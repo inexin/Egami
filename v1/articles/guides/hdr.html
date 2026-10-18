@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>HDR files | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="HDR files | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/hdr.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="hdr-files">HDR files</h1>
+
+<p>Egami reads and writes Radiance pictures (.hdr) and OpenEXR images (.exr), lists the images of Multi-Picture JPEG files, and
+reads, keeps and writes the gain maps of Ultra HDR, ISO 21496-1 and Apple JPEGs. HDR pixels load as linear light in floating
+point, unclamped, with 1.0 as reference white (203 cd/m²), the same scale the <a href="color-management.html">color management</a> guide's
+tone mapping and HDR metadata use.</p>
+<h2 id="radiance">Radiance</h2>
+<p>Radiance pictures hold three 8-bit mantissas and a shared exponent per pixel (RGBE), or CIE X, Y and Z the same way (XYZE).
+<code>RadianceFormat</code> reads both, every scan order a resolution line can name (<code>-Y 512 +X 768</code> and the other seven), and flat,
+old-style repeat-pixel and per-channel run-length scanlines. Pixels load as <code>RgbF32</code>, bit for bit what stb_image decodes; XYZE
+converts to RGB in Radiance's standard primaries, which <code>RasterMetadata.Primaries</code> then names. A <code>PRIMARIES</code> line sets the
+primaries of an RGBE file the same way; without one, Rec. 709 is assumed.</p>
+<p><code>RadianceDetails</code> keeps the header: the <code>RadiancePixelFormat</code>, <code>Exposure</code>, <code>ColorCorrection</code>, <code>Primaries</code>, <code>Software</code>, <code>View</code>, <code>PixelAspectRatio</code>, the scan
+order as stored and every header line. The reader also measures the brightest value and stores it as
+<code>HdrMetadata.MaxContentLightLevel</code>, so <code>ToneMap</code> fits the image rather than a fixed 1,000 cd/m² peak.</p>
+<pre><code class="lang-csharp">// Linear light, unclamped: 1.0 is reference white. The brightest value is measured as the light level ToneMap fits.
+using Raster&lt;RgbF32&gt; hdr = Raster.Load&lt;RgbF32&gt;(&quot;desk.hdr&quot;);
+var details = (RadianceDetails)hdr.Metadata.FormatDetails!;
+double? exposure = details.Exposure;                    // the header's EXPOSURE lines; the pixels are kept as stored
+
+// To SDR: tone map, then save. Saving the HDR raster to PNG or JPEG as it is would clip the highlights.
+using Raster&lt;RgbF32&gt; mapped = hdr.Derive(ops =&gt; ops.ToneMap(ToneMapping.Bt2390));
+mapped.Save(&quot;desk.jpg&quot;);
+
+// RGBE with per-channel run-length scanlines, as Radiance writes them; EXPOSURE only when asked for.
+hdr.Save(&quot;copy.hdr&quot;);
+hdr.Save(&quot;labeled.hdr&quot;, new RadianceWriterOptions { Exposure = 1.5 });
+</code></pre>
+<p>The writer writes RGBE, top row first, with per-channel run-length scanlines (<code>RadianceWriterOptions.Compress = false</code> writes them
+flat) and an <code>EXPOSURE</code> line only when <code>RadianceWriterOptions.Exposure</code> is set. Reading a file and writing it again gives the same
+floats, and the same bytes once written by Egami.</p>
+<h2 id="openexr">OpenEXR</h2>
+<p><code>ExrFormat</code> reads scanline and tiled files, single and multi-part (<code>ExrPartKind</code>), with every compression of OpenEXR 3
+(<code>ExrCompression</code>: NONE, RLE, ZIPS, ZIP, PIZ, PXR24, B44, B44A, DWAA and DWAB; HTJ2K is refused), half, float and uint channels
+(<code>ExrPixelType</code>), and luminance-chroma images. Pixels match OpenEXR's own decode bit for bit, DWA within one half-float step.
+A load gives the first part's R, G, B and A (or Y, YA or the luminance-chroma channels) as linear light; a tiled part loads its
+full-resolution level (<code>ExrLevelMode</code> says which levels it has). Deep parts throw <code>UnsupportedFormatException</code>.</p>
+<p><code>ExrDetails</code> lists every part as an <code>ExrPart</code>: its name, channels (<code>ExrChannel</code>), layers, data and display windows, tile size,
+chromaticities and every header attribute as an <code>ExrHeaderEntry</code>. <code>ExrReaderOptions</code> picks the <code>Part</code>, a <code>Layer</code> (such as
+<code>diffuse</code> for <code>diffuse.R</code>, <code>diffuse.G</code> and <code>diffuse.B</code>) and the <code>ExrWindow</code> to load: the data window, the pixels the file
+stores (the default), or the display window, padded with transparent black where there is no data. <code>ExrImage.ReadChannel</code> loads any one channel, such as depth
+or an object id, as 32-bit float.</p>
+<pre><code class="lang-csharp">// The first part's RGBA channels as linear light, 1.0 reference white; other layers by name.
+using Raster&lt;RgbaF32&gt; beauty = Raster.Load&lt;RgbaF32&gt;(&quot;render.exr&quot;);
+var details = (ExrDetails)beauty.Metadata.FormatDetails!;
+IReadOnlyList&lt;string&gt; layers = details.Parts[details.Part].Layers;       // &quot;diffuse&quot;, &quot;specular&quot;
+using Raster&lt;RgbaF32&gt; diffuse = Raster.Load&lt;RgbaF32&gt;(&quot;render.exr&quot;, options: new ExrReaderOptions { Layer = &quot;diffuse&quot; });
+
+// Any one channel, such as depth or an object id, as 32-bit float.
+using Raster&lt;GrayF32&gt; depth = ExrImage.ReadChannel(&quot;aov.exr&quot;, &quot;Z&quot;);
+</code></pre>
+<p>The writer writes one scanline part with R, G, B and A when the raster has alpha (<code>ExrWriterOptions</code>): ZIP by default, or NONE,
+RLE, ZIPS or PIZ, in half or float (<code>ExrWriterOptions.PixelType</code>; by default float for float rasters other than <code>RgbaF16</code>,
+half otherwise). A
+non-linear raster, such as sRGB, is converted to linear light first, and primaries other than Rec. 709 are written as
+chromaticities. OpenEXR reads every file Egami writes to the same values.</p>
+<pre><code class="lang-csharp">// Half-float RGBA, ZIP-compressed, by default; a sRGB or other non-linear raster is linearized first.
+beauty.Save(&quot;copy.exr&quot;);
+beauty.Save(&quot;float.exr&quot;, new ExrWriterOptions { Compression = ExrCompression.Piz, PixelType = ExrPixelType.Float });
+</code></pre><h2 id="multi-picture-jpeg-files">Multi-Picture JPEG files</h2>
+<p>Phones store more than one image in a JPEG: a gain map for HDR, large previews, the second view of a stereo pair. The CIPA
+Multi-Picture Format (MPF) lists them in an APP2 segment. <code>JpegDetails.MultiPicture</code> gives that index as <code>MpfData</code>: an
+<code>MpfImage</code> for each image with its <code>MpfImageType</code>, flags, length, and offset from the start of the file (the same numbers
+ExifTool prints). <code>Raster.Probe</code> counts them in <code>RasterInfo.ImageCount</code>, and <code>Raster.LoadAll</code> loads each JPEG one, the primary
+first. A damaged index never fails a load: the primary loads with a <code>Jpeg.MpfDamaged</code> warning.</p>
+<pre><code class="lang-csharp">// A JPEG's Multi-Picture index lists the images stored after the primary: previews, stereo views, a gain map.
+using Raster photo = Raster.Load(&quot;ultrahdr.jpg&quot;);
+MpfData? index = ((JpegDetails)photo.Metadata.FormatDetails!).MultiPicture;
+foreach (MpfImage image in index?.Images ?? [])
+{
+    Console.WriteLine($&quot;{image.Type}: {image.Length:N0} bytes at {image.Offset:N0}&quot;);
+}
+
+// LoadAll gives every JPEG image the index lists, the primary first; a plain JPEG gives one.
+using RasterList all = Raster.LoadAll(&quot;ultrahdr.jpg&quot;);
+</code></pre><h2 id="gain-maps">Gain maps</h2>
+<p>An Ultra HDR JPEG, as Android phones, Chrome and Photoshop write it, is an SDR picture any viewer shows, followed (through
+MPF) by a gain map: how much brighter each part of the picture is in the HDR rendition. ISO 21496-1, Adobe's hdrgm XMP (Ultra
+HDR 1.0) and Apple's HDRGainMap are three ways of writing the same idea down; <code>GainMapFormat</code> says which a file used, and
+<code>GainMapInfo</code> holds its values, in log2 units as the standards give them. A load gives the SDR picture as stored, with the map in
+<code>RasterMetadata.GainMap</code> as a <code>GainMap</code> (<code>GainMapValues</code> per channel); a damaged map is dropped with <code>Jpeg.GainMapDropped</code>.</p>
+<p><code>ReaderOptions.Hdr</code> asks for the HDR rendition instead: <code>HdrDecode.Headroom</code> is how much brighter than SDR white the display can
+go (or the map's full capacity), and the load gives linear <code>RgbaF16</code>, within about 1% of libultrahdr's decode.
+<code>GainMap.Apply</code> does the same for a raster in hand.</p>
+<pre><code class="lang-csharp">// As stored: the SDR base image, with the gain map in the metadata.
+using Raster sdr = Raster.Load(&quot;ultrahdr.jpg&quot;);
+GainMap? map = sdr.Metadata.GainMap;                                     // null for a plain JPEG
+
+// The HDR rendition for a display 4x as bright as SDR white: linear half floats, 1.0 = SDR white.
+using Raster&lt;RgbaF16&gt; hdr = Raster.Load&lt;RgbaF16&gt;(&quot;ultrahdr.jpg&quot;, options: new ReaderOptions { Hdr = new HdrDecode { Headroom = 4 } });
+
+// The same from a raster in hand, at the map's full capacity.
+using Raster&lt;RgbaF16&gt; full = map!.Apply(sdr);
+</code></pre>
+<p>Saving as JPEG writes the map back, in both metadata forms, as Skia and libultrahdr write them. Crops, turns, flips and resizes
+move the map with the picture; operations that change pixel values drop it (<code>Operation.GainMapDropped</code>), as do other formats
+(<code>Save.GainMapDropped</code>) and <code>JpegWriterOptions.KeepGainMap = false</code>.</p>
+<pre><code class="lang-csharp">// Crops, turns, flips and resizes move the gain map with the picture; saving as JPEG writes it back.
+using Raster photo = Raster.Load(&quot;ultrahdr.jpg&quot;);
+using Raster cropped = photo.Derive(ops =&gt; ops.Crop(16, 16, 200, 150).Rotate(90));
+cropped.Save(&quot;cropped.jpg&quot;);                                             // still Ultra HDR
+
+// Operations that change pixel values drop it (Operation.GainMapDropped), and so do formats other than JPEG
+// (Save.GainMapDropped); KeepGainMap = false leaves it out on purpose.
+cropped.Save(&quot;sdr-only.jpg&quot;, new JpegWriterOptions { KeepGainMap = false });
+</code></pre>
+<p>To write an HDR raster as Ultra HDR, set <code>JpegWriterOptions.GainMap</code>: the raster is tone mapped to the SDR picture and
+<code>GainMap.Create</code> makes the map that brings it back. <code>GainMapOptions</code> has libultrahdr's defaults (a full-size, color map, gamma 1,
+quality 95) and each can be changed; <code>Create</code> also takes an SDR rendition you graded yourself.</p>
+<pre><code class="lang-csharp">// An HDR raster as Ultra HDR: the SDR base, tone mapped with BT.2390, and a gain map that brings the HDR raster back.
+using Raster&lt;RgbaF32&gt; hdr = Raster.Load&lt;RgbaF32&gt;(&quot;render.exr&quot;);
+hdr.Save(&quot;render.jpg&quot;, new JpegWriterOptions { Quality = 90, GainMap = new GainMapOptions() });
+
+// Or choose the SDR rendition: the map goes in its metadata, and saving as JPEG writes both.
+using Raster&lt;Rgb8&gt; sdr = hdr.Derive(ops =&gt; ops.ToneMap(ToneMapping.Reinhard)).As&lt;Rgb8&gt;();
+sdr.Metadata.GainMap = GainMap.Create(hdr, sdr, new GainMapOptions { Scale = 4 });
+sdr.Save(&quot;graded.jpg&quot;, new JpegWriterOptions { Quality = 90 });
+</code></pre><h2 id="saving-hdr-to-an-sdr-format">Saving HDR to an SDR format</h2>
+<p>PNG, JPEG and the other 8 and 16-bit formats hold 0 to 1. Saving a floating-point raster to them clamps, as other libraries do;
+when the raster holds light above reference white, the save also reports <code>Save.HdrClipped</code>, naming <code>ToneMap</code>, which rolls the
+highlights off instead of cutting them.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/hdr.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class EncodedImage | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class EncodedImage | Egami ">
+      
+      <meta name="description" content="An image kept as its file&#39;s bytes, such as a JPEG, for : a backend that can store the bytes as they are, as a PDF page stores a JPEG as DCTDecode, gets them through OnDrawEncodedImage without decoding and encoding again; every other backend draws the decoded pixels. The bytes are probed when the image is made and decoded at most once, on first need. Immutable and thread-safe.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_EncodedImage.md&amp;value=---%0Auid%3A%20Egami.Drawing.EncodedImage%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.EncodedImage">
+
+
+
+  <h1 id="Egami_Drawing_EncodedImage" data-uid="Egami.Drawing.EncodedImage" class="text-break">
+Class EncodedImage  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/EncodedImage.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An image kept as its file's bytes, such as a JPEG, for <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Drawing_EncodedImage_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">DrawImage(EncodedImage, RectF, SamplingOptions?, Paint?)</a>:
+a backend that can store the bytes as they are, as a PDF page stores a JPEG as DCTDecode, gets them through
+<code>OnDrawEncodedImage</code> without decoding and encoding again; every other backend draws the decoded pixels. The bytes are
+probed when the image is made and decoded at most once, on first need. Immutable and thread-safe.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class EncodedImage</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">EncodedImage</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_EncodedImage_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A JPEG kept as its bytes: a PDF backend embeds them as they are; a raster canvas draws the decoded pixels.
+EncodedImage jpeg = EncodedImage.Load("photo.jpg");
+canvas.DrawImage(jpeg, new RectF(20, 20, 128, 96));</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Drawing_EncodedImage_Data_" data-uid="Egami.Drawing.EncodedImage.Data*"></a>
+
+  <h3 id="Egami_Drawing_EncodedImage_Data" data-uid="Egami.Drawing.EncodedImage.Data">
+  Data
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/EncodedImage.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the file's bytes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;byte&gt; Data { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_EncodedImage_Height_" data-uid="Egami.Drawing.EncodedImage.Height*"></a>
+
+  <h3 id="Egami_Drawing_EncodedImage_Height" data-uid="Egami.Drawing.EncodedImage.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/EncodedImage.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the height of the decoded image in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_EncodedImage_Info_" data-uid="Egami.Drawing.EncodedImage.Info*"></a>
+
+  <h3 id="Egami_Drawing_EncodedImage_Info" data-uid="Egami.Drawing.EncodedImage.Info">
+  Info
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/EncodedImage.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what probing the bytes found: the format, the size, the pixel layout and the orientation.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RasterInfo Info { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.RasterInfo.html">RasterInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_EncodedImage_Width_" data-uid="Egami.Drawing.EncodedImage.Width*"></a>
+
+  <h3 id="Egami_Drawing_EncodedImage_Width" data-uid="Egami.Drawing.EncodedImage.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/EncodedImage.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width of the decoded image in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Drawing_EncodedImage_Decode_" data-uid="Egami.Drawing.EncodedImage.Decode*"></a>
+
+  <h3 id="Egami_Drawing_EncodedImage_Decode" data-uid="Egami.Drawing.EncodedImage.Decode">
+  Decode()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/EncodedImage.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the decoded image, decoding it on the first call; later calls return the same raster, which must not be changed or disposed.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster Decode()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The decoded image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The image data is damaged.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_EncodedImage_Load_" data-uid="Egami.Drawing.EncodedImage.Load*"></a>
+
+  <h3 id="Egami_Drawing_EncodedImage_Load_System_IO_Stream_Egami_EgamiContext_" data-uid="Egami.Drawing.EncodedImage.Load(System.IO.Stream,Egami.EgamiContext)">
+  Load(Stream, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/EncodedImage.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a stream to its end into an encoded image.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static EncodedImage Load(Stream stream, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context whose formats and limits apply, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.EncodedImage.html">EncodedImage</a></dt>
+    <dd><p>The image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_EncodedImage_Load_System_IO_Stream_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG kept as its bytes: a PDF backend embeds them as they are; a raster canvas draws the decoded pixels.
+EncodedImage jpeg = EncodedImage.Load("photo.jpg");
+canvas.DrawImage(jpeg, new RectF(20, 20, 128, 96));</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The data is not an image Egami reads.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_EncodedImage_Load_" data-uid="Egami.Drawing.EncodedImage.Load*"></a>
+
+  <h3 id="Egami_Drawing_EncodedImage_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_" data-uid="Egami.Drawing.EncodedImage.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext)">
+  Load(ReadOnlyMemory&lt;byte&gt;, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/EncodedImage.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes an encoded image from a file's bytes, which are kept as they are (not copied) and probed but not decoded; they must not change while the image is in use.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static EncodedImage Load(ReadOnlyMemory&lt;byte&gt; data, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The file's bytes, in any format Egami reads.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context whose formats and limits apply when probing and decoding, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.EncodedImage.html">EncodedImage</a></dt>
+    <dd><p>The image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_EncodedImage_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG kept as its bytes: a PDF backend embeds them as they are; a raster canvas draws the decoded pixels.
+EncodedImage jpeg = EncodedImage.Load("photo.jpg");
+canvas.DrawImage(jpeg, new RectF(20, 20, 128, 96));</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The bytes are not an image Egami reads.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The header is damaged.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_EncodedImage_Load_" data-uid="Egami.Drawing.EncodedImage.Load*"></a>
+
+  <h3 id="Egami_Drawing_EncodedImage_Load_System_String_Egami_EgamiContext_" data-uid="Egami.Drawing.EncodedImage.Load(System.String,Egami.EgamiContext)">
+  Load(string, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/EncodedImage.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a file into an encoded image.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static EncodedImage Load(string path, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context whose formats and limits apply, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.EncodedImage.html">EncodedImage</a></dt>
+    <dd><p>The image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_EncodedImage_Load_System_String_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG kept as its bytes: a PDF backend embeds them as they are; a raster canvas draws the decoded pixels.
+EncodedImage jpeg = EncodedImage.Load("photo.jpg");
+canvas.DrawImage(jpeg, new RectF(20, 20, 128, 96));</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The file is not an image Egami reads.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/EncodedImage.cs/#L15" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

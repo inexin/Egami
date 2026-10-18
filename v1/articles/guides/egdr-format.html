@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>The .egdr format | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="The .egdr format | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/egdr-format.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="the-egdr-format">The .egdr format</h1>
+
+<p>An Egami drawing file holds a recorded <code>Picture</code>: the calls a <code>PictureRecorder</code> kept, and the images, paths and nested drawings
+they use. <code>Picture.Save</code> writes it and <code>Picture.Load</code> reads it; this page is the format's specification, version 1.1, for
+anyone writing a reader or writer of their own. See <a href="drawing.html#recorded-drawings">Drawing</a> for the API.</p>
+<h2 id="layout">Layout</h2>
+<p>All numbers are little-endian. <code>u8</code>, <code>u16</code> and <code>u32</code> are unsigned integers of 1, 2 and 4 bytes, <code>i32</code> a signed 4-byte integer,
+<code>f32</code> an IEEE 754 single, and <code>bool</code> a <code>u8</code> that is 0 or 1.</p>
+<p>A file is a 12-byte header followed by chunks:</p>
+<table>
+<thead>
+<tr>
+<th>Bytes</th>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 to 7</td>
+<td>Signature</td>
+<td><code>89 45 47 44 52 0D 0A 1A</code> (<code>\x89EGDR\r\n\x1A</code>, after PNG's: it catches text-mode transfers and stops <code>type</code>)</td>
+</tr>
+<tr>
+<td>8 to 9</td>
+<td>Major version</td>
+<td><code>u16</code>, 1. A reader rejects a major version it does not know.</td>
+</tr>
+<tr>
+<td>10 to 11</td>
+<td>Minor version</td>
+<td><code>u16</code>, 1. A reader accepts any minor version of its major version.</td>
+</tr>
+</tbody>
+</table>
+<p>Each chunk is a 4-byte ASCII type, a <code>u32</code> payload length, and the payload. A reader skips the payload of a chunk type it does
+not know, which is how later minor versions add to the format. The chunk types of version 1.1:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Payload</th>
+<th>Defines</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IMAG</code></td>
+<td>A PNG file</td>
+<td>The next image, numbered from 0</td>
+</tr>
+<tr>
+<td><code>PATH</code></td>
+<td>A path, below</td>
+<td>The next path, numbered from 0</td>
+</tr>
+<tr>
+<td><code>DRAW</code></td>
+<td>A drawing, below</td>
+<td>The next drawing, numbered from 0</td>
+</tr>
+<tr>
+<td><code>ENCI</code></td>
+<td>An encoded image file (a JPEG, a PNG, any format Egami reads), its bytes as they were given</td>
+<td>The next encoded image, numbered from 0</td>
+</tr>
+<tr>
+<td><code>INKS</code></td>
+<td>Ink entries, below (since 1.1)</td>
+<td>Nothing: it annotates the <code>DRAW</code> chunk right after it</td>
+</tr>
+<tr>
+<td><code>DEND</code></td>
+<td>Empty</td>
+<td>The end. The file's drawing is the last <code>DRAW</code> chunk before it.</td>
+</tr>
+</tbody>
+</table>
+<p>A chunk refers to images, paths and drawings by number, and only to ones defined by earlier chunks, so a file is read in one pass
+and cannot hold a cycle. A writer writes each image, path and drawing once, however often it is used. Bytes after <code>DEND</code> are
+ignored.</p>
+<h2 id="paths">Paths</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fill rule</td>
+<td><code>u8</code>: 0 nonzero, 1 even-odd</td>
+</tr>
+<tr>
+<td>Verb count</td>
+<td><code>u32</code></td>
+</tr>
+<tr>
+<td>Verbs</td>
+<td><code>u8</code> each: 0 move, 1 line, 2 quadratic, 3 cubic, 4 close</td>
+</tr>
+<tr>
+<td>Point count</td>
+<td><code>u32</code>, the sum of the verbs' points: 1 for a move or a line, 2 for a quadratic, 3 for a cubic, 0 for a close</td>
+</tr>
+<tr>
+<td>Points</td>
+<td><code>f32</code> x and y each, finite</td>
+</tr>
+</tbody>
+</table>
+<p>A line, quadratic or cubic must follow a move, or another segment, in its contour: after a close, a new contour starts with a
+move.</p>
+<h2 id="drawings">Drawings</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bounds</td>
+<td>Rectangle</td>
+</tr>
+<tr>
+<td>Call count</td>
+<td><code>u32</code></td>
+</tr>
+<tr>
+<td>Calls</td>
+<td>One after another, each an opcode <code>u8</code> and its operands</td>
+</tr>
+</tbody>
+</table>
+<p>The payload must end exactly after the last call.</p>
+<p>A rectangle is four <code>f32</code>: x, y, width and height. A matrix is six <code>f32</code>: M11, M12, M21, M22, M31, M32, as .NET's <code>Matrix3x2</code>,
+which maps a row vector (x, y, 1). A color is four <code>f32</code>: red, green, blue and straight alpha, encoded (sRGB) values from 0 to 1.
+A point is two <code>f32</code>. A string is a <code>u32</code> byte count and that many bytes of UTF-8. A round rectangle is a rectangle and the x and y radii of its corners: top-left, top-right, bottom-right,
+bottom-left. An enum is a <code>u8</code> with the value Egami's enum of that name has. Every number must be finite.</p>
+<table>
+<thead>
+<tr>
+<th>Opcode</th>
+<th>Call</th>
+<th>Operands</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Save</td>
+<td>None</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Restore (also ends a layer)</td>
+<td>None</td>
+</tr>
+<tr>
+<td>3</td>
+<td>SaveLayer</td>
+<td>Opacity <code>f32</code>, BlendMode, a flags <code>u8</code> (1 isolated, 2 knockout), has-bounds <code>bool</code>, bounds rectangle if it has them</td>
+</tr>
+<tr>
+<td>4</td>
+<td>SetMatrix</td>
+<td>Matrix</td>
+</tr>
+<tr>
+<td>5</td>
+<td>ClipRect</td>
+<td>Rectangle, ClipOp, antialias <code>bool</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td>ClipRoundRect</td>
+<td>Round rectangle, ClipOp, antialias <code>bool</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>ClipPath</td>
+<td>Path number <code>u32</code>, ClipOp, antialias <code>bool</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>DrawPaint</td>
+<td>Paint</td>
+</tr>
+<tr>
+<td>9</td>
+<td>DrawRect</td>
+<td>Rectangle, has-stroke <code>bool</code>, stroke if it has one, paint</td>
+</tr>
+<tr>
+<td>10</td>
+<td>DrawRoundRect</td>
+<td>Round rectangle, has-stroke <code>bool</code>, stroke, paint</td>
+</tr>
+<tr>
+<td>11</td>
+<td>DrawOval</td>
+<td>Rectangle, has-stroke <code>bool</code>, stroke, paint</td>
+</tr>
+<tr>
+<td>12</td>
+<td>DrawPath</td>
+<td>Path number <code>u32</code>, has-stroke <code>bool</code>, stroke, paint</td>
+</tr>
+<tr>
+<td>13</td>
+<td>DrawPoints</td>
+<td>PointMode, count <code>u32</code>, points, stroke, paint</td>
+</tr>
+<tr>
+<td>14</td>
+<td>DrawImage</td>
+<td>Image number <code>u32</code>, source rectangle (inside the image), destination rectangle, sampling, has-paint <code>bool</code>, paint</td>
+</tr>
+<tr>
+<td>15</td>
+<td>DrawLattice</td>
+<td>Image number, lattice, destination rectangle, sampling, has-paint <code>bool</code>, paint</td>
+</tr>
+<tr>
+<td>16</td>
+<td>DrawAtlas</td>
+<td>Image number, count <code>u32</code>, that many sprite transforms (four <code>f32</code>: ScaleCos, ScaleSin, Tx, Ty), that many source rectangles, has-colors <code>bool</code>, that many colors if it has them, BlendMode, sampling, has-paint <code>bool</code>, paint</td>
+</tr>
+<tr>
+<td>17</td>
+<td>DrawMesh</td>
+<td>Mesh, paint, BlendMode, stops</td>
+</tr>
+<tr>
+<td>18</td>
+<td>DrawPatch</td>
+<td>Patch, paint, BlendMode, stops</td>
+</tr>
+<tr>
+<td>19</td>
+<td>DrawPicture</td>
+<td>Picture number <code>u32</code>, matrix, has-paint <code>bool</code>, paint, cache-as-image <code>bool</code></td>
+</tr>
+<tr>
+<td>20</td>
+<td>DrawEncodedImage</td>
+<td>Encoded image number <code>u32</code>, source rectangle (inside the image), destination rectangle, sampling, has-paint <code>bool</code>, paint</td>
+</tr>
+<tr>
+<td>21</td>
+<td>DrawAnnotation</td>
+<td>Area rectangle, AnnotationKind, the URL or name as a string</td>
+</tr>
+<tr>
+<td>22</td>
+<td>BeginMarkedContent</td>
+<td>Tag as a string, a flags <code>u8</code> (1 node id, 2 actual text, 4 alternate text), then the node id <code>i32</code> and the two strings for the flags set</td>
+</tr>
+<tr>
+<td>23</td>
+<td>EndMarkedContent</td>
+<td>None; every BeginMarkedContent in a drawing has its EndMarkedContent in the same drawing</td>
+</tr>
+<tr>
+<td>24</td>
+<td>DrawImageMask</td>
+<td>Image number <code>u32</code>, destination rectangle, sampling, paint</td>
+</tr>
+</tbody>
+</table>
+<p>Coordinates are those the recorder's hooks received: local coordinates under the matrix last set. Replaying a drawing sets each
+recorded matrix after the matrix the drawing is replayed under. Text is written as <code>DrawPath</code> of its outlines, filled, since a
+file holds no fonts.</p>
+<p>A <strong>stroke</strong> is width <code>f32</code> (0 for a hairline), LineCap, LineJoin, miter limit <code>f32</code>, has-dash <code>bool</code>, and for a dash an
+interval count <code>u32</code>, the intervals as <code>f32</code> and the phase <code>f32</code>. Path effects never reach a file: the canvas applies them
+before the hook.</p>
+<p><strong>Sampling</strong> is ResampleFilter, ColorSpace, EdgeMode and the background color as four <code>u8</code> (red, green, blue, alpha).</p>
+<p><strong>Stops</strong> are a count <code>u32</code>, then each stop's offset <code>f32</code> (0 to 1) and color.</p>
+<p>A <strong>lattice</strong> is the x division count <code>u32</code> and the divisions as <code>i32</code>, the same for y, has-bounds <code>bool</code> and the bounds as four
+<code>i32</code> (x, y, width, height), has-kinds <code>bool</code> and one LatticeCellKind per cell, has-colors <code>bool</code> and one color per cell. There
+are (x divisions + 1) · (y divisions + 1) cells, row by row.</p>
+<p>A <strong>mesh</strong> is MeshMode, the vertex count <code>u32</code>, the positions, a flags <code>u8</code> (1 colors, 2 texture coordinates, 4 values,
+8 indices), then for each flag set in that order: a color per vertex, a point per vertex, an <code>f32</code> per vertex, and an index
+count <code>u32</code> with that many <code>i32</code> indices, each below the vertex count. Colors and values are not both present, and a mesh with
+values has at least one stop.</p>
+<p>A <strong>patch</strong> is PatchKind (0 Coons, 1 tensor), its 12 or 16 points, a flags <code>u8</code> (1 colors, 2 texture coordinates, 4 values),
+then four corner colors, four corner points and four corner <code>f32</code> values for the flags set, in that order.</p>
+<h2 id="paints">Paints</h2>
+<p>A paint is its kind <code>u8</code>, the fields every paint has, then its own:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BlendMode</td>
+<td><code>u8</code></td>
+</tr>
+<tr>
+<td>Opacity</td>
+<td><code>f32</code>, 0 to 1</td>
+</tr>
+<tr>
+<td>Flags</td>
+<td><code>u8</code>: 1 antialias, 2 dither, 4 has a mask blur</td>
+</tr>
+<tr>
+<td>Local matrix</td>
+<td>Matrix</td>
+</tr>
+<tr>
+<td>Mask blur</td>
+<td>Sigma <code>f32</code> and BlurStyle, when flag 4 is set</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Paint</th>
+<th>Own fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>SolidPaint</td>
+<td>Color</td>
+</tr>
+<tr>
+<td>2</td>
+<td>LinearGradient</td>
+<td>Start point, end point, gradient fields</td>
+</tr>
+<tr>
+<td>3</td>
+<td>RadialGradient</td>
+<td>Center point, radius <code>f32</code>, gradient fields</td>
+</tr>
+<tr>
+<td>4</td>
+<td>ConicalGradient</td>
+<td>Start point, start radius <code>f32</code>, end point, end radius <code>f32</code>, gradient fields</td>
+</tr>
+<tr>
+<td>5</td>
+<td>SweepGradient</td>
+<td>Center point, start angle <code>f32</code>, end angle <code>f32</code>, gradient fields</td>
+</tr>
+<tr>
+<td>6</td>
+<td>ImagePaint</td>
+<td>Image number <code>u32</code>, TileMode x, TileMode y, sampling</td>
+</tr>
+<tr>
+<td>7</td>
+<td>NoisePaint</td>
+<td>NoisePaintKind, base frequency x and y <code>f32</code>, octaves <code>i32</code>, seed <code>i32</code>, has-tile <code>bool</code>, tile width and height <code>i32</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>BlendPaint</td>
+<td>Destination paint, source paint, BlendMode</td>
+</tr>
+<tr>
+<td>9</td>
+<td>ColorMatrixPaint</td>
+<td>Source paint, the 20 matrix values <code>f32</code>, row by row</td>
+</tr>
+<tr>
+<td>10</td>
+<td>PicturePaint</td>
+<td>Picture number <code>u32</code>, TileMode x, TileMode y, tile rectangle</td>
+</tr>
+</tbody>
+</table>
+<p>The gradient fields are the stops (at least one), TileMode, a flags <code>u8</code> (1 extend start, 2 extend end, 4 premultiplied),
+InterpolationSpace and HueMethod. A simplex noise uses its x frequency.</p>
+<p>A <code>CustomPaint</code> runs C# and has no kind: saving a drawing that uses one throws, and so does saving a layer with a filter, a
+backdrop or a soft mask, naming the call.</p>
+<h2 id="inks">Inks</h2>
+<p>A drawing made with ink colours (<code>InkColor</code>), overprint or layers with a <code>ColorSpace</code> keeps them in an <code>INKS</code> chunk written just
+before its <code>DRAW</code> chunk, which holds every colour as its sRGB appearance. A 1.0 reader skips <code>INKS</code> and draws the appearances;
+an ink canvas reading 1.1 prints the inks. The payload is an entry count <code>u32</code>, then each entry: the byte offset <code>u32</code> in the
+next <code>DRAW</code> chunk's payload that it is about, its kind <code>u8</code>, a data length <code>u32</code> and the data. Each offset appears once and must
+be the start of what its kind names:</p>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>At</th>
+<th>Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>A color: a SolidPaint's, a stop's, a mesh vertex's or a patch corner's</td>
+<td>An ink colour</td>
+</tr>
+<tr>
+<td>2</td>
+<td>A paint's kind <code>u8</code></td>
+<td>Overprint <code>u8</code>: 1 on, 2 nonzero (absent means off)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>A SaveLayer opcode</td>
+<td>The layer's colour space as an ICC profile</td>
+</tr>
+</tbody>
+</table>
+<p>An ink colour is a flags <code>u8</code> (1 for a process CMYK colour, whose four inks are Cyan, Magenta, Yellow and Black in that order),
+an ink count <code>u32</code>, and per ink: its name as a string, ColorantKind <code>u8</code> (0 process, 1 spot, 2 technical), an appearance <code>u8</code>
+(0 none, 1 CMYK, 2 sRGB, 3 Lab D50) with four <code>f32</code> when there is one (RGB and Lab leave the fourth 0), and its tint <code>f32</code>. A
+mesh's or patch's vertices have inks all or none.</p>
+<h2 id="reading-untrusted-files">Reading untrusted files</h2>
+<p>Egami's reader checks every count against the bytes left before it allocates, puts every value through the constructors that
+check it, reads images with the PNG reader under the context's <code>SafetyLimits</code>, counts what it decodes toward
+<code>MaxTotalBytes</code>, and limits drawings to 64 levels of nesting and 50 million calls with nested drawings expanded, so a small file
+cannot ask for an exponential replay. Any failure is an <code>EgamiException</code>. The reader has a fuzz target, <code>egdr</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/egdr-format.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

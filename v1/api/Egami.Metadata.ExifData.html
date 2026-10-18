@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class ExifData | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class ExifData | Egami ">
+      
+      <meta name="description" content="A parsed EXIF block (a TIFF structure, CIPA DC-008): the tags of IFD0, the EXIF, GPS and interoperability sub-IFDs and IFD1 with its thumbnail, with typed getters for the common ones. An unedited block writes back byte for byte; after an edit it is laid out again, keeping the maker note at its old offset when it fits, since maker notes often hold offsets of their own.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Metadata_ExifData.md&amp;value=---%0Auid%3A%20Egami.Metadata.ExifData%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Metadata.ExifData">
+
+
+
+  <h1 id="Egami_Metadata_ExifData" data-uid="Egami.Metadata.ExifData" class="text-break">
+Class ExifData  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Metadata.html">Metadata</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A parsed EXIF block (a TIFF structure, CIPA DC-008): the tags of IFD0, the EXIF, GPS and interoperability sub-IFDs and IFD1
+with its thumbnail, with typed getters for the common ones. An unedited block writes back byte for byte; after an edit it is
+laid out again, keeping the maker note at its old offset when it fits, since maker notes often hold offsets of their own.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class ExifData</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">ExifData</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Metadata_ExifData_examples">Examples</h2>
+  <pre><code class="lang-csharp">using Raster photo = Raster.Load("sideways.jpg");
+ExifData exif = photo.Metadata.Exif ?? new ExifData();
+
+// Typed values go in with their EXIF type; fractions are exact numerator / denominator pairs.
+exif.Set(ExifKey.ExposureTime, new ExifFraction(1, 250));
+exif.Set(ExifKey.Artist, "A. Photographer");
+if (exif.TryGet(ExifKey.ExposureTime, out ExifEntry? entry) &amp;&amp; entry.Type == ExifType.Rational)
+{
+    Console.WriteLine($"Exposure {entry.AsFraction()} s = {entry.AsFraction().ToDouble()} s, in the {entry.Key.Ifd} IFD");
+}
+
+if (exif.Location is GeoPosition where)
+{
+    Console.WriteLine($"Taken at {where.Latitude:F5}, {where.Longitude:F5}");
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Metadata_ExifData__ctor_" data-uid="Egami.Metadata.ExifData.#ctor*"></a>
+
+  <h3 id="Egami_Metadata_ExifData__ctor" data-uid="Egami.Metadata.ExifData.#ctor">
+  ExifData()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates an empty block, little-endian, to fill with <a class="xref" href="Egami.Metadata.ExifData.html#Egami_Metadata_ExifData_Set_Egami_Metadata_ExifKey_System_String_">Set(ExifKey, string)</a> and the other setters.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ExifData()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Metadata_ExifData_CameraMake_" data-uid="Egami.Metadata.ExifData.CameraMake*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_CameraMake" data-uid="Egami.Metadata.ExifData.CameraMake">
+  CameraMake
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the camera maker, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? CameraMake { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_CameraModel_" data-uid="Egami.Metadata.ExifData.CameraModel*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_CameraModel" data-uid="Egami.Metadata.ExifData.CameraModel">
+  CameraModel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the camera model, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? CameraModel { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_DateTaken_" data-uid="Egami.Metadata.ExifData.DateTaken*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_DateTaken" data-uid="Egami.Metadata.ExifData.DateTaken">
+  DateTaken
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets when the photo was taken: <a class="xref" href="Egami.Metadata.ExifKey.html#Egami_Metadata_ExifKey_DateTimeOriginal">DateTimeOriginal</a>, else <a class="xref" href="Egami.Metadata.ExifKey.html#Egami_Metadata_ExifKey_DateTime">DateTime</a>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DateTime? DateTaken { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetime">DateTime</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_Entries_" data-uid="Egami.Metadata.ExifData.Entries*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Entries" data-uid="Egami.Metadata.ExifData.Entries">
+  Entries
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets every entry, IFD by IFD (IFD0, EXIF, GPS, interoperability, IFD1), in the order stored.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;ExifEntry&gt; Entries { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Metadata.ExifEntry.html">ExifEntry</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_IsBigEndian_" data-uid="Egami.Metadata.ExifData.IsBigEndian*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_IsBigEndian" data-uid="Egami.Metadata.ExifData.IsBigEndian">
+  IsBigEndian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether values are stored big-endian (Motorola order) rather than little-endian (Intel order).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsBigEndian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_IsDamaged_" data-uid="Egami.Metadata.ExifData.IsDamaged*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_IsDamaged" data-uid="Egami.Metadata.ExifData.IsDamaged">
+  IsDamaged
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the block was damaged when read: an offset outside it, a loop between IFDs, or more data than allowed. What
+could be read is available; the original bytes are kept and written back unless the block is edited.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsDamaged { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_Location_" data-uid="Egami.Metadata.ExifData.Location*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Location" data-uid="Egami.Metadata.ExifData.Location">
+  Location
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the GPS position, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the block has no complete latitude and longitude.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GeoPosition? Location { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.GeoPosition.html">GeoPosition</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_Orientation_" data-uid="Egami.Metadata.ExifData.Orientation*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Orientation" data-uid="Egami.Metadata.ExifData.Orientation">
+  Orientation
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the orientation (IFD0 0x0112). Missing or out-of-range values read as <a class="xref" href="Egami.Metadata.ImageOrientation.html#Egami_Metadata_ImageOrientation_Normal">Normal</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ImageOrientation Orientation { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.ImageOrientation.html">ImageOrientation</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value set is not one of the EXIF values 1 to 8.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_ExifData_Thumbnail_" data-uid="Egami.Metadata.ExifData.Thumbnail*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Thumbnail" data-uid="Egami.Metadata.ExifData.Thumbnail">
+  Thumbnail
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the embedded thumbnail (usually a small JPEG), or empty.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;byte&gt; Thumbnail { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_Warnings_" data-uid="Egami.Metadata.ExifData.Warnings*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Warnings" data-uid="Egami.Metadata.ExifData.Warnings">
+  Warnings
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what was wrong with a damaged block, and what changed when an edited block was written, as sentences.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; Warnings { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Metadata_ExifData_Copy_" data-uid="Egami.Metadata.ExifData.Copy*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Copy" data-uid="Egami.Metadata.ExifData.Copy">
+  Copy()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L340"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns an independent copy.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ExifData Copy()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.ExifData.html">ExifData</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_Parse_" data-uid="Egami.Metadata.ExifData.Parse*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Parse_System_ReadOnlySpan_System_Byte__Egami_SafetyLimits_" data-uid="Egami.Metadata.ExifData.Parse(System.ReadOnlySpan{System.Byte},Egami.SafetyLimits)">
+  Parse(ReadOnlySpan&lt;byte&gt;, SafetyLimits?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L113"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads an EXIF block: a TIFF header and its IFDs, without the &quot;Exif\0\0&quot; prefix JPEG puts before it. Never throws: values past
+<a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxMetadataBytes">MaxMetadataBytes</a> in all are dropped and the block is marked damaged.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExifData Parse(ReadOnlySpan&lt;byte&gt; tiff, SafetyLimits? limits = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>tiff</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The block.</p>
+</dd>
+    <dt><code>limits</code> <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a></dt>
+    <dd><p>The limits whose <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxMetadataBytes">MaxMetadataBytes</a> caps the values copied. Defaults to <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.ExifData.html">ExifData</a></dt>
+    <dd><p>The parsed block; <a class="xref" href="Egami.Metadata.ExifData.html#Egami_Metadata_ExifData_IsDamaged">IsDamaged</a> says whether it was all readable.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Metadata_ExifData_Parse_System_ReadOnlySpan_System_Byte__Egami_SafetyLimits__examples">Examples</h4>
+  <pre><code class="lang-csharp">// EXIF from somewhere other than an image file (a database column, a sidecar), with a cap on the bytes of values read.
+ExifData exif = ExifData.Parse(tiff.Span, SafetyLimits.Default with { MaxMetadataBytes = 64 * 1024 });
+foreach (string warning in exif.Warnings)
+{
+    Console.WriteLine($"EXIF: {warning}");
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_ReadThumbnail_" data-uid="Egami.Metadata.ExifData.ReadThumbnail*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_ReadThumbnail_Egami_EgamiContext_" data-uid="Egami.Metadata.ExifData.ReadThumbnail(Egami.EgamiContext)">
+  ReadThumbnail(EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L277"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Decodes the IFD1 thumbnail with Egami's JPEG reader under the context's safety limits. The pixels are as stored: apply the
+main image's orientation (<a class="xref" href="Egami.Metadata.ExifData.html#Egami_Metadata_ExifData_Orientation">Orientation</a>) to show it upright.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;Rgb8&gt;? ReadThumbnail(EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context whose limits apply. Defaults to <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;<a class="xref" href="Egami.Pixels.Rgb8.html">Rgb8</a>&gt;</dt>
+    <dd><p>The thumbnail, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when there is no JPEG thumbnail (uncompressed ones are kept as bytes). The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Metadata_ExifData_ReadThumbnail_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Raster photo = Raster.Load("sideways.jpg");
+
+// The thumbnail as stored, if the file has one; ReadThumbnail returns null otherwise.
+using (Raster&lt;Rgb8&gt;? stored = photo.Metadata.Exif?.ReadThumbnail())
+{
+    Console.WriteLine(stored is null ? "No thumbnail" : $"Thumbnail {stored.Width} x {stored.Height}");
+}
+
+// Turning the image drops the thumbnail, which would show sideways; make a new one from the result.
+photo.Apply(ops =&gt; ops.AutoOrient());
+photo.Metadata.Exif?.SetThumbnail(photo);
+photo.Save("upright.jpg");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The thumbnail is damaged.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The thumbnail is larger than the context's limits allow.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_ExifData_Remove_" data-uid="Egami.Metadata.ExifData.Remove*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Remove_Egami_Metadata_ExifKey_" data-uid="Egami.Metadata.ExifData.Remove(Egami.Metadata.ExifKey)">
+  Remove(ExifKey)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L231"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes a tag. Removing <a class="xref" href="Egami.Metadata.ExifKey.html#Egami_Metadata_ExifKey_GpsInfo">GpsInfo</a> or <a class="xref" href="Egami.Metadata.ExifKey.html#Egami_Metadata_ExifKey_ExifInfo">ExifInfo</a> removes that whole sub-IFD.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Remove(ExifKey key)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.ExifKey.html">ExifKey</a></dt>
+    <dd><p>The tag and IFD.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether anything was removed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_RemoveThumbnail_" data-uid="Egami.Metadata.ExifData.RemoveThumbnail*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_RemoveThumbnail" data-uid="Egami.Metadata.ExifData.RemoveThumbnail">
+  RemoveThumbnail()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L322"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the thumbnail and the rest of IFD1, as operations do once the image no longer matches it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool RemoveThumbnail()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether there was one.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_Set_" data-uid="Egami.Metadata.ExifData.Set*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Set_Egami_Metadata_ExifKey_Egami_Metadata_ExifType_System_ReadOnlySpan_System_Byte__" data-uid="Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey,Egami.Metadata.ExifType,System.ReadOnlySpan{System.Byte})">
+  Set(ExifKey, ExifType, ReadOnlySpan&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L215"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets a value of any type from its raw bytes, in this block's byte order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Set(ExifKey key, ExifType type, ReadOnlySpan&lt;byte&gt; value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.ExifKey.html">ExifKey</a></dt>
+    <dd><p>The tag and IFD.</p>
+</dd>
+    <dt><code>type</code> <a class="xref" href="Egami.Metadata.ExifType.html">ExifType</a></dt>
+    <dd><p>The TIFF type.</p>
+</dd>
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes: a whole number of values of <code class="paramref">type</code>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The type is unknown or the bytes are not a whole number of values.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_ExifData_Set_" data-uid="Egami.Metadata.ExifData.Set*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Set_Egami_Metadata_ExifKey_System_ReadOnlySpan_Egami_Metadata_ExifFraction__" data-uid="Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey,System.ReadOnlySpan{Egami.Metadata.ExifFraction})">
+  Set(ExifKey, params ReadOnlySpan&lt;ExifFraction&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L187"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets one or more fractions: RATIONAL type, or SRATIONAL when any part is negative.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Set(ExifKey key, params ReadOnlySpan&lt;ExifFraction&gt; values)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.ExifKey.html">ExifKey</a></dt>
+    <dd><p>The tag and IFD.</p>
+</dd>
+    <dt><code>values</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Metadata.ExifFraction.html">ExifFraction</a>&gt;</dt>
+    <dd><p>The fractions; each part must fit 32 bits.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">values</code> is empty.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A numerator or denominator does not fit 32 bits.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_ExifData_Set_" data-uid="Egami.Metadata.ExifData.Set*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Set_Egami_Metadata_ExifKey_System_String_" data-uid="Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey,System.String)">
+  Set(ExifKey, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets a text value: ASCII type, with other characters stored as UTF-8, as many programs do. The Windows XP tags are stored
+as UTF-16 in BYTE values, as Explorer writes them, and the encoded strings (<a class="xref" href="Egami.Metadata.ExifKey.html#Egami_Metadata_ExifKey_UserComment">UserComment</a>,
+<a class="xref" href="Egami.Metadata.ExifKey.html#Egami_Metadata_ExifKey_GpsProcessingMethod">GpsProcessingMethod</a>, <a class="xref" href="Egami.Metadata.ExifKey.html#Egami_Metadata_ExifKey_GpsAreaInformation">GpsAreaInformation</a>) as UNDEFINED with an ASCII prefix when
+the text is ASCII and a UNICODE one otherwise.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Set(ExifKey key, string value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.ExifKey.html">ExifKey</a></dt>
+    <dd><p>The tag and IFD.</p>
+</dd>
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_Set_" data-uid="Egami.Metadata.ExifData.Set*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Set_Egami_Metadata_ExifKey_System_UInt16_" data-uid="Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey,System.UInt16)">
+  Set(ExifKey, ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L157"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets a 16-bit unsigned value (SHORT type).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Set(ExifKey key, ushort value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.ExifKey.html">ExifKey</a></dt>
+    <dd><p>The tag and IFD.</p>
+</dd>
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_Set_" data-uid="Egami.Metadata.ExifData.Set*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_Set_Egami_Metadata_ExifKey_System_UInt32_" data-uid="Egami.Metadata.ExifData.Set(Egami.Metadata.ExifKey,System.UInt32)">
+  Set(ExifKey, uint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets a 32-bit unsigned value (LONG type).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Set(ExifKey key, uint value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.ExifKey.html">ExifKey</a></dt>
+    <dd><p>The tag and IFD.</p>
+</dd>
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint32">uint</a></dt>
+    <dd><p>The value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_SetThumbnail_" data-uid="Egami.Metadata.ExifData.SetThumbnail*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_SetThumbnail_Egami_Raster_System_Int32_System_Int32_" data-uid="Egami.Metadata.ExifData.SetThumbnail(Egami.Raster,System.Int32,System.Int32)">
+  SetThumbnail(Raster, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L301"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a thumbnail from <code class="paramref">raster</code>: converted to sRGB, resized to fit <code class="paramref">maxSide</code> (never
+enlarged), encoded as a baseline 4:2:0 JPEG and stored in IFD1 with compression 6. 160 pixels is the DCF thumbnail size.
+Operations drop a thumbnail that no longer matches the image; this rebuilds it in one line.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetThumbnail(Raster raster, int maxSide = 160, int quality = 75)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>raster</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The image, usually the one this block belongs to after its operations. Its first frame is used.</p>
+</dd>
+    <dt><code>maxSide</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The longest side, in pixels. Defaults to 160.</p>
+</dd>
+    <dt><code>quality</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The JPEG quality, 1 to 100. Defaults to 75.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Metadata_ExifData_SetThumbnail_Egami_Raster_System_Int32_System_Int32__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Raster photo = Raster.Load("sideways.jpg");
+
+// The thumbnail as stored, if the file has one; ReadThumbnail returns null otherwise.
+using (Raster&lt;Rgb8&gt;? stored = photo.Metadata.Exif?.ReadThumbnail())
+{
+    Console.WriteLine(stored is null ? "No thumbnail" : $"Thumbnail {stored.Width} x {stored.Height}");
+}
+
+// Turning the image drops the thumbnail, which would show sideways; make a new one from the result.
+photo.Apply(ops =&gt; ops.AutoOrient());
+photo.Metadata.Exif?.SetThumbnail(photo);
+photo.Save("upright.jpg");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">raster</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">maxSide</code> is below 1, or <code class="paramref">quality</code> is outside 1 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_ExifData_ToBytes_" data-uid="Egami.Metadata.ExifData.ToBytes*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_ToBytes" data-uid="Egami.Metadata.ExifData.ToBytes">
+  ToBytes()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L336"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the block as bytes: the bytes it was read from if nothing was edited, else the block laid out again. A maker note
+that cannot stay at its old offset adds a warning to <a class="xref" href="Egami.Metadata.ExifData.html#Egami_Metadata_ExifData_Warnings">Warnings</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;byte&gt; ToBytes()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The TIFF bytes.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_ExifData_TryGet_" data-uid="Egami.Metadata.ExifData.TryGet*"></a>
+
+  <h3 id="Egami_Metadata_ExifData_TryGet_Egami_Metadata_ExifKey_Egami_Metadata_ExifEntry__" data-uid="Egami.Metadata.ExifData.TryGet(Egami.Metadata.ExifKey,Egami.Metadata.ExifEntry@)">
+  TryGet(ExifKey, out ExifEntry?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L119"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the entry for <code class="paramref">key</code>, if the block has it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGet(ExifKey key, out ExifEntry? entry)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.ExifKey.html">ExifKey</a></dt>
+    <dd><p>The tag and IFD.</p>
+</dd>
+    <dt><code>entry</code> <a class="xref" href="Egami.Metadata.ExifEntry.html">ExifEntry</a></dt>
+    <dd><p>The entry, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the block has the tag.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/ExifData.cs/#L16" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

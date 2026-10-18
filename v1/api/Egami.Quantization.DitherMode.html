@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Enum DitherMode | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Enum DitherMode | Egami ">
+      
+      <meta name="description" content="How the error of mapping pixels to a palette is spread: error diffusion (Floyd–Steinberg and eight other published kernels, and Riemersma&#39;s Hilbert-curve walk) or an ordered pattern (Bayer 2, 4, 8 and 16, and 3 &#215; 3). The values are fixed.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Quantization_DitherMode.md&amp;value=---%0Auid%3A%20Egami.Quantization.DitherMode%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Quantization.DitherMode">
+
+
+
+
+  <h1 id="Egami_Quantization_DitherMode" data-uid="Egami.Quantization.DitherMode" class="text-break">
+Enum DitherMode  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PaletteOptions.cs/#L10"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Quantization.html">Quantization</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>How the error of mapping pixels to a palette is spread: error diffusion (Floyd–Steinberg and eight other published kernels, and
+Riemersma's Hilbert-curve walk) or an ordered pattern (Bayer 2, 4, 8 and 16, and 3 × 3). The values are fixed.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public enum DitherMode</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h2 id="fields">Fields
+</h2>
+  <dl class="parameters">
+    <dt id="Egami_Quantization_DitherMode_Atkinson"><code>Atkinson = 3</code></dt>
+  
+  <dd><p>Atkinson's error diffusion (Apple, 1984): spreads six eighths of the error, so flat areas keep more contrast.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_Bayer16x16"><code>Bayer16x16 = 14</code></dt>
+  
+  <dd><p>A 16 × 16 ordered (Bayer) pattern: the finest steps, for large palettes.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_Bayer2x2"><code>Bayer2x2 = 12</code></dt>
+  
+  <dd><p>A 2 × 2 ordered (Bayer) pattern: coarse, visible cross-hatching.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_Bayer4x4"><code>Bayer4x4 = 13</code></dt>
+  
+  <dd><p>A 4 × 4 ordered (Bayer) pattern.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_Burkes"><code>Burkes = 4</code></dt>
+  
+  <dd><p>Burkes' error diffusion (1988): two rows, 32nds.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_FloydSteinberg"><code>FloydSteinberg = 0</code></dt>
+  
+  <dd><p>Floyd–Steinberg error diffusion: the smoothest gradients; frames of an animation dither one row after another.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_JarvisJudiceNinke"><code>JarvisJudiceNinke = 5</code></dt>
+  
+  <dd><p>Jarvis, Judice and Ninke's error diffusion (1976): three rows, 48ths; smooth but slow.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_None"><code>None = 2</code></dt>
+  
+  <dd><p>No dithering: each pixel takes the nearest palette color.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_Ordered"><code>Ordered = 1</code></dt>
+  
+  <dd><p>An 8×8 ordered (Bayer) pattern: stable between animation frames and parallel, at some cost in quality.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_Ordered3x3"><code>Ordered3x3 = 15</code></dt>
+  
+  <dd><p>A 3 × 3 ordered pattern.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_Riemersma"><code>Riemersma = 11</code></dt>
+  
+  <dd><p>Riemersma's dithering (1998): error diffusion along a Hilbert curve with a 16-pixel memory, so no direction shows.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_Sierra2"><code>Sierra2 = 7</code></dt>
+  
+  <dd><p>Sierra's two-row error diffusion, 16ths.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_Sierra3"><code>Sierra3 = 6</code></dt>
+  
+  <dd><p>Sierra's three-row error diffusion (1989), 32nds.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_SierraLite"><code>SierraLite = 8</code></dt>
+  
+  <dd><p>Sierra's Filter Lite: three neighbours, quarters; nearly as smooth as Floyd–Steinberg and faster.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_StevensonArce"><code>StevensonArce = 9</code></dt>
+  
+  <dd><p>Stevenson and Arce's error diffusion (1985), four rows, 200ths.</p>
+</dd>
+    <dt id="Egami_Quantization_DitherMode_Stucki"><code>Stucki = 10</code></dt>
+  
+  <dd><p>Stucki's error diffusion (1981): three rows, 42nds; sharper than Jarvis, Judice and Ninke.</p>
+</dd>
+  </dl>
+
+  <h2 id="Egami_Quantization_DitherMode_examples">Examples</h2>
+  <pre><code class="lang-csharp">using FileStream output = File.Create("duck.gif");
+photo.Save(output, GifFormat.Info, new GifWriterOptions
+{
+    Palette = new PaletteOptions { MaxColors = 128, Dither = DitherMode.Ordered }, // FloydSteinberg (default), Ordered or None
+    PaletteScope = GifPaletteScope.PerFrame,   // Auto (default): one table when all frames fit, else one per frame
+});</code></pre>
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PaletteOptions.cs/#L10" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

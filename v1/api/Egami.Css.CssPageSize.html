@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct CssPageSize | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct CssPageSize | Egami ">
+      
+      <meta name="description" content="The size descriptor of  (CSS Paged Media 3 section 7.1): auto, one or two lengths, or a page size name such as A4 or letter with an optional orientation.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Css_CssPageSize.md&amp;value=---%0Auid%3A%20Egami.Css.CssPageSize%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Css.CssPageSize">
+
+
+
+  <h1 id="Egami_Css_CssPageSize" data-uid="Egami.Css.CssPageSize" class="text-break">
+Struct CssPageSize  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssPage.cs/#L362"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Css.html">Css</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Css.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The <code>size</code> descriptor of <code>@page</code> (CSS Paged Media 3 section 7.1): <code>auto</code>, one or two lengths, or a page size
+name such as <code>A4</code> or <code>letter</code> with an optional orientation.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct CssPageSize : IEquatable&lt;CssPageSize&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Css.CssPageSize.html">CssPageSize</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Css_CssPageSize_examples">Examples</h2>
+  <pre><code class="lang-csharp">CssStyleSheet sheet = CssStyleSheet.Parse("""
+    @page { size: A4; margin: 2cm; font: 9pt serif;
+      @bottom-center { content: counter(page) } }
+    @page :first { margin-top: 5cm; @bottom-center { content: none } }
+    @page :left { margin-left: 3cm }
+    @page appendix { size: A4 landscape }
+    h1.appendix { page: appendix; break-before: right }
+    """);
+CssPageRule first = (CssPageRule)sheet.Rules[1];
+CssPageSelector selector = first.Selectors[0];               // :first, specificity (0, 1, 0)
+CssPageMarginRule footer = ((CssPageRule)sheet.Rules[0]).MarginRules[0]; // CssMarginBox.BottomCenter
+
+// Cascade the page rules for each page the layout makes, then compute the page context from the root element's
+// computed style and each margin box from the page context's.
+var cascade = new CssCascade([(sheet, CssOrigin.Author)]);
+CssPageStyle pageStyle = cascade.CascadePage(new CssPage(Name: null, IsFirst: false, IsLeft: true));
+CssComputedStyle root = cascade.Compute(new CssCascadedStyle(), null);
+CssComputedStyle page = cascade.Compute(pageStyle.Page, root);
+string? marginLeft = page.GetValueText("margin-left");                // "3cm"
+bool isSize = CssPageSize.TryParse(page.GetValueText("size")!, out CssPageSize a4); // 210mm by 297mm
+CssComputedStyle box = cascade.Compute(pageStyle.MarginBoxes[CssMarginBox.BottomCenter], page);
+string? content = box.GetValueText("content");                        // "counter(page)"
+string? fontSize = box.GetValueText("font-size");                     // "9pt": inherited from the page context
+
+// A named page: the appendix pages turn A4 to landscape.
+CssPageStyle appendix = cascade.CascadePage(new CssPage("appendix", IsFirst: false, IsLeft: false));
+bool isTurned = CssPageSize.TryParse(appendix.Page.GetValueText("size")!, out CssPageSize turned);
+bool landscape = turned.Orientation == CssPageOrientation.Landscape;  // true: 297mm by 210mm</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Css_CssPageSize_Height_" data-uid="Egami.Css.CssPageSize.Height*"></a>
+
+  <h3 id="Egami_Css_CssPageSize_Height" data-uid="Egami.Css.CssPageSize.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssPage.cs/#L382"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the page height, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when <a class="xref" href="Egami.Css.CssPageSize.html#Egami_Css_CssPageSize_Width">Width</a> is.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssLength? Height { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssLength.html">CssLength</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssPageSize_IsAuto_" data-uid="Egami.Css.CssPageSize.IsAuto*"></a>
+
+  <h3 id="Egami_Css_CssPageSize_IsAuto" data-uid="Egami.Css.CssPageSize.IsAuto">
+  IsAuto
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssPage.cs/#L394"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the user agent picks the size (no width and height given).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsAuto { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssPageSize_Name_" data-uid="Egami.Css.CssPageSize.Name*"></a>
+
+  <h3 id="Egami_Css_CssPageSize_Name" data-uid="Egami.Css.CssPageSize.Name">
+  Name
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssPage.cs/#L385"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the page size name in lowercase, such as <code>a4</code>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Name { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssPageSize_Names_" data-uid="Egami.Css.CssPageSize.Names*"></a>
+
+  <h3 id="Egami_Css_CssPageSize_Names" data-uid="Egami.Css.CssPageSize.Names">
+  Names
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssPage.cs/#L397"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the page size names, in lowercase.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IEnumerable&lt;string&gt; Names { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssPageSize_Orientation_" data-uid="Egami.Css.CssPageSize.Orientation*"></a>
+
+  <h3 id="Egami_Css_CssPageSize_Orientation" data-uid="Egami.Css.CssPageSize.Orientation">
+  Orientation
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssPage.cs/#L391"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the orientation given. With a size it is already applied to <a class="xref" href="Egami.Css.CssPageSize.html#Egami_Css_CssPageSize_Width">Width</a> and <a class="xref" href="Egami.Css.CssPageSize.html#Egami_Css_CssPageSize_Height">Height</a>; alone it
+asks the user agent's default size to be turned.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssPageOrientation Orientation { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssPageOrientation.html">CssPageOrientation</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssPageSize_Width_" data-uid="Egami.Css.CssPageSize.Width*"></a>
+
+  <h3 id="Egami_Css_CssPageSize_Width" data-uid="Egami.Css.CssPageSize.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssPage.cs/#L379"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the page width, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the size leaves it to the user agent (<code>auto</code>, or an orientation alone).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssLength? Width { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssLength.html">CssLength</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Css_CssPageSize_ToString_" data-uid="Egami.Css.CssPageSize.ToString*"></a>
+
+  <h3 id="Egami_Css_CssPageSize_ToString" data-uid="Egami.Css.CssPageSize.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssPage.cs/#L485"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Formats the size as CSS text, such as <code>a4 landscape</code> or <code>8.5in 11in</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssPageSize_TryParse_" data-uid="Egami.Css.CssPageSize.TryParse*"></a>
+
+  <h3 id="Egami_Css_CssPageSize_TryParse_System_Collections_Generic_IReadOnlyList_Egami_Css_CssComponentValue__Egami_Css_CssPageSize__" data-uid="Egami.Css.CssPageSize.TryParse(System.Collections.Generic.IReadOnlyList{Egami.Css.CssComponentValue},Egami.Css.CssPageSize@)">
+  TryParse(IReadOnlyList&lt;CssComponentValue&gt;, out CssPageSize)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssPage.cs/#L413"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses a <code>size</code> value from component values.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool TryParse(IReadOnlyList&lt;CssComponentValue&gt; values, out CssPageSize size)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>values</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Css.CssComponentValue.html">CssComponentValue</a>&gt;</dt>
+    <dd><p>The component values.</p>
+</dd>
+    <dt><code>size</code> <a class="xref" href="Egami.Css.CssPageSize.html">CssPageSize</a></dt>
+    <dd><p>The page size.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the values are a valid <code>size</code> value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssPageSize_TryParse_" data-uid="Egami.Css.CssPageSize.TryParse*"></a>
+
+  <h3 id="Egami_Css_CssPageSize_TryParse_System_String_Egami_Css_CssPageSize__" data-uid="Egami.Css.CssPageSize.TryParse(System.String,Egami.Css.CssPageSize@)">
+  TryParse(string, out CssPageSize)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssPage.cs/#L403"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses a <code>size</code> value, such as <code>A4 landscape</code> or <code>8.5in 11in</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool TryParse(string text, out CssPageSize size)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The CSS text.</p>
+</dd>
+    <dt><code>size</code> <a class="xref" href="Egami.Css.CssPageSize.html">CssPageSize</a></dt>
+    <dd><p>The page size.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the text is a valid <code>size</code> value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssPage.cs/#L362" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

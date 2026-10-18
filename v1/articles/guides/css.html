@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>CSS | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="CSS | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/css.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="css">CSS</h1>
+
+<p>Egami.Css parses and applies CSS in managed code, with no dependencies. Egami.Svg uses it for SVG's style sheets, <code>style</code>
+attributes and presentation attributes; Egap's HTML reader will use it later. It covers the CSS Syntax 3 tokenizer and
+parser, Selectors 4 matching, the cascade with custom properties and <code>var()</code>, media queries, the box, background, list,
+table and page properties documents use, <code>@page</code> with its margin boxes, and parsers for colors, lengths, <code>calc()</code>,
+transforms, fonts and page sizes. Layout and the computed values of each property stay with the consumer: Egami.Css hands
+back component values, and the consumer reads them with the value parsers.</p>
+<p>Egami.Css is at 1.0 (1.0.0) and its API is stable: 1.x versions add to it without breaking code that uses it.</p>
+<h2 id="parsing-style-sheets">Parsing style sheets</h2>
+<p><code>CssStyleSheet.Parse</code> reads a sheet into rules. Parsing never throws on bad CSS: it recovers as CSS Syntax 3 says, and each
+problem goes to <code>CssParseOptions.Errors</code> as a <code>CssParseError</code> with its line and column. A style rule whose selector does not
+parse is dropped, as browsers drop it.</p>
+<pre><code class="lang-csharp">// Parsing never throws on bad CSS: it recovers as CSS Syntax 3 says and reports each problem.
+var errors = new List&lt;CssParseError&gt;();
+var options = new CssParseOptions { Errors = errors.Add };
+CssStyleSheet sheet = CssStyleSheet.Parse(&quot;&quot;&quot;
+    @import url(print.css) print;
+    @namespace svg url(http://www.w3.org/2000/svg);
+    rect.note, svg|circle { fill: gold !important; stroke: #333 }
+    @media (max-width: 600px) { rect { stroke-width: 2px } }
+    @supports (display: grid) { g { display: grid } }
+    @font-face { font-family: &quot;Inter&quot;; src: url(inter.woff2) format(&quot;woff2&quot;) }
+    @layer base { text { fill: gray } }
+    @keyframes spin { to { rotate: 1turn } }
+    p:unknown { color: red }
+    &quot;&quot;&quot;, options);
+
+foreach (CssRule rule in sheet.Rules)
+{
+    switch (rule)
+    {
+        case CssStyleRule style:
+            Console.WriteLine($&quot;{style.SelectorText}: {style.Declarations.Count} declarations&quot;);
+            break;
+        case CssMediaRule media:
+            Console.WriteLine($&quot;@media {media.Media.MediaText}: {media.Rules.Count} rules&quot;);
+            break;
+        case CssSupportsRule supports:
+            Console.WriteLine($&quot;@supports {supports.ConditionText}&quot;);
+            break;
+        case CssFontFaceRule fontFace:
+            Console.WriteLine($&quot;@font-face {fontFace.FontFace.Family}&quot;);
+            break;
+        case CssImportRule import:
+            Console.WriteLine($&quot;@import {import.Url} for {import.Media.MediaText}&quot;);
+            break;
+        case CssNamespaceRule ns:
+            Console.WriteLine($&quot;@namespace {ns.Prefix} = {ns.Uri}&quot;);
+            break;
+        case CssLayerRule layer:
+            Console.WriteLine($&quot;@layer {string.Join(&quot;, &quot;, layer.Names)}&quot;);
+            break;
+        case CssUnknownAtRule other:
+            Console.WriteLine($&quot;@{other.Name} (kept, not interpreted)&quot;);
+            break;
+    }
+}
+
+// The rule with ':unknown' was dropped and reported.
+CssParseError dropped = errors[0];
+Console.WriteLine($&quot;{dropped.Line}:{dropped.Column} {dropped.Message}&quot;);
+</code></pre>
+<p>Every rule is a <code>CssRule</code>:</p>
+<ul>
+<li><code>CssStyleRule</code>: a selector list and its declarations.</li>
+<li><code>CssMediaRule</code> and <code>CssSupportsRule</code>: rules that apply when a media query or a condition holds.</li>
+<li><code>CssFontFaceRule</code>: the descriptors of a web font, parsed as a <code>CssFontFace</code>.</li>
+<li><code>CssImportRule</code>: a URL Egami.Css does not fetch. Load the sheet yourself and pass it to the cascade.</li>
+<li><code>CssNamespaceRule</code>: a prefix for selectors; the sheet collects them in <code>CssStyleSheet.Namespaces</code>.</li>
+<li><code>CssLayerRule</code>: cascade layers are not implemented, so the rules inside a layer block count as ordinary rules.</li>
+<li><code>CssPageRule</code>: page selectors, the page context's declarations and its <code>CssPageMarginRule</code>s (see <a href="#pages">Pages</a>).</li>
+<li><code>CssUnknownAtRule</code>: anything else, such as <code>@keyframes</code> or <code>@counter-style</code>, kept as component values.</li>
+</ul>
+<h2 id="declarations">Declarations</h2>
+<p>A <code>CssDeclaration</code> is a property name, its value and the <code>!important</code> flag. <code>CssDeclaration.ParseList</code> reads a <code>style</code>
+attribute; <code>CssDeclaration.Create</code> makes one declaration, for example from an SVG presentation attribute. Names are
+lowercased, except custom properties such as <code>--Accent</code>, which keep their case.</p>
+<pre><code class="lang-csharp">// A style attribute, and a declaration made from a presentation attribute such as SVG's fill=&quot;red&quot;.
+IReadOnlyList&lt;CssDeclaration&gt; inline = CssDeclaration.ParseList(&quot;color: Red; --Accent: #0af; font-size: 12px !important&quot;);
+CssDeclaration size = inline[2];
+Console.WriteLine($&quot;{size.Name} = {size.ValueText}, important: {size.Important}&quot;); // font-size = 12px, important: True
+
+CssDeclaration fill = CssDeclaration.Create(&quot;fill&quot;, &quot;red&quot;);
+</code></pre><h2 id="tokens-and-component-values">Tokens and component values</h2>
+<p>Values stay close to the syntax. <code>CssTokenizer</code> splits text into <code>CssToken</code>s of a <code>CssTokenKind</code>, each with its line and
+column. The parser groups them into component values: a <code>CssComponentValue</code> is a <code>CssTokenValue</code>, a <code>CssFunction</code> or a
+<code>CssSimpleBlock</code>. <code>CssComponentValue.Serialize</code> writes them back as CSS text.</p>
+<pre><code class="lang-csharp">// CSS Syntax 3 tokens, and component values: tokens, functions and simple blocks.
+IReadOnlyList&lt;CssToken&gt; tokens = CssTokenizer.Tokenize(&quot;rgb(255 0 0 / 50%) 12px&quot;);
+CssToken first = tokens[0];
+bool isFunction = first.Kind == CssTokenKind.Function; // &quot;rgb(&quot; at line 1, column 1
+
+IReadOnlyList&lt;CssComponentValue&gt; values = CssComponentValue.ParseList(&quot;calc(100% - 2px) [a] x&quot;);
+var calc = (CssFunction)values[0];
+var block = (CssSimpleBlock)values[2];
+var word = (CssTokenValue)values[4];
+string text = CssComponentValue.Serialize(values); // &quot;calc(100% - 2px) [a] x&quot;
+</code></pre><h2 id="selectors">Selectors</h2>
+<p>Selectors match a document tree through <code>ICssElement</code>. Egami.Svg's elements implement it, and an HTML DOM will. An element
+gives its name and namespace, its parent and siblings, its ID, classes and attributes (as <code>CssAttribute</code>s). Optional members
+cover HTML's case rules, the language for <code>:lang()</code>, the direction for <code>:dir()</code> and states such as <code>:hover</code> or <code>:checked</code>.</p>
+<pre><code class="lang-csharp">// A document tree implements ICssElement; Egami.Svg's elements do. The members must not allocate in the common case.
+public sealed class Element(string localName, string? namespaceUri = &quot;http://www.w3.org/2000/svg&quot;) : ICssElement
+{
+    private readonly List&lt;Element&gt; _children = [];
+    private readonly List&lt;CssAttribute&gt; _attributes = [];
+
+    public string LocalName { get; } = localName;
+    public string? NamespaceUri { get; } = namespaceUri;
+    public Element? ParentElement { get; private set; }
+    public ICssElement? Parent =&gt; ParentElement;
+    public ICssElement? PreviousSibling =&gt; Sibling(-1);
+    public ICssElement? NextSibling =&gt; Sibling(1);
+    public ICssElement? FirstChild =&gt; _children.Count &gt; 0 ? _children[0] : null;
+    public bool IsEmpty =&gt; _children.Count == 0;
+    public string? Id =&gt; GetAttribute(&quot;id&quot;, null);
+    public IEnumerable&lt;CssAttribute&gt; Attributes =&gt; _attributes;
+
+    public bool HasClass(string name) =&gt; GetAttribute(&quot;class&quot;, null)?.Split(' ').Contains(name) == true;
+
+    public string? GetAttribute(string localName, string? namespaceUri) =&gt;
+        _attributes.Find(a =&gt; a.LocalName == localName &amp;&amp; a.NamespaceUri == namespaceUri) is { LocalName: not null } a ? a.Value : null;
+
+    public Element Set(string name, string value)
+    {
+        _attributes.Add(new CssAttribute(null, name, value));
+        return this;
+    }
+
+    public Element Add(Element child)
+    {
+        child.ParentElement = this;
+        _children.Add(child);
+        return this;
+    }
+
+    private Element? Sibling(int step)
+    {
+        if (ParentElement is null)
+        {
+            return null;
+        }
+
+        int index = ParentElement._children.IndexOf(this) + step;
+        return index &gt;= 0 &amp;&amp; index &lt; ParentElement._children.Count ? ParentElement._children[index] : null;
+    }
+}
+</code></pre>
+<p><code>CssSelectorList.Parse</code> reads a selector list; <code>TryParse</code> does the same without throwing. Each <code>CssSelector</code> has its
+<code>CssSpecificity</code> and its pseudo-element, if any. Prefixes such as <code>svg|rect</code> need a <code>CssNamespaces</code>. Matching runs right to
+left and does not allocate, so files with thousands of elements stay fast.</p>
+<pre><code class="lang-csharp">// Selectors 4, matched right to left over ICssElement.
+CssSelectorList list = CssSelectorList.Parse(&quot;g.layer &gt; rect:first-child, :is(circle, ellipse)&quot;);
+bool matches = list.Matches(rect);
+
+CssSelector selector = list.Selectors[0];
+CssSpecificity specificity = selector.Specificity; // (0, 2, 2)
+
+// Namespace prefixes, as @namespace declares them.
+var namespaces = new CssNamespaces();
+namespaces.Set(&quot;svg&quot;, &quot;http://www.w3.org/2000/svg&quot;);
+bool inSvg = CssSelectorList.Parse(&quot;svg|rect&quot;, namespaces).Matches(rect);
+
+// A pseudo-element never matches the element itself; the cascade asks for it by name.
+CssSelector before = CssSelectorList.Parse(&quot;rect::before&quot;).Selectors[0];
+bool beforeMatches = before.MatchesPseudoElement(rect, &quot;before&quot;);
+
+bool valid = CssSelectorList.TryParse(&quot;rect:nonsense&quot;, out _); // false: unknown pseudo-classes are invalid
+</code></pre>
+<p>Egami.Css supports the Selectors 4 set: type, universal and namespaces; IDs, classes and every attribute operator with the
+<code>i</code> and <code>s</code> flags; the four combinators; the structural pseudo-classes, including <code>:nth-child(An+B of S)</code>; <code>:not()</code>, <code>:is()</code>,
+<code>:where()</code> and <code>:has()</code>; <code>:lang()</code> with wildcards, <code>:dir()</code>, <code>:scope</code> and <code>:defined</code>; and the pseudo-elements. An unknown
+pseudo-class makes a selector invalid.</p>
+<h2 id="the-cascade-and-computed-styles">The cascade and computed styles</h2>
+<p><code>CssCascade</code> takes the sheets in document order, each with a <code>CssOrigin</code>, and <code>CssCascadeOptions</code>: the media context, a
+callback for <code>@supports</code>, and a <code>CssPropertyRegistry</code>. It indexes the rules by ID, class and type, so each element tests
+few rules.</p>
+<p><code>CssCascade.Cascade</code> gives an element's <code>CssCascadedStyle</code>: the winning declaration of each property, by origin and
+importance, the style attribute, specificity and order. Presentation hints count as author declarations of specificity
+zero, before every author rule. Shorthands are expanded first, so <code>font</code> in a sheet and <code>font-size</code> in a hint compete per
+longhand.</p>
+<p><code>CssCascade.Compute</code> turns it into a <code>CssComputedStyle</code>: it resolves <code>inherit</code>, <code>initial</code>, <code>unset</code> and <code>revert</code>, applies
+inheritance, and substitutes <code>var()</code> with fallbacks. Properties in a reference cycle become invalid. A computed style stores
+only what its element sets and looks the rest up in its parent.</p>
+<p>The registry says which properties inherit and what their initial values are. <code>CssPropertyRegistry.CreateDefault</code> knows the
+common text properties of CSS. Consumers add their own with a <code>CssPropertyDefinition</code>, and shorthands with a
+<code>CssShorthandDefinition</code>. A definition can validate values, so an invalid declaration is dropped and an earlier one wins.</p>
+<pre><code class="lang-csharp">// The registry says which properties inherit and their initial values; consumers add their own.
+CssPropertyRegistry registry = CssPropertyRegistry.CreateDefault();
+registry.Register(new CssPropertyDefinition(&quot;fill&quot;, Inherited: true, InitialValue: &quot;black&quot;)
+{
+    Validate = value =&gt; CssColor.TryParse(value, out _),
+});
+registry.RegisterShorthand(new CssShorthandDefinition(&quot;marker&quot;, [&quot;marker-start&quot;, &quot;marker-end&quot;],
+    value =&gt; [new CssDeclaration(&quot;marker-start&quot;, value), new CssDeclaration(&quot;marker-end&quot;, value)]));
+
+CssStyleSheet userAgent = CssStyleSheet.Parse(&quot;rect { fill: gray }&quot;);
+CssStyleSheet author = CssStyleSheet.Parse(&quot;&quot;&quot;
+    svg { --accent: teal; font: 12px sans-serif }
+    .layer { fill: var(--accent) }
+    #r { fill: inherit; opacity: 0.5 }
+    &quot;&quot;&quot;);
+var cascade = new CssCascade(
+    [(userAgent, CssOrigin.UserAgent), (author, CssOrigin.Author)],
+    new CssCascadeOptions { Registry = registry, Media = new CssMediaContext { Width = 800 } });
+
+// Cascade each element (presentation attributes as hints, the style attribute as inline style), then compute it
+// from its parent's computed style.
+CssComputedStyle rootStyle = cascade.Compute(cascade.Cascade(root), null);
+CssComputedStyle groupStyle = cascade.Compute(cascade.Cascade(group), rootStyle);
+CssCascadedStyle cascaded = cascade.Cascade(rect,
+    presentationHints: [CssDeclaration.Create(&quot;fill&quot;, &quot;red&quot;)],
+    inlineStyle: CssDeclaration.ParseList(&quot;stroke: blue&quot;));
+CssComputedStyle style = cascade.Compute(cascaded, groupStyle);
+
+cascaded.TryGetDeclaration(&quot;fill&quot;, out CssDeclaration? winner, out CssOrigin origin); // fill: inherit, Author
+string? fill = style.GetValueText(&quot;fill&quot;);           // &quot;teal&quot;: inherited, var() substituted
+string? fontSize = style.GetValueText(&quot;font-size&quot;);  // &quot;12px&quot;: from the font shorthand, inherited
+if (style.TryGetValue(&quot;opacity&quot;, out IReadOnlyList&lt;CssComponentValue&gt;? opacity))
+{
+    // The consumer parses each property by its type.
+}
+</code></pre><h2 id="box-list-and-table-properties">Box, list and table properties</h2>
+<p><code>CssPropertyRegistry.CreateDefault</code> also knows the properties a document's boxes need, each with its value grammar, so an
+invalid value is dropped and an earlier valid one wins:</p>
+<ul>
+<li>Boxes: <code>margin</code>, <code>padding</code>, <code>border</code> and their sides, <code>border-width</code>, <code>border-style</code>, <code>border-color</code>, <code>border-radius</code>,
+<code>width</code>, <code>height</code> with their <code>min-</code> and <code>max-</code> forms, and <code>box-sizing</code>.</li>
+<li>Backgrounds: the <code>background-*</code> longhands, which hold one comma-separated item per layer, and the <code>background</code> shorthand.</li>
+<li>Lists: <code>list-style</code> and its longhands. Tables: <code>border-collapse</code>, <code>border-spacing</code>, <code>caption-side</code>, <code>empty-cells</code>,
+<code>table-layout</code> and <code>vertical-align</code>.</li>
+<li>Flow: <code>float</code>, <code>clear</code>, and <code>overflow</code> with <code>overflow-x</code> and <code>overflow-y</code>.</li>
+<li>Fragmentation: <code>break-before</code>, <code>break-after</code>, <code>break-inside</code>, <code>orphans</code>, <code>widows</code>, <code>box-decoration-break</code> and <code>page</code>.
+The legacy <code>page-break-before</code>, <code>page-break-after</code> and <code>page-break-inside</code> are shorthands of the <code>break-*</code> properties, so
+<code>always</code> becomes <code>page</code>.</li>
+<li>Generated content: <code>content</code>, <code>counter-reset</code>, <code>counter-increment</code> and <code>counter-set</code>, kept as written.</li>
+</ul>
+<p>Shorthands expand into longhands; what a shorthand leaves out is reset to its initial value, as CSS says. The HTML default
+style sheet and what each property means for layout stay with the consumer.</p>
+<pre><code class="lang-csharp">// The default registry knows the box, background, list, table, float, overflow and break properties: shorthands
+// expand into longhands, and an invalid value is dropped so an earlier one wins.
+CssStyleSheet sheet = CssStyleSheet.Parse(&quot;&quot;&quot;
+    .layer { list-style: square inside; border-collapse: collapse }
+    rect {
+      margin: 1em auto; padding: 2px 4px;
+      border: 1px solid; border-left: thick double red;
+      background: url(paper.png) no-repeat center / cover, ivory;
+      float: left; overflow: hidden auto;
+      page-break-before: always; break-inside: avoid;
+      width: 50%; width: wide;
+    }
+    &quot;&quot;&quot;);
+var cascade = new CssCascade([(sheet, CssOrigin.Author)]);
+CssComputedStyle groupStyle = cascade.Compute(cascade.Cascade(group), cascade.Compute(cascade.Cascade(root), null));
+CssComputedStyle style = cascade.Compute(cascade.Cascade(rect), groupStyle);
+
+string? marginLeft = style.GetValueText(&quot;margin-left&quot;);        // &quot;auto&quot;
+string? borderLeft = style.GetValueText(&quot;border-left-style&quot;);  // &quot;double&quot;
+string? borderTop = style.GetValueText(&quot;border-top-color&quot;);    // &quot;currentcolor&quot;: left out, so initial
+string? images = style.GetValueText(&quot;background-image&quot;);       // &quot;url(paper.png), none&quot;: one item per layer
+string? color = style.GetValueText(&quot;background-color&quot;);        // &quot;ivory&quot;
+string? breakBefore = style.GetValueText(&quot;break-before&quot;);      // &quot;page&quot;: the legacy alias mapped
+string? width = style.GetValueText(&quot;width&quot;);                   // &quot;50%&quot;: &quot;wide&quot; is not a width
+string? listType = style.GetValueText(&quot;list-style-type&quot;);      // &quot;square&quot;: inherited
+</code></pre><h2 id="pages">Pages</h2>
+<p><code>@page</code> rules style the pages of paged media (CSS Paged Media 3). A <code>CssPageRule</code> has <code>CssPageSelector</code>s, each a page type
+name and <code>CssPagePseudoClasses</code> (<code>:first</code>, <code>:left</code>, <code>:right</code>, <code>:blank</code>) with its specificity, the declarations for the page
+context, and <code>CssPageMarginRule</code>s for the sixteen <code>CssMarginBox</code>es around the page, such as <code>@top-center</code>.</p>
+<p><code>CssCascade.CascadePage</code> takes a <code>CssPage</code> (the page type and whether the page is the first, a left or a blank one) and
+gives a <code>CssPageStyle</code>: the page context's cascaded style and one for each margin box a matching rule styles. Rules compete
+by origin and importance, then by page selector specificity and order. Compute the page context with the root element's
+computed style as its parent, and each margin box with the page context's. <code>CssPageSize</code> reads the <code>size</code> descriptor: <code>auto</code>,
+one or two lengths, or a name such as <code>A4</code> or <code>letter</code> with <code>portrait</code> or <code>landscape</code>. The registry also knows
+<code>page-orientation</code>, <code>marks</code> and <code>bleed</code>.</p>
+<pre><code class="lang-csharp">CssStyleSheet sheet = CssStyleSheet.Parse(&quot;&quot;&quot;
+    @page { size: A4; margin: 2cm; font: 9pt serif;
+      @bottom-center { content: counter(page) } }
+    @page :first { margin-top: 5cm; @bottom-center { content: none } }
+    @page :left { margin-left: 3cm }
+    @page appendix { size: A4 landscape }
+    h1.appendix { page: appendix; break-before: right }
+    &quot;&quot;&quot;);
+CssPageRule first = (CssPageRule)sheet.Rules[1];
+CssPageSelector selector = first.Selectors[0];               // :first, specificity (0, 1, 0)
+CssPageMarginRule footer = ((CssPageRule)sheet.Rules[0]).MarginRules[0]; // CssMarginBox.BottomCenter
+
+// Cascade the page rules for each page the layout makes, then compute the page context from the root element's
+// computed style and each margin box from the page context's.
+var cascade = new CssCascade([(sheet, CssOrigin.Author)]);
+CssPageStyle pageStyle = cascade.CascadePage(new CssPage(Name: null, IsFirst: false, IsLeft: true));
+CssComputedStyle root = cascade.Compute(new CssCascadedStyle(), null);
+CssComputedStyle page = cascade.Compute(pageStyle.Page, root);
+string? marginLeft = page.GetValueText(&quot;margin-left&quot;);                // &quot;3cm&quot;
+bool isSize = CssPageSize.TryParse(page.GetValueText(&quot;size&quot;)!, out CssPageSize a4); // 210mm by 297mm
+CssComputedStyle box = cascade.Compute(pageStyle.MarginBoxes[CssMarginBox.BottomCenter], page);
+string? content = box.GetValueText(&quot;content&quot;);                        // &quot;counter(page)&quot;
+string? fontSize = box.GetValueText(&quot;font-size&quot;);                     // &quot;9pt&quot;: inherited from the page context
+
+// A named page: the appendix pages turn A4 to landscape.
+CssPageStyle appendix = cascade.CascadePage(new CssPage(&quot;appendix&quot;, IsFirst: false, IsLeft: false));
+bool isTurned = CssPageSize.TryParse(appendix.Page.GetValueText(&quot;size&quot;)!, out CssPageSize turned);
+bool landscape = turned.Orientation == CssPageOrientation.Landscape;  // true: 297mm by 210mm
+</code></pre><h2 id="media-queries">Media queries</h2>
+<p><code>CssMediaQueryList</code> evaluates Media Queries 4 against a <code>CssMediaContext</code>: the media type, the viewport, the resolution and
+the user's preferences. It knows <code>not</code>, <code>only</code>, <code>and</code> and <code>or</code>, <code>min-</code> and <code>max-</code> prefixes and the range syntax. A query that
+does not parse becomes <code>not all</code> without affecting the others; a feature the context does not know goes to its hook, or
+counts as false.</p>
+<pre><code class="lang-csharp">// Media Queries 4: types, features, min-/max- and range syntax. Unknown features count as false.
+var phone = new CssMediaContext { Width = 390, Height = 844, Resolution = 3, PrefersColorScheme = &quot;dark&quot; };
+bool narrow = CssMediaQueryList.Parse(&quot;screen and (width &lt; 600px)&quot;).Matches(phone);
+bool dark = CssMediaQueryList.Parse(&quot;(prefers-color-scheme: dark) and (min-resolution: 2dppx)&quot;).Matches(phone);
+
+// Features the context does not know go to a hook.
+CssMediaContext touch = phone with { Feature = (name, value) =&gt; name == &quot;pointer&quot; ? value?[0].ToString() == &quot;coarse&quot; : null };
+bool coarse = CssMediaQueryList.Parse(&quot;(pointer: coarse)&quot;).Matches(touch);
+</code></pre><h2 id="value-parsers">Value parsers</h2>
+<p>Each parser has <code>TryParse</code> over text and over component values.</p>
+<p><code>CssColor</code> reads every CSS Color 4 syntax: the named and system colors, hex, <code>rgb()</code>, <code>hsl()</code>, <code>hwb()</code>, <code>lab()</code>, <code>lch()</code>,
+<code>oklab()</code>, <code>oklch()</code> and <code>color()</code>. It converts to sRGB and clips to its gamut. <code>Level</code> says whether the text used CSS Color 3
+or 4 syntax, for consumers that follow an older specification.</p>
+<pre><code class="lang-csharp">// Every CSS Color 4 syntax, converted to sRGB (0 to 1) and clipped to its gamut.
+bool isColor = CssColor.TryParse(&quot;oklch(62.8% 0.258 29.2 / 50%)&quot;, out CssColor red);
+(byte r, byte g, byte b, byte a) = red.ToRgba8();         // about (255, 0, 0, 128)
+bool newer = red.Level == 4;                             // SVG 1.1 knows only level 3
+
+bool isCurrent = CssColor.TryParse(&quot;currentColor&quot;, out CssColor current);  // current.IsCurrentColor: use the 'color' property
+</code></pre>
+<p><code>CssLength</code> is a number with a <code>CssUnit</code>. <code>CssAngle</code> converts to degrees. <code>CssUrl</code> reads <code>url()</code> and <code>src()</code>. <code>CssCalc</code> reads
+<code>calc()</code>, <code>min()</code>, <code>max()</code> and <code>clamp()</code>; the consumer resolves it by saying what each unit is worth.</p>
+<pre><code class="lang-csharp">bool isLength = CssLength.TryParse(&quot;1.5em&quot;, out CssLength length);       // (1.5, CssUnit.Em)
+new CssLength(1, CssUnit.In).TryToPixels(out double px);  // 96
+bool isAngle = CssAngle.TryParse(&quot;0.25turn&quot;, out CssAngle angle);        // 90 degrees
+bool isUrl = CssUrl.TryParse(&quot;url('pattern.svg#dots')&quot;, out CssUrl url);
+
+// calc(), min(), max() and clamp(): the consumer says what each unit is worth.
+bool isCalc = CssCalc.TryParse(&quot;calc(100% - 2em)&quot;, out CssCalc? calc);
+double width = calc!.Resolve(unit =&gt; unit switch
+{
+    CssUnit.Percent =&gt; 3,   // a percent of a 300px box
+    CssUnit.Em =&gt; 16,
+    CssUnit.Px =&gt; 1,
+    _ =&gt; double.NaN,
+});                                                       // 268
+</code></pre>
+<p><code>CssTransformList</code> reads the CSS <code>transform</code> property into <code>CssTransformFunction</code>s:
+<code>CssMatrixTransform</code>, <code>CssTranslateTransform</code>, <code>CssScaleTransform</code>, <code>CssRotateTransform</code> and <code>CssSkewTransform</code>. 3D functions
+become <code>CssUnsupportedTransform</code> and the matrix ignores them. <code>CssTransformOrigin</code> reads <code>transform-origin</code>.</p>
+<pre><code class="lang-csharp">// A CSS transform list, its matrix, and the functions it holds.
+bool isTransform = CssTransformList.TryParse(&quot;translate(10px, 50%) rotate(45deg) scale(2)&quot;, out CssTransformList? css);
+Matrix3x2 matrix = css!.ToMatrix((length, isX) =&gt; length.Unit == CssUnit.Percent ? length.Value * (isX ? 2 : 1) : length.Value);
+
+foreach (CssTransformFunction function in css.Functions)
+{
+    string kind = function switch
+    {
+        CssTranslateTransform t =&gt; $&quot;translate {t.X} {t.Y}&quot;,
+        CssRotateTransform r =&gt; $&quot;rotate {r.Degrees} about ({r.CenterX}, {r.CenterY})&quot;,
+        CssScaleTransform s =&gt; $&quot;scale {s.X} {s.Y}&quot;,
+        CssSkewTransform k =&gt; $&quot;skew {k.XDegrees} {k.YDegrees}&quot;,
+        CssMatrixTransform m =&gt; $&quot;matrix {m.A} {m.B} {m.C} {m.D} {m.E} {m.F}&quot;,
+        CssUnsupportedTransform u =&gt; $&quot;{u.Name} (3D, ignored)&quot;,
+        _ =&gt; &quot;&quot;,
+    };
+}
+
+bool isOrigin = CssTransformOrigin.TryParse(&quot;left bottom&quot;, out CssTransformOrigin origin); // (0%, 100%, 0)
+</code></pre>
+<p><code>CssFont</code> reads the <code>font</code> shorthand. <code>CssFontFamilyList</code> holds <code>CssFontFamily</code> names and generic families. <code>CssFontWeight</code>
+resolves <code>bolder</code> and <code>lighter</code> against the parent's weight, as its <code>CssFontWeightKind</code> says. <code>CssFontFace</code> reads
+<code>@font-face</code>: its <code>CssFontSource</code>s, its weight and width as a <code>CssRange</code>, and its <code>CssUnicodeRange</code>s.</p>
+<pre><code class="lang-csharp">bool isFont = CssFont.TryParse(&quot;italic bold 14px/1.4 \&quot;Source Sans 3\&quot;, sans-serif&quot;, out CssFont? font);
+CssFontWeight weight = font!.Weight;                     // 700
+foreach (CssFontFamily family in font.Families!.Families)
+{
+    Console.WriteLine($&quot;{family.Name} (generic: {family.IsGeneric})&quot;);
+}
+
+bool isFamilyList = CssFontFamilyList.TryParse(&quot;Georgia, serif&quot;, out CssFontFamilyList? families);
+bool isWeight = CssFontWeight.TryParse(&quot;bolder&quot;, out CssFontWeight bolder);
+double resolved = bolder.Kind == CssFontWeightKind.Bolder ? bolder.Resolve(400) : bolder.Value; // 700
+
+// @font-face descriptors.
+CssStyleSheet sheet = CssStyleSheet.Parse(&quot;&quot;&quot;
+    @font-face {
+      font-family: &quot;Inter&quot;;
+      src: local(&quot;Inter&quot;), url(inter.woff2) format(&quot;woff2&quot;) tech(variations);
+      font-weight: 100 900;
+      unicode-range: U+0000-00FF, U+20AC;
+    }
+    &quot;&quot;&quot;);
+CssFontFace face = ((CssFontFaceRule)sheet.Rules[0]).FontFace;
+CssFontSource source = face.Sources[1];                  // inter.woff2, format woff2, tech variations
+CssRange weights = face.Weight!.Value;                   // 100 to 900
+CssUnicodeRange latin = face.UnicodeRanges[0];           // U+0-FF
+</code></pre><h2 id="not-supported">Not supported</h2>
+<ul>
+<li>CSS Nesting: rules nested in a style rule are dropped and reported.</li>
+<li>Cascade layers: layer blocks count as ordinary rules.</li>
+<li><code>@import</code> is not fetched, and animations and transitions are not part of the cascade.</li>
+<li><code>@property</code>, <code>@container</code>, <code>@scope</code>, <code>@keyframes</code>, <code>@counter-style</code> and similar rules are kept as unknown at-rules.</li>
+<li>Logical properties such as <code>margin-inline-start</code> and <code>inset</code>, and positioning (<code>position</code>, <code>top</code>, <code>z-index</code>), are not in the
+default registry: they cascade as unregistered properties, without a shorthand or a link to the physical sides.</li>
+<li>Page selectors take <code>:first</code>, <code>:left</code>, <code>:right</code> and <code>:blank</code>, not <code>:nth()</code> or page groups.</li>
+<li>Shadow DOM: <code>:host</code> is invalid, and <code>::part()</code> and <code>::slotted()</code> parse but never match. <code>:state()</code> and Selectors 5's
+<code>:heading</code> are invalid.</li>
+<li>CSS Color 5: <code>color-mix()</code>, relative colors and <code>device-cmyk()</code>. Colors outside sRGB are clipped, not gamut-mapped.</li>
+<li><code>calc()</code> covers lengths, percentages and numbers, not angles or <code>calc()</code> inside transforms.</li>
+<li>Selectors keep their text as written, not CSSOM's canonical serialization.</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/css.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class RowReader | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class RowReader | Egami ">
+      
+      <meta name="description" content="One open image, as a format reader streams it: frames of rows at the stored size. Derive from , which names the natural pixel type.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_RowReader.md&amp;value=---%0Auid%3A%20Egami.Formats.RowReader%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.RowReader">
+
+
+
+  <h1 id="Egami_Formats_RowReader" data-uid="Egami.Formats.RowReader" class="text-break">
+Class RowReader  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>One open image, as a format reader streams it: frames of rows at the stored size. Derive from <a class="xref" href="Egami.Formats.RowReader-1.html">RowReader&lt;TNatural&gt;</a>,
+which names the natural pixel type.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract class RowReader : IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">RowReader</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist derived">
+    <dt>Derived</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Formats.RowReader-1.html">RowReader</a>&lt;TNatural&gt;</div>
+    </dd>
+  </dl>
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_RowReader_examples">Examples</h2>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;The same RAW8 format, streaming: rows go in and out one at a time, so RasterDecoder, RasterEncoder and Transcode stream it.&lt;/summary&gt;
+public static class StreamingRaw8Format
+{
+    public static FormatInfo Info { get; } = Raw8Format.Info with { Reader = new Reader(), Writer = new Writer() };
+
+    private sealed class Reader : IFormatReader, IRowFormatReader
+    {
+        private static readonly IFormatReader Whole = Raw8Format.Info.Reader!;
+
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options) =&gt; Whole.ReadInfo(input, options) with { Access = RasterAccess.Streamed };
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; Whole.Read&lt;TPixel&gt;(input, options);
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Whole.Read(input, options);
+
+        // The open image reads each row when it is asked for; the decoder crops, reduces and converts after it.
+        public RowReader Open(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(4);
+            int width = (int)input.ReadUInt32BigEndian();
+            return new Rows(input, width, (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Rows(EgamiInput input, int width, int height) : RowReader&lt;Rgba8&gt;
+    {
+        private readonly Rgba8[] _row = new Rgba8[width];
+        private int _next;
+        private bool _started;
+
+        public override int Width =&gt; width;
+
+        public override int Height =&gt; height;
+
+        public override Metadata.RasterMetadata Metadata { get; } = new();
+
+        public override Metadata.FrameMetadata? NextFrame()
+        {
+            if (_started)
+            {
+                return null;
+            }
+
+            _started = true;
+            return new Metadata.FrameMetadata();
+        }
+
+        public override void ReadRow&lt;TPixel&gt;(int y, int x, Span&lt;TPixel&gt; destination)
+        {
+            for (; _next &lt;= y; _next++)
+            {
+                input.ReadExactly(MemoryMarshal.AsBytes(_row.AsSpan()));
+            }
+
+            PixelConvert.Convert&lt;Rgba8, TPixel&gt;(_row.AsSpan(x, destination.Length), destination);
+        }
+    }
+
+    private sealed class Writer : IFormatWriter, IRowFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; Raw8Format.Info.Writer!.Write(raster, output, options);
+
+        // Save, SaveAsync, RasterEncoder and Transcode all write through the encoder.
+        public RowEncoder&lt;TPixel&gt; Start&lt;TPixel&gt;(Stream output, EncodeStart&lt;TPixel&gt; start)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; new Encoder&lt;TPixel&gt;(output, start.Width, start.Height);
+    }
+
+    private sealed class Encoder&lt;TPixel&gt; : RowEncoder&lt;TPixel&gt;
+        where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+    {
+        private readonly Stream _output;
+        private readonly Rgba8[] _row;
+
+        public Encoder(Stream output, int width, int height)
+        {
+            _output = output;
+            _row = new Rgba8[width];
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            "RAW8"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)height);
+            output.Write(header);
+        }
+
+        public override void WriteRow(ReadOnlySpan&lt;TPixel&gt; row)
+        {
+            PixelConvert.Convert&lt;TPixel, Rgba8&gt;(row, _row);
+            _output.Write(MemoryMarshal.AsBytes(_row.AsSpan()));
+        }
+
+        public override void Complete()
+        {
+        }
+    }
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Formats_RowReader__ctor_" data-uid="Egami.Formats.RowReader.#ctor*"></a>
+
+  <h3 id="Egami_Formats_RowReader__ctor" data-uid="Egami.Formats.RowReader.#ctor">
+  RowReader()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates the reader. Only <a class="xref" href="Egami.Formats.RowReader-1.html">RowReader&lt;TNatural&gt;</a> can derive from it, since it names the natural pixel type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected RowReader()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_RowReader_Access_" data-uid="Egami.Formats.RowReader.Access*"></a>
+
+  <h3 id="Egami_Formats_RowReader_Access" data-uid="Egami.Formats.RowReader.Access">
+  Access
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether rows are decoded as they are asked for or served from a buffer. Defaults to streamed.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public virtual RasterAccess Access { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.RasterAccess.html">RasterAccess</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RowReader_FrameCount_" data-uid="Egami.Formats.RowReader.FrameCount*"></a>
+
+  <h3 id="Egami_Formats_RowReader_FrameCount" data-uid="Egami.Formats.RowReader.FrameCount">
+  FrameCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of frames, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> while unknown. Defaults to 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public virtual int? FrameCount { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RowReader_Height_" data-uid="Egami.Formats.RowReader.Height*"></a>
+
+  <h3 id="Egami_Formats_RowReader_Height" data-uid="Egami.Formats.RowReader.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the stored height.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract int Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RowReader_IsMetadataComplete_" data-uid="Egami.Formats.RowReader.IsMetadataComplete*"></a>
+
+  <h3 id="Egami_Formats_RowReader_IsMetadataComplete" data-uid="Egami.Formats.RowReader.IsMetadataComplete">
+  IsMetadataComplete
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L65"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Formats.RowReader.html#Egami_Formats_RowReader_Metadata">Metadata</a> is complete; a format can store metadata after its image data. Defaults to true.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public virtual bool IsMetadataComplete { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RowReader_Layout_" data-uid="Egami.Formats.RowReader.Layout*"></a>
+
+  <h3 id="Egami_Formats_RowReader_Layout" data-uid="Egami.Formats.RowReader.Layout">
+  Layout
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the layout of the natural pixel type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract PixelLayoutInfo Layout { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.PixelLayoutInfo.html">PixelLayoutInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RowReader_Metadata_" data-uid="Egami.Formats.RowReader.Metadata*"></a>
+
+  <h3 id="Egami_Formats_RowReader_Metadata" data-uid="Egami.Formats.RowReader.Metadata">
+  Metadata
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the metadata read so far.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract RasterMetadata Metadata { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.RasterMetadata.html">RasterMetadata</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RowReader_Width_" data-uid="Egami.Formats.RowReader.Width*"></a>
+
+  <h3 id="Egami_Formats_RowReader_Width" data-uid="Egami.Formats.RowReader.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the stored width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract int Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RowReader_WorkingBytes_" data-uid="Egami.Formats.RowReader.WorkingBytes*"></a>
+
+  <h3 id="Egami_Formats_RowReader_WorkingBytes" data-uid="Egami.Formats.RowReader.WorkingBytes">
+  WorkingBytes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the most bytes the reader holds while decoding, for <a class="xref" href="Egami.Formats.RasterInfo.html#Egami_Formats_RasterInfo_WorkingBytes">WorkingBytes</a>. Defaults to 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public virtual long WorkingBytes { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_RowReader_Dispose_" data-uid="Egami.Formats.RowReader.Dispose*"></a>
+
+  <h3 id="Egami_Formats_RowReader_Dispose" data-uid="Egami.Formats.RowReader.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RowReader_Dispose_" data-uid="Egami.Formats.RowReader.Dispose*"></a>
+
+  <h3 id="Egami_Formats_RowReader_Dispose_System_Boolean_" data-uid="Egami.Formats.RowReader.Dispose(System.Boolean)">
+  Dispose(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L98"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the reader's buffers.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual void Dispose(bool disposing)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>disposing</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when called from <a class="xref" href="Egami.Formats.RowReader.html#Egami_Formats_RowReader_Dispose">Dispose()</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RowReader_EndFrame_" data-uid="Egami.Formats.RowReader.EndFrame*"></a>
+
+  <h3 id="Egami_Formats_RowReader_EndFrame" data-uid="Egami.Formats.RowReader.EndFrame">
+  EndFrame()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Says no more rows of the current frame are needed, so the rest can be skipped. Does nothing by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public virtual void EndFrame()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RowReader_NextFrame_" data-uid="Egami.Formats.RowReader.NextFrame*"></a>
+
+  <h3 id="Egami_Formats_RowReader_NextFrame" data-uid="Egami.Formats.RowReader.NextFrame">
+  NextFrame()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Moves to the next frame: the first call moves to frame 0. Returns its metadata, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> after the last.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract FrameMetadata? NextFrame()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.FrameMetadata.html">FrameMetadata</a></dt>
+    <dd><p>The frame's metadata, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when there are no more frames.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RowReader_ReadRow_" data-uid="Egami.Formats.RowReader.ReadRow*"></a>
+
+  <h3 id="Egami_Formats_RowReader_ReadRow__1_System_Int32_System_Int32_System_Span___0__" data-uid="Egami.Formats.RowReader.ReadRow``1(System.Int32,System.Int32,System.Span{``0})">
+  ReadRow&lt;TPixel&gt;(int, int, Span&lt;TPixel&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts row <code class="paramref">y</code> of the current frame, from column <code class="paramref">x</code>, into <code class="paramref">destination</code>.
+<code class="paramref">y</code> never decreases within a frame, so rows in between can be skipped.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract void ReadRow&lt;TPixel&gt;(int y, int x, Span&lt;TPixel&gt; destination) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The row.</p>
+</dd>
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The first column.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;TPixel&gt;</dt>
+    <dd><p>Where the row goes; its length is how many columns are wanted.</p>
+</dd>
+  </dl>
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type to produce.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowReader.cs/#L36" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

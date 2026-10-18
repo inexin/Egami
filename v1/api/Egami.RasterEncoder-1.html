@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class RasterEncoder&lt;TPixel&gt; | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class RasterEncoder&lt;TPixel&gt; | Egami ">
+      
+      <meta name="description" content="An image being written a band of rows or a frame at a time, so a huge image never has to exist whole. The bytes are the ones  writes for the same pixels and options, except where a format must write differently without seeking: top-down BMP and TGA rows, and run-length TGA, which is always top-down. Options that need every pixel before the first byte (automatic palettes, PNG&#39;s Reduce, automatic alpha) throw at Create instead of quietly writing something else.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_RasterEncoder_1.md&amp;value=---%0Auid%3A%20Egami.RasterEncoder%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.RasterEncoder`1">
+
+
+
+  <h1 id="Egami_RasterEncoder_1" data-uid="Egami.RasterEncoder`1" class="text-break">
+Class RasterEncoder&lt;TPixel&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An image being written a band of rows or a frame at a time, so a huge image never has to exist whole. The bytes are the ones
+<a class="xref" href="Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">Save(Stream, FormatInfo, WriterOptions?)</a> writes for the same pixels and options, except where a format must
+write differently without seeking: top-down BMP and TGA rows, and run-length TGA, which is always top-down. Options that need
+every pixel before the first byte (automatic palettes, PNG's Reduce, automatic alpha) throw at Create instead of quietly
+writing something else.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class RasterEncoder&lt;TPixel&gt; : IDisposable where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type of the rows and frames.</p>
+</dd>
+  </dl>
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">RasterEncoder&lt;TPixel&gt;</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_RasterEncoder_1_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A huge image written a band at a time: only the band is ever in memory.
+const int Width = 8_000, Height = 6_000;
+using Raster&lt;Rgb8&gt; band = Raster.Create&lt;Rgb8&gt;(Width, 64);
+using RasterEncoder&lt;Rgb8&gt; encoder = RasterEncoder.Create&lt;Rgb8&gt;("big.png", Width, Height);
+for (int top = 0; top &lt; Height; top += band.Height)
+{
+    int rows = Math.Min(band.Height, Height - top);
+    for (int y = 0; y &lt; rows; y++)
+    {
+        band.Row(y).Fill(new Rgb8((byte)(top + y), 128, 200));
+    }
+
+    encoder.WriteRows(band, rows);
+}
+
+encoder.Complete(); // writes IEND; without it the file is deleted on dispose</code></pre>
+
+
+  <h2 id="Egami_RasterEncoder_1_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Write a still image with <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_WriteRows_Egami_Raster__0__System_Int32_">WriteRows(Raster&lt;TPixel&gt;, int)</a>, top to bottom, or an animation with
+<a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_WriteFrame_Egami_Raster__0__Egami_Metadata_FrameMetadata_">WriteFrame(Raster&lt;TPixel&gt;, FrameMetadata?)</a>; then call <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Complete">Complete()</a>, which writes what follows the image data. An encoder is one caller's
+object and is not thread-safe. Formats from plugins that do not stream gather the image and write it at Complete.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_RasterEncoder_1_Format_" data-uid="Egami.RasterEncoder`1.Format*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_Format" data-uid="Egami.RasterEncoder`1.Format">
+  Format
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L171"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the format being written.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FormatInfo Format { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_RasterEncoder_1_FramesWritten_" data-uid="Egami.RasterEncoder`1.FramesWritten*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_FramesWritten" data-uid="Egami.RasterEncoder`1.FramesWritten">
+  FramesWritten
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L183"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many frames have been written.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int FramesWritten { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_RasterEncoder_1_Height_" data-uid="Egami.RasterEncoder`1.Height*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_Height" data-uid="Egami.RasterEncoder`1.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L177"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the image height.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_RasterEncoder_1_RowsWritten_" data-uid="Egami.RasterEncoder`1.RowsWritten*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_RowsWritten" data-uid="Egami.RasterEncoder`1.RowsWritten">
+  RowsWritten
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L180"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many rows of the still image have been written.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int RowsWritten { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_RasterEncoder_1_Width_" data-uid="Egami.RasterEncoder`1.Width*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_Width" data-uid="Egami.RasterEncoder`1.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L174"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the image width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_RasterEncoder_1_Complete_" data-uid="Egami.RasterEncoder`1.Complete*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_Complete" data-uid="Egami.RasterEncoder`1.Complete">
+  Complete()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L246"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes what follows the image data, such as PNG's IEND or a TGA footer, and the bytes still held. Without it the output is
+truncated.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Complete()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Fewer rows than <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Height">Height</a>, or no frame, were written.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The encoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterEncoder_1_CompleteAsync_" data-uid="Egami.RasterEncoder`1.CompleteAsync*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_CompleteAsync_System_Threading_CancellationToken_" data-uid="Egami.RasterEncoder`1.CompleteAsync(System.Threading.CancellationToken)">
+  CompleteAsync(CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L319"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Completes the image as <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Complete">Complete()</a> does, writing the last bytes asynchronously.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ValueTask CompleteAsync(CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the write.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask">ValueTask</a></dt>
+    <dd><p>A task that completes when every byte is written.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Fewer rows than <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Height">Height</a>, or no frame, were written.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The encoder has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterEncoder_1_Dispose_" data-uid="Egami.RasterEncoder`1.Dispose*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_Dispose" data-uid="Egami.RasterEncoder`1.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L339"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Releases the encoder. Disposing before <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Complete">Complete()</a> leaves a truncated stream; a file the encoder created is
+deleted.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_RasterEncoder_1_WriteFrame_" data-uid="Egami.RasterEncoder`1.WriteFrame*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_WriteFrame_Egami_Raster__0__Egami_Metadata_FrameMetadata_" data-uid="Egami.RasterEncoder`1.WriteFrame(Egami.Raster{`0},Egami.Metadata.FrameMetadata)">
+  WriteFrame(Raster&lt;TPixel&gt;, FrameMetadata?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L234"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the next frame of an animation (GIF, APNG), with its delay from <code class="paramref">metadata</code>. A format that holds one
+image takes one frame, written as the still image.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void WriteFrame(Raster&lt;TPixel&gt; frame, FrameMetadata? metadata = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The frame, <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Width">Width</a> × <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Height">Height</a>; its first frame is written.</p>
+</dd>
+    <dt><code>metadata</code> <a class="xref" href="Egami.Metadata.FrameMetadata.html">FrameMetadata</a></dt>
+    <dd><p>The frame's delay, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the frame's own metadata.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterEncoder_1_WriteFrame_Egami_Raster__0__Egami_Metadata_FrameMetadata__examples">Examples</h4>
+  <pre><code class="lang-csharp">// An animation written a frame at a time, each frame from one reused canvas.
+using Raster&lt;Rgba8&gt; canvas = Raster.Create&lt;Rgba8&gt;(120, 80);
+using FileStream file = File.Create("spinner.gif");
+using RasterEncoder&lt;Rgba8&gt; gif = RasterEncoder.Create&lt;Rgba8&gt;(file, GifFormat.Info, 120, 80);
+for (int i = 0; i &lt; 12; i++)
+{
+    for (int y = 0; y &lt; canvas.Height; y++)
+    {
+        canvas.Row(y).Fill(new Rgba8(255, 255, 255, 255));
+    }
+
+    canvas.Row(40)[(i * 10)..((i * 10) + 10)].Fill(new Rgba8(200, 0, 0, 255));
+    gif.WriteFrame(canvas, new Metadata.FrameMetadata { Delay = TimeSpan.FromMilliseconds(80) });
+}
+
+gif.Complete();</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">frame</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">frame</code> is not <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Width">Width</a> × <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Height">Height</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Rows were written, the format holds one image and it was written, an APNG to a stream that cannot seek has no
+<a class="xref" href="Egami.Formats.Png.PngWriterOptions.html#Egami_Formats_Png_PngWriterOptions_FrameCount">FrameCount</a>, or the encoder is complete.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The encoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterEncoder_1_WriteFrameAsync_" data-uid="Egami.RasterEncoder`1.WriteFrameAsync*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_WriteFrameAsync_Egami_Raster__0__Egami_Metadata_FrameMetadata_System_Threading_CancellationToken_" data-uid="Egami.RasterEncoder`1.WriteFrameAsync(Egami.Raster{`0},Egami.Metadata.FrameMetadata,System.Threading.CancellationToken)">
+  WriteFrameAsync(Raster&lt;TPixel&gt;, FrameMetadata?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L296"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the next frame as <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_WriteFrame_Egami_Raster__0__Egami_Metadata_FrameMetadata_">WriteFrame(Raster&lt;TPixel&gt;, FrameMetadata?)</a> does, then writes the encoded bytes asynchronously.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ValueTask WriteFrameAsync(Raster&lt;TPixel&gt; frame, FrameMetadata? metadata = null, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The frame, <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Width">Width</a> × <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Height">Height</a>.</p>
+</dd>
+    <dt><code>metadata</code> <a class="xref" href="Egami.Metadata.FrameMetadata.html">FrameMetadata</a></dt>
+    <dd><p>The frame's delay, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the frame's own metadata.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the write.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask">ValueTask</a></dt>
+    <dd><p>A task that completes when the bytes are written.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">frame</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">frame</code> is not <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Width">Width</a> × <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Height">Height</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>As for <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_WriteFrame_Egami_Raster__0__Egami_Metadata_FrameMetadata_">WriteFrame(Raster&lt;TPixel&gt;, FrameMetadata?)</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The encoder has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterEncoder_1_WriteRows_" data-uid="Egami.RasterEncoder`1.WriteRows*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_WriteRows_Egami_Raster__0__" data-uid="Egami.RasterEncoder`1.WriteRows(Egami.Raster{`0})">
+  WriteRows(Raster&lt;TPixel&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L212"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes every row of <code class="paramref">band</code>'s first frame as the next rows of the still image.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void WriteRows(Raster&lt;TPixel&gt; band)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>band</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The rows, <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Width">Width</a> wide.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">band</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">band</code> is not <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Width">Width</a> wide.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The band holds more rows than are left.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Frames were written, or the encoder is complete.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The encoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterEncoder_1_WriteRows_" data-uid="Egami.RasterEncoder`1.WriteRows*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_WriteRows_Egami_Raster__0__System_Int32_" data-uid="Egami.RasterEncoder`1.WriteRows(Egami.Raster{`0},System.Int32)">
+  WriteRows(Raster&lt;TPixel&gt;, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L199"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the next <code class="paramref">rows</code> rows of the still image, from the top of <code class="paramref">band</code>'s first frame. Rows
+go top to bottom; together the calls write exactly <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Height">Height</a> rows.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void WriteRows(Raster&lt;TPixel&gt; band, int rows)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>band</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The rows, <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Width">Width</a> wide.</p>
+</dd>
+    <dt><code>rows</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>How many of the band's rows to write, from its top.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterEncoder_1_WriteRows_Egami_Raster__0__System_Int32__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A huge image written a band at a time: only the band is ever in memory.
+const int Width = 8_000, Height = 6_000;
+using Raster&lt;Rgb8&gt; band = Raster.Create&lt;Rgb8&gt;(Width, 64);
+using RasterEncoder&lt;Rgb8&gt; encoder = RasterEncoder.Create&lt;Rgb8&gt;("big.png", Width, Height);
+for (int top = 0; top &lt; Height; top += band.Height)
+{
+    int rows = Math.Min(band.Height, Height - top);
+    for (int y = 0; y &lt; rows; y++)
+    {
+        band.Row(y).Fill(new Rgb8((byte)(top + y), 128, 200));
+    }
+
+    encoder.WriteRows(band, rows);
+}
+
+encoder.Complete(); // writes IEND; without it the file is deleted on dispose</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">band</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">band</code> is not <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Width">Width</a> wide.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">rows</code> is negative, more than the band holds, or more than are left.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Frames were written, or the encoder is complete.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The encoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterEncoder_1_WriteRowsAsync_" data-uid="Egami.RasterEncoder`1.WriteRowsAsync*"></a>
+
+  <h3 id="Egami_RasterEncoder_1_WriteRowsAsync_Egami_Raster__0__System_Int32_System_Threading_CancellationToken_" data-uid="Egami.RasterEncoder`1.WriteRowsAsync(Egami.Raster{`0},System.Int32,System.Threading.CancellationToken)">
+  WriteRowsAsync(Raster&lt;TPixel&gt;, int, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L269"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the next rows as <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_WriteRows_Egami_Raster__0__System_Int32_">WriteRows(Raster&lt;TPixel&gt;, int)</a> does, then writes the encoded bytes to the stream
+asynchronously. Encoding itself is synchronous, since it is CPU-bound.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ValueTask WriteRowsAsync(Raster&lt;TPixel&gt; band, int rows, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>band</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The rows, <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Width">Width</a> wide.</p>
+</dd>
+    <dt><code>rows</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>How many of the band's rows to write, from its top.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels the write.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask">ValueTask</a></dt>
+    <dd><p>A task that completes when the bytes are written.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterEncoder_1_WriteRowsAsync_Egami_Raster__0__System_Int32_System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// On a server: send each band as it is encoded, without holding the file.
+using RasterDecoder source = RasterDecoder.Open("egret.png");
+using Raster&lt;Rgb8&gt; band = Raster.Create&lt;Rgb8&gt;(source.Info.Width, 32);
+using RasterEncoder&lt;Rgb8&gt; encoder = RasterEncoder.Create&lt;Rgb8&gt;(response, JpegFormat.Info, source.Info.Width, source.Info.Height);
+int rows;
+while ((rows = source.ReadRows(band)) &gt; 0)
+{
+    await encoder.WriteRowsAsync(band, rows, TestContext.Current.CancellationToken);
+}
+
+await encoder.CompleteAsync(TestContext.Current.CancellationToken);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">band</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">band</code> is not <a class="xref" href="Egami.RasterEncoder-1.html#Egami_RasterEncoder_1_Width">Width</a> wide.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">rows</code> is negative, more than the band holds, or more than are left.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Frames were written, or the encoder is complete.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The encoder has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterEncoder.cs/#L112" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

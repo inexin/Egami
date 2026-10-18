@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>JPEG | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="JPEG | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/jpeg.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="jpeg">JPEG</h1>
+
+<p>JPEG files load like any other: baseline, extended and progressive, Huffman or arithmetic-coded, gray, YCbCr, RGB, CMYK and
+YCCK, any chroma subsampling. The decoded pixels match libjpeg-turbo's <code>djpeg</code> exactly.</p>
+<h2 id="arithmetic-12-bit-and-lossless-files">Arithmetic, 12-bit and lossless files</h2>
+<p>Arithmetic-coded files load like Huffman-coded ones. 12-bit files load in their natural 16-bit types (<code>Gray16</code>, <code>Rgb16</code>, or
+<code>Cmyk16</code> for four components), each sample scaled so 4095 becomes 65535; ask for an 8-bit type and they are rounded to it.
+Lossless JPEG, the kind inside DNG tiles and many DICOM files, decodes to its exact samples at 2 to 16 bits: up to 8 bits as
+<code>Gray8</code> or <code>Rgb8</code>, deeper as <code>Gray16</code> or <code>Rgb16</code>. Three-component lossless files are RGB unless a JFIF segment or Adobe
+transform says YCbCr. Lossless files have no DCT, so <code>MinimumSize</code> reduces them after a full decode. <code>JpegDetails.Precision</code>,
+<code>Arithmetic</code> and <code>Lossless</code> say what a file is. Hierarchical files are refused with <code>UnsupportedFormatException</code>.</p>
+<p>Browsers show none of these modes. Egami writes 12-bit files on request (below), but no arithmetic or lossless ones.</p>
+<h2 id="threads">Threads</h2>
+<p>A large file decodes on up to <code>MaxParallelism</code> threads with the same pixels as one thread. A file with restart markers is split
+at the markers already in it; a progressive file's scans run as a pipeline, each refinement scan a few rows behind the scan
+before it, and the last pass is split by rows. A sequential file without markers overlaps its entropy decoding with the rest on
+a second thread. Damaged data falls back to one thread, so warnings and recovery are as before.</p>
+<h2 id="scaled-decode">Scaled decode</h2>
+<pre><code class="lang-csharp">// At least 100 × 75 from the stored JPEG, decoded at 1/2, 1/4 or 1/8 scale straight from the DCT.
+using Raster preview = Raster.Load(&quot;duck.jpg&quot;, options: new ReaderOptions { MinimumSize = new Size(100, 75) });
+</code></pre>
+<p><code>ReaderOptions.MinimumSize</code> picks the smallest of 1/1, 1/2, 1/4 and 1/8 scale that still covers the size you need, and decodes
+at that scale straight from the DCT. For a thumbnail from a 12-megapixel photo it is many times faster than decoding in full and
+resizing. Other formats ignore it.</p>
+<h2 id="orientation">Orientation</h2>
+<p>Cameras and phones store pixels as the sensor saw them and say in EXIF how to turn them. <code>Raster.Probe</code> reports the orientation,
+and <code>AutoOrient</code> applies it; see <a href="resizing-and-geometry.html#orientation">resizing and geometry</a>. To turn the file itself upright
+without re-encoding it, use <code>JpegTransform</code> with <code>AutoOrient</code> (see <a href="#lossless-rotation-flips-and-crops">lossless rotation</a>).</p>
+<h2 id="writing">Writing</h2>
+<pre><code class="lang-csharp">using FileStream output = File.Create(&quot;duck-q85.jpg&quot;);
+image.Save(output, JpegFormat.Info, new JpegWriterOptions
+{
+    Quality = 85,                                  // 75 by default, on libjpeg's scale
+    Subsampling = ChromaSubsampling.Subsample444,  // 4:2:0 by default
+    OptimizeHuffman = true,                        // a few percent smaller, a little slower
+});
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Quality</code></td>
+<td>75</td>
+<td>1 to 100, the same scale as libjpeg's <code>cjpeg</code></td>
+</tr>
+<tr>
+<td><code>Subsampling</code></td>
+<td><code>Subsample420</code></td>
+<td><code>Subsample422</code> or <code>Subsample444</code> keep more color detail</td>
+</tr>
+<tr>
+<td><code>OptimizeHuffman</code></td>
+<td><code>false</code></td>
+<td>Tables built for the image: a few percent smaller</td>
+</tr>
+<tr>
+<td><code>ColorType</code></td>
+<td><code>Auto</code></td>
+<td><code>Gray</code> writes one gray component whatever the pixel type; <code>Cmyk</code> and <code>Ycck</code> write four (<code>Auto</code> picks <code>Cmyk</code> for CMYK pixels)</td>
+</tr>
+<tr>
+<td><code>Progressive</code></td>
+<td><code>false</code></td>
+<td>Scans that show a coarse image first and refine it, with tables optimized per scan</td>
+</tr>
+<tr>
+<td><code>Precision</code></td>
+<td>8</td>
+<td>12 keeps more of 16-bit and float pixels</td>
+</tr>
+<tr>
+<td><code>RestartInterval</code></td>
+<td>0</td>
+<td>Restart markers every so many blocks, for damaged-stream recovery</td>
+</tr>
+<tr>
+<td><code>Background</code></td>
+<td>none</td>
+<td>Composites alpha onto this color first; without it alpha is ignored</td>
+</tr>
+</tbody>
+</table>
+<h3 id="progressive">Progressive</h3>
+<pre><code class="lang-csharp">// Shows coarse first and sharpens as it loads; usually a few percent smaller, and decodes to the same pixels.
+image.Save(&quot;duck-progressive.jpg&quot;, new JpegWriterOptions { Progressive = true });
+</code></pre>
+<p><code>Progressive</code> writes the scan script libjpeg's <code>cjpeg -progressive</code> writes: ten scans for color, six for gray, spectral
+selection and successive approximation, each scan with its own optimized Huffman tables. The file decodes to exactly the pixels
+the baseline file at the same quality gives, and is the same file <code>cjpeg -progressive</code> writes. The encoder holds every quantized
+coefficient until the last scan, about 2 bytes per sample (72 MB for a 24-megapixel 4:2:0 photo), counted against
+<code>SafetyLimits.MaxTotalBytes</code>; a streamed encode buffers them. Re-saving a progressive file writes baseline unless you set it.</p>
+<h3 id="cmyk-and-ycck">CMYK and YCCK</h3>
+<pre><code class="lang-csharp">// CMYK pixels save as CMYK, inverted behind an Adobe marker as Photoshop writes; YCCK is usually smaller.
+using Raster&lt;Cmyk8&gt; inks = image.As&lt;Cmyk8&gt;();
+inks.Save(&quot;duck-cmyk-out.jpg&quot;, JpegWriterOptions.Default);
+inks.Save(&quot;duck-ycck.jpg&quot;, new JpegWriterOptions { ColorType = JpegColorType.Ycck });
+</code></pre>
+<p><code>Cmyk8</code> and <code>Cmyk16</code> pixels save as four CMYK components with an Adobe marker, the values inverted as Photoshop writes them and
+every reader expects, and no JFIF segment (JFIF covers gray and YCbCr only). <code>Ycck</code> converts cyan, magenta and yellow to YCbCr
+as libjpeg does and subsamples their chroma by <code>Subsampling</code>, keeping black at full size; it is usually smaller. Other pixel types
+written as <code>Cmyk</code> or <code>Ycck</code> are converted with the plain formula. djpeg, ImageMagick and Pillow read the files to the same inks.</p>
+<h3 id="12-bit">12-bit</h3>
+<pre><code class="lang-csharp">// 16-bit and float pixels keep more than 8 bits in a 12-bit file; it loads back as Rgb16. No browser shows it.
+using Raster&lt;Rgb16&gt; deep = image.As&lt;Rgb16&gt;();
+deep.Save(&quot;duck-12bit.jpg&quot;, new JpegWriterOptions { Precision = 12, Quality = 95 });
+</code></pre>
+<p><code>Precision = 12</code> writes 12-bit samples (an extended, SOF1 file, or SOF2 when progressive) from any pixel type, narrowing 16-bit
+samples to 12 bits; it is worth it for 16-bit and float pixels. The Huffman tables are always optimized, as libjpeg-turbo does
+at 12 bits, and quantization tables pass 255 at low quality, in 16-bit entries. libjpeg-turbo's djpeg reads them; browsers,
+Pillow and many ImageMagick builds do not.</p>
+<h2 id="lossless-rotation-flips-and-crops">Lossless rotation, flips and crops</h2>
+<pre><code class="lang-csharp">// Turns the photo upright by its EXIF orientation without re-encoding: no quality is lost, and the tag is reset.
+JpegTransform.Apply(&quot;sideways.jpg&quot;, &quot;upright.jpg&quot;, new JpegTransformOptions { Operation = JpegTransformOperation.AutoOrient });
+
+// Rotates, crops and drops the color in one pass; a file can be transformed in place.
+JpegTransformResult result = JpegTransform.Apply(&quot;upright.jpg&quot;, &quot;upright.jpg&quot;, new JpegTransformOptions
+{
+    Operation = JpegTransformOperation.Rotate90,
+    Crop = new Rect(0, 0, 200, 120),
+    Grayscale = true,
+});
+Console.WriteLine($&quot;{result.Width} × {result.Height}&quot;);
+</code></pre>
+<p><code>JpegTransform</code> turns, mirrors, crops and drops the color of a JPEG without decoding it to pixels, as <code>jpegtran</code> does: the
+quantized DCT coefficients move and change sign block by block, and are coded again, so the result has exactly the quality the
+file had. Quantization tables and chroma subsampling stay as they were. It takes every mode the reader takes except lossless
+JPEG: baseline, progressive, arithmetic (written back with Huffman coding), 12-bit, gray, CMYK and YCCK. The result decodes to
+the same pixels as the file <code>jpegtran</code> makes with the same switches, on every subsampling and edge case.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Operation</code></td>
+<td><code>None</code></td>
+<td><code>FlipHorizontal</code>, <code>FlipVertical</code>, <code>Rotate90</code>, <code>Rotate180</code>, <code>Rotate270</code>, <code>Transpose</code>, <code>Transverse</code>, or <code>AutoOrient</code>: what the EXIF orientation needs, then the tag is reset to normal</td>
+</tr>
+<tr>
+<td><code>Crop</code></td>
+<td>none</td>
+<td>The area to keep, after the operation; its top-left corner moves to the MCU grid (8 or 16 pixels), as <code>jpegtran -crop</code> does</td>
+</tr>
+<tr>
+<td><code>Grayscale</code></td>
+<td><code>false</code></td>
+<td>Keeps only luma: a gray file with no loss. YCbCr files only</td>
+</tr>
+<tr>
+<td><code>Edges</code></td>
+<td><code>Trim</code></td>
+<td>What happens at a mirrored edge that is not a whole number of MCUs (below)</td>
+</tr>
+<tr>
+<td><code>Progressive</code></td>
+<td><code>false</code></td>
+<td>Writes progressive scans, as <code>JpegWriterOptions.Progressive</code> does</td>
+</tr>
+<tr>
+<td><code>OptimizeHuffman</code></td>
+<td><code>true</code></td>
+<td>Tables built for the result, a few percent smaller than the standard ones</td>
+</tr>
+<tr>
+<td><code>CopyMetadata</code></td>
+<td><code>true</code></td>
+<td>Copies EXIF, ICC, XMP, IPTC, comments and other segments</td>
+</tr>
+</tbody>
+</table>
+<p>A block of 8 × 8 pixels moves as a whole, so an edge that is not a whole number of MCUs (8 pixels, or 16 with subsampled chroma)
+cannot be mirrored to the other side intact. <code>JpegTransformEdges.Trim</code> drops that partial MCU from each mirrored edge, so the image loses up to 15
+pixels there, as <code>jpegtran -trim</code> does; <code>Strict</code> throws instead, as <code>-perfect</code> does; <code>Keep</code> leaves it in place unmirrored, as
+<code>jpegtran</code> does by default. Edges that are not mirrored keep every pixel, and <code>Transpose</code> never loses any.</p>
+<p>EXIF's pixel dimensions follow the result, and its thumbnail gets the same rotation, flip and gray conversion; after a crop the
+thumbnail is dropped, since it would still show the whole picture. An MPF index (the extra images some cameras append) is
+dropped too. Other segments are copied byte for byte. The result's size and any warnings about a damaged source are in the
+returned <code>JpegTransformResult</code>.</p>
+<p>The whole image's coefficients are held while it runs, about 2 bytes per sample, counted against <code>SafetyLimits.MaxTotalBytes</code>.
+A 12-megapixel photo turns in 170 ms with optimized tables (jpegtran <code>-optimize</code>: 305 ms), 130 ms with the standard ones
+(jpegtran: 246 ms) and 260 ms written progressive (jpegtran: 458 ms).</p>
+<h2 id="what-the-file-says">What the file says</h2>
+<pre><code class="lang-csharp">using Raster image = Raster.Load(&quot;duck.jpg&quot;);
+if (image.Metadata.FormatDetails is JpegDetails jpeg)
+{
+    Console.WriteLine($&quot;Progressive: {jpeg.Progressive}, saved at about quality {jpeg.EstimatedQuality}&quot;);
+}
+</code></pre>
+<p>EXIF, XMP (including extended XMP) and ICC profiles are read and written back. A JPEG saved again is re-encoded: pixels lose a
+little each time, so keep a lossless master if you edit repeatedly, or use <code>JpegTransform</code> for rotations, flips and crops.</p>
+<h2 id="details">Details</h2>
+<p>The components, color space and estimated quality are in <code>JpegDetails</code>. <code>JpegReaderOptions.FastUpsampling</code> trades a little chroma
+sharpness for speed; <code>JpegColorType.Gray</code> writes one channel.</p>
+<p>CMYK and YCCK files load as RGB by the plain formula, R = (1 − C)(1 − K). <code>Raster.Load&lt;Cmyk8&gt;</code> returns the file's ink amounts
+instead, without the RGB step; print-accurate color needs the embedded ICC profile, which Egami keeps but does not apply yet.</p>
+<pre><code class="lang-csharp">using Raster photo = Raster.Load(&quot;duck.jpg&quot;, options: new JpegReaderOptions { FastUpsampling = true });
+JpegDetails details = (JpegDetails)photo.Metadata.FormatDetails!;
+Console.WriteLine($&quot;{details.ColorSpace}, progressive: {details.Progressive}, quality about {details.EstimatedQuality}&quot;);
+foreach (JpegComponent component in details.Components)
+{
+    Console.WriteLine($&quot;Component {component.Id}: sampled {component.HorizontalSampling} × {component.VerticalSampling}&quot;);
+}
+
+// Gray output, and 4:4:4 (no chroma subsampling) for sharp colored edges.
+photo.Save(&quot;gray.jpg&quot;, new JpegWriterOptions { ColorType = JpegColorType.Gray });
+photo.Save(&quot;sharp.jpg&quot;, new JpegWriterOptions { Quality = 90, Subsampling = ChromaSubsampling.Subsample444 });
+</code></pre><h2 id="run-it">Run it</h2>
+<p><a href="https://github.com/inexin/Egami/tree/main/samples/Jpeg"><code>samples/Jpeg</code></a> is a console app that does what this guide shows on the bundled
+images: <code>dotnet run --project samples/Jpeg</code> writes its results to <code>./output</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/jpeg.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

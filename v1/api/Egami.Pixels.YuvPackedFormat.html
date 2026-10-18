@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Enum YuvPackedFormat | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Enum YuvPackedFormat | Egami ">
+      
+      <meta name="description" content="The interleaved YUV layouts that operating system decoders, GPUs and webcams hand out, which a  copies to and from its planes with  and .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Pixels_YuvPackedFormat.md&amp;value=---%0Auid%3A%20Egami.Pixels.YuvPackedFormat%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Pixels.YuvPackedFormat">
+
+
+
+
+  <h1 id="Egami_Pixels_YuvPackedFormat" data-uid="Egami.Pixels.YuvPackedFormat" class="text-break">
+Enum YuvPackedFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/YuvPackedFormat.cs/#L10"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Pixels.html">Pixels</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The interleaved YUV layouts that operating system decoders, GPUs and webcams hand out, which a <a class="xref" href="Egami.YuvRaster.html">YuvRaster</a> copies
+to and from its planes with <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_CopyFromPacked_Egami_Pixels_YuvPackedFormat_System_ReadOnlySpan_System_Byte__System_Int32_System_ReadOnlySpan_System_Byte__System_Int32_">CopyFromPacked(YuvPackedFormat, ReadOnlySpan&lt;byte&gt;, int, ReadOnlySpan&lt;byte&gt;, int)</a> and <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_CopyToPacked_Egami_Pixels_YuvPackedFormat_System_Span_System_Byte__System_Int32_System_Span_System_Byte__System_Int32_">CopyToPacked(YuvPackedFormat, Span&lt;byte&gt;, int, Span&lt;byte&gt;, int)</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public enum YuvPackedFormat</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h2 id="fields">Fields
+</h2>
+  <dl class="parameters">
+    <dt id="Egami_Pixels_YuvPackedFormat_Nv12"><code>Nv12 = 0</code></dt>
+  
+  <dd><p>8-bit 4:2:0 in two planes: Y, then U and V interleaved (U first) at half width and height.</p>
+</dd>
+    <dt id="Egami_Pixels_YuvPackedFormat_Nv21"><code>Nv21 = 1</code></dt>
+  
+  <dd><p>8-bit 4:2:0 in two planes: Y, then V and U interleaved (V first) at half width and height.</p>
+</dd>
+    <dt id="Egami_Pixels_YuvPackedFormat_P010"><code>P010 = 2</code></dt>
+  
+  <dd><p>10-bit 4:2:0 in two planes of little-endian 16-bit words, samples in the high 10 bits: Y, then U and V interleaved.</p>
+</dd>
+    <dt id="Egami_Pixels_YuvPackedFormat_P016"><code>P016 = 3</code></dt>
+  
+  <dd><p>4:2:0 in two planes of little-endian 16-bit words, samples in the high bits (16, or 10 or 12 with zero low bits): Y, then
+U and V interleaved.</p>
+</dd>
+    <dt id="Egami_Pixels_YuvPackedFormat_Uyvy"><code>Uyvy = 5</code></dt>
+  
+  <dd><p>8-bit 4:2:2 in one plane, four bytes for two pixels: U, Y0, V, Y1.</p>
+</dd>
+    <dt id="Egami_Pixels_YuvPackedFormat_Yuyv"><code>Yuyv = 4</code></dt>
+  
+  <dd><p>8-bit 4:2:2 in one plane, four bytes for two pixels: Y0, U, Y1, V (also called YUY2).</p>
+</dd>
+  </dl>
+
+  <h2 id="Egami_Pixels_YuvPackedFormat_examples">Examples</h2>
+  <pre><code class="lang-csharp">// An NV12 frame from Media Foundation or MediaCodec: Y rows, then interleaved U, V rows, both at the same stride.
+int width = 640, height = 360, stride = 704;
+byte[] nv12 = new byte[stride * height * 3 / 2];
+using YuvRaster&lt;byte&gt; frame = YuvRaster.Create(width, height, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+frame.CopyFromPacked(YuvPackedFormat.Nv12, nv12, stride);
+
+// A webcam's YUYV, 4:2:2 in one plane, the other way.
+using YuvRaster&lt;byte&gt; webcam = YuvRaster.Create(width, height, ChromaFormat.Yuv422, YuvColor.Bt601Limited);
+byte[] yuyv = new byte[width * 2 * height];
+webcam.CopyToPacked(YuvPackedFormat.Yuyv, yuyv);</code></pre>
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/YuvPackedFormat.cs/#L10" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

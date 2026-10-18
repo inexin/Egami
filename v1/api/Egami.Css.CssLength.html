@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct CssLength | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct CssLength | Egami ">
+      
+      <meta name="description" content="A length (or percentage, or unitless number) with its unit, such as 12px or 50%.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Css_CssLength.md&amp;value=---%0Auid%3A%20Egami.Css.CssLength%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Css.CssLength">
+
+
+
+  <h1 id="Egami_Css_CssLength" data-uid="Egami.Css.CssLength" class="text-break">
+Struct CssLength  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Css.html">Css</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Css.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A length (or percentage, or unitless number) with its unit, such as <code>12px</code> or <code>50%</code>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct CssLength : IEquatable&lt;CssLength&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Css.CssLength.html">CssLength</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Css_CssLength_examples">Examples</h2>
+  <pre><code class="lang-csharp">bool isLength = CssLength.TryParse("1.5em", out CssLength length);       // (1.5, CssUnit.Em)
+new CssLength(1, CssUnit.In).TryToPixels(out double px);  // 96
+bool isAngle = CssAngle.TryParse("0.25turn", out CssAngle angle);        // 90 degrees
+bool isUrl = CssUrl.TryParse("url('pattern.svg#dots')", out CssUrl url);
+
+// calc(), min(), max() and clamp(): the consumer says what each unit is worth.
+bool isCalc = CssCalc.TryParse("calc(100% - 2em)", out CssCalc? calc);
+double width = calc!.Resolve(unit =&gt; unit switch
+{
+    CssUnit.Percent =&gt; 3,   // a percent of a 300px box
+    CssUnit.Em =&gt; 16,
+    CssUnit.Px =&gt; 1,
+    _ =&gt; double.NaN,
+});                                                       // 268</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Css_CssLength__ctor_" data-uid="Egami.Css.CssLength.#ctor*"></a>
+
+  <h3 id="Egami_Css_CssLength__ctor_System_Double_Egami_Css_CssUnit_" data-uid="Egami.Css.CssLength.#ctor(System.Double,Egami.Css.CssUnit)">
+  CssLength(double, CssUnit)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A length (or percentage, or unitless number) with its unit, such as <code>12px</code> or <code>50%</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssLength(double Value, CssUnit Unit)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>Value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The number.</p>
+</dd>
+    <dt><code>Unit</code> <a class="xref" href="Egami.Css.CssUnit.html">CssUnit</a></dt>
+    <dd><p>The unit.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Css_CssLength__ctor_System_Double_Egami_Css_CssUnit__examples">Examples</h4>
+  <pre><code class="lang-csharp">bool isLength = CssLength.TryParse("1.5em", out CssLength length);       // (1.5, CssUnit.Em)
+new CssLength(1, CssUnit.In).TryToPixels(out double px);  // 96
+bool isAngle = CssAngle.TryParse("0.25turn", out CssAngle angle);        // 90 degrees
+bool isUrl = CssUrl.TryParse("url('pattern.svg#dots')", out CssUrl url);
+
+// calc(), min(), max() and clamp(): the consumer says what each unit is worth.
+bool isCalc = CssCalc.TryParse("calc(100% - 2em)", out CssCalc? calc);
+double width = calc!.Resolve(unit =&gt; unit switch
+{
+    CssUnit.Percent =&gt; 3,   // a percent of a 300px box
+    CssUnit.Em =&gt; 16,
+    CssUnit.Px =&gt; 1,
+    _ =&gt; double.NaN,
+});                                                       // 268</code></pre>
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Css_CssLength_IsAbsolute_" data-uid="Egami.Css.CssLength.IsAbsolute*"></a>
+
+  <h3 id="Egami_Css_CssLength_IsAbsolute" data-uid="Egami.Css.CssLength.IsAbsolute">
+  IsAbsolute
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L124"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the unit is absolute (px, cm, mm, Q, in, pt, pc), so <a class="xref" href="Egami.Css.CssLength.html#Egami_Css_CssLength_TryToPixels_System_Double__">TryToPixels(out double)</a> succeeds.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsAbsolute { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLength_Unit_" data-uid="Egami.Css.CssLength.Unit*"></a>
+
+  <h3 id="Egami_Css_CssLength_Unit" data-uid="Egami.Css.CssLength.Unit">
+  Unit
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The unit.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssUnit Unit { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssUnit.html">CssUnit</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLength_Value_" data-uid="Egami.Css.CssLength.Value*"></a>
+
+  <h3 id="Egami_Css_CssLength_Value" data-uid="Egami.Css.CssLength.Value">
+  Value
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The number.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Value { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLength_Zero_" data-uid="Egami.Css.CssLength.Zero*"></a>
+
+  <h3 id="Egami_Css_CssLength_Zero" data-uid="Egami.Css.CssLength.Zero">
+  Zero
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a zero length in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static CssLength Zero { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssLength.html">CssLength</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Css_CssLength_ToString_" data-uid="Egami.Css.CssLength.ToString*"></a>
+
+  <h3 id="Egami_Css_CssLength_ToString" data-uid="Egami.Css.CssLength.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L189"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Formats the length as CSS text, such as <code>12px</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLength_TryParse_" data-uid="Egami.Css.CssLength.TryParse*"></a>
+
+  <h3 id="Egami_Css_CssLength_TryParse_Egami_Css_CssComponentValue_Egami_Css_CssLength__" data-uid="Egami.Css.CssLength.TryParse(Egami.Css.CssComponentValue,Egami.Css.CssLength@)">
+  TryParse(CssComponentValue, out CssLength)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses one component value as a length, percentage or unitless number.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool TryParse(CssComponentValue value, out CssLength length)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>value</code> <a class="xref" href="Egami.Css.CssComponentValue.html">CssComponentValue</a></dt>
+    <dd><p>The component value.</p>
+</dd>
+    <dt><code>length</code> <a class="xref" href="Egami.Css.CssLength.html">CssLength</a></dt>
+    <dd><p>The length.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the value is a length, percentage or number.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLength_TryParse_" data-uid="Egami.Css.CssLength.TryParse*"></a>
+
+  <h3 id="Egami_Css_CssLength_TryParse_System_Collections_Generic_IReadOnlyList_Egami_Css_CssComponentValue__Egami_Css_CssLength__" data-uid="Egami.Css.CssLength.TryParse(System.Collections.Generic.IReadOnlyList{Egami.Css.CssComponentValue},Egami.Css.CssLength@)">
+  TryParse(IReadOnlyList&lt;CssComponentValue&gt;, out CssLength)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L150"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses a length, percentage or unitless number from component values (whitespace around it is ignored).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool TryParse(IReadOnlyList&lt;CssComponentValue&gt; values, out CssLength length)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>values</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Css.CssComponentValue.html">CssComponentValue</a>&gt;</dt>
+    <dd><p>The component values.</p>
+</dd>
+    <dt><code>length</code> <a class="xref" href="Egami.Css.CssLength.html">CssLength</a></dt>
+    <dd><p>The length.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the values are one length, percentage or number.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLength_TryParse_" data-uid="Egami.Css.CssLength.TryParse*"></a>
+
+  <h3 id="Egami_Css_CssLength_TryParse_System_String_Egami_Css_CssLength__" data-uid="Egami.Css.CssLength.TryParse(System.String,Egami.Css.CssLength@)">
+  TryParse(string, out CssLength)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L140"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses a length, percentage or unitless number, such as <code>1.5em</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool TryParse(string text, out CssLength length)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The CSS text.</p>
+</dd>
+    <dt><code>length</code> <a class="xref" href="Egami.Css.CssLength.html">CssLength</a></dt>
+    <dd><p>The length.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the text is one length, percentage or number.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLength_TryToPixels_" data-uid="Egami.Css.CssLength.TryToPixels*"></a>
+
+  <h3 id="Egami_Css_CssLength_TryToPixels_System_Double__" data-uid="Egami.Css.CssLength.TryToPixels(System.Double@)">
+  TryToPixels(out double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts an absolute length to CSS pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryToPixels(out double pixels)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>pixels</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The length in pixels.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the unit is absolute; false for relative units, percentages and unitless numbers.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLength.cs/#L118" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

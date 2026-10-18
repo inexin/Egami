@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class TransferFunction | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class TransferFunction | Egami ">
+      
+      <meta name="description" content="How a color space encodes light: the curve from stored values to linear light and back. Single values use exact double arithmetic; rows of floats use a vectorized form within 1e-5 of it (PQ rows use the double form), the same on every CPU with or without SIMD.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Colors_TransferFunction.md&amp;value=---%0Auid%3A%20Egami.Colors.TransferFunction%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Colors.TransferFunction">
+
+
+
+  <h1 id="Egami_Colors_TransferFunction" data-uid="Egami.Colors.TransferFunction" class="text-break">
+Class TransferFunction  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Colors.html">Colors</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>How a color space encodes light: the curve from stored values to linear light and back. Single values use exact double
+arithmetic; rows of floats use a vectorized form within 1e-5 of it (PQ rows use the double form), the same on every CPU with
+or without SIMD.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class TransferFunction : IEquatable&lt;TransferFunction&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">TransferFunction</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Colors_TransferFunction_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A transfer function decodes stored values to linear light and back; HDR curves put reference white at 1.0.
+double linear = TransferFunction.Srgb.ToLinear(0.5);           // 0.214
+double nits = TransferFunction.Pq.ToLinear(0.75) * 203;         // a 75% PQ signal is about 983 cd/m²
+float[] row = [0f, 0.25f, 0.5f, 1f];
+TransferFunction.Srgb.ToLinear(row, row);                        // a whole row at once, in place</code></pre>
+
+
+  <h2 id="Egami_Colors_TransferFunction_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+Linear 1.0 is the encoding's reference white. For PQ and HLG that is 203 cd/m² (ITU-R BT.2408), so HDR highlights are values
+above 1. PQ covers 0 to 10,000 cd/m², about 0 to 49.3. HLG decodes for a 1,000 cd/m² display with system gamma 1.2, which puts
+its reference white (a 75% signal) at 1.0; single values and rows apply its OOTF to each value as for a gray color, and the
+full OOTF, which depends on the color's luminance, is applied by color conversion.
+</p>
+<p>
+The SDR curves are extended to negative values by mirroring (f(−x) = −f(x)), as CSS Color 4 does, and to values above 1 by
+their own formula. PQ and HLG treat negative values as 0.
+</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Colors_TransferFunction_Hlg_" data-uid="Egami.Colors.TransferFunction.Hlg*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_Hlg" data-uid="Egami.Colors.TransferFunction.Hlg">
+  Hlg
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the hybrid log-gamma curve of ITU-R BT.2100, for a 1,000 cd/m² display, scaled so reference white is 1.0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TransferFunction Hlg { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_IsHdr_" data-uid="Egami.Colors.TransferFunction.IsHdr*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_IsHdr" data-uid="Egami.Colors.TransferFunction.IsHdr">
+  IsHdr
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether this is an HDR curve (PQ or HLG), whose linear values go above 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsHdr { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_IsLinear_" data-uid="Egami.Colors.TransferFunction.IsLinear*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_IsLinear" data-uid="Egami.Colors.TransferFunction.IsLinear">
+  IsLinear
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether the curve is the identity.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsLinear { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_Linear_" data-uid="Egami.Colors.TransferFunction.Linear*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_Linear" data-uid="Egami.Colors.TransferFunction.Linear">
+  Linear
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the identity: values are linear light already.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TransferFunction Linear { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_Pq_" data-uid="Egami.Colors.TransferFunction.Pq*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_Pq" data-uid="Egami.Colors.TransferFunction.Pq">
+  Pq
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the SMPTE ST 2084 perceptual quantizer of ITU-R BT.2100, scaled so 203 cd/m² is 1.0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TransferFunction Pq { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_Rec709_" data-uid="Egami.Colors.TransferFunction.Rec709*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_Rec709" data-uid="Egami.Colors.TransferFunction.Rec709">
+  Rec709
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the ITU-R BT.709 and BT.2020 curve (the inverse of their camera OETF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TransferFunction Rec709 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_Srgb_" data-uid="Egami.Colors.TransferFunction.Srgb*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_Srgb" data-uid="Egami.Colors.TransferFunction.Srgb">
+  Srgb
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sRGB curve of IEC 61966-2-1: a linear segment below 0.04045, then a 2.4 power.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TransferFunction Srgb { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Colors_TransferFunction_Equals_" data-uid="Egami.Colors.TransferFunction.Equals*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_Equals_Egami_Colors_TransferFunction_" data-uid="Egami.Colors.TransferFunction.Equals(Egami.Colors.TransferFunction)">
+  Equals(TransferFunction?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L258"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Indicates whether the current object is equal to another object of the same type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Equals(TransferFunction? other)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd><p>An object to compare with this object.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the current object is equal to the <code class="paramref">other</code> parameter; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_Equals_" data-uid="Egami.Colors.TransferFunction.Equals*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_Equals_System_Object_" data-uid="Egami.Colors.TransferFunction.Equals(System.Object)">
+  Equals(object?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L292"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Determines whether the specified object is equal to the current object.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool Equals(object? obj)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>obj</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></dt>
+    <dd><p>The object to compare with the current object.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the specified object  is equal to the current object; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_FromLinear_" data-uid="Egami.Colors.TransferFunction.FromLinear*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_FromLinear_System_Double_" data-uid="Egami.Colors.TransferFunction.FromLinear(System.Double)">
+  FromLinear(double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L209"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes one linear value.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double FromLinear(double linear)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>linear</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The linear value.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The stored value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_FromLinear_" data-uid="Egami.Colors.TransferFunction.FromLinear*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_FromLinear_System_ReadOnlySpan_System_Single__System_Span_System_Single__" data-uid="Egami.Colors.TransferFunction.FromLinear(System.ReadOnlySpan{System.Single},System.Span{System.Single})">
+  FromLinear(ReadOnlySpan&lt;float&gt;, Span&lt;float&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L252"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes a row of linear values; <code class="paramref">destination</code> may be <code class="paramref">source</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void FromLinear(ReadOnlySpan&lt;float&gt; source, Span&lt;float&gt; destination)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>source</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>&gt;</dt>
+    <dd><p>The linear values.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>&gt;</dt>
+    <dd><p>Where to write the stored values. It must be at least as long as <code class="paramref">source</code>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">destination</code> is shorter than <code class="paramref">source</code>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Colors_TransferFunction_Gamma_" data-uid="Egami.Colors.TransferFunction.Gamma*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_Gamma_System_Double_" data-uid="Egami.Colors.TransferFunction.Gamma(System.Double)">
+  Gamma(double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a pure power curve: linear = encoded^<code class="paramref">gamma</code> (2.2 for a typical display).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TransferFunction Gamma(double gamma)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>gamma</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The decoding exponent, above 0.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd><p>The curve.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">gamma</code> is not a positive finite number.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Colors_TransferFunction_GetHashCode_" data-uid="Egami.Colors.TransferFunction.GetHashCode*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_GetHashCode" data-uid="Egami.Colors.TransferFunction.GetHashCode">
+  GetHashCode()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L295"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Serves as the default hash function.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int GetHashCode()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>A hash code for the current object.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_IsCloseTo_" data-uid="Egami.Colors.TransferFunction.IsCloseTo*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_IsCloseTo_Egami_Colors_TransferFunction_System_Double_" data-uid="Egami.Colors.TransferFunction.IsCloseTo(Egami.Colors.TransferFunction,System.Double)">
+  IsCloseTo(TransferFunction, double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L271"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns whether two curves give the same linear values, within <code class="paramref">tolerance</code>, at 256 points from 0 to 1:
+a parametric curve written for sRGB is close to <a class="xref" href="Egami.Colors.TransferFunction.html#Egami_Colors_TransferFunction_Srgb">Srgb</a>, for example.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsCloseTo(TransferFunction other, double tolerance = 0.0001)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd><p>The other curve.</p>
+</dd>
+    <dt><code>tolerance</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The largest difference allowed.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the curves agree.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_Parametric_" data-uid="Egami.Colors.TransferFunction.Parametric*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_Parametric_System_Double_System_Double_System_Double_System_Double_System_Double_System_Double_System_Double_" data-uid="Egami.Colors.TransferFunction.Parametric(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)">
+  Parametric(double, double, double, double, double, double, double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L134"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the ICC parametric curve: linear = (a·x + b)^g + e for x ≥ d, and c·x + f below d. Every ICC <code>para</code> curve and
+the sRGB, BT.709 and gamma curves are special cases.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TransferFunction Parametric(double g, double a, double b, double c, double d, double e, double f)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>g</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The exponent, above 0.</p>
+</dd>
+    <dt><code>a</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The scale inside the power.</p>
+</dd>
+    <dt><code>b</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The offset inside the power.</p>
+</dd>
+    <dt><code>c</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The slope of the linear segment.</p>
+</dd>
+    <dt><code>d</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>Where the power segment starts.</p>
+</dd>
+    <dt><code>e</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The offset added to the power segment.</p>
+</dd>
+    <dt><code>f</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The offset of the linear segment.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd><p>The curve.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A value is not finite, or <code class="paramref">g</code> is not above 0.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Colors_TransferFunction_Table_" data-uid="Egami.Colors.TransferFunction.Table*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_Table_System_ReadOnlySpan_System_Single__" data-uid="Egami.Colors.TransferFunction.Table(System.ReadOnlySpan{System.Single})">
+  Table(ReadOnlySpan&lt;float&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L155"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a sampled curve: <code class="paramref">linear</code>[i] is the linear value of encoded value i / (count − 1), and values in
+between are interpolated, as an ICC <code>curv</code> table is.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TransferFunction Table(ReadOnlySpan&lt;float&gt; linear)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>linear</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>&gt;</dt>
+    <dd><p>At least two samples, not decreasing.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd><p>The curve.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>Fewer than two samples, a sample that is not finite, or samples that go down.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Colors_TransferFunction_ToLinear_" data-uid="Egami.Colors.TransferFunction.ToLinear*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_ToLinear_System_Double_" data-uid="Egami.Colors.TransferFunction.ToLinear(System.Double)">
+  ToLinear(double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L176"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Decodes one value to linear light.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double ToLinear(double encoded)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>encoded</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The stored value, nominally 0 to 1.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The linear value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_TransferFunction_ToLinear_" data-uid="Egami.Colors.TransferFunction.ToLinear*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_ToLinear_System_ReadOnlySpan_System_Single__System_Span_System_Single__" data-uid="Egami.Colors.TransferFunction.ToLinear(System.ReadOnlySpan{System.Single},System.Span{System.Single})">
+  ToLinear(ReadOnlySpan&lt;float&gt;, Span&lt;float&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L243"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Decodes a row of values to linear light; <code class="paramref">destination</code> may be <code class="paramref">source</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ToLinear(ReadOnlySpan&lt;float&gt; source, Span&lt;float&gt; destination)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>source</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>&gt;</dt>
+    <dd><p>The stored values.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>&gt;</dt>
+    <dd><p>Where to write the linear values. It must be at least as long as <code class="paramref">source</code>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">destination</code> is shorter than <code class="paramref">source</code>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Colors_TransferFunction_ToString_" data-uid="Egami.Colors.TransferFunction.ToString*"></a>
+
+  <h3 id="Egami_Colors_TransferFunction_ToString" data-uid="Egami.Colors.TransferFunction.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L298"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a string that represents the current object.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A string that represents the current object.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/TransferFunction.cs/#L29" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

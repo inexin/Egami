@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class ColorFilter | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class ColorFilter | Egami ">
+      
+      <meta name="description" content="A function of one pixel&#39;s color, as a value: build one from a matrix, curves, a 3D table or a tone step, chain filters with , mix two with , run one with  or on your own pixels with , and save it as a .cube file through . Like Skia&#39;s SkColorFilter, a filter sees only the pixel&#39;s own straight RGBA: no neighbours, position or image statistics, so any chain of filters runs as one pass.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Operations_ColorFilter.md&amp;value=---%0Auid%3A%20Egami.Operations.ColorFilter%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Operations.ColorFilter">
+
+
+
+  <h1 id="Egami_Operations_ColorFilter" data-uid="Egami.Operations.ColorFilter" class="text-break">
+Class ColorFilter  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L7"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Operations.html">Operations</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A function of one pixel's color, as a value: build one from a matrix, curves, a 3D table or a tone step, chain filters with
+<a class="xref" href="Egami.Operations.ColorFilter.html#Egami_Operations_ColorFilter_Then_Egami_Operations_ColorFilter_">Then(ColorFilter)</a>, mix two with <a class="xref" href="Egami.Operations.ColorFilter.html#Egami_Operations_ColorFilter_Lerp_Egami_Operations_ColorFilter_Egami_Operations_ColorFilter_System_Single_">Lerp(ColorFilter, ColorFilter, float)</a>, run one with <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_ApplyFilter_Egami_Operations_ColorFilter_">ApplyFilter(ColorFilter)</a> or on your own pixels with
+<a class="xref" href="Egami.Operations.ColorFilter.html#Egami_Operations_ColorFilter_Apply__1_System_Span___0__">Apply&lt;TPixel&gt;(Span&lt;TPixel&gt;)</a>, and save it as a .cube file through <a class="xref" href="Egami.Operations.ColorFilter.html#Egami_Operations_ColorFilter_ToLut3D_System_Int32_">ToLut3D(int)</a>. Like Skia's SkColorFilter, a filter sees
+only the pixel's own straight RGBA: no neighbours, position or image statistics, so any chain of filters runs as one pass.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class ColorFilter</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">ColorFilter</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Operations_ColorFilter_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A look as a value: build it once, mix it in at 70%, apply it to any image or to your own pixels.
+ColorFilter look = ColorFilter.Level(0.03f, 0.97f).Then(ColorFilter.Saturation(1.2f)).Then(ColorFilter.Tint(new Rgba8(255, 190, 140, 255), 0.2f));
+ColorFilter subtle = ColorFilter.Lerp(ColorFilter.Identity, look, 0.7f);
+raster.Apply(o =&gt; o.ApplyFilter(subtle), Ct);
+
+Span&lt;Rgba8&gt; swatch = [new Rgba8(200, 120, 80, 255), new Rgba8(40, 60, 90, 255)];
+subtle.Apply(swatch);</code></pre>
+
+
+  <h2 id="Egami_Operations_ColorFilter_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Filters work on the stored, gamma-encoded values, as photo editors and LUT files do, and clamp to 0..1 after each step, as the
+color matrices do. Immutable and safe to share between threads.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Operations_ColorFilter_ChangesAlpha_" data-uid="Egami.Operations.ColorFilter.ChangesAlpha*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_ChangesAlpha" data-uid="Egami.Operations.ColorFilter.ChangesAlpha">
+  ChangesAlpha
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether this filter can change alpha, which a 3D table cannot hold.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ChangesAlpha { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Operations_ColorFilter_Identity_" data-uid="Egami.Operations.ColorFilter.Identity*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Identity" data-uid="Egami.Operations.ColorFilter.Identity">
+  Identity
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the filter that changes nothing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Identity { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Operations_ColorFilter_Apply_" data-uid="Egami.Operations.ColorFilter.Apply*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Apply__1_System_Span___0__" data-uid="Egami.Operations.ColorFilter.Apply``1(System.Span{``0})">
+  Apply&lt;TPixel&gt;(Span&lt;TPixel&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.cs/#L134"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Applies the filter to <code class="paramref">pixels</code> in place, with the same arithmetic <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_ApplyFilter_Egami_Operations_ColorFilter_">ApplyFilter(ColorFilter)</a> uses
+for that pixel type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Apply&lt;TPixel&gt;(Span&lt;TPixel&gt; pixels) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>pixels</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;TPixel&gt;</dt>
+    <dd><p>The pixels.</p>
+</dd>
+  </dl>
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Operations_ColorFilter_Brightness_" data-uid="Egami.Operations.ColorFilter.Brightness*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Brightness_System_Single_" data-uid="Egami.Operations.ColorFilter.Brightness(System.Single)">
+  Brightness(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L288"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns <a class="xref" href="Egami.Operations.ColorMatrix.html#Egami_Operations_ColorMatrix_Brightness_System_Single_">Brightness(float)</a> as a filter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Brightness(float amount)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The factor, 0 or more.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">amount</code> is negative or not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Colorize_" data-uid="Egami.Operations.ColorFilter.Colorize*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Colorize_Egami_Pixels_Rgba8_System_Single_" data-uid="Egami.Operations.ColorFilter.Colorize(Egami.Pixels.Rgba8,System.Single)">
+  Colorize(Rgba8, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L137"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns ImageMagick's -colorize: red, green and blue are blended toward <code class="paramref">color</code> by <code class="paramref">amount</code>;
+the color's alpha is ignored and the pixel's kept.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Colorize(Rgba8 color, float amount)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The color to blend toward.</p>
+</dd>
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The blend, from 0 (no change) to 1 (flat <code class="paramref">color</code>).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">amount</code> is outside 0..1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Contrast_" data-uid="Egami.Operations.ColorFilter.Contrast*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Contrast_System_Single_" data-uid="Egami.Operations.ColorFilter.Contrast(System.Single)">
+  Contrast(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L294"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns <a class="xref" href="Egami.Operations.ColorMatrix.html#Egami_Operations_ColorMatrix_Contrast_System_Single_">Contrast(float)</a> as a filter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Contrast(float amount)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The factor, 0 or more.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">amount</code> is negative or not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Curves_" data-uid="Egami.Operations.ColorFilter.Curves*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Curves_Egami_Operations_ToneCurve_" data-uid="Egami.Operations.ColorFilter.Curves(Egami.Operations.ToneCurve)">
+  Curves(ToneCurve)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a filter that maps red, green and blue through one curve and keeps alpha.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Curves(ToneCurve all)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>all</code> <a class="xref" href="Egami.Operations.ToneCurve.html">ToneCurve</a></dt>
+    <dd><p>The curve for red, green and blue.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">all</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Curves_" data-uid="Egami.Operations.ColorFilter.Curves*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Curves_Egami_Operations_ToneCurve_Egami_Operations_ToneCurve_Egami_Operations_ToneCurve_Egami_Operations_ToneCurve_" data-uid="Egami.Operations.ColorFilter.Curves(Egami.Operations.ToneCurve,Egami.Operations.ToneCurve,Egami.Operations.ToneCurve,Egami.Operations.ToneCurve)">
+  Curves(ToneCurve, ToneCurve, ToneCurve, ToneCurve?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.cs/#L69"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a filter that maps each channel through its own curve, as ImageMagick's -clut and Skia's TableARGB do.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Curves(ToneCurve red, ToneCurve green, ToneCurve blue, ToneCurve? alpha = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>red</code> <a class="xref" href="Egami.Operations.ToneCurve.html">ToneCurve</a></dt>
+    <dd><p>The curve for red.</p>
+</dd>
+    <dt><code>green</code> <a class="xref" href="Egami.Operations.ToneCurve.html">ToneCurve</a></dt>
+    <dd><p>The curve for green.</p>
+</dd>
+    <dt><code>blue</code> <a class="xref" href="Egami.Operations.ToneCurve.html">ToneCurve</a></dt>
+    <dd><p>The curve for blue.</p>
+</dd>
+    <dt><code>alpha</code> <a class="xref" href="Egami.Operations.ToneCurve.html">ToneCurve</a></dt>
+    <dd><p>The curve for alpha, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to keep alpha.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>A color curve is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Duotone_" data-uid="Egami.Operations.ColorFilter.Duotone*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Duotone_Egami_Pixels_Rgba8_Egami_Pixels_Rgba8_Egami_Operations_LumaWeights_" data-uid="Egami.Operations.ColorFilter.Duotone(Egami.Pixels.Rgba8,Egami.Pixels.Rgba8,Egami.Operations.LumaWeights)">
+  Duotone(Rgba8, Rgba8, LumaWeights)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a duotone: each pixel's luminance is mapped onto the line from <code class="paramref">shadows</code> to
+<code class="paramref">highlights</code>, as ImageMagick's -grayscale followed by +level-colors. The colors' alpha is ignored.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Duotone(Rgba8 shadows, Rgba8 highlights, LumaWeights weights = LumaWeights.Rec709)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>shadows</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The color for black.</p>
+</dd>
+    <dt><code>highlights</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The color for white.</p>
+</dd>
+    <dt><code>weights</code> <a class="xref" href="Egami.Operations.LumaWeights.html">LumaWeights</a></dt>
+    <dd><p>The luma weights. Defaults to <a class="xref" href="Egami.Operations.LumaWeights.html#Egami_Operations_LumaWeights_Rec709">Rec709</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">weights</code> is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_FromLut_" data-uid="Egami.Operations.ColorFilter.FromLut*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_FromLut_Egami_Operations_Lut3D_Egami_Operations_LutInterpolation_" data-uid="Egami.Operations.ColorFilter.FromLut(Egami.Operations.Lut3D,Egami.Operations.LutInterpolation)">
+  FromLut(Lut3D, LutInterpolation)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a filter that maps red, green and blue through a 3D table and keeps alpha.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter FromLut(Lut3D lut, LutInterpolation interpolation = LutInterpolation.Tetrahedral)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>lut</code> <a class="xref" href="Egami.Operations.Lut3D.html">Lut3D</a></dt>
+    <dd><p>The table.</p>
+</dd>
+    <dt><code>interpolation</code> <a class="xref" href="Egami.Operations.LutInterpolation.html">LutInterpolation</a></dt>
+    <dd><p>How the table is read between its grid points. Defaults to <a class="xref" href="Egami.Operations.LutInterpolation.html#Egami_Operations_LutInterpolation_Tetrahedral">Tetrahedral</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">lut</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">interpolation</code> is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Gamma_" data-uid="Egami.Operations.ColorFilter.Gamma*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Gamma_System_Single_" data-uid="Egami.Operations.ColorFilter.Gamma(System.Single)">
+  Gamma(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns ImageMagick's -gamma: each of red, green and blue becomes v^(1/<code class="paramref">gamma</code>), so 2.2 brightens.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Gamma(float gamma)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>gamma</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The gamma, above 0; 1 changes nothing.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">gamma</code> is not a positive finite number.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Grayscale_" data-uid="Egami.Operations.ColorFilter.Grayscale*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Grayscale_Egami_Operations_LumaWeights_System_Single_" data-uid="Egami.Operations.ColorFilter.Grayscale(Egami.Operations.LumaWeights,System.Single)">
+  Grayscale(LumaWeights, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L313"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns <a class="xref" href="Egami.Operations.ColorMatrix.html#Egami_Operations_ColorMatrix_Grayscale_Egami_Operations_LumaWeights_System_Single_">Grayscale(LumaWeights, float)</a> as a filter, on the stored values.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Grayscale(LumaWeights mode = LumaWeights.Rec709, float amount = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.Operations.LumaWeights.html">LumaWeights</a></dt>
+    <dd><p>The luma weights. Defaults to <a class="xref" href="Egami.Operations.LumaWeights.html#Egami_Operations_LumaWeights_Rec709">Rec709</a>.</p>
+</dd>
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>0 changes nothing, 1 gives full gray.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>An argument is out of range.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_HighContrast_" data-uid="Egami.Operations.ColorFilter.HighContrast*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_HighContrast_System_Boolean_Egami_Operations_ContrastInvert_System_Single_" data-uid="Egami.Operations.ColorFilter.HighContrast(System.Boolean,Egami.Operations.ContrastInvert,System.Single)">
+  HighContrast(bool, ContrastInvert, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L206"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns Skia's high-contrast accessibility filter: optionally gray, then optionally inverted in brightness or lightness, then
+contrast around mid-gray, all in linear light as Skia runs it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter HighContrast(bool grayscale = false, ContrastInvert invert = ContrastInvert.None, float contrast = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>grayscale</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether colors become gray first.</p>
+</dd>
+    <dt><code>invert</code> <a class="xref" href="Egami.Operations.ContrastInvert.html">ContrastInvert</a></dt>
+    <dd><p>How to invert. Defaults to <a class="xref" href="Egami.Operations.ContrastInvert.html#Egami_Operations_ContrastInvert_None">None</a>.</p>
+</dd>
+    <dt><code>contrast</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The contrast, from −1 (flat gray) through 0 (no change) to 1 (black and white).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">invert</code> is not defined, or <code class="paramref">contrast</code> is outside −1..1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_HueRotate_" data-uid="Egami.Operations.ColorFilter.HueRotate*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_HueRotate_System_Single_" data-uid="Egami.Operations.ColorFilter.HueRotate(System.Single)">
+  HueRotate(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L306"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns <a class="xref" href="Egami.Operations.ColorMatrix.html#Egami_Operations_ColorMatrix_HueRotate_System_Single_">HueRotate(float)</a> as a filter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter HueRotate(float degrees)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>degrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The angle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">degrees</code> is not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Invert_" data-uid="Egami.Operations.ColorFilter.Invert*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Invert_System_Single_" data-uid="Egami.Operations.ColorFilter.Invert(System.Single)">
+  Invert(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L325"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns <a class="xref" href="Egami.Operations.ColorMatrix.html#Egami_Operations_ColorMatrix_Invert_System_Single_">Invert(float)</a> as a filter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Invert(float amount = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>0 changes nothing, 1 inverts fully.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">amount</code> is outside 0..1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Lerp_" data-uid="Egami.Operations.ColorFilter.Lerp*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Lerp_Egami_Operations_ColorFilter_Egami_Operations_ColorFilter_System_Single_" data-uid="Egami.Operations.ColorFilter.Lerp(Egami.Operations.ColorFilter,Egami.Operations.ColorFilter,System.Single)">
+  Lerp(ColorFilter, ColorFilter, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.cs/#L105"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a filter whose result is <code class="paramref">from</code>'s and <code class="paramref">to</code>'s mixed by <code class="paramref">amount</code>, as
+Skia's SkColorFilters::Lerp: <code>Lerp(Identity, look, 0.7f)</code> applies a look at 70%.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Lerp(ColorFilter from, ColorFilter to, float amount)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>from</code> <a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter at amount 0.</p>
+</dd>
+    <dt><code>to</code> <a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter at amount 1.</p>
+</dd>
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The mix, from 0 to 1.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>A filter is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">amount</code> is outside 0..1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Level_" data-uid="Egami.Operations.ColorFilter.Level*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Level_System_Single_System_Single_System_Single_System_Single_System_Single_" data-uid="Egami.Operations.ColorFilter.Level(System.Single,System.Single,System.Single,System.Single,System.Single)">
+  Level(float, float, float, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L21"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns ImageMagick's -level and +level in one filter: <code class="paramref">black</code>..<code class="paramref">white</code> is stretched to
+0..1 (values outside it clip), raised to 1/<code class="paramref">gamma</code>, and mapped onto
+<code class="paramref">outputBlack</code>..<code class="paramref">outputWhite</code>. Red, green and blue change; alpha is kept.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Level(float black = 0, float white = 1, float gamma = 1, float outputBlack = 0, float outputWhite = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>black</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The input that becomes <code class="paramref">outputBlack</code>, from 0 to 1.</p>
+</dd>
+    <dt><code>white</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The input that becomes <code class="paramref">outputWhite</code>, from 0 to 1 and not equal to <code class="paramref">black</code>; below it inverts.</p>
+</dd>
+    <dt><code>gamma</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The midtone gamma, above 0: above 1 brightens the midtones.</p>
+</dd>
+    <dt><code>outputBlack</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The output for <code class="paramref">black</code>, from 0 to 1.</p>
+</dd>
+    <dt><code>outputWhite</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The output for <code class="paramref">white</code>, from 0 to 1; below <code class="paramref">outputBlack</code> inverts.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A value is out of range, or <code class="paramref">black</code> equals <code class="paramref">white</code>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Matrix_" data-uid="Egami.Operations.ColorFilter.Matrix*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Matrix_Egami_Operations_ColorMatrix_" data-uid="Egami.Operations.ColorFilter.Matrix(Egami.Operations.ColorMatrix)">
+  Matrix(ColorMatrix)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a filter that applies a color matrix, as <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_ColorMatrix_Egami_Operations_ColorMatrix_">ColorMatrix(ColorMatrix)</a> does.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Matrix(ColorMatrix matrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>matrix</code> <a class="xref" href="Egami.Operations.ColorMatrix.html">ColorMatrix</a></dt>
+    <dd><p>The matrix.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Operations_ColorFilter_Opacity_" data-uid="Egami.Operations.ColorFilter.Opacity*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Opacity_System_Single_" data-uid="Egami.Operations.ColorFilter.Opacity(System.Single)">
+  Opacity(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L331"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns <a class="xref" href="Egami.Operations.ColorMatrix.html#Egami_Operations_ColorMatrix_Opacity_System_Single_">Opacity(float)</a> as a filter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Opacity(float amount)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>0 makes pixels transparent, 1 changes nothing.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">amount</code> is outside 0..1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Posterize_" data-uid="Egami.Operations.ColorFilter.Posterize*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Posterize_System_Int32_" data-uid="Egami.Operations.ColorFilter.Posterize(System.Int32)">
+  Posterize(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns ImageMagick's -posterize without dithering: each of red, green and blue is rounded to <code class="paramref">levels</code> evenly
+spaced values. Dithered posterizing looks at neighbours, so it is only a step: <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Posterize_System_Int32_Egami_Quantization_DitherMode_">Posterize(int, DitherMode)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Posterize(int levels)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>levels</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Values per channel, from 2 to 256.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">levels</code> is outside 2 to 256.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Saturation_" data-uid="Egami.Operations.ColorFilter.Saturation*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Saturation_System_Single_" data-uid="Egami.Operations.ColorFilter.Saturation(System.Single)">
+  Saturation(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L300"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns <a class="xref" href="Egami.Operations.ColorMatrix.html#Egami_Operations_ColorMatrix_Saturation_System_Single_">Saturation(float)</a> as a filter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Saturation(float amount)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The factor, 0 or more.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">amount</code> is negative or not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Sepia_" data-uid="Egami.Operations.ColorFilter.Sepia*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Sepia_System_Single_" data-uid="Egami.Operations.ColorFilter.Sepia(System.Single)">
+  Sepia(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L319"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns <a class="xref" href="Egami.Operations.ColorMatrix.html#Egami_Operations_ColorMatrix_Sepia_System_Single_">Sepia(float)</a> as a filter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Sepia(float amount = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>0 changes nothing, 1 gives full sepia.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">amount</code> is outside 0..1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_SigmoidalContrast_" data-uid="Egami.Operations.ColorFilter.SigmoidalContrast*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_SigmoidalContrast_System_Single_System_Single_System_Boolean_" data-uid="Egami.Operations.ColorFilter.SigmoidalContrast(System.Single,System.Single,System.Boolean)">
+  SigmoidalContrast(float, float, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns ImageMagick's -sigmoidal-contrast (or +sigmoidal-contrast when <code class="paramref">increase</code> is false): an S-shaped
+logistic curve through <code class="paramref">midpoint</code>, scaled so black and white stay, which adds contrast without clipping.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter SigmoidalContrast(float contrast, float midpoint = 0.5, bool increase = true)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>contrast</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How steep the curve is, 0 or more: 0 changes nothing, 3 is gentle, 10 strong.</p>
+</dd>
+    <dt><code>midpoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Where the curve is steepest, from 0 to 1. Defaults to 0.5.</p>
+</dd>
+    <dt><code>increase</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether contrast increases (the default) or decreases, by the inverse curve.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">contrast</code> is negative or not finite, or <code class="paramref">midpoint</code> is outside 0..1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_SimulateColorBlindness_" data-uid="Egami.Operations.ColorFilter.SimulateColorBlindness*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_SimulateColorBlindness_Egami_Operations_ColorVisionDeficiency_System_Single_" data-uid="Egami.Operations.ColorFilter.SimulateColorBlindness(Egami.Operations.ColorVisionDeficiency,System.Single)">
+  SimulateColorBlindness(ColorVisionDeficiency, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L229"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns how the colors look to someone with a color vision deficiency, from the matrices of Machado, Oliveira and Fernandes
+(2009), applied in linear light: severity 1 is the full -opia, values below it the milder -anomaly.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter SimulateColorBlindness(ColorVisionDeficiency kind, float severity = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>kind</code> <a class="xref" href="Egami.Operations.ColorVisionDeficiency.html">ColorVisionDeficiency</a></dt>
+    <dd><p>The deficiency.</p>
+</dd>
+    <dt><code>severity</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>From 0 (normal vision) to 1. Defaults to 1.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">kind</code> is not defined, or <code class="paramref">severity</code> is outside 0..1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Solarize_" data-uid="Egami.Operations.ColorFilter.Solarize*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Solarize_System_Single_" data-uid="Egami.Operations.ColorFilter.Solarize(System.Single)">
+  Solarize(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns ImageMagick's -solarize: red, green and blue values above <code class="paramref">threshold</code> are inverted.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Solarize(float threshold = 0.5)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>threshold</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The level above which values invert, from 0 to 1. Defaults to 0.5.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">threshold</code> is outside 0..1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Then_" data-uid="Egami.Operations.ColorFilter.Then*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Then_Egami_Operations_ColorFilter_" data-uid="Egami.Operations.ColorFilter.Then(Egami.Operations.ColorFilter)">
+  Then(ColorFilter)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the filter that applies this one and then <code class="paramref">next</code>, clamping in between.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorFilter Then(ColorFilter next)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>next</code> <a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter applied second.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The combined filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">next</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Threshold_" data-uid="Egami.Operations.ColorFilter.Threshold*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Threshold_System_Single_Egami_Operations_ThresholdMode_System_Nullable_Egami_Pixels_Rgba8__System_Nullable_Egami_Pixels_Rgba8__" data-uid="Egami.Operations.ColorFilter.Threshold(System.Single,Egami.Operations.ThresholdMode,System.Nullable{Egami.Pixels.Rgba8},System.Nullable{Egami.Pixels.Rgba8})">
+  Threshold(float, ThresholdMode, Rgba8?, Rgba8?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L105"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a two-color threshold: pixels whose measured value lies above <code class="paramref">level</code> take <code class="paramref">above</code>'s
+red, green and blue, the others <code class="paramref">below</code>'s, and alpha is kept. In <a class="xref" href="Egami.Operations.ThresholdMode.html#Egami_Operations_ThresholdMode_Channels">Channels</a> each
+channel is measured and replaced on its own.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Threshold(float level = 0.5, ThresholdMode mode = ThresholdMode.Luminance, Rgba8? below = null, Rgba8? above = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>level</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The level, from 0 to 1. Defaults to 0.5.</p>
+</dd>
+    <dt><code>mode</code> <a class="xref" href="Egami.Operations.ThresholdMode.html">ThresholdMode</a></dt>
+    <dd><p>What is measured. Defaults to <a class="xref" href="Egami.Operations.ThresholdMode.html#Egami_Operations_ThresholdMode_Luminance">Luminance</a>.</p>
+</dd>
+    <dt><code>below</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a>?</dt>
+    <dd><p>The color at or below the level, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for black.</p>
+</dd>
+    <dt><code>above</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a>?</dt>
+    <dd><p>The color above the level, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for white.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">level</code> is outside 0..1, or <code class="paramref">mode</code> is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_Tint_" data-uid="Egami.Operations.ColorFilter.Tint*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_Tint_Egami_Pixels_Rgba8_System_Single_" data-uid="Egami.Operations.ColorFilter.Tint(Egami.Pixels.Rgba8,System.Single)">
+  Tint(Rgba8, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L158"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns ImageMagick's -tint: midtones are pushed toward <code class="paramref">color</code> along a parabola that is largest at mid-gray,
+and black and white stay as they are.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter Tint(Rgba8 color, float amount = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The tint; its alpha is ignored.</p>
+</dd>
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The strength, from 0 to 1. Defaults to 1.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">amount</code> is outside 0..1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_ToLut3D_" data-uid="Egami.Operations.ColorFilter.ToLut3D*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_ToLut3D_System_Int32_" data-uid="Egami.Operations.ColorFilter.ToLut3D(System.Int32)">
+  ToLut3D(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.cs/#L161"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Samples the filter into a 3D table of <code class="paramref">size</code>³ points, for <a class="xref" href="Egami.Operations.CubeFile.html#Egami_Operations_CubeFile_Write_System_String_Egami_Operations_Lut3D_System_String_">Write(string, Lut3D, string?)</a>.
+A chain that ends in a 3D table and maps grid points to grid points comes back exactly; curves and matrices are sampled.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Lut3D ToLut3D(int size = 33)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The points per axis, from 2 to 256. Defaults to 33, the common .cube size.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.Lut3D.html">Lut3D</a></dt>
+    <dd><p>The table.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">size</code> is outside 2 to 256.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The filter changes alpha, which a 3D table cannot hold.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_WhiteBalance_" data-uid="Egami.Operations.ColorFilter.WhiteBalance*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_WhiteBalance_Egami_Pixels_Rgba8_" data-uid="Egami.Operations.ColorFilter.WhiteBalance(Egami.Pixels.Rgba8)">
+  WhiteBalance(Rgba8)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L247"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes <code class="paramref">neutral</code> a neutral gray of its own luminance by scaling red, green and blue in linear light, as a
+photo editor's white-balance picker does.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter WhiteBalance(Rgba8 neutral)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>neutral</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>A color that should be gray, such as a gray card's pixels.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A channel of <code class="paramref">neutral</code> is 0, so no gain can make it gray.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_ColorFilter_WhiteBalance_" data-uid="Egami.Operations.ColorFilter.WhiteBalance*"></a>
+
+  <h3 id="Egami_Operations_ColorFilter_WhiteBalance_System_Single_System_Single_" data-uid="Egami.Operations.ColorFilter.WhiteBalance(System.Single,System.Single)">
+  WhiteBalance(float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L269"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Corrects for a light of <code class="paramref">temperature</code> kelvin, as a raw editor's temperature and tint sliders: the light's
+white is adapted to D65 with the Bradford transform, in linear light. Use the light the photo was taken under: 3200 for
+tungsten makes a tungsten-lit photo neutral.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorFilter WhiteBalance(float temperature, float tint = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>temperature</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The light's correlated color temperature, from 1,500 to 15,000 kelvin; 6504 changes almost nothing.</p>
+</dd>
+    <dt><code>tint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The light's offset from a black body's color, from −1 to 1 (Δuv of ±0.05): positive for a greener light, which the correction
+turns magenta, as Lightroom's positive tint.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+    <dd><p>The filter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>An argument is out of range.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/ColorFilter.Factories.cs/#L7" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

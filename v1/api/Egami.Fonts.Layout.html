@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Fonts.Layout | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Fonts.Layout | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.Layout">
+
+  <h1 id="Egami_Fonts_Layout" data-uid="Egami.Fonts.Layout" class="text-break">Namespace Egami.Fonts.Layout</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.DecorationShape.html">DecorationShape</a></dt>
+      <dd><p>One decoration line over a decorated stretch of one text line: an underline, overline or line-through at one position and
+thickness for the whole stretch (the lowest underline and thickest line among its fonts, as CSS), cut where glyphs cross an
+underline or overline when <a class="xref" href="Egami.Fonts.Layout.TextDecoration.html#Egami_Fonts_Layout_TextDecoration_SkipInk">SkipInk</a> is Auto.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.LayoutRun.html">LayoutRun</a></dt>
+      <dd><p>A piece of a line: glyphs of one font and bidi level, or a placeholder, tab or break.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.LineBreaks.html">LineBreaks</a></dt>
+      <dd><p>Finds where lines may break: Unicode's line breaking algorithm (UAX #14, Unicode 17.0) from Egami's own tables, with CSS
+Text 3's <code>word-break</code> and <code>line-break</code> switches. No shaping is involved, and there are no dictionaries: Thai, Lao,
+Khmer and Myanmar break only at spaces and zero width spaces.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.LineFlow.html">LineFlow</a></dt>
+      <dd><p>Lays a paragraph out one line at a time, each at its own width, so text can flow across columns and pages or around
+images; <a class="xref" href="Egami.Fonts.Layout.Paragraph.html#Egami_Fonts_Layout_Paragraph_Layout_System_Single_">Layout(float)</a> is built on it. Not thread-safe; make one per flow.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.Paragraph.html">Paragraph</a></dt>
+      <dd><p>A paragraph of styled text, prepared once to be laid out at any width: styles resolved, bidi levels and break opportunities
+found, text itemized into runs and each run shaped. Immutable and safe to share between threads.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html">ParagraphStyle</a></dt>
+      <dd><p>How a paragraph is laid out: its default text style, direction, alignment, line breaking, line filling, hyphens, ellipsis
+and line limits, line box rules, tabs and writing mode. The defaults follow CSS: start-aligned, greedy filling, normal line
+height, tab stops every 8 spaces, horizontal lines.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.RichText.html">RichText</a></dt>
+      <dd><p>Text with styles: a string, the <a class="xref" href="Egami.Fonts.Layout.StyleSpan.html">StyleSpan</a>s over it (sorted, never overlapping) and the
+<a class="xref" href="Egami.Fonts.Layout.Placeholder.html">Placeholder</a>s for its object replacement characters, in order. Immutable; build one with
+<a class="xref" href="Egami.Fonts.Layout.RichTextBuilder.html">RichTextBuilder</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.RichTextBuilder.html">RichTextBuilder</a></dt>
+      <dd><p>Builds a <a class="xref" href="Egami.Fonts.Layout.RichText.html">RichText</a>: <a class="xref" href="Egami.Fonts.Layout.RichTextBuilder.html#Egami_Fonts_Layout_RichTextBuilder_Push_Egami_Fonts_Layout_TextStyle_">Push(TextStyle)</a> a style, <a class="xref" href="Egami.Fonts.Layout.RichTextBuilder.html#Egami_Fonts_Layout_RichTextBuilder_Append_System_String_">Append(string)</a> text, <a class="xref" href="Egami.Fonts.Layout.RichTextBuilder.html#Egami_Fonts_Layout_RichTextBuilder_Pop">Pop()</a> back to the
+enclosing style. Styles nest: a pushed style's unset fields come from the one it is pushed on, and the result has one flat
+span per stretch of equal style.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.Strut.html">Strut</a></dt>
+      <dd><p>A minimum line box every line has, from a font and a line height (CSS's strut), or with <a class="xref" href="Egami.Fonts.Layout.Strut.html#Egami_Fonts_Layout_Strut_Force">Force</a> the exact
+line box, for line grids in forms and columns.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextDecoration.html">TextDecoration</a></dt>
+      <dd><p>Lines drawn with text (CSS Text Decoration 4).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextLayout.html">TextLayout</a></dt>
+      <dd><p>A paragraph laid out at a width: its lines of glyph runs and the size of its layout box. Positions are in canvas units
+relative to the box's top-left corner, y down; nothing is rounded to pixels. Immutable and safe to share between threads.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextLine.html">TextLine</a></dt>
+      <dd><p>One line of a laid-out paragraph: the text it holds, its line box and its runs in visual order. Coordinates are the layout
+box's, or for a line from a <a class="xref" href="Egami.Fonts.Layout.LineFlow.html">LineFlow</a>, the line's own box with its top at 0.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextStyle.html">TextStyle</a></dt>
+      <dd><p>How a stretch of text looks. Every field is optional: an unset field takes the enclosing builder style's, then the
+paragraph's <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_DefaultStyle">DefaultStyle</a>, then Egami's default (16 pixels, black, normal line height, no
+decoration). Fields that change shaping (fonts, size, style, variations, language, features, letter spacing) split a
+paragraph into separately shaped runs; the others (colors, paints, background, decoration, shadows) never do, so a color
+change inside a ligature keeps the ligature.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.Caret.html">Caret</a></dt>
+      <dd><p>Where a caret is drawn: the primary segment, and at a bidi boundary, where the position touches text of both directions, a
+secondary segment at the other text's edge.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.CaretLine.html">CaretLine</a></dt>
+      <dd><p>A caret segment across the line: vertical in horizontal layouts, horizontal in vertical ones.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.DecorationSegment.html">DecorationSegment</a></dt>
+      <dd><p>A piece of a decoration line along a text line: its left and right x.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.LineBreak.html">LineBreak</a></dt>
+      <dd><p>A place where a line may or must end.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.LineBreakEnumerator.html">LineBreakEnumerator</a></dt>
+      <dd><p>Enumerates line break opportunities; get one from <a class="xref" href="Egami.Fonts.Layout.LineBreaks.html#Egami_Fonts_Layout_LineBreaks_Enumerate_System_ReadOnlySpan_System_Char__Egami_Fonts_Layout_LineBreakOptions_">Enumerate(ReadOnlySpan&lt;char&gt;, LineBreakOptions)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.LineBreakOptions.html">LineBreakOptions</a></dt>
+      <dd><p>How text may break into lines, as CSS Text 3 sets it: <code>word-break</code>, <code>overflow-wrap</code>, <code>line-break</code> and the
+content language. The default is CSS's default: Unicode's line breaking algorithm (UAX #14) with breaks before small kana,
+as browsers break.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.LineHeight.html">LineHeight</a></dt>
+      <dd><p>The height a run asks of its line box (CSS <code>line-height</code>): <a class="xref" href="Egami.Fonts.Layout.LineHeight.html#Egami_Fonts_Layout_LineHeight_Normal">Normal</a> from the font's metrics, a
+<a class="xref" href="Egami.Fonts.Layout.LineHeight.html#Egami_Fonts_Layout_LineHeight_Multiple_System_Single_">Multiple(float)</a> of the font size or an <a class="xref" href="Egami.Fonts.Layout.LineHeight.html#Egami_Fonts_Layout_LineHeight_Absolute_System_Single_">Absolute(float)</a> height. The extra over the font's ascent and descent is
+split half above and half below.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.Placeholder.html">Placeholder</a></dt>
+      <dd><p>An inline box laid out with the text, such as an icon or an image, which the caller draws: it stands for an object replacement
+character (U+FFFC) in the text, so bidi, line breaking and indexes treat it as one character.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.StyleSpan.html">StyleSpan</a></dt>
+      <dd><p>A text style over a stretch of a <a class="xref" href="Egami.Fonts.Layout.RichText.html">RichText</a>, in UTF-16 units.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TabStop.html">TabStop</a></dt>
+      <dd><p>An explicit tab stop.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextPosition.html">TextPosition</a></dt>
+      <dd><p>A caret position: a UTF-16 index at a grapheme cluster boundary and the side it belongs to.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextShadow.html">TextShadow</a></dt>
+      <dd><p>A shadow under text: the glyphs and decorations again, moved and blurred (CSS <code>text-shadow</code>).</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.ITextPaint.html">ITextPaint</a></dt>
+      <dd><p>A paint that Egami.Fonts carries for text but never reads: Egami.Drawing's <code>Paint</code> implements it, so gradients, images
+and blend modes reach text drawn from a layout without Egami.Fonts depending on the drawing package.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.CaretMove.html">CaretMove</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Fonts.Layout.TextLayout.html#Egami_Fonts_Layout_TextLayout_MoveCaret_Egami_Fonts_Layout_TextPosition_Egami_Fonts_Layout_CaretMove_System_Single_">MoveCaret(TextPosition, CaretMove, float)</a> moves a caret.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.LayoutRunKind.html">LayoutRunKind</a></dt>
+      <dd><p>What a <a class="xref" href="Egami.Fonts.Layout.LayoutRun.html">LayoutRun</a> holds.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.LineBreakStrictness.html">LineBreakStrictness</a></dt>
+      <dd><p>How strictly line breaks follow Chinese and Japanese rules (CSS <code>line-break</code>): breaks before small kana, hyphens,
+iteration marks and some punctuation.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.LineFill.html">LineFill</a></dt>
+      <dd><p>How lines are filled.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.LineHeightKind.html">LineHeightKind</a></dt>
+      <dd><p>How a <a class="xref" href="Egami.Fonts.Layout.LineHeight.html">LineHeight</a> is given.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.OverflowWrap.html">OverflowWrap</a></dt>
+      <dd><p>Whether a piece wider than its line may break anywhere (CSS <code>overflow-wrap</code>).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.PlaceholderAlignment.html">PlaceholderAlignment</a></dt>
+      <dd><p>How a <a class="xref" href="Egami.Fonts.Layout.Placeholder.html">Placeholder</a> sits on its line.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.SelectionHeight.html">SelectionHeight</a></dt>
+      <dd><p>How tall selection rectangles are.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TabAlignment.html">TabAlignment</a></dt>
+      <dd><p>How text aligns on a tab stop.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextAffinity.html">TextAffinity</a></dt>
+      <dd><p>Which side of a position a caret belongs to where one index has two places: at a line wrap or a bidi boundary.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextAlign.html">TextAlign</a></dt>
+      <dd><p>How lines align in their width (CSS <code>text-align</code>).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextAlignLast.html">TextAlignLast</a></dt>
+      <dd><p>How the last line, and lines before a hard break, align (CSS <code>text-align-last</code>).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextDecorationLines.html">TextDecorationLines</a></dt>
+      <dd><p>Which decoration lines are drawn.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextDecorationSkipInk.html">TextDecorationSkipInk</a></dt>
+      <dd><p>Whether underlines and overlines skip glyph ink.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextDecorationStyle.html">TextDecorationStyle</a></dt>
+      <dd><p>How decoration lines are drawn.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextJustify.html">TextJustify</a></dt>
+      <dd><p>How justified lines stretch (CSS <code>text-justify</code>).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.TextOrientation.html">TextOrientation</a></dt>
+      <dd><p>How characters stand in vertical lines (CSS <code>text-orientation</code>).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.WordBreak.html">WordBreak</a></dt>
+      <dd><p>Where breaks may fall inside words (CSS <code>word-break</code>).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.WritingMode.html">WritingMode</a></dt>
+      <dd><p>Whether lines run horizontally or vertically (CSS <code>writing-mode</code>).</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

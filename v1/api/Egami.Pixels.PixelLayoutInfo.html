@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct PixelLayoutInfo | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct PixelLayoutInfo | Egami ">
+      
+      <meta name="description" content="Describes the memory layout of a pixel type.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Pixels_PixelLayoutInfo.md&amp;value=---%0Auid%3A%20Egami.Pixels.PixelLayoutInfo%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Pixels.PixelLayoutInfo">
+
+
+
+  <h1 id="Egami_Pixels_PixelLayoutInfo" data-uid="Egami.Pixels.PixelLayoutInfo" class="text-break">
+Struct PixelLayoutInfo  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Pixels.html">Pixels</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Describes the memory layout of a pixel type.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct PixelLayoutInfo : IEquatable&lt;PixelLayoutInfo&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Pixels.PixelLayoutInfo.html">PixelLayoutInfo</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.tostring">ValueType.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Pixels_PixelLayoutInfo_examples">Examples</h2>
+  <pre><code class="lang-csharp">// What a pixel type stores, for code that handles any TPixel.
+PixelLayoutInfo layout = Rgba16.Layout;
+Console.WriteLine($"{layout.ChannelOrder} {layout.ChannelType}: {layout.ChannelCount} channels, {layout.BitsPerChannel} bits each, {layout.BytesPerPixel} bytes");
+bool needsAlpha = layout.Alpha != AlphaKind.None;
+bool eightBit = layout.ChannelType == PixelChannelType.Unorm8;
+bool bgrOrder = Bgr8.Layout.ChannelOrder is PixelChannelOrder.Bgr or PixelChannelOrder.Bgra;</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo__ctor_" data-uid="Egami.Pixels.PixelLayoutInfo.#ctor*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo__ctor_Egami_Pixels_PixelChannelOrder_Egami_Pixels_PixelChannelType_Egami_Pixels_AlphaKind_" data-uid="Egami.Pixels.PixelLayoutInfo.#ctor(Egami.Pixels.PixelChannelOrder,Egami.Pixels.PixelChannelType,Egami.Pixels.AlphaKind)">
+  PixelLayoutInfo(PixelChannelOrder, PixelChannelType, AlphaKind)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Describes the memory layout of a pixel type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PixelLayoutInfo(PixelChannelOrder ChannelOrder, PixelChannelType ChannelType, AlphaKind Alpha)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>ChannelOrder</code> <a class="xref" href="Egami.Pixels.PixelChannelOrder.html">PixelChannelOrder</a></dt>
+    <dd><p>The order of the channels in memory.</p>
+</dd>
+    <dt><code>ChannelType</code> <a class="xref" href="Egami.Pixels.PixelChannelType.html">PixelChannelType</a></dt>
+    <dd><p>The storage type shared by every channel.</p>
+</dd>
+    <dt><code>Alpha</code> <a class="xref" href="Egami.Pixels.AlphaKind.html">AlphaKind</a></dt>
+    <dd><p>How alpha is stored, if at all.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Pixels_PixelLayoutInfo__ctor_Egami_Pixels_PixelChannelOrder_Egami_Pixels_PixelChannelType_Egami_Pixels_AlphaKind__examples">Examples</h4>
+  <pre><code class="lang-csharp">// What a pixel type stores, for code that handles any TPixel.
+PixelLayoutInfo layout = Rgba16.Layout;
+Console.WriteLine($"{layout.ChannelOrder} {layout.ChannelType}: {layout.ChannelCount} channels, {layout.BitsPerChannel} bits each, {layout.BytesPerPixel} bytes");
+bool needsAlpha = layout.Alpha != AlphaKind.None;
+bool eightBit = layout.ChannelType == PixelChannelType.Unorm8;
+bool bgrOrder = Bgr8.Layout.ChannelOrder is PixelChannelOrder.Bgr or PixelChannelOrder.Bgra;</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo__ctor_" data-uid="Egami.Pixels.PixelLayoutInfo.#ctor*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo__ctor_Egami_Pixels_PixelChannelOrder_Egami_Pixels_PixelChannelType_Egami_Pixels_AlphaKind_System_Int32_System_ReadOnlySpan_System_Int32__" data-uid="Egami.Pixels.PixelLayoutInfo.#ctor(Egami.Pixels.PixelChannelOrder,Egami.Pixels.PixelChannelType,Egami.Pixels.AlphaKind,System.Int32,System.ReadOnlySpan{System.Int32})">
+  PixelLayoutInfo(PixelChannelOrder, PixelChannelType, AlphaKind, int, params ReadOnlySpan&lt;int&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Pixels.PixelLayoutInfo.html">PixelLayoutInfo</a> struct for a packed layout, such as 5-6-5.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PixelLayoutInfo(PixelChannelOrder channelOrder, PixelChannelType channelType, AlphaKind alpha, int bitsPerPixel, params ReadOnlySpan&lt;int&gt; channelBits)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelOrder</code> <a class="xref" href="Egami.Pixels.PixelChannelOrder.html">PixelChannelOrder</a></dt>
+    <dd><p>The order of the channels, from the lowest bit up.</p>
+</dd>
+    <dt><code>channelType</code> <a class="xref" href="Egami.Pixels.PixelChannelType.html">PixelChannelType</a></dt>
+    <dd><p>The storage type, usually <a class="xref" href="Egami.Pixels.PixelChannelType.html#Egami_Pixels_PixelChannelType_Packed">Packed</a>.</p>
+</dd>
+    <dt><code>alpha</code> <a class="xref" href="Egami.Pixels.AlphaKind.html">AlphaKind</a></dt>
+    <dd><p>How alpha is stored, if at all.</p>
+</dd>
+    <dt><code>bitsPerPixel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The size of one pixel in bits.</p>
+</dd>
+    <dt><code>channelBits</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd><p>The width of each channel in bits, in the order of <code class="paramref">channelOrder</code>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">bitsPerPixel</code> is not positive, or a channel width is negative.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The channel widths add up to more than <code class="paramref">bitsPerPixel</code>.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo_Alpha_" data-uid="Egami.Pixels.PixelLayoutInfo.Alpha*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo_Alpha" data-uid="Egami.Pixels.PixelLayoutInfo.Alpha">
+  Alpha
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>How alpha is stored, if at all.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AlphaKind Alpha { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.AlphaKind.html">AlphaKind</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo_BitsPerChannel_" data-uid="Egami.Pixels.PixelLayoutInfo.BitsPerChannel*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo_BitsPerChannel" data-uid="Egami.Pixels.PixelLayoutInfo.BitsPerChannel">
+  BitsPerChannel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L153"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of bits in each channel; for a packed layout, the width its channels share, or 0 when they differ;
+0 for <a class="xref" href="Egami.Pixels.PixelChannelType.html#Egami_Pixels_PixelChannelType_Other">Other</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int BitsPerChannel { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo_BitsPerPixel_" data-uid="Egami.Pixels.PixelLayoutInfo.BitsPerPixel*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo_BitsPerPixel" data-uid="Egami.Pixels.PixelLayoutInfo.BitsPerPixel">
+  BitsPerPixel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the size of one pixel in bits: the size given for a packed layout, otherwise the channel count times the channel
+size; 0 when the order or type is <code>Other</code> and no size was given.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int BitsPerPixel { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo_BytesPerPixel_" data-uid="Egami.Pixels.PixelLayoutInfo.BytesPerPixel*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo_BytesPerPixel" data-uid="Egami.Pixels.PixelLayoutInfo.BytesPerPixel">
+  BytesPerPixel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L177"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the size of one pixel in bytes as the layout describes it, rounded up to whole bytes; 0 when the order or type is
+<code>Other</code> and no size was given. Egami itself always uses the struct's size.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int BytesPerPixel { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo_ChannelBits_" data-uid="Egami.Pixels.PixelLayoutInfo.ChannelBits*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo_ChannelBits" data-uid="Egami.Pixels.PixelLayoutInfo.ChannelBits">
+  ChannelBits
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L171"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width of each channel in bits, in channel order, for a layout created with them (packed layouts); empty
+otherwise, when every channel is <a class="xref" href="Egami.Pixels.PixelLayoutInfo.html#Egami_Pixels_PixelLayoutInfo_BitsPerChannel">BitsPerChannel</a> wide.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlySpan&lt;int&gt; ChannelBits { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo_ChannelCount_" data-uid="Egami.Pixels.PixelLayoutInfo.ChannelCount*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo_ChannelCount" data-uid="Egami.Pixels.PixelLayoutInfo.ChannelCount">
+  ChannelCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L140"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of channels, including alpha; for <a class="xref" href="Egami.Pixels.PixelChannelOrder.html#Egami_Pixels_PixelChannelOrder_Other">Other</a>, the number of channel widths
+given, else 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int ChannelCount { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo_ChannelOrder_" data-uid="Egami.Pixels.PixelLayoutInfo.ChannelOrder*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo_ChannelOrder" data-uid="Egami.Pixels.PixelLayoutInfo.ChannelOrder">
+  ChannelOrder
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The order of the channels in memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PixelChannelOrder ChannelOrder { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.PixelChannelOrder.html">PixelChannelOrder</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo_ChannelType_" data-uid="Egami.Pixels.PixelLayoutInfo.ChannelType*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo_ChannelType" data-uid="Egami.Pixels.PixelLayoutInfo.ChannelType">
+  ChannelType
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The storage type shared by every channel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PixelChannelType ChannelType { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.PixelChannelType.html">PixelChannelType</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo_HasAlpha_" data-uid="Egami.Pixels.PixelLayoutInfo.HasAlpha*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo_HasAlpha" data-uid="Egami.Pixels.PixelLayoutInfo.HasAlpha">
+  HasAlpha
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L180"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether the type has an alpha channel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HasAlpha { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo_Equals_" data-uid="Egami.Pixels.PixelLayoutInfo.Equals*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo_Equals_Egami_Pixels_PixelLayoutInfo_" data-uid="Egami.Pixels.PixelLayoutInfo.Equals(Egami.Pixels.PixelLayoutInfo)">
+  Equals(PixelLayoutInfo)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L211"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns whether two layouts are the same, including the size and channel widths of packed layouts.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Equals(PixelLayoutInfo other)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Pixels.PixelLayoutInfo.html">PixelLayoutInfo</a></dt>
+    <dd><p>The other layout.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if they describe the same memory.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PixelLayoutInfo_GetHashCode_" data-uid="Egami.Pixels.PixelLayoutInfo.GetHashCode*"></a>
+
+  <h3 id="Egami_Pixels_PixelLayoutInfo_GetHashCode" data-uid="Egami.Pixels.PixelLayoutInfo.GetHashCode">
+  GetHashCode()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L218"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the hash code for this instance.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int GetHashCode()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>A 32-bit signed integer that is the hash code for this instance.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PixelLayoutInfo.cs/#L103" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

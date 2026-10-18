@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class CssCascadedStyle | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class CssCascadedStyle | Egami ">
+      
+      <meta name="description" content="The cascaded style of an element: the winning declaration of each property, with its origin.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Css_CssCascadedStyle.md&amp;value=---%0Auid%3A%20Egami.Css.CssCascadedStyle%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Css.CssCascadedStyle">
+
+
+
+  <h1 id="Egami_Css_CssCascadedStyle" data-uid="Egami.Css.CssCascadedStyle" class="text-break">
+Class CssCascadedStyle  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L493"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Css.html">Css</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Css.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The cascaded style of an element: the winning declaration of each property, with its origin.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class CssCascadedStyle</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">CssCascadedStyle</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Css_CssCascadedStyle_examples">Examples</h2>
+  <pre><code class="lang-csharp">// The registry says which properties inherit and their initial values; consumers add their own.
+CssPropertyRegistry registry = CssPropertyRegistry.CreateDefault();
+registry.Register(new CssPropertyDefinition("fill", Inherited: true, InitialValue: "black")
+{
+    Validate = value =&gt; CssColor.TryParse(value, out _),
+});
+registry.RegisterShorthand(new CssShorthandDefinition("marker", ["marker-start", "marker-end"],
+    value =&gt; [new CssDeclaration("marker-start", value), new CssDeclaration("marker-end", value)]));
+
+CssStyleSheet userAgent = CssStyleSheet.Parse("rect { fill: gray }");
+CssStyleSheet author = CssStyleSheet.Parse("""
+    svg { --accent: teal; font: 12px sans-serif }
+    .layer { fill: var(--accent) }
+    #r { fill: inherit; opacity: 0.5 }
+    """);
+var cascade = new CssCascade(
+    [(userAgent, CssOrigin.UserAgent), (author, CssOrigin.Author)],
+    new CssCascadeOptions { Registry = registry, Media = new CssMediaContext { Width = 800 } });
+
+// Cascade each element (presentation attributes as hints, the style attribute as inline style), then compute it
+// from its parent's computed style.
+CssComputedStyle rootStyle = cascade.Compute(cascade.Cascade(root), null);
+CssComputedStyle groupStyle = cascade.Compute(cascade.Cascade(group), rootStyle);
+CssCascadedStyle cascaded = cascade.Cascade(rect,
+    presentationHints: [CssDeclaration.Create("fill", "red")],
+    inlineStyle: CssDeclaration.ParseList("stroke: blue"));
+CssComputedStyle style = cascade.Compute(cascaded, groupStyle);
+
+cascaded.TryGetDeclaration("fill", out CssDeclaration? winner, out CssOrigin origin); // fill: inherit, Author
+string? fill = style.GetValueText("fill");           // "teal": inherited, var() substituted
+string? fontSize = style.GetValueText("font-size");  // "12px": from the font shorthand, inherited
+if (style.TryGetValue("opacity", out IReadOnlyList&lt;CssComponentValue&gt;? opacity))
+{
+    // The consumer parses each property by its type.
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Css_CssCascadedStyle__ctor_" data-uid="Egami.Css.CssCascadedStyle.#ctor*"></a>
+
+  <h3 id="Egami_Css_CssCascadedStyle__ctor" data-uid="Egami.Css.CssCascadedStyle.#ctor">
+  CssCascadedStyle()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L498"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates an empty cascaded style (no declarations apply).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssCascadedStyle()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Css_CssCascadedStyle_Count_" data-uid="Egami.Css.CssCascadedStyle.Count*"></a>
+
+  <h3 id="Egami_Css_CssCascadedStyle_Count" data-uid="Egami.Css.CssCascadedStyle.Count">
+  Count
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L503"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of properties with a winning declaration.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Count { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssCascadedStyle_Properties_" data-uid="Egami.Css.CssCascadedStyle.Properties*"></a>
+
+  <h3 id="Egami_Css_CssCascadedStyle_Properties" data-uid="Egami.Css.CssCascadedStyle.Properties">
+  Properties
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L506"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the names of the properties with a winning declaration (longhands and custom properties).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IEnumerable&lt;string&gt; Properties { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Css_CssCascadedStyle_GetValueText_" data-uid="Egami.Css.CssCascadedStyle.GetValueText*"></a>
+
+  <h3 id="Egami_Css_CssCascadedStyle_GetValueText_System_String_" data-uid="Egami.Css.CssCascadedStyle.GetValueText(System.String)">
+  GetValueText(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L543"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the value text of a property's winning declaration, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? GetValueText(string name)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The value text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssCascadedStyle_TryGetDeclaration_" data-uid="Egami.Css.CssCascadedStyle.TryGetDeclaration*"></a>
+
+  <h3 id="Egami_Css_CssCascadedStyle_TryGetDeclaration_System_String_Egami_Css_CssDeclaration__" data-uid="Egami.Css.CssCascadedStyle.TryGetDeclaration(System.String,Egami.Css.CssDeclaration@)">
+  TryGetDeclaration(string, out CssDeclaration?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L512"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the winning declaration of a property.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetDeclaration(string name, out CssDeclaration? declaration)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name (lowercase, or a custom property name as written).</p>
+</dd>
+    <dt><code>declaration</code> <a class="xref" href="Egami.Css.CssDeclaration.html">CssDeclaration</a></dt>
+    <dd><p>The winning declaration.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when a declaration applies.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssCascadedStyle_TryGetDeclaration_" data-uid="Egami.Css.CssCascadedStyle.TryGetDeclaration*"></a>
+
+  <h3 id="Egami_Css_CssCascadedStyle_TryGetDeclaration_System_String_Egami_Css_CssDeclaration__Egami_Css_CssOrigin__" data-uid="Egami.Css.CssCascadedStyle.TryGetDeclaration(System.String,Egami.Css.CssDeclaration@,Egami.Css.CssOrigin@)">
+  TryGetDeclaration(string, out CssDeclaration?, out CssOrigin)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L519"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the winning declaration of a property and its origin.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetDeclaration(string name, out CssDeclaration? declaration, out CssOrigin origin)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name.</p>
+</dd>
+    <dt><code>declaration</code> <a class="xref" href="Egami.Css.CssDeclaration.html">CssDeclaration</a></dt>
+    <dd><p>The winning declaration.</p>
+</dd>
+    <dt><code>origin</code> <a class="xref" href="Egami.Css.CssOrigin.html">CssOrigin</a></dt>
+    <dd><p>Its origin.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when a declaration applies.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L493" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class GainMap | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class GainMap | Egami ">
+      
+      <meta name="description" content="An HDR gain map: a small image that, with , turns an SDR base image into its HDR rendition (or the reverse). Read from Ultra HDR, ISO 21496-1 and Apple JPEG files into ; written back by the JPEG writer. Immutable, so rasters can share it.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Colors_GainMap.md&amp;value=---%0Auid%3A%20Egami.Colors.GainMap%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Colors.GainMap">
+
+
+
+  <h1 id="Egami_Colors_GainMap" data-uid="Egami.Colors.GainMap" class="text-break">
+Class GainMap  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/GainMap.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Colors.html">Colors</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An HDR gain map: a small image that, with <a class="xref" href="Egami.Colors.GainMapInfo.html">GainMapInfo</a>, turns an SDR base image into its HDR rendition (or the
+reverse). Read from Ultra HDR, ISO 21496-1 and Apple JPEG files into <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_GainMap">GainMap</a>; written
+back by the JPEG writer. Immutable, so rasters can share it.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class GainMap</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">GainMap</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Colors_GainMap_examples">Examples</h2>
+  <pre><code class="lang-csharp">// As stored: the SDR base image, with the gain map in the metadata.
+using Raster sdr = Raster.Load("ultrahdr.jpg");
+GainMap? map = sdr.Metadata.GainMap;                                     // null for a plain JPEG
+
+// The HDR rendition for a display 4x as bright as SDR white: linear half floats, 1.0 = SDR white.
+using Raster&lt;RgbaF16&gt; hdr = Raster.Load&lt;RgbaF16&gt;("ultrahdr.jpg", options: new ReaderOptions { Hdr = new HdrDecode { Headroom = 4 } });
+
+// The same from a raster in hand, at the map's full capacity.
+using Raster&lt;RgbaF16&gt; full = map!.Apply(sdr);</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Colors_GainMap__ctor_" data-uid="Egami.Colors.GainMap.#ctor*"></a>
+
+  <h3 id="Egami_Colors_GainMap__ctor_Egami_Colors_GainMapInfo_Egami_Raster_" data-uid="Egami.Colors.GainMap.#ctor(Egami.Colors.GainMapInfo,Egami.Raster)">
+  GainMap(GainMapInfo, Raster)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/GainMap.cs/#L119"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a gain map from its metadata and image, whose pixels are copied.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GainMap(GainMapInfo info, Raster image)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>info</code> <a class="xref" href="Egami.Colors.GainMapInfo.html">GainMapInfo</a></dt>
+    <dd><p>How the map applies.</p>
+</dd>
+    <dt><code>image</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The map: gray for one channel, anything else as three (red, green, blue), 8 bits a sample.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>An argument is null.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Colors_GainMap_Channels_" data-uid="Egami.Colors.GainMap.Channels*"></a>
+
+  <h3 id="Egami_Colors_GainMap_Channels" data-uid="Egami.Colors.GainMap.Channels">
+  Channels
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/GainMap.cs/#L179"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets 1 for a gray map that boosts red, green and blue alike, or 3 for one boost each.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Channels { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_GainMap_Height_" data-uid="Egami.Colors.GainMap.Height*"></a>
+
+  <h3 id="Egami_Colors_GainMap_Height" data-uid="Egami.Colors.GainMap.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/GainMap.cs/#L176"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the map's height.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_GainMap_Info_" data-uid="Egami.Colors.GainMap.Info*"></a>
+
+  <h3 id="Egami_Colors_GainMap_Info" data-uid="Egami.Colors.GainMap.Info">
+  Info
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/GainMap.cs/#L170"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how the map applies.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GainMapInfo Info { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.GainMapInfo.html">GainMapInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_GainMap_Width_" data-uid="Egami.Colors.GainMap.Width*"></a>
+
+  <h3 id="Egami_Colors_GainMap_Width" data-uid="Egami.Colors.GainMap.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/GainMap.cs/#L173"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the map's width, often a fraction of the base image's.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Colors_GainMap_Apply_" data-uid="Egami.Colors.GainMap.Apply*"></a>
+
+  <h3 id="Egami_Colors_GainMap_Apply_Egami_Raster_System_Nullable_System_Double__" data-uid="Egami.Colors.GainMap.Apply(Egami.Raster,System.Nullable{System.Double})">
+  Apply(Raster, double?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/GainMap.Apply.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the rendition of <code class="paramref">baseImage</code> for a display with <code class="paramref">headroom</code> (its peak over SDR
+white, linear; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the map's full HDR capacity): linear <a class="xref" href="Egami.Pixels.RgbaF16.html">RgbaF16</a> with 1.0 as SDR white
+(203 cd/m²), in the base image's primaries, with <a class="xref" href="Egami.Colors.HdrMetadata.html#Egami_Colors_HdrMetadata_MaxContentLightLevel">MaxContentLightLevel</a> set from the map's
+largest boost. The map is upsampled bilinearly row by row, so no full-size copy of it is made.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;RgbaF16&gt; Apply(Raster baseImage, double? headroom = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>baseImage</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The base image, in its own encoding (usually sRGB), the size the map was made for (it may differ by scale).</p>
+</dd>
+    <dt><code>headroom</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd><p>The display headroom, 1 or more, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for full HDR.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;<a class="xref" href="Egami.Pixels.RgbaF16.html">RgbaF16</a>&gt;</dt>
+    <dd><p>The rendition. The caller disposes it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Colors_GainMap_Apply_Egami_Raster_System_Nullable_System_Double___examples">Examples</h4>
+  <pre><code class="lang-csharp">// As stored: the SDR base image, with the gain map in the metadata.
+using Raster sdr = Raster.Load("ultrahdr.jpg");
+GainMap? map = sdr.Metadata.GainMap;                                     // null for a plain JPEG
+
+// The HDR rendition for a display 4x as bright as SDR white: linear half floats, 1.0 = SDR white.
+using Raster&lt;RgbaF16&gt; hdr = Raster.Load&lt;RgbaF16&gt;("ultrahdr.jpg", options: new ReaderOptions { Hdr = new HdrDecode { Headroom = 4 } });
+
+// The same from a raster in hand, at the map's full capacity.
+using Raster&lt;RgbaF16&gt; full = map!.Apply(sdr);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">baseImage</code> is null.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">headroom</code> is below 1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Colors_GainMap_Create_" data-uid="Egami.Colors.GainMap.Create*"></a>
+
+  <h3 id="Egami_Colors_GainMap_Create_Egami_Raster_Egami_Raster_Egami_Colors_GainMapOptions_" data-uid="Egami.Colors.GainMap.Create(Egami.Raster,Egami.Raster,Egami.Colors.GainMapOptions)">
+  Create(Raster, Raster?, GainMapOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/GainMap.Create.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Computes the gain map that turns <code class="paramref">sdr</code> into <code class="paramref">hdr</code>: for each map pixel, the log2 ratio of the
+HDR light to the SDR light, averaged over the pixels it covers, stored in 8 bits between the smallest and largest gain.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static GainMap Create(Raster hdr, Raster? sdr = null, GainMapOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>hdr</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The HDR rendition: linear light with 1.0 as SDR white (as Radiance, OpenEXR and HDR decodes give), or PQ or HLG
+with its color profile.</p>
+</dd>
+    <dt><code>sdr</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The SDR rendition to show on SDR displays, the same size; or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to make one with
+<a class="xref" href="Egami.Colors.ToneMapping.html#Egami_Colors_ToneMapping_Bt2390">Bt2390</a>, as <a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_GainMap">GainMap</a> does.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Colors.GainMapOptions.html">GainMapOptions</a></dt>
+    <dd><p>How to make the map, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.GainMap.html">GainMap</a></dt>
+    <dd><p>The gain map, for <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_GainMap">GainMap</a> of the SDR rendition.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Colors_GainMap_Create_Egami_Raster_Egami_Raster_Egami_Colors_GainMapOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// An HDR raster as Ultra HDR: the SDR base, tone mapped with BT.2390, and a gain map that brings the HDR raster back.
+using Raster&lt;RgbaF32&gt; hdr = Raster.Load&lt;RgbaF32&gt;("render.exr");
+hdr.Save("render.jpg", new JpegWriterOptions { Quality = 90, GainMap = new GainMapOptions() });
+
+// Or choose the SDR rendition: the map goes in its metadata, and saving as JPEG writes both.
+using Raster&lt;Rgb8&gt; sdr = hdr.Derive(ops =&gt; ops.ToneMap(ToneMapping.Reinhard)).As&lt;Rgb8&gt;();
+sdr.Metadata.GainMap = GainMap.Create(hdr, sdr, new GainMapOptions { Scale = 4 });
+sdr.Save("graded.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">hdr</code> is null.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">sdr</code> is not the size of <code class="paramref">hdr</code>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Colors_GainMap_ToRaster_" data-uid="Egami.Colors.GainMap.ToRaster*"></a>
+
+  <h3 id="Egami_Colors_GainMap_ToRaster_Egami_EgamiContext_" data-uid="Egami.Colors.GainMap.ToRaster(Egami.EgamiContext)">
+  ToRaster(EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/GainMap.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the map as a new raster: <a class="xref" href="Egami.Pixels.Gray8.html">Gray8</a> for one channel, <a class="xref" href="Egami.Pixels.Rgb8.html">Rgb8</a> for three. The caller disposes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster ToRaster(EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context for the raster, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The map's image.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_GainMap_WithInfo_" data-uid="Egami.Colors.GainMap.WithInfo*"></a>
+
+  <h3 id="Egami_Colors_GainMap_WithInfo_Egami_Colors_GainMapInfo_" data-uid="Egami.Colors.GainMap.WithInfo(Egami.Colors.GainMapInfo)">
+  WithInfo(GainMapInfo)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/GainMap.cs/#L216"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the same map with other metadata.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GainMap WithInfo(GainMapInfo info)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>info</code> <a class="xref" href="Egami.Colors.GainMapInfo.html">GainMapInfo</a></dt>
+    <dd><p>The new metadata.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.GainMap.html">GainMap</a></dt>
+    <dd><p>The map.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/GainMap.cs/#L111" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

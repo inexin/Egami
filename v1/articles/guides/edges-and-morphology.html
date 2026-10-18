@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Edges and morphology | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Edges and morphology | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/edges-and-morphology.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="edges-and-morphology">Edges and morphology</h1>
+
+<p>Edge operators measure how fast the image changes at each pixel; Canny's detector turns that into thin edge lines; and
+morphology grows, shrinks and cleans up shapes by taking the maximum or minimum over a neighbourhood. All of them keep the
+image's size, so they work inside <code>Within</code> scopes.</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Edges(op, grayscale)</code></td>
+<td>The gradient magnitude of a fixed kernel, 0 to 1; gray by default, or per channel</td>
+</tr>
+<tr>
+<td><code>CannyEdges(sigma, low, high)</code></td>
+<td>Thin white edges on black, as ImageMagick's <code>-canny</code></td>
+</tr>
+<tr>
+<td><code>Morphology(op, shape, iterations)</code></td>
+<td>Dilate, erode, open, close, gradient, top hat or bottom hat over a <code>StructuringElement</code></td>
+</tr>
+<tr>
+<td><code>Dilate(radius)</code>, <code>Erode(radius)</code></td>
+<td>The maximum or minimum over a square; <code>Dilate(rx, ry)</code> and <code>Erode(rx, ry)</code> over a rectangle</td>
+</tr>
+</tbody>
+</table>
+<h2 id="find-edges">Find edges</h2>
+<pre><code class="lang-csharp">using Raster edges = photo.Derive(o =&gt; o.Edges(), Ct);                                  // Sobel, gray, 0 to 1
+using Raster crisp = photo.Derive(o =&gt; o.Edges(EdgeOperator.Scharr), Ct);              // rotation-steady
+using Raster colored = photo.Derive(o =&gt; o.Edges(EdgeOperator.Sobel, grayscale: false), Ct);  // per channel
+using Raster lines = photo.Derive(o =&gt; o.Blur(1).Edges(EdgeOperator.Laplacian3x3), Ct); // second derivative
+</code></pre>
+<p><code>EdgeOperator</code> picks the kernels. Every operator is scaled so a full black-to-white step gives 1, so their results can be
+compared and thresholded alike.</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Kernels</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Sobel</code> (default)</td>
+<td>3 × 3 pair, weights 1, 2, 1</td>
+<td>The usual choice</td>
+</tr>
+<tr>
+<td><code>Scharr</code></td>
+<td>3 × 3 pair, weights 3, 10, 3</td>
+<td>Its strength depends least on the edge's direction</td>
+</tr>
+<tr>
+<td><code>Prewitt</code></td>
+<td>3 × 3 pair, weights 1, 1, 1</td>
+<td></td>
+</tr>
+<tr>
+<td><code>RobertsCross</code></td>
+<td>2 × 2 diagonal differences</td>
+<td>Sharpest and noisiest; the pixel and the one below right</td>
+</tr>
+<tr>
+<td><code>Kirsch</code>, <code>Robinson</code></td>
+<td>Eight 3 × 3 compass kernels</td>
+<td>The strongest of the eight directions</td>
+</tr>
+<tr>
+<td><code>Laplacian3x3</code>, <code>Laplacian5x5</code></td>
+<td>One kernel, absolute value</td>
+<td>Second derivative: edges come out as double lines</td>
+</tr>
+<tr>
+<td><code>LaplacianOfGaussian</code></td>
+<td>5 × 5, absolute value</td>
+<td>A Laplacian smoothed against noise</td>
+</tr>
+</tbody>
+</table>
+<p>Gradient pairs write <code>sqrt(gx² + gy²)</code>; the compass operators keep the largest of their eight responses. The edges are
+measured on premultiplied values, so transparent areas count as black, and alpha is kept. With <code>grayscale: true</code> (the
+default) the pixels are first reduced to Rec. 709 luma and the magnitude is written as gray; with <code>false</code> red, green and blue
+each get their own. Past the border the edge pixel repeats.</p>
+<h2 id="a-selection-from-canny">A selection from Canny</h2>
+<pre><code class="lang-csharp">// Thin white edges on black. A gray raster works as a Mask as it is; an RGBA one needs MaskChannel.Luminance,
+// because a Mask of a raster with alpha reads its alpha.
+using Raster&lt;Gray8&gt; edges = Raster.Load&lt;Gray8&gt;(&quot;duck.png&quot;);
+edges.Apply(o =&gt; o.CannyEdges(sigma: 1.4f).Dilate(1), Ct);                 // thin edges, thickened
+
+photo.Apply(o =&gt; o.Within(new Mask(edges), s =&gt; s.FillColor(Rgba8.Red)), Ct);  // paint over them
+</code></pre>
+<p><code>CannyEdges</code> runs the four steps of Canny's detector: a Gaussian blur of the luma with standard deviation <code>sigma</code>, the
+gradient from Canny's own 2 × 2 first differences, non-maximum suppression (a pixel is kept only if neither neighbour across
+its edge is stronger), and hysteresis: pixels at least <code>high</code> times the image's strongest gradient start edges, and edges
+follow 8-connected pixels down to <code>low</code> times it. The output is white edges, one pixel wide, on black, with alpha kept.</p>
+<p>The parameters mean what ImageMagick's <code>-canny 0x{sigma}+{low × 100}%+{high × 100}%</code> means, and the edge maps match it pixel
+for pixel except where ImageMagick stops a trace early: it keeps its trace stack in one image row, so a trace deeper than the
+image is wide ends part way. Egami follows every connected pixel, so it finds the same edges plus the rest of those traces.</p>
+<p>A gray edge map is a <code>Mask</code> as it is. A color raster used as a <code>Mask</code> is read by its alpha, so for an RGBA edge map pass
+<code>MaskChannel.Luminance</code>: <code>new Mask(edges, Channel: MaskChannel.Luminance)</code>.</p>
+<h2 id="clean-a-scanned-form-with-close">Clean a scanned form with Close</h2>
+<pre><code class="lang-csharp">// Close removes dark specks smaller than the shape (dust and toner dots on the paper) and keeps strokes wider than it;
+// Open does the opposite, for light pinholes in dark areas.
+using Raster&lt;Gray8&gt; scan = Raster.Load&lt;Gray8&gt;(&quot;scan.tif&quot;);
+scan.Apply(o =&gt; o.Morphology(MorphologyOp.Close, StructuringElement.Disk(1)), Ct);
+
+// The outlines of shapes, and the light details smaller than a disk.
+using Raster outlines = scan.Derive(o =&gt; o.Morphology(MorphologyOp.Gradient, StructuringElement.Square(1)), Ct);
+using Raster details = scan.Derive(o =&gt; o.Morphology(MorphologyOp.TopHat, StructuringElement.Disk(5)), Ct);
+</code></pre>
+<p>Morphology is flat: dilation takes each channel's maximum over the shape, erosion the minimum, on the stored values, so 8 and
+16-bit results are exact. The rest combine them:</p>
+<table>
+<thead>
+<tr>
+<th><code>MorphologyOp</code></th>
+<th>Is</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Dilate</code></td>
+<td>Maximum</td>
+<td>Grow light areas, close dark gaps</td>
+</tr>
+<tr>
+<td><code>Erode</code></td>
+<td>Minimum</td>
+<td>Shrink light areas, remove light specks</td>
+</tr>
+<tr>
+<td><code>Open</code></td>
+<td>Erode, then dilate</td>
+<td>Remove light details smaller than the shape; never brightens</td>
+</tr>
+<tr>
+<td><code>Close</code></td>
+<td>Dilate, then erode</td>
+<td>Remove dark details smaller than the shape; never darkens</td>
+</tr>
+<tr>
+<td><code>Gradient</code></td>
+<td>Dilate minus erode</td>
+<td>Outlines as wide as the shape</td>
+</tr>
+<tr>
+<td><code>TopHat</code></td>
+<td>Image minus its open</td>
+<td>The light details the open removed</td>
+</tr>
+<tr>
+<td><code>BottomHat</code></td>
+<td>Its close minus the image</td>
+<td>The dark details the close removed</td>
+</tr>
+</tbody>
+</table>
+<p><code>iterations</code> repeats each dilation and erosion: <code>Open</code> with 2 erodes twice, then dilates twice, as ImageMagick's <code>Open:2</code>.
+Alpha is dilated and eroded with the color, so a logo's shape grows and shrinks with it; <code>Gradient</code>, <code>TopHat</code> and
+<code>BottomHat</code> keep alpha, since a difference of alpha would make an opaque image transparent. Past the border the edge pixel
+repeats, as ImageMagick does.</p>
+<h2 id="shapes">Shapes</h2>
+<pre><code class="lang-csharp">StructuringElement disk = StructuringElement.Disk(4);          // x² + y² ≤ 16, ImageMagick's Disk:4
+StructuringElement diamond = StructuringElement.Diamond(3);    // |x| + |y| ≤ 3
+StructuringElement plus = StructuringElement.Cross(2);         // ImageMagick's Plus:2
+StructuringElement corner = StructuringElement.FromMask(
+    new[,]
+    {
+        { true, true, true },
+        { true, false, false },
+        { true, false, false },
+    },
+    new Point(0, 0));                                          // [y, x] cells; the origin sits on the pixel
+
+using Raster rounded = photo.Derive(o =&gt; o.Morphology(MorphologyOp.Open, disk, iterations: 2), Ct);
+</code></pre>
+<p>The factories make ImageMagick's kernels of the same name, so <code>-morphology Dilate Disk:4</code> and
+<code>Morphology(MorphologyOp.Dilate, StructuringElement.Disk(4))</code> give identical pixels. <code>Cross(r)</code> is ImageMagick's <code>Plus:r</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Shape</th>
+<th>Cells</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Square(r)</code></td>
+<td>The (2r + 1) square</td>
+</tr>
+<tr>
+<td><code>Rectangle(rx, ry)</code></td>
+<td>The (2rx + 1) × (2ry + 1) rectangle, Skia's dilate and erode radii</td>
+</tr>
+<tr>
+<td><code>Disk(r)</code></td>
+<td>x² + y² ≤ r²</td>
+</tr>
+<tr>
+<td><code>Diamond(r)</code></td>
+<td>|x| + |y| ≤ r</td>
+</tr>
+<tr>
+<td><code>Cross(r)</code></td>
+<td>The row and column through the origin, 2r + 1 long</td>
+</tr>
+<tr>
+<td><code>FromMask(cells, origin)</code></td>
+<td>Any set of cells, <code>[y, x]</code>, with the origin on the pixel being computed</td>
+</tr>
+</tbody>
+</table>
+<p>Erosion reads the cells as offsets from the pixel and dilation reads them mirrored, as ImageMagick does, so <code>Open</code> and
+<code>Close</code> work as expected for lopsided shapes too. Squares and rectangles cost the same per pixel whatever their size (van Herk and
+Gil-Werman's running maximum down the columns); other shapes cost in proportion to their height.</p>
+<pre><code class="lang-csharp">using Raster grown = photo.Derive(o =&gt; o.Dilate(3), Ct);       // light areas grow 3 px: a 7 × 7 square
+using Raster shrunk = photo.Derive(o =&gt; o.Erode(3), Ct);       // light areas shrink 3 px
+using Raster wide = photo.Derive(o =&gt; o.Dilate(6, 1), Ct);     // 13 × 3, as Skia's dilate radii
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/edges-and-morphology.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

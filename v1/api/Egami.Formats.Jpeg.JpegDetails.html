@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class JpegDetails | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class JpegDetails | Egami ">
+      
+      <meta name="description" content="Facts about a decoded JPEG that have no general home in . Read-only facts; not written.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Jpeg_JpegDetails.md&amp;value=---%0Auid%3A%20Egami.Formats.Jpeg.JpegDetails%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Jpeg.JpegDetails">
+
+
+
+  <h1 id="Egami_Formats_Jpeg_JpegDetails" data-uid="Egami.Formats.Jpeg.JpegDetails" class="text-break">
+Class JpegDetails  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Jpeg.html">Jpeg</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Facts about a decoded JPEG that have no general home in <a class="xref" href="Egami.Metadata.RasterMetadata.html">RasterMetadata</a>. Read-only facts; not written.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class JpegDetails : FormatDetails</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Metadata.FormatDetails.html">FormatDetails</a></div>
+      <div><span class="xref">JpegDetails</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Jpeg_JpegDetails_examples">Examples</h2>
+  <pre><code class="lang-csharp">using Raster photo = Raster.Load("duck.jpg", options: new JpegReaderOptions { FastUpsampling = true });
+JpegDetails details = (JpegDetails)photo.Metadata.FormatDetails!;
+Console.WriteLine($"{details.ColorSpace}, progressive: {details.Progressive}, quality about {details.EstimatedQuality}");
+foreach (JpegComponent component in details.Components)
+{
+    Console.WriteLine($"Component {component.Id}: sampled {component.HorizontalSampling} × {component.VerticalSampling}");
+}
+
+// Gray output, and 4:4:4 (no chroma subsampling) for sharp colored edges.
+photo.Save("gray.jpg", new JpegWriterOptions { ColorType = JpegColorType.Gray });
+photo.Save("sharp.jpg", new JpegWriterOptions { Quality = 90, Subsampling = ChromaSubsampling.Subsample444 });</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_Arithmetic_" data-uid="Egami.Formats.Jpeg.JpegDetails.Arithmetic*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_Arithmetic" data-uid="Egami.Formats.Jpeg.JpegDetails.Arithmetic">
+  Arithmetic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether the file is arithmetic-coded rather than Huffman-coded.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Arithmetic { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_ColorSpace_" data-uid="Egami.Formats.Jpeg.JpegDetails.ColorSpace*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_ColorSpace" data-uid="Egami.Formats.Jpeg.JpegDetails.ColorSpace">
+  ColorSpace
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the color model the components are stored in.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public JpegColorSpace ColorSpace { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Jpeg.JpegColorSpace.html">JpegColorSpace</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_Components_" data-uid="Egami.Formats.Jpeg.JpegDetails.Components*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_Components" data-uid="Egami.Formats.Jpeg.JpegDetails.Components">
+  Components
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the components, in frame order, with their sampling factors (for example 2×2, 1×1, 1×1 for 4:2:0).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IList&lt;JpegComponent&gt; Components { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1">IList</a>&lt;<a class="xref" href="Egami.Formats.Jpeg.JpegComponent.html">JpegComponent</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_EstimatedQuality_" data-uid="Egami.Formats.Jpeg.JpegDetails.EstimatedQuality*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_EstimatedQuality" data-uid="Egami.Formats.Jpeg.JpegDetails.EstimatedQuality">
+  EstimatedQuality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the IJG quality (1 to 100) whose scaled Annex K table is closest to the file's luma quantization table, or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the file has no such table. An estimate: encoders with their own tables have no true quality.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? EstimatedQuality { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_ExtendedXmp_" data-uid="Egami.Formats.Jpeg.JpegDetails.ExtendedXmp*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_ExtendedXmp" data-uid="Egami.Formats.Jpeg.JpegDetails.ExtendedXmp">
+  ExtendedXmp
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the extended XMP packet (the part that did not fit in one segment), joined from its segments, or empty. The
+main packet is in <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_Xmp">Xmp</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;byte&gt; ExtendedXmp { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_Lossless_" data-uid="Egami.Formats.Jpeg.JpegDetails.Lossless*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_Lossless" data-uid="Egami.Formats.Jpeg.JpegDetails.Lossless">
+  Lossless
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether the file is lossless JPEG (predicted samples, no DCT), as in DNG tiles and DICOM.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Lossless { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_MultiPicture_" data-uid="Egami.Formats.Jpeg.JpegDetails.MultiPicture*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_MultiPicture" data-uid="Egami.Formats.Jpeg.JpegDetails.MultiPicture">
+  MultiPicture
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the file's Multi-Picture Format index (APP2 &quot;MPF&quot;), which lists the images stored after the primary one, such
+as previews, stereo views or a gain map; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the file has none. The JPEG writer does not write it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MpfData? MultiPicture { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Jpeg.MpfData.html">MpfData</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_PhotoshopResources_" data-uid="Egami.Formats.Jpeg.JpegDetails.PhotoshopResources*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_PhotoshopResources" data-uid="Egami.Formats.Jpeg.JpegDetails.PhotoshopResources">
+  PhotoshopResources
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the Photoshop image resource block (APP13 &quot;Photoshop 3.0&quot;), joined from its segments, or empty. Egami parses
+only its IPTC resource, into <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_Iptc">Iptc</a>; on save the IPTC resource is replaced by the current IPTC,
+its digest (0x0425) is updated to match, and every other resource is written back as it was.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;byte&gt; PhotoshopResources { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_Precision_" data-uid="Egami.Formats.Jpeg.JpegDetails.Precision*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_Precision" data-uid="Egami.Formats.Jpeg.JpegDetails.Precision">
+  Precision
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the sample precision in bits: 8 or 12 for DCT files, 2 to 16 for lossless ones.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Precision { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_Progressive_" data-uid="Egami.Formats.Jpeg.JpegDetails.Progressive*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_Progressive" data-uid="Egami.Formats.Jpeg.JpegDetails.Progressive">
+  Progressive
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether the file is progressive rather than baseline (sequential).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Progressive { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_RestartInterval_" data-uid="Egami.Formats.Jpeg.JpegDetails.RestartInterval*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_RestartInterval" data-uid="Egami.Formats.Jpeg.JpegDetails.RestartInterval">
+  RestartInterval
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the restart interval in MCUs, or 0 for none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int RestartInterval { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_ScaleDenominator_" data-uid="Egami.Formats.Jpeg.JpegDetails.ScaleDenominator*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_ScaleDenominator" data-uid="Egami.Formats.Jpeg.JpegDetails.ScaleDenominator">
+  ScaleDenominator
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the scale the pixels were decoded at: 1, 2, 4 or 8 for full size, 1/2, 1/4 or 1/8.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int ScaleDenominator { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_Jpeg_JpegDetails_Copy_" data-uid="Egami.Formats.Jpeg.JpegDetails.Copy*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegDetails_Copy" data-uid="Egami.Formats.Jpeg.JpegDetails.Copy">
+  Copy()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a deep copy.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override FormatDetails Copy()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.FormatDetails.html">FormatDetails</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegDetails.cs/#L40" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

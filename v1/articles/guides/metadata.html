@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Metadata | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Metadata | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/metadata.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="metadata">Metadata</h1>
+
+<p><code>raster.Metadata</code> holds what a file says beside its pixels. It is kept apart from the pixels, survives operations unless an
+operation makes it wrong, and is written back by every format that can carry it.</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Read from</th>
+<th>Written to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Exif</code> (<code>ExifData</code>)</td>
+<td>JPEG, PNG (eXIf, and the legacy &quot;Raw profile type&quot; chunks)</td>
+<td>JPEG, PNG</td>
+</tr>
+<tr>
+<td><code>Iptc</code> (<code>IptcData</code>)</td>
+<td>JPEG (APP13), PNG (&quot;Raw profile type iptc&quot;)</td>
+<td>JPEG, PNG</td>
+</tr>
+<tr>
+<td><code>Xmp</code>, <code>XmpData</code></td>
+<td>JPEG (with extended XMP), PNG, GIF</td>
+<td>JPEG, PNG, GIF</td>
+</tr>
+<tr>
+<td><code>IccProfile</code></td>
+<td>JPEG, PNG, GIF, BMP (V5)</td>
+<td>JPEG, PNG, GIF, BMP</td>
+</tr>
+<tr>
+<td><code>Text</code></td>
+<td>PNG text chunks, GIF comments, PNM comments, TGA author and comments</td>
+<td>The same</td>
+</tr>
+<tr>
+<td><code>Resolution</code></td>
+<td>PNG, JPEG, BMP</td>
+<td>PNG, JPEG, BMP</td>
+</tr>
+<tr>
+<td><code>ColorSpace</code>, <code>Gamma</code></td>
+<td>PNG, QOI, TGA</td>
+<td>PNG, QOI</td>
+</tr>
+<tr>
+<td><code>LoopCount</code>, frame <code>Delay</code></td>
+<td>GIF, APNG</td>
+<td>GIF, APNG</td>
+</tr>
+<tr>
+<td><code>FormatDetails</code></td>
+<td>Every format: what only it has</td>
+<td>The same format, for round trips</td>
+</tr>
+<tr>
+<td><code>Warnings</code></td>
+<td>Every reader: what a lenient read recovered from</td>
+<td>Never</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="lang-csharp">RasterMetadata metadata = image.Metadata;
+metadata.Text.Add(new TextEntry(&quot;Comment&quot;, &quot;Made with Egami&quot;));
+metadata.Resolution = new Resolution(300, 300, ResolutionUnit.PerInch);
+Console.WriteLine($&quot;{metadata.ColorSpace}, ICC {metadata.IccProfile.Length} bytes, XMP {metadata.Xmp.Length} bytes&quot;);
+foreach (EgamiDiagnostic warning in metadata.Warnings)
+{
+    Console.WriteLine($&quot;Recovered from: {warning.Message} ({warning.Id})&quot;);
+}
+
+image.Save(&quot;duck-300dpi.png&quot;);
+</code></pre><h2 id="exif">EXIF</h2>
+<pre><code class="lang-csharp">if (image.Metadata.Exif is ExifData exif)
+{
+    Console.WriteLine($&quot;{exif.CameraMake} {exif.CameraModel}, {exif.DateTaken}, {exif.Location}&quot;);
+    if (exif.TryGet(ExifKey.ExposureTime, out ExifEntry? exposure))
+    {
+        Console.WriteLine($&quot;1/{1 / exposure.AsDouble():0} s&quot;);
+    }
+
+    exif.Set(ExifKey.Copyright, &quot;© 2026 Example&quot;);
+    exif.Remove(ExifKey.GpsLatitude);
+}
+</code></pre>
+<p>Common values have typed properties (<code>Orientation</code>, <code>DateTaken</code>, <code>CameraMake</code>, <code>CameraModel</code>, <code>Location</code>); any tag can be read
+with <code>TryGet</code> and written with <code>Set</code>. A block you do not edit is saved back byte for byte; an edited one is laid out again, in
+tag order. A damaged block keeps its raw bytes and sets <code>IsDamaged</code>, and the pixels still load. <code>ExifData.Parse</code> reads a block on
+its own, capped by <code>SafetyLimits.MaxMetadataBytes</code>.</p>
+<h2 id="what-operations-do-to-metadata">What operations do to metadata</h2>
+<ul>
+<li>Rotating, flipping and <code>AutoOrient</code> set the EXIF orientation to <code>Normal</code> and drop the embedded thumbnail, which would
+otherwise show sideways.</li>
+<li>Resizing and cropping, including your own operations that change the size, update the EXIF pixel dimensions and drop the
+embedded thumbnail, which no longer matches.</li>
+<li>Every geometry operation moves the EXIF <code>SubjectArea</code> and <code>SubjectLocation</code> with the picture: shifted by crops and pads,
+scaled by resizes, mirrored and turned with flips and rotations, clipped to a crop and dropped when the subject leaves it.
+Their XMP copies, and the XMP <code>tiff:Orientation</code>, <code>exif:PixelXDimension</code> and <code>exif:PixelYDimension</code>, follow the same rules.
+A tag the file does not have is never added.</li>
+<li>Color operations change nothing in the metadata.</li>
+</ul>
+<h2 id="removing-metadata">Removing metadata</h2>
+<pre><code class="lang-csharp">// Every writer's options have StripMetadata: the pixels are written, EXIF, XMP, ICC and text are not.
+image.Save(&quot;clean.jpg&quot;, new JpegWriterOptions { StripMetadata = true });
+</code></pre><h2 id="typed-exif-values">Typed EXIF values</h2>
+<pre><code class="lang-csharp">using Raster photo = Raster.Load(&quot;sideways.jpg&quot;);
+ExifData exif = photo.Metadata.Exif ?? new ExifData();
+
+// Typed values go in with their EXIF type; fractions are exact numerator / denominator pairs.
+exif.Set(ExifKey.ExposureTime, new ExifFraction(1, 250));
+exif.Set(ExifKey.Artist, &quot;A. Photographer&quot;);
+if (exif.TryGet(ExifKey.ExposureTime, out ExifEntry? entry) &amp;&amp; entry.Type == ExifType.Rational)
+{
+    Console.WriteLine($&quot;Exposure {entry.AsFraction()} s = {entry.AsFraction().ToDouble()} s, in the {entry.Key.Ifd} IFD&quot;);
+}
+
+if (exif.Location is GeoPosition where)
+{
+    Console.WriteLine($&quot;Taken at {where.Latitude:F5}, {where.Longitude:F5}&quot;);
+}
+</code></pre>
+<p>The IFD1 thumbnail decodes as a raster, and a new one is made from any raster. Crops, resizes, flips and turns drop the
+thumbnail, since it no longer shows the image:</p>
+<pre><code class="lang-csharp">using Raster photo = Raster.Load(&quot;sideways.jpg&quot;);
+
+// The thumbnail as stored, if the file has one; ReadThumbnail returns null otherwise.
+using (Raster&lt;Rgb8&gt;? stored = photo.Metadata.Exif?.ReadThumbnail())
+{
+    Console.WriteLine(stored is null ? &quot;No thumbnail&quot; : $&quot;Thumbnail {stored.Width} x {stored.Height}&quot;);
+}
+
+// Turning the image drops the thumbnail, which would show sideways; make a new one from the result.
+photo.Apply(ops =&gt; ops.AutoOrient());
+photo.Metadata.Exif?.SetThumbnail(photo);
+photo.Save(&quot;upright.jpg&quot;);
+</code></pre>
+<p>The Windows XP tags (<code>ExifKey.XPTitle</code>, <code>XPComment</code>, <code>XPAuthor</code>, <code>XPKeywords</code>, <code>XPSubject</code>) and the encoded strings
+(<code>ExifKey.UserComment</code>, <code>GpsProcessingMethod</code>, <code>GpsAreaInformation</code>) read and write as text through <code>ExifEntry.AsString</code> and
+<code>ExifData.Set</code>, in the encodings Windows Explorer and cameras use.</p>
+<p>EXIF stored somewhere else, such as a database, parses on its own:</p>
+<pre><code class="lang-csharp">// EXIF from somewhere other than an image file (a database column, a sidecar), with a cap on the bytes of values read.
+ExifData exif = ExifData.Parse(tiff.Span, SafetyLimits.Default with { MaxMetadataBytes = 64 * 1024 });
+foreach (string warning in exif.Warnings)
+{
+    Console.WriteLine($&quot;EXIF: {warning}&quot;);
+}
+</code></pre><h2 id="iptc">IPTC</h2>
+<p><code>IptcData</code> holds IPTC-IIM datasets, as news agencies, stock libraries and Lightroom write them. Each <code>IptcEntry</code> has an
+<code>IptcKey</code> (record and dataset, such as 2:25 for keywords), and typed getters cover the common ones. Values longer than the
+IIM specification allows are refused on <code>Set</code> and <code>Add</code>; long text belongs in XMP. Text that is not ASCII switches the block
+to UTF-8.</p>
+<pre><code class="lang-csharp">using Raster photo = Raster.Load(&quot;sideways.jpg&quot;);
+IptcData iptc = photo.Metadata.Iptc ?? new IptcData();
+iptc.Headline = &quot;Harbour at dawn&quot;;
+iptc.Keywords = [.. iptc.Keywords, &quot;harbour&quot;, &quot;Bergen&quot;];
+
+// Any dataset by its key; Add appends to the repeatable ones.
+iptc.Set(IptcKey.City, &quot;Bergen&quot;);
+
+// Text that is not ASCII sets the coded character set (1:90) to UTF-8, so other programs read it right.
+iptc.Caption = &quot;Fishing boats at Bryggen, Bergen — first light&quot;;
+foreach (IptcEntry entry in iptc.Entries)
+{
+    Console.WriteLine($&quot;{entry.Key} {entry.AsString()}&quot;);
+}
+
+// JPEG saves it in its Photoshop resource block (APP13), with the digest Photoshop and Lightroom check.
+photo.Metadata.Iptc = iptc;
+photo.Save(&quot;captioned.jpg&quot;);
+</code></pre>
+<p>IPTC stored somewhere else parses on its own:</p>
+<pre><code class="lang-csharp">// IPTC datasets from somewhere other than an image file, with a cap on the bytes of values read.
+IptcData iptc = IptcData.Parse(iim.Span, SafetyLimits.Default with { MaxMetadataBytes = 64 * 1024 });
+Console.WriteLine($&quot;{iptc.Get(IptcKey.ObjectName)}: {iptc.Entries.Count} datasets, damaged: {iptc.IsDamaged}&quot;);
+</code></pre><h2 id="xmp">XMP</h2>
+<p><code>XmpData</code> is a parsed XMP packet. Properties are addressed by <code>XmpName</code> (a namespace URI from <code>XmpNamespaces</code> and a local
+name), never by prefix. A property is a simple value, an <code>XmpArray</code> (bag, sequence or language alternatives, an
+<code>XmpArrayKind</code>) or an <code>XmpStruct</code>; typed properties cover the Dublin Core, XMP Basic, Photoshop and TIFF values apps use most.
+An edited packet is written as canonical RDF/XML with padding; properties Egami does not know are kept.</p>
+<pre><code class="lang-csharp">XmpData xmp = new()
+{
+    Title = &quot;Harbour at dawn&quot;,
+    Creators = [&quot;A. Photographer&quot;],
+    Keywords = [&quot;harbour&quot;, &quot;Bergen&quot;],
+    Rating = 4,
+};
+
+// Any property, by namespace URI and local name; structures and arrays nest.
+XmpStruct contact = new();
+contact.Set(new XmpName(XmpNamespaces.IptcCore, &quot;CiEmailWork&quot;), &quot;photo@example.com&quot;);
+xmp.Set(new XmpName(XmpNamespaces.IptcCore, &quot;CreatorContactInfo&quot;), contact);
+if (xmp.TryGet(new XmpName(XmpNamespaces.DublinCore, &quot;title&quot;), out object? title) &amp;&amp; title is XmpArray languages)
+{
+    languages.SetLanguage(&quot;nb-NO&quot;, &quot;Havn ved daggry&quot;);
+}
+
+ReadOnlyMemory&lt;byte&gt; packet = xmp.ToBytes();   // canonical RDF/XML with padding
+</code></pre>
+<p><code>RasterMetadata.XmpData</code> is a live view of <code>RasterMetadata.Xmp</code>: it parses the packet on first use, and once edited, the
+edit is the packet every format saves. JPEG, PNG (an iTXt chunk) and GIF carry XMP.</p>
+<pre><code class="lang-csharp">using Raster photo = Raster.Load(&quot;sideways.jpg&quot;);
+
+// The parsed view of the packet; it is null when the file has none, so start one.
+XmpData xmp = photo.Metadata.XmpData ??= new XmpData();
+xmp.Keywords = [.. xmp.Keywords, &quot;harbour&quot;];
+xmp.Rating = 5;
+
+// The edit is the packet now: Metadata.Xmp returns it and every format saves it.
+photo.Save(&quot;rated.png&quot;);
+</code></pre><pre><code class="lang-csharp">// An XMP packet from a sidecar file or a database; DTDs are refused and nothing outside it is read.
+XmpData xmp = XmpData.Parse(packet.Span, SafetyLimits.Default with { MaxMetadataBytes = 1024 * 1024 });
+Console.WriteLine(xmp.IsDamaged ? string.Join(&quot; &quot;, xmp.Warnings) : $&quot;Label: {xmp.Label}&quot;);
+</code></pre><h2 id="color-space">Color space</h2>
+<p><code>RasterMetadata.ColorSpace</code> says what the file declared about its colors. Egami keeps the declaration and the profile bytes;
+it does not convert between color spaces.</p>
+<pre><code class="lang-csharp">using Raster image = Raster.Load(&quot;duck.png&quot;);
+string note = image.Metadata.ColorSpace switch
+{
+    ColorSpaceHint.Srgb or ColorSpaceHint.Unknown =&gt; &quot;sRGB: shown as is&quot;,
+    ColorSpaceHint.Linear =&gt; &quot;linear light: encode before showing&quot;,
+    ColorSpaceHint.Gamma =&gt; &quot;a file gamma other than sRGB&quot;,
+    ColorSpaceHint.EmbeddedIcc =&gt; &quot;an ICC profile describes the colors&quot;,
+    _ =&gt; &quot;unknown&quot;,
+};
+</code></pre><h2 id="run-it">Run it</h2>
+<p><a href="https://github.com/inexin/Egami/tree/main/samples/Metadata"><code>samples/Metadata</code></a> is a console app that does what this guide shows on the bundled
+images: <code>dotnet run --project samples/Metadata</code> writes its results to <code>./output</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/metadata.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

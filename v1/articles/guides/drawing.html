@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Drawing | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Drawing | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/drawing.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="drawing">Drawing</h1>
+
+<p>Egami.Drawing is a separate package that draws antialiased paths, shapes, strokes, clips and images on a <code>Canvas</code>. It is at
+1.0 (1.0.0) and its API is stable: 1.x versions add to it without breaking code that uses it. Text is drawn with
+Egami.Fonts; see <a href="text.html">Fonts and text</a>.</p>
+<h2 id="a-canvas">A canvas</h2>
+<p><code>raster.CreateCanvas()</code> returns a <code>RasterCanvas&lt;TPixel&gt;</code> that draws on the raster's first frame, in the pixel type's own
+precision. Calls draw when they are made; <code>Save</code> and <code>Restore</code> bracket changes to the transform and clip.</p>
+<pre><code class="lang-csharp">// A canvas draws onto a raster. Calls draw when they are made; dispose the canvas when done.
+using Raster&lt;Rgba8&gt; raster = Raster.Create(400, 300, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    canvas.FillRect(new RectF(20, 20, 160, 100), new Rgba8(30, 90, 200, 255));
+
+    // Save and Restore bracket transform and clip changes.
+    canvas.Save();
+    canvas.Translate(260, 150);
+    canvas.Rotate(30);
+    canvas.FillRect(new RectF(-50, -30, 100, 60), new Rgba8(200, 60, 30, 200));
+    canvas.Restore();
+
+    canvas.FillCircle(new Vector2(100, 220), 50, Rgba8.Black);
+}
+
+// Blend edges in linear light, which keeps thin lines and translucent colors from darkening.
+using RasterCanvas&lt;Rgba8&gt; linear = raster.CreateCanvas(new CanvasOptions { ColorSpace = ColorSpace.Linear });
+</code></pre>
+<ul>
+<li>Coordinates are float pixels, y down. Pixel (0, 0) covers the square from (0, 0) to (1, 1), so a <code>RectF</code> with whole-number
+edges covers whole pixels and a rectangle from 2.5 covers pixel 2 by half.</li>
+<li>Every pixel gets its exact covered area, rounded to 1/255: abutting shapes leave no seams.</li>
+<li><code>CanvasOptions</code> sets where edges blend (<code>ColorSpace.Encoded</code>, the default, or <code>Linear</code>) and the curve <code>Tolerance</code>
+(0.1 pixel by default).</li>
+<li>A canvas is for one thread at a time. A large call spreads its rows over <code>EgamiContext.MaxParallelism</code> cores, with the same
+pixels at any core count.</li>
+</ul>
+<h2 id="shapes">Shapes</h2>
+<pre><code class="lang-csharp">canvas.FillRect(new RectF(10, 10, 80, 40), Rgba8.Red);
+canvas.FillRoundRect(new RoundRect(new RectF(100, 10, 80, 40), 12), new Rgba8(0, 128, 0, 255));
+
+// Each corner can have its own radii; radii that would overlap are scaled down together, as CSS does.
+CornerRadii tab = new(topLeft: 16, topRight: 16, bottomRight: 0, bottomLeft: 0);
+canvas.FillRoundRect(new RoundRect(new RectF(190, 10, 100, 40), tab), Rgba8.Black);
+
+canvas.FillOval(new RectF(10, 60, 120, 60), new Rgba8(255, 200, 0, 255));
+canvas.FillCircle(new Vector2(170, 90), 30, new Rgba8(80, 80, 200, 255));
+canvas.FillArc(new RectF(210, 60, 60, 60), startDegrees: -90, sweepDegrees: 120, Rgba8.Red);
+canvas.FillRing(new RoundRect(new RectF(10, 130, 60, 60), 30), new RoundRect(new RectF(25, 145, 30, 30), 15), Rgba8.Black);
+
+// The same shapes as paths, to build on or to reuse.
+Path hexagon = Path.RegularPolygon(new Vector2(120, 160), 30, sides: 6);
+Path star = Path.Star(new Vector2(200, 160), outerRadius: 30, innerRadius: 12, points: 5);
+canvas.FillPath(hexagon, new Rgba8(0, 150, 150, 255));
+canvas.FillPath(star, new Rgba8(220, 160, 0, 255));
+</code></pre>
+<p>Each shape has a <code>Fill</code> and a <code>Stroke</code> call. <code>RoundRect</code> takes <code>CornerRadii</code>, one x and y radius per corner; its <code>Kind</code>
+(<code>RoundRectKind</code>) says when it is really a rectangle or an ellipse. <code>FillRing</code> fills between two round rectangles.</p>
+<h2 id="paths">Paths</h2>
+<p>A <code>Path</code> holds contours of lines, quadratic and cubic curves, built with a <code>PathBuilder</code>, and never changes once built.
+Arcs, ovals and round corners become cubic curves as they are added. <code>PathVerb</code> names each command and <code>Points</code> holds their
+points, for code that reads paths back.</p>
+<pre><code class="lang-csharp">// A path is built once and never changes, so it can be drawn many times and from many threads.
+Path heart = new PathBuilder()
+    .MoveTo(150, 60)
+    .CubicTo(150, 30, 100, 20, 90, 60)
+    .CubicTo(80, 100, 130, 130, 150, 160)
+    .CubicTo(170, 130, 220, 100, 210, 60)
+    .CubicTo(200, 20, 150, 30, 150, 60)
+    .Close()
+    .ToPath();
+canvas.FillPath(heart, Rgba8.Red);
+
+// SVG's arc command, and the even-odd rule: an inner contour becomes a hole.
+Path frame = new PathBuilder()
+    .AddRect(new RectF(10, 10, 60, 60))
+    .AddCircle(new Vector2(40, 40), 20)
+    .MoveTo(10, 120)
+    .ArcTo(radii: new Vector2(30, 20), rotationDegrees: 0, largeArc: false, clockwise: true, end: new Vector2(70, 120))
+    .Close()
+    .ToPath(FillRule.EvenOdd);
+canvas.FillPath(frame, Rgba8.Black);
+
+bool hit = heart.Contains(new Vector2(150, 100));   // hit testing on the curves themselves
+RectF box = heart.TightBounds;                       // curves measured at their extremes
+</code></pre>
+<ul>
+<li><code>FillRule</code> decides what is inside: <code>NonZero</code> (the default) or <code>EvenOdd</code>. Shapes are added clockwise; a
+<code>PathDirection.CounterClockwise</code> contour inside a clockwise one makes a hole under <code>NonZero</code> too.</li>
+<li><code>Contains</code> uses the winding number on the curves themselves, and counts a point on the outline as inside.</li>
+<li><code>Transform</code> takes a <code>Matrix3x2</code>, or a <code>Homography</code> for perspective.</li>
+</ul>
+<h2 id="strokes">Strokes</h2>
+<p><code>Stroke</code> is the pen: <code>Width</code>, <code>Cap</code> (<code>LineCap.Butt</code>, <code>Round</code>, <code>Square</code>), <code>Join</code> (<code>LineJoin.Miter</code>, <code>Round</code>, <code>Bevel</code>) and
+<code>MiterLimit</code> (4). The pen is applied in local coordinates, so a non-uniform scale gives an elliptical pen.</p>
+<pre><code class="lang-csharp">// The pen is data: width, caps, joins and miter limit. Width 1, butt caps and miter joins by default.
+Stroke thick = new(12) { Cap = LineCap.Round, Join = LineJoin.Round };
+canvas.DrawLine(new Vector2(20, 20), new Vector2(280, 20), thick, new Rgba8(30, 90, 200, 255));
+
+Path zigzag = Path.Polygon([new(20, 120), new(80, 60), new(140, 120), new(200, 60), new(260, 120)], close: false);
+canvas.StrokePath(zigzag, new Stroke(8) { Join = LineJoin.Miter, MiterLimit = 4 }, Rgba8.Black);
+
+// A hairline is one device pixel wide whatever the transform.
+canvas.StrokeCircle(new Vector2(150, 160), 30, Stroke.Hairline, Rgba8.Red);
+</code></pre>
+<ul>
+<li>Width 0 is a hairline: one device pixel across its major axis at any scale, as in Skia. A stroke thinner than a pixel draws
+as a hairline, fainter by its width.</li>
+<li>Overlaps within one stroke never double the color.</li>
+<li><code>DrawPoints</code> takes a <code>PointMode</code>: dots, pairs of points as lines, or one polyline.</li>
+</ul>
+<h2 id="paints">Paints</h2>
+<p>A color converts to a <code>SolidPaint</code> wherever a <code>Paint</code> is expected. The paint also carries a <code>BlendMode</code>, an <code>Opacity</code> and
+<code>Antialias</code>.</p>
+<pre><code class="lang-csharp">// A color converts to a SolidPaint. A paint also carries a blend mode, an opacity and whether edges are antialiased.
+canvas.FillRect(new RectF(0, 0, 200, 100), Rgba8.White);
+SolidPaint glaze = new(new RgbaF32(0.9f, 0.2f, 0.1f, 1)) { BlendMode = BlendMode.Multiply, Opacity = 0.6f };
+canvas.FillCircle(new Vector2(60, 50), 40, glaze);
+
+// Pixel art: no antialiasing, so every pixel is fully drawn or not at all.
+canvas.FillCircle(new Vector2(150, 50), 30, new SolidPaint(Rgba8.Black) { Antialias = false });
+</code></pre><h3 id="gradients">Gradients</h3>
+<p><code>LinearGradient</code>, <code>RadialGradient</code>, <code>ConicalGradient</code> (between two circles, as the HTML canvas, Skia and PDF define it) and
+<code>SweepGradient</code> take <code>GradientStop</code>s from 0 to 1. <code>Tile</code> says what lies past the ends (<code>Clamp</code>, <code>Repeat</code>, <code>Mirror</code>, <code>Decal</code>), and
+with <code>Clamp</code>, <code>ExtendStart</code> and <code>ExtendEnd</code> can leave one side empty, as a PDF shading's Extend does. Stops mix in encoded sRGB by
+default, or in linear light, Oklab or Oklch with a <code>HueMethod</code> (<code>GradientInterpolation</code>, whose <code>InterpolationSpace</code> names the
+space), as CSS Color 4 defines them, and premultiplied so a fade to a transparent color never darkens. Every paint has a
+<code>LocalMatrix</code>, which turns a radial gradient into an ellipse. On 8-bit targets a gradient reads 1024 colors made once per paint;
+<code>Dither</code> adds a 4×4 ordered pattern that hides banding on large soft ramps.</p>
+<pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // Two colors along a line; past the ends the end colors repeat (TileMode.Clamp).
+    canvas.FillRect(new RectF(0, 0, 200, 100), new LinearGradient(new Vector2(0, 0), new Vector2(200, 0), new RgbaF32(0.1f, 0.3f, 0.9f, 1), new RgbaF32(1, 0.8f, 0.2f, 1)));
+
+    // Several stops, mixed in Oklab for even midpoints, repeating every 40 pixels.
+    canvas.FillRect(new RectF(200, 0, 200, 100), new LinearGradient(
+        new Vector2(200, 0),
+        new Vector2(240, 0),
+        new GradientStop(0, new Rgba8(230, 40, 60, 255)),
+        new GradientStop(0.5f, new Rgba8(250, 210, 60, 255)),
+        new GradientStop(1, new Rgba8(230, 40, 60, 255)))
+    {
+        Tile = TileMode.Repeat,
+        Interpolation = GradientInterpolation.Oklab,
+    });
+
+    // A radial gradient stretched into an ellipse by its local matrix, and a sweep around a center.
+    canvas.FillOval(new RectF(10, 110, 180, 80), new RadialGradient(Vector2.Zero, 1, new RgbaF32(1, 1, 1, 1), new RgbaF32(0, 0.4f, 0.2f, 1))
+    {
+        LocalMatrix = Matrix3x2.CreateScale(90, 40) * Matrix3x2.CreateTranslation(100, 150),
+    });
+    canvas.FillCircle(new Vector2(300, 150), 45, new SweepGradient(
+        new Vector2(300, 150),
+        new GradientStop(0, new Rgba8(255, 0, 0, 255)),
+        new GradientStop(0.5f, new Rgba8(0, 0, 255, 255)),
+        new GradientStop(1, new Rgba8(255, 0, 0, 255))));
+}
+</code></pre><h3 id="images-noise-and-your-own-paints">Images, noise and your own paints</h3>
+<p><code>ImagePaint</code> fills with an image under its local matrix, tiled per axis, sampled by Egami's filters and from a <code>MipChain</code> level
+when shrunk. <code>NoisePaint.Fractal</code> and <code>NoisePaint.Turbulence</code> (its <code>NoisePaintKind</code>) are SVG's feTurbulence (matching SkiaSharp's noise
+shaders), and <code>NoisePaint.Simplex</code> is smoother and tiles exactly. <code>BlendPaint</code> combines two paints with a blend mode,
+<code>WithColorMatrix</code> runs a color matrix on a paint (a <code>ColorMatrixPaint</code>), and a <code>CustomPaint</code> record fills rows of premultiplied
+colors from C#.</p>
+<pre><code class="lang-csharp">// Fill a shape with a photo tiled as a pattern, half size, turned 15 degrees.
+using Raster photo = Raster.Load(&quot;duck.png&quot;);
+using Raster&lt;Rgba8&gt; raster = Raster.Create(400, 300, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    ImagePaint pattern = new(photo, TileMode.Mirror, TileMode.Mirror)
+    {
+        LocalMatrix = Matrix3x2.CreateScale(0.5f) * Matrix3x2.CreateRotation(MathF.PI / 12),
+    };
+    canvas.FillPath(Path.Star(new Vector2(200, 150), 140, 60, 5), pattern);
+}
+</code></pre><pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // SVG's feTurbulence fractal noise, stitched so a 128-pixel tile repeats without a seam, made gray by a color matrix.
+    Paint stone = NoisePaint.Fractal(0.03f, 0.03f, octaves: 5, seed: 7, tileSize: new Size(128, 128))
+        .WithColorMatrix(new ColorMatrix([0.3f, 0.6f, 0.1f, 0, 0, 0.3f, 0.6f, 0.1f, 0, 0, 0.3f, 0.6f, 0.1f, 0, 0, 0, 0, 0, 0, 1]));
+    canvas.DrawPaint(stone);
+
+    // Smooth simplex noise as a soft overlay.
+    canvas.DrawPaint(NoisePaint.Simplex(0.01f, octaves: 3) with { BlendMode = BlendMode.Overlay, Opacity = 0.5f });
+}
+</code></pre><pre><code class="lang-csharp">LinearGradient sky = new(new Vector2(0, 0), new Vector2(0, 100), new RgbaF32(0.2f, 0.4f, 0.9f, 1), new RgbaF32(0.9f, 0.6f, 0.4f, 1));
+NoisePaint clouds = NoisePaint.Fractal(0.02f, 0.05f, 4, seed: 3);
+
+// Noise multiplied onto the gradient, then the whole paint turned to sepia.
+Paint paint = new BlendPaint(sky, clouds, BlendMode.SoftLight).WithColorMatrix(ColorMatrix.Sepia(0.6f));
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    canvas.DrawPaint(paint);
+}
+</code></pre><pre><code class="lang-csharp">// Concentric rings from C#: a record class whose Shade fills one row of premultiplied colors. It runs on several threads at
+// once, so it keeps no state.
+public sealed record class Rings(float Spacing) : CustomPaint
+{
+    public override void Shade(int y, int x, Span&lt;PremulRgbaF32&gt; row, in Matrix3x2 inverse)
+    {
+        for (int i = 0; i &lt; row.Length; i++)
+        {
+            Vector2 p = Vector2.Transform(new Vector2(x + i + 0.5f, y + 0.5f), inverse);
+            float v = 0.5f + (0.5f * MathF.Cos(p.Length() * MathF.Tau / Spacing));
+            row[i] = new PremulRgbaF32(v, v * 0.6f, 0.2f, 1);
+        }
+    }
+}
+</code></pre>
+<p>A colour can also be given as printing inks: <code>new SolidPaint(InkColor)</code>, a <code>GradientStop</code> with an <code>InkColor</code>, and
+<code>Mesh.WithInks</code> and <code>Patch.WithInks</code> for vertex and corner colours. An ink canvas prints the inks; every other canvas,
+SVG included, draws the colour's appearance in sRGB. <code>Paint.Overprint</code> (an <code>Overprint</code>) says which plates a paint prints on an
+ink canvas, as PDF's overprint does; RGB canvases ignore it. The <a href="color-management.html">colour management guide</a> covers inks.</p>
+<pre><code class="lang-csharp">// A spot colour, overprinting what is below. An ink canvas prints its plate; this RGB canvas draws its appearance.
+var logo = Colors.InkColor.Spot(&quot;PANTONE 186 C&quot;, 1, Colors.InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+canvas.FillRect(new RectF(10, 10, 80, 40), new SolidPaint(logo) { Overprint = Overprint.On });
+</code></pre><h2 id="layers">Layers</h2>
+<p><code>SaveLayer</code> sends later drawing into a layer that the matching <code>Restore</code> merges with an opacity, a blend mode, a filter (any chain
+of Egami's operations that keeps the size) and a soft mask: what PDF calls a transparency group. Two overlapping shapes in a
+half-opacity layer fade as one. The layer covers only its bounds inside the clip, grown by the filter's reach (<code>RasterOps.Reach</code>,
+an <code>OperationReach</code>), so a blur near the clip's edge still sees what was drawn just outside it. <code>Backdrop</code> runs a chain on what
+lies behind the layer first, for frosted glass, and <code>Isolated = false</code> starts the layer from the backdrop.</p>
+<pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // Group opacity: the overlapping circles fade as one shape, with no darker overlap.
+    canvas.SaveLayer(0.5f);
+    canvas.FillCircle(new Vector2(80, 100), 60, new Rgba8(200, 30, 30, 255));
+    canvas.FillCircle(new Vector2(140, 100), 60, new Rgba8(200, 30, 30, 255));
+    canvas.Restore();
+
+    // A group blended with Multiply and blurred as a whole; the layer grows by the blur's reach, so nothing is cut.
+    canvas.SaveLayer(new LayerOptions { BlendMode = BlendMode.Multiply, Filter = ops =&gt; ops.Blur(4) });
+    canvas.FillRect(new RectF(180, 40, 90, 120), new Rgba8(40, 120, 220, 255));
+    canvas.FillCircle(new Vector2(225, 100), 30, Rgba8.White);
+    canvas.Restore();
+}
+</code></pre>
+<p>A <code>SoftMask</code> is drawn on its own canvas; its luminosity over a backdrop color, or its alpha, through an optional transfer curve,
+multiplies the layer, as a PDF soft mask does.</p>
+<pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // A luminosity mask, as a PDF soft mask: white shows the photo, black hides it, a gradient fades it out to the right.
+    RectF area = new(0, 0, photo.Width, photo.Height);
+    SoftMask fade = new(mask =&gt; mask.FillRect(area, new LinearGradient(new Vector2(area.Width * 0.6f, 0), new Vector2(area.Width, 0), new RgbaF32(1, 1, 1, 1), new RgbaF32(0, 0, 0, 1))));
+    canvas.SaveLayer(new LayerOptions { Mask = fade });
+    canvas.DrawImage(photo, Vector2.Zero);
+    canvas.Restore();
+}
+</code></pre><h3 id="common-layer-effects">Common layer effects</h3>
+<p>In Egami each layer effect is a <code>LayerOptions.Filter</code> or <code>Backdrop</code> chain, so any Egami operation works on a layer.</p>
+<table>
+<thead>
+<tr>
+<th>Effect</th>
+<th>Egami</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gaussian or box blur effect</td>
+<td><code>Filter = o =&gt; o.Blur(sigma)</code> or <code>o.BoxBlur(radius)</code></td>
+</tr>
+<tr>
+<td>Drop shadow</td>
+<td><code>Filter = o =&gt; o.DropShadow(dx, dy, sigma, color, new DropShadowOptions { Expand = false })</code></td>
+</tr>
+<tr>
+<td>Outer glow</td>
+<td><code>Filter = o =&gt; o.Glow(sigma, color, spread)</code></td>
+</tr>
+<tr>
+<td>Inner glow</td>
+<td><code>Filter = o =&gt; o.Glow(sigma, color, spread, inner: true)</code></td>
+</tr>
+<tr>
+<td>Inner shadow</td>
+<td><code>Filter = o =&gt; o.InnerShadow(dx, dy, sigma, color)</code></td>
+</tr>
+<tr>
+<td>Color matrix, brightness, contrast, saturation, grayscale, sepia, hue</td>
+<td><code>Filter = o =&gt; o.ColorMatrix(...)</code> and the tone steps</td>
+</tr>
+<tr>
+<td>Opacity</td>
+<td><code>LayerOptions.Opacity</code></td>
+</tr>
+<tr>
+<td>Blend mode</td>
+<td><code>LayerOptions.BlendMode</code></td>
+</tr>
+<tr>
+<td>Backdrop blur and other backdrop effects</td>
+<td><code>Backdrop = o =&gt; o.Blur(sigma)</code> and any other chain</td>
+</tr>
+</tbody>
+</table>
+<h2 id="blurs-and-shadows">Blurs and shadows</h2>
+<p><code>Paint.Blur</code> takes a <code>MaskBlur</code>: the shape's coverage blurred by a sigma in device pixels before the paint is applied, keeping
+the inside and outside as its <code>BlurStyle</code> says, as Skia's blur mask filter. Axis-aligned rectangles with the normal style are
+blurred exactly, from the error function. <code>DrawShadow</code> casts a Material-style shadow from a shape's elevation and
+a light, after Skia's shadow utilities; a group's drop shadow is a layer filter.</p>
+<pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // A soft-edged card (exact, from the error function) and a neon outline: the stroke's outer blur only, then the stroke.
+    canvas.FillRoundRect(new RoundRect(new RectF(20, 20, 110, 80), 12), new SolidPaint(new Rgba8(30, 30, 30, 255)) { Blur = new MaskBlur(6) });
+    Path ring = Path.Circle(new Vector2(220, 60), 40);
+    canvas.StrokePath(ring, new Stroke(4), new SolidPaint(new Rgba8(255, 40, 200, 255)) { Blur = new MaskBlur(8, BlurStyle.Outer) });
+    canvas.StrokePath(ring, new Stroke(4), new Rgba8(255, 200, 250, 255));
+}
+</code></pre><pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // A card floating 12 pixels up: its ambient and spot shadows, then the card itself.
+    RoundRect card = new(new RectF(60, 40, 180, 110), 10);
+    canvas.DrawShadow(Path.RoundRect(card), new ShadowOptions { Elevation = 12 });
+    canvas.FillRoundRect(card, Rgba8.White);
+
+    // A whole group's drop shadow: a layer with a drop shadow filter that keeps the layer's size.
+    canvas.SaveLayer(new LayerOptions { Filter = ops =&gt; ops.DropShadow(3, 4, 3, new Rgba8(0, 0, 0, 90), new DropShadowOptions { Expand = false }) });
+    canvas.FillCircle(new Vector2(110, 95), 20, new Rgba8(230, 80, 40, 255));
+    canvas.FillRect(new RectF(140, 80, 60, 30), new Rgba8(40, 120, 220, 255));
+    canvas.Restore();
+}
+</code></pre><h2 id="clips">Clips</h2>
+<p><code>ClipRect</code>, <code>ClipRoundRect</code> and <code>ClipPath</code> take a <code>ClipOp</code>: <code>Intersect</code> keeps the inside, <code>Difference</code> the outside. Clips are
+antialiased unless asked not to be. A clip that is a pixel-aligned rectangle costs nothing; any other clip is a coverage mask
+of one byte per pixel of its bounds, and drawing through it costs about 1.2 times drawing without.</p>
+<pre><code class="lang-csharp">// Clips are antialiased and last until the matching Restore.
+canvas.Save();
+canvas.ClipPath(Path.Circle(new Vector2(100, 100), 80));
+canvas.ClipRect(new RectF(60, 60, 80, 80), ClipOp.Difference);   // a square hole
+canvas.DrawPaint(new Rgba8(30, 90, 200, 255));                    // fills the whole clip
+canvas.Restore();
+
+// Only whole pixels inside the clip are drawn after a pixel-aligned rectangle clip, at no extra cost.
+canvas.ClipRect(new RectF(0, 0, 100, 200));
+canvas.FillCircle(new Vector2(100, 190), 40, Rgba8.Black);
+</code></pre><h2 id="images">Images</h2>
+<p><code>DrawImage</code> draws all or part of an image into a rectangle, under the transform and clip, sampled with Egami's
+<code>SamplingOptions</code>. At its own size on whole pixels it blends exactly as <code>DrawImage</code> in an operation chain does.</p>
+<pre><code class="lang-csharp">using Raster photo = Raster.Load(&quot;duck.png&quot;);
+using Raster&lt;Rgba8&gt; page = Raster.Create(800, 600, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = page.CreateCanvas())
+{
+    // At its own size: whole-pixel placement blends exactly as DrawImage does.
+    canvas.DrawImage(photo, new Vector2(10, 10));
+
+    // Scaled into a rectangle and turned, sampled with any of Egami's filters.
+    canvas.Save();
+    canvas.Rotate(-8, new Vector2(500, 300));
+    canvas.DrawImage(photo, new RectF(350, 150, 300, 300 * photo.Height / photo.Width), new SamplingOptions { Filter = ResampleFilter.Lanczos3 });
+    canvas.Restore();
+
+    // A part of the image, at half opacity.
+    canvas.DrawImage(photo, source: new RectF(0, 0, 100, 100), destination: new RectF(10, 450, 140, 140), paint: new SolidPaint(Rgba8.Black) { Opacity = 0.5f });
+}
+</code></pre><h2 id="nine-patches-and-lattices">Nine-patches and lattices</h2>
+<p><code>DrawImageNinePatch</code> stretches an image to a rectangle while its corners keep their size: the edges stretch one way and the
+center both ways, as Skia's drawImageNine. <code>DrawImageLattice</code> generalizes it: a <code>Lattice</code>'s x and y divisions cut the image into
+columns and rows that alternate fixed and stretchable, and each cell can draw its part of the image, nothing, or a fixed color
+(<code>LatticeCellKind</code>). Fixed parts shrink in proportion when the destination is too small for them. <code>NinePatch.FromAndroid</code> reads
+an Android .9.png: the one-pixel border's black markers become the lattice, and the right and bottom markers the content
+padding.</p>
+<pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // An Android .9.png: its one-pixel border marks what stretches. The corners stay sharp at any size.
+    (Raster inner, Lattice lattice, Rect? padding) = NinePatch.FromAndroid(file);
+    canvas.DrawImageLattice(inner, lattice, new RectF(10, 10, 180, 48));
+    inner.Dispose();
+
+    // A nine-patch from a plain image: the 8-pixel corners keep their size, the edges and center stretch.
+    canvas.DrawImageNinePatch(frame, new Rect(8, 8, 8, 8), new RectF(10, 70, 120, 40));
+
+    // A lattice can leave cells out or fill them with a color: here the center becomes a flat panel.
+    LatticeCellKind[] kinds = [.. Enumerable.Repeat(LatticeCellKind.Default, 9)];
+    kinds[4] = LatticeCellKind.FixedColor;
+    RgbaF32[] colors = new RgbaF32[9];
+    colors[4] = new RgbaF32(0.95f, 0.95f, 0.9f, 1);
+    canvas.DrawImageLattice(frame, new Lattice([8, 16], [8, 16]) { CellKinds = kinds, CellColors = colors }, new RectF(150, 70, 140, 40));
+}
+</code></pre>
+<p>The raster backend draws the cells as one textured mesh, so neighboring cells meet without seams at any scale or position.</p>
+<h2 id="sprite-atlases">Sprite atlases</h2>
+<p><code>DrawAtlas</code> draws many sprites from one image in one call, as Skia's drawAtlas: each sprite is a source rectangle placed by a
+<code>SpriteTransform</code> (a rotation and uniform scale, then a move, as Skia's RSXform), and may be tinted by a color combined with it
+by a blend mode. Each sprite blends with what lies below on its own, so additive particles add up. It pairs with
+<code>SpriteSheet.Pack</code>; the sheet's texels are prepared once for the whole call.</p>
+<pre><code class="lang-csharp">// Pack the sprites once, then draw thousands of them in one call: each with its own place, turn, scale and tint.
+using SpriteSheet sheet = SpriteSheet.Pack([spark, star], new SpritePackOptions { Padding = 1 });
+Random random = new(7);
+SpriteTransform[] transforms = new SpriteTransform[2000];
+RectF[] sources = new RectF[transforms.Length];
+RgbaF32[] tints = new RgbaF32[transforms.Length];
+for (int i = 0; i &lt; transforms.Length; i++)
+{
+    Rect frame = sheet.Frames[i % 2];
+    sources[i] = frame;
+    transforms[i] = SpriteTransform.FromRotationScale(
+        scale: 0.3f + random.NextSingle(),
+        degrees: random.NextSingle() * 360,
+        position: new Vector2(random.NextSingle() * 320, random.NextSingle() * 200),
+        anchor: new Vector2(frame.Width / 2f, frame.Height / 2f));
+    tints[i] = new RgbaF32(1, 0.5f + (random.NextSingle() / 2), random.NextSingle(), 0.8f);
+}
+
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // Plus adds the sprites up, as light does.
+    canvas.DrawAtlas(sheet.Image, transforms, sources, tints, BlendMode.Modulate, paint: new SolidPaint(Rgba8.White) { BlendMode = BlendMode.Plus });
+}
+</code></pre><h2 id="meshes-and-patches">Meshes and patches</h2>
+<p>A <code>Mesh</code> is triangles (<code>MeshMode</code>: a list, a strip or a fan, from the vertices or from indices) with an optional color,
+texture coordinate or value at each vertex. <code>DrawMesh</code> fills the triangles' union once, antialiased on its outer edges only, so
+a mesh has no cracks between its triangles, which PDF requires of its mesh shadings; where triangles overlap, the later one
+shows. Vertex colors interpolate in the canvas's color space, premultiplied (Gouraud shading); with texture coordinates, the
+paint is mapped onto each triangle; and the two combine by a blend mode, the vertex color as the destination. As in Skia, a
+solid paint's color gives way to the vertex colors and only its alpha applies.</p>
+<pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // Gouraud shading: a color at each corner, blended across each triangle without cracks between them.
+    Vector2[] quad = [new(10, 10), new(140, 20), new(130, 140), new(20, 120)];
+    RgbaF32[] colors = [new(1, 0.2f, 0.2f, 1), new(1, 0.9f, 0.2f, 1), new(0.2f, 0.6f, 1, 1), new(0.6f, 0.2f, 0.9f, 1)];
+    canvas.DrawMesh(new Mesh(MeshMode.Fan, quad, colors), Rgba8.White);
+
+    // A textured mesh: each vertex says which point of the paint lands on it, here bending a photo into a trapezoid.
+    Vector2[] trapezoid = [new(170, 20), new(280, 30), new(290, 140), new(160, 130)];
+    Vector2[] corners = [new(0, 0), new(64, 0), new(64, 64), new(0, 64)];
+    canvas.DrawMesh(new Mesh(MeshMode.Fan, trapezoid, texCoords: corners), new ImagePaint(photo));
+}
+</code></pre>
+<p>A <code>Patch</code> is a curved four-sided surface: a Coons patch from four cubic edges (<code>Patch.Coons</code>, 12 points, PDF shading type 6
+and Skia's drawPatch) or a tensor-product patch from a 4×4 net (<code>Patch.Tensor</code>, PDF type 7), with colors, values or texture
+coordinates at its corners. <code>DrawPatch</code> cuts it into triangles under the current transform until they stray less than a
+quarter of a device pixel from the surface, and where it folds over itself the larger parameters cover the smaller, as PDF
+specifies.</p>
+<pre><code class="lang-csharp">// A Coons patch: four cubic edges, clockwise from the top-left corner, and a color at each corner.
+Vector2[] edges =
+[
+    new(20, 20), new(80, 0), new(150, 40), new(220, 20),    // top, left to right
+    new(200, 80), new(240, 140), new(220, 180),             // right, down
+    new(150, 160), new(80, 200), new(20, 180),              // bottom, right to left
+    new(40, 120), new(0, 60),                               // left, up
+];
+Patch patch = Patch.Coons(edges, [new RgbaF32(1, 0, 0, 1), new RgbaF32(1, 1, 0, 1), new RgbaF32(0, 0, 1, 1), new RgbaF32(0, 1, 0, 1)]);
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    canvas.DrawPatch(patch);
+
+    // PDF's function-based shadings give each corner a value instead, mapped through a gradient's stops.
+    Patch shaded = Patch.Tensor(patch.ToTensorNet().Span, cornerValues: [0, 0.3f, 1, 0.6f]);
+    canvas.Translate(10, 10);
+    canvas.Scale(0.3f);
+    canvas.DrawPatch(shaded, valueStops: [new GradientStop(0, Rgba8.Black), new GradientStop(1, Rgba8.White)]);
+}
+</code></pre>
+<p>Values are PDF's way of shading through a function: each vertex or corner carries one number t, interpolated, then mapped to a
+color through gradient stops, so a renderer of PDF shadings types 4 to 7 hands Egami its meshes and patches directly and the
+colors stay smooth inside each triangle.</p>
+<h2 id="recorded-drawings">Recorded drawings</h2>
+<p>A <code>PictureRecorder</code> is a canvas that records instead of drawing; <code>Finish</code> returns an immutable <code>Picture</code>. <code>DrawPicture</code> replays
+it on any canvas under a matrix, through the public calls, so it stays sharp at any scale and a vector backend receives it as
+vectors. A paint with an opacity or a blend mode merges the whole drawing as one layer; <code>cacheAsImage</code> draws an image of it
+rendered at the current scale and kept with the drawing, for a drawing repeated many times at one scale. <code>ToRaster</code> renders it,
+and <code>Playback</code> replays it without the state <code>DrawPicture</code> adds. A drawing replays on many threads and canvases at once.</p>
+<pre><code class="lang-csharp">// Record any picture code once...
+PictureRecorder recorder = new(new RectF(0, 0, 40, 40));
+DrawLogo(recorder);
+Picture logo = recorder.Finish();
+
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // ...and replay it anywhere, at any scale, still sharp: replay is vector.
+    canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(10, 10));
+    canvas.DrawPicture(logo, Matrix3x2.CreateScale(4) * Matrix3x2.CreateTranslation(60, 10));
+
+    // A paint with an opacity merges the whole picture as one layer.
+    canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(240, 10), new SolidPaint(Rgba8.White) { Opacity = 0.4f });
+
+    // Drawn many times at one scale, a cached image is cheaper than replaying.
+    for (int i = 0; i &lt; 6; i++)
+    {
+        canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(230 + (i * 25), 150), cacheAsImage: true);
+    }
+}
+
+using Raster&lt;Rgba8&gt; icon = logo.ToRaster&lt;Rgba8&gt;(scale: 2);
+</code></pre><h3 id="drawing-patterns">Drawing patterns</h3>
+<p>A <code>PicturePaint</code> fills shapes with a drawing repeated by tile modes: the tiling patterns of PDF and SVG, and Skia's picture
+shader. The raster backend renders one tile at the scale it is drawn at and keeps it with the drawing, so a zoomed pattern stays
+sharp.</p>
+<pre><code class="lang-csharp">// A tile drawn once as vectors fills any shape, repeated, and stays sharp when the canvas is zoomed.
+PictureRecorder tile = new(new RectF(0, 0, 20, 20));
+tile.FillCircle(new Vector2(10, 10), 4, new Rgba8(220, 60, 60, 255));
+tile.StrokeRect(new RectF(0.5f, 0.5f, 19, 19), new Stroke(1), new Rgba8(230, 230, 230, 255));
+PicturePaint dots = new(tile.Finish(), TileMode.Repeat, TileMode.Repeat) { LocalMatrix = Matrix3x2.CreateRotation(MathF.PI / 8) };
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    canvas.FillRoundRect(new RoundRect(new RectF(10, 10, 280, 180), 24), dots);
+}
+</code></pre><h3 id="documents">Documents</h3>
+<p>A canvas also carries what a document backend needs and pixels never show. <code>DrawImage</code> takes an <code>EncodedImage</code>, a file's bytes
+probed but not decoded, so a PDF page can embed a JPEG as it is while a raster canvas draws the decoded pixels.
+<code>DrawImageMask</code> paints through an image used as a mask, as PDF's stencil masks: its alpha, or for an image without alpha its
+gray level, is the coverage. <code>LayerOptions.Knockout</code> makes a layer a knockout group: each call inside it composites with what
+the layer started as and replaces earlier calls where it covers. <code>DrawAnnotation</code> marks a link to a URL, a named destination or a link to one (<code>Annotation</code>, as Skia's drawAnnotation), and
+<code>BeginMarkedContent</code> and <code>EndMarkedContent</code> bracket drawing with a <code>MarkedContent</code> tag for tagged PDF, with a structure node id,
+replacement text and alternate text. Backends get <code>OnDrawEncodedImage</code>, <code>OnDrawAnnotation</code>, <code>OnBeginMarkedContent</code> and
+<code>OnEndMarkedContent</code>; by default the image is decoded and the others do nothing.</p>
+<pre><code class="lang-csharp">// A JPEG kept as its bytes: a PDF backend embeds them as they are; a raster canvas draws the decoded pixels.
+EncodedImage jpeg = EncodedImage.Load(&quot;photo.jpg&quot;);
+canvas.DrawImage(jpeg, new RectF(20, 20, 128, 96));
+</code></pre><pre><code class="lang-csharp">// A 1-bit scan as a stencil: its white pixels paint in ink, its black ones leave the page as it is.
+using Raster&lt;Gray8&gt; scan = Raster.Create(32, 16, new Gray8(255));
+canvas.DrawImageMask(scan, new RectF(160, 20, 64, 32), new Rgba8(20, 40, 120, 255), new SamplingOptions { Filter = ResampleFilter.Nearest });
+
+// A knockout group: each shape composites with what the group started as, so overlapping translucent shapes do not darken.
+canvas.SaveLayer(new LayerOptions { Knockout = true });
+canvas.FillCircle(new Vector2(180, 100), 20, new RgbaF32(1, 0, 0, 0.5f));
+canvas.FillCircle(new Vector2(200, 100), 20, new RgbaF32(0, 0, 1, 0.5f));
+canvas.Restore();
+</code></pre><pre><code class="lang-csharp">// A layout engine marks links, destinations and structure while it draws; pixels show none of it.
+canvas.BeginMarkedContent(new MarkedContent(&quot;P&quot;) { NodeId = 12 });
+canvas.DrawAnnotation(new RectF(20, 130, 120, 16), Annotation.Url(&quot;https://example.com&quot;));
+canvas.DrawAnnotation(new RectF(20, 150, 0, 0), Annotation.NamedDestination(&quot;chapter-2&quot;));
+canvas.EndMarkedContent();
+</code></pre><h3 id="saving-drawings">Saving drawings</h3>
+<p><code>Picture.Save</code> writes Egami's own documented binary format, <a href="egdr-format.html">.egdr</a>, and <code>Picture.Load</code> reads it back as
+untrusted input, under the context's safety limits. Images are kept as PNG, text as its outlines. A drawing that holds C# code (a
+<code>CustomPaint</code>, or a layer's filter or soft mask) cannot be saved: <code>Save</code> throws and names the call.</p>
+<pre><code class="lang-csharp">// Keep a picture in Egami's own documented format, and load it later; a loaded file is untrusted, so the context's
+// safety limits apply.
+using (FileStream file = File.Create(&quot;logo.egdr&quot;))
+{
+    logo.Save(file);
+}
+
+Picture loaded;
+using (FileStream file = File.OpenRead(&quot;logo.egdr&quot;))
+{
+    loaded = Picture.Load(file);
+}
+</code></pre><h2 id="path-geometry">Path geometry</h2>
+<p>Paths can be combined, outlined, dashed, measured, reshaped by effects, and read from and written as SVG path data. Every
+result is a new <code>Path</code> that keeps lines, quadratics and cubics where the input had them, so a vector backend writes it exactly.</p>
+<h3 id="boolean-operations">Boolean operations</h3>
+<p><code>Op</code> combines two areas with a <code>PathOp</code>: <code>Union</code>, <code>Intersect</code>, <code>Difference</code>, <code>Xor</code> or <code>ReverseDifference</code> (with shortcuts
+for the first four). <code>Path.Combine</code> takes any number of paths in one pass, applied left to right. <code>Simplify</code> returns the
+same area without overlaps or self-intersections.</p>
+<pre><code class="lang-csharp">// A frame: one round rectangle cut out of another, kept as curves, so a PDF or SVG backend writes it exactly.
+Path frame = Path.RoundRect(new RoundRect(new RectF(0, 0, 200, 140), 24))
+    .Difference(Path.RoundRect(new RoundRect(new RectF(20, 20, 160, 100), 12)));
+
+// Many shapes in one pass, applied left to right; overlaps and self-intersections removed; an area grown by 4 units.
+Path dots = Path.Combine([Path.Circle(new Vector2(40, 40), 30), Path.Circle(new Vector2(80, 40), 30), Path.Circle(new Vector2(60, 75), 30)], PathOp.Union);
+Path clean = Path.Star(new Vector2(50, 50), 45, 20, 5).Simplify();
+Path halo = dots.Inflate(4, LineJoin.Round);
+</code></pre>
+<ul>
+<li>Each input keeps its fill rule; open contours count as closed. Results use <code>NonZero</code>, with outer contours clockwise on screen
+and holes counterclockwise, and no contours cross.</li>
+<li>Crossings are found on the curves themselves and cut exactly. The <code>tolerance</code> (0.05 units by default) is how close points
+must be to count as the same: ends and crossings within a tenth of it merge, and edges that run within it of each other
+merge, so nearly coincident outlines leave no slivers. Pass a smaller tolerance for geometry that will be drawn larger.</li>
+<li><code>Inflate</code> grows an area by a distance, or shrinks it for a negative one, with a <code>LineJoin</code> at the corners.</li>
+</ul>
+<h3 id="outlines-and-dashes">Outlines and dashes</h3>
+<p><code>Stroke.ToPath</code> returns the outline a pen draws, as a path to fill: filled at the given scale it gives exactly the stroke's
+pixels, and <code>simplify: true</code> removes its overlaps for export or hit testing. <code>Stroke.Dash</code> takes a <code>DashPattern</code> of absolute
+on and off lengths and a phase, as PDF, SVG and Skia define them; <code>Scaled</code> turns lengths given in widths into units.</p>
+<pre><code class="lang-csharp">// A dashed route: the pattern travels with the stroke, so a PDF backend writes [8 4] 0 d instead of hundreds of pieces.
+Path route = new PathBuilder().MoveTo(10, 90).CubicTo(60, 0, 140, 160, 190, 60).ToPath();
+Stroke dashed = new(3) { Cap = LineCap.Round, Dash = new DashPattern([8, 4]) };
+using Raster&lt;Rgba8&gt; map = Raster.Create(200, 120, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = map.CreateCanvas())
+{
+    canvas.StrokePath(route, dashed, new Rgba8(200, 60, 30, 255));
+}
+
+// The outline the stroke fills, as a path: for hit testing, or to export without strokes.
+Path outline = dashed.ToPath(route, simplify: true);
+</code></pre>
+<p>A backend receives the pattern as data, so PDF can write <code>d</code> and SVG <code>stroke-dasharray</code>; the raster backend cuts the path
+into dashes along its curves before outlining it.</p>
+<h3 id="measuring">Measuring</h3>
+<p><code>PathMeasure</code> lists each contour as a <code>ContourMeasure</code>: its <code>Length</code>, and the position, tangent and placing matrix at any
+distance. <code>GetSegment</code> returns a piece of the contour that keeps its curves; <code>AddSegment</code> chains pieces into one contour.
+Lengths are integrated, not taken from a flattened outline, and are exact to about 1e-4 units.</p>
+<pre><code class="lang-csharp">// Measure a path: its length, and a point and direction at any distance, curves included.
+Path route = new PathBuilder().MoveTo(10, 90).CubicTo(60, 0, 140, 160, 190, 60).ToPath();
+PathMeasure measure = new(route);
+ContourMeasure contour = measure.Contours[0];
+Vector2 halfway = contour.GetPosition(contour.Length / 2);
+Vector2 heading = contour.GetTangent(contour.Length / 2);
+
+// An arrowhead placed at the end, turned along the path, and the middle third as a path of its own (still a cubic).
+Path arrow = Path.Polygon([new(-6, -4), new(0, 0), new(-6, 4)]).Transform(contour.GetMatrix(contour.Length));
+Path middle = contour.GetSegment(contour.Length / 3, 2 * contour.Length / 3);
+</code></pre><h3 id="path-effects">Path effects</h3>
+<p>A <code>PathEffect</code> turns one path into another: <code>Dash</code>, <code>Corner</code> (rounded corners), <code>Trim</code>, <code>Jitter</code>, <code>Stamp</code> (a shape repeated
+along the path, placed by a <code>StampStyle</code>), <code>Hatch</code> and <code>HatchPath</code> (lines or shapes on a lattice inside an area). <code>Then</code> and
+<code>Plus</code> combine them. <code>path.Apply(effect)</code> applies one; <code>Stroke.Effect</code> has the canvas apply it before dashing and stroking.</p>
+<pre><code class="lang-csharp">// A hand-drawn chart line: jittered the same way on every run, then its corners rounded.
+Path data = Path.Polygon([new(10, 80), new(50, 30), new(90, 60), new(130, 20), new(170, 50)], close: false);
+PathEffect sketchy = PathEffect.Jitter(segmentLength: 6, deviation: 1.5f, seed: 7).Then(PathEffect.Corner(3));
+using Raster&lt;Rgba8&gt; chart = Raster.Create(180, 100, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = chart.CreateCanvas())
+{
+    canvas.StrokePath(data, new Stroke(2) { Effect = sketchy }, new Rgba8(40, 40, 40, 255));
+
+    // Dots along the line, and hatching inside a circle.
+    canvas.FillPath(data.Apply(PathEffect.Stamp(Path.Circle(Vector2.Zero, 2), advance: 12, style: StampStyle.Translate)), Rgba8.Black);
+    canvas.FillPath(Path.Circle(new Vector2(150, 75), 20).Apply(PathEffect.Hatch(Matrix3x2.CreateScale(1, 5) * Matrix3x2.CreateRotation(0.6f), width: 1)), Rgba8.Black);
+}
+
+// A line that draws itself: trim it to a growing fraction of its length, frame by frame.
+Path frame30 = data.Apply(PathEffect.Trim(0, 0.3f));
+</code></pre>
+<p><code>Jitter</code> hashes its seed with the contour and the point, so a path jitters the same way on every thread and machine.</p>
+<h3 id="svg-path-data">SVG path data</h3>
+<p><code>Path.ParseSvg</code> reads the <code>d</code> attribute grammar of SVG 1.1 and 2; <code>TryParseSvg</code> returns false instead of throwing
+<code>SvgPathException</code>, and <code>lenient: true</code> keeps every complete command before the first error. <code>ToSvg</code> writes path data, absolute
+or relative, compact or spaced, to a precision (<code>SvgPathFormat</code>).</p>
+<pre><code class="lang-csharp">// An icon from SVG path data, drawn four times larger, and written back as compact relative data.
+Path heart = Path.ParseSvg(&quot;M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09&quot; +
+                           &quot;C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z&quot;);
+string d = heart.Transform(Matrix3x2.CreateScale(4)).ToSvg(new SvgPathFormat { Relative = true, Compact = true });
+
+// Untrusted data: TryParseSvg says whether it is valid; lenient keeps what comes before an error, as browsers draw it.
+bool valid = Path.TryParseSvg(&quot;M0 0 L10 10 L20&quot;, out Path? strict);
+Path drawn = Path.ParseSvg(&quot;M0 0 L10 10 L20&quot;, lenient: true);
+try
+{
+    Path.ParseSvg(&quot;M0 0 X&quot;);
+}
+catch (SvgPathException e)
+{
+    Console.WriteLine($&quot;{e.Problem} at character {e.Position}&quot;);
+}
+</code></pre><h2 id="in-an-operation-chain">In an operation chain</h2>
+<p><code>Draw</code> adds a step that draws on each frame with a canvas over the step's pixels (<code>DrawingExtensions</code>).</p>
+<pre><code class="lang-csharp">// Draw as a step in an operation chain: inside Within the canvas covers the area, with its origin at the area's corner.
+raster.Apply(ops =&gt; ops
+    .Draw(canvas =&gt; canvas.FillRect(new RectF(0, 0, 300, 200), new Rgba8(240, 240, 255, 255)))
+    .Within(new Rect(100, 50, 100, 100), area =&gt; area.Draw(canvas =&gt; canvas.FillCircle(new Vector2(50, 50), 40, Rgba8.Red))),
+    Ct);
+
+// On an animation the step runs once per frame, and can be told which.
+raster.Apply(ops =&gt; ops.Draw((canvas, frame) =&gt; canvas.FillCircle(new Vector2(20 + (frame * 4), 20), 10, Rgba8.Black)), Ct);
+</code></pre><h2 id="printing-inks">Printing inks</h2>
+<p><code>InkCanvas</code> draws into an <code>InkRaster</code>'s plates instead of RGB pixels. It shares the raster canvas's rasterizer, clips and layers,
+so shapes, strokes and text cover the same pixels; where the RGB canvas blends colours, it sets each plate. Ink paints print
+their inks by name, and RGB colours, gradients and images convert into the process inks as <code>InkCanvasOptions</code> says (the RGB
+encoding, intent and black point compensation). <code>InkCanvas.Clear(InkColor.None)</code> leaves blank paper.</p>
+<pre><code class="lang-csharp">// Plates for CMYK and a spot; an RGB photo converts through FOGRA39, the logo prints on its own plate.
+Egami.Colors.InkSet inks = Egami.Colors.InkSet.FromProfile(Egami.Colors.ColorProfile.Fogra39)
+    .WithSpot(&quot;PANTONE 186 C&quot;, Egami.Colors.InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+using InkRaster page = new(inks, 300, 200);
+using (InkCanvas canvas = new(page))
+{
+    canvas.Clear(Egami.Colors.InkColor.None);                                   // paper
+    canvas.FillRect(new RectF(0, 0, 300, 120), new Rgba8(80, 140, 200, 255));   // RGB: converted to CMYK
+    canvas.FillCircle(new Vector2(150, 100), 40, new SolidPaint(Egami.Colors.InkColor.Spot(inks[4], 1)));
+}
+</code></pre><h2 id="other-backends">Other backends</h2>
+<p><code>Canvas</code> is abstract. Each public call is checked, tracked (transform, clip bounds, save stack) and then ends in one protected
+hook, so a backend sees shapes and pens as data: a PDF page can write a rectangle as <code>re</code> and a pen as <code>w</code>, <code>J</code>, <code>j</code> and <code>M</code>.
+Hooks a backend leaves alone have defaults: rectangles, round rectangles and ovals become paths. A backend that cannot express a
+call (a blend mode its format lacks, a <code>CustomPaint</code>, a filtered layer) can draw it into pixels with <code>RasterizeFallback</code>, which
+returns a <code>FallbackImage</code>. Layers reach a backend through <code>OnSaveLayer</code> and <code>OnRestoreLayer</code>; a PDF page would write a
+transparency group with its opacity, blend mode and soft mask. <code>OnDrawMesh</code> and <code>OnDrawPatch</code> let a PDF page write shading
+types 4 to 7, <code>OnDrawPicture</code> a form XObject drawn once and referenced each time, and <code>OnDrawImageLattice</code> and <code>OnDrawAtlas</code> images
+per cell or sprite; by default meshes go through the raster fallback, patches become meshes, and the others become images and
+meshes.</p>
+<pre><code class="lang-csharp">// A backend overrides hooks; the base class has already checked the arguments and tracks the transform and clip bounds.
+// This one writes SVG elements, keeping rectangles as rectangles and strokes as stroke settings.
+public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
+{
+    private readonly System.Text.StringBuilder _body = new();
+
+    public string Document =&gt; $&quot;&lt;svg xmlns=\&quot;http://www.w3.org/2000/svg\&quot; width=\&quot;{Width}\&quot; height=\&quot;{Height}\&quot;&gt;{_body}&lt;/svg&gt;&quot;;
+
+    protected override void OnDrawRect(RectF rect, Stroke? stroke, Paint paint)
+        =&gt; _body.Append(FormattableString.Invariant($&quot;&lt;rect x=\&quot;{rect.X}\&quot; y=\&quot;{rect.Y}\&quot; width=\&quot;{rect.Width}\&quot; height=\&quot;{rect.Height}\&quot; {Style(stroke, paint)}/&gt;&quot;));
+
+    protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)
+    {
+        System.Text.StringBuilder d = new();
+        int p = 0;
+        foreach (PathVerb verb in path.Verbs)
+        {
+            int count = verb switch { PathVerb.Quad =&gt; 2, PathVerb.Cubic =&gt; 3, PathVerb.Close =&gt; 0, _ =&gt; 1 };
+            d.Append(verb switch { PathVerb.Move =&gt; &quot;M&quot;, PathVerb.Line =&gt; &quot;L&quot;, PathVerb.Quad =&gt; &quot;Q&quot;, PathVerb.Cubic =&gt; &quot;C&quot;, _ =&gt; &quot;Z&quot; });
+            foreach (Vector2 point in path.Points.Slice(p, count))
+            {
+                d.Append(FormattableString.Invariant($&quot;{point.X},{point.Y} &quot;));
+            }
+
+            p += count;
+        }
+
+        _body.Append(System.Globalization.CultureInfo.InvariantCulture, $&quot;&lt;path d=\&quot;{d}\&quot; {Style(stroke, paint)}/&gt;&quot;);
+    }
+
+    protected override void OnClipPath(Path path, ClipOp op, bool antialias)
+    {
+        // Clips would become &lt;clipPath&gt; elements; this sketch leaves them out.
+    }
+
+    protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
+    {
+        // An image would be embedded as a PNG data URI.
+    }
+
+    private string Style(Stroke? stroke, Paint paint)
+    {
+        Rgba8 c = paint is SolidPaint solid ? solid.Color.ToRgba8() : Rgba8.Black;
+        string color = $&quot;#{c.R:x2}{c.G:x2}{c.B:x2}&quot;;
+        string transform = Matrix.IsIdentity ? &quot;&quot; : FormattableString.Invariant($&quot; transform=\&quot;matrix({Matrix.M11} {Matrix.M12} {Matrix.M21} {Matrix.M22} {Matrix.M31} {Matrix.M32})\&quot;&quot;);
+        return stroke is null
+            ? $&quot;fill=\&quot;{color}\&quot;{transform}&quot;
+            : FormattableString.Invariant($&quot;fill=\&quot;none\&quot; stroke=\&quot;{color}\&quot; stroke-width=\&quot;{stroke.Width}\&quot; stroke-linecap=\&quot;{stroke.Cap.ToString().ToLowerInvariant()}\&quot;{transform}&quot;);
+    }
+}
+</code></pre><h2 id="accuracy-and-speed">Accuracy and speed</h2>
+<p>Fills are within a mean level of SkiaSharp's and closer than SkiaSharp's to the exact covered area.
+Boolean operations, outlines, dashes, effects and SVG parsing give paths within a mean level of SkiaSharp's, and measured lengths agree within 1e-3. The figures are in the 2.6.1
+and 2.6.2 release notes.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/drawing.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

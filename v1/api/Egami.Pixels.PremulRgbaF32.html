@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct PremulRgbaF32 | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct PremulRgbaF32 | Egami ">
+      
+      <meta name="description" content="A pixel with 32-bit float red, green and blue channels premultiplied by the alpha channel, in that order, for float compositing and blending. The conversions take and return straight colors; values are not clamped, except that a premultiplied pixel with zero alpha has no color.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Pixels_PremulRgbaF32.md&amp;value=---%0Auid%3A%20Egami.Pixels.PremulRgbaF32%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Pixels.PremulRgbaF32">
+
+
+
+  <h1 id="Egami_Pixels_PremulRgbaF32" data-uid="Egami.Pixels.PremulRgbaF32" class="text-break">
+Struct PremulRgbaF32  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L14"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Pixels.html">Pixels</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A pixel with 32-bit float red, green and blue channels premultiplied by the alpha channel, in that order, for float
+compositing and blending. The conversions take and return straight colors; values are not clamped, except that a
+premultiplied pixel with zero alpha has no color.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public struct PremulRgbaF32 : IPixelType&lt;PremulRgbaF32&gt;, IEquatable&lt;PremulRgbaF32&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Pixels.IPixelType-1.html">IPixelType</a>&lt;<a class="xref" href="Egami.Pixels.PremulRgbaF32.html">PremulRgbaF32</a>&gt;</div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Pixels.PremulRgbaF32.html">PremulRgbaF32</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Pixels_PremulRgbaF32_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Eight-bit, sixteen-bit and float pixels; every type converts to every other through PixelConvert.
+Rgba8 orange = new(255, 128, 0, 255);
+Bgr8 bgr = Bgr8.FromRgba8(orange);
+Gray8 gray = Gray8.FromRgba8(orange);
+GrayAlpha8 grayAlpha = new(gray.L, 128);
+Gray16 deep = Gray16.FromRgba8(orange);
+Rgba16 wide = new(65535, 32896, 0, 65535);
+Rgb16 wideOpaque = Rgb16.FromRgba16(wide);           // exact: 16-bit to 16-bit never rounds
+GrayAlpha16 deepMask = new(deep.L, 32768);
+Argb8 alphaFirst = Argb8.FromRgba8(orange);             // bytes A, R, G, B
+Alpha8 mask = Alpha8.FromRgba8(orange);                 // alpha only; reads back as black
+RgbaF16 hdr = RgbaF16.FromScaled(new Vector4(4f, 2f, 0.5f, 1f)); // half floats keep values above 1
+GrayF32 depth = new(12.5f);                              // floats hold any value until written to an integer type
+Bgr565 packed = Bgr565.FromRgba8(orange);                // 5-6-5 levels in one ushort; rounds to the nearest level
+Cmyk8 ink = Cmyk8.FromRgba8(orange);                     // inks by the plain formula: (0, 127, 255, 0)
+PremulRgba8 glass = PremulRgba8.FromRgba8(new Rgba8(255, 128, 0, 128)); // stored (128, 64, 0, 128); converts back straight
+RgbaF32 linear = RgbaF32.FromScaled(orange.ToScaled());
+
+Rgba8[] row = [orange, Rgba8.Transparent];
+Bgra8[] converted = new Bgra8[row.Length];
+PixelConvert.Convert&lt;Rgba8, Bgra8&gt;(row, converted);</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Pixels_PremulRgbaF32__ctor_" data-uid="Egami.Pixels.PremulRgbaF32.#ctor*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32__ctor_System_Single_System_Single_System_Single_System_Single_" data-uid="Egami.Pixels.PremulRgbaF32.#ctor(System.Single,System.Single,System.Single,System.Single)">
+  PremulRgbaF32(float, float, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Pixels.PremulRgbaF32.html">PremulRgbaF32</a> struct from premultiplied channels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PremulRgbaF32(float r, float g, float b, float a)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>r</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The red channel, already premultiplied.</p>
+</dd>
+    <dt><code>g</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The green channel, already premultiplied.</p>
+</dd>
+    <dt><code>b</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The blue channel, already premultiplied.</p>
+</dd>
+    <dt><code>a</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The alpha channel.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="fields">Fields
+</h2>
+
+
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_A" data-uid="Egami.Pixels.PremulRgbaF32.A">
+  A
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The alpha channel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float A</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_B" data-uid="Egami.Pixels.PremulRgbaF32.B">
+  B
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The blue channel, premultiplied.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float B</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_G" data-uid="Egami.Pixels.PremulRgbaF32.G">
+  G
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L21"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The green channel, premultiplied.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float G</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_R" data-uid="Egami.Pixels.PremulRgbaF32.R">
+  R
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The red channel, premultiplied.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float R</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Pixels_PremulRgbaF32_Layout_" data-uid="Egami.Pixels.PremulRgbaF32.Layout*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_Layout" data-uid="Egami.Pixels.PremulRgbaF32.Layout">
+  Layout
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the memory layout of this pixel type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static PixelLayoutInfo Layout { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.PixelLayoutInfo.html">PixelLayoutInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Pixels_PremulRgbaF32_Equals_" data-uid="Egami.Pixels.PremulRgbaF32.Equals*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_Equals_Egami_Pixels_PremulRgbaF32_" data-uid="Egami.Pixels.PremulRgbaF32.Equals(Egami.Pixels.PremulRgbaF32)">
+  Equals(PremulRgbaF32)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Indicates whether the current object is equal to another object of the same type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly bool Equals(PremulRgbaF32 other)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Pixels.PremulRgbaF32.html">PremulRgbaF32</a></dt>
+    <dd><p>An object to compare with this object.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the current object is equal to the <code class="paramref">other</code> parameter; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PremulRgbaF32_Equals_" data-uid="Egami.Pixels.PremulRgbaF32.Equals*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_Equals_System_Object_" data-uid="Egami.Pixels.PremulRgbaF32.Equals(System.Object)">
+  Equals(object?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Indicates whether this instance and a specified object are equal.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override readonly bool Equals(object? obj)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>obj</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></dt>
+    <dd><p>The object to compare with the current instance.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if <code class="paramref">obj</code> and this instance are the same type and represent the same value; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PremulRgbaF32_FromRgba8_" data-uid="Egami.Pixels.PremulRgbaF32.FromRgba8*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_FromRgba8_Egami_Pixels_Rgba8_" data-uid="Egami.Pixels.PremulRgbaF32.FromRgba8(Egami.Pixels.Rgba8)">
+  FromRgba8(Rgba8)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a pixel from an 8-bit color. The conversion is exact wherever the type can hold the color.
+Gray types take the Rec. 709 luma, weighted in linear light. Types without alpha drop it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static PremulRgbaF32 FromRgba8(Rgba8 value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>value</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.PremulRgbaF32.html">PremulRgbaF32</a></dt>
+    <dd><p>The pixel.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PremulRgbaF32_FromScaled_" data-uid="Egami.Pixels.PremulRgbaF32.FromScaled*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_FromScaled_System_Numerics_Vector4_" data-uid="Egami.Pixels.PremulRgbaF32.FromScaled(System.Numerics.Vector4)">
+  FromScaled(Vector4)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L48"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a pixel from a straight color by multiplying red, green and blue by alpha. Values are not clamped.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static PremulRgbaF32 FromScaled(Vector4 rgba)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rgba</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector4">Vector4</a></dt>
+    <dd><p>The straight color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.PremulRgbaF32.html">PremulRgbaF32</a></dt>
+    <dd><p>The pixel.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PremulRgbaF32_GetHashCode_" data-uid="Egami.Pixels.PremulRgbaF32.GetHashCode*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_GetHashCode" data-uid="Egami.Pixels.PremulRgbaF32.GetHashCode">
+  GetHashCode()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the hash code for this instance.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override readonly int GetHashCode()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>A 32-bit signed integer that is the hash code for this instance.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PremulRgbaF32_ToRgba8_" data-uid="Egami.Pixels.PremulRgbaF32.ToRgba8*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_ToRgba8" data-uid="Egami.Pixels.PremulRgbaF32.ToRgba8">
+  ToRgba8()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the pixel as an 8-bit color. 16-bit channels are rounded to the nearest 8-bit value,
+and gray is copied to red, green and blue.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly Rgba8 ToRgba8()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The 8-bit color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PremulRgbaF32_ToScaled_" data-uid="Egami.Pixels.PremulRgbaF32.ToScaled*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_ToScaled" data-uid="Egami.Pixels.PremulRgbaF32.ToScaled">
+  ToScaled()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the straight color: red, green and blue divided by alpha, or transparent black when alpha is 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly Vector4 ToScaled()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector4">Vector4</a></dt>
+    <dd><p>The straight color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PremulRgbaF32_ToString_" data-uid="Egami.Pixels.PremulRgbaF32.ToString*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_ToString" data-uid="Egami.Pixels.PremulRgbaF32.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the fully qualified type name of this instance.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override readonly string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The fully qualified type name.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="operators">Operators
+</h2>
+
+
+  <a id="Egami_Pixels_PremulRgbaF32_op_Equality_" data-uid="Egami.Pixels.PremulRgbaF32.op_Equality*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_op_Equality_Egami_Pixels_PremulRgbaF32_Egami_Pixels_PremulRgbaF32_" data-uid="Egami.Pixels.PremulRgbaF32.op_Equality(Egami.Pixels.PremulRgbaF32,Egami.Pixels.PremulRgbaF32)">
+  operator ==(PremulRgbaF32, PremulRgbaF32)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a value indicating whether two pixels are equal.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool operator ==(PremulRgbaF32 left, PremulRgbaF32 right)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>left</code> <a class="xref" href="Egami.Pixels.PremulRgbaF32.html">PremulRgbaF32</a></dt>
+    <dd><p>The first pixel.</p>
+</dd>
+    <dt><code>right</code> <a class="xref" href="Egami.Pixels.PremulRgbaF32.html">PremulRgbaF32</a></dt>
+    <dd><p>The second pixel.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if every stored channel is equal.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Pixels_PremulRgbaF32_op_Inequality_" data-uid="Egami.Pixels.PremulRgbaF32.op_Inequality*"></a>
+
+  <h3 id="Egami_Pixels_PremulRgbaF32_op_Inequality_Egami_Pixels_PremulRgbaF32_Egami_Pixels_PremulRgbaF32_" data-uid="Egami.Pixels.PremulRgbaF32.op_Inequality(Egami.Pixels.PremulRgbaF32,Egami.Pixels.PremulRgbaF32)">
+  operator !=(PremulRgbaF32, PremulRgbaF32)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a value indicating whether two pixels differ.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool operator !=(PremulRgbaF32 left, PremulRgbaF32 right)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>left</code> <a class="xref" href="Egami.Pixels.PremulRgbaF32.html">PremulRgbaF32</a></dt>
+    <dd><p>The first pixel.</p>
+</dd>
+    <dt><code>right</code> <a class="xref" href="Egami.Pixels.PremulRgbaF32.html">PremulRgbaF32</a></dt>
+    <dd><p>The second pixel.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if any stored channel differs.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/PremulRgbaF32.cs/#L14" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

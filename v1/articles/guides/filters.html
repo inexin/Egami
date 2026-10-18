@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Filters | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Filters | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/filters.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="filters">Filters</h1>
+
+<pre><code class="lang-csharp">using Raster soft = photo.Derive(ops =&gt; ops.Blur(3), Ct);           // Gaussian, sigma in pixels
+using Raster boxed = photo.Derive(ops =&gt; ops.BoxBlur(4), Ct);       // fast, radius in pixels
+using Raster crisp = photo.Derive(ops =&gt; ops.Sharpen(0.8f, 1.5f), Ct); // unsharp mask: amount, sigma
+
+// Any kernel: here a 3 × 3 emboss, with edges clamped and alpha left alone.
+ConvolutionKernel emboss = new(3, 3, [-2, -1, 0, -1, 1, 1, 0, 1, 2]);
+using Raster embossed = photo.Derive(ops =&gt; ops.Convolve(emboss, EdgeMode.Clamp, preserveAlpha: true), Ct);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Blur(sigma, colorSpace)</code></td>
+<td>Gaussian blur, separable; exact up to sigma 100, three box passes above</td>
+</tr>
+<tr>
+<td><code>Blur(sigma, colorSpace, BlurMethod.Fast)</code></td>
+<td>Gaussian blur in constant time per pixel at any sigma, for shadows, glows and large blurs</td>
+</tr>
+<tr>
+<td><code>BoxBlur(radius)</code></td>
+<td>Mean of a square, in constant time per pixel whatever the radius</td>
+</tr>
+<tr>
+<td><code>Sharpen(amount, sigma)</code></td>
+<td>Unsharp mask: adds <code>amount</code> times the difference from a Gaussian blur</td>
+</tr>
+<tr>
+<td><code>Convolve(kernel, edge, preserveAlpha)</code></td>
+<td>Any <code>ConvolutionKernel</code>, separable ones in two passes</td>
+</tr>
+<tr>
+<td><code>Median(radius, includeAlpha)</code></td>
+<td>The median of each channel over a square: removes salt-and-pepper noise, keeps edges</td>
+</tr>
+<tr>
+<td><code>LensBlur(radius, options)</code></td>
+<td>An out-of-focus lens: points become discs or polygons</td>
+</tr>
+<tr>
+<td><code>BilateralBlur(spatialSigma, rangeSigma)</code></td>
+<td>Smooths flat areas, keeps edges</td>
+</tr>
+<tr>
+<td><code>MotionBlur(radius, sigma, angle)</code></td>
+<td>A streak in one direction, as ImageMagick's -motion-blur</td>
+</tr>
+<tr>
+<td><code>RotationalBlur(degrees, center)</code></td>
+<td>A spin around a point, as ImageMagick's -rotational-blur</td>
+</tr>
+<tr>
+<td><code>ZoomBlur(amount, center)</code></td>
+<td>Streaks along rays from a point</td>
+</tr>
+<tr>
+<td><code>AddNoise(kind, amount, monochrome, seed)</code></td>
+<td>ImageMagick's six noise kinds, the same for a seed at any thread count</td>
+</tr>
+<tr>
+<td><code>Despeckle()</code></td>
+<td>Crimmins' speckle removal, as ImageMagick's -despeckle</td>
+</tr>
+</tbody>
+</table>
+<h2 id="large-blurs">Large blurs</h2>
+<p><code>Blur(sigma)</code> computes the exact Gaussian, so its cost grows with sigma. <code>BlurMethod.Fast</code> runs three box passes per axis whose
+widths and fractional end weights give exactly the Gaussian's variance (Gwosdek et al., 2011): it costs the same at sigma 5 or 500,
+about six times less than the exact blur at sigma 20, and stays within 50 dB PSNR of it from sigma 3 up.</p>
+<pre><code class="lang-csharp">// A large, soft background blur: Fast costs the same at any sigma and is within 50 dB of the exact Gaussian from sigma 3.
+using Raster soft = photo.Derive(ops =&gt; ops.Blur(40, ColorSpace.Linear, BlurMethod.Fast), Ct);
+</code></pre><h2 id="median-and-despeckle">Median and despeckle</h2>
+<p><code>Median</code> works on the stored values, so 8 and 16-bit results are exactly ImageMagick's <code>-statistic Median</code>. Its cost per pixel
+does not grow with the radius. <code>Despeckle</code> is gentler: it nudges values a level at a time toward their neighbours and leaves edges
+alone, exactly as ImageMagick's <code>-despeckle</code>.</p>
+<pre><code class="lang-csharp">// Salt-and-pepper noise disappears and edges stay sharp; radius 2 is a 5 × 5 window.
+photo.Apply(ops =&gt; ops.Median(2), Ct);
+</code></pre><pre><code class="lang-csharp">// Clean a scan: specks shrink, edges and text stay. Median(1) is the stronger alternative.
+scan.Apply(ops =&gt; ops.Despeckle(), Ct);
+</code></pre><h2 id="lens-and-bilateral-blur">Lens and bilateral blur</h2>
+<p><code>LensBlur</code> convolves with an aperture: a disc, or a polygon of 5 to 12 blades turned by <code>Rotation</code>. It works in linear light,
+since a lens adds light, and <code>HighlightGain</code> brightens light above <code>HighlightThreshold</code> before the blur, so small lights bloom into
+bright discs. It runs by FFT on tiles, so its cost does not grow with the radius.</p>
+<pre><code class="lang-csharp">// Blur the background like a wide-open lens with a six-blade aperture: bright points become hexagons.
+LensBlurOptions lens = new() { Blades = 6, Rotation = 15, HighlightGain = 4, HighlightThreshold = 0.8f };
+photo.Apply(ops =&gt; ops.Within(new Rect(0, 0, photo.Width, photo.Height / 3), o =&gt; o.LensBlur(12, lens)), Ct);
+</code></pre>
+<p><code>BilateralBlur</code> weighs each neighbour by its distance and by how different its color is, so noise flattens and edges stay. The
+color difference is the root-mean-square difference of red, green and blue on 0..1; on gray images the sigmas mean what
+ImageMagick's <code>-bilateral-blur</code> means, with its intensity sigma 255 times <code>rangeSigma</code>.</p>
+<pre><code class="lang-csharp">// Smooth skin or sky while keeping edges: neighbours count less the more their color differs (0.1 on the 0..1 scale).
+using Raster smooth = photo.Derive(ops =&gt; ops.BilateralBlur(spatialSigma: 4, rangeSigma: 0.1f), Ct);
+</code></pre><h2 id="directional-blurs">Directional blurs</h2>
+<p><code>MotionBlur</code> takes ImageMagick's parameters: 2⌈radius⌉ + 1 samples along <code>angle</code> (clockwise, y down), weighted by a Gaussian of
+<code>sigma</code>. Egami reads between pixels bilinearly where ImageMagick rounds to the nearest pixel, so diagonal streaks are smoother.
+<code>RotationalBlur</code> and <code>ZoomBlur</code> take about one sample per pixel of path; their center is in pixels, with pixel centers at +0.5.</p>
+<pre><code class="lang-csharp">using Raster moving = photo.Derive(ops =&gt; ops.MotionBlur(radius: 12, sigma: 4, angle: 15), Ct);  // a streak toward 15°
+using Raster spinning = photo.Derive(ops =&gt; ops.RotationalBlur(8), Ct);                          // 8° around the center
+using Raster zooming = photo.Derive(ops =&gt; ops.ZoomBlur(0.2f, new System.Numerics.Vector2(320, 200)), Ct);
+</code></pre><h2 id="noise">Noise</h2>
+<p><code>AddNoise</code> adds ImageMagick's <code>+noise</code> kinds to red, green and blue, never alpha, with <code>amount</code> as ImageMagick's <code>-attenuate</code>.
+Each value's noise is a hash of the seed, frame and position, so the same seed gives the same pixels at any thread count, and
+inside <code>Within</code> an area gets the noise the whole image would get there.</p>
+<pre><code class="lang-csharp">// Film grain: gray Gaussian noise at a third of ImageMagick's default strength; the same seed gives the same grain.
+photo.Apply(ops =&gt; ops.AddNoise(NoiseKind.Gaussian, 0.3f, monochrome: true, seed: 42), Ct);
+</code></pre><h2 id="edges">Edges</h2>
+<p><code>EdgeMode</code> says what a kernel sees past the border: <code>Clamp</code> repeats the edge pixel (the default), <code>Mirror</code> reflects the image,
+<code>Wrap</code> tiles it, and <code>Transparent</code> treats it as transparent black. The filters above repeat the edge pixel, as ImageMagick's
+default virtual pixel does.</p>
+<h2 id="alpha">Alpha</h2>
+<p>Blurs work on premultiplied values internally, so transparent pixels do not bleed their color into opaque ones.
+<code>preserveAlpha: true</code> keeps the alpha channel as it was, for effects that should only change color. <code>Median</code> and <code>Despeckle</code>
+keep alpha unless asked; <code>AddNoise</code> never touches it.</p>
+<h2 id="run-it">Run it</h2>
+<p><a href="https://github.com/inexin/Egami/tree/main/samples/Filters"><code>samples/Filters</code></a> is a console app that does what this guide shows on the bundled
+images: <code>dotnet run --project samples/Filters</code> writes its results to <code>./output</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/filters.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

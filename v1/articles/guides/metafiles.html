@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Windows metafiles | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Windows metafiles | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/metafiles.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="windows-metafiles">Windows metafiles</h1>
+
+<p>Egami.Metafiles plays Windows metafiles, the vector pictures Office and Windows programs exchange: WMF (Windows Metafile),
+EMF (Enhanced Metafile) and EMF+ (GDI+ records inside an EMF), and their gzip forms WMZ and EMZ. It draws them through
+Egami.Drawing's canvas, so a chart pasted from Excel stays vector on a PDF page or in SVG output and rasterizes the same on
+any OS. It only reads and plays: it does not write metafiles. It is fully managed.</p>
+<p>Egami.Metafiles is at 0.1 (0.1.1) and its API may still change before 1.0.</p>
+<h2 id="loading">Loading</h2>
+<p><code>Metafile.Load</code> reads a file or stream; gzip is detected by its first bytes. <code>Metafile.Kind</code> says what it holds (a
+<code>MetafileKind</code>: <code>Wmf</code>, <code>Emf</code>, <code>EmfPlusDual</code> or <code>EmfPlusOnly</code>), and the header gives the picture's size:</p>
+<ul>
+<li><code>Size</code> and <code>Frame</code> are in points: an EMF's frame rectangle (0.01 mm), a placeable WMF's box and units per inch, or, for a
+WMF without a placeable header, its window extent at 96 DPI (with a <code>Metafile.NoPlaceableHeader</code> warning).</li>
+<li><code>Dpi</code> is the resolution the records were made at, and <code>Description</code> an EMF's application and picture names.</li>
+</ul>
+<p>Loading is lenient: a record that runs past the end of the file ends the walk with a warning, and what came before it plays.
+<code>Warnings</code> lists what the load found; <code>MetafileLoadOptions.Context</code> sets the limits (the file size and what EMZ and WMZ
+inflate to) and the diagnostics handler.</p>
+<pre><code class="lang-csharp">// Untrusted files: the context's limits bound the file size and what EMZ and WMZ inflate to; a record that runs past
+// the end is skipped with a warning, and what came before it plays.
+MetafileLoadOptions options = new()
+{
+    Context = EgamiContext.Default with { Limits = SafetyLimits.Default with { MaxTotalBytes = 16 &lt;&lt; 20 } },
+};
+Metafile picture = Metafile.Load(new MemoryStream(bytes), options);
+if (picture.Kind is MetafileKind.EmfPlusDual or MetafileKind.EmfPlusOnly)
+{
+    Console.WriteLine(&quot;Drawn by its EMF+ records, as GDI+ draws it.&quot;);
+}
+</code></pre><h2 id="drawing">Drawing</h2>
+<p><code>Metafile.Draw</code> plays the picture on any canvas: in points from the canvas's origin, or with its frame stretched to a box, as
+Word stretches a picture to its frame. <code>Metafile.Rasterize</code> draws into a new raster at a DPI (96 by default) or a width
+and height, over a background:</p>
+<pre><code class="lang-csharp">// WMF, EMF and EMF+ alike, and the gzip forms WMZ and EMZ.
+Metafile chart = Metafile.Load(path);
+Console.WriteLine($&quot;{chart.Kind}, {chart.Size.X} by {chart.Size.Y} points&quot;);
+
+// At twice the screen's resolution, over white; text uses the installed fonts.
+using Raster&lt;Rgba8&gt; image = chart.Rasterize&lt;Rgba8&gt;(new MetafileRenderOptions
+{
+    Dpi = 192,
+    Background = new RgbaF32(1, 1, 1, 1),
+});
+image.Save(output);
+</code></pre><pre><code class="lang-csharp">Metafile picture = Metafile.Load(path);
+
+// The frame is stretched to the box, as Word stretches a picture to its frame. The same calls draw on a PDF page.
+using Raster&lt;Rgba8&gt; page = Raster.Create&lt;Rgba8&gt;(400, 300);
+using RasterCanvas&lt;Rgba8&gt; canvas = page.CreateCanvas();
+canvas.Clear(new RgbaF32(1, 1, 1, 1));
+picture.Draw(canvas, new RectF(50, 50, 300, 200));
+</code></pre>
+<p><code>MetafileRenderOptions</code> carries the rest:</p>
+<ul>
+<li><code>Antialias</code> is on by default; off, GDI records draw aliased as GDI itself draws them, which is what to compare with
+Windows. EMF+ records follow the file's own smoothing either way.</li>
+<li><code>Playback</code> (a <code>MetafilePlayback</code>) picks which records of a dual file play: <code>Auto</code>, the EMF+ records as GDI+ plays them,
+or <code>Gdi</code>, the GDI records only, as programs without GDI+ draw the file.</li>
+<li><code>Fonts</code> and <code>FontSubstitutions</code> choose the faces for text; <code>TextAsPaths</code> draws text as outlines.</li>
+</ul>
+<pre><code class="lang-csharp">// A dual EMF+ file plays its EMF+ records by default, as Office and GDI+ do; Gdi plays only the GDI records, as
+// programs without GDI+ draw it.
+Metafile picture = Metafile.Load(path);
+using Raster&lt;Rgba8&gt; gdi = picture.Rasterize&lt;Rgba8&gt;(new MetafileRenderOptions { Playback = MetafilePlayback.Gdi });
+</code></pre><h2 id="text-and-fonts">Text and fonts</h2>
+<p>Text records name a face, and each glyph's place comes from the record itself, so a line keeps its length in another face.
+A face the fonts lack is replaced by a metric-compatible open font where one exists (Arial by Liberation Sans or Arimo, Times
+New Roman by Liberation Serif or Tinos, Courier New by Liberation Mono or Cousine, Calibri by Carlito, Cambria by Caladea),
+then by your <code>FontSubstitutions</code>, then by the generic family; each substitution is a <code>Metafile.FontSubstituted</code> warning.
+Symbol and Wingdings text maps to Unicode in a substitute. Text given as glyph indices (Word writes these for complex
+scripts) is drawn only in the face it was made for, since another face would show the wrong letters.</p>
+<pre><code class="lang-csharp">// Faces the machine lacks: the built-in table maps Calibri to Carlito, Arial to Liberation Sans and so on; add your own.
+Metafile picture = Metafile.Load(path);
+using Raster&lt;Rgba8&gt; image = picture.Rasterize&lt;Rgba8&gt;(new MetafileRenderOptions
+{
+    FontSubstitutions = new Dictionary&lt;string, string&gt; { [&quot;Segoe UI&quot;] = &quot;Noto Sans&quot; },
+    Antialias = false, // GDI's own aliased look, for comparing with Windows
+});
+</code></pre><h2 id="rasterload">Raster.Load</h2>
+<p>Registered with <code>EgamiContext.WithFormat</code>, <code>MetafileFormat</code> lets <code>Raster.Load</code> draw a metafile at its size at 96 DPI onto a
+transparent <code>Rgba8</code> raster, and <code>Raster.Probe</code> give that size from the header without drawing. <code>MetafileDecodeOptions.Dpi</code>
+sets another resolution.</p>
+<pre><code class="lang-csharp">// Register the format once; Raster.Load then draws metafiles at their own size at 96 DPI.
+EgamiContext context = EgamiContext.Default.WithFormat(MetafileFormat.Info);
+using Raster raster = Raster.Load(path, context);
+RasterInfo info = Raster.Probe(path, context); // the size from the header, nothing drawn
+
+// MetafileDecodeOptions sets the resolution; Raster.Load then draws at that DPI.
+using Raster sharp = Raster.Load(path, context, new MetafileDecodeOptions { Dpi = 300 });
+</code></pre><h2 id="what-plays-and-how-close-it-is">What plays, and how close it is</h2>
+<p>The GDI records of WMF and EMF play as GDI plays them: map modes, the world transform, pens and brushes (hatches and pattern
+brushes sized from the reference device, so they scale with the picture), paths, clipping regions, bitmaps through Egami's BMP
+reader, and text. Drawn aliased, the synthetic test files match Windows GDI within a mean of one level and 99% of pixels within
+16 levels, family by family; text is measured with a looser bound, since GDI hints glyphs to whole pixels. Raster operations
+Egami draws with the nearest blend: AND as multiply, OR as lighten, XOR as difference, and the common transparent-bitmap
+idioms as one masked image; others draw as a copy with a <code>Metafile.RasterOperation</code> warning.</p>
+<p>EMF+ records play as GDI+ plays them: the world and page transforms, containers, clips with all six combine modes,
+smoothing, pixel offset and compositing; solid, hatch, texture, linear and path gradient brushes (path gradients as a
+Gouraud mesh); pens with dashes, compound lines, inset alignment and anchor and arrow caps; cardinal curves; images, with
+JPEG and PNG handed to the canvas unchanged so a PDF page embeds them as they are, and metafile images played as vectors up to
+eight levels deep; GDI+ 1.1 image effects; <code>DrawString</code> laid out in its rectangle and <code>DrawDriverString</code>. In a dual file the
+GDI records play only where GDI+ hands drawing to GDI (EmfPlusGetDC).</p>
+<p>Flood fills, OpenGL records, escapes and PostScript carried in comments are skipped with a <code>Metafile.SkippedRecord</code>
+warning. The <a href="../diagnostics.html">diagnostics</a> page lists every <code>Metafile.*</code> id.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/metafiles.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

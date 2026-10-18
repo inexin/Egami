@@ -1,0 +1,2461 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Typeface | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Typeface | Egami ">
+      
+      <meta name="description" content="One font face: its names, style, metrics, character map, glyph outlines and kerning, read from a TrueType or OpenType font, a collection, or a bare CFF stream. Immutable and safe to share across threads, canvases and backends.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_Typeface.md&amp;value=---%0Auid%3A%20Egami.Fonts.Typeface%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.Typeface">
+
+
+
+  <h1 id="Egami_Fonts_Typeface" data-uid="Egami.Fonts.Typeface" class="text-break">
+Class Typeface  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Variations.cs/#L13"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>One font face: its names, style, metrics, character map, glyph outlines and kerning, read from a TrueType or OpenType font, a
+collection, or a bare CFF stream. Immutable and safe to share across threads, canvases and backends.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Typeface</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Typeface</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Fonts_Typeface_examples">Examples</h2>
+  <pre><code class="lang-csharp">// One face from a file; a collection takes an index. The bytes are read once and every table is parsed when first needed.
+Typeface face = Typeface.FromFile(FontFile);
+Console.WriteLine($"{face.FamilyName} {face.SubfamilyName}, {face.GlyphCount} glyphs, {face.UnitsPerEm} units per em");
+
+// What a file holds, from its header alone.
+FontProbe probe = FontLoader.Probe(File.ReadAllBytes(FontFile));
+Console.WriteLine($"{probe.Kind}, {probe.FaceCount} face(s), {probe.Outlines} outlines");
+
+// Damaged fonts load leniently with diagnostics; Strict throws instead.
+var seen = new List&lt;EgamiDiagnostic&gt;();
+var options = new FontLoadOptions { Context = EgamiContext.Default with { Diagnostics = seen.Add } };
+Typeface lenient = Typeface.FromMemory(File.ReadAllBytes(FontFile), 0, options);</code></pre>
+
+
+  <h2 id="Egami_Fonts_Typeface_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+Loading reads the table directory, head and maxp, and checks that glyph data is there; every other table is parsed the first
+time it is needed and kept. The font's bytes are held once, as the <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory&lt;T&gt;</a> given or read, and every table
+is a slice of them. Memory given to <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_FromMemory_System_ReadOnlyMemory_System_Byte__System_Int32_Egami_Fonts_FontLoadOptions_">FromMemory(ReadOnlyMemory&lt;byte&gt;, int, FontLoadOptions?)</a> must not change
+afterwards.
+</p>
+<p>
+Loading is lenient by default: see <a class="xref" href="Egami.Fonts.FontLoadOptions.html">FontLoadOptions</a> for the defaults damaged or missing tables get and the
+diagnostics they raise. All glyph metrics and outlines are in font units with y up; <a class="xref" href="Egami.Fonts.Font.html">Font</a> scales them to a size.
+</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_Typeface_BuiltInEncoding_" data-uid="Egami.Fonts.Typeface.BuiltInEncoding*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_BuiltInEncoding" data-uid="Egami.Fonts.Typeface.BuiltInEncoding">
+  BuiltInEncoding
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.FontData.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a name-keyed CFF font's own encoding (bare, or the CFF table of an OpenType font) as FreeType presents it: a
+<a class="xref" href="Egami.Fonts.CharacterMap.html">CharacterMap</a> with platform 7 and encoding 0 (the Standard Encoding), 1 (the Expert Encoding) or 2 (a custom
+encoding) that maps character codes 0 to 255 to glyphs. Null for CID-keyed, CFF2 and TrueType fonts.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CharacterMap? BuiltInEncoding { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.CharacterMap.html">CharacterMap</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_BuiltInEncoding_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>PDF uses it for a Type1C font whose font dictionary gives no /Encoding.</p>
+</div>
+
+
+
+
+  <a id="Egami_Fonts_Typeface_CharacterMaps_" data-uid="Egami.Fonts.Typeface.CharacterMaps*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_CharacterMaps" data-uid="Egami.Fonts.Typeface.CharacterMaps">
+  CharacterMaps
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.FontData.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets every cmap subtable of the face as stored, in table order, but the format 14 variation sequences (which
+<a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GetGlyph_System_Int32_System_Int32_">GetGlyph(int, int)</a> uses); empty for a bare CFF font or a face without a cmap table.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;CharacterMap&gt; CharacterMaps { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.CharacterMap.html">CharacterMap</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_CharacterMaps_examples">Examples</h4>
+  <pre><code class="lang-csharp">// A symbolic TrueType font in PDF looks a code up in (3,0) first, then (1,0); a non-symbolic one uses (3,1).
+CharacterMap? map = trueType.FindCharacterMap(3, 0) ?? trueType.FindCharacterMap(1, 0) ?? trueType.FindCharacterMap(3, 1);
+ushort forA = map?.GetGlyph('A') ?? 0;
+
+// A Type1C font without /Encoding uses the CFF program's own encoding.
+CharacterMap? own = face.BuiltInEncoding;                  // platform 7, encoding 0: the Standard Encoding
+ushort forB = own?.GetGlyph('B') ?? 0;
+
+// Every code the map gives a glyph, in code order, for a PDF writer's /Widths or a ToUnicode table.
+int mapped = map?.GetMappings().Count() ?? 0;</code></pre>
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_CharacterMaps_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p><a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GetGlyph_System_Int32_">GetGlyph(int)</a> keeps choosing its one Unicode subtable as before; these maps are for callers that need a
+particular one, such as PDF's (3,0) or (1,0) for a symbolic TrueType font and (3,1) otherwise.</p>
+</div>
+
+
+
+
+  <a id="Egami_Fonts_Typeface_CidSystemInfo_" data-uid="Egami.Fonts.Typeface.CidSystemInfo*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_CidSystemInfo" data-uid="Egami.Fonts.Typeface.CidSystemInfo">
+  CidSystemInfo
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.FontData.cs/#L23"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the character collection of a CID-keyed CFF font (bare, or the CFF table of an OpenType font), such as
+Adobe-Identity-0; null for every other font.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CidSystemInfo? CidSystemInfo { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.CidSystemInfo.html">CidSystemInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_ColorFormats_" data-uid="Egami.Fonts.Typeface.ColorFormats*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_ColorFormats" data-uid="Egami.Fonts.Typeface.ColorFormats">
+  ColorFormats
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Color.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the kinds of color glyph data the face holds; <a class="xref" href="Egami.Fonts.ColorGlyphFormats.html#Egami_Fonts_ColorGlyphFormats_None">None</a> for a plain outline font.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorGlyphFormats ColorFormats { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.ColorGlyphFormats.html">ColorGlyphFormats</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_Container_" data-uid="Egami.Fonts.Typeface.Container*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_Container" data-uid="Egami.Fonts.Typeface.Container">
+  Container
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L138"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the container the face was read from: <a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Sfnt">Sfnt</a>, <a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Collection">Collection</a>,
+<a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Cff">Cff</a>, or <a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Woff">Woff</a> and <a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Woff2">Woff2</a> for a web font, whose
+tables <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_TryGetTable_Egami_Fonts_FontTag_System_ReadOnlyMemory_System_Byte___">TryGetTable(FontTag, out ReadOnlyMemory&lt;byte&gt;)</a> returns decoded.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontFileKind Container { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontFileKind.html">FontFileKind</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_Embedding_" data-uid="Egami.Fonts.Typeface.Embedding*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_Embedding" data-uid="Egami.Fonts.Typeface.Embedding">
+  Embedding
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L131"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the embedding permissions the face declares (OS/2 fsType). Egami never enforces them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontEmbedding Embedding { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontEmbedding.html">FontEmbedding</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_Extents_" data-uid="Egami.Fonts.Typeface.Extents*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_Extents" data-uid="Egami.Fonts.Typeface.Extents">
+  Extents
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the face's vertical metrics and decoration positions in font units; see <a class="xref" href="Egami.Fonts.FontExtents.html">FontExtents</a> for the rule.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontExtents Extents { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontExtents.html">FontExtents</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_FaceIndex_" data-uid="Egami.Fonts.Typeface.FaceIndex*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_FaceIndex" data-uid="Egami.Fonts.Typeface.FaceIndex">
+  FaceIndex
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L104"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the face's index in its collection, 0 for a single font.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int FaceIndex { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_FamilyName_" data-uid="Egami.Fonts.Typeface.FamilyName*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_FamilyName" data-uid="Egami.Fonts.Typeface.FamilyName">
+  FamilyName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L107"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the typographic family name in English (name ID 16, else 1), such as &quot;Noto Sans&quot;; &quot;Unknown&quot; when the font has none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string FamilyName { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_FullName_" data-uid="Egami.Fonts.Typeface.FullName*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_FullName" data-uid="Egami.Fonts.Typeface.FullName">
+  FullName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L113"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the full name in English (name ID 4), such as &quot;Noto Sans Bold Italic&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string FullName { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GlyphCount_" data-uid="Egami.Fonts.Typeface.GlyphCount*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GlyphCount" data-uid="Egami.Fonts.Typeface.GlyphCount">
+  GlyphCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L125"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of glyphs.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int GlyphCount { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_HasCharacterMap_" data-uid="Egami.Fonts.Typeface.HasCharacterMap*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_HasCharacterMap" data-uid="Egami.Fonts.Typeface.HasCharacterMap">
+  HasCharacterMap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the face maps characters to glyphs; false for a bare CFF font or a font without a usable cmap.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HasCharacterMap { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_HasKerning_" data-uid="Egami.Fonts.Typeface.HasKerning*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_HasKerning" data-uid="Egami.Fonts.Typeface.HasKerning">
+  HasKerning
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the face has pair kerning, from GPOS or the kern table.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HasKerning { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_HheaMetrics_" data-uid="Egami.Fonts.Typeface.HheaMetrics*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_HheaMetrics" data-uid="Egami.Fonts.Typeface.HheaMetrics">
+  HheaMetrics
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the hhea table's ascender, descender and line gap; zeros when the font has no hhea.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public VerticalMetrics HheaMetrics { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.VerticalMetrics.html">VerticalMetrics</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_IsFixedPitch_" data-uid="Egami.Fonts.Typeface.IsFixedPitch*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_IsFixedPitch" data-uid="Egami.Fonts.Typeface.IsFixedPitch">
+  IsFixedPitch
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L141"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether every glyph has the same advance (post isFixedPitch, or the CFF isFixedPitch entry).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsFixedPitch { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_IsVariable_" data-uid="Egami.Fonts.Typeface.IsVariable*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_IsVariable" data-uid="Egami.Fonts.Typeface.IsVariable">
+  IsVariable
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Variations.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the face is a variable font (it has an fvar table with at least one axis).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsVariable { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_Layout_" data-uid="Egami.Fonts.Typeface.Layout*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_Layout" data-uid="Egami.Fonts.Typeface.Layout">
+  Layout
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Layout.cs/#L8"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what the face's OpenType layout tables offer: scripts, language systems and features.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public OpenTypeLayout Layout { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Shaping.OpenTypeLayout.html">OpenTypeLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_NamedInstances_" data-uid="Egami.Fonts.Typeface.NamedInstances*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_NamedInstances" data-uid="Egami.Fonts.Typeface.NamedInstances">
+  NamedInstances
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Variations.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the named instances of a variable font, such as &quot;Bold&quot;; empty for a static font.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;NamedInstance&gt; NamedInstances { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.NamedInstance.html">NamedInstance</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_Outlines_" data-uid="Egami.Fonts.Typeface.Outlines*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_Outlines" data-uid="Egami.Fonts.Typeface.Outlines">
+  Outlines
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how the face stores its outlines.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontOutlines Outlines { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontOutlines.html">FontOutlines</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_Palettes_" data-uid="Egami.Fonts.Typeface.Palettes*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_Palettes" data-uid="Egami.Fonts.Typeface.Palettes">
+  Palettes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Color.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the face's CPAL palettes; empty when it has none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FontPaletteInfo&gt; Palettes { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.FontPaletteInfo.html">FontPaletteInfo</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_PostScriptName_" data-uid="Egami.Fonts.Typeface.PostScriptName*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_PostScriptName" data-uid="Egami.Fonts.Typeface.PostScriptName">
+  PostScriptName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the PostScript name (name ID 6, or the CFF font name), such as &quot;NotoSans-BoldItalic&quot;, which PDF uses as BaseFont.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string PostScriptName { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_Style_" data-uid="Egami.Fonts.Typeface.Style*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_Style" data-uid="Egami.Fonts.Typeface.Style">
+  Style
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L119"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the weight, width and slant the face declares in OS/2 (or head and post when OS/2 is missing).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontStyle Style { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontStyle.html">FontStyle</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_SubfamilyName_" data-uid="Egami.Fonts.Typeface.SubfamilyName*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_SubfamilyName" data-uid="Egami.Fonts.Typeface.SubfamilyName">
+  SubfamilyName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L110"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the typographic subfamily name in English (name ID 17, else 2), such as &quot;Bold Italic&quot;; &quot;Regular&quot; when the font has none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string SubfamilyName { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_TypoMetrics_" data-uid="Egami.Fonts.Typeface.TypoMetrics*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_TypoMetrics" data-uid="Egami.Fonts.Typeface.TypoMetrics">
+  TypoMetrics
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the OS/2 typo ascender, descender and line gap; zeros when the font has no OS/2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public VerticalMetrics TypoMetrics { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.VerticalMetrics.html">VerticalMetrics</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_UnitsPerEm_" data-uid="Egami.Fonts.Typeface.UnitsPerEm*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_UnitsPerEm" data-uid="Egami.Fonts.Typeface.UnitsPerEm">
+  UnitsPerEm
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the font units per em, 16 to 16384.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int UnitsPerEm { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_VariationAxes_" data-uid="Egami.Fonts.Typeface.VariationAxes*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_VariationAxes" data-uid="Egami.Fonts.Typeface.VariationAxes">
+  VariationAxes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Variations.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the axes of a variable font, in fvar order; empty for a static font.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;VariationAxis&gt; VariationAxes { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.VariationAxis.html">VariationAxis</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_Variations_" data-uid="Egami.Fonts.Typeface.Variations*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_Variations" data-uid="Egami.Fonts.Typeface.Variations">
+  Variations
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Variations.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets this face's position: one value per axis that is not at its default, in fvar order; empty for the default position and
+for a static font.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FontVariation&gt; Variations { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.FontVariation.html">FontVariation</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_WinMetrics_" data-uid="Egami.Fonts.Typeface.WinMetrics*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_WinMetrics" data-uid="Egami.Fonts.Typeface.WinMetrics">
+  WinMetrics
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the OS/2 Windows ascent and descent (the descent made negative), with a zero line gap.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public VerticalMetrics WinMetrics { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.VerticalMetrics.html">VerticalMetrics</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Fonts_Typeface_FindCharacterMap_" data-uid="Egami.Fonts.Typeface.FindCharacterMap*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_FindCharacterMap_System_Int32_System_Int32_" data-uid="Egami.Fonts.Typeface.FindCharacterMap(System.Int32,System.Int32)">
+  FindCharacterMap(int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.FontData.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds the first character map with a platform and encoding, as stored (without translating codes).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CharacterMap? FindCharacterMap(int platformId, int encodingId)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>platformId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The platform: 0 Unicode, 1 Macintosh, 3 Windows; 7 gives <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_BuiltInEncoding">BuiltInEncoding</a>.</p>
+</dd>
+    <dt><code>encodingId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The encoding within the platform, such as 1 for (3,1) or 0 for (1,0).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.CharacterMap.html">CharacterMap</a></dt>
+    <dd><p>The map, or null when the face has none for that pair.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_FromCff_" data-uid="Egami.Fonts.Typeface.FromCff*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_FromCff_System_ReadOnlyMemory_System_Byte__Egami_Fonts_CffOptions_" data-uid="Egami.Fonts.Typeface.FromCff(System.ReadOnlyMemory{System.Byte},Egami.Fonts.CffOptions)">
+  FromCff(ReadOnlyMemory&lt;byte&gt;, CffOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L283"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads a bare CFF stream as PDF embeds it (FontFile3 with subtype Type1C or CIDFontType0C). The face has no character map:
+glyphs are reached by id, or by CID through the charset for a CID-keyed font.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Typeface FromCff(ReadOnlyMemory&lt;byte&gt; data, CffOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The CFF data, kept and not copied.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Fonts.CffOptions.html">CffOptions</a></dt>
+    <dd><p>Units per em and widths the CFF lacks, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Fonts.CffOptions.html#Egami_Fonts_CffOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd><p>The face.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_FromCff_System_ReadOnlyMemory_System_Byte__Egami_Fonts_CffOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A CFF stream as a PDF embeds it (FontFile3): no character map, glyphs by id; widths from the PDF when it gives them.
+Typeface embedded = Typeface.FromCff(fontFile3, new CffOptions { UnitsPerEm = 1000 });
+float width = embedded.GetAdvance(1);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The data is CFF2 or uses Type 1 charstrings.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The CFF structures cannot be read.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The data is larger than the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Typeface_FromFile_" data-uid="Egami.Fonts.Typeface.FromFile*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_FromFile_System_String_System_Int32_Egami_Fonts_FontLoadOptions_" data-uid="Egami.Fonts.Typeface.FromFile(System.String,System.Int32,Egami.Fonts.FontLoadOptions)">
+  FromFile(string, int, FontLoadOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L171"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads one face from a font file, reading the whole file into memory and closing it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Typeface FromFile(string path, int index = 0, FontLoadOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file: .ttf, .otf, .ttc, .otc, .woff, .woff2 or a bare CFF stream.</p>
+</dd>
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The face to load from a collection; 0 for a single font.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Fonts.FontLoadOptions.html">FontLoadOptions</a></dt>
+    <dd><p>How to load, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Fonts.FontLoadOptions.html#Egami_Fonts_FontLoadOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd><p>The face.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_FromFile_System_String_System_Int32_Egami_Fonts_FontLoadOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// One face from a file; a collection takes an index. The bytes are read once and every table is parsed when first needed.
+Typeface face = Typeface.FromFile(FontFile);
+Console.WriteLine($"{face.FamilyName} {face.SubfamilyName}, {face.GlyphCount} glyphs, {face.UnitsPerEm} units per em");
+
+// What a file holds, from its header alone.
+FontProbe probe = FontLoader.Probe(File.ReadAllBytes(FontFile));
+Console.WriteLine($"{probe.Kind}, {probe.FaceCount} face(s), {probe.Outlines} outlines");
+
+// Damaged fonts load leniently with diagnostics; Strict throws instead.
+var seen = new List&lt;EgamiDiagnostic&gt;();
+var options = new FontLoadOptions { Context = EgamiContext.Default with { Diagnostics = seen.Add } };
+Typeface lenient = Typeface.FromMemory(File.ReadAllBytes(FontFile), 0, options);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">index</code> is not a face of the file.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The file is not a font Egami reads.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The font has no readable glyph data, or is damaged and <a class="xref" href="Egami.Fonts.FontLoadOptions.html#Egami_Fonts_FontLoadOptions_Strict">Strict</a> is set.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The file is larger than the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Typeface_FromMemory_" data-uid="Egami.Fonts.Typeface.FromMemory*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_FromMemory_System_ReadOnlyMemory_System_Byte__System_Int32_Egami_Fonts_FontLoadOptions_" data-uid="Egami.Fonts.Typeface.FromMemory(System.ReadOnlyMemory{System.Byte},System.Int32,Egami.Fonts.FontLoadOptions)">
+  FromMemory(ReadOnlyMemory&lt;byte&gt;, int, FontLoadOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L212"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads one face from memory, which is kept, not copied, and must not change afterwards. A WOFF or WOFF2 file is unwrapped
+into an sfnt in new memory once, and the compressed input is not kept.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Typeface FromMemory(ReadOnlyMemory&lt;byte&gt; data, int index = 0, FontLoadOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The font data: an sfnt, a collection, a WOFF or WOFF2 file, or a bare CFF stream.</p>
+</dd>
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The face to load from a collection; 0 for a single font.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Fonts.FontLoadOptions.html">FontLoadOptions</a></dt>
+    <dd><p>How to load, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Fonts.FontLoadOptions.html#Egami_Fonts_FontLoadOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd><p>The face.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_FromMemory_System_ReadOnlyMemory_System_Byte__System_Int32_Egami_Fonts_FontLoadOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// One face from a file; a collection takes an index. The bytes are read once and every table is parsed when first needed.
+Typeface face = Typeface.FromFile(FontFile);
+Console.WriteLine($"{face.FamilyName} {face.SubfamilyName}, {face.GlyphCount} glyphs, {face.UnitsPerEm} units per em");
+
+// What a file holds, from its header alone.
+FontProbe probe = FontLoader.Probe(File.ReadAllBytes(FontFile));
+Console.WriteLine($"{probe.Kind}, {probe.FaceCount} face(s), {probe.Outlines} outlines");
+
+// Damaged fonts load leniently with diagnostics; Strict throws instead.
+var seen = new List&lt;EgamiDiagnostic&gt;();
+var options = new FontLoadOptions { Context = EgamiContext.Default with { Diagnostics = seen.Add } };
+Typeface lenient = Typeface.FromMemory(File.ReadAllBytes(FontFile), 0, options);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">index</code> is not a face of the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The data is not a font Egami reads.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The font has no readable glyph data, or is damaged and <a class="xref" href="Egami.Fonts.FontLoadOptions.html#Egami_Fonts_FontLoadOptions_Strict">Strict</a> is set.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The data is larger than the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Typeface_FromStream_" data-uid="Egami.Fonts.Typeface.FromStream*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_FromStream_System_IO_Stream_System_Int32_Egami_Fonts_FontLoadOptions_" data-uid="Egami.Fonts.Typeface.FromStream(System.IO.Stream,System.Int32,Egami.Fonts.FontLoadOptions)">
+  FromStream(Stream, int, FontLoadOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads one face from a stream, reading it to the end.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Typeface FromStream(Stream stream, int index = 0, FontLoadOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream; it is read but not closed.</p>
+</dd>
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The face to load from a collection; 0 for a single font.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Fonts.FontLoadOptions.html">FontLoadOptions</a></dt>
+    <dd><p>How to load, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Fonts.FontLoadOptions.html#Egami_Fonts_FontLoadOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd><p>The face.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_FromStream_System_IO_Stream_System_Int32_Egami_Fonts_FontLoadOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// One face from a file; a collection takes an index. The bytes are read once and every table is parsed when first needed.
+Typeface face = Typeface.FromFile(FontFile);
+Console.WriteLine($"{face.FamilyName} {face.SubfamilyName}, {face.GlyphCount} glyphs, {face.UnitsPerEm} units per em");
+
+// What a file holds, from its header alone.
+FontProbe probe = FontLoader.Probe(File.ReadAllBytes(FontFile));
+Console.WriteLine($"{probe.Kind}, {probe.FaceCount} face(s), {probe.Outlines} outlines");
+
+// Damaged fonts load leniently with diagnostics; Strict throws instead.
+var seen = new List&lt;EgamiDiagnostic&gt;();
+var options = new FontLoadOptions { Context = EgamiContext.Default with { Diagnostics = seen.Add } };
+Typeface lenient = Typeface.FromMemory(File.ReadAllBytes(FontFile), 0, options);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">index</code> is not a face of the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The data is not a font Egami reads.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The font has no readable glyph data, or is damaged and <a class="xref" href="Egami.Fonts.FontLoadOptions.html#Egami_Fonts_FontLoadOptions_Strict">Strict</a> is set.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The data is larger than the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Typeface_GetAdvance_" data-uid="Egami.Fonts.Typeface.GetAdvance*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetAdvance_System_UInt16_" data-uid="Egami.Fonts.Typeface.GetAdvance(System.UInt16)">
+  GetAdvance(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L184"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a glyph's advance width in font units: hmtx, or for a bare CFF font the given or charstring width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float GetAdvance(ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph id.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The advance; 0 for a glyph id past <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GlyphCount">GlyphCount</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GetCid_" data-uid="Egami.Fonts.Typeface.GetCid*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetCid_System_UInt16_" data-uid="Egami.Fonts.Typeface.GetCid(System.UInt16)">
+  GetCid(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.FontData.cs/#L104"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the CID of a glyph of a CID-keyed CFF font (its charset entry), as FreeType's FT_Get_CID_From_Glyph_Index does.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int GetCid(ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph id.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The CID; -1 for a font that is not CID-keyed or a glyph past <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GlyphCount">GlyphCount</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_GetCid_System_UInt16__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A CIDFontType0 font with /CIDToGIDMap absent reaches glyphs by CID through the CFF charset.
+CidSystemInfo? collection = cjk.CidSystemInfo;            // Adobe-Identity-0 for this font
+ushort glyph = cjk.TryGetGlyphByCid(1, out ushort byCid) ? byCid : (ushort)0;
+int cid = cjk.GetCid(glyph);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GetGlyph_" data-uid="Egami.Fonts.Typeface.GetGlyph*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetGlyph_System_Int32_" data-uid="Egami.Fonts.Typeface.GetGlyph(System.Int32)">
+  GetGlyph(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L96"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Maps a Unicode code point to a glyph id through the character map.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ushort GetGlyph(int codePoint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>codePoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The code point, 0 to 0x10FFFF.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph, or 0 (.notdef) when the face has none for the code point.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GetGlyph_" data-uid="Egami.Fonts.Typeface.GetGlyph*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetGlyph_System_Int32_System_Int32_" data-uid="Egami.Fonts.Typeface.GetGlyph(System.Int32,System.Int32)">
+  GetGlyph(int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Maps a code point followed by a variation selector, such as U+FE0E, through the format 14 subtable.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ushort GetGlyph(int codePoint, int variationSelector)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>codePoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The base code point.</p>
+</dd>
+    <dt><code>variationSelector</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The selector, U+FE00 to U+FE0F or U+E0100 to U+E01EF.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph for the sequence, else the base glyph, else 0.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GetGlyphExtents_" data-uid="Egami.Fonts.Typeface.GetGlyphExtents*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetGlyphExtents_System_UInt16_" data-uid="Egami.Fonts.Typeface.GetGlyphExtents(System.UInt16)">
+  GetGlyphExtents(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L232"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the box around a glyph's ink in font units: from the glyph header for TrueType, from the curves' extremes for CFF.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GlyphExtents GetGlyphExtents(ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph id.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.GlyphExtents.html">GlyphExtents</a></dt>
+    <dd><p>The box; empty for a glyph without ink, past <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GlyphCount">GlyphCount</a> or damaged.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GetGlyphName_" data-uid="Egami.Fonts.Typeface.GetGlyphName*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetGlyphName_System_UInt16_" data-uid="Egami.Fonts.Typeface.GetGlyphName(System.UInt16)">
+  GetGlyphName(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.FontData.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a glyph's name: from the charset of a name-keyed CFF font (bare, or the CFF table of an OpenType font), else from the
+post table (versions 1, 2 and 2.5), as FreeType's FT_Get_Glyph_Name gives it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? GetGlyphName(ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph id.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The name, such as &quot;Aacute&quot;; null for a glyph past <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GlyphCount">GlyphCount</a>, for a font without names (a CID-keyed CFF font,
+post versions 3 and 4) or for a damaged entry, which also reports a warning.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_GetGlyphName_System_UInt16__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A PDF simple font's /Differences array names glyphs: find each by name, and get names back for a ToUnicode guess.
+ushort aacute = face.TryGetGlyphByName("aacute", out ushort g) ? g : (ushort)0;
+string? name = face.GetGlyphName(aacute);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GetGlyphOutline_" data-uid="Egami.Fonts.Typeface.GetGlyphOutline*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetGlyphOutline_System_UInt16_Egami_Fonts_IGlyphOutlineSink_" data-uid="Egami.Fonts.Typeface.GetGlyphOutline(System.UInt16,Egami.Fonts.IGlyphOutlineSink)">
+  GetGlyphOutline(ushort, IGlyphOutlineSink)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L161"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sends a glyph's outline to <code class="paramref">sink</code> in font units with y up.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool GetGlyphOutline(ushort glyph, IGlyphOutlineSink sink)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph id.</p>
+</dd>
+    <dt><code>sink</code> <a class="xref" href="Egami.Fonts.IGlyphOutlineSink.html">IGlyphOutlineSink</a></dt>
+    <dd><p>The receiver.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the outline was sent (a glyph without ink sends nothing); <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> if the glyph id is
+past <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GlyphCount">GlyphCount</a> or its data is damaged, which raises <code>Font.BadGlyph</code> (or throws in strict mode).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GetKerning_" data-uid="Egami.Fonts.Typeface.GetKerning*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetKerning_System_UInt16_System_UInt16_" data-uid="Egami.Fonts.Typeface.GetKerning(System.UInt16,System.UInt16)">
+  GetKerning(ushort, ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L267"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pair kerning between two glyphs in font units: GPOS pair positioning, else the kern table.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float GetKerning(ushort left, ushort right)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>left</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The first glyph.</p>
+</dd>
+    <dt><code>right</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph after it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The adjustment to the first glyph's advance, usually negative; 0 when the pair is not kerned.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GetLeftSideBearing_" data-uid="Egami.Fonts.Typeface.GetLeftSideBearing*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetLeftSideBearing_System_UInt16_" data-uid="Egami.Fonts.Typeface.GetLeftSideBearing(System.UInt16)">
+  GetLeftSideBearing(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L212"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a glyph's left side bearing in font units: hmtx, or the left edge of its outline when there is no hmtx.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float GetLeftSideBearing(ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph id.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The bearing; 0 for a glyph id past <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GlyphCount">GlyphCount</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GetNames_" data-uid="Egami.Fonts.Typeface.GetNames*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetNames" data-uid="Egami.Fonts.Typeface.GetNames">
+  GetNames()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L293"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets every decoded string of the naming table, in every language present.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FontNameRecord&gt; GetNames()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.FontNameRecord.html">FontNameRecord</a>&gt;</dt>
+    <dd><p>The records, in table order; empty when the font has no name table.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GetWoffMetadata_" data-uid="Egami.Fonts.Typeface.GetWoffMetadata*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetWoffMetadata" data-uid="Egami.Fonts.Typeface.GetWoffMetadata">
+  GetWoffMetadata()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L264"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the extended metadata block of a WOFF or WOFF2 file, decompressed: XML in UTF-8, as the W3C WOFF specifications define it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? GetWoffMetadata()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The XML text, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the face is not from a web font or the file has no metadata.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_GetWoffPrivateData_" data-uid="Egami.Fonts.Typeface.GetWoffPrivateData*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_GetWoffPrivateData" data-uid="Egami.Fonts.Typeface.GetWoffPrivateData">
+  GetWoffPrivateData()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L268"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the private data block of a WOFF or WOFF2 file, whose meaning only its vendor knows.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;byte&gt; GetWoffPrivateData()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes; empty when the face is not from a web font or the file has none.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_HasColorGlyph_" data-uid="Egami.Fonts.Typeface.HasColorGlyph*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_HasColorGlyph_System_UInt16_" data-uid="Egami.Fonts.Typeface.HasColorGlyph(System.UInt16)">
+  HasColorGlyph(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Color.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a glyph has color data in any format this face draws (not counting SVG), without reading it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HasColorGlyph(ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if it has.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_MapCodePoints_" data-uid="Egami.Fonts.Typeface.MapCodePoints*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_MapCodePoints_System_ReadOnlySpan_System_Char__System_Span_System_UInt16__" data-uid="Egami.Fonts.Typeface.MapCodePoints(System.ReadOnlySpan{System.Char},System.Span{System.UInt16})">
+  MapCodePoints(ReadOnlySpan&lt;char&gt;, Span&lt;ushort&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L130"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Maps text to glyphs, one per code point: surrogate pairs become one glyph, and a variation selector changes the glyph before
+it instead of adding one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MapCodePoints(ReadOnlySpan&lt;char&gt; text, Span&lt;ushort&gt; glyphs)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The UTF-16 text.</p>
+</dd>
+    <dt><code>glyphs</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>&gt;</dt>
+    <dd><p>The glyphs, at least as long as <code class="paramref">text</code>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of glyphs written.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">glyphs</code> is shorter than <code class="paramref">text</code>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Typeface_ToString_" data-uid="Egami.Fonts.Typeface.ToString*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_ToString" data-uid="Egami.Fonts.Typeface.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L316"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the full name, such as &quot;Noto Sans Bold&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_TryGetColorGlyph_" data-uid="Egami.Fonts.Typeface.TryGetColorGlyph*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_TryGetColorGlyph_System_UInt16_Egami_Fonts_FontPalette_Egami_Fonts_ColorGlyph__System_Single_" data-uid="Egami.Fonts.Typeface.TryGetColorGlyph(System.UInt16,Egami.Fonts.FontPalette,Egami.Fonts.ColorGlyph@,System.Single)">
+  TryGetColorGlyph(ushort, FontPalette?, out ColorGlyph?, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Color.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a glyph's color description in the first format that has it: COLR version 1, then version 0, then sbix, then CBDT
+(OpenType SVG glyphs are not drawn; see <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_TryGetSvgDocument_System_UInt16_System_ReadOnlyMemory_System_Byte___System_UInt16__System_UInt16__">TryGetSvgDocument(ushort, out ReadOnlyMemory&lt;byte&gt;, out ushort, out ushort)</a>). COLR graphs are read at this face's variation
+position with the palette's colors; bitmaps come from the strike for <code class="paramref">pixelsPerEm</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetColorGlyph(ushort glyph, FontPalette? palette, out ColorGlyph? colorGlyph, float pixelsPerEm = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph.</p>
+</dd>
+    <dt><code>palette</code> <a class="xref" href="Egami.Fonts.FontPalette.html">FontPalette</a></dt>
+    <dd><p>The palette, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Fonts.FontPalette.html#Egami_Fonts_FontPalette_Default">Default</a>.</p>
+</dd>
+    <dt><code>colorGlyph</code> <a class="xref" href="Egami.Fonts.ColorGlyph.html">ColorGlyph</a></dt>
+    <dd><p>The color glyph, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>pixelsPerEm</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The size the glyph is drawn at, for choosing a bitmap strike: the smallest at or above it, else the largest; 0 for the largest.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the glyph has color data; otherwise it draws as its outline.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_TryGetColorGlyph_System_UInt16_Egami_Fonts_FontPalette_Egami_Fonts_ColorGlyph__System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Color glyphs draw in color by themselves: COLR (layers and gradients), sbix and CBDT (images), per glyph.
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.DrawText("Ship it", new Vector2(8, 40), new Font(text, 24), Rgba8.Black);
+    canvas.DrawText("\U0001F680\U0001F389", new Vector2(100, 42), new Font(emoji, 32), Rgba8.Black);
+}
+
+// The palette is a font setting; the paint's color fills a glyph's foreground parts and its alpha the whole glyph.
+var darkMode = new Font(emoji, 32) { Palette = FontPalette.Dark };
+ColorGlyphFormats formats = emoji.ColorFormats;
+
+// The paint graph is there to walk, for writers that draw color glyphs their own way.
+emoji.TryGetColorGlyph(emoji.GetGlyph(0x1F680), darkMode.Palette, out ColorGlyph? rocket);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_TryGetGlyph_" data-uid="Egami.Fonts.Typeface.TryGetGlyph*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_TryGetGlyph_System_Int32_System_UInt16__" data-uid="Egami.Fonts.Typeface.TryGetGlyph(System.Int32,System.UInt16@)">
+  TryGetGlyph(int, out ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Glyphs.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Maps a code point to a glyph, saying whether the face has one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetGlyph(int codePoint, out ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>codePoint</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The code point.</p>
+</dd>
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph, or 0 when there is none.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the face maps the code point to a glyph other than .notdef.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_TryGetGlyphByCid_" data-uid="Egami.Fonts.Typeface.TryGetGlyphByCid*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_TryGetGlyphByCid_System_Int32_System_UInt16__" data-uid="Egami.Fonts.Typeface.TryGetGlyphByCid(System.Int32,System.UInt16@)">
+  TryGetGlyphByCid(int, out ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.FontData.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds the glyph with a CID in a CID-keyed CFF font; when several share it, the lowest glyph id.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetGlyphByCid(int cid, out ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>cid</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The CID.</p>
+</dd>
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph id, or 0 when no glyph has the CID.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if a glyph has the CID; always <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> for a font that is not CID-keyed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_TryGetGlyphByName_" data-uid="Egami.Fonts.Typeface.TryGetGlyphByName*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_TryGetGlyphByName_System_String_System_UInt16__" data-uid="Egami.Fonts.Typeface.TryGetGlyphByName(System.String,System.UInt16@)">
+  TryGetGlyphByName(string, out ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.FontData.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds the glyph with a name; when several share it, the lowest glyph id, as FreeType's FT_Get_Name_Index does.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetGlyphByName(string name, out ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The glyph name, compared ordinally.</p>
+</dd>
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph id, or 0 when no glyph has the name.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if a glyph has the name.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">name</code> is null.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Typeface_TryGetSvgDocument_" data-uid="Egami.Fonts.Typeface.TryGetSvgDocument*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_TryGetSvgDocument_System_UInt16_System_ReadOnlyMemory_System_Byte___System_UInt16__System_UInt16__" data-uid="Egami.Fonts.Typeface.TryGetSvgDocument(System.UInt16,System.ReadOnlyMemory{System.Byte}@,System.UInt16@,System.UInt16@)">
+  TryGetSvgDocument(ushort, out ReadOnlyMemory&lt;byte&gt;, out ushort, out ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Color.cs/#L131"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the OpenType SVG document holding a glyph, decompressed when it is gzipped, for callers that draw SVG themselves; Egami
+draws such glyphs from their COLR, bitmap or outline data instead (SVG drawing arrives with Egami.Svg). The glyph's
+element in it has the id <code>glyph</code> followed by the glyph id.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetSvgDocument(ushort glyph, out ReadOnlyMemory&lt;byte&gt; document, out ushort firstGlyph, out ushort lastGlyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph.</p>
+</dd>
+    <dt><code>document</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The document's UTF-8 bytes.</p>
+</dd>
+    <dt><code>firstGlyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The first glyph the document covers.</p>
+</dd>
+    <dt><code>lastGlyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The last glyph the document covers.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the face has an SVG document for the glyph.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_TryGetSvgDocument_System_UInt16_System_ReadOnlyMemory_System_Byte___System_UInt16__System_UInt16___examples">Examples</h4>
+  <pre><code class="lang-csharp">// Color glyphs draw in color by themselves: COLR (layers and gradients), sbix and CBDT (images), per glyph.
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.DrawText("Ship it", new Vector2(8, 40), new Font(text, 24), Rgba8.Black);
+    canvas.DrawText("\U0001F680\U0001F389", new Vector2(100, 42), new Font(emoji, 32), Rgba8.Black);
+}
+
+// The palette is a font setting; the paint's color fills a glyph's foreground parts and its alpha the whole glyph.
+var darkMode = new Font(emoji, 32) { Palette = FontPalette.Dark };
+ColorGlyphFormats formats = emoji.ColorFormats;
+
+// The paint graph is there to walk, for writers that draw color glyphs their own way.
+emoji.TryGetColorGlyph(emoji.GetGlyph(0x1F680), darkMode.Palette, out ColorGlyph? rocket);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The document is damaged and strict loading is set.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Typeface_TryGetTable_" data-uid="Egami.Fonts.Typeface.TryGetTable*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_TryGetTable_Egami_Fonts_FontTag_System_ReadOnlyMemory_System_Byte___" data-uid="Egami.Fonts.Typeface.TryGetTable(Egami.Fonts.FontTag,System.ReadOnlyMemory{System.Byte}@)">
+  TryGetTable(FontTag, out ReadOnlyMemory&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L299"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a table's bytes as stored in the font, without parsing them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetTable(FontTag tag, out ReadOnlyMemory&lt;byte&gt; data)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>tag</code> <a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a></dt>
+    <dd><p>The table tag, such as <code>new FontTag(&quot;GSUB&quot;)</code>.</p>
+</dd>
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The table's bytes, a slice of the font's memory.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the font has the table.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Typeface_WithNamedInstance_" data-uid="Egami.Fonts.Typeface.WithNamedInstance*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_WithNamedInstance_System_Int32_" data-uid="Egami.Fonts.Typeface.WithNamedInstance(System.Int32)">
+  WithNamedInstance(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Variations.cs/#L151"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the face at one of its named instances.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Typeface WithNamedInstance(int index)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The instance's index in <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_NamedInstances">NamedInstances</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd><p>The face at the instance's position.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">index</code> is not an instance of the face.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Typeface_WithVariations_" data-uid="Egami.Fonts.Typeface.WithVariations*"></a>
+
+  <h3 id="Egami_Fonts_Typeface_WithVariations_System_ReadOnlySpan_Egami_Fonts_FontVariation__" data-uid="Egami.Fonts.Typeface.WithVariations(System.ReadOnlySpan{Egami.Fonts.FontVariation})">
+  WithVariations(params ReadOnlySpan&lt;FontVariation&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Variations.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns this face at another position on its axes, sharing the file's memory and parsed tables: outlines, advances, extents,
+kerning, names and subsets all answer for that position. Axes not named keep this face's values; values clamp to each
+axis's range; a tag the font repeats sets every axis with it; axes the font does not have are ignored.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Typeface WithVariations(params ReadOnlySpan&lt;FontVariation&gt; variations)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>variations</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Fonts.FontVariation.html">FontVariation</a>&gt;</dt>
+    <dd><p>The axis values, such as <code>FontVariation.Weight(650)</code>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd><p>The face at that position: the default face when every axis is at its default, this face for a static font.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Typeface_WithVariations_System_ReadOnlySpan_Egami_Fonts_FontVariation___examples">Examples</h4>
+  <pre><code class="lang-csharp">// A variable font's axes and named instances, and the face at any position on them.
+Typeface flex = Typeface.FromFile(VariableFile);
+foreach (VariationAxis axis in flex.VariationAxes)
+{
+    Console.WriteLine($"{axis.Tag} {axis.Name}: {axis.Min} to {axis.Max}, default {axis.Default}");
+}
+
+Typeface semiBold = flex.WithVariations(FontVariation.Weight(600), FontVariation.Width(90));
+Typeface black = flex.WithNamedInstance(flex.NamedInstances.Count - 1);
+
+// The optical size follows the font size unless the face sets it (OpticalSizing.None turns that off).
+var caption = new Font(semiBold, 11);
+Typeface drawn = caption.EffectiveTypeface;
+
+// For a PDF, the subset is a static font at the face's position, which every viewer draws as it is.
+FontSubset subset = FontSubsetter.Subset(semiBold, caption.Shape("Static at 600").Glyphs.ToArray());</code></pre>
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.Variations.cs/#L13" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

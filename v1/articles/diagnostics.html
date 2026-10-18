@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Diagnostics | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Diagnostics | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/diagnostics.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="diagnostics">Diagnostics</h1>
+
+<p>Egami can tell an app what it recovered from, what it lost on purpose and what it decided on the caller's behalf, through one
+optional handler on <code>EgamiContext</code>. Egami has no logging dependency: the handler is a plain delegate, so one line sends the events
+to <code>ILogger</code>, Serilog or the console.</p>
+<pre><code class="lang-csharp">// With Microsoft.Extensions.Logging: one line at startup sends every call's warnings to the app's log, with the id as
+// a property to filter and count on. Egami itself has no logging dependency.
+EgamiContext.SetDefault(new EgamiContext
+{
+    Diagnostics = d =&gt; logger.Log(d.Level.ToLogLevel(), &quot;{Source} {Id} at {Offset}: {Message}&quot;, d.Source, d.Id, d.Offset, d.Message),
+});
+</code></pre><h2 id="the-handler">The handler</h2>
+<p><code>EgamiContext.Diagnostics</code> is an <code>Action&lt;EgamiDiagnostic&gt;</code>, <code>null</code> by default. With no handler, nothing is built and nothing is
+allocated. Each <code>EgamiDiagnostic</code> carries:</p>
+<table>
+<thead>
+<tr>
+<th>Member</th>
+<th>What it holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Level</code></td>
+<td><code>Warning</code>, <code>Info</code> or <code>Debug</code>, mapping onto the log levels Warning, Information and Debug</td>
+</tr>
+<tr>
+<td><code>Source</code></td>
+<td>The part of Egami that found it: <code>Png</code>, <code>Tiff</code>, <code>Exif</code>, <code>Limits</code> and so on (the id up to its first dot)</td>
+</tr>
+<tr>
+<td><code>Id</code></td>
+<td>A stable id such as <code>Png.ChecksumMismatch</code>, to filter and count on without parsing text</td>
+</tr>
+<tr>
+<td><code>Message</code></td>
+<td>What happened and what Egami did, as a sentence</td>
+</tr>
+<tr>
+<td><code>Offset</code></td>
+<td>The byte offset in the input, when known</td>
+</tr>
+<tr>
+<td><code>Frame</code></td>
+<td>The frame or page index, when known</td>
+</tr>
+</tbody>
+</table>
+<p>Ids are listed below and are never renamed or reused once shipped, like the public API.</p>
+<ul>
+<li><p><strong>Levels.</strong> <code>EgamiContext.DiagnosticLevel</code> is the lowest level delivered, <code>Warning</code> by default. Events below it are never even
+formatted.</p>
+<pre><code class="lang-csharp">// Info and Debug events are off unless asked for; below the level they are never even formatted.
+EgamiContext verbose = EgamiContext.Default with
+{
+    Diagnostics = d =&gt; seen.Add(d),
+    DiagnosticLevel = DiagnosticLevel.Debug,
+};
+
+using Raster image = Raster.Load(&quot;duck.jpg&quot;, verbose, new ReaderOptions { MinimumSize = new Size(100, 100) });
+foreach (EgamiDiagnostic d in seen)
+{
+    Console.WriteLine($&quot;{d.Level,-7} {d.Id}: {d.Message}&quot;);
+}
+</code></pre></li>
+<li><p><strong>Threads.</strong> The handler runs inline, on whichever thread found the event, possibly on several decode threads at once, so it
+must be quick and thread-safe. Egami takes no lock around it.</p>
+</li>
+<li><p><strong>When Warnings arrive.</strong> The Warnings a load raises arrive as the call ends, in the order of <code>Metadata.Warnings</code>, on the
+calling thread; a <code>RasterDecoder</code> session sends them when it is disposed. A reader that waits for more input can take a warning
+back and read it again, so nothing is sent until it is final. Info and Debug events arrive as they happen. A load that throws
+sends no Warnings: the exception says what went wrong.</p>
+</li>
+<li><p><strong>Errors.</strong> An exception from the handler fails the call with that exception, which turns warnings into errors. Nothing the call
+allocated is leaked.</p>
+<pre><code class="lang-csharp">// Warnings as errors: a handler that throws fails the call with its exception, and nothing the call allocated is leaked.
+EgamiContext strict = EgamiContext.Default with
+{
+    Diagnostics = d =&gt; throw new InvalidDataException($&quot;{d.Id}: {d.Message}&quot;),
+};
+
+try
+{
+    using Raster image = Raster.Load(SampleFiles.Damaged(), strict);
+}
+catch (InvalidDataException e)
+{
+    Console.WriteLine($&quot;Rejected: {e.Message}&quot;);
+}
+</code></pre></li>
+<li><p><strong>Repeats.</strong> One id is delivered at most 10 times per call, then once more as &quot;The same problem came up N more times&quot;.
+<code>Metadata.Warnings</code> holds the same capped list, so the two always agree. A hostile file cannot flood a log.</p>
+</li>
+<li><p><strong>Per file.</strong> Contexts are cheap records, so a context per file, whose handler's closure carries the path, scopes the events to
+that file.</p>
+<pre><code class="lang-csharp">// Per file: the handler's closure carries the path, so no correlation id is needed. Contexts are cheap records.
+foreach (string path in Directory.EnumerateFiles(&quot;.&quot;, &quot;*.png&quot;))
+{
+    EgamiContext perFile = EgamiContext.Default with { Diagnostics = d =&gt; log.Add($&quot;{path}: {d.Message}&quot;) };
+    using Raster image = Raster.Load(path, perFile);
+}
+</code></pre></li>
+</ul>
+<h2 id="metadatawarnings">Metadata.Warnings</h2>
+<p>Every Warning a load raises is also in <code>RasterMetadata.Warnings</code>, an <code>IReadOnlyList&lt;EgamiDiagnostic&gt;</code>, with or without a handler.
+Info and Debug events never are. Metadata parsed on first use (XMP, IPTC, ICC) adds its warnings then, and sends them to the handler
+of the context the raster was loaded with.</p>
+<pre><code class="lang-csharp">// Without a handler the same Warnings are in the metadata, each with its id.
+using Raster image = Raster.Load(SampleFiles.Damaged());
+foreach (EgamiDiagnostic warning in image.Metadata.Warnings)
+{
+    Console.WriteLine($&quot;{warning.Id} at byte {warning.Offset}: {warning.Message}&quot;);
+}
+
+bool checksumsOnly = image.Metadata.Warnings.All(w =&gt; w.Id == &quot;Png.ChecksumMismatch&quot;);
+</code></pre><h2 id="reporting-from-your-own-code">Reporting from your own code</h2>
+<p>A format plug-in notes a recovery with <code>EgamiInput.Warn(raster, id, message)</code>, which lists it in <code>Metadata.Warnings</code> and sends it to
+the handler as Egami's own readers do; <code>EgamiInput.Diagnostics</code> takes its Info and Debug events. Code with no <code>EgamiInput</code>, such
+as a video demuxer, starts a <code>DiagnosticReporter</code> for the call with <code>EgamiContext.StartDiagnostics()</code>, which applies the same level
+filter and cap; disposing it sends the counts of capped ids. Use your own source name in ids (<code>Avi.IndexRebuilt</code>), never one of
+Egami's.</p>
+<pre><code class="lang-csharp">// A decoder outside Egami (a video demuxer, a format plug-in's own entry point) reports through the same handler, with the
+// same level filter and the same cap of 10 per id per call. Dispose the reporter when the call ends.
+using (DiagnosticReporter diagnostics = context.StartDiagnostics())
+{
+    if (diagnostics.IsEnabled(DiagnosticLevel.Warning))
+    {
+        diagnostics.Report(DiagnosticLevel.Warning, &quot;Avi.IndexRebuilt&quot;, &quot;The index was missing; it was rebuilt from the frames.&quot;, offset: 4096);
+    }
+
+    diagnostics.Report(DiagnosticLevel.Info, &quot;Mjpeg.DhtInserted&quot;, &quot;Frames have no Huffman tables; the standard ones were used.&quot;);
+}
+</code></pre><h2 id="logging-libraries">Logging libraries</h2>
+<p><code>ILogger</code> takes the mapping in the first example. Serilog's static <code>Log</code> is the same one line:</p>
+<pre><code class="lang-csharp">// With Serilog's static Log: the same one line, with Serilog's level names.
+EgamiContext context = EgamiContext.Default with
+{
+    Diagnostics = d =&gt; log.Write(d.Level == DiagnosticLevel.Warning ? &quot;Warning&quot; : d.Level == DiagnosticLevel.Info ? &quot;Information&quot; : &quot;Debug&quot;, &quot;{Id}: {Message}&quot;, d.Id, d.Message),
+};
+</code></pre>
+<p>Memory leaks are reported by <code>PixelMemoryUsage.LeakDetected</code> instead, because they belong to a memory source rather than a call and
+are found on the finalizer thread after the call has ended; see <a href="guides/memory-and-threading.html#finding-leaks">Memory and threading</a>.</p>
+<h2 id="catalog">Catalog</h2>
+<!-- tests/Egami.Tests/DiagnosticsCatalogTests.cs checks this table against the ids in src/Egami, one to one. -->
+<table>
+<thead>
+<tr>
+<th>Id</th>
+<th>Level</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Avif.BaseLayerOnly</code></td>
+<td>Warning</td>
+<td>An AVIF image is coded in layers whose later ones are inter frames, which Egami does not decode yet; its first layer was loaded</td>
+</tr>
+<tr>
+<td><code>Avif.ExifDamaged</code></td>
+<td>Warning</td>
+<td>An AVIF Exif item's TIFF header offset points past its end; the item was skipped</td>
+</tr>
+<tr>
+<td><code>Avif.FramesDropped</code></td>
+<td>Warning</td>
+<td>A frame of an AVIF sequence after the first cannot be decoded; a lenient load keeps the frames before it</td>
+</tr>
+<tr>
+<td><code>Avif.GainMapDropped</code></td>
+<td>Warning</td>
+<td>An AVIF gain map (tmap item) has metadata or an image that cannot be read, or a version Egami does not know; the image loads as SDR only</td>
+</tr>
+<tr>
+<td><code>Avif.MatrixApproximated</code></td>
+<td>Warning</td>
+<td>An AVIF image's matrix coefficients are ones libavif does not convert (reserved, constant luminance, or YCgCo at limited range); the nearest matrix it has was used</td>
+</tr>
+<tr>
+<td><code>Avif.MatrixUnknown</code></td>
+<td>Warning</td>
+<td>An AVIF image's matrix coefficients have no YuvMatrix; YuvRaster.Load marks the planes BT.601</td>
+</tr>
+<tr>
+<td><code>Avif.SequenceFirstFrame</code></td>
+<td>Warning</td>
+<td>An AVIF sequence has inter frames, which Egami does not decode yet; only its first frame was loaded</td>
+</tr>
+<tr>
+<td><code>Bmp.DataOffsetInHeaders</code></td>
+<td>Warning</td>
+<td>The pixel data offset points into the headers; the pixels are read from where the headers end</td>
+</tr>
+<tr>
+<td><code>Bmp.EmbeddedSizeMismatch</code></td>
+<td>Warning</td>
+<td>An embedded PNG or JPEG is not the size the BMP header gives</td>
+</tr>
+<tr>
+<td><code>Bmp.IndexOutOfRange</code></td>
+<td>Warning</td>
+<td>Pixels use indices past the palette; they are drawn black</td>
+</tr>
+<tr>
+<td><code>Bmp.PlanesInvalid</code></td>
+<td>Warning</td>
+<td>The header gives a plane count other than 1; it was ignored</td>
+</tr>
+<tr>
+<td><code>Bmp.ProfileLinked</code></td>
+<td>Warning</td>
+<td>The color profile is linked by file name, which Egami does not open</td>
+</tr>
+<tr>
+<td><code>Bmp.ProfileTruncated</code></td>
+<td>Warning</td>
+<td>The file ends before the embedded ICC profile; it was dropped</td>
+</tr>
+<tr>
+<td><code>Bmp.RowsMissing</code></td>
+<td>Warning</td>
+<td>The pixel data ends or is damaged; the rows not decoded are black</td>
+</tr>
+<tr>
+<td><code>Bmp.RunPastRow</code></td>
+<td>Warning</td>
+<td>RLE runs go past the end of a row; the extra pixels were dropped</td>
+</tr>
+<tr>
+<td><code>Ccitt.Damaged</code></td>
+<td>Warning</td>
+<td>A row of CCITT data is damaged and could not be skipped; the rows before it were kept and the rest are white</td>
+</tr>
+<tr>
+<td><code>Ccitt.RowsSkipped</code></td>
+<td>Warning</td>
+<td>Damaged CCITT rows were skipped to the next EOL, as DamagedRowsBeforeError allows; each repeats the row before it</td>
+</tr>
+<tr>
+<td><code>Ccitt.Truncated</code></td>
+<td>Warning</td>
+<td>The CCITT data ends before the rows its parameters give; the rest are white</td>
+</tr>
+<tr>
+<td><code>Color.ConvertedOnLoad</code></td>
+<td>Info</td>
+<td><code>ReaderOptions.ConvertColorTo</code> converted the pixels; from which encoding to which</td>
+</tr>
+<tr>
+<td><code>Decode.FramesSelected</code></td>
+<td>Info</td>
+<td><code>ReaderOptions.Frames</code> chose some frames; how many were read</td>
+</tr>
+<tr>
+<td><code>Decode.ScaleChosen</code></td>
+<td>Info</td>
+<td>For <code>ReaderOptions.MinimumSize</code>, the 1/N scale the reader decodes at and the box factor after it</td>
+</tr>
+<tr>
+<td><code>Detect.Format</code></td>
+<td>Info</td>
+<td>The format detected, and how</td>
+</tr>
+<tr>
+<td><code>Exif.Damaged</code></td>
+<td>Warning</td>
+<td>The EXIF block would not parse in full; it is kept as bytes</td>
+</tr>
+<tr>
+<td><code>Exr.BlocksDamaged</code></td>
+<td>Warning</td>
+<td>Blocks of an OpenEXR part cannot be read or decompressed; their pixels are zero</td>
+</tr>
+<tr>
+<td><code>Exr.ChunkTableRebuilt</code></td>
+<td>Warning</td>
+<td>An OpenEXR part's chunk offset table is incomplete or damaged; it was rebuilt by walking the chunks</td>
+</tr>
+<tr>
+<td><code>Font.BadColorGlyph</code></td>
+<td>Warning</td>
+<td>A glyph's color data (COLR, sbix, CBDT or SVG) is damaged, cyclic or deeper than 64 paints; the part that cannot be drawn is left out, or the glyph draws as its outline (Egami.Fonts)</td>
+</tr>
+<tr>
+<td><code>Font.BadContainer</code></td>
+<td>Warning</td>
+<td>A WOFF or WOFF2 file's header or blocks disagree with its data (a wrong length, a misplaced metadata block); the tables are still read (Egami.Fonts)</td>
+</tr>
+<tr>
+<td><code>Font.BadDirectory</code></td>
+<td>Warning</td>
+<td>A font's table directory lists a table outside the file; it was dropped or cut short (Egami.Fonts)</td>
+</tr>
+<tr>
+<td><code>Font.BadGlyph</code></td>
+<td>Warning</td>
+<td>A glyph's data cannot be read; it draws empty (Egami.Fonts)</td>
+</tr>
+<tr>
+<td><code>Font.BadTable</code></td>
+<td>Warning</td>
+<td>A font table is damaged; its documented default is used (Egami.Fonts)</td>
+</tr>
+<tr>
+<td><code>Font.FileSkipped</code></td>
+<td>Warning</td>
+<td>A file in a font folder cannot be indexed; it is left out of the collection (Egami.Fonts)</td>
+</tr>
+<tr>
+<td><code>Font.MissingTable</code></td>
+<td>Warning</td>
+<td>A font lacks a table; its documented default is used (Egami.Fonts)</td>
+</tr>
+<tr>
+<td><code>Font.ShapingLimit</code></td>
+<td>Warning</td>
+<td>A font's layout tables drove shaping past its operation or length limits, as a hostile font can; the text is shaped as far as the limits allow (Egami.Fonts)</td>
+</tr>
+<tr>
+<td><code>Gif.BlockTruncated</code></td>
+<td>Warning</td>
+<td>The file ends inside a block</td>
+</tr>
+<tr>
+<td><code>Gif.ColorTableMissing</code></td>
+<td>Warning</td>
+<td>A frame has no color table; it is drawn transparent</td>
+</tr>
+<tr>
+<td><code>Gif.ControlExtensionShort</code></td>
+<td>Warning</td>
+<td>A graphic control extension is shorter than 4 bytes</td>
+</tr>
+<tr>
+<td><code>Gif.DisposalUndefined</code></td>
+<td>Warning</td>
+<td>A frame's disposal method is undefined; it is read as none</td>
+</tr>
+<tr>
+<td><code>Gif.FrameOutsideScreen</code></td>
+<td>Warning</td>
+<td>A frame sticks out of the logical screen</td>
+</tr>
+<tr>
+<td><code>Gif.ImageDataShort</code></td>
+<td>Warning</td>
+<td>A frame's image data ends early</td>
+</tr>
+<tr>
+<td><code>Gif.ImageDataTruncated</code></td>
+<td>Warning</td>
+<td>The file ends inside a frame's image data</td>
+</tr>
+<tr>
+<td><code>Gif.ImageTruncated</code></td>
+<td>Warning</td>
+<td>The file ends inside a frame's header</td>
+</tr>
+<tr>
+<td><code>Gif.IndexOutOfRange</code></td>
+<td>Warning</td>
+<td>A frame uses indices past its color table; they are drawn transparent</td>
+</tr>
+<tr>
+<td><code>Gif.LzwCodeSizeOne</code></td>
+<td>Warning</td>
+<td>An LZW minimum code size of 1, outside the specification</td>
+</tr>
+<tr>
+<td><code>Gif.TrailerMissing</code></td>
+<td>Warning</td>
+<td>The file ends without a trailer</td>
+</tr>
+<tr>
+<td><code>Gif.UnknownBlock</code></td>
+<td>Warning</td>
+<td>An unknown block where a block introducer was expected</td>
+</tr>
+<tr>
+<td><code>Gif.XmpTrailerMissing</code></td>
+<td>Warning</td>
+<td>The XMP application extension lacks its magic trailer</td>
+</tr>
+<tr>
+<td><code>Heif.ItemCount</code></td>
+<td>Warning</td>
+<td>A HEIF (AVIF) iinf box's entry count differs from the infe boxes it holds; the boxes found are read</td>
+</tr>
+<tr>
+<td><code>Heif.ItemEntryVersion</code></td>
+<td>Warning</td>
+<td>A HEIF (AVIF) infe box has an unknown version; the item was skipped</td>
+</tr>
+<tr>
+<td><code>Heif.OldItemEntry</code></td>
+<td>Warning</td>
+<td>A HEIF (AVIF) infe box of version 0 or 1 has no item type; the item was skipped</td>
+</tr>
+<tr>
+<td><code>Heif.PrimaryItemMissing</code></td>
+<td>Warning</td>
+<td>A HEIF (AVIF) pitm box names an item that has no iinf entry</td>
+</tr>
+<tr>
+<td><code>Heif.PropertiesOfUnknownItem</code></td>
+<td>Warning</td>
+<td>A HEIF (AVIF) ipma box associates properties with an item that has no iinf entry; they were ignored</td>
+</tr>
+<tr>
+<td><code>Heif.ReferenceFromUnknownItem</code></td>
+<td>Warning</td>
+<td>A HEIF (AVIF) iref box has a reference from an item that has no iinf entry; it was ignored</td>
+</tr>
+<tr>
+<td><code>Heif.SecondMeta</code></td>
+<td>Warning</td>
+<td>A HEIF (AVIF) file has a second meta box at the top level; it was ignored</td>
+</tr>
+<tr>
+<td><code>Heif.TrailingData</code></td>
+<td>Warning</td>
+<td>A HEIF (AVIF) file has data after its last whole top-level box that does not form a box; it was ignored</td>
+</tr>
+<tr>
+<td><code>Heif.UnknownLocatedItem</code></td>
+<td>Warning</td>
+<td>A HEIF (AVIF) iloc box locates an item that has no iinf entry; it was ignored</td>
+</tr>
+<tr>
+<td><code>Icc.Unusable</code></td>
+<td>Warning</td>
+<td>The embedded ICC profile is damaged or of a kind Egami cannot use; colors are read as if it were absent</td>
+</tr>
+<tr>
+<td><code>Ico.DirectoryMismatch</code></td>
+<td>Warning</td>
+<td>An icon's directory gives a size its entry's own header contradicts; the header's was used</td>
+</tr>
+<tr>
+<td><code>Ico.EntryDamaged</code></td>
+<td>Warning</td>
+<td>The entry Load picked could not be decoded; the next best was loaded</td>
+</tr>
+<tr>
+<td><code>Ico.EntrySkipped</code></td>
+<td>Warning</td>
+<td>An icon entry lies outside the file, overlaps another or is neither PNG nor BMP; it was skipped</td>
+</tr>
+<tr>
+<td><code>Ico.MaskMissing</code></td>
+<td>Warning</td>
+<td>A BMP entry ends before its AND mask; the rows without one are opaque</td>
+</tr>
+<tr>
+<td><code>Iptc.Damaged</code></td>
+<td>Warning</td>
+<td>The IPTC datasets would not parse in full; the block is kept as bytes</td>
+</tr>
+<tr>
+<td><code>Iptc.ResourceBlockDamaged</code></td>
+<td>Warning</td>
+<td>The Photoshop resource block that holds IPTC is damaged; it is kept as bytes</td>
+</tr>
+<tr>
+<td><code>Iptc.ValueTooLong</code></td>
+<td>Warning</td>
+<td>An IPTC value is longer than the IIM specification allows; it was kept</td>
+</tr>
+<tr>
+<td><code>Jbig2.ColourExtension</code></td>
+<td>Warning</td>
+<td>A region uses the colour extension (T.88 Amendment 3); it was decoded as bilevel</td>
+</tr>
+<tr>
+<td><code>Jbig2.ColourPaletteSkipped</code></td>
+<td>Warning</td>
+<td>A colour palette segment was skipped; the page decodes as bilevel</td>
+</tr>
+<tr>
+<td><code>Jbig2.RegionClipped</code></td>
+<td>Warning</td>
+<td>A region lies partly outside its page; the part outside was dropped</td>
+</tr>
+<tr>
+<td><code>Jbig2.RegionDamaged</code></td>
+<td>Warning</td>
+<td>A region segment is damaged; it was skipped and the rest of the page decoded</td>
+</tr>
+<tr>
+<td><code>Jbig2.RegionDataShort</code></td>
+<td>Warning</td>
+<td>A region's arithmetic-coded data ends early; the rest of it is what the decoder makes of 1-bits</td>
+</tr>
+<tr>
+<td><code>Jbig2.ReservedSegment</code></td>
+<td>Warning</td>
+<td>A segment has a type T.88 reserves; it was skipped</td>
+</tr>
+<tr>
+<td><code>Jbig2.Truncated</code></td>
+<td>Warning</td>
+<td>The data ends inside a segment; what it holds was decoded</td>
+</tr>
+<tr>
+<td><code>Jpeg.ArithmeticDamaged</code></td>
+<td>Warning</td>
+<td>Arithmetic-coded data is damaged; the rest of the image is gray</td>
+</tr>
+<tr>
+<td><code>Jpeg.DataEnded</code></td>
+<td>Warning</td>
+<td>The entropy-coded data ends early; the rest is gray or has less detail</td>
+</tr>
+<tr>
+<td><code>Jpeg.EncodingChosen</code></td>
+<td>Info</td>
+<td>The color space, chroma sampling and quality a JPEG save used, with <code>ColorType</code> left at Auto</td>
+</tr>
+<tr>
+<td><code>Jpeg.EoiMissing</code></td>
+<td>Warning</td>
+<td>The file ends before its end-of-image marker; the scans so far were decoded</td>
+</tr>
+<tr>
+<td><code>Jpeg.ExtendedXmpIncomplete</code></td>
+<td>Warning</td>
+<td>The extended XMP packet is missing parts; it was dropped</td>
+</tr>
+<tr>
+<td><code>Jpeg.ExtendedXmpOverLimit</code></td>
+<td>Warning</td>
+<td>The extended XMP packet is over the metadata limit; it was dropped</td>
+</tr>
+<tr>
+<td><code>Jpeg.GainMapDropped</code></td>
+<td>Warning</td>
+<td>A gain map was found but its metadata or image cannot be read; the SDR image loads without it</td>
+</tr>
+<tr>
+<td><code>Jpeg.IccIncomplete</code></td>
+<td>Warning</td>
+<td>Parts of the ICC profile are missing; it was dropped</td>
+</tr>
+<tr>
+<td><code>Jpeg.MpfDamaged</code></td>
+<td>Warning</td>
+<td>The Multi-Picture Format index is damaged; only the primary image is listed and loaded</td>
+</tr>
+<tr>
+<td><code>Jpeg.PhotoshopOverLimit</code></td>
+<td>Warning</td>
+<td>The Photoshop resource block is over the metadata limit; it was dropped</td>
+</tr>
+<tr>
+<td><code>Jpeg.RestartResync</code></td>
+<td>Warning</td>
+<td>A restart marker is missing or out of order; decoding picked up at the next one</td>
+</tr>
+<tr>
+<td><code>Jpeg.SegmentTruncated</code></td>
+<td>Warning</td>
+<td>A segment between scans is cut off</td>
+</tr>
+<tr>
+<td><code>Jpeg.StrayBytes</code></td>
+<td>Warning</td>
+<td>Stray bytes between segments after a scan were skipped</td>
+</tr>
+<tr>
+<td><code>Jpeg.ThumbnailDropped</code></td>
+<td>Warning</td>
+<td>A lossless transform could not turn the EXIF thumbnail with the image (it is not a JPEG, or is damaged); it was left out</td>
+</tr>
+<tr>
+<td><code>Jpeg2000.ChannelsDropped</code></td>
+<td>Warning</td>
+<td>Channels that are neither color nor alpha (by the channel definitions, or beyond the color space's count) were not loaded</td>
+</tr>
+<tr>
+<td><code>Jpeg2000.ExtraCodestreams</code></td>
+<td>Warning</td>
+<td>A JPX file holds several codestreams; only the first was read</td>
+</tr>
+<tr>
+<td><code>Jpeg2000.MissingTiles</code></td>
+<td>Warning</td>
+<td>Tiles have no data in the codestream; they were left black</td>
+</tr>
+<tr>
+<td><code>Jpeg2000.SignedSamples</code></td>
+<td>Warning</td>
+<td>Signed samples were offset by half their range to load as unsigned</td>
+</tr>
+<tr>
+<td><code>Jpeg2000.Truncated</code></td>
+<td>Warning</td>
+<td>The codestream ends before its last packet; what it holds was decoded</td>
+</tr>
+<tr>
+<td><code>Jxl.BoxDropped</code></td>
+<td>Warning</td>
+<td>A JPEG XL metadata box (Exif, xml, jumb, jhgm, jbrd, jxli or brob) is over SafetyLimits.MaxMetadataBytes, or opens to more; it was skipped</td>
+</tr>
+<tr>
+<td><code>Jxl.BrobDropped</code></td>
+<td>Warning</td>
+<td>A JPEG XL brob box is too small, compresses a box that must not be compressed, or holds broken Brotli data; it was dropped</td>
+</tr>
+<tr>
+<td><code>Jxl.ExifDropped</code></td>
+<td>Warning</td>
+<td>A JPEG XL Exif box's TIFF header offset is missing or points past the box; the box was dropped</td>
+</tr>
+<tr>
+<td><code>Jxl.GainMapDropped</code></td>
+<td>Warning</td>
+<td>A JPEG XL jhgm gain map box is damaged, or its metadata or map cannot be read; the SDR image loads without it</td>
+</tr>
+<tr>
+<td><code>Jxl.LevelInvalid</code></td>
+<td>Warning</td>
+<td>A JPEG XL jxll box holds a level other than 5 or 10; it is ignored</td>
+</tr>
+<tr>
+<td><code>Jxl.RegionGroups</code></td>
+<td>Debug</td>
+<td>How many of a JPEG XL frame's pass groups ReaderOptions.Region needed; the others were not decoded</td>
+</tr>
+<tr>
+<td><code>Jxl.TrailingData</code></td>
+<td>Warning</td>
+<td>A JPEG XL file ends with bytes after its last box that do not make a whole box; they were ignored</td>
+</tr>
+<tr>
+<td><code>Limits.Exceeded</code></td>
+<td>Debug</td>
+<td>A safety limit is about to fail the load: its name, the limit and the value found</td>
+</tr>
+<tr>
+<td><code>Metafile.BadBitmap</code></td>
+<td>Warning</td>
+<td>A bitmap in a record or a pattern brush cannot be decoded; it is not drawn, or the brush draws black (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.BadChecksum</code></td>
+<td>Warning</td>
+<td>A placeable WMF header's checksum does not match; the header is used anyway, as Windows does (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.BadHeader</code></td>
+<td>Warning</td>
+<td>A header field cannot be used (0 units per inch, a description outside the header); a default is used or the field ignored (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.BadObject</code></td>
+<td>Warning</td>
+<td>An EMF+ object split over several records is broken (no size, interrupted, larger than the file); it is skipped (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.BadRecord</code></td>
+<td>Warning</td>
+<td>A record's fields do not fit its size, or describe geometry that cannot be drawn; that record is skipped and playback goes on (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.FontSubstituted</code></td>
+<td>Warning</td>
+<td>A text record names a face that is not installed; a metric-compatible or generic face is used with the record's own advances, or, with no font at all, the text is not drawn (design question 8) (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.GlyphIndices</code></td>
+<td>Warning</td>
+<td>Text given as glyph indices of a face that is not installed is skipped, since the indices would show wrong letters in another face (design question 9) (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.NoEndRecord</code></td>
+<td>Warning</td>
+<td>The file ends without its end-of-file record; the records before the end are played (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.NoPlaceableHeader</code></td>
+<td>Warning</td>
+<td>A WMF has no placeable header; it is sized by its window extent at 96 DPI (design question 10) (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.RasterOperation</code></td>
+<td>Warning</td>
+<td>A mix mode or raster operation has no Egami equivalent; it is drawn as a copy (design question 7) (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.SkippedRecord</code></td>
+<td>Warning</td>
+<td>Records Egami.Metafiles does not draw (flood fills, OpenGL, escapes, unknown types); they are skipped, once reported per kind (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.TextApproximated</code></td>
+<td>Warning</td>
+<td>An EMF+ DrawString has no layout width; its text is aligned from its origin instead (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.TooDeep</code></td>
+<td>Warning</td>
+<td>A metafile inside a metafile is nested deeper than 8 levels; it is not drawn (design question 12) (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Metafile.TruncatedRecord</code></td>
+<td>Warning</td>
+<td>A record claims more bytes than the file or its EMF+ comment holds; reading stops there and the records before it are played (Egami.Metafiles)</td>
+</tr>
+<tr>
+<td><code>Operation.ChainPlanned</code></td>
+<td>Info</td>
+<td>The planner changed a chain: a crop fused into a resize, color steps fused, a no-op draw dropped</td>
+</tr>
+<tr>
+<td><code>Operation.GainMapDropped</code></td>
+<td>Warning</td>
+<td>A step changed pixel values, or moved them in a way the gain map cannot follow; the gain map was dropped and the image saves as SDR only</td>
+</tr>
+<tr>
+<td><code>Parallel.Bands</code></td>
+<td>Debug</td>
+<td>How many bands and threads a parallel decode or encode uses</td>
+</tr>
+<tr>
+<td><code>Png.ActlAfterData</code></td>
+<td>Warning</td>
+<td>The acTL chunk comes after the image data; the file is read as a still PNG</td>
+</tr>
+<tr>
+<td><code>Png.ActlFrameCount</code></td>
+<td>Warning</td>
+<td>The acTL chunk gives an impossible frame count; the file is read as a still PNG</td>
+</tr>
+<tr>
+<td><code>Png.ActlLength</code></td>
+<td>Warning</td>
+<td>The acTL chunk has the wrong length; the file is read as a still PNG</td>
+</tr>
+<tr>
+<td><code>Png.ActlRepeated</code></td>
+<td>Warning</td>
+<td>A second acTL chunk was ignored</td>
+</tr>
+<tr>
+<td><code>Png.AdlerMismatch</code></td>
+<td>Warning</td>
+<td>The image data's Adler-32 checksum is wrong</td>
+</tr>
+<tr>
+<td><code>Png.AnimationTruncated</code></td>
+<td>Warning</td>
+<td>The file ends inside the animation; the frames before are kept</td>
+</tr>
+<tr>
+<td><code>Png.ChecksumMismatch</code></td>
+<td>Warning</td>
+<td>An ancillary chunk's CRC is wrong; the chunk was ignored</td>
+</tr>
+<tr>
+<td><code>Png.ChunkMalformed</code></td>
+<td>Warning</td>
+<td>An ancillary chunk is malformed; it was ignored</td>
+</tr>
+<tr>
+<td><code>Png.ChunkOutOfOrder</code></td>
+<td>Warning</td>
+<td>A chunk breaks an ordering rule; it was ignored</td>
+</tr>
+<tr>
+<td><code>Png.ChunkOutOfPlace</code></td>
+<td>Warning</td>
+<td>A chunk appears where it may not; it was ignored</td>
+</tr>
+<tr>
+<td><code>Png.ChunkTruncated</code></td>
+<td>Warning</td>
+<td>The file ends inside a chunk after the image data</td>
+</tr>
+<tr>
+<td><code>Png.ColorTypeChosen</code></td>
+<td>Info</td>
+<td>The color type, bit depth and palette a PNG save chose, with <code>ColorType</code> left unset</td>
+</tr>
+<tr>
+<td><code>Png.DamageAfterLastRow</code></td>
+<td>Warning</td>
+<td>The compressed data is damaged after the last row</td>
+</tr>
+<tr>
+<td><code>Png.DataAfterLastRow</code></td>
+<td>Warning</td>
+<td>The image data has extra bytes after the last row</td>
+</tr>
+<tr>
+<td><code>Png.DataEmpty</code></td>
+<td>Warning</td>
+<td>The image data ends before any row; the image is transparent black</td>
+</tr>
+<tr>
+<td><code>Png.DataTruncated</code></td>
+<td>Warning</td>
+<td>The file ends inside the image data</td>
+</tr>
+<tr>
+<td><code>Png.ExifDuplicate</code></td>
+<td>Warning</td>
+<td>EXIF is given twice (eXIf and a raw profile); the first is used</td>
+</tr>
+<tr>
+<td><code>Png.FctlUnknownOps</code></td>
+<td>Warning</td>
+<td>An fcTL chunk has unknown disposal or blend values; they are read as 0</td>
+</tr>
+<tr>
+<td><code>Png.FdatMissing</code></td>
+<td>Warning</td>
+<td>An fcTL chunk is not followed by fdAT; the animation ends there</td>
+</tr>
+<tr>
+<td><code>Png.FramesExtra</code></td>
+<td>Warning</td>
+<td>There are more frames than acTL gives; the rest were ignored</td>
+</tr>
+<tr>
+<td><code>Png.FramesMissing</code></td>
+<td>Warning</td>
+<td>There are fewer frames than acTL gives</td>
+</tr>
+<tr>
+<td><code>Png.IendData</code></td>
+<td>Warning</td>
+<td>The IEND chunk has data</td>
+</tr>
+<tr>
+<td><code>Png.IendMissing</code></td>
+<td>Warning</td>
+<td>The file ends without an IEND chunk</td>
+</tr>
+<tr>
+<td><code>Png.IndexOutOfRange</code></td>
+<td>Warning</td>
+<td>Pixels use palette indices past the palette; they were made black</td>
+</tr>
+<tr>
+<td><code>Png.PaletteTooLong</code></td>
+<td>Warning</td>
+<td>The palette has more entries than the bit depth can index</td>
+</tr>
+<tr>
+<td><code>Png.RawProfileInvalid</code></td>
+<td>Warning</td>
+<td>A &quot;Raw profile type&quot; text chunk cannot be decoded; it is kept as text</td>
+</tr>
+<tr>
+<td><code>Png.RowsMissing</code></td>
+<td>Warning</td>
+<td>The image data ends early; the rows not decoded are transparent black</td>
+</tr>
+<tr>
+<td><code>Png.SequenceError</code></td>
+<td>Warning</td>
+<td>An APNG sequence number is out of order</td>
+</tr>
+<tr>
+<td><code>Png.TrnsInvalid</code></td>
+<td>Warning</td>
+<td>The tRNS chunk does not fit the color type; it was ignored</td>
+</tr>
+<tr>
+<td><code>Png.XmpDuplicate</code></td>
+<td>Warning</td>
+<td>XMP is given twice (iTXt and a raw profile); the iTXt chunk is used</td>
+</tr>
+<tr>
+<td><code>Pnm.DataAfterImage</code></td>
+<td>Warning</td>
+<td>More data follows the image; only the first image is read</td>
+</tr>
+<tr>
+<td><code>Pnm.RowsMissing</code></td>
+<td>Warning</td>
+<td>The pixel data ends or is damaged; the rows not decoded are black</td>
+</tr>
+<tr>
+<td><code>Pnm.SamplesClamped</code></td>
+<td>Warning</td>
+<td>Samples above the maxval were clamped</td>
+</tr>
+<tr>
+<td><code>Pnm.TupleTypeMismatch</code></td>
+<td>Warning</td>
+<td>The PAM tuple type does not fit the depth; the image is read by its depth</td>
+</tr>
+<tr>
+<td><code>Pnm.UnknownHeaderLine</code></td>
+<td>Warning</td>
+<td>An unknown PAM header line was ignored</td>
+</tr>
+<tr>
+<td><code>Psd.ChannelsDropped</code></td>
+<td>Warning</td>
+<td>A multichannel file has no color model; its first channel was loaded as gray and the rest were not</td>
+</tr>
+<tr>
+<td><code>Psd.DataTruncated</code></td>
+<td>Warning</td>
+<td>The file ends inside the flattened image; the missing pixels are 0</td>
+</tr>
+<tr>
+<td><code>Psd.LayersDamaged</code></td>
+<td>Warning</td>
+<td>A layer record is damaged; the records after it were not read, which the flattened image does not need</td>
+</tr>
+<tr>
+<td><code>Psd.NoComposite</code></td>
+<td>Warning</td>
+<td>The file was saved without Maximize Compatibility; its stored placeholder was loaded, not the layers composited</td>
+</tr>
+<tr>
+<td><code>Psd.ResourcesDamaged</code></td>
+<td>Warning</td>
+<td>An image resource is damaged; the resources after it were skipped</td>
+</tr>
+<tr>
+<td><code>Psd.RowShort</code></td>
+<td>Warning</td>
+<td>A PackBits row decodes short; the rest of it is 0</td>
+</tr>
+<tr>
+<td><code>Qoi.DataAfterEnd</code></td>
+<td>Warning</td>
+<td>Data follows the last pixel where the end marker should be</td>
+</tr>
+<tr>
+<td><code>Qoi.EndMarkerMissing</code></td>
+<td>Warning</td>
+<td>The file ends without the QOI end marker</td>
+</tr>
+<tr>
+<td><code>Qoi.RowsMissing</code></td>
+<td>Warning</td>
+<td>The file ends early; the rows not decoded are transparent black</td>
+</tr>
+<tr>
+<td><code>Radiance.RowsMissing</code></td>
+<td>Warning</td>
+<td>The file ends early; the scanlines not decoded are black</td>
+</tr>
+<tr>
+<td><code>Save.AlphaDropped</code></td>
+<td>Warning</td>
+<td>The format, as written with these options, has no alpha; translucent pixels were written opaque</td>
+</tr>
+<tr>
+<td><code>Save.ColorsQuantized</code></td>
+<td>Warning</td>
+<td>The image has more colors than the palette holds; it was reduced</td>
+</tr>
+<tr>
+<td><code>Save.ConvertedToRgb</code></td>
+<td>Warning</td>
+<td>The format holds no CMYK; the inks were converted to RGB</td>
+</tr>
+<tr>
+<td><code>Save.DepthReduced</code></td>
+<td>Warning</td>
+<td>Samples deeper than the format holds were rounded, or floating-point samples clipped to integers</td>
+</tr>
+<tr>
+<td><code>Save.FramesDropped</code></td>
+<td>Warning</td>
+<td>The format holds one image here; only the first frame was written</td>
+</tr>
+<tr>
+<td><code>Save.GainMapDropped</code></td>
+<td>Warning</td>
+<td>The format holds no gain map, or the map no longer fits the image; the SDR base was written without it</td>
+</tr>
+<tr>
+<td><code>Save.HdrClipped</code></td>
+<td>Warning</td>
+<td>An HDR raster with light above reference white was saved to a format that holds 0 to 1; the highlights were clipped and ToneMap would have kept them</td>
+</tr>
+<tr>
+<td><code>Save.IcoFitted</code></td>
+<td>Warning</td>
+<td>A raster larger than an icon entry's 256 × 256 was fitted to 256</td>
+</tr>
+<tr>
+<td><code>Save.MetadataDropped</code></td>
+<td>Warning</td>
+<td>Metadata the format cannot hold, or that is too large for it, was not written</td>
+</tr>
+<tr>
+<td><code>Streaming.BufferGrown</code></td>
+<td>Debug</td>
+<td>An incremental decode's buffer grew past its first size to hold bytes not yet decoded</td>
+</tr>
+<tr>
+<td><code>Streaming.ReadWhole</code></td>
+<td>Debug</td>
+<td>A stream that cannot seek was read into memory whole, to find every image</td>
+</tr>
+<tr>
+<td><code>Streaming.Replayed</code></td>
+<td>Debug</td>
+<td>A transcode of a stream that cannot seek kept the bytes it read to plan, and read them again</td>
+</tr>
+<tr>
+<td><code>Svg.Approximated</code></td>
+<td>Warning</td>
+<td>A blend mode or call SVG cannot express was written as the nearest SVG can draw, or left out (Egami.Svg's SvgCanvas)</td>
+</tr>
+<tr>
+<td><code>Svg.BadAttribute</code></td>
+<td>Warning</td>
+<td>An attribute's value cannot be read (a length, number, list, viewBox or keyword); it is ignored, as browsers ignore it (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.BadPathData</code></td>
+<td>Warning</td>
+<td>Path data breaks the grammar; the path is drawn up to the error, as SVG says (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.BadReference</code></td>
+<td>Warning</td>
+<td>A reference (href, url(#id) in fill, stroke, clip-path, mask, marker) names no element of the right kind, or forms a cycle; what refers to it draws as SVG says for a missing reference (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.BadStyle</code></td>
+<td>Warning</td>
+<td>A property's value cannot be used where it is applied; the inherited or initial value is used (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.BadStyleSheet</code></td>
+<td>Warning</td>
+<td>A style sheet or style attribute has a CSS syntax error; the declaration or rule is dropped and the rest applies, as CSS says (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.DefaultSize</code></td>
+<td>Warning</td>
+<td>The root has no width, height or viewBox to size it; it is drawn at 100 by 100 pixels, as resvg does (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.FallbackImage</code></td>
+<td>Info</td>
+<td>A drawing call SVG cannot express was drawn by Egami and embedded as a PNG image (Egami.Svg's SvgCanvas)</td>
+</tr>
+<tr>
+<td><code>Svg.FontNotEmbedded</code></td>
+<td>Warning</td>
+<td>A font's license forbids embedding a subset, or it could not be subset; its text names the font only (Egami.Svg's SvgCanvas)</td>
+</tr>
+<tr>
+<td><code>Svg.FontNotFound</code></td>
+<td>Warning</td>
+<td>A font-family names a family no font has, or no font is available at all; the next family, the serif family or no text is drawn (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.FontNotLoaded</code></td>
+<td>Warning</td>
+<td>An @font-face rule has no single family, or none of its sources could be read; the family falls back (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.ImageNotLoaded</code></td>
+<td>Warning</td>
+<td>An image was not loaded: no resolver allows its URI, the resolver refused it, or it cannot be decoded; it draws nothing (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.NoNamespace</code></td>
+<td>Warning</td>
+<td>The root svg element has no namespace; its elements are read as SVG anyway (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.Unsupported</code></td>
+<td>Warning</td>
+<td>An element Egami.Svg does not draw (foreignObject, and text until stage C); it is skipped (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.UnsupportedColor</code></td>
+<td>Warning</td>
+<td>A color uses CSS Color 4 syntax, which SVG here does not read (question 5); the initial value is used (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Text.LcdFallback</code></td>
+<td>Warning</td>
+<td>LCD text edging could not be drawn (no pixel geometry, a canvas without 8-bit RGB, a layer, or a paint other than solid source-over); the text was drawn with grayscale antialiasing, reported once per canvas (Egami.Drawing)</td>
+</tr>
+<tr>
+<td><code>Tga.IndexOutOfRange</code></td>
+<td>Warning</td>
+<td>Pixels use indices outside the color map; they are drawn black</td>
+</tr>
+<tr>
+<td><code>Tga.RowsMissing</code></td>
+<td>Warning</td>
+<td>The pixel data ends or is damaged; the rows not decoded are black</td>
+</tr>
+<tr>
+<td><code>Tga.RunPastImage</code></td>
+<td>Warning</td>
+<td>An RLE packet goes past the end of the image; the rest of it was ignored</td>
+</tr>
+<tr>
+<td><code>Tiff.ByteCountsMissing</code></td>
+<td>Warning</td>
+<td>A page has no usable byte counts; they were worked out</td>
+</tr>
+<tr>
+<td><code>Tiff.ExtraSamplesDropped</code></td>
+<td>Warning</td>
+<td>Extra samples that are not alpha were dropped</td>
+</tr>
+<tr>
+<td><code>Tiff.Float64Narrowed</code></td>
+<td>Warning</td>
+<td>64-bit floating-point samples were read as 32-bit</td>
+</tr>
+<tr>
+<td><code>Tiff.IfdDamaged</code></td>
+<td>Warning</td>
+<td>An IFD in the chain is damaged; the pages before it were read</td>
+</tr>
+<tr>
+<td><code>Tiff.IfdLoop</code></td>
+<td>Warning</td>
+<td>The IFD chain loops; it was read up to there</td>
+</tr>
+<tr>
+<td><code>Tiff.IfdOutside</code></td>
+<td>Warning</td>
+<td>The next IFD lies outside the file; the pages before it were read</td>
+</tr>
+<tr>
+<td><code>Tiff.InksNotCmyk</code></td>
+<td>Warning</td>
+<td>A page has inks that are not CMYK; only the first was read, as gray</td>
+</tr>
+<tr>
+<td><code>Tiff.OffsetsMissing</code></td>
+<td>Warning</td>
+<td>A page has fewer strip or tile offsets than it needs; the rest is black</td>
+</tr>
+<tr>
+<td><code>Tiff.PhotometricMissing</code></td>
+<td>Warning</td>
+<td>A page has no PhotometricInterpretation; it was read as RGB or gray</td>
+</tr>
+<tr>
+<td><code>Tiff.PredictorIgnored</code></td>
+<td>Warning</td>
+<td>A predictor with a compression it means nothing to was ignored</td>
+</tr>
+<tr>
+<td><code>Tiff.RowsPerStripZero</code></td>
+<td>Warning</td>
+<td>RowsPerStrip is 0; the page was read as one strip</td>
+</tr>
+<tr>
+<td><code>Tiff.SignedSamples</code></td>
+<td>Warning</td>
+<td>Signed samples were offset so 0 is the middle value</td>
+</tr>
+<tr>
+<td><code>Tiff.SubIfdDamaged</code></td>
+<td>Warning</td>
+<td>An EXIF, GPS or other sub-IFD is damaged; it was skipped</td>
+</tr>
+<tr>
+<td><code>Tiff.TileSizeOdd</code></td>
+<td>Warning</td>
+<td>Tiles are not multiples of 16, as TIFF 6.0 requires; they were read as they are</td>
+</tr>
+<tr>
+<td><code>Tiff.UnitsShort</code></td>
+<td>Warning</td>
+<td>Strips or tiles decode to fewer bytes than their rows; the rest is zero</td>
+</tr>
+<tr>
+<td><code>Webp.AlphaDamaged</code></td>
+<td>Warning</td>
+<td>The alpha data is short or damaged; the missing rows are opaque or transparent</td>
+</tr>
+<tr>
+<td><code>Webp.AlphaEmpty</code></td>
+<td>Warning</td>
+<td>The ALPH chunk is empty; the image is read as opaque</td>
+</tr>
+<tr>
+<td><code>Webp.AlphaRepeated</code></td>
+<td>Warning</td>
+<td>A second ALPH chunk was ignored</td>
+</tr>
+<tr>
+<td><code>Webp.AnimationFlagWithoutFrames</code></td>
+<td>Warning</td>
+<td>The header says animated, but the file holds a still image</td>
+</tr>
+<tr>
+<td><code>Webp.AnimInvalid</code></td>
+<td>Warning</td>
+<td>The ANIM chunk has the wrong size; it was ignored</td>
+</tr>
+<tr>
+<td><code>Webp.AnmfShort</code></td>
+<td>Warning</td>
+<td>An ANMF chunk is too short for its header; the frame was skipped</td>
+</tr>
+<tr>
+<td><code>Webp.ChunkBetweenFrames</code></td>
+<td>Warning</td>
+<td>A chunk lies between the frames of an animation; it was ignored</td>
+</tr>
+<tr>
+<td><code>Webp.ChunkHeaderTruncated</code></td>
+<td>Warning</td>
+<td>The file ends inside a chunk header</td>
+</tr>
+<tr>
+<td><code>Webp.ChunkPastRiff</code></td>
+<td>Warning</td>
+<td>A chunk's size runs past the RIFF data</td>
+</tr>
+<tr>
+<td><code>Webp.ChunkTruncated</code></td>
+<td>Warning</td>
+<td>The file ends inside a chunk</td>
+</tr>
+<tr>
+<td><code>Webp.EncodingChosen</code></td>
+<td>Info</td>
+<td>Lossless or lossy, and the quality, a WebP save used with <code>Lossless</code> left unset</td>
+</tr>
+<tr>
+<td><code>Webp.ExifRepeated</code></td>
+<td>Warning</td>
+<td>A second EXIF chunk was ignored</td>
+</tr>
+<tr>
+<td><code>Webp.FileTruncated</code></td>
+<td>Warning</td>
+<td>The file ends early, or before the end the RIFF size gives</td>
+</tr>
+<tr>
+<td><code>Webp.FrameChunkPastAnmf</code></td>
+<td>Warning</td>
+<td>A frame's image chunk runs past its ANMF chunk</td>
+</tr>
+<tr>
+<td><code>Webp.FrameOutsideCanvas</code></td>
+<td>Warning</td>
+<td>A frame reaches past the canvas; it was clipped</td>
+</tr>
+<tr>
+<td><code>Webp.FramesWithoutAnimationFlag</code></td>
+<td>Warning</td>
+<td>The file holds ANMF frames, but the header does not say it is animated</td>
+</tr>
+<tr>
+<td><code>Webp.IccAfterImage</code></td>
+<td>Warning</td>
+<td>The ICCP chunk comes after the image data; it was read anyway</td>
+</tr>
+<tr>
+<td><code>Webp.LossyDataEnded</code></td>
+<td>Warning</td>
+<td>The lossy image data ends early; the rest is decoded from zeros</td>
+</tr>
+<tr>
+<td><code>Webp.MetadataOverLimit</code></td>
+<td>Warning</td>
+<td>A metadata chunk is over the metadata limit; it was dropped</td>
+</tr>
+<tr>
+<td><code>Webp.RiffSizeMismatch</code></td>
+<td>Warning</td>
+<td>The RIFF size does not match the file</td>
+</tr>
+<tr>
+<td><code>Webp.RowsMissing</code></td>
+<td>Warning</td>
+<td>The lossless data is damaged; the rows from there on are transparent black</td>
+</tr>
+<tr>
+<td><code>Webp.SecondImage</code></td>
+<td>Warning</td>
+<td>A second image chunk follows the image; it was ignored</td>
+</tr>
+<tr>
+<td><code>Webp.TrailingBytes</code></td>
+<td>Warning</td>
+<td>Bytes after the last chunk are too few for another; they were ignored</td>
+</tr>
+<tr>
+<td><code>Webp.XmpRepeated</code></td>
+<td>Warning</td>
+<td>A second XMP chunk was ignored</td>
+</tr>
+<tr>
+<td><code>Xmp.Damaged</code></td>
+<td>Warning</td>
+<td>The XMP packet is not well-formed XML; it is kept as bytes</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/diagnostics.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

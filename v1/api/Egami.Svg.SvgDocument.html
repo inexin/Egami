@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class SvgDocument | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class SvgDocument | Egami ">
+      
+      <meta name="description" content="An SVG document: an editable element tree read from an .svg or .svgz file, which saves back to SVG and draws through Egami.Drawing&#39;s canvas.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Svg_SvgDocument.md&amp;value=---%0Auid%3A%20Egami.Svg.SvgDocument%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Svg.SvgDocument">
+
+
+
+  <h1 id="Egami_Svg_SvgDocument" data-uid="Egami.Svg.SvgDocument" class="text-break">
+Class SvgDocument  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Svg.html">Svg</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Svg.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An SVG document: an editable element tree read from an .svg or .svgz file, which saves back to SVG and draws through
+Egami.Drawing's canvas.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class SvgDocument</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">SvgDocument</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Svg_SvgDocument_examples">Examples</h2>
+  <pre><code class="lang-csharp">// .svg and .svgz alike; nothing outside the file is opened unless a resolver allows it.
+SvgDocument document = SvgDocument.Load(path);
+Console.WriteLine($"{document.Title}: {document.Root.Descendants().Count()} elements");
+
+// What a lenient load skipped is in Warnings, and in the context's diagnostics.
+foreach (EgamiDiagnostic warning in document.Warnings)
+{
+    Console.WriteLine($"{warning.Id}: {warning.Message}");
+}</code></pre>
+
+
+  <h2 id="Egami_Svg_SvgDocument_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Loading is lenient, as browsers and resvg read SVG: what cannot be used is skipped and reported through the context's
+diagnostics, and the rest is kept. <a class="xref" href="Egami.Svg.SvgLoadOptions.html#Egami_Svg_SvgLoadOptions_Strict">Strict</a> throws instead. Nothing outside the file is opened
+unless <a class="xref" href="Egami.Svg.SvgLoadOptions.html#Egami_Svg_SvgLoadOptions_Resolver">Resolver</a> allows it.</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Svg_SvgDocument__ctor_" data-uid="Egami.Svg.SvgDocument.#ctor*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument__ctor_Egami_Svg_SvgElement_Egami_Svg_SvgLoadOptions_" data-uid="Egami.Svg.SvgDocument.#ctor(Egami.Svg.SvgElement,Egami.Svg.SvgLoadOptions)">
+  SvgDocument(SvgElement, SvgLoadOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Svg.SvgDocument.html">SvgDocument</a> class around a root element made in code.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SvgDocument(SvgElement root, SvgLoadOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>root</code> <a class="xref" href="Egami.Svg.SvgElement.html">SvgElement</a></dt>
+    <dd><p>The root, an <code>svg</code> element without a parent or another document.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Svg.SvgLoadOptions.html">SvgLoadOptions</a></dt>
+    <dd><p>How references, units and limits work, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Svg_SvgDocument__ctor_Egami_Svg_SvgElement_Egami_Svg_SvgLoadOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A document made in code: an svg root and its content.
+SvgElement root = new("svg");
+root.Attributes["viewBox"] = "0 0 100 100";
+SvgElement circle = new("circle");
+circle.Attributes["cx"] = "50";
+circle.Attributes["cy"] = "50";
+circle.Attributes["r"] = "40";
+root.Children.Add(circle);
+SvgDocument document = new(root);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">root</code> already has a parent or a document.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Svg_SvgDocument_Description_" data-uid="Egami.Svg.SvgDocument.Description*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Description" data-uid="Egami.Svg.SvgDocument.Description">
+  Description
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the text of the root's first <code>desc</code> child, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Description { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Svg_SvgDocument_Options_" data-uid="Egami.Svg.SvgDocument.Options*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Options" data-uid="Egami.Svg.SvgDocument.Options">
+  Options
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the options the document was loaded with.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SvgLoadOptions Options { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Svg.SvgLoadOptions.html">SvgLoadOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Svg_SvgDocument_RenderTree_" data-uid="Egami.Svg.SvgDocument.RenderTree*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_RenderTree" data-uid="Egami.Svg.SvgDocument.RenderTree">
+  RenderTree
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L173"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the render tree: the elements resolved for drawing (styles applied, units in pixels, use expanded, shapes as paths),
+in the document's pixels (<a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Size">Size</a>). It is built at load and again on first use after an edit; what an edit
+leaves undrawable is reported to the context's diagnostics then. It is immutable and safe to read from many threads.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SvgGroup RenderTree { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Svg.SvgGroup.html">SvgGroup</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Svg_SvgDocument_RenderTree_examples">Examples</h4>
+  <pre><code class="lang-csharp">// The resolved tree: groups, paths with their paints and strokes, images; styles applied and units in pixels.
+static void Walk(SvgNode node, int depth)
+{
+    string what = node switch
+    {
+        SvgPath path =&gt; $"path {path.Path.Bounds} fill {path.Fill}",
+        SvgGroup group =&gt; $"group of {group.Children.Count}",
+        SvgImage image =&gt; $"image {image.Destination}",
+        _ =&gt; node.GetType().Name,
+    };
+    Console.WriteLine($"{new string(' ', depth * 2)}{node.Id} {what} opacity {node.Opacity}");
+    if (node is SvgGroup g)
+    {
+        foreach (SvgNode child in g.Children)
+        {
+            Walk(child, depth + 1);
+        }
+    }
+}
+
+Walk(document.RenderTree, 0);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Svg_SvgDocument_Root_" data-uid="Egami.Svg.SvgDocument.Root*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Root" data-uid="Egami.Svg.SvgDocument.Root">
+  Root
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the root <code>svg</code> element.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SvgElement Root { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Svg.SvgElement.html">SvgElement</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Svg_SvgDocument_Size_" data-uid="Egami.Svg.SvgDocument.Size*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Size" data-uid="Egami.Svg.SvgDocument.Size">
+  Size
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the document's size in pixels: the root's width and height, a percentage (or a missing side) taken of the viewBox,
+or of 100 by 100 when there is no viewBox, as resvg sizes documents. Physical units use <a class="xref" href="Egami.Svg.SvgLoadOptions.html#Egami_Svg_SvgLoadOptions_Dpi">Dpi</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Vector2 Size { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Svg_SvgDocument_Title_" data-uid="Egami.Svg.SvgDocument.Title*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Title" data-uid="Egami.Svg.SvgDocument.Title">
+  Title
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the text of the root's first <code>title</code> child, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Title { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Svg_SvgDocument_ViewBox_" data-uid="Egami.Svg.SvgDocument.ViewBox*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_ViewBox" data-uid="Egami.Svg.SvgDocument.ViewBox">
+  ViewBox
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the root's viewBox, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when it has none (or an invalid one).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RectF? ViewBox { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.RectF.html">RectF</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Svg_SvgDocument_Warnings_" data-uid="Egami.Svg.SvgDocument.Warnings*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Warnings" data-uid="Egami.Svg.SvgDocument.Warnings">
+  Warnings
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what the load skipped, as also sent to the context's diagnostics; empty for a document made in code.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;EgamiDiagnostic&gt; Warnings { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.EgamiDiagnostic.html">EgamiDiagnostic</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Svg_SvgDocument_Draw_" data-uid="Egami.Svg.SvgDocument.Draw*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Draw_Egami_Drawing_Canvas_System_Nullable_Egami_Drawing_RectF__Egami_Svg_SvgRenderOptions_" data-uid="Egami.Svg.SvgDocument.Draw(Egami.Drawing.Canvas,System.Nullable{Egami.Drawing.RectF},Egami.Svg.SvgRenderOptions)">
+  Draw(Canvas, RectF?, SvgRenderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L186"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws the document on a canvas: at its own size from the canvas's origin, or fitted into <code class="paramref">box</code> by the
+root's preserveAspectRatio. Drawing calls only the public canvas API, so a raster canvas, a PDF page, SvgCanvas or a
+PictureRecorder receive the same calls. It never throws on content.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Draw(Canvas canvas, RectF? box = null, SvgRenderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>canvas</code> <a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a></dt>
+    <dd><p>The canvas.</p>
+</dd>
+    <dt><code>box</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a>?</dt>
+    <dd><p>The rectangle to fit the document into, in the canvas's coordinates, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Svg.SvgRenderOptions.html">SvgRenderOptions</a></dt>
+    <dd><p>Languages, text as paths and filter scale, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Svg_SvgDocument_Draw_Egami_Drawing_Canvas_System_Nullable_Egami_Drawing_RectF__Egami_Svg_SvgRenderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Fitted into a box by the root's preserveAspectRatio; a PDF page or SvgCanvas receives the same calls.
+document.Draw(canvas, new RectF(10, 10, 180, 180));
+
+// One element of a sprite sheet, fitted into its own box.
+document.Draw(canvas, "body", new RectF(200, 10, 48, 48));</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Svg_SvgDocument_Draw_" data-uid="Egami.Svg.SvgDocument.Draw*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Draw_Egami_Drawing_Canvas_System_String_System_Nullable_Egami_Drawing_RectF__Egami_Svg_SvgRenderOptions_" data-uid="Egami.Svg.SvgDocument.Draw(Egami.Drawing.Canvas,System.String,System.Nullable{Egami.Drawing.RectF},Egami.Svg.SvgRenderOptions)">
+  Draw(Canvas, string, RectF?, SvgRenderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L228"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws one element and what it holds, such as a <code>symbol</code> or <code>g</code> of a sprite sheet: fitted into
+<code class="paramref">box</code> (a symbol's viewBox, else the element's bounding box, centered and scaled to fit), or, without a
+box, in the coordinates of its parent.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Draw(Canvas canvas, string id, RectF? box = null, SvgRenderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>canvas</code> <a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a></dt>
+    <dd><p>The canvas.</p>
+</dd>
+    <dt><code>id</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The element's id.</p>
+</dd>
+    <dt><code>box</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a>?</dt>
+    <dd><p>The rectangle to fit the element into, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Svg.SvgRenderOptions.html">SvgRenderOptions</a></dt>
+    <dd><p>Languages, text as paths and filter scale, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Svg_SvgDocument_Draw_Egami_Drawing_Canvas_System_String_System_Nullable_Egami_Drawing_RectF__Egami_Svg_SvgRenderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Fitted into a box by the root's preserveAspectRatio; a PDF page or SvgCanvas receives the same calls.
+document.Draw(canvas, new RectF(10, 10, 180, 180));
+
+// One element of a sprite sheet, fitted into its own box.
+document.Draw(canvas, "body", new RectF(200, 10, 48, 48));</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>No element has the id.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Svg_SvgDocument_FindById_" data-uid="Egami.Svg.SvgDocument.FindById*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_FindById_System_String_" data-uid="Egami.Svg.SvgDocument.FindById(System.String)">
+  FindById(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L370"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds the element with an <code>id</code>; the first in file order when several share it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SvgElement? FindById(string id)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>id</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The id, without a <code>#</code>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Svg.SvgElement.html">SvgElement</a></dt>
+    <dd><p>The element, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Svg_SvgDocument_Load_" data-uid="Egami.Svg.SvgDocument.Load*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Load_System_IO_Stream_Egami_Svg_SvgLoadOptions_" data-uid="Egami.Svg.SvgDocument.Load(System.IO.Stream,Egami.Svg.SvgLoadOptions)">
+  Load(Stream, SvgLoadOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L131"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads an .svg or .svgz stream from its current position.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static SvgDocument Load(Stream stream, SvgLoadOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream; it is read to the end of the document and left open.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Svg.SvgLoadOptions.html">SvgLoadOptions</a></dt>
+    <dd><p>How to read it, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Svg.SvgDocument.html">SvgDocument</a></dt>
+    <dd><p>The document.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Svg_SvgDocument_Load_System_IO_Stream_Egami_Svg_SvgLoadOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Images, style sheets and fonts the file refers to open only through a resolver; data: URIs always work.
+var options = new SvgLoadOptions
+{
+    Resolver = SvgResolvers.SameDirectory(folder),
+    Dpi = 96,
+    Context = EgamiContext.Default with { Limits = SafetyLimits.Default with { MaxTotalBytes = 64L &lt;&lt; 20 } },
+};
+SvgDocument document = SvgDocument.Parse(Icon, options);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Svg.SvgException.html">SvgException</a></dt>
+    <dd><p>The data is not well-formed XML, is not SVG, breaks a limit, or, in strict mode, has an error.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The data is larger than the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Svg_SvgDocument_Load_" data-uid="Egami.Svg.SvgDocument.Load*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Load_System_String_Egami_Svg_SvgLoadOptions_" data-uid="Egami.Svg.SvgDocument.Load(System.String,Egami.Svg.SvgLoadOptions)">
+  Load(string, SvgLoadOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads an .svg or .svgz file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static SvgDocument Load(string path, SvgLoadOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file. Relative references resolve against its folder (they open only through a resolver).</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Svg.SvgLoadOptions.html">SvgLoadOptions</a></dt>
+    <dd><p>How to read it, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Svg.SvgDocument.html">SvgDocument</a></dt>
+    <dd><p>The document.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Svg_SvgDocument_Load_System_String_Egami_Svg_SvgLoadOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// .svg and .svgz alike; nothing outside the file is opened unless a resolver allows it.
+SvgDocument document = SvgDocument.Load(path);
+Console.WriteLine($"{document.Title}: {document.Root.Descendants().Count()} elements");
+
+// What a lenient load skipped is in Warnings, and in the context's diagnostics.
+foreach (EgamiDiagnostic warning in document.Warnings)
+{
+    Console.WriteLine($"{warning.Id}: {warning.Message}");
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Svg.SvgException.html">SvgException</a></dt>
+    <dd><p>The file is not well-formed XML, is not SVG, breaks a limit, or, in strict mode, has an error.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The file is larger than the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Svg_SvgDocument_Parse_" data-uid="Egami.Svg.SvgDocument.Parse*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Parse_System_String_Egami_Svg_SvgLoadOptions_" data-uid="Egami.Svg.SvgDocument.Parse(System.String,Egami.Svg.SvgLoadOptions)">
+  Parse(string, SvgLoadOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L158"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads SVG text.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static SvgDocument Parse(string text, SvgLoadOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The SVG markup.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Svg.SvgLoadOptions.html">SvgLoadOptions</a></dt>
+    <dd><p>How to read it, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Svg.SvgDocument.html">SvgDocument</a></dt>
+    <dd><p>The document.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Svg_SvgDocument_Parse_System_String_Egami_Svg_SvgLoadOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Strict turns everything a lenient load would skip into an exception with the line and column.
+try
+{
+    SvgDocument.Parse("&lt;svg&gt;\n  &lt;rect width='10' height='10'/&gt;\n&lt;/svg&gt;", new SvgLoadOptions { Strict = true });
+}
+catch (SvgException e)
+{
+    Console.WriteLine($"Line {e.Line}, column {e.Column}: {e.Problem}");
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Svg.SvgException.html">SvgException</a></dt>
+    <dd><p>The text is not well-formed XML, is not SVG, breaks a limit, or, in strict mode, has an error.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Svg_SvgDocument_Rasterize_" data-uid="Egami.Svg.SvgDocument.Rasterize*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Rasterize__1_Egami_Svg_SvgRenderOptions_" data-uid="Egami.Svg.SvgDocument.Rasterize``1(Egami.Svg.SvgRenderOptions)">
+  Rasterize&lt;TPixel&gt;(SvgRenderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L279"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws the document into a new raster: at its own size times <a class="xref" href="Egami.Svg.SvgRenderOptions.html#Egami_Svg_SvgRenderOptions_Scale">Scale</a>, or at a target width
+and/or height (the other side keeps the aspect ratio), over <a class="xref" href="Egami.Svg.SvgRenderOptions.html#Egami_Svg_SvgRenderOptions_Background">Background</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;TPixel&gt; Rasterize&lt;TPixel&gt;(SvgRenderOptions? options = null) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.Svg.SvgRenderOptions.html">SvgRenderOptions</a></dt>
+    <dd><p>The size, background and canvas options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The raster.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type of the raster.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_Svg_SvgDocument_Rasterize__1_Egami_Svg_SvgRenderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// At the document's own size, scaled, or at a target width (the height keeps the aspect ratio).
+using Raster&lt;Rgba8&gt; icon = document.Rasterize&lt;Rgba8&gt;();
+using Raster&lt;Rgba8&gt; large = document.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { Width = 512 });
+using Raster&lt;Rgba8&gt; onWhite = document.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { Scale = 2, Background = new RgbaF32(1, 1, 1, 1) });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The raster would break the context's size limits.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Svg_SvgDocument_Save_" data-uid="Egami.Svg.SvgDocument.Save*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Save_System_IO_Stream_Egami_Svg_SvgSaveOptions_" data-uid="Egami.Svg.SvgDocument.Save(System.IO.Stream,Egami.Svg.SvgSaveOptions)">
+  Save(Stream, SvgSaveOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L348"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the document as SVG: the element tree with everything read from the file (unknown elements, foreign namespaces,
+comments, the DOCTYPE), so a load and save without edits keeps the document's meaning; attribute order and whitespace
+inside tags may change, and entities are written out.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream stream, SvgSaveOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream to write to; it is left open.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Svg.SvgSaveOptions.html">SvgSaveOptions</a></dt>
+    <dd><p>How to write, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Svg.SvgSaveOptions.html#Egami_Svg_SvgSaveOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Svg_SvgDocument_Save_System_IO_Stream_Egami_Svg_SvgSaveOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Numbers and paths set in code are written with Precision decimals; what was read keeps its text.
+document.FindById("body")!.Attributes.Set("width", 17.666666);
+document.Save(path, new SvgSaveOptions { Precision = 2, Gzip = true });
+
+using var stream = new MemoryStream();
+document.Save(stream);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Svg_SvgDocument_Save_" data-uid="Egami.Svg.SvgDocument.Save*"></a>
+
+  <h3 id="Egami_Svg_SvgDocument_Save_System_String_Egami_Svg_SvgSaveOptions_" data-uid="Egami.Svg.SvgDocument.Save(System.String,Egami.Svg.SvgSaveOptions)">
+  Save(string, SvgSaveOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L360"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the document to a file, as <a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Save_System_IO_Stream_Egami_Svg_SvgSaveOptions_">Save(Stream, SvgSaveOptions?)</a> does.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(string path, SvgSaveOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file; it is replaced if it exists. Use <a class="xref" href="Egami.Svg.SvgSaveOptions.html#Egami_Svg_SvgSaveOptions_Gzip">Gzip</a> for .svgz.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Svg.SvgSaveOptions.html">SvgSaveOptions</a></dt>
+    <dd><p>How to write, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Svg.SvgSaveOptions.html#Egami_Svg_SvgSaveOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Svg_SvgDocument_Save_System_String_Egami_Svg_SvgSaveOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Numbers and paths set in code are written with Precision decimals; what was read keeps its text.
+document.FindById("body")!.Attributes.Set("width", 17.666666);
+document.Save(path, new SvgSaveOptions { Precision = 2, Gzip = true });
+
+using var stream = new MemoryStream();
+document.Save(stream);</code></pre>
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L24" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

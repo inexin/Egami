@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Color management | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Color management | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/color-management.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="color-management">Color management</h1>
+
+<p>Egami reads color information from every file and keeps it, but changes no pixel unless you ask: a file's numbers load as
+stored. The types below say what those numbers mean, and convert between them.</p>
+<h2 id="profiles">Profiles</h2>
+<p>A <code>ColorProfile</code> says what a raster's numbers mean: the color model (<code>ColorModel.Rgb</code>, <code>Gray</code> or <code>Cmyk</code>), the primaries and
+white point, and the transfer function. The built-ins cover sRGB, linear sRGB, Display P3, Adobe RGB, ProPhoto RGB, Rec. 2020,
+the two Rec. 2100 HDR encodings, gray, and one CMYK print profile, <code>Fogra39</code> (offset on coated paper); <code>ColorProfile.Create</code>
+makes any other RGB encoding.</p>
+<pre><code class="lang-csharp">// A ColorProfile says what a raster's numbers mean. The built-ins cover the common encodings...
+ColorProfile web = ColorProfile.Srgb;
+ColorProfile wide = ColorProfile.DisplayP3;
+ColorProfile hdr = ColorProfile.Rec2100Pq;
+
+// ...and Create makes any other RGB encoding from primaries and a transfer function.
+ColorProfile camera = ColorProfile.Create(ColorPrimaries.AdobeRgb, TransferFunction.Gamma(2.2), &quot;Camera RGB&quot;);
+Console.WriteLine($&quot;{camera.Name}: {camera.Model}, HDR {camera.IsHdr}, same as Adobe RGB: {camera.IsEquivalentTo(ColorProfile.AdobeRgb)}&quot;);
+</code></pre><h2 id="primaries-and-white-points">Primaries and white points</h2>
+<p><code>ColorPrimaries</code> holds the CIE 1931 <code>Chromaticity</code> of red, green, blue and white. The named sets are BT.709 (sRGB's), Display P3,
+BT.2020, Adobe RGB and ProPhoto, with the D65 and D50 white points.</p>
+<pre><code class="lang-csharp">// Primaries are the chromaticities of red, green, blue and white.
+ColorPrimaries p3 = ColorPrimaries.DisplayP3;
+Chromaticity red = p3.Red;
+Console.WriteLine($&quot;P3 red is x {red.X}, y {red.Y}; white is D65: {p3.White == Chromaticity.D65}&quot;);
+ColorPrimaries custom = new(new(0.68, 0.32), new(0.265, 0.69), new(0.15, 0.06), Chromaticity.D65);
+</code></pre><h2 id="transfer-functions">Transfer functions</h2>
+<p>A <code>TransferFunction</code> decodes stored values to linear light and back: sRGB, linear, a pure gamma, BT.709, the ICC parametric curve,
+a sampled table, and the HDR curves PQ and HLG. Single values use exact double arithmetic; rows use a vectorized form within
+1e-5 of it, the same on every CPU. Linear 1.0 is reference white, which for PQ and HLG is 203 cd/m² (ITU-R BT.2408), so HDR
+highlights are values above 1.</p>
+<pre><code class="lang-csharp">// A transfer function decodes stored values to linear light and back; HDR curves put reference white at 1.0.
+double linear = TransferFunction.Srgb.ToLinear(0.5);           // 0.214
+double nits = TransferFunction.Pq.ToLinear(0.75) * 203;         // a 75% PQ signal is about 983 cd/m²
+float[] row = [0f, 0.25f, 0.5f, 1f];
+TransferFunction.Srgb.ToLinear(row, row);                        // a whole row at once, in place
+</code></pre><h2 id="icc-profiles">ICC profiles</h2>
+<p><code>IccData</code> parses an ICC profile (versions 2 and 4): the header fields (version, <code>IccProfileClass</code>, data and connection spaces,
+the suggested <code>RenderingIntent</code>, creation date), the description and copyright text, and every tag with its bytes. Like <code>ExifData</code>, it never throws: offsets or sizes outside the profile, a missing <code>acsp</code> signature or more bytes than
+<code>SafetyLimits.MaxMetadataBytes</code> mark it damaged, with <code>Warnings</code> saying why, and what could be read stays available.</p>
+<p><code>ColorProfile.FromIcc</code> turns a profile into an encoding. Egami converts with RGB, gray and CMYK profiles of the input, display,
+output and color space classes, whether they convert through a matrix and curves or through <code>lut8</code>, <code>lut16</code>, <code>lutAtoB</code> and
+<code>lutBtoA</code> tables; a damaged tag that conversion needs throws <code>CorruptDataException</code>, and other classes or data spaces throw
+<code>UnsupportedFormatException</code>. A matrix profile gets its primaries and curve, so <code>IsEquivalentTo</code> recognizes an ICC profile written
+for one of the built-ins, and a version 4.4 <code>cicp</code> tag naming PQ or HLG wins over the rest.</p>
+<pre><code class="lang-csharp">// IccData reads a profile's header and tags; it never throws, and says what was wrong with a damaged one.
+IccData icc = IccData.Parse(bytes);
+Console.WriteLine($&quot;{icc.Description}: version {icc.Version}, {icc.ProfileClass}, {icc.DataSpace} to {icc.ConnectionSpace}, damaged: {icc.IsDamaged}&quot;);
+foreach (IccTag tag in icc.Tags)
+{
+    Console.WriteLine($&quot;  {tag.Signature} ({tag.Type}), {tag.Data.Length} bytes&quot;);
+}
+
+// ColorProfile.FromIcc makes an encoding from it: a matrix profile gets its primaries and curve, so an ICC profile written
+// for Display P3 is equivalent to the built-in.
+ColorProfile profile = ColorProfile.FromIcc(icc);
+bool isP3 = profile.IsEquivalentTo(ColorProfile.DisplayP3);
+</code></pre><h2 id="converting">Converting</h2>
+<p>Nothing converts unless asked. <code>RasterMetadata.GetColorProfile</code> says what a raster's pixels mean, from its ICC profile, its sRGB
+or linear tag or its gamma, and sRGB when the file said nothing. <code>RasterOps.ConvertColor</code> converts in place to another encoding of
+the same model and records the result: no profile for sRGB, the target's ICC profile otherwise.</p>
+<pre><code class="lang-csharp">// What the pixels mean, from the file's ICC profile, tags and gamma; sRGB when it said nothing.
+ColorProfile stored = raster.Metadata.GetColorProfile();
+
+// Convert in place to sRGB for the web: the metadata then says sRGB, so no profile is written.
+raster.Apply(ops =&gt; ops.ConvertColor(ColorProfile.Srgb));
+</code></pre>
+<p>What a file says is kept in the metadata: the 1.0 <code>IccProfile</code>, <code>ColorSpace</code> hint and <code>Gamma</code> as before, and now
+<code>CodePoints</code> (PNG cICP), <code>Primaries</code> (PNG cHRM, BMP calibrated endpoints) and <code>Hdr</code> (PNG mDCV and cLLI, as <code>HdrMetadata</code>).
+<code>GetColorProfile</code> resolves them in one order for every format: code points, then the ICC profile, then an sRGB tag, then a gamma
+or linear tag with the primaries, then a camera's EXIF Adobe RGB marker, and sRGB when the file said nothing. PNG's gAMA 45455
+(1/2.2) without other chromaticities than sRGB's counts as sRGB, which is what such files mean.</p>
+<pre><code class="lang-csharp">// What an HDR file says about its mastering display and light levels, alongside its code points.
+RasterMetadata metadata = raster.Metadata;
+double? peak = metadata.Hdr?.MaxContentLightLevel ?? metadata.Hdr?.MasteringMaxLuminance;
+bool pq = metadata.GetColorProfile().IsHdr;
+</code></pre>
+<p><code>Raster.ConvertColor&lt;TTo&gt;</code> converts into a new raster of another pixel type, which is how a CMYK image becomes RGB through its
+profile. <code>ColorTransformOptions</code> choose the rendering intent (perceptual by default) and black point compensation (off by
+default, as in Little CMS and Pillow).</p>
+<pre><code class="lang-csharp">// A CMYK image becomes RGB through its profile (or the plain formula if it has none), as a new raster.
+using Raster&lt;Cmyk8&gt; print = Raster.Load&lt;Cmyk8&gt;(path);
+using Raster&lt;Rgb8&gt; screen = print.ConvertColor&lt;Rgb8&gt;(ColorProfile.Srgb, new ColorTransformOptions { Intent = RenderingIntent.RelativeColorimetric, BlackPointCompensation = true });
+</code></pre>
+<p><code>ReaderOptions.ConvertColorTo</code> converts while loading. In the natural pixel type the type is kept when the model stays the same;
+a CMYK file converted to sRGB loads as <code>Rgb8</code>.</p>
+<pre><code class="lang-csharp">// Load straight into sRGB: the same pixels as loading and then calling ConvertColor.
+using Raster web = Raster.Load(path, options: new ReaderOptions { ConvertColorTo = ColorProfile.Srgb });
+</code></pre><h2 id="transforms-on-pixel-spans">Transforms on pixel spans</h2>
+<p><code>ColorTransform</code> compiles a conversion once and applies it to spans of any pixel type, in place or into another type. Transforms
+are cached per <code>EgamiContext</code>. Matrix encodings (sRGB, Display P3, Adobe RGB, matrix ICC profiles, gray) run as curves and one
+matrix; table profiles and CMYK are sampled onto a 33 or 17 point grid and interpolated. 8-bit pixels take a fast path; float
+and half types keep values outside 0..1.</p>
+<pre><code class="lang-csharp">// A transform is compiled once (and cached), then applied to spans of any pixel type, in place or into another type.
+ColorTransform transform = ColorTransform.Create(ColorProfile.DisplayP3, ColorProfile.Srgb, new ColorTransformOptions { Intent = RenderingIntent.Perceptual });
+Rgba8[] pixels = [new(255, 0, 0, 255), new(0, 128, 255, 128)];
+transform.Apply&lt;Rgba8&gt;(pixels);
+RgbaF32[] wide = new RgbaF32[pixels.Length];
+transform.Apply&lt;Rgba8, RgbaF32&gt;(pixels, wide);   // float types keep values outside 0..1
+</code></pre>
+<p><code>ColorProfile.ToIcc</code> writes an encoding as a small version 4 ICC profile, the one embedded after a conversion: version 4.3 with
+parametric curves, or 4.4 with a cicp tag for PQ and HLG. Little CMS, Pillow and ImageMagick read them.</p>
+<pre><code class="lang-csharp">// Any RGB or gray encoding as a small ICC profile, for files and other software.
+byte[] p3 = ColorProfile.DisplayP3.ToIcc();
+bool same = ColorProfile.FromIcc(p3).IsEquivalentTo(ColorProfile.DisplayP3);
+</code></pre><h2 id="writing-color-tags">Writing color tags</h2>
+<p>Writers take color tags from the generic metadata, so they survive a change of format: PNG writes cICP from <code>CodePoints</code>, cHRM
+from <code>Primaries</code> when there is no ICC profile, and mDCV and cLLI from <code>Hdr</code>; QOI marks a raster linear when its profile is linear.
+<code>WriterOptions.OmitSrgbProfile</code> leaves out an embedded profile that means sRGB (PNG writes its sRGB chunk instead).</p>
+<pre><code class="lang-csharp">// Leave out an embedded profile that only says sRGB, which is what a file without one means anyway.
+raster.Save(output, &quot;png&quot;, new WriterOptions { OmitSrgbProfile = true });
+</code></pre><h2 id="linear-light">Linear light</h2>
+<p>Operations with <code>ColorSpace.Linear</code> (resize, blur, sharpen, grayscale) decode with the raster's own transfer function, from
+<code>GetColorProfile</code> or the last <code>ConvertColor</code> before them in the chain, so a gamma 1.8 file or a PQ image is linearized correctly and
+a raster tagged linear is used as it is. Untagged and sRGB rasters give the same bytes as before.</p>
+<h2 id="hdr">HDR</h2>
+<p>PQ and HLG decode to linear light with reference white (203 cd/m², ITU-R BT.2408) at 1.0, so highlights are values above 1, kept
+by float and half pixel types. Converting an HDR encoding to an SDR one tone maps by default: <code>ToneMapping.Bt2390</code> applies the
+EETF of ITU-R BT.2390 to max(R, G, B), which keeps hue, and then clips what is still outside the target's gamut toward each
+pixel's luminance. The source peak comes from <code>ColorTransformOptions.SourcePeakNits</code>, else the raster's <code>Hdr</code> (MaxCLL, then the
+mastering display's peak), else 1,000 cd/m². <code>ToneMapping.Reinhard</code> is a simpler curve; <code>ToneMapping.Clip</code> turns mapping off.
+<code>RasterOps.ToneMap</code> maps linear HDR pixels in place.</p>
+<pre><code class="lang-csharp">// HDR to SDR tone maps by default (BT.2390, source peak from the file's mDCV/cLLI, else 1,000 cd/m²).
+using Raster&lt;Rgb8&gt; web = hdr.ConvertColor&lt;Rgb8&gt;(ColorProfile.Srgb);
+
+// Or choose the curve and peak; Clip turns tone mapping off.
+using Raster&lt;Rgb8&gt; soft = hdr.ConvertColor&lt;Rgb8&gt;(ColorProfile.Srgb, new ColorTransformOptions { ToneMapping = ToneMapping.Reinhard, SourcePeakNits = 4000 });
+
+// Linear HDR pixels (1.0 = reference white, 203 cd/m²) can be tone mapped in place.
+using Raster&lt;RgbaF32&gt; linear = hdr.ConvertColor&lt;RgbaF32&gt;(ColorProfile.LinearSrgb, new ColorTransformOptions { ToneMapping = ToneMapping.Clip });
+linear.Apply(ops =&gt; ops.ToneMap(ToneMapping.Bt2390, sourcePeakNits: 1000));
+</code></pre><h2 id="color-values">Color values</h2>
+<p>Nine small structs hold colors in the models apps ask for: <code>HslColor</code> and <code>HsvColor</code> (on encoded sRGB, as CSS and color pickers),
+<code>XyzColor</code> (D65, CSS Color 4's XYZ), <code>LabColor</code> and <code>LchColor</code> (D50, as ICC and CSS Color 4), <code>OklabColor</code> and <code>OklchColor</code>
+(Ottosson's perceptual space), <code>YCbCrColor</code> (BT.601 full range by default, or any <code>YuvMatrix</code> and <code>YuvRange</code>; values are
+8-bit codes / 255, so gray chroma is 128 / 255, as JPEG stores it) and <code>CmykColor</code> (the plain formula, or a print profile). Each implements <code>IColorValue&lt;TSelf&gt;</code>, so it converts from and to <code>Rgba8</code> and <code>RgbaF32</code>; <code>ColorConvert.Convert</code> converts between
+any two through XYZ, and <code>ColorConvert.FromPixels</code> and <code>ToPixels</code> convert whole rows, from pixels in any encoding.
+<code>LabColor.DeltaE2000</code> and <code>OklabColor.Distance</code> measure how different two colors look.</p>
+<pre><code class="lang-csharp">// Color values in the models apps ask for, from and to pixels, and between each other.
+Rgba8 orange = new(240, 128, 32, 255);
+HslColor hsl = HslColor.From(orange);                          // hue 28°, saturation 0.87, lightness 0.53
+LabColor lab = ColorConvert.Convert&lt;HslColor, LabColor&gt;(hsl);  // through XYZ
+OklchColor oklch = OklchColor.From(orange);
+YCbCrColor jpeg = YCbCrColor.From(orange);                     // BT.601 full range, as JPEG
+YCbCrColor video = YCbCrColor.From(orange, YuvMatrix.Bt709, YuvRange.Limited);
+
+// Color difference: CIEDE2000 on Lab, distance on Oklab.
+double deltaE = lab.DeltaE2000(LabColor.From(new Rgba8(235, 130, 40, 255)));
+
+// Whole rows at once, from any pixel type and encoding.
+Rgba8[] pixels = [orange, new(10, 20, 30, 255)];
+OklabColor[] row = new OklabColor[pixels.Length];
+ColorConvert.FromPixels&lt;Rgba8, OklabColor&gt;(pixels, row);
+ColorConvert.FromPixels&lt;Rgba8, OklabColor&gt;(pixels, row, ColorProfile.DisplayP3);   // the same pixels read as Display P3
+</code></pre>
+<p>Real inks come from a print profile. <code>ColorProfile.Fogra39</code> is built in: FOGRA39L, the usual European condition for offset on
+coated paper, a free profile built by ArgyllCMS from Fogra's measurements and shipped unchanged; <code>ToIcc</code> gives its bytes to
+embed in a file or a PDF output intent. CMYK files without a profile still convert by the plain formula, as libjpeg-turbo,
+libtiff and browsers do, not through this profile.</p>
+<pre><code class="lang-csharp">// The inks a press would use for a color, and the color it would print, through the press's CMYK profile: here the
+// built-in FOGRA39 (coated offset paper); ColorProfile.FromIcc reads any other.
+ColorProfile print = ColorProfile.Fogra39;
+CmykColor inks = CmykColor.From(new Rgba8(200, 60, 30, 255), print, new ColorTransformOptions { Intent = RenderingIntent.RelativeColorimetric });
+Rgba8 proof = inks.ToRgba8(print);
+</code></pre>
+<p>A printed page can use more than the four process inks. An <code>InkSet</code> lists them: a CMYK profile's Cyan, Magenta, Yellow and
+Black (each a <code>Colorant</code> of <code>ColorantKind.Process</code>), then named spot colours and technical inks such as varnish, at most 64.
+An <code>InkColor</code> names inks with tints, as PDF's Separation and DeviceN colours do (an <code>InkTint</code> each), and carries an
+<code>InkAppearance</code> (CMYK, sRGB or Lab, an <code>InkAppearanceKind</code>) for anything that cannot print the inks: the tinted appearances
+of inks printed over one another combine as filters. Names match exactly, and Cyan, Magenta, Yellow and Black always mean the
+process inks.</p>
+<pre><code class="lang-csharp">// The inks of a page: FOGRA39's process inks, a spot colour with how it looks, and a varnish that never shows.
+InkSet inks = InkSet.FromProfile(ColorProfile.Fogra39)
+    .WithSpot(&quot;PANTONE 186 C&quot;, InkAppearance.Cmyk(0, 1, 0.81f, 0.04f))
+    .WithSpot(&quot;Varnish&quot;, null, ColorantKind.Technical);
+
+// Colours as inks: process CMYK, the spot at 60%, and the spot over 30% black (a DeviceN colour).
+InkColor text = InkColor.Cmyk(0, 0, 0, 1);
+InkColor logo = InkColor.Spot(inks[4], 0.6f);
+InkColor shadow = InkColor.Mix(new InkTint(Colorant.Black, 0.3f), new InkTint(inks[4], 1));
+InkAppearance? onScreen = shadow.Appearance;   // CMYK 0, 1, 0.81, 0.328: the spot's look printed over the black
+</code></pre>
+<p>An <code>InkRaster</code> holds a page as plates: one plane per ink of its set plus an alpha plane, 8 or 16 bits (<code>InkDepth</code>). A plane
+holds the ink as it prints over paper, 0 for none to the maximum for full ink. Each <code>InkPlate</code> gives its rows in place, or a
+<code>Raster&lt;Gray8&gt;</code> or <code>Raster&lt;Gray16&gt;</code> over the same memory to save or process like any image.</p>
+<pre><code class="lang-csharp">// A page as plates: CMYK and the spot, 8 bits each, plus alpha. Rows are written in place; a plate is also a gray raster.
+using InkRaster page = new(inks, 200, 100, InkDepth.Unorm8);
+page.Plate(&quot;PANTONE 186 C&quot;)!.Row8(10).Fill(255);              // a full-tint line of the spot
+page.Alpha.Row8(10).Fill(255);
+using Raster&lt;Gray8&gt; spot = page.Plate(&quot;PANTONE 186 C&quot;)!.AsRaster&lt;Gray8&gt;();   // no copy: 0 = no ink, 255 = full ink
+</code></pre>
+<p><code>InkRaster.Save</code> writes all the plates as one separated TIFF, with the ink names and the output profile; <code>InkRaster.Load</code> reads
+it back, and any other separated TIFF of 8 or 16-bit strips. <code>InkTiffOptions</code> picks the compression and whether to keep the
+alpha plane (off by default, as a RIP wants only the plates). TIFF has no place for a spot's appearance, so loaded spots have
+none.</p>
+<pre><code class="lang-csharp">// One separated TIFF with every plate and the ink names, Deflate by default; it loads back plate for plate.
+page.Save(file, new InkTiffOptions { Compression = Egami.Formats.Tiff.TiffCompression.Lzw });
+file.Position = 0;
+using InkRaster loaded = InkRaster.Load(file);
+</code></pre>
+<p><code>InkRaster.Proof</code> shows the plates on screen: each spot's appearance, scaled by its tint, adds to the process inks (capped at full
+ink, as Ghostscript's and MuPDF's overprint simulation do), and the result converts through the ink set's profile to sRGB or another
+RGB or gray profile in <code>ProofOptions</code>. Technical inks such as varnish do not show. <code>SimulatePaper</code> shows the paper's own tone
+(absolute colorimetric). <code>MeasureCoverage</code> totals the printing inks per pixel against a limit (300% by default) and gives each
+plate's mean coverage.</p>
+<pre><code class="lang-csharp">// How the plates look on screen, and whether they print within the press's total ink limit.
+using Raster&lt;Rgba8&gt; proof = page.Proof&lt;Rgba8&gt;(new ProofOptions { SimulatePaper = true });
+InkCoverage coverage = page.MeasureCoverage(limit: 3.0f);
+bool tooMuchInk = coverage.MaxTotal &gt; coverage.Limit;      // where: coverage.MaxAt; how often: coverage.ShareOver
+</code></pre>
+<p>Presses with more than four process inks have n-colour ICC profiles (2CLR to FCLR): <code>ColorProfile.FromIcc</code> reads them as
+<code>ColorModel.NColor</code>, with <code>ChannelCount</code> inks named by <code>ColorantNames</code>, and <code>InkSet.FromProfile</code> takes those inks with their
+colours as appearances. No pixel type holds them, so conversions to and from such a profile run on float spans:
+<code>ColorTransform.Apply(ReadOnlySpan&lt;float&gt;, Span&lt;float&gt;)</code> takes <code>InputChannels</code> values per color and writes <code>OutputChannels</code>.</p>
+<h2 id="code-points">Code points</h2>
+<p><code>ColorCodePoints</code> holds the ITU-T H.273 code points that PNG's cICP chunk, AVIF and JPEG XL use, exactly as stored, so codes Egami
+does not know round-trip.</p>
+<pre><code class="lang-csharp">// H.273 code points, as PNG cICP, AVIF and JPEG XL store them, name an encoding in four bytes.
+ColorCodePoints pq = ColorCodePoints.Rec2100Pq;
+ColorProfile? profile = ColorProfile.FromCodePoints(pq);              // Rec. 2100 PQ
+ColorCodePoints? back = ColorProfile.DisplayP3.ToCodePoints();         // 12, 13, 0, full range
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/color-management.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

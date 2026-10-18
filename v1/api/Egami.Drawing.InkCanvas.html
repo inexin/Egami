@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class InkCanvas | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class InkCanvas | Egami ">
+      
+      <meta name="description" content="A canvas that draws into an &#39;s plates: printing inks instead of RGB. It shares &#39;s rasterizer, clips and layers, so shapes, strokes and text cover exactly the same pixels; where the RGB canvas blends colours, this one sets each plate. A paint&#39;s  prints its inks by name (inks the raster lacks through their appearance into the process inks); RGB colours, gradients and images convert into the process inks through  and the ink set&#39;s profile.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_InkCanvas.md&amp;value=---%0Auid%3A%20Egami.Drawing.InkCanvas%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.InkCanvas">
+
+
+
+  <h1 id="Egami_Drawing_InkCanvas" data-uid="Egami.Drawing.InkCanvas" class="text-break">
+Class InkCanvas  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A canvas that draws into an <a class="xref" href="Egami.InkRaster.html">InkRaster</a>'s plates: printing inks instead of RGB. It shares
+<a class="xref" href="Egami.Drawing.RasterCanvas-1.html">RasterCanvas&lt;TPixel&gt;</a>'s rasterizer, clips and layers, so shapes, strokes and text cover exactly the same pixels;
+where the RGB canvas blends colours, this one sets each plate. A paint's <a class="xref" href="Egami.Drawing.SolidPaint.html#Egami_Drawing_SolidPaint_Ink">Ink</a> prints its inks by name
+(inks the raster lacks through their appearance into the process inks); RGB colours, gradients and images convert into the
+process inks through <a class="xref" href="Egami.Drawing.InkCanvasOptions.html#Egami_Drawing_InkCanvasOptions_RgbSource">RgbSource</a> and the ink set's profile.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class InkCanvas : Canvas, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a></div>
+      <div><span class="xref">InkCanvas</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImageNinePatch_Egami_Raster_Egami_Rect_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImageNinePatch(Raster, Rect, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImageLattice_Egami_Raster_Egami_Drawing_Lattice_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImageLattice(Raster, Lattice, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawAtlas_Egami_Raster_System_ReadOnlySpan_Egami_Drawing_SpriteTransform__System_ReadOnlySpan_Egami_Drawing_RectF__System_ReadOnlySpan_Egami_Pixels_RgbaF32__Egami_Operations_BlendMode_Egami_Operations_SamplingOptions_System_Nullable_Egami_Drawing_RectF__Egami_Drawing_Paint_">Canvas.DrawAtlas(Raster, ReadOnlySpan&lt;SpriteTransform&gt;, ReadOnlySpan&lt;RectF&gt;, ReadOnlySpan&lt;RgbaF32&gt;, BlendMode, SamplingOptions, RectF?, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__">Canvas.DrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPatch_Egami_Drawing_Patch_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__">Canvas.DrawPatch(Patch, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPicture_Egami_Drawing_Picture_System_Nullable_System_Numerics_Matrix3x2__Egami_Drawing_Paint_System_Boolean_">Canvas.DrawPicture(Picture, Matrix3x2?, Paint, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Width">Canvas.Width</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Height">Canvas.Height</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Matrix">Canvas.Matrix</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveCount">Canvas.SaveCount</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DeviceClipBounds">Canvas.DeviceClipBounds</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_LocalClipBounds">Canvas.LocalClipBounds</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Save">Canvas.Save()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Canvas.Restore()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_RestoreToCount_System_Int32_">Canvas.RestoreToCount(int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Translate_System_Single_System_Single_">Canvas.Translate(float, float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Scale_System_Single_System_Single_">Canvas.Scale(float, float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Scale_System_Single_">Canvas.Scale(float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Rotate_System_Single_">Canvas.Rotate(float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Rotate_System_Single_System_Numerics_Vector2_">Canvas.Rotate(float, Vector2)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Skew_System_Single_System_Single_">Canvas.Skew(float, float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Concat_System_Numerics_Matrix3x2_">Canvas.Concat(Matrix3x2)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SetMatrix_System_Numerics_Matrix3x2_">Canvas.SetMatrix(Matrix3x2)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_ResetMatrix">Canvas.ResetMatrix()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_ClipRect_Egami_Drawing_RectF_Egami_Drawing_ClipOp_System_Boolean_">Canvas.ClipRect(RectF, ClipOp, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_ClipRoundRect_Egami_Drawing_RoundRect_Egami_Drawing_ClipOp_System_Boolean_">Canvas.ClipRoundRect(RoundRect, ClipOp, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_ClipPath_Egami_Drawing_Path_Egami_Drawing_ClipOp_System_Boolean_">Canvas.ClipPath(Path, ClipOp, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_QuickReject_Egami_Drawing_RectF_">Canvas.QuickReject(RectF)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_QuickReject_Egami_Drawing_Path_">Canvas.QuickReject(Path)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillRect_Egami_Drawing_RectF_Egami_Drawing_Paint_">Canvas.FillRect(RectF, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokeRect_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokeRect(RectF, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillRoundRect_Egami_Drawing_RoundRect_Egami_Drawing_Paint_">Canvas.FillRoundRect(RoundRect, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokeRoundRect_Egami_Drawing_RoundRect_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokeRoundRect(RoundRect, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillOval_Egami_Drawing_RectF_Egami_Drawing_Paint_">Canvas.FillOval(RectF, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokeOval_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokeOval(RectF, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillCircle_System_Numerics_Vector2_System_Single_Egami_Drawing_Paint_">Canvas.FillCircle(Vector2, float, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokeCircle_System_Numerics_Vector2_System_Single_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokeCircle(Vector2, float, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillArc_Egami_Drawing_RectF_System_Single_System_Single_Egami_Drawing_Paint_">Canvas.FillArc(RectF, float, float, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokeArc_Egami_Drawing_RectF_System_Single_System_Single_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokeArc(RectF, float, float, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillRing_Egami_Drawing_RoundRect_Egami_Drawing_RoundRect_Egami_Drawing_Paint_">Canvas.FillRing(RoundRect, RoundRect, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillPath_Egami_Drawing_Path_Egami_Drawing_Paint_">Canvas.FillPath(Path, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokePath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokePath(Path, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawLine_System_Numerics_Vector2_System_Numerics_Vector2_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.DrawLine(Vector2, Vector2, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPoints_Egami_Drawing_PointMode_System_ReadOnlySpan_System_Numerics_Vector2__Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.DrawPoints(PointMode, ReadOnlySpan&lt;Vector2&gt;, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPaint_Egami_Drawing_Paint_">Canvas.DrawPaint(Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Clear_Egami_Pixels_RgbaF32_">Canvas.Clear(RgbaF32)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Clear_Egami_Pixels_Rgba8_">Canvas.Clear(Rgba8)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Raster_System_Numerics_Vector2_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImage(Raster, Vector2, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImage(Raster, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImage(Raster, RectF, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Dispose">Canvas.Dispose()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_MarkedContentDepth">Canvas.MarkedContentDepth</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Drawing_EncodedImage_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImage(EncodedImage, RectF, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Drawing_EncodedImage_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImage(EncodedImage, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImageMask_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_Paint_Egami_Operations_SamplingOptions_">Canvas.DrawImageMask(Raster, RectF, Paint, SamplingOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawAnnotation_Egami_Drawing_RectF_Egami_Drawing_Annotation_">Canvas.DrawAnnotation(RectF, Annotation)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_BeginMarkedContent_Egami_Drawing_MarkedContent_">Canvas.BeginMarkedContent(MarkedContent)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_EndMarkedContent">Canvas.EndMarkedContent()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_Egami_Drawing_LayerOptions_">Canvas.SaveLayer(LayerOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_System_Single_">Canvas.SaveLayer(float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawShadow_Egami_Drawing_Path_Egami_Drawing_ShadowOptions_">Canvas.DrawShadow(Path, ShadowOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawText_System_String_System_Numerics_Vector2_Egami_Fonts_Font_Egami_Drawing_Paint_Egami_Fonts_Shaping_ShapingOptions_">Canvas.DrawText(string, Vector2, Font, Paint, ShapingOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawShapedText_Egami_Fonts_Shaping_ShapedText_System_Numerics_Vector2_Egami_Drawing_Paint_">Canvas.DrawShapedText(ShapedText, Vector2, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawTextOnPath_System_String_Egami_Drawing_Path_Egami_Fonts_Font_Egami_Drawing_Paint_Egami_Drawing_TextOnPathOptions_">Canvas.DrawTextOnPath(string, Path, Font, Paint, TextOnPathOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawGlyphRun_Egami_Fonts_GlyphRun_System_Numerics_Vector2_Egami_Drawing_Paint_">Canvas.DrawGlyphRun(GlyphRun, Vector2, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawTextLayout_Egami_Fonts_Layout_TextLayout_System_Numerics_Vector2_System_Nullable_Egami_Drawing_RectF__Egami_Drawing_PlaceholderPainter_">Canvas.DrawTextLayout(TextLayout, Vector2, RectF?, PlaceholderPainter)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawText_System_String_Egami_Drawing_RectF_Egami_Fonts_Layout_ParagraphStyle_Egami_Drawing_VerticalAlign_">Canvas.DrawText(string, RectF, ParagraphStyle, VerticalAlign)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawText_Egami_Fonts_Layout_RichText_Egami_Drawing_RectF_Egami_Fonts_Layout_ParagraphStyle_Egami_Drawing_VerticalAlign_">Canvas.DrawText(RichText, RectF, ParagraphStyle, VerticalAlign)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_InkCanvas_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Plates for CMYK and a spot; an RGB photo converts through FOGRA39, the logo prints on its own plate.
+Egami.Colors.InkSet inks = Egami.Colors.InkSet.FromProfile(Egami.Colors.ColorProfile.Fogra39)
+    .WithSpot("PANTONE 186 C", Egami.Colors.InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+using InkRaster page = new(inks, 300, 200);
+using (InkCanvas canvas = new(page))
+{
+    canvas.Clear(Egami.Colors.InkColor.None);                                   // paper
+    canvas.FillRect(new RectF(0, 0, 300, 120), new Rgba8(80, 140, 200, 255));   // RGB: converted to CMYK
+    canvas.FillCircle(new Vector2(150, 100), 40, new SolidPaint(Egami.Colors.InkColor.Spot(inks[4], 1)));
+}</code></pre>
+
+
+  <h2 id="Egami_Drawing_InkCanvas_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Every blend mode works as ISO 32000-2 has it for inks: on complements per plate, the non-separable ones on Cyan, Magenta and
+Yellow with Black from the backdrop, spots Normal where PDF allows only separable modes. <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Overprint">Overprint</a> picks
+the plates a paint prints. Layers are isolated or not, knockout or not, take soft masks, and with
+<a class="xref" href="Egami.Drawing.LayerOptions.html#Egami_Drawing_LayerOptions_ColorSpace">ColorSpace</a> blend their process part in RGB or gray, converted into the inks as they merge. Layer
+filters run on RGB pixels and are not taken here.</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Drawing_InkCanvas__ctor_" data-uid="Egami.Drawing.InkCanvas.#ctor*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas__ctor_Egami_InkRaster_Egami_Drawing_InkCanvasOptions_" data-uid="Egami.Drawing.InkCanvas.#ctor(Egami.InkRaster,Egami.Drawing.InkCanvasOptions)">
+  InkCanvas(InkRaster, InkCanvasOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Drawing.InkCanvas.html">InkCanvas</a> class over an ink raster.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public InkCanvas(InkRaster raster, InkCanvasOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>raster</code> <a class="xref" href="Egami.InkRaster.html">InkRaster</a></dt>
+    <dd><p>The plates to draw on.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Drawing.InkCanvasOptions.html">InkCanvasOptions</a></dt>
+    <dd><p>How other colours become inks, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Drawing.InkCanvasOptions.html#Egami_Drawing_InkCanvasOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_InkCanvas__ctor_Egami_InkRaster_Egami_Drawing_InkCanvasOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Plates for CMYK and a spot; an RGB photo converts through FOGRA39, the logo prints on its own plate.
+Egami.Colors.InkSet inks = Egami.Colors.InkSet.FromProfile(Egami.Colors.ColorProfile.Fogra39)
+    .WithSpot("PANTONE 186 C", Egami.Colors.InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+using InkRaster page = new(inks, 300, 200);
+using (InkCanvas canvas = new(page))
+{
+    canvas.Clear(Egami.Colors.InkColor.None);                                   // paper
+    canvas.FillRect(new RectF(0, 0, 300, 120), new Rgba8(80, 140, 200, 255));   // RGB: converted to CMYK
+    canvas.FillCircle(new Vector2(150, 100), 40, new SolidPaint(Egami.Colors.InkColor.Spot(inks[4], 1)));
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">raster</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Drawing_InkCanvas_Options_" data-uid="Egami.Drawing.InkCanvas.Options*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_Options" data-uid="Egami.Drawing.InkCanvas.Options">
+  Options
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the options.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public InkCanvasOptions Options { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.InkCanvasOptions.html">InkCanvasOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_Raster_" data-uid="Egami.Drawing.InkCanvas.Raster*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_Raster" data-uid="Egami.Drawing.InkCanvas.Raster">
+  Raster
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the plates drawn on.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public InkRaster Raster { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.InkRaster.html">InkRaster</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Drawing_InkCanvas_Clear_" data-uid="Egami.Drawing.InkCanvas.Clear*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_Clear_Egami_Colors_InkColor_" data-uid="Egami.Drawing.InkCanvas.Clear(Egami.Colors.InkColor)">
+  Clear(InkColor)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills the clip with an ink colour, replacing what is there: <a class="xref" href="Egami.Colors.InkColor.html#Egami_Colors_InkColor_None">None</a> leaves blank paper.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Clear(InkColor ink)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>ink</code> <a class="xref" href="Egami.Colors.InkColor.html">InkColor</a></dt>
+    <dd><p>The colour.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">ink</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_InkCanvas_Dispose_" data-uid="Egami.Drawing.InkCanvas.Dispose*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_Dispose_System_Boolean_" data-uid="Egami.Drawing.InkCanvas.Dispose(System.Boolean)">
+  Dispose(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Releases the backend's resources; called once by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Dispose">Dispose()</a> after every state is restored.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void Dispose(bool disposing)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>disposing</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Always <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>: the canvas has no finalizer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_DrawImage_" data-uid="Egami.Drawing.InkCanvas.DrawImage*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_DrawImage_Egami_InkRaster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.DrawImage(Egami.InkRaster,Egami.Drawing.RectF,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
+  DrawImage(InkRaster, RectF, RectF, SamplingOptions?, Paint?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L123"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws part of another ink raster's plates into a rectangle; see <a class="xref" href="Egami.Drawing.InkCanvas.html#Egami_Drawing_InkCanvas_DrawImage_Egami_InkRaster_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">DrawImage(InkRaster, RectF, SamplingOptions?, Paint?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawImage(InkRaster image, RectF source, RectF destination, SamplingOptions? sampling = null, Paint? paint = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.InkRaster.html">InkRaster</a></dt>
+    <dd><p>The plates to draw.</p>
+</dd>
+    <dt><code>source</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The part of the image, in its pixels.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>Where it goes, in local coordinates.</p>
+</dd>
+    <dt><code>sampling</code> <a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a></dt>
+    <dd><p>How the plates are sampled, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for bilinear.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The blend mode, opacity, overprint and antialiasing, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_InkCanvas_DrawImage_Egami_InkRaster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Plates for CMYK and a spot; an RGB photo converts through FOGRA39, the logo prints on its own plate.
+Egami.Colors.InkSet inks = Egami.Colors.InkSet.FromProfile(Egami.Colors.ColorProfile.Fogra39)
+    .WithSpot("PANTONE 186 C", Egami.Colors.InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+using InkRaster page = new(inks, 300, 200);
+using (InkCanvas canvas = new(page))
+{
+    canvas.Clear(Egami.Colors.InkColor.None);                                   // paper
+    canvas.FillRect(new RectF(0, 0, 300, 120), new Rgba8(80, 140, 200, 255));   // RGB: converted to CMYK
+    canvas.FillCircle(new Vector2(150, 100), 40, new SolidPaint(Egami.Colors.InkColor.Spot(inks[4], 1)));
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">image</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_InkCanvas_DrawImage_" data-uid="Egami.Drawing.InkCanvas.DrawImage*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_DrawImage_Egami_InkRaster_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.DrawImage(Egami.InkRaster,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
+  DrawImage(InkRaster, RectF, SamplingOptions?, Paint?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L107"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws another ink raster's plates into a rectangle, mapped by name: a plate this canvas also has prints on it, any other
+through its colorant's appearance into the process inks. Sampled nearest or bilinear (any other filter samples bilinear),
+with the image's edges clamped; the paint gives the blend mode, opacity, overprint and antialiasing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawImage(InkRaster image, RectF destination, SamplingOptions? sampling = null, Paint? paint = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.InkRaster.html">InkRaster</a></dt>
+    <dd><p>The plates to draw.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>Where they go, in local coordinates.</p>
+</dd>
+    <dt><code>sampling</code> <a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a></dt>
+    <dd><p>How the plates are sampled, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for bilinear.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The blend mode, opacity, overprint and antialiasing, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_InkCanvas_DrawImage_Egami_InkRaster_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Plates for CMYK and a spot; an RGB photo converts through FOGRA39, the logo prints on its own plate.
+Egami.Colors.InkSet inks = Egami.Colors.InkSet.FromProfile(Egami.Colors.ColorProfile.Fogra39)
+    .WithSpot("PANTONE 186 C", Egami.Colors.InkAppearance.Cmyk(0, 1, 0.81f, 0.04f));
+using InkRaster page = new(inks, 300, 200);
+using (InkCanvas canvas = new(page))
+{
+    canvas.Clear(Egami.Colors.InkColor.None);                                   // paper
+    canvas.FillRect(new RectF(0, 0, 300, 120), new Rgba8(80, 140, 200, 255));   // RGB: converted to CMYK
+    canvas.FillCircle(new Vector2(150, 100), 40, new SolidPaint(Egami.Colors.InkColor.Spot(inks[4], 1)));
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">image</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnClear_" data-uid="Egami.Drawing.InkCanvas.OnClear*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnClear_Egami_Pixels_RgbaF32_" data-uid="Egami.Drawing.InkCanvas.OnClear(Egami.Pixels.RgbaF32)">
+  OnClear(RgbaF32)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L196"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Replaces everything inside the clip with a color. A PDF page can write it as a filled rectangle over a white or transparent
+page; by default it is <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawPaint_Egami_Drawing_Paint_">OnDrawPaint(Paint)</a> with a solid paint in <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Source">Source</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnClear(RgbaF32 color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnClipPath_" data-uid="Egami.Drawing.InkCanvas.OnClipPath*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnClipPath_Egami_Drawing_Path_Egami_Drawing_ClipOp_System_Boolean_" data-uid="Egami.Drawing.InkCanvas.OnClipPath(Egami.Drawing.Path,Egami.Drawing.ClipOp,System.Boolean)">
+  OnClipPath(Path, ClipOp, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L189"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clips by a path's fill.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnClipPath(Path path, ClipOp op, bool antialias)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path in local coordinates.</p>
+</dd>
+    <dt><code>op</code> <a class="xref" href="Egami.Drawing.ClipOp.html">ClipOp</a></dt>
+    <dd><p>Whether to keep the inside or the outside.</p>
+</dd>
+    <dt><code>antialias</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the edges are antialiased.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnClipRect_" data-uid="Egami.Drawing.InkCanvas.OnClipRect*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnClipRect_Egami_Drawing_RectF_Egami_Drawing_ClipOp_System_Boolean_" data-uid="Egami.Drawing.InkCanvas.OnClipRect(Egami.Drawing.RectF,Egami.Drawing.ClipOp,System.Boolean)">
+  OnClipRect(RectF, ClipOp, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clips by a rectangle. By default it goes to <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnClipPath_Egami_Drawing_Path_Egami_Drawing_ClipOp_System_Boolean_">OnClipPath(Path, ClipOp, bool)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnClipRect(RectF rect, ClipOp op, bool antialias)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The rectangle in local coordinates, under <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Matrix">Matrix</a>.</p>
+</dd>
+    <dt><code>op</code> <a class="xref" href="Egami.Drawing.ClipOp.html">ClipOp</a></dt>
+    <dd><p>Whether to keep the inside or the outside.</p>
+</dd>
+    <dt><code>antialias</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the edges are antialiased.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnClipRoundRect_" data-uid="Egami.Drawing.InkCanvas.OnClipRoundRect*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnClipRoundRect_Egami_Drawing_RoundRect_Egami_Drawing_ClipOp_System_Boolean_" data-uid="Egami.Drawing.InkCanvas.OnClipRoundRect(Egami.Drawing.RoundRect,Egami.Drawing.ClipOp,System.Boolean)">
+  OnClipRoundRect(RoundRect, ClipOp, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L182"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clips by a round rectangle. By default it goes to <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnClipPath_Egami_Drawing_Path_Egami_Drawing_ClipOp_System_Boolean_">OnClipPath(Path, ClipOp, bool)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnClipRoundRect(RoundRect roundRect, ClipOp op, bool antialias)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>roundRect</code> <a class="xref" href="Egami.Drawing.RoundRect.html">RoundRect</a></dt>
+    <dd><p>The round rectangle in local coordinates.</p>
+</dd>
+    <dt><code>op</code> <a class="xref" href="Egami.Drawing.ClipOp.html">ClipOp</a></dt>
+    <dd><p>Whether to keep the inside or the outside.</p>
+</dd>
+    <dt><code>antialias</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the edges are antialiased.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawAtlas_" data-uid="Egami.Drawing.InkCanvas.OnDrawAtlas*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawAtlas_Egami_Raster_System_ReadOnlySpan_Egami_Drawing_SpriteTransform__System_ReadOnlySpan_Egami_Drawing_RectF__System_ReadOnlySpan_Egami_Pixels_RgbaF32__Egami_Operations_BlendMode_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.OnDrawAtlas(Egami.Raster,System.ReadOnlySpan{Egami.Drawing.SpriteTransform},System.ReadOnlySpan{Egami.Drawing.RectF},System.ReadOnlySpan{Egami.Pixels.RgbaF32},Egami.Operations.BlendMode,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
+  OnDrawAtlas(Raster, ReadOnlySpan&lt;SpriteTransform&gt;, ReadOnlySpan&lt;RectF&gt;, ReadOnlySpan&lt;RgbaF32&gt;, BlendMode, SamplingOptions, Paint?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L287"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws sprites from one image; the lists have equal lengths and colors is empty or as long. By default a sprite without a
+color is a <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">DrawImage(Raster, RectF, RectF, SamplingOptions?, Paint?)</a> under its transform, and a tinted one a
+two-triangle textured <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__">OnDrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)</a> call, one sprite at a time.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawAtlas(Raster image, ReadOnlySpan&lt;SpriteTransform&gt; transforms, ReadOnlySpan&lt;RectF&gt; sources, ReadOnlySpan&lt;RgbaF32&gt; colors, BlendMode colorBlend, SamplingOptions sampling, Paint? paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The sprite sheet.</p>
+</dd>
+    <dt><code>transforms</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Drawing.SpriteTransform.html">SpriteTransform</a>&gt;</dt>
+    <dd><p>Where each sprite goes.</p>
+</dd>
+    <dt><code>sources</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Drawing.RectF.html">RectF</a>&gt;</dt>
+    <dd><p>Each sprite's part of the image.</p>
+</dd>
+    <dt><code>colors</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a>&gt;</dt>
+    <dd><p>One color per sprite, or empty.</p>
+</dd>
+    <dt><code>colorBlend</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How a sprite combines with its color.</p>
+</dd>
+    <dt><code>sampling</code> <a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a></dt>
+    <dd><p>How the image is sampled.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The blend mode, opacity and antialiasing, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_InkCanvas_OnDrawAtlas_Egami_Raster_System_ReadOnlySpan_Egami_Drawing_SpriteTransform__System_ReadOnlySpan_Egami_Drawing_RectF__System_ReadOnlySpan_Egami_Pixels_RgbaF32__Egami_Operations_BlendMode_Egami_Operations_SamplingOptions_Egami_Drawing_Paint__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Pack the sprites once, then draw thousands of them in one call: each with its own place, turn, scale and tint.
+using SpriteSheet sheet = SpriteSheet.Pack([spark, star], new SpritePackOptions { Padding = 1 });
+Random random = new(7);
+SpriteTransform[] transforms = new SpriteTransform[2000];
+RectF[] sources = new RectF[transforms.Length];
+RgbaF32[] tints = new RgbaF32[transforms.Length];
+for (int i = 0; i &lt; transforms.Length; i++)
+{
+    Rect frame = sheet.Frames[i % 2];
+    sources[i] = frame;
+    transforms[i] = SpriteTransform.FromRotationScale(
+        scale: 0.3f + random.NextSingle(),
+        degrees: random.NextSingle() * 360,
+        position: new Vector2(random.NextSingle() * 320, random.NextSingle() * 200),
+        anchor: new Vector2(frame.Width / 2f, frame.Height / 2f));
+    tints[i] = new RgbaF32(1, 0.5f + (random.NextSingle() / 2), random.NextSingle(), 0.8f);
+}
+
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // Plus adds the sprites up, as light does.
+    canvas.DrawAtlas(sheet.Image, transforms, sources, tints, BlendMode.Modulate, paint: new SolidPaint(Rgba8.White) { BlendMode = BlendMode.Plus });
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawGlyphRun_" data-uid="Egami.Drawing.InkCanvas.OnDrawGlyphRun*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawGlyphRun_Egami_Fonts_GlyphRun_System_Numerics_Vector2_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.OnDrawGlyphRun(Egami.Fonts.GlyphRun,System.Numerics.Vector2,Egami.Drawing.Paint)">
+  OnDrawGlyphRun(GlyphRun, Vector2, Paint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L315"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws a glyph run. The default turns the glyphs into one path, with the font's synthetic bold and italic, and calls
+<a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_">OnDrawPath(Path, Stroke?, Paint)</a>, aliased for <a class="xref" href="Egami.Fonts.FontEdging.html#Egami_Fonts_FontEdging_Alias">Alias</a>, so every backend draws text; a
+backend with text of its own, such as a PDF page writing text operators, overrides it and can use
+<a class="xref" href="Egami.Fonts.GlyphRun.html#Egami_Fonts_GlyphRun_Text">Text</a> and <a class="xref" href="Egami.Fonts.GlyphRun.html#Egami_Fonts_GlyphRun_Clusters">Clusters</a> to keep the text searchable.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawGlyphRun(GlyphRun run, Vector2 origin, Paint paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>run</code> <a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a></dt>
+    <dd><p>The glyphs, never empty.</p>
+</dd>
+    <dt><code>origin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>Where the run's origin goes, in local coordinates.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawImage_" data-uid="Egami.Drawing.InkCanvas.OnDrawImage*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.OnDrawImage(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
+  OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L273"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws part of an image into a local rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>source</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The part to draw, inside the image.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>Where it goes, in local coordinates.</p>
+</dd>
+    <dt><code>sampling</code> <a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a></dt>
+    <dd><p>How it is sampled.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The blend mode, opacity and antialiasing, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for source-over.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_InkCanvas_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A backend overrides hooks; the base class has already checked the arguments and tracks the transform and clip bounds.
+// This one writes SVG elements, keeping rectangles as rectangles and strokes as stroke settings.
+public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
+{
+    private readonly System.Text.StringBuilder _body = new();
+
+    public string Document =&gt; $"&lt;svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{Width}\" height=\"{Height}\"&gt;{_body}&lt;/svg&gt;";
+
+    protected override void OnDrawRect(RectF rect, Stroke? stroke, Paint paint)
+        =&gt; _body.Append(FormattableString.Invariant($"&lt;rect x=\"{rect.X}\" y=\"{rect.Y}\" width=\"{rect.Width}\" height=\"{rect.Height}\" {Style(stroke, paint)}/&gt;"));
+
+    protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)
+    {
+        System.Text.StringBuilder d = new();
+        int p = 0;
+        foreach (PathVerb verb in path.Verbs)
+        {
+            int count = verb switch { PathVerb.Quad =&gt; 2, PathVerb.Cubic =&gt; 3, PathVerb.Close =&gt; 0, _ =&gt; 1 };
+            d.Append(verb switch { PathVerb.Move =&gt; "M", PathVerb.Line =&gt; "L", PathVerb.Quad =&gt; "Q", PathVerb.Cubic =&gt; "C", _ =&gt; "Z" });
+            foreach (Vector2 point in path.Points.Slice(p, count))
+            {
+                d.Append(FormattableString.Invariant($"{point.X},{point.Y} "));
+            }
+
+            p += count;
+        }
+
+        _body.Append(System.Globalization.CultureInfo.InvariantCulture, $"&lt;path d=\"{d}\" {Style(stroke, paint)}/&gt;");
+    }
+
+    protected override void OnClipPath(Path path, ClipOp op, bool antialias)
+    {
+        // Clips would become &lt;clipPath&gt; elements; this sketch leaves them out.
+    }
+
+    protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
+    {
+        // An image would be embedded as a PNG data URI.
+    }
+
+    private string Style(Stroke? stroke, Paint paint)
+    {
+        Rgba8 c = paint is SolidPaint solid ? solid.Color.ToRgba8() : Rgba8.Black;
+        string color = $"#{c.R:x2}{c.G:x2}{c.B:x2}";
+        string transform = Matrix.IsIdentity ? "" : FormattableString.Invariant($" transform=\"matrix({Matrix.M11} {Matrix.M12} {Matrix.M21} {Matrix.M22} {Matrix.M31} {Matrix.M32})\"");
+        return stroke is null
+            ? $"fill=\"{color}\"{transform}"
+            : FormattableString.Invariant($"fill=\"none\" stroke=\"{color}\" stroke-width=\"{stroke.Width}\" stroke-linecap=\"{stroke.Cap.ToString().ToLowerInvariant()}\"{transform}");
+    }
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawImageLattice_" data-uid="Egami.Drawing.InkCanvas.OnDrawImageLattice*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawImageLattice_Egami_Raster_Egami_Drawing_Lattice_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.OnDrawImageLattice(Egami.Raster,Egami.Drawing.Lattice,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
+  OnDrawImageLattice(Raster, Lattice, RectF, SamplingOptions, Paint?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L280"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws an image through a lattice; the lattice fits the image. By default each cell is an <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint?)</a> call of
+its part of the image, sampled only inside that part, and each fixed-color cell an <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawRect_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_">OnDrawRect(RectF, Stroke?, Paint)</a> call; a PDF
+backend gets one image per cell this way. The raster backend draws the cells as one mesh instead, so they meet without seams.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawImageLattice(Raster image, Lattice lattice, RectF destination, SamplingOptions sampling, Paint? paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>lattice</code> <a class="xref" href="Egami.Drawing.Lattice.html">Lattice</a></dt>
+    <dd><p>The grid.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>Where the image goes, in local coordinates; not empty.</p>
+</dd>
+    <dt><code>sampling</code> <a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a></dt>
+    <dd><p>How the image is sampled.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The blend mode, opacity and antialiasing, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_InkCanvas_OnDrawImageLattice_Egami_Raster_Egami_Drawing_Lattice_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint__examples">Examples</h4>
+  <pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // An Android .9.png: its one-pixel border marks what stretches. The corners stay sharp at any size.
+    (Raster inner, Lattice lattice, Rect? padding) = NinePatch.FromAndroid(file);
+    canvas.DrawImageLattice(inner, lattice, new RectF(10, 10, 180, 48));
+    inner.Dispose();
+
+    // A nine-patch from a plain image: the 8-pixel corners keep their size, the edges and center stretch.
+    canvas.DrawImageNinePatch(frame, new Rect(8, 8, 8, 8), new RectF(10, 70, 120, 40));
+
+    // A lattice can leave cells out or fill them with a color: here the center becomes a flat panel.
+    LatticeCellKind[] kinds = [.. Enumerable.Repeat(LatticeCellKind.Default, 9)];
+    kinds[4] = LatticeCellKind.FixedColor;
+    RgbaF32[] colors = new RgbaF32[9];
+    colors[4] = new RgbaF32(0.95f, 0.95f, 0.9f, 1);
+    canvas.DrawImageLattice(frame, new Lattice([8, 16], [8, 16]) { CellKinds = kinds, CellColors = colors }, new RectF(150, 70, 140, 40));
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawImageMask_" data-uid="Egami.Drawing.InkCanvas.OnDrawImageMask*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawImageMask_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_Paint_Egami_Operations_SamplingOptions_" data-uid="Egami.Drawing.InkCanvas.OnDrawImageMask(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.Paint,Egami.Operations.SamplingOptions)">
+  OnDrawImageMask(Raster, RectF, Paint, SamplingOptions)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L308"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Paints through an image mask. A PDF backend writes it as a stencil mask. By default the paint fills the rectangle in a layer
+and the mask's coverage, as an image drawn with <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_DestinationIn">DestinationIn</a>, cuts it out.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawImageMask(Raster mask, RectF destination, Paint paint, SamplingOptions sampling)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mask</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The mask image.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>Where the mask goes, in local coordinates; not empty.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>What fills the covered pixels.</p>
+</dd>
+    <dt><code>sampling</code> <a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a></dt>
+    <dd><p>How the mask is sampled.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_InkCanvas_OnDrawImageMask_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_Paint_Egami_Operations_SamplingOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A 1-bit scan as a stencil: its white pixels paint in ink, its black ones leave the page as it is.
+using Raster&lt;Gray8&gt; scan = Raster.Create(32, 16, new Gray8(255));
+canvas.DrawImageMask(scan, new RectF(160, 20, 64, 32), new Rgba8(20, 40, 120, 255), new SamplingOptions { Filter = ResampleFilter.Nearest });
+
+// A knockout group: each shape composites with what the group started as, so overlapping translucent shapes do not darken.
+canvas.SaveLayer(new LayerOptions { Knockout = true });
+canvas.FillCircle(new Vector2(180, 100), 20, new RgbaF32(1, 0, 0, 0.5f));
+canvas.FillCircle(new Vector2(200, 100), 20, new RgbaF32(0, 0, 1, 0.5f));
+canvas.Restore();</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawMesh_" data-uid="Egami.Drawing.InkCanvas.OnDrawMesh*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__" data-uid="Egami.Drawing.InkCanvas.OnDrawMesh(Egami.Drawing.Mesh,Egami.Drawing.Paint,Egami.Operations.BlendMode,System.ReadOnlySpan{Egami.Drawing.GradientStop})">
+  OnDrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L294"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws a mesh with at least one triangle; a mesh with values comes with stops. A PDF backend can write it as a free-form or
+lattice-form shading (types 4 and 5). By default it is drawn through <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_RasterizeFallback_System_Action_Egami_Drawing_Canvas__System_Single_">RasterizeFallback(Action&lt;Canvas&gt;, float)</a> at one raster pixel per
+device unit, over the mesh's bounds, and placed with <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawMesh(Mesh mesh, Paint paint, BlendMode colorBlend, ReadOnlySpan&lt;GradientStop&gt; valueStops)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mesh</code> <a class="xref" href="Egami.Drawing.Mesh.html">Mesh</a></dt>
+    <dd><p>The mesh, in local coordinates.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+    <dt><code>colorBlend</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How the vertex colors combine with the paint.</p>
+</dd>
+    <dt><code>valueStops</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Drawing.GradientStop.html">GradientStop</a>&gt;</dt>
+    <dd><p>The stops vertex values map through, or empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawOval_" data-uid="Egami.Drawing.InkCanvas.OnDrawOval*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawOval_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.OnDrawOval(Egami.Drawing.RectF,Egami.Drawing.Stroke,Egami.Drawing.Paint)">
+  OnDrawOval(RectF, Stroke?, Paint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L238"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills or strokes an ellipse. By default it goes to <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_">OnDrawPath(Path, Stroke?, Paint)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawOval(RectF oval, Stroke? stroke, Paint paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>oval</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The rectangle the ellipse fills.</p>
+</dd>
+    <dt><code>stroke</code> <a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a></dt>
+    <dd><p>The pen, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to fill.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawPaint_" data-uid="Egami.Drawing.InkCanvas.OnDrawPaint*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawPaint_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.OnDrawPaint(Egami.Drawing.Paint)">
+  OnDrawPaint(Paint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L203"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills the clip. By default it fills the device clip bounds mapped back to local coordinates.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawPaint(Paint paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawPatch_" data-uid="Egami.Drawing.InkCanvas.OnDrawPatch*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawPatch_Egami_Drawing_Patch_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__" data-uid="Egami.Drawing.InkCanvas.OnDrawPatch(Egami.Drawing.Patch,Egami.Drawing.Paint,Egami.Operations.BlendMode,System.ReadOnlySpan{Egami.Drawing.GradientStop})">
+  OnDrawPatch(Patch, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L301"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws a patch. A PDF backend can write it as a Coons or tensor-product shading (types 6 and 7). By default it is cut into
+triangles under the current transform and drawn with <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__">OnDrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawPatch(Patch patch, Paint paint, BlendMode colorBlend, ReadOnlySpan&lt;GradientStop&gt; valueStops)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>patch</code> <a class="xref" href="Egami.Drawing.Patch.html">Patch</a></dt>
+    <dd><p>The patch, in local coordinates.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+    <dt><code>colorBlend</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How the corner colors combine with the paint.</p>
+</dd>
+    <dt><code>valueStops</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Drawing.GradientStop.html">GradientStop</a>&gt;</dt>
+    <dd><p>The stops corner values map through, or empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawPath_" data-uid="Egami.Drawing.InkCanvas.OnDrawPath*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.OnDrawPath(Egami.Drawing.Path,Egami.Drawing.Stroke,Egami.Drawing.Paint)">
+  OnDrawPath(Path, Stroke?, Paint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L252"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills a path by its fill rule, or strokes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path in local coordinates.</p>
+</dd>
+    <dt><code>stroke</code> <a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a></dt>
+    <dd><p>The pen, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to fill.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_InkCanvas_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A backend overrides hooks; the base class has already checked the arguments and tracks the transform and clip bounds.
+// This one writes SVG elements, keeping rectangles as rectangles and strokes as stroke settings.
+public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
+{
+    private readonly System.Text.StringBuilder _body = new();
+
+    public string Document =&gt; $"&lt;svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{Width}\" height=\"{Height}\"&gt;{_body}&lt;/svg&gt;";
+
+    protected override void OnDrawRect(RectF rect, Stroke? stroke, Paint paint)
+        =&gt; _body.Append(FormattableString.Invariant($"&lt;rect x=\"{rect.X}\" y=\"{rect.Y}\" width=\"{rect.Width}\" height=\"{rect.Height}\" {Style(stroke, paint)}/&gt;"));
+
+    protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)
+    {
+        System.Text.StringBuilder d = new();
+        int p = 0;
+        foreach (PathVerb verb in path.Verbs)
+        {
+            int count = verb switch { PathVerb.Quad =&gt; 2, PathVerb.Cubic =&gt; 3, PathVerb.Close =&gt; 0, _ =&gt; 1 };
+            d.Append(verb switch { PathVerb.Move =&gt; "M", PathVerb.Line =&gt; "L", PathVerb.Quad =&gt; "Q", PathVerb.Cubic =&gt; "C", _ =&gt; "Z" });
+            foreach (Vector2 point in path.Points.Slice(p, count))
+            {
+                d.Append(FormattableString.Invariant($"{point.X},{point.Y} "));
+            }
+
+            p += count;
+        }
+
+        _body.Append(System.Globalization.CultureInfo.InvariantCulture, $"&lt;path d=\"{d}\" {Style(stroke, paint)}/&gt;");
+    }
+
+    protected override void OnClipPath(Path path, ClipOp op, bool antialias)
+    {
+        // Clips would become &lt;clipPath&gt; elements; this sketch leaves them out.
+    }
+
+    protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
+    {
+        // An image would be embedded as a PNG data URI.
+    }
+
+    private string Style(Stroke? stroke, Paint paint)
+    {
+        Rgba8 c = paint is SolidPaint solid ? solid.Color.ToRgba8() : Rgba8.Black;
+        string color = $"#{c.R:x2}{c.G:x2}{c.B:x2}";
+        string transform = Matrix.IsIdentity ? "" : FormattableString.Invariant($" transform=\"matrix({Matrix.M11} {Matrix.M12} {Matrix.M21} {Matrix.M22} {Matrix.M31} {Matrix.M32})\"");
+        return stroke is null
+            ? $"fill=\"{color}\"{transform}"
+            : FormattableString.Invariant($"fill=\"none\" stroke=\"{color}\" stroke-width=\"{stroke.Width}\" stroke-linecap=\"{stroke.Cap.ToString().ToLowerInvariant()}\"{transform}");
+    }
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawPoints_" data-uid="Egami.Drawing.InkCanvas.OnDrawPoints*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawPoints_Egami_Drawing_PointMode_System_ReadOnlySpan_System_Numerics_Vector2__Egami_Drawing_Stroke_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.OnDrawPoints(Egami.Drawing.PointMode,System.ReadOnlySpan{System.Numerics.Vector2},Egami.Drawing.Stroke,Egami.Drawing.Paint)">
+  OnDrawPoints(PointMode, ReadOnlySpan&lt;Vector2&gt;, Stroke, Paint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L266"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws points, lines or a polyline. By default each dot or line goes to <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_">OnDrawPath(Path, Stroke?, Paint)</a>, the polyline as one path.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawPoints(PointMode mode, ReadOnlySpan&lt;Vector2&gt; points, Stroke stroke, Paint paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.Drawing.PointMode.html">PointMode</a></dt>
+    <dd><p>How the points are read.</p>
+</dd>
+    <dt><code>points</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>&gt;</dt>
+    <dd><p>The points.</p>
+</dd>
+    <dt><code>stroke</code> <a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a></dt>
+    <dd><p>The pen.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawRect_" data-uid="Egami.Drawing.InkCanvas.OnDrawRect*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawRect_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.OnDrawRect(Egami.Drawing.RectF,Egami.Drawing.Stroke,Egami.Drawing.Paint)">
+  OnDrawRect(RectF, Stroke?, Paint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L210"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills or strokes a rectangle. By default it goes to <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_">OnDrawPath(Path, Stroke?, Paint)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawRect(RectF rect, Stroke? stroke, Paint paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+    <dt><code>stroke</code> <a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a></dt>
+    <dd><p>The pen, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to fill.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnDrawRoundRect_" data-uid="Egami.Drawing.InkCanvas.OnDrawRoundRect*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnDrawRoundRect_Egami_Drawing_RoundRect_Egami_Drawing_Stroke_Egami_Drawing_Paint_" data-uid="Egami.Drawing.InkCanvas.OnDrawRoundRect(Egami.Drawing.RoundRect,Egami.Drawing.Stroke,Egami.Drawing.Paint)">
+  OnDrawRoundRect(RoundRect, Stroke?, Paint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L224"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills or strokes a round rectangle. By default it goes to <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_">OnDrawPath(Path, Stroke?, Paint)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawRoundRect(RoundRect roundRect, Stroke? stroke, Paint paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>roundRect</code> <a class="xref" href="Egami.Drawing.RoundRect.html">RoundRect</a></dt>
+    <dd><p>The round rectangle.</p>
+</dd>
+    <dt><code>stroke</code> <a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a></dt>
+    <dd><p>The pen, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to fill.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnRestore_" data-uid="Egami.Drawing.InkCanvas.OnRestore*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnRestore" data-uid="Egami.Drawing.InkCanvas.OnRestore">
+  OnRestore()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L159"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Restore()</a> after the state is popped; <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Matrix">Matrix</a> and <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DeviceClipBounds">DeviceClipBounds</a> are already the restored ones.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnRestore()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnRestoreLayer_" data-uid="Egami.Drawing.InkCanvas.OnRestoreLayer*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnRestoreLayer" data-uid="Egami.Drawing.InkCanvas.OnRestoreLayer">
+  OnRestoreLayer()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L169"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Restore()</a> for a state saved by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_Egami_Drawing_LayerOptions_">SaveLayer(LayerOptions?)</a>, after it is popped, so
+<a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Matrix">Matrix</a> and <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DeviceClipBounds">DeviceClipBounds</a> are those the layer was started with: the raster backend merges the
+layer through that clip. By default it calls <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnRestore">OnRestore()</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnRestoreLayer()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnSave_" data-uid="Egami.Drawing.InkCanvas.OnSave*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnSave" data-uid="Egami.Drawing.InkCanvas.OnSave">
+  OnSave()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Save">Save()</a> after the state is pushed.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnSave()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnSaveLayer_" data-uid="Egami.Drawing.InkCanvas.OnSaveLayer*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnSaveLayer_Egami_Drawing_LayerOptions_" data-uid="Egami.Drawing.InkCanvas.OnSaveLayer(Egami.Drawing.LayerOptions)">
+  OnSaveLayer(LayerOptions)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_Egami_Drawing_LayerOptions_">SaveLayer(LayerOptions?)</a> after the state is pushed; <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DeviceClipBounds">DeviceClipBounds</a> is already limited
+by the options' bounds. The raster backend allocates the layer; a PDF backend would begin a transparency group. By default it
+calls <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnSave">OnSave()</a>, so a backend without layers draws their contents directly.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnSaveLayer(LayerOptions options)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.Drawing.LayerOptions.html">LayerOptions</a></dt>
+    <dd><p>How the layer is merged.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_InkCanvas_OnSaveLayer_Egami_Drawing_LayerOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // Group opacity: the overlapping circles fade as one shape, with no darker overlap.
+    canvas.SaveLayer(0.5f);
+    canvas.FillCircle(new Vector2(80, 100), 60, new Rgba8(200, 30, 30, 255));
+    canvas.FillCircle(new Vector2(140, 100), 60, new Rgba8(200, 30, 30, 255));
+    canvas.Restore();
+
+    // A group blended with Multiply and blurred as a whole; the layer grows by the blur's reach, so nothing is cut.
+    canvas.SaveLayer(new LayerOptions { BlendMode = BlendMode.Multiply, Filter = ops =&gt; ops.Blur(4) });
+    canvas.FillRect(new RectF(180, 40, 90, 120), new Rgba8(40, 120, 220, 255));
+    canvas.FillCircle(new Vector2(225, 100), 30, Rgba8.White);
+    canvas.Restore();
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_InkCanvas_OnSetMatrix_" data-uid="Egami.Drawing.InkCanvas.OnSetMatrix*"></a>
+
+  <h3 id="Egami_Drawing_InkCanvas_OnSetMatrix_System_Numerics_Matrix3x2_" data-uid="Egami.Drawing.InkCanvas.OnSetMatrix(System.Numerics.Matrix3x2)">
+  OnSetMatrix(Matrix3x2)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L172"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called whenever the transform changes, with the new transform (also <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Matrix">Matrix</a>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnSetMatrix(Matrix3x2 matrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>matrix</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.matrix3x2">Matrix3x2</a></dt>
+    <dd><p>The transform from local to device coordinates.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/InkCanvas.cs/#L63" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

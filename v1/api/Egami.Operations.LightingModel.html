@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct LightingModel | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct LightingModel | Egami ">
+      
+      <meta name="description" content="How a surface reflects light in :  (SVG&#39;s feDiffuseLighting, Lambert&#39;s N&#183;L) or  (feSpecularLighting, Phong–Blinn&#39;s (N&#183;H)^shininess), with SVG&#39;s and Skia&#39;s constants.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Operations_LightingModel.md&amp;value=---%0Auid%3A%20Egami.Operations.LightingModel%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Operations.LightingModel">
+
+
+
+  <h1 id="Egami_Operations_LightingModel" data-uid="Egami.Operations.LightingModel" class="text-break">
+Struct LightingModel  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/LightingModel.cs/#L10"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Operations.html">Operations</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>How a surface reflects light in <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Lighting_Egami_Operations_Light_Egami_Operations_LightingModel_Egami_Operations_LightingOptions_">Lighting(Light, LightingModel, LightingOptions?)</a>: <a class="xref" href="Egami.Operations.LightingModel.html#Egami_Operations_LightingModel_Diffuse_System_Single_">Diffuse(float)</a> (SVG's feDiffuseLighting, Lambert's
+N·L) or <a class="xref" href="Egami.Operations.LightingModel.html#Egami_Operations_LightingModel_Specular_System_Single_System_Single_">Specular(float, float)</a> (feSpecularLighting, Phong–Blinn's (N·H)^shininess), with SVG's and Skia's constants.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct LightingModel : IEquatable&lt;LightingModel&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Operations.LightingModel.html">LightingModel</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.tostring">ValueType.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Operations_LightingModel_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Three light sources, as SVG and Skia have them. Positions are pixels: x right, y down, z up out of the image.
+Light sun = new DistantLight(azimuth: 225, elevation: 40);              // from the top left, 40° up
+Light bulb = new PointLight(new Vector3(60, 20, 80)) { Color = new Rgba8(255, 240, 210, 255) };
+Light spot = new SpotLight(new Vector3(0, 0, 150), target: new Vector3(120, 60, 0), exponent: 4, coneAngle: 30);
+
+// Two ways a surface reflects: matte (N·L) or shiny (a highlight, (N·H)^shininess).
+LightingModel matte = LightingModel.Diffuse(kd: 1.2f);
+LightingModel shiny = LightingModel.Specular(ks: 1, shininess: 20);
+
+using Raster&lt;Rgba8&gt; map = logo.Derive(ops =&gt; ops.Lighting(sun, matte), Ct);   // the light map, opaque
+using Raster&lt;Rgba8&gt; glints = logo.Derive(ops =&gt; ops.Lighting(bulb, shiny), Ct); // alpha = brightest channel
+using Raster&lt;Rgba8&gt; pool = logo.Derive(ops =&gt; ops.Lighting(spot, matte), Ct);</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Operations_LightingModel_Constant_" data-uid="Egami.Operations.LightingModel.Constant*"></a>
+
+  <h3 id="Egami_Operations_LightingModel_Constant" data-uid="Egami.Operations.LightingModel.Constant">
+  Constant
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/LightingModel.cs/#L23"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the reflectance: SVG's diffuseConstant (kd) or specularConstant (ks).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Constant { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Operations_LightingModel_IsSpecular_" data-uid="Egami.Operations.LightingModel.IsSpecular*"></a>
+
+  <h3 id="Egami_Operations_LightingModel_IsSpecular" data-uid="Egami.Operations.LightingModel.IsSpecular">
+  IsSpecular
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/LightingModel.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether the model is specular; otherwise it is diffuse.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsSpecular { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Operations_LightingModel_Shininess_" data-uid="Egami.Operations.LightingModel.Shininess*"></a>
+
+  <h3 id="Egami_Operations_LightingModel_Shininess" data-uid="Egami.Operations.LightingModel.Shininess">
+  Shininess
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/LightingModel.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the specular exponent (SVG's specularExponent, Skia's shininess); 0 for a diffuse model.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Shininess { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Operations_LightingModel_Diffuse_" data-uid="Egami.Operations.LightingModel.Diffuse*"></a>
+
+  <h3 id="Egami_Operations_LightingModel_Diffuse_System_Single_" data-uid="Egami.Operations.LightingModel.Diffuse(System.Single)">
+  Diffuse(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/LightingModel.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A matte surface: each pixel is the light's color times <code class="paramref">kd</code> times N·L, the cosine between the surface
+normal and the direction to the light, clamped to 0..1. The light map is opaque.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static LightingModel Diffuse(float kd = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>kd</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The reflectance, SVG's diffuseConstant and Skia's kd; 0 or more.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.LightingModel.html">LightingModel</a></dt>
+    <dd><p>The model.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">kd</code> is negative or not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_LightingModel_Specular_" data-uid="Egami.Operations.LightingModel.Specular*"></a>
+
+  <h3 id="Egami_Operations_LightingModel_Specular_System_Single_System_Single_" data-uid="Egami.Operations.LightingModel.Specular(System.Single,System.Single)">
+  Specular(float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/LightingModel.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A shiny surface: each pixel is the light's color times <code class="paramref">ks</code> times (N·H)^<code class="paramref">shininess</code>, where
+H is halfway between the direction to the light and the viewer straight above, clamped to 0..1. The light map's alpha is
+the largest of its color channels, so it is transparent where there is no highlight.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static LightingModel Specular(float ks = 1, float shininess = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>ks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The reflectance, SVG's specularConstant and Skia's ks; 0 or more.</p>
+</dd>
+    <dt><code>shininess</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The exponent, SVG's specularExponent and Skia's shininess, from 1 to 128; larger is a smaller, sharper highlight.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.LightingModel.html">LightingModel</a></dt>
+    <dd><p>The model.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">ks</code> is negative or not finite, or <code class="paramref">shininess</code> is not from 1 to 128.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/LightingModel.cs/#L10" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

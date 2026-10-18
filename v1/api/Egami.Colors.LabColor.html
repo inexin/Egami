@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct LabColor | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct LabColor | Egami ">
+      
+      <meta name="description" content="A CIE Lab* color relative to D50, as ICC and CSS Color 4 define Lab.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Colors_LabColor.md&amp;value=---%0Auid%3A%20Egami.Colors.LabColor%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Colors.LabColor">
+
+
+
+  <h1 id="Egami_Colors_LabColor" data-uid="Egami.Colors.LabColor" class="text-break">
+Struct LabColor  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Colors.html">Colors</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A CIE L<em>a</em>b* color relative to D50, as ICC and CSS Color 4 define Lab.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct LabColor : IColorValue&lt;LabColor&gt;, IEquatable&lt;LabColor&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Colors.IColorValue-1.html">IColorValue</a>&lt;<a class="xref" href="Egami.Colors.LabColor.html">LabColor</a>&gt;</div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Colors.LabColor.html">LabColor</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.tostring">ValueType.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Colors_LabColor_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Color values in the models apps ask for, from and to pixels, and between each other.
+Rgba8 orange = new(240, 128, 32, 255);
+HslColor hsl = HslColor.From(orange);                          // hue 28°, saturation 0.87, lightness 0.53
+LabColor lab = ColorConvert.Convert&lt;HslColor, LabColor&gt;(hsl);  // through XYZ
+OklchColor oklch = OklchColor.From(orange);
+YCbCrColor jpeg = YCbCrColor.From(orange);                     // BT.601 full range, as JPEG
+YCbCrColor video = YCbCrColor.From(orange, YuvMatrix.Bt709, YuvRange.Limited);
+
+// Color difference: CIEDE2000 on Lab, distance on Oklab.
+double deltaE = lab.DeltaE2000(LabColor.From(new Rgba8(235, 130, 40, 255)));
+
+// Whole rows at once, from any pixel type and encoding.
+Rgba8[] pixels = [orange, new(10, 20, 30, 255)];
+OklabColor[] row = new OklabColor[pixels.Length];
+ColorConvert.FromPixels&lt;Rgba8, OklabColor&gt;(pixels, row);
+ColorConvert.FromPixels&lt;Rgba8, OklabColor&gt;(pixels, row, ColorProfile.DisplayP3);   // the same pixels read as Display P3</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Colors_LabColor__ctor_" data-uid="Egami.Colors.LabColor.#ctor*"></a>
+
+  <h3 id="Egami_Colors_LabColor__ctor_System_Single_System_Single_System_Single_" data-uid="Egami.Colors.LabColor.#ctor(System.Single,System.Single,System.Single)">
+  LabColor(float, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A CIE L<em>a</em>b* color relative to D50, as ICC and CSS Color 4 define Lab.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public LabColor(float L, float A, float B)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>L</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Lightness, 0 for black to 100 for white.</p>
+</dd>
+    <dt><code>A</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Green (negative) to red (positive), about −128 to 127 for real colors.</p>
+</dd>
+    <dt><code>B</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Blue (negative) to yellow (positive), about −128 to 127 for real colors.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Colors_LabColor__ctor_System_Single_System_Single_System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Color values in the models apps ask for, from and to pixels, and between each other.
+Rgba8 orange = new(240, 128, 32, 255);
+HslColor hsl = HslColor.From(orange);                          // hue 28°, saturation 0.87, lightness 0.53
+LabColor lab = ColorConvert.Convert&lt;HslColor, LabColor&gt;(hsl);  // through XYZ
+OklchColor oklch = OklchColor.From(orange);
+YCbCrColor jpeg = YCbCrColor.From(orange);                     // BT.601 full range, as JPEG
+YCbCrColor video = YCbCrColor.From(orange, YuvMatrix.Bt709, YuvRange.Limited);
+
+// Color difference: CIEDE2000 on Lab, distance on Oklab.
+double deltaE = lab.DeltaE2000(LabColor.From(new Rgba8(235, 130, 40, 255)));
+
+// Whole rows at once, from any pixel type and encoding.
+Rgba8[] pixels = [orange, new(10, 20, 30, 255)];
+OklabColor[] row = new OklabColor[pixels.Length];
+ColorConvert.FromPixels&lt;Rgba8, OklabColor&gt;(pixels, row);
+ColorConvert.FromPixels&lt;Rgba8, OklabColor&gt;(pixels, row, ColorProfile.DisplayP3);   // the same pixels read as Display P3</code></pre>
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Colors_LabColor_A_" data-uid="Egami.Colors.LabColor.A*"></a>
+
+  <h3 id="Egami_Colors_LabColor_A" data-uid="Egami.Colors.LabColor.A">
+  A
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Green (negative) to red (positive), about −128 to 127 for real colors.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float A { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_LabColor_B_" data-uid="Egami.Colors.LabColor.B*"></a>
+
+  <h3 id="Egami_Colors_LabColor_B" data-uid="Egami.Colors.LabColor.B">
+  B
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Blue (negative) to yellow (positive), about −128 to 127 for real colors.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float B { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_LabColor_L_" data-uid="Egami.Colors.LabColor.L*"></a>
+
+  <h3 id="Egami_Colors_LabColor_L" data-uid="Egami.Colors.LabColor.L">
+  L
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Lightness, 0 for black to 100 for white.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float L { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Colors_LabColor_DeltaE2000_" data-uid="Egami.Colors.LabColor.DeltaE2000*"></a>
+
+  <h3 id="Egami_Colors_LabColor_DeltaE2000_Egami_Colors_LabColor_" data-uid="Egami.Colors.LabColor.DeltaE2000(Egami.Colors.LabColor)">
+  DeltaE2000(LabColor)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the CIEDE2000 color difference (CIE 142-2001), the industry's measure of how different two colors look: under 1
+is barely visible, 2 is noticeable side by side.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double DeltaE2000(LabColor other)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Colors.LabColor.html">LabColor</a></dt>
+    <dd><p>The other color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>ΔE₀₀, 0 or more.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_LabColor_From_" data-uid="Egami.Colors.LabColor.From*"></a>
+
+  <h3 id="Egami_Colors_LabColor_From_Egami_Pixels_Rgba8_" data-uid="Egami.Colors.LabColor.From(Egami.Pixels.Rgba8)">
+  From(Rgba8)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the value of an sRGB pixel; alpha is ignored.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static LabColor From(Rgba8 color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The pixel.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.LabColor.html">LabColor</a></dt>
+    <dd><p>The value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_LabColor_From_" data-uid="Egami.Colors.LabColor.From*"></a>
+
+  <h3 id="Egami_Colors_LabColor_From_Egami_Pixels_RgbaF32_" data-uid="Egami.Colors.LabColor.From(Egami.Pixels.RgbaF32)">
+  From(RgbaF32)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L21"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the value of an sRGB pixel, whose channels may be outside 0..1; alpha is ignored.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static LabColor From(RgbaF32 color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a></dt>
+    <dd><p>The pixel.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.LabColor.html">LabColor</a></dt>
+    <dd><p>The value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_LabColor_FromXyz_" data-uid="Egami.Colors.LabColor.FromXyz*"></a>
+
+  <h3 id="Egami_Colors_LabColor_FromXyz_Egami_Colors_XyzColor_" data-uid="Egami.Colors.LabColor.FromXyz(Egami.Colors.XyzColor)">
+  FromXyz(XyzColor)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the value for an XYZ color (D65, white Y = 1).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static LabColor FromXyz(XyzColor xyz)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>xyz</code> <a class="xref" href="Egami.Colors.XyzColor.html">XyzColor</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.LabColor.html">LabColor</a></dt>
+    <dd><p>The value; components may fall outside their usual range for colors outside sRGB.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_LabColor_IsCloseTo_" data-uid="Egami.Colors.LabColor.IsCloseTo*"></a>
+
+  <h3 id="Egami_Colors_LabColor_IsCloseTo_Egami_Colors_LabColor_System_Single_" data-uid="Egami.Colors.LabColor.IsCloseTo(Egami.Colors.LabColor,System.Single)">
+  IsCloseTo(LabColor, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns whether every component of the two values differs by at most <code class="paramref">tolerance</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsCloseTo(LabColor other, float tolerance = 0.0001)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Colors.LabColor.html">LabColor</a></dt>
+    <dd><p>The other value.</p>
+</dd>
+    <dt><code>tolerance</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The largest difference allowed in a component.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if they are that close.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_LabColor_ToRgba8_" data-uid="Egami.Colors.LabColor.ToRgba8*"></a>
+
+  <h3 id="Egami_Colors_LabColor_ToRgba8" data-uid="Egami.Colors.LabColor.ToRgba8">
+  ToRgba8()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the color as an opaque sRGB pixel, each channel clamped into range.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Rgba8 ToRgba8()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The pixel.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_LabColor_ToRgbaF32_" data-uid="Egami.Colors.LabColor.ToRgbaF32*"></a>
+
+  <h3 id="Egami_Colors_LabColor_ToRgbaF32" data-uid="Egami.Colors.LabColor.ToRgbaF32">
+  ToRgbaF32()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the color as an opaque sRGB pixel, unclamped, so colors outside sRGB keep channels outside 0..1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RgbaF32 ToRgbaF32()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a></dt>
+    <dd><p>The pixel.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_LabColor_ToXyz_" data-uid="Egami.Colors.LabColor.ToXyz*"></a>
+
+  <h3 id="Egami_Colors_LabColor_ToXyz" data-uid="Egami.Colors.LabColor.ToXyz">
+  ToXyz()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the color as XYZ (D65, white Y = 1).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public XyzColor ToXyz()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.XyzColor.html">XyzColor</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/LabColor.cs/#L12" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

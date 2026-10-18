@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Svg | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Svg | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Svg">
+
+  <h1 id="Egami_Svg" data-uid="Egami.Svg" class="text-break">Namespace Egami.Svg</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgAttribute.html">SvgAttribute</a></dt>
+      <dd><p>An attribute of an <a class="xref" href="Egami.Svg.SvgElement.html">SvgElement</a>: its name, namespace, the prefix it was written with, and its value.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgAttributeCollection.html">SvgAttributeCollection</a></dt>
+      <dd><p>An element's attributes, in file order. Setting, adding and removing mark the document's render tree for rebuilding.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgCanvas.html">SvgCanvas</a></dt>
+      <dd><p>A canvas that writes SVG: every drawing call becomes SVG elements, so anything drawn on a <a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a> (shapes,
+strokes, gradients, images, text, clips, layers, recorded pictures) can be saved as a vector file that browsers, Inkscape and
+Egami.Svg all read. Gradients, patterns, clips, masks, images, glyph outlines and pictures are written once in <code>defs</code> and
+shared. What SVG cannot express (sweep gradients, noise and composed paints, meshes, layers with filters) is drawn by Egami
+into an image at <a class="xref" href="Egami.Svg.SvgWriteOptions.html#Egami_Svg_SvgWriteOptions_FallbackScale">FallbackScale</a> and embedded as PNG.</p>
+<p>
+The output is SVG 1.1 with CSS <code>mix-blend-mode</code> and <code>isolation</code> for blend modes and layers (and SVG 2's <code>fr</code>
+for a conical gradient whose start circle has a radius). Disposing the canvas finishes the file and writes it to the stream,
+which is left open. An image or picture drawn several times is stored once, as it was when first drawn.
+</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgClip.html">SvgClip</a></dt>
+      <dd><p>A clip path, in the coordinates of the node it clips: the union of its shapes, each with its own clip-rule.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgComment.html">SvgComment</a></dt>
+      <dd><p>An XML comment, kept so a save writes it back.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgContent.html">SvgContent</a></dt>
+      <dd><p>One item of an <a class="xref" href="Egami.Svg.SvgElement.html">SvgElement</a>'s content, in file order: an element, text, a comment or a processing instruction.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgContentList.html">SvgContentList</a></dt>
+      <dd><p>An element's content in file order: child elements, text, comments and processing instructions. Changes mark the document's
+render tree for rebuilding.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgDecodeOptions.html">SvgDecodeOptions</a></dt>
+      <dd><p>Options for reading SVG through <a class="xref" href="Egami.Svg.SvgFormat.html">SvgFormat</a> with <code>Raster.Load</code> and <code>Raster.Probe</code>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgDocument.html">SvgDocument</a></dt>
+      <dd><p>An SVG document: an editable element tree read from an .svg or .svgz file, which saves back to SVG and draws through
+Egami.Drawing's canvas.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgElement.html">SvgElement</a></dt>
+      <dd><p>An element of an SVG document's editable tree: its name and namespace, attributes and content, like XDocument's elements.
+Unknown elements and foreign namespaces (Inkscape's, Illustrator's metadata) are kept, so a save writes them back.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgException.html">SvgException</a></dt>
+      <dd><p>Thrown when an SVG file is not well-formed XML, breaks a safety limit, or, with <a class="xref" href="Egami.Svg.SvgLoadOptions.html#Egami_Svg_SvgLoadOptions_Strict">Strict</a>, has
+anything a lenient load would skip.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgFilter.html">SvgFilter</a></dt>
+      <dd><p>A filter, in the coordinates of the node it filters: the filter elements and CSS filter functions of its filter property, run
+one after the other.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgFontOptions.html">SvgFontOptions</a></dt>
+      <dd><p>Where a document's text finds its fonts (question 13): the caller's <a class="xref" href="Egami.Svg.SvgFontOptions.html#Egami_Svg_SvgFontOptions_Collection">Collection</a> first, then the fonts installed
+on the machine unless <a class="xref" href="Egami.Svg.SvgFontOptions.html#Egami_Svg_SvgFontOptions_UseSystemFonts">UseSystemFonts</a> is off, then per-character fallback through the same fonts. A server
+that renders untrusted files should pass its own collection and turn system fonts off, so output never depends on the
+machine.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgFormat.html">SvgFormat</a></dt>
+      <dd><p>SVG and SVGZ as an Egami format: registered with <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_WithFormat_Egami_Formats_FormatInfo_">WithFormat(FormatInfo)</a>, <code>Raster.Load</code> draws an SVG file
+at its own size (times <a class="xref" href="Egami.Svg.SvgDecodeOptions.html#Egami_Svg_SvgDecodeOptions_Scale">Scale</a>) and <code>Raster.Probe</code> gives that size without drawing. The
+format only reads; nothing outside the file is opened, so images it links are not drawn, and text uses the machine's fonts.
+For a resolver, your own fonts, a target size or a background, load an <a class="xref" href="Egami.Svg.SvgDocument.html">SvgDocument</a> and call
+<a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Rasterize__1_Egami_Svg_SvgRenderOptions_">Rasterize&lt;TPixel&gt;(SvgRenderOptions?)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgGlyphRenderer.html">SvgGlyphRenderer</a></dt>
+      <dd><p>Draws the glyphs of an OpenType SVG table (question 20): each glyph's document is read once per font and kept, and the
+element <code>glyph</code><i>id</i> is drawn in the font's units, its origin on the baseline. Set it on
+<a class="xref" href="Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_ColorGlyphRenderer">ColorGlyphRenderer</a>; <a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Rasterize__1_Egami_Svg_SvgRenderOptions_">Rasterize&lt;TPixel&gt;(SvgRenderOptions?)</a> uses it already.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgGroup.html">SvgGroup</a></dt>
+      <dd><p>A group of nodes drawn in order: a <code>g</code>, <code>svg</code>, <code>a</code>, <code>switch</code>, a <code>use</code> instance or a marker.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgImage.html">SvgImage</a></dt>
+      <dd><p>An image: a raster drawn into a rectangle, or another SVG document drawn as a group.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgLoadOptions.html">SvgLoadOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Svg.SvgDocument.html">SvgDocument</a> reads a file: what it may fetch, how strict it is, and which limits and diagnostics apply.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgMask.html">SvgMask</a></dt>
+      <dd><p>A mask, in the coordinates of the node it masks: content drawn into a region, used by luminance or alpha.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgNamespaces.html">SvgNamespaces</a></dt>
+      <dd><p>The XML namespaces SVG files use.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgNode.html">SvgNode</a></dt>
+      <dd><p>A node of a document's render tree: the elements resolved for drawing, with styles applied, units in pixels, <code>use</code>
+expanded, references linked and shapes turned into paths, as resvg's usvg tree. It is immutable, so a document that is not
+being edited can be drawn on many threads at once.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgPath.html">SvgPath</a></dt>
+      <dd><p>A shape: a 2.6 <a class="xref" href="Egami.Drawing.Path.html">Path</a> with its fill, stroke and markers.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgProcessingInstruction.html">SvgProcessingInstruction</a></dt>
+      <dd><p>An XML processing instruction, such as <code>&lt;?xml-stylesheet ...?&gt;</code>, kept so a save writes it back.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgRenderOptions.html">SvgRenderOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Rasterize__1_Egami_Svg_SvgRenderOptions_">Rasterize&lt;TPixel&gt;(SvgRenderOptions?)</a> and <a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Draw_Egami_Drawing_Canvas_System_Nullable_Egami_Drawing_RectF__Egami_Svg_SvgRenderOptions_">Draw(Canvas, RectF?, SvgRenderOptions?)</a> draw a document.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgResolvers.html">SvgResolvers</a></dt>
+      <dd><p>Ready resolvers for <a class="xref" href="Egami.Svg.SvgLoadOptions.html#Egami_Svg_SvgLoadOptions_Resolver">Resolver</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgSaveOptions.html">SvgSaveOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Save_System_IO_Stream_Egami_Svg_SvgSaveOptions_">Save(Stream, SvgSaveOptions?)</a> writes a document.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgTextContent.html">SvgTextContent</a></dt>
+      <dd><p>Character data in an element: text or a CDATA section, kept apart so a save writes it back the same way.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgTextRun.html">SvgTextRun</a></dt>
+      <dd><p>Text: one run of positioned glyphs in one font with one fill and stroke, drawn with <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawGlyphRun_Egami_Fonts_GlyphRun_System_Numerics_Vector2_Egami_Drawing_Paint_">DrawGlyphRun(GlyphRun, Vector2, Paint)</a> so a
+PDF or SVG canvas keeps real text. A text element becomes a group of these and of the paths of its decorations.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgWriteOptions.html">SvgWriteOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Svg.SvgCanvas.html">SvgCanvas</a> writes SVG: text, number precision, layout, image format and fallback resolution.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgImageFormat.html">SvgImageFormat</a></dt>
+      <dd><p>The format <a class="xref" href="Egami.Svg.SvgCanvas.html">SvgCanvas</a> embeds drawn images in.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgPaintOrder.html">SvgPaintOrder</a></dt>
+      <dd><p>Which of a shape's fill, stroke and markers is painted first (<code>paint-order</code>).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgTextMode.html">SvgTextMode</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Svg.SvgCanvas.html">SvgCanvas</a> writes text.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

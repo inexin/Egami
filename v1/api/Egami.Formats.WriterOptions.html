@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class WriterOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class WriterOptions | Egami ">
+      
+      <meta name="description" content="Options for writing. Each format has a subclass with its own settings; writers given this base class use their defaults.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_WriterOptions.md&amp;value=---%0Auid%3A%20Egami.Formats.WriterOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.WriterOptions">
+
+
+
+  <h1 id="Egami_Formats_WriterOptions" data-uid="Egami.Formats.WriterOptions" class="text-break">
+Class WriterOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Options for writing. Each format has a subclass with its own settings; writers given this base class use their defaults.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class WriterOptions</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">WriterOptions</span></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist derived">
+    <dt>Derived</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Formats.Bmp.BmpWriterOptions.html">BmpWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Exr.ExrWriterOptions.html">ExrWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Gif.GifWriterOptions.html">GifWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Ico.IcoWriterOptions.html">IcoWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html">JpegWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html">JxlWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Png.PngWriterOptions.html">PngWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Pnm.PnmWriterOptions.html">PnmWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Qoi.QoiWriterOptions.html">QoiWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Radiance.RadianceWriterOptions.html">RadianceWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Tga.TgaWriterOptions.html">TgaWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Tiff.TiffWriterOptions.html">TiffWriterOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Webp.WebpWriterOptions.html">WebpWriterOptions</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_WriterOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;A minimal format: "RAW8", width and height as big-endian numbers, then RGBA rows.&lt;/summary&gt;
+public static class Raw8Format
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = "RAW8",
+        Extensions = ["raw8"],
+        SignatureLength = 4,
+        Matches = header =&gt; header.StartsWith("RAW8"u8),
+        Reader = new Reader(),
+        Writer = new Writer(),
+    };
+
+    private sealed class Reader : IFormatReader
+    {
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height) = Header(input);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            (int width, int height) = Header(input);
+
+            // CreateRaster checks the size against the safety limits before allocating.
+            Raster&lt;TPixel&gt; raster = input.CreateRaster&lt;TPixel&gt;(width, height);
+            using IMemoryOwner&lt;byte&gt; row = input.RentScratch(width * 4);
+            for (int y = 0; y &lt; height; y++)
+            {
+                input.ReadExactly(row.Memory.Span[..(width * 4)]);
+                PixelConvert.Convert&lt;Rgba8, TPixel&gt;(MemoryMarshal.Cast&lt;byte, Rgba8&gt;(row.Memory.Span[..(width * 4)]), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Read&lt;Rgba8&gt;(input, options);
+
+        private static (int Width, int Height) Header(EgamiInput input)
+        {
+            input.Skip(4);
+            return ((int)input.ReadUInt32BigEndian(), (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Writer : IFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            "RAW8"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)raster.Width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)raster.Height);
+            output.Write(header);
+            Rgba8[] row = new Rgba8[raster.Width];
+            for (int y = 0; y &lt; raster.Height; y++)
+            {
+                PixelConvert.Convert&lt;TPixel, Rgba8&gt;(raster.Row(y), row);
+                output.Write(MemoryMarshal.AsBytes(row.AsSpan()));
+            }
+        }
+    }
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_WriterOptions_Default_" data-uid="Egami.Formats.WriterOptions.Default*"></a>
+
+  <h3 id="Egami_Formats_WriterOptions_Default" data-uid="Egami.Formats.WriterOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the default options.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static WriterOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_WriterOptions_OmitSrgbProfile_" data-uid="Egami.Formats.WriterOptions.OmitSrgbProfile*"></a>
+
+  <h3 id="Egami_Formats_WriterOptions_OmitSrgbProfile" data-uid="Egami.Formats.WriterOptions.OmitSrgbProfile">
+  OmitSrgbProfile
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether to leave out an embedded ICC profile that means sRGB (<a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_IsEquivalentTo_Egami_Colors_ColorProfile_">IsEquivalentTo(ColorProfile)</a>), which
+saves about 3 KB on a web image; PNG writes its small sRGB chunk instead. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, so output
+is as in 1.0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool OmitSrgbProfile { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_WriterOptions_OmitSrgbProfile_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Leave out an embedded profile that only says sRGB, which is what a file without one means anyway.
+raster.Save(output, "png", new WriterOptions { OmitSrgbProfile = true });</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Formats_WriterOptions_StripMetadata_" data-uid="Egami.Formats.WriterOptions.StripMetadata*"></a>
+
+  <h3 id="Egami_Formats_WriterOptions_StripMetadata" data-uid="Egami.Formats.WriterOptions.StripMetadata">
+  StripMetadata
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether to leave out all metadata. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>: writers keep whatever their format supports.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StripMetadata { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L126" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct CssRange | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct CssRange | Egami ">
+      
+      <meta name="description" content="A range of numbers, such as a weight range 100 900; a single value has equal ends.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Css_CssRange.md&amp;value=---%0Auid%3A%20Egami.Css.CssRange%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Css.CssRange">
+
+
+
+  <h1 id="Egami_Css_CssRange" data-uid="Egami.Css.CssRange" class="text-break">
+Struct CssRange  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssFontFace.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Css.html">Css</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Css.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A range of numbers, such as a weight range <code>100 900</code>; a single value has equal ends.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct CssRange : IEquatable&lt;CssRange&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Css.CssRange.html">CssRange</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Css_CssRange_examples">Examples</h2>
+  <pre><code class="lang-csharp">bool isFont = CssFont.TryParse("italic bold 14px/1.4 \"Source Sans 3\", sans-serif", out CssFont? font);
+CssFontWeight weight = font!.Weight;                     // 700
+foreach (CssFontFamily family in font.Families!.Families)
+{
+    Console.WriteLine($"{family.Name} (generic: {family.IsGeneric})");
+}
+
+bool isFamilyList = CssFontFamilyList.TryParse("Georgia, serif", out CssFontFamilyList? families);
+bool isWeight = CssFontWeight.TryParse("bolder", out CssFontWeight bolder);
+double resolved = bolder.Kind == CssFontWeightKind.Bolder ? bolder.Resolve(400) : bolder.Value; // 700
+
+// @font-face descriptors.
+CssStyleSheet sheet = CssStyleSheet.Parse("""
+    @font-face {
+      font-family: "Inter";
+      src: local("Inter"), url(inter.woff2) format("woff2") tech(variations);
+      font-weight: 100 900;
+      unicode-range: U+0000-00FF, U+20AC;
+    }
+    """);
+CssFontFace face = ((CssFontFaceRule)sheet.Rules[0]).FontFace;
+CssFontSource source = face.Sources[1];                  // inter.woff2, format woff2, tech variations
+CssRange weights = face.Weight!.Value;                   // 100 to 900
+CssUnicodeRange latin = face.UnicodeRanges[0];           // U+0-FF</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Css_CssRange__ctor_" data-uid="Egami.Css.CssRange.#ctor*"></a>
+
+  <h3 id="Egami_Css_CssRange__ctor_System_Double_System_Double_" data-uid="Egami.Css.CssRange.#ctor(System.Double,System.Double)">
+  CssRange(double, double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssFontFace.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>A range of numbers, such as a weight range <code>100 900</code>; a single value has equal ends.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssRange(double Min, double Max)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>Min</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The lower end.</p>
+</dd>
+    <dt><code>Max</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The upper end.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Css_CssRange__ctor_System_Double_System_Double__examples">Examples</h4>
+  <pre><code class="lang-csharp">bool isFont = CssFont.TryParse("italic bold 14px/1.4 \"Source Sans 3\", sans-serif", out CssFont? font);
+CssFontWeight weight = font!.Weight;                     // 700
+foreach (CssFontFamily family in font.Families!.Families)
+{
+    Console.WriteLine($"{family.Name} (generic: {family.IsGeneric})");
+}
+
+bool isFamilyList = CssFontFamilyList.TryParse("Georgia, serif", out CssFontFamilyList? families);
+bool isWeight = CssFontWeight.TryParse("bolder", out CssFontWeight bolder);
+double resolved = bolder.Kind == CssFontWeightKind.Bolder ? bolder.Resolve(400) : bolder.Value; // 700
+
+// @font-face descriptors.
+CssStyleSheet sheet = CssStyleSheet.Parse("""
+    @font-face {
+      font-family: "Inter";
+      src: local("Inter"), url(inter.woff2) format("woff2") tech(variations);
+      font-weight: 100 900;
+      unicode-range: U+0000-00FF, U+20AC;
+    }
+    """);
+CssFontFace face = ((CssFontFaceRule)sheet.Rules[0]).FontFace;
+CssFontSource source = face.Sources[1];                  // inter.woff2, format woff2, tech variations
+CssRange weights = face.Weight!.Value;                   // 100 to 900
+CssUnicodeRange latin = face.UnicodeRanges[0];           // U+0-FF</code></pre>
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Css_CssRange_Max_" data-uid="Egami.Css.CssRange.Max*"></a>
+
+  <h3 id="Egami_Css_CssRange_Max" data-uid="Egami.Css.CssRange.Max">
+  Max
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssFontFace.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The upper end.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Max { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssRange_Min_" data-uid="Egami.Css.CssRange.Min*"></a>
+
+  <h3 id="Egami_Css_CssRange_Min" data-uid="Egami.Css.CssRange.Min">
+  Min
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssFontFace.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The lower end.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Min { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Css_CssRange_ToString_" data-uid="Egami.Css.CssRange.ToString*"></a>
+
+  <h3 id="Egami_Css_CssRange_ToString" data-uid="Egami.Css.CssRange.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssFontFace.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Formats the range as a record does, such as <code>CssRange { Min = 100, Max = 900 }</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssFontFace.cs/#L12" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class SvgFormat | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class SvgFormat | Egami ">
+      
+      <meta name="description" content="SVG and SVGZ as an Egami format: registered with , Raster.Load draws an SVG file at its own size (times ) and Raster.Probe gives that size without drawing. The format only reads; nothing outside the file is opened, so images it links are not drawn, and text uses the machine&#39;s fonts. For a resolver, your own fonts, a target size or a background, load an  and call .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Svg_SvgFormat.md&amp;value=---%0Auid%3A%20Egami.Svg.SvgFormat%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Svg.SvgFormat">
+
+
+
+  <h1 id="Egami_Svg_SvgFormat" data-uid="Egami.Svg.SvgFormat" class="text-break">
+Class SvgFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgFormat.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Svg.html">Svg</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Svg.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>SVG and SVGZ as an Egami format: registered with <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_WithFormat_Egami_Formats_FormatInfo_">WithFormat(FormatInfo)</a>, <code>Raster.Load</code> draws an SVG file
+at its own size (times <a class="xref" href="Egami.Svg.SvgDecodeOptions.html#Egami_Svg_SvgDecodeOptions_Scale">Scale</a>) and <code>Raster.Probe</code> gives that size without drawing. The
+format only reads; nothing outside the file is opened, so images it links are not drawn, and text uses the machine's fonts.
+For a resolver, your own fonts, a target size or a background, load an <a class="xref" href="Egami.Svg.SvgDocument.html">SvgDocument</a> and call
+<a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Rasterize__1_Egami_Svg_SvgRenderOptions_">Rasterize&lt;TPixel&gt;(SvgRenderOptions?)</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class SvgFormat</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">SvgFormat</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Svg_SvgFormat_examples">Examples</h2>
+  <pre><code class="lang-csharp">// SVG as an Egami format: Raster.Load draws a file at its own size, Raster.Probe reads the size without drawing.
+EgamiContext context = EgamiContext.Default.WithFormat(SvgFormat.Info);
+RasterInfo info = Raster.Probe(path, context);
+using Raster&lt;Rgba8&gt; icon = Raster.Load&lt;Rgba8&gt;(path, context);
+
+// Twice the size, for a high-density screen.
+using Raster&lt;Rgba8&gt; sharp = Raster.Load&lt;Rgba8&gt;(path, context, new SvgDecodeOptions { Scale = 2 });</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Svg_SvgFormat_Info_" data-uid="Egami.Svg.SvgFormat.Info*"></a>
+
+  <h3 id="Egami_Svg_SvgFormat_Info" data-uid="Egami.Svg.SvgFormat.Info">
+  Info
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgFormat.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the SVG format: detected by an svg root element (after any XML declaration, comments and DOCTYPE), or by gzip data whose start is one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static FormatInfo Info { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Svg_SvgFormat_Info_examples">Examples</h4>
+  <pre><code class="lang-csharp">// SVG as an Egami format: Raster.Load draws a file at its own size, Raster.Probe reads the size without drawing.
+EgamiContext context = EgamiContext.Default.WithFormat(SvgFormat.Info);
+RasterInfo info = Raster.Probe(path, context);
+using Raster&lt;Rgba8&gt; icon = Raster.Load&lt;Rgba8&gt;(path, context);
+
+// Twice the size, for a high-density screen.
+using Raster&lt;Rgba8&gt; sharp = Raster.Load&lt;Rgba8&gt;(path, context, new SvgDecodeOptions { Scale = 2 });</code></pre>
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgFormat.cs/#L19" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

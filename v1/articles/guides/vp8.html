@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>VP8 video frames | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="VP8 video frames | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/vp8.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="vp8-video-frames">VP8 video frames</h1>
+
+<p><code>Vp8StreamDecoder</code> decodes VP8 video (RFC 6386) a frame at a time: key frames and inter frames, motion vectors, the last, golden and
+alternate references and hidden frames. Every frame equals libvpx's sample for sample, on libvpx's own test vectors and on clips
+made with its encoder, across the four versions, one to eight token partitions, segmentation and odd sizes. It reads frames, not
+files: WebM and IVF are read by Egami.Video, which uses this decoder, and frames from any other source decode the same way.</p>
+<pre><code class="lang-csharp">// VP8 frames in stream order, here from an IVF file (Egami.Video reads WebM and IVF for you).
+using Vp8StreamDecoder decoder = new() { ConcealErrors = false };
+YuvRaster&lt;byte&gt;? picture = null;
+foreach (byte[] packet in IvfFrames(&quot;clip.ivf&quot;))
+{
+    Vp8FrameInfo info = decoder.Decode(packet);
+    if (!info.IsShown)
+    {
+        continue; // a hidden frame, typically an alternate reference: it only updates the references
+    }
+
+    picture ??= YuvRaster.Create(info.Width, info.Height, ChromaFormat.Yuv420, YuvColor.Bt601Limited);
+    decoder.CopyFrameTo(picture); // the picture is the caller's: change it or keep it
+    shown++;
+}
+
+picture?.Dispose();
+</code></pre>
+<p><code>Decode</code> takes the frames in stream order and returns a <code>Vp8FrameInfo</code>: whether the frame is a key frame and whether it is shown,
+the frame size from the last key frame, and the VP8 version. A hidden frame, typically an alternate reference, only updates the
+references and has no picture. <code>CopyFrameTo</code> copies a shown frame's planes into a 4:2:0 8-bit <code>YuvRaster</code> of the frame's size; the
+copy belongs to the caller, so it can be changed or kept while later frames decode. VP8 pictures are BT.601, limited range.</p>
+<h2 id="broken-data">Broken data</h2>
+<p>Decoding starts at a key frame. By default a broken frame (data that runs out, a header that cannot be read) or an inter frame with
+no key frame before it throws <code>CorruptDataException</code>, and the decoder carries on from the next frame it is given; <code>Reset</code> drops the
+references so the next frame must be a key frame again. With <code>ConcealErrors</code> set nothing throws for broken data: the macroblocks a
+frame could not read are copied from the previous frame (mid-gray when there is none), a frame whose header cannot be read shows the
+previous frame again, and an inter frame with no key frame before it predicts from mid-gray. <code>Vp8FrameInfo.IsConcealed</code> says which
+frames were concealed. A key frame larger than the context's <code>SafetyLimits</code> throws <code>LimitExceededException</code> either way.</p>
+<h2 id="memory-and-threads">Memory and threads</h2>
+<p>The decoder keeps four frame buffers, which the references and the frame being decoded share as libvpx shares them, so a stream
+holds four frames however long it is. They come from the context's <code>IPixelMemorySource</code> and go back when the decoder is disposed.
+A frame's macroblock rows decode in a wavefront on up to <code>EgamiContext.MaxParallelism</code> threads, as many as the frame's token
+partitions allow (one partition decodes on one thread, as in libvpx); the result does not depend on the thread count. Decoding
+takes at most 1.5 times libvpx's time at 720p and 1080p, on one thread and on all cores.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/vp8.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Warps | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Warps | Egami ">
+      
+      <meta name="description" content="The built-in warps for : lens correction, polar and depolar, arc, swirl, wave and implode with ImageMagick&#39;s parameter meanings, so its documentation describes them and its results are their reference, and Skia&#39;s magnifier. Positions are in pixels with pixel centers at +0.5.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Operations_Warps.md&amp;value=---%0Auid%3A%20Egami.Operations.Warps%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Operations.Warps">
+
+
+
+  <h1 id="Egami_Operations_Warps" data-uid="Egami.Operations.Warps" class="text-break">
+Class Warps  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Warps.cs/#L13"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Operations.html">Operations</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The built-in warps for <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Warp_Egami_Operations_IWarp_Egami_Operations_SamplingOptions_">Warp(IWarp, SamplingOptions?)</a>: lens correction, polar and depolar, arc, swirl, wave and implode with
+ImageMagick's parameter meanings, so its documentation describes them and its results are their reference, and Skia's
+magnifier. Positions are in pixels with pixel centers at +0.5.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class Warps</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Warps</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Operations_Warps_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Correct a wide-angle lens with the PanoTools coefficients a lens database gives (ImageMagick's Barrel), then swirl a
+// square region in place; size-keeping warps run inside Within.
+using Raster corrected = photo.Derive(ops =&gt; ops
+    .Warp(Warps.Barrel(0.0, -0.018, 0.0))
+    .Within(new Rect(300, 200, 200, 200), s =&gt; s.Warp(Warps.Swirl(90))), Ct);
+
+// Size-changing ones: wrap the image into a circle, or bend it into an arc.
+using Raster disc = photo.Derive(ops =&gt; ops.Warp(Warps.Polar(), new SamplingOptions { Background = Rgba8.White }), Ct);
+using Raster arc = photo.Derive(ops =&gt; ops.Warp(Warps.Arc(120)), Ct);
+
+// A magnifying glass over the duck's head, blending into the photo over 12 pixels.
+using Raster loupe = photo.Derive(ops =&gt; ops.Warp(Warps.Magnifier(new Rect(380, 60, 160, 160), 2.5f, 12)), Ct);</code></pre>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Operations_Warps_Arc_" data-uid="Egami.Operations.Warps.Arc*"></a>
+
+  <h3 id="Egami_Operations_Warps_Arc_System_Single_System_Single_System_Nullable_System_Single__System_Nullable_System_Single__" data-uid="Egami.Operations.Warps.Arc(System.Single,System.Single,System.Nullable{System.Single},System.Nullable{System.Single})">
+  Arc(float, float, float?, float?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Warps.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bends the image into an arc, ImageMagick's Arc distort: the source's width spans <code class="paramref">degrees</code> of a circle
+centered above it, its top edge on the outer radius. The output is the arc's bounding box.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IWarp Arc(float degrees, float rotation = 0, float? topRadius = null, float? bottomRadius = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>degrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The angle the width spans, more than 0; 360 makes a ring.</p>
+</dd>
+    <dt><code>rotation</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Turns the arc clockwise from the top, in degrees.</p>
+</dd>
+    <dt><code>topRadius</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>?</dt>
+    <dd><p>The radius of the top edge, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the one that keeps the center line's length.</p>
+</dd>
+    <dt><code>bottomRadius</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>?</dt>
+    <dd><p>The radius of the bottom edge, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to scale the height with the top radius.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.IWarp.html">IWarp</a></dt>
+    <dd><p>The warp.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The angle is not more than 0, or a value is not finite, or the top radius is not more than 0.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Warps_Barrel_" data-uid="Egami.Operations.Warps.Barrel*"></a>
+
+  <h3 id="Egami_Operations_Warps_Barrel_System_Double_System_Double_System_Double_System_Nullable_System_Double__System_Nullable_System_Numerics_Vector2__" data-uid="Egami.Operations.Warps.Barrel(System.Double,System.Double,System.Double,System.Nullable{System.Double},System.Nullable{System.Numerics.Vector2})">
+  Barrel(double, double, double, double?, Vector2?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Warps.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Corrects (or adds) barrel and pincushion lens distortion with the PanoTools model that ImageMagick's Barrel distort, Hugin
+and lens databases use: each output point at radius r from the center samples the source at radius
+r × (a·r³ + b·r² + c·r + d), with r normalized to half the image's smaller side. The size is kept.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IWarp Barrel(double a, double b, double c, double? d = null, Vector2? center = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>a</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The cubic coefficient.</p>
+</dd>
+    <dt><code>b</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The quadratic coefficient.</p>
+</dd>
+    <dt><code>c</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The linear coefficient.</p>
+</dd>
+    <dt><code>d</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd><p>The constant term, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for 1 − a − b − c, which keeps the scale at r = 1.</p>
+</dd>
+    <dt><code>center</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>?</dt>
+    <dd><p>The center of the distortion, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the image's center.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.IWarp.html">IWarp</a></dt>
+    <dd><p>The warp.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A coefficient or the center is not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Warps_BarrelInverse_" data-uid="Egami.Operations.Warps.BarrelInverse*"></a>
+
+  <h3 id="Egami_Operations_Warps_BarrelInverse_System_Double_System_Double_System_Double_System_Nullable_System_Double__System_Nullable_System_Numerics_Vector2__" data-uid="Egami.Operations.Warps.BarrelInverse(System.Double,System.Double,System.Double,System.Nullable{System.Double},System.Nullable{System.Numerics.Vector2})">
+  BarrelInverse(double, double, double, double?, Vector2?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Warps.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The inverse lens model, ImageMagick's BarrelInverse distort: each output point at radius r samples the source at radius
+r / (a·r³ + b·r² + c·r + d), r normalized as for <a class="xref" href="Egami.Operations.Warps.html#Egami_Operations_Warps_Barrel_System_Double_System_Double_System_Double_System_Nullable_System_Double__System_Nullable_System_Numerics_Vector2__">Barrel(double, double, double, double?, Vector2?)</a>. The size is kept.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IWarp BarrelInverse(double a, double b, double c, double? d = null, Vector2? center = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>a</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The cubic coefficient.</p>
+</dd>
+    <dt><code>b</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The quadratic coefficient.</p>
+</dd>
+    <dt><code>c</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The linear coefficient.</p>
+</dd>
+    <dt><code>d</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd><p>The constant term, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for 1 − a − b − c.</p>
+</dd>
+    <dt><code>center</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>?</dt>
+    <dd><p>The center of the distortion, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the image's center.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.IWarp.html">IWarp</a></dt>
+    <dd><p>The warp.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A coefficient or the center is not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Warps_DePolar_" data-uid="Egami.Operations.Warps.DePolar*"></a>
+
+  <h3 id="Egami_Operations_Warps_DePolar_System_Single_System_Single_System_Nullable_System_Numerics_Vector2__System_Single_System_Nullable_System_Single__" data-uid="Egami.Operations.Warps.DePolar(System.Single,System.Single,System.Nullable{System.Numerics.Vector2},System.Single,System.Nullable{System.Single})">
+  DePolar(float, float, Vector2?, float, float?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Warps.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Unwraps a circle into a rectangle, ImageMagick's DePolar distort, the inverse of <a class="xref" href="Egami.Operations.Warps.html#Egami_Operations_Warps_Polar_System_Single_System_Single_System_Nullable_System_Numerics_Vector2__System_Single_System_Nullable_System_Single__">Polar(float, float, Vector2?, float, float?)</a>: output columns are
+angles and rows radii from <code class="paramref">minRadius</code> to <code class="paramref">maxRadius</code> around the center. The output is
+as tall as the radii's difference and as wide as their mean circumference, rounded up.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IWarp DePolar(float maxRadius = 0, float minRadius = 0, Vector2? center = null, float fromDegrees = -180, float? toDegrees = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>maxRadius</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The outer radius; 0 (the default) for the distance from the center to the nearest edge, −1 for the farthest corner.</p>
+</dd>
+    <dt><code>minRadius</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The inner radius, 0 or more and less than the outer.</p>
+</dd>
+    <dt><code>center</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>?</dt>
+    <dd><p>The center, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the image's center.</p>
+</dd>
+    <dt><code>fromDegrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The angle of the output's left edge.</p>
+</dd>
+    <dt><code>toDegrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>?</dt>
+    <dd><p>The angle of its right edge; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for a full circle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.IWarp.html">IWarp</a></dt>
+    <dd><p>The warp.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A radius or angle is not finite, or the radii are out of order.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Warps_Implode_" data-uid="Egami.Operations.Warps.Implode*"></a>
+
+  <h3 id="Egami_Operations_Warps_Implode_System_Single_" data-uid="Egami.Operations.Warps.Implode(System.Single)">
+  Implode(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Warps.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Pulls the image toward its center, ImageMagick's -implode; a negative amount pushes it out (explodes). The size is kept.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IWarp Implode(float amount)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>amount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The strength: 0 changes nothing, 1 is strong.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.IWarp.html">IWarp</a></dt>
+    <dd><p>The warp.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">amount</code> is not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Warps_Magnifier_" data-uid="Egami.Operations.Warps.Magnifier*"></a>
+
+  <h3 id="Egami_Operations_Warps_Magnifier_Egami_Rect_System_Single_System_Single_" data-uid="Egami.Operations.Warps.Magnifier(Egami.Rect,System.Single,System.Single)">
+  Magnifier(Rect, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Warps.cs/#L173"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Magnifies the area <code class="paramref">lens</code> by <code class="paramref">zoom</code>, as Skia's magnifier filter does: the middle of the
+lens shows the zoomed image, and over the last <code class="paramref">inset</code> pixels to the lens's edge it blends back into the
+surroundings with rounded corners. Outside the lens nothing moves. The size is kept.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IWarp Magnifier(Rect lens, float zoom, float inset)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>lens</code> <a class="xref" href="Egami.Rect.html">Rect</a></dt>
+    <dd><p>The lens, in pixels.</p>
+</dd>
+    <dt><code>zoom</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The magnification; 1 or less changes nothing, as in Skia.</p>
+</dd>
+    <dt><code>inset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The width of the blending band, 0 or more; 0 gives a hard edge.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.IWarp.html">IWarp</a></dt>
+    <dd><p>The warp.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The lens is empty, or the zoom or inset is out of range or not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Warps_Polar_" data-uid="Egami.Operations.Warps.Polar*"></a>
+
+  <h3 id="Egami_Operations_Warps_Polar_System_Single_System_Single_System_Nullable_System_Numerics_Vector2__System_Single_System_Nullable_System_Single__" data-uid="Egami.Operations.Warps.Polar(System.Single,System.Single,System.Nullable{System.Numerics.Vector2},System.Single,System.Nullable{System.Single})">
+  Polar(float, float, Vector2?, float, float?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Warps.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Wraps the image around a circle, ImageMagick's Polar distort: the source's columns become angles (0° pointing down, growing
+counter-clockwise on screen from <code class="paramref">fromDegrees</code> to <code class="paramref">toDegrees</code>) and its rows radii, the
+top row at <code class="paramref">minRadius</code> and the bottom at <code class="paramref">maxRadius</code>. The output is the square around the
+circle, as ImageMagick's +distort sizes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IWarp Polar(float maxRadius = 0, float minRadius = 0, Vector2? center = null, float fromDegrees = -180, float? toDegrees = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>maxRadius</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The outer radius; 0 (the default) for the distance from the center to the nearest edge, −1 for the farthest corner.</p>
+</dd>
+    <dt><code>minRadius</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The inner radius, 0 or more and less than the outer.</p>
+</dd>
+    <dt><code>center</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>?</dt>
+    <dd><p>The center, used for the special radii; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the image's center.</p>
+</dd>
+    <dt><code>fromDegrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The angle of the source's left edge.</p>
+</dd>
+    <dt><code>toDegrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>?</dt>
+    <dd><p>The angle of its right edge; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for a full circle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.IWarp.html">IWarp</a></dt>
+    <dd><p>The warp.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A radius or angle is not finite, or the radii are out of order.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Warps_Swirl_" data-uid="Egami.Operations.Warps.Swirl*"></a>
+
+  <h3 id="Egami_Operations_Warps_Swirl_System_Single_System_Nullable_System_Numerics_Vector2__System_Nullable_System_Single__" data-uid="Egami.Operations.Warps.Swirl(System.Single,System.Nullable{System.Numerics.Vector2},System.Nullable{System.Single})">
+  Swirl(float, Vector2?, float?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Warps.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Swirls the image about its center, ImageMagick's -swirl: points turn by <code class="paramref">degrees</code> at the center, falling
+to 0 at the radius with the square of the distance. The size is kept; points outside the radius stay put.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IWarp Swirl(float degrees, Vector2? center = null, float? radius = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>degrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The turn at the center; positive turns clockwise.</p>
+</dd>
+    <dt><code>center</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>?</dt>
+    <dd><p>The center, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for ImageMagick's, the middle of the image.</p>
+</dd>
+    <dt><code>radius</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>?</dt>
+    <dd><p>The radius, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for half the image's larger side; the swirl is stretched to the image's aspect ratio.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.IWarp.html">IWarp</a></dt>
+    <dd><p>The warp.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A value is not finite, or the radius is not more than 0.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Warps_Wave_" data-uid="Egami.Operations.Warps.Wave*"></a>
+
+  <h3 id="Egami_Operations_Warps_Wave_System_Single_System_Single_" data-uid="Egami.Operations.Warps.Wave(System.Single,System.Single)">
+  Wave(float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Warps.cs/#L152"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Shifts each column up or down along a sine wave, ImageMagick's -wave: column x moves down by
+|amplitude| + amplitude × sin(2πx / wavelength). The image grows by twice the amplitude in height.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IWarp Wave(float amplitude, float wavelength)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>amplitude</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The wave's height, in pixels.</p>
+</dd>
+    <dt><code>wavelength</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The wave's length, in pixels, more than 0.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.IWarp.html">IWarp</a></dt>
+    <dd><p>The warp.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A value is not finite, or the wavelength is not more than 0.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Warps.cs/#L13" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

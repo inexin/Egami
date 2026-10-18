@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Unicode text and shaping | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Unicode text and shaping | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/unicode-text.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="unicode-text-and-shaping">Unicode text and shaping</h1>
+
+<p>Egami.Fonts carries its own Unicode 17.0 data and the Unicode algorithms text shaping builds on: character properties, the
+bidirectional algorithm and text boundaries, in the <code>Egami.Fonts.Unicode</code> namespace. On top of them, <code>Egami.Fonts.Shaping</code>
+shapes text with a font's OpenType tables, as HarfBuzz does, with HarfBuzz's script shapers (Arabic, Syriac, N'Ko and
+Mongolian joining, Hebrew, the nine Indic scripts, Khmer, Myanmar, Thai, Lao, Hangul, and the Universal Shaping Engine for
+Tibetan, Sinhala, Javanese and the other complex scripts), itemization, font fallback and drawing on the canvas.</p>
+<p>The tables are generated from the Unicode Character Database by <code>tools/make-unicode-tables.py</code> and never come from the .NET runtime,
+so the same text gives the same answer on every runtime and machine. <code>UnicodeData.UnicodeVersion</code> says which version they follow.</p>
+<h2 id="character-properties">Character properties</h2>
+<p><code>UnicodeData</code> answers per code point: the general category (as the runtime's <code>UnicodeCategory</code>), the <code>Script</code> and its script
+extensions, the <code>BidiClass</code>, the mirroring character and <code>BidiPairedBracketType</code>, the <code>JoiningType</code> and <code>JoiningGroup</code> of Arabic
+and Syriac letters, the canonical combining class, the
+<code>VerticalOrientation</code>, the <code>EastAsianWidth</code>, the <code>LineBreakClass</code> (UAX #14), the emoji properties and whether a character is default ignorable.</p>
+<pre><code class="lang-csharp">// Egami's own Unicode 17.0 tables: the same answer on every runtime and machine.
+Script script = UnicodeData.GetScript('\u0915');                          // Devanagari
+ReadOnlySpan&lt;FontTag&gt; tags = script.OpenTypeTags;                         // dev2, then deva
+BidiClass bidi = UnicodeData.GetBidiClass('\u0627');                      // ArabicLetter
+JoiningType joining = UnicodeData.GetJoiningType('\u0628');               // DualJoining
+JoiningGroup group = UnicodeData.GetJoiningGroup('\u0628');               // Beh
+VerticalOrientation upright = UnicodeData.GetVerticalOrientation('\u6F22');   // Upright
+EastAsianWidth width = UnicodeData.GetEastAsianWidth('\u6F22');               // Wide
+bool emoji = UnicodeData.IsEmojiPresentation(0x1F600);                    // true
+UnicodeData.TryGetBidiMirroringGlyph('(', out int mirror);                // ')'
+BidiPairedBracketType bracket = UnicodeData.GetBidiPairedBracketType('['); // Open
+</code></pre>
+<ul>
+<li>A <code>Script</code> has its ISO 15924 <code>Code</code>, its Unicode <code>Name</code> and the OpenType tags fonts use for it, newest first (<code>dev2</code> then <code>deva</code>).
+Common, Inherited and Unknown are the shared scripts, and fonts know them as <code>DFLT</code>.</li>
+<li>Every lookup is a few array reads and allocates nothing. Code points run from 0 to 0x10FFFF; lone surrogates are code points too.</li>
+</ul>
+<h2 id="bidirectional-text">Bidirectional text</h2>
+<p><code>Bidi.Resolve</code> runs the Unicode Bidirectional Algorithm (UAX #9) in full: embeddings, overrides and isolates up to depth 125,
+paired brackets and the weak and neutral rules. It returns a <code>BidiResult</code> with a level per UTF-16 unit and the <code>BidiRun</code>s of equal
+level; <code>Reorder</code> gives one line's runs from left to right. <code>TextDirection.Auto</code>, the default, takes each paragraph's direction from
+its first strong character; <code>LeftToRight</code> and <code>RightToLeft</code> force it.</p>
+<pre><code class="lang-csharp">// A Hebrew word inside English text: three runs, the middle one drawn right to left.
+string text = &quot;abc \u05D0\u05D1\u05D2 def&quot;;
+using BidiResult result = Bidi.Resolve(text, TextDirection.Auto);
+int paragraph = result.ParagraphLevel;           // 0: the first strong character is Latin
+foreach (BidiRun run in result.Reorder(0, result.Length))
+{
+    Console.WriteLine($&quot;{run.Start}+{run.Length} {(run.IsRightToLeft ? &quot;right to left&quot; : &quot;left to right&quot;)}&quot;);
+}
+</code></pre>
+<ul>
+<li>Each paragraph separator ends a paragraph, and each paragraph is resolved on its own.</li>
+<li><code>Levels</code> lays each paragraph out as one line. When text is wrapped, call <code>Reorder</code> per line: trailing spaces then take the
+paragraph's level, as rule L1 asks.</li>
+<li>The result rents its arrays; dispose it when done.</li>
+<li>Unicode's BidiTest.txt and BidiCharacterTest.txt pass in full.</li>
+</ul>
+<h2 id="graphemes-and-words">Graphemes and words</h2>
+<p><code>TextSegmenter.Graphemes</code> walks extended grapheme clusters (UAX #29): what a reader sees as one character, such as a letter with
+its accents, a Hangul syllable, a Devanagari conjunct or an emoji sequence. <code>TextSegmenter.Words</code> walks the segments between word
+boundaries with Unicode's default rules. Both return a <code>TextSegment</code> per segment through a <code>GraphemeEnumerator</code> or
+<code>WordEnumerator</code> that allocates nothing; <code>IsGraphemeBoundary</code> checks one index.</p>
+<pre><code class="lang-csharp">// A family emoji is one grapheme cluster of eight UTF-16 units; &quot;can't&quot; is one word.
+string text = &quot;\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67 can't stop&quot;;
+var graphemes = new List&lt;TextSegment&gt;();
+foreach (TextSegment grapheme in TextSegmenter.Graphemes(text))
+{
+    graphemes.Add(grapheme);
+}
+
+var words = new List&lt;string&gt;();
+foreach (TextSegment word in TextSegmenter.Words(text))
+{
+    words.Add(text.Substring(word.Start, word.Length));
+}
+
+bool inside = TextSegmenter.IsGraphemeBoundary(text, 2); // false: inside the family
+</code></pre>
+<ul>
+<li>Words use no dictionary, so Thai, Lao, Khmer and CJK text without spaces is not split into words.</li>
+<li>Line breaking (UAX #14) arrives with paragraph layout in 2.8.2.</li>
+<li>Unicode's GraphemeBreakTest.txt and WordBreakTest.txt pass in full.</li>
+</ul>
+<h2 id="shaping-a-run">Shaping a run</h2>
+<p><code>TextShaper.ShapeRun</code> shapes one run of text in one font, as HarfBuzz's hb_shape: the font's GSUB substitutions (ligatures,
+contextual and alternate forms) and GPOS positioning (kerning, marks, cursive attachment) with the default features,
+normalization against the font's character map, and the fallbacks HarfBuzz uses for fonts that lack them. <code>RunProperties</code>
+gives the script (taken from the text when null), a BCP 47 language (none by default: the font's default forms, never the
+machine's culture), the direction, feature settings and the <code>ClusterLevel</code>. The result lands in a reusable <code>GlyphBuffer</code>:
+glyph ids, the UTF-16 index each glyph's cluster starts at, <code>GlyphFlags</code> and a <code>GlyphPosition</code> per glyph, in visual order and in
+the font's units.</p>
+<pre><code class="lang-csharp">// One run, one font, as HarfBuzz's hb_shape: ligatures, kerning and marks from the font's GSUB and GPOS.
+var font = new Font(face, 24);
+var glyphs = new GlyphBuffer();
+string text = &quot;office&quot;;
+TextShaper.ShapeRun(text, 0, text.Length, font, new RunProperties { Script = Script.Latin }, glyphs);
+
+for (int i = 0; i &lt; glyphs.Count; i++)
+{
+    ushort id = glyphs.GlyphIds[i];
+    int cluster = glyphs.Clusters[i];                 // index in text the glyph came from
+    GlyphPosition position = glyphs.Positions[i];     // in the font's units (pixels here)
+    bool breakable = (glyphs.Flags[i] &amp; GlyphFlags.UnsafeToBreak) == 0;
+}
+
+float width = glyphs.Advance;
+</code></pre>
+<ul>
+<li><code>GlyphFlags.UnsafeToBreak</code> marks where breaking the text needs shaping again; line layout uses it to re-shape only there.</li>
+<li>A run is one script in one direction; <code>TextShaper.Shape</code> splits real text into runs.</li>
+<li>The engine gives exactly hb-shape's glyphs, clusters, positions and flags on HarfBuzz's own tests and on Egami's corpus.</li>
+</ul>
+<h2 id="shaping-text">Shaping text</h2>
+<p><code>TextShaper.Shape</code> shapes a whole string: it splits it into lines at hard breaks (<code> </code>, <code> </code>, <code> </code>, U+0085, U+2028,
+U+2029), resolves each line's bidi levels, splits the line into runs of one level, one script, one span and one font, shapes each
+run as <code>ShapeRun</code> does and returns the runs in display order. Nothing wraps; that is line layout's job.</p>
+<pre><code class="lang-csharp">// Whole text: lines at hard breaks, bidi levels, script runs, fallback fonts, runs in display order.
+var font = new Font(face, 24);
+var options = new ShapingOptions { Fallback = new FontFallback(fonts.Families) };
+ShapedText shaped = TextShaper.Shape(&quot;Shalom: \u05E9\u05DC\u05D5\u05DD!&quot;, font, options);
+
+float x = 0;
+foreach (ShapedRun run in shaped.Lines[0].Runs)
+{
+    GlyphRun glyphs = run.ToGlyphRun(new System.Numerics.Vector2(x, 0), shaped.Text); // what a canvas draws
+    x += run.Advance;
+}
+</code></pre>
+<ul>
+<li><code>ShapedText.Lines</code> holds a <code>ShapedLine</code> per line, with its <code>ParagraphLevel</code>, its <code>Runs</code> from left to right, its <code>Advance</code> and the
+highest ascent and lowest descent of its fonts. Each <code>ShapedRun</code> has its <code>Font</code>, <code>BidiLevel</code>, <code>Script</code>, <code>Language</code>, text range
+and <code>GlyphBuffer</code>; <code>ToGlyphRun</code> turns it into the <code>GlyphRun</code> a canvas draws.</li>
+<li><code>ShapingOptions.Direction</code> is <code>Auto</code> by default: each paragraph takes the direction of its first strong character.</li>
+<li><code>ShapingOptions.Spans</code> give ranges their own font, language or features; spans must not overlap.</li>
+</ul>
+<pre><code class="lang-csharp">// A styled range: its own font, language or features.
+var options = new ShapingOptions
+{
+    Language = &quot;en&quot;,
+    Spans = [new TextSpan(6, 6) { Font = font with { Kerning = false }, Features = [FontFeature.SmallCaps] }],
+};
+ShapedText shaped = TextShaper.Shape(&quot;Hello, World&quot;, font, options);
+</code></pre><h2 id="font-fallback">Font fallback</h2>
+<p>A font that does not map a character draws .notdef, unless <code>ShapingOptions.Fallback</code> names fonts to try. Fallback works on whole
+grapheme clusters, so a letter and its accents, or an emoji sequence, stay in one font: the first font that maps every character
+of the cluster takes it. The span's font comes first, then the <code>FontFallback.Families</code> (matched to the font's style), then the
+<code>FontFallback.Resolver</code>. Spaces and punctuation stay in the font before them when it has them, so fallback does not split words.
+Emoji presentation (a default-emoji character or VS16) prefers a color face (COLR, sbix or CBDT); VS15 prefers an outline face.</p>
+<pre><code class="lang-csharp">// Characters the font lacks: the caller's families first, then installed fonts only when asked for.
+FontFallback mine = new(FontCollection.System.Families.Where(f =&gt; f.Name is &quot;Segoe UI Emoji&quot; or &quot;Noto Color Emoji&quot;));
+FontFallback system = FontFallback.System;      // depends on the machine's fonts
+FontFallback none = FontFallback.None;          // the default: missing characters draw as .notdef
+</code></pre>
+<ul>
+<li><code>FontFallback.None</code>, the default, keeps output independent of the machine: only the fonts passed are used.</li>
+<li><code>FontFallback.System</code> resolves from the installed fonts through <code>SystemFontFallback</code>: fixed families per script on Windows, macOS and Linux (Segoe UI Emoji,
+Apple Color Emoji or Noto Color Emoji for emoji; the language picks Japanese, Chinese or Korean faces for Han), then any
+installed face that maps the cluster. Output then depends on the fonts installed.</li>
+<li>An <code>IFontFallbackResolver</code> of your own receives the cluster's text, script, language and the font's style.</li>
+</ul>
+<h2 id="features">Features</h2>
+<p>A <code>FontFeature</code> sets one OpenType feature for the whole run or a range of it: 0 turns a default feature off, 1 turns a feature
+on, higher values pick an alternate. <code>FontFeature.Parse</code> reads HarfBuzz's syntax (<code>liga=0</code>, <code>+smcp</code>, <code>ss01</code>, <code>aalt=2</code>,
+<code>kern[3:5]=0</code>); the presets cover common cases.</p>
+<pre><code class="lang-csharp">// HarfBuzz's feature syntax, or the presets.
+FontFeature noLigatures = FontFeature.Parse(&quot;liga=0&quot;);
+FontFeature figures = FontFeature.TabularFigures;
+FontFeature alternates = FontFeature.StylisticSet(1);
+FontFeature someKerning = FontFeature.Parse(&quot;kern[0:3]=0&quot;); // off for the first three characters only
+
+var properties = new RunProperties { Features = [noLigatures, figures] };
+TextShaper.ShapeRun(text, 0, text.Length, font, properties, glyphs);
+</code></pre><h2 id="layout-tables">Layout tables</h2>
+<p><code>Typeface.Layout</code> returns an <code>OpenTypeLayout</code>, which lists the scripts, language systems and features the font's GSUB and GPOS
+offer. A table whose structure is damaged is ignored whole, with a <code>Font.BadTable</code> diagnostic, as HarfBuzz ignores it; a font
+that drives shaping past its limits stops with <code>Font.ShapingLimit</code>.</p>
+<pre><code class="lang-csharp">// What the font's layout tables list.
+OpenTypeLayout layout = face.Layout;
+IReadOnlyList&lt;FontTag&gt; scripts = layout.Scripts;                                // DFLT, cyrl, grek, latn
+IReadOnlyList&lt;FontTag&gt; languages = layout.GetLanguageSystems(new FontTag(&quot;latn&quot;));
+IReadOnlyList&lt;FontTag&gt; features = layout.GetFeatures(new FontTag(&quot;latn&quot;));      // liga, kern, ...
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/unicode-text.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

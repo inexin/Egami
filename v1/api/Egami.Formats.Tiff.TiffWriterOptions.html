@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class TiffWriterOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class TiffWriterOptions | Egami ">
+      
+      <meta name="description" content="Options for writing TIFF.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Tiff_TiffWriterOptions.md&amp;value=---%0Auid%3A%20Egami.Formats.Tiff.TiffWriterOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Tiff.TiffWriterOptions">
+
+
+
+  <h1 id="Egami_Formats_Tiff_TiffWriterOptions" data-uid="Egami.Formats.Tiff.TiffWriterOptions" class="text-break">
+Class TiffWriterOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Tiff.html">Tiff</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Options for writing TIFF.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class TiffWriterOptions : WriterOptions</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></div>
+      <div><span class="xref">TiffWriterOptions</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_StripMetadata">WriterOptions.StripMetadata</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_OmitSrgbProfile">WriterOptions.OmitSrgbProfile</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Tiff_TiffWriterOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Each pixel type is written at its own depth: 16-bit color stays 16-bit. Deflate with the predictor is the default.
+photo.Save("duck.tif");
+
+// Tiles, LZW, BigTIFF, or the smallest exact form the pixels allow.
+photo.Save("tiled.tif", new TiffWriterOptions { Compression = TiffCompression.Lzw, TileSize = 256, Layout = TiffLayout.Auto });
+photo.Save("small.tif", new TiffWriterOptions { Reduce = true });
+
+// JPEG inside TIFF: RGB is written as YCbCr 4:2:0 with the tables shared by every strip.
+photo.Save("photo.tif", new TiffWriterOptions { Compression = TiffCompression.Jpeg, Quality = 90 });</code></pre>
+
+
+  <h2 id="Egami_Formats_Tiff_TiffWriterOptions_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Re-saving a raster loaded from TIFF keeps the source's compression, predictor, tiling and byte order for every option left at
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, so a round trip writes the same kind of file. A JPEG or WebP source compression is kept only while the
+raster is unchanged since loading; otherwise it falls back to Deflate, to avoid a second lossy pass.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Tiff_TiffWriterOptions_AssociatedAlpha_" data-uid="Egami.Formats.Tiff.TiffWriterOptions.AssociatedAlpha*"></a>
+
+  <h3 id="Egami_Formats_Tiff_TiffWriterOptions_AssociatedAlpha" data-uid="Egami.Formats.Tiff.TiffWriterOptions.AssociatedAlpha">
+  AssociatedAlpha
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether straight alpha is written premultiplied, with ExtraSamples 1 (associated). Premultiplied pixel types are always
+written that way. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AssociatedAlpha { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Tiff_TiffWriterOptions_Compression_" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Compression*"></a>
+
+  <h3 id="Egami_Formats_Tiff_TiffWriterOptions_Compression" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Compression">
+  Compression
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the compression, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the TIFF source's, else <a class="xref" href="Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_Deflate">Deflate</a>.
+The writer takes <a class="xref" href="Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_None">None</a>, <a class="xref" href="Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_Lzw">Lzw</a>, <a class="xref" href="Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_Deflate">Deflate</a>,
+<a class="xref" href="Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_PackBits">PackBits</a>, <a class="xref" href="Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_CcittGroup3">CcittGroup3</a> and <a class="xref" href="Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_CcittGroup4">CcittGroup4</a>
+(1-bit images only), <a class="xref" href="Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_Jpeg">Jpeg</a> and <a class="xref" href="Egami.Formats.Tiff.TiffCompression.html#Egami_Formats_Tiff_TiffCompression_Webp">Webp</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TiffCompression? Compression { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Tiff.TiffCompression.html">TiffCompression</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Tiff_TiffWriterOptions_CompressionLevel_" data-uid="Egami.Formats.Tiff.TiffWriterOptions.CompressionLevel*"></a>
+
+  <h3 id="Egami_Formats_Tiff_TiffWriterOptions_CompressionLevel" data-uid="Egami.Formats.Tiff.TiffWriterOptions.CompressionLevel">
+  CompressionLevel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Deflate level, 0 (fastest) to 9 (smallest). Defaults to 5, as PNG's.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int CompressionLevel { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 9.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Tiff_TiffWriterOptions_Default_" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Default*"></a>
+
+  <h3 id="Egami_Formats_Tiff_TiffWriterOptions_Default" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the default options.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TiffWriterOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Tiff.TiffWriterOptions.html">TiffWriterOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Tiff_TiffWriterOptions_Layout_" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Layout*"></a>
+
+  <h3 id="Egami_Formats_Tiff_TiffWriterOptions_Layout" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Layout">
+  Layout
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether classic TIFF or BigTIFF is written. Defaults to <a class="xref" href="Egami.Formats.Tiff.TiffLayout.html#Egami_Formats_Tiff_TiffLayout_Classic">Classic</a>, which throws before writing
+anything when the uncompressed pixels pass 4 GB.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TiffLayout Layout { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Tiff.TiffLayout.html">TiffLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Tiff_TiffWriterOptions_ParallelCompression_" data-uid="Egami.Formats.Tiff.TiffWriterOptions.ParallelCompression*"></a>
+
+  <h3 id="Egami_Formats_Tiff_TiffWriterOptions_ParallelCompression" data-uid="Egami.Formats.Tiff.TiffWriterOptions.ParallelCompression">
+  ParallelCompression
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L141"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether strips and tiles are compressed on up to <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_MaxParallelism">MaxParallelism</a> threads. The file is the same
+either way. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ParallelCompression { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Tiff_TiffWriterOptions_Predictor_" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Predictor*"></a>
+
+  <h3 id="Egami_Formats_Tiff_TiffWriterOptions_Predictor" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Predictor">
+  Predictor
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the predictor for LZW and Deflate, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the source's, else
+<a class="xref" href="Egami.Formats.Tiff.TiffPredictor.html#Egami_Formats_Tiff_TiffPredictor_Horizontal">Horizontal</a> for 8, 16 and 32-bit integer samples and <a class="xref" href="Egami.Formats.Tiff.TiffPredictor.html#Egami_Formats_Tiff_TiffPredictor_FloatingPoint">FloatingPoint</a>
+for float samples. <a class="xref" href="Egami.Formats.Tiff.TiffPredictor.html#Egami_Formats_Tiff_TiffPredictor_None">None</a> turns it off.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TiffPredictor? Predictor { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Tiff.TiffPredictor.html">TiffPredictor</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Tiff_TiffWriterOptions_Quality_" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Quality*"></a>
+
+  <h3 id="Egami_Formats_Tiff_TiffWriterOptions_Quality" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Quality">
+  Quality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the quality of JPEG and lossy WebP compression, 1 to 100, with the JPEG and WebP writers' meanings. Defaults to 75.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Quality { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 1 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Tiff_TiffWriterOptions_Reduce_" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Reduce*"></a>
+
+  <h3 id="Egami_Formats_Tiff_TiffWriterOptions_Reduce" data-uid="Egami.Formats.Tiff.TiffWriterOptions.Reduce">
+  Reduce
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether to write the smallest exact form the pixels allow: 1 bit when every pixel is black or white, gray when red,
+green and blue are equal, a palette of up to 256 colors for opaque images, 8 bits when every 16-bit sample is a multiple of
+257. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>: each pixel type is written at its own depth.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Reduce { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Tiff_TiffWriterOptions_TileSize_" data-uid="Egami.Formats.Tiff.TiffWriterOptions.TileSize*"></a>
+
+  <h3 id="Egami_Formats_Tiff_TiffWriterOptions_TileSize" data-uid="Egami.Formats.Tiff.TiffWriterOptions.TileSize">
+  TileSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L110"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the side of square tiles, a multiple of 16, or 0 for strips of about 64 KB of uncompressed rows, or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the source's layout, else strips.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? TileSize { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is negative or not a multiple of 16.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Tiff/TiffFormat.cs/#L55" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

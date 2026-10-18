@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct CssColor | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct CssColor | Egami ">
+      
+      <meta name="description" content="A CSS color (CSS Color 4) converted to sRGB: red, green, blue and alpha from 0 to 1, gamma-encoded, clipped to the sRGB gamut; or currentcolor.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Css_CssColor.md&amp;value=---%0Auid%3A%20Egami.Css.CssColor%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Css.CssColor">
+
+
+
+  <h1 id="Egami_Css_CssColor" data-uid="Egami.Css.CssColor" class="text-break">
+Struct CssColor  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Css.html">Css</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Css.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A CSS color (CSS Color 4) converted to sRGB: red, green, blue and alpha from 0 to 1, gamma-encoded, clipped to the sRGB gamut;
+or <code>currentcolor</code>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly struct CssColor : IEquatable&lt;CssColor&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Css.CssColor.html">CssColor</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Css_CssColor_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Every CSS Color 4 syntax, converted to sRGB (0 to 1) and clipped to its gamut.
+bool isColor = CssColor.TryParse("oklch(62.8% 0.258 29.2 / 50%)", out CssColor red);
+(byte r, byte g, byte b, byte a) = red.ToRgba8();         // about (255, 0, 0, 128)
+bool newer = red.Level == 4;                             // SVG 1.1 knows only level 3
+
+bool isCurrent = CssColor.TryParse("currentColor", out CssColor current);  // current.IsCurrentColor: use the 'color' property</code></pre>
+
+
+  <h2 id="Egami_Css_CssColor_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p><a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_Level">Level</a> says which CSS Color level's syntax the text used, so a consumer that follows an older specification
+(such as SVG 1.1, which knows only CSS Color 3) can refuse the newer forms.</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Css_CssColor__ctor_" data-uid="Egami.Css.CssColor.#ctor*"></a>
+
+  <h3 id="Egami_Css_CssColor__ctor_System_Single_System_Single_System_Single_System_Single_" data-uid="Egami.Css.CssColor.#ctor(System.Single,System.Single,System.Single,System.Single)">
+  CssColor(float, float, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates an sRGB color.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssColor(float r, float g, float b, float a = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>r</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Red, 0 to 1.</p>
+</dd>
+    <dt><code>g</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Green, 0 to 1.</p>
+</dd>
+    <dt><code>b</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Blue, 0 to 1.</p>
+</dd>
+    <dt><code>a</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Alpha, 0 (transparent) to 1 (opaque).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Css_CssColor_A_" data-uid="Egami.Css.CssColor.A*"></a>
+
+  <h3 id="Egami_Css_CssColor_A" data-uid="Egami.Css.CssColor.A">
+  A
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets alpha, 0 (transparent) to 1 (opaque).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float A { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_B_" data-uid="Egami.Css.CssColor.B*"></a>
+
+  <h3 id="Egami_Css_CssColor_B" data-uid="Egami.Css.CssColor.B">
+  B
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets blue, 0 to 1 (gamma-encoded sRGB).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float B { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_CurrentColor_" data-uid="Egami.Css.CssColor.CurrentColor*"></a>
+
+  <h3 id="Egami_Css_CssColor_CurrentColor" data-uid="Egami.Css.CssColor.CurrentColor">
+  CurrentColor
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets <code>currentcolor</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static CssColor CurrentColor { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_G_" data-uid="Egami.Css.CssColor.G*"></a>
+
+  <h3 id="Egami_Css_CssColor_G" data-uid="Egami.Css.CssColor.G">
+  G
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets green, 0 to 1 (gamma-encoded sRGB).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float G { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_IsCurrentColor_" data-uid="Egami.Css.CssColor.IsCurrentColor*"></a>
+
+  <h3 id="Egami_Css_CssColor_IsCurrentColor" data-uid="Egami.Css.CssColor.IsCurrentColor">
+  IsCurrentColor
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the color is <code>currentcolor</code>: the consumer substitutes the element's <code>color</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsCurrentColor { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_Level_" data-uid="Egami.Css.CssColor.Level*"></a>
+
+  <h3 id="Egami_Css_CssColor_Level" data-uid="Egami.Css.CssColor.Level">
+  Level
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the CSS Color level whose syntax the color was written in: 3 for keywords, <code>#rgb</code> and <code>#rrggbb</code>,
+comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and <code>hsla()</code> and the CSS2 system colors; 4 for
+<code>#rgba</code>, <code>#rrggbbaa</code>, <code>rebeccapurple</code>, space-separated or percentage-alpha <code>rgb()</code> and <code>hsl()</code>,
+<code>hwb()</code>, <code>lab()</code>, <code>lch()</code>, <code>oklab()</code>, <code>oklch()</code>, <code>color()</code> and the CSS Color 4 system colors.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Level { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_R_" data-uid="Egami.Css.CssColor.R*"></a>
+
+  <h3 id="Egami_Css_CssColor_R" data-uid="Egami.Css.CssColor.R">
+  R
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets red, 0 to 1 (gamma-encoded sRGB).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float R { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_Transparent_" data-uid="Egami.Css.CssColor.Transparent*"></a>
+
+  <h3 id="Egami_Css_CssColor_Transparent" data-uid="Egami.Css.CssColor.Transparent">
+  Transparent
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets <code>transparent</code>: black with zero alpha.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static CssColor Transparent { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Css_CssColor_Equals_" data-uid="Egami.Css.CssColor.Equals*"></a>
+
+  <h3 id="Egami_Css_CssColor_Equals_Egami_Css_CssColor_" data-uid="Egami.Css.CssColor.Equals(Egami.Css.CssColor)">
+  Equals(CssColor)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L144"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Indicates whether the current object is equal to another object of the same type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Equals(CssColor other)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd><p>An object to compare with this object.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the current object is equal to the <code class="paramref">other</code> parameter; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_Equals_" data-uid="Egami.Css.CssColor.Equals*"></a>
+
+  <h3 id="Egami_Css_CssColor_Equals_System_Object_" data-uid="Egami.Css.CssColor.Equals(System.Object)">
+  Equals(object?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Indicates whether this instance and a specified object are equal.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool Equals(object? obj)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>obj</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></dt>
+    <dd><p>The object to compare with the current instance.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if <code class="paramref">obj</code> and this instance are the same type and represent the same value; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_GetHashCode_" data-uid="Egami.Css.CssColor.GetHashCode*"></a>
+
+  <h3 id="Egami_Css_CssColor_GetHashCode" data-uid="Egami.Css.CssColor.GetHashCode">
+  GetHashCode()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L150"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the hash code for this instance.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int GetHashCode()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>A 32-bit signed integer that is the hash code for this instance.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_ToRgba8_" data-uid="Egami.Css.CssColor.ToRgba8*"></a>
+
+  <h3 id="Egami_Css_CssColor_ToRgba8" data-uid="Egami.Css.CssColor.ToRgba8">
+  ToRgba8()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts to 8-bit sRGB components, rounded.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public (byte R, byte G, byte B, byte A) ToRgba8()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt>(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.byte,system.byte,system.byte,system.byte-.r">R</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.byte,system.byte,system.byte,system.byte-.g">G</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.byte,system.byte,system.byte,system.byte-.b">B</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.byte,system.byte,system.byte,system.byte-.a">A</a>)</dt>
+    <dd><p>Red, green, blue and alpha, 0 to 255.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_ToString_" data-uid="Egami.Css.CssColor.ToString*"></a>
+
+  <h3 id="Egami_Css_CssColor_ToString" data-uid="Egami.Css.CssColor.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Serializes the color as CSS Color 4 does for sRGB: <code>rgb(r, g, b)</code> or <code>rgba(r, g, b, a)</code>, or <code>currentcolor</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_TryParse_" data-uid="Egami.Css.CssColor.TryParse*"></a>
+
+  <h3 id="Egami_Css_CssColor_TryParse_Egami_Css_CssComponentValue_Egami_Css_CssColor__" data-uid="Egami.Css.CssColor.TryParse(Egami.Css.CssComponentValue,Egami.Css.CssColor@)">
+  TryParse(CssComponentValue, out CssColor)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L98"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses one component value as a color.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool TryParse(CssComponentValue value, out CssColor color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>value</code> <a class="xref" href="Egami.Css.CssComponentValue.html">CssComponentValue</a></dt>
+    <dd><p>The component value: an identifier, a hash or a color function.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the value is a valid color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_TryParse_" data-uid="Egami.Css.CssColor.TryParse*"></a>
+
+  <h3 id="Egami_Css_CssColor_TryParse_System_Collections_Generic_IReadOnlyList_Egami_Css_CssComponentValue__Egami_Css_CssColor__" data-uid="Egami.Css.CssColor.TryParse(System.Collections.Generic.IReadOnlyList{Egami.Css.CssComponentValue},Egami.Css.CssColor@)">
+  TryParse(IReadOnlyList&lt;CssComponentValue&gt;, out CssColor)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses component values as one color (whitespace around it is ignored).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool TryParse(IReadOnlyList&lt;CssComponentValue&gt; values, out CssColor color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>values</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Css.CssComponentValue.html">CssComponentValue</a>&gt;</dt>
+    <dd><p>The component values.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the values are one valid color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_TryParse_" data-uid="Egami.Css.CssColor.TryParse*"></a>
+
+  <h3 id="Egami_Css_CssColor_TryParse_System_String_Egami_Css_CssColor__" data-uid="Egami.Css.CssColor.TryParse(System.String,Egami.Css.CssColor@)">
+  TryParse(string, out CssColor)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses a color, such as <code>red</code>, <code>#ff000080</code>, <code>rgb(255 0 0 / 50%)</code> or <code>oklch(62.8% 0.26 29)</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool TryParse(string text, out CssColor color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The CSS text (ASCII case-insensitive).</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the text is one valid color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="operators">Operators
+</h2>
+
+
+  <a id="Egami_Css_CssColor_op_Equality_" data-uid="Egami.Css.CssColor.op_Equality*"></a>
+
+  <h3 id="Egami_Css_CssColor_op_Equality_Egami_Css_CssColor_Egami_Css_CssColor_" data-uid="Egami.Css.CssColor.op_Equality(Egami.Css.CssColor,Egami.Css.CssColor)">
+  operator ==(CssColor, CssColor)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Compares two colors by their components; the syntax level is not compared.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool operator ==(CssColor left, CssColor right)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>left</code> <a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd><p>The first color.</p>
+</dd>
+    <dt><code>right</code> <a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd><p>The second color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when they are equal.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_op_Inequality_" data-uid="Egami.Css.CssColor.op_Inequality*"></a>
+
+  <h3 id="Egami_Css_CssColor_op_Inequality_Egami_Css_CssColor_Egami_Css_CssColor_" data-uid="Egami.Css.CssColor.op_Inequality(Egami.Css.CssColor,Egami.Css.CssColor)">
+  operator !=(CssColor, CssColor)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Compares two colors by their components; the syntax level is not compared.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool operator !=(CssColor left, CssColor right)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>left</code> <a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd><p>The first color.</p>
+</dd>
+    <dt><code>right</code> <a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd><p>The second color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when they differ.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L16" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

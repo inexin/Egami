@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>JPEG XL | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="JPEG XL | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/jxl.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="jpeg-xl">JPEG XL</h1>
+
+<p>Egami reads and writes JPEG XL (ISO/IEC 18181), written from the specification with no native code. <code>JxlFormat.Info</code> is
+registered in <code>EgamiContext.Default</code>, so <code>Raster.Load</code> recognizes a bare codestream (FF 0A) or the box format from the first
+bytes, and <code>Save(&quot;x.jxl&quot;)</code> picks the writer. <code>JxlDetails</code> describes the container.</p>
+<p><code>Raster.Probe</code> reads the headers alone: size, sample format, channels, orientation and frame count.</p>
+<pre><code class="lang-csharp">// The headers alone: size, natural pixel type, orientation and frame count, without decoding any pixels.
+RasterInfo info = Raster.Probe(&quot;duck.jxl&quot;);
+bool isJxl = info.Format == JxlFormat.Info;
+long bytes = info.EstimatedBytes;                       // what a full load would allocate
+</code></pre><h2 id="reading">Reading</h2>
+<p>Every kind of still decodes:</p>
+<ul>
+<li><strong>Lossless Modular</strong>: every predictor, RCT, palette and squeeze, 1 to 31-bit and float samples, alpha.</li>
+<li><strong>Lossy VarDCT or Modular</strong> in XYB: every transform size, Gaborish, the edge-preserving filter, LF frames, upsampling, patches,
+splines and noise.</li>
+</ul>
+<pre><code class="lang-csharp">// JPEG XL loads like any format: lossless, lossy, animated or recompressed from a JPEG, in its natural pixel type.
+using Raster duck = Raster.Load(&quot;duck.jxl&quot;);
+duck.Save(&quot;duck.png&quot;);
+</code></pre>
+<p>The natural pixel type follows the bit depth: <code>Rgb8</code>, <code>Rgba8</code> or <code>Gray8</code>, their 16-bit forms, <code>RgbaF16</code> for 16-bit float, and
+<code>RgbF32</code>, <code>RgbaF32</code> or <code>GrayF32</code> beyond. CMYK loads as <code>Cmyk8</code> or <code>Cmyk16</code>.</p>
+<p>Color: lossy (XYB) files come out in the file's own color space, enumerated (as djxl gives it) or from its ICC profile through
+Egami's color pipeline, and that space goes on the raster. PQ and HLG files keep their curve, named by H.273 code points, with
+intensity_target as <code>HdrMetadata.MaxContentLightLevel</code>; converting to sRGB as they load tone maps them:</p>
+<pre><code class="lang-csharp">// An HDR (PQ or HLG) file, tone mapped into sRGB as it loads; the peak comes from the file's intensity_target.
+using Raster&lt;Rgb8&gt; sdr = Raster.Load&lt;Rgb8&gt;(&quot;hdr.jxl&quot;, options: new ReaderOptions { ConvertColorTo = Egami.Colors.ColorProfile.Srgb });
+sdr.Save(&quot;hdr-as-sdr.jpg&quot;);
+</code></pre>
+<p>A jhgm gain map loads into <code>RasterMetadata.GainMap</code>, and <code>ReaderOptions.Hdr</code> renders HDR from it as for Ultra HDR JPEGs (see the
+<a href="hdr.html">HDR guide</a>). Groups decode on several threads (<code>EgamiContext.MaxParallelism</code>), and <code>ReaderOptions.Region</code> on a still
+decodes only the groups it touches.</p>
+<p><code>JxlReaderOptions</code> adds three choices on top of the general reader options:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MaxDownscale</code></td>
+<td>1</td>
+<td>8 or more decodes only a lossy still's LF image, an eighth of the size each way and far faster</td>
+</tr>
+<tr>
+<td><code>RenderSpotColors</code></td>
+<td><code>true</code></td>
+<td>Mixes spot color channels into the color as djxl does; <code>false</code> leaves the color as coded</td>
+</tr>
+<tr>
+<td><code>LinearOutput</code></td>
+<td><code>false</code></td>
+<td>Gives linear light in float, in the file's own primaries, instead of its encoded color space</td>
+</tr>
+</tbody>
+</table>
+<h2 id="animations-layers-and-previews">Animations, layers and previews</h2>
+<p>Animations load as their blended frames with delays and loop count. <code>JxlImage.ReadLayers</code> gives the frames before blending, each
+a <code>JxlLayer</code> with its offset, duration and <code>JxlLayerBlend</code> mode, for an editor; <code>JxlImage.ReadPreview</code> gives the preview a file
+may carry.</p>
+<pre><code class="lang-csharp">// An animation loads as its frames, blended onto the canvas, each with its delay.
+using Raster animation = Raster.Load(&quot;sprite.jxl&quot;);
+int frames = animation.FrameCount;
+
+// The layers before blending, for an editor: each at its own size and place.
+IReadOnlyList&lt;JxlLayer&gt; layers = JxlImage.ReadLayers(&quot;sprite.jxl&quot;);
+foreach (JxlLayer layer in layers)
+{
+    Console.WriteLine($&quot;{layer.Raster.Width}x{layer.Raster.Height} at {layer.X},{layer.Y}: {layer.Blend}, {layer.Duration.TotalMilliseconds} ms&quot;);
+    layer.Dispose();
+}
+
+// The preview some files carry for quick display, or null.
+using Raster? preview = JxlImage.ReadPreview(&quot;duck.jxl&quot;);
+
+// A lossy still at an eighth of its size, from its LF image alone.
+using Raster thumbnail = Raster.Load(&quot;duck.jxl&quot;, options: new JxlReaderOptions { MaxDownscale = 8 });
+</code></pre><h2 id="extra-channels">Extra channels</h2>
+<p>Alpha loads straight (premultiplied color is divided out). <code>JxlDetails.ExtraChannels</code> lists every channel as a
+<code>JxlExtraChannel</code> with its <code>JxlExtraChannelKind</code> (alpha, depth, spot color, selection mask and others), and
+<code>JxlImage.ReadExtraChannel</code> reads any one alone as gray floats.</p>
+<pre><code class="lang-csharp">// Alpha joins the pixels (straight, even when the file premultiplies); other extra channels are listed in the details.
+using Raster image = Raster.Load(&quot;sprite.jxl&quot;);
+JxlDetails details = (JxlDetails)image.Metadata.FormatDetails!;
+foreach (JxlExtraChannel channel in details.ExtraChannels)
+{
+    Console.WriteLine($&quot;{channel.Kind} '{channel.Name}', {channel.BitsPerSample} bits&quot;);
+}
+
+// Any one of them alone, such as depth or a selection mask, as gray floats.
+using Raster&lt;GrayF32&gt; alpha = JxlImage.ReadExtraChannel(&quot;sprite.jxl&quot;, 0);
+
+// Spot colors are mixed into the color as djxl does, unless turned off.
+using Raster plain = Raster.Load(&quot;sprite.jxl&quot;, options: new JxlReaderOptions { RenderSpotColors = false });
+</code></pre><h2 id="recompressed-jpegs">Recompressed JPEGs</h2>
+<p>JPEG XL can hold a JPEG losslessly, about a fifth smaller. <code>JxlImage.RecompressJpeg</code> makes such a file from a JPEG, and
+<code>JxlImage.ReconstructJpeg</code> gives the original back byte for byte. <code>JxlDetails.HasJpegReconstruction</code> says which files can.</p>
+<pre><code class="lang-csharp">// A JPEG becomes a JPEG XL file about a fifth smaller with the same pixels, and comes back byte for byte.
+JxlImage.RecompressJpeg(&quot;duck.jpg&quot;, &quot;duck.jxl&quot;);
+JxlImage.ReconstructJpeg(&quot;duck.jxl&quot;, &quot;duck-again.jpg&quot;);
+</code></pre>
+<p>Such files also load as pixels like any other:</p>
+<pre><code class="lang-csharp">// A JPEG recompressed into JPEG XL loads as pixels like any other file, and gives its JPEG back byte for byte.
+using Raster image = Raster.Load(&quot;recompressed.jxl&quot;);
+if (((JxlDetails)image.Metadata.FormatDetails!).HasJpegReconstruction)
+{
+    JxlImage.ReconstructJpeg(&quot;recompressed.jxl&quot;, &quot;original.jpg&quot;);
+}
+</code></pre><h2 id="writing">Writing</h2>
+<p>The writer makes lossless Modular files in the raster's own precision, or lossy VarDCT files in XYB, with ICC, EXIF, XMP and
+orientation. <code>JxlWriterOptions</code> follows cjxl's own knobs, so the same numbers give about the same files:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Lossless</code></td>
+<td><code>null</code></td>
+<td><code>true</code> writes Modular, <code>false</code> VarDCT; <code>null</code> keeps the kind of the JPEG XL file the raster came from and writes lossy otherwise</td>
+</tr>
+<tr>
+<td><code>Effort</code></td>
+<td>5</td>
+<td>1 (fastest) to 7 (smallest), cjxl's <code>-e</code>, for both kinds</td>
+</tr>
+<tr>
+<td><code>Quality</code></td>
+<td>90</td>
+<td>Lossy quality, 0 to 100, cjxl's <code>-q</code> scale; 90 is distance 1.0, visually lossless</td>
+</tr>
+<tr>
+<td><code>Distance</code></td>
+<td><code>null</code></td>
+<td>A distance as cjxl's <code>-d</code> instead of a quality, 0.1 to 25</td>
+</tr>
+<tr>
+<td><code>AlphaDistance</code></td>
+<td>0</td>
+<td>Lossy files: 0 keeps alpha exact, larger values code it lossy</td>
+</tr>
+<tr>
+<td><code>KeepTransparentColors</code></td>
+<td><code>true</code></td>
+<td>Lossy files keep the color under fully transparent pixels; <code>false</code> gives smaller files</td>
+</tr>
+<tr>
+<td><code>Progressive</code></td>
+<td><code>false</code></td>
+<td>Lossy files as cjxl <code>-p</code> makes them: a coarse image first that sharpens</td>
+</tr>
+<tr>
+<td><code>PhotonNoiseIso</code></td>
+<td><code>null</code></td>
+<td>Film-like noise the decoder adds, as cjxl's <code>--photon_noise_iso</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="lang-csharp">// Lossless JPEG XL, about the size cjxl -d 0 makes at the same effort (1 fastest to 7 smallest, 5 by default).
+using Raster photo = Raster.Load(&quot;duck.png&quot;);
+photo.Save(&quot;duck-lossless.jxl&quot;, new JxlWriterOptions { Lossless = true, Effort = 7 });
+</code></pre><pre><code class="lang-csharp">// Lossy JPEG XL at cjxl's default: quality 90, which is distance 1.0 (visually lossless).
+using Raster photo = Raster.Load(&quot;duck.png&quot;);
+photo.Save(&quot;duck-lossy.jxl&quot;, new JxlWriterOptions { Lossless = false });
+
+// A distance as cjxl -d takes it instead of a quality, and more effort for a smaller file.
+photo.Save(&quot;duck-small.jxl&quot;, new JxlWriterOptions { Lossless = false, Distance = 2.5f, Effort = 7 });
+</code></pre><pre><code class="lang-csharp">// Alpha stays exact in lossy files by default, and fully transparent pixels keep their color.
+using Raster&lt;Rgba8&gt; logo = Raster.Load&lt;Rgba8&gt;(&quot;duck.png&quot;);
+logo.Save(&quot;logo.jxl&quot;, new JxlWriterOptions { Lossless = false, Quality = 85 });
+
+// Smaller: alpha coded lossy too, and the color under transparent pixels left to the encoder (as cjxl does).
+logo.Save(&quot;logo-small.jxl&quot;, new JxlWriterOptions { Lossless = false, AlphaDistance = 1, KeepTransparentColors = false });
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/jxl.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

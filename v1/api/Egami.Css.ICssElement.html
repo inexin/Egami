@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Interface ICssElement | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Interface ICssElement | Egami ">
+      
+      <meta name="description" content="An element that selectors match against: implemented by a document tree such as Egami.Svg&#39;s or an HTML DOM.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Css_ICssElement.md&amp;value=---%0Auid%3A%20Egami.Css.ICssElement%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Css.ICssElement">
+
+
+
+  <h1 id="Egami_Css_ICssElement" data-uid="Egami.Css.ICssElement" class="text-break">
+Interface ICssElement  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Css.html">Css</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Css.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An element that selectors match against: implemented by a document tree such as Egami.Svg's or an HTML DOM.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface ICssElement</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+  <h2 id="Egami_Css_ICssElement_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A document tree implements ICssElement; Egami.Svg's elements do. The members must not allocate in the common case.
+public sealed class Element(string localName, string? namespaceUri = "http://www.w3.org/2000/svg") : ICssElement
+{
+    private readonly List&lt;Element&gt; _children = [];
+    private readonly List&lt;CssAttribute&gt; _attributes = [];
+
+    public string LocalName { get; } = localName;
+    public string? NamespaceUri { get; } = namespaceUri;
+    public Element? ParentElement { get; private set; }
+    public ICssElement? Parent =&gt; ParentElement;
+    public ICssElement? PreviousSibling =&gt; Sibling(-1);
+    public ICssElement? NextSibling =&gt; Sibling(1);
+    public ICssElement? FirstChild =&gt; _children.Count &gt; 0 ? _children[0] : null;
+    public bool IsEmpty =&gt; _children.Count == 0;
+    public string? Id =&gt; GetAttribute("id", null);
+    public IEnumerable&lt;CssAttribute&gt; Attributes =&gt; _attributes;
+
+    public bool HasClass(string name) =&gt; GetAttribute("class", null)?.Split(' ').Contains(name) == true;
+
+    public string? GetAttribute(string localName, string? namespaceUri) =&gt;
+        _attributes.Find(a =&gt; a.LocalName == localName &amp;&amp; a.NamespaceUri == namespaceUri) is { LocalName: not null } a ? a.Value : null;
+
+    public Element Set(string name, string value)
+    {
+        _attributes.Add(new CssAttribute(null, name, value));
+        return this;
+    }
+
+    public Element Add(Element child)
+    {
+        child.ParentElement = this;
+        _children.Add(child);
+        return this;
+    }
+
+    private Element? Sibling(int step)
+    {
+        if (ParentElement is null)
+        {
+            return null;
+        }
+
+        int index = ParentElement._children.IndexOf(this) + step;
+        return index &gt;= 0 &amp;&amp; index &lt; ParentElement._children.Count ? ParentElement._children[index] : null;
+    }
+}</code></pre>
+
+
+  <h2 id="Egami_Css_ICssElement_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Matching compares elements by reference (for <code>:scope</code> and <code>:has()</code>), so a tree must return the same object for the
+same element every time. The members are called often while matching; they should not allocate.</p>
+</div>
+
+
+  <h2 class="section" id="fields">Fields
+</h2>
+
+
+
+  <h3 id="Egami_Css_ICssElement_XmlNamespace" data-uid="Egami.Css.ICssElement.XmlNamespace">
+  XmlNamespace
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The XML namespace, used for <code>xml:lang</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string XmlNamespace = &quot;http://www.w3.org/XML/1998/namespace&quot;</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Css_ICssElement_Attributes_" data-uid="Egami.Css.ICssElement.Attributes*"></a>
+
+  <h3 id="Egami_Css_ICssElement_Attributes" data-uid="Egami.Css.ICssElement.Attributes">
+  Attributes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L69"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets every attribute of the element, for attribute selectors with any namespace (<code>[*|name]</code>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">IEnumerable&lt;CssAttribute&gt; Attributes { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Egami.Css.CssAttribute.html">CssAttribute</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_ClassName_" data-uid="Egami.Css.ICssElement.ClassName*"></a>
+
+  <h3 id="Egami_Css_ICssElement_ClassName" data-uid="Egami.Css.ICssElement.ClassName">
+  ClassName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the element's class attribute: whitespace-separated class names that must agree with <a class="xref" href="Egami.Css.ICssElement.html#Egami_Css_ICssElement_HasClass_System_String_">HasClass(string)</a>.
+The cascade reads it to find the rules that may match. Defaults to the <code>class</code> attribute in no namespace.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">string? ClassName { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_FirstChild_" data-uid="Egami.Css.ICssElement.FirstChild*"></a>
+
+  <h3 id="Egami_Css_ICssElement_FirstChild" data-uid="Egami.Css.ICssElement.FirstChild">
+  FirstChild
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the first child element, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">ICssElement? FirstChild { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.ICssElement.html">ICssElement</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_Id_" data-uid="Egami.Css.ICssElement.Id*"></a>
+
+  <h3 id="Egami_Css_ICssElement_Id" data-uid="Egami.Css.ICssElement.Id">
+  Id
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the element's ID, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">string? Id { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_IsEmpty_" data-uid="Egami.Css.ICssElement.IsEmpty*"></a>
+
+  <h3 id="Egami_Css_ICssElement_IsEmpty" data-uid="Egami.Css.ICssElement.IsEmpty">
+  IsEmpty
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the element has no child elements and no text other than an empty string, for <code>:empty</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool IsEmpty { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_IsHtml_" data-uid="Egami.Css.ICssElement.IsHtml*"></a>
+
+  <h3 id="Egami_Css_ICssElement_IsHtml" data-uid="Egami.Css.ICssElement.IsHtml">
+  IsHtml
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the element is an HTML element in an HTML document. Type selectors and attribute names then match ASCII
+case-insensitively, and the values of the attributes HTML lists (such as <code>type</code>) too. Defaults to false.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool IsHtml { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_IsRightToLeft_" data-uid="Egami.Css.ICssElement.IsRightToLeft*"></a>
+
+  <h3 id="Egami_Css_ICssElement_IsRightToLeft" data-uid="Egami.Css.ICssElement.IsRightToLeft">
+  IsRightToLeft
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L105"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the element's directionality is right-to-left, for <code>:dir()</code>. Defaults to false.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool IsRightToLeft { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_Language_" data-uid="Egami.Css.ICssElement.Language*"></a>
+
+  <h3 id="Egami_Css_ICssElement_Language" data-uid="Egami.Css.ICssElement.Language">
+  Language
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the element's language for <code>:lang()</code>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when unknown. Defaults to the nearest
+<code>xml:lang</code> or <code>lang</code> attribute on the element or an ancestor, <code>xml:lang</code> first.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">string? Language { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_LocalName_" data-uid="Egami.Css.ICssElement.LocalName*"></a>
+
+  <h3 id="Egami_Css_ICssElement_LocalName" data-uid="Egami.Css.ICssElement.LocalName">
+  LocalName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the element's local name, such as <code>rect</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">string LocalName { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_NamespaceUri_" data-uid="Egami.Css.ICssElement.NamespaceUri*"></a>
+
+  <h3 id="Egami_Css_ICssElement_NamespaceUri" data-uid="Egami.Css.ICssElement.NamespaceUri">
+  NamespaceUri
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the element's namespace URI, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">string? NamespaceUri { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_NextSibling_" data-uid="Egami.Css.ICssElement.NextSibling*"></a>
+
+  <h3 id="Egami_Css_ICssElement_NextSibling" data-uid="Egami.Css.ICssElement.NextSibling">
+  NextSibling
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the next sibling element (skipping text and other nodes), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">ICssElement? NextSibling { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.ICssElement.html">ICssElement</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_Parent_" data-uid="Egami.Css.ICssElement.Parent*"></a>
+
+  <h3 id="Egami_Css_ICssElement_Parent" data-uid="Egami.Css.ICssElement.Parent">
+  Parent
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the parent element, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the root element.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">ICssElement? Parent { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.ICssElement.html">ICssElement</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_PreviousSibling_" data-uid="Egami.Css.ICssElement.PreviousSibling*"></a>
+
+  <h3 id="Egami_Css_ICssElement_PreviousSibling" data-uid="Egami.Css.ICssElement.PreviousSibling">
+  PreviousSibling
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the previous sibling element (skipping text and other nodes), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">ICssElement? PreviousSibling { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.ICssElement.html">ICssElement</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Css_ICssElement_GetAttribute_" data-uid="Egami.Css.ICssElement.GetAttribute*"></a>
+
+  <h3 id="Egami_Css_ICssElement_GetAttribute_System_String_System_String_" data-uid="Egami.Css.ICssElement.GetAttribute(System.String,System.String)">
+  GetAttribute(string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets an attribute's value.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">string? GetAttribute(string localName, string? namespaceUri)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>localName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The attribute's local name.</p>
+</dd>
+    <dt><code>namespaceUri</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The attribute's namespace URI, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for an attribute in no namespace.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The value, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the element has no such attribute.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_HasClass_" data-uid="Egami.Css.ICssElement.HasClass*"></a>
+
+  <h3 id="Egami_Css_ICssElement_HasClass_System_String_" data-uid="Egami.Css.ICssElement.HasClass(System.String)">
+  HasClass(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the element has the class <code class="paramref">name</code> (compared case-sensitively).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool HasClass(string name)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The class name.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the element has the class.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_ICssElement_MatchesPseudoClass_" data-uid="Egami.Css.ICssElement.MatchesPseudoClass*"></a>
+
+  <h3 id="Egami_Css_ICssElement_MatchesPseudoClass_System_String_" data-uid="Egami.Css.ICssElement.MatchesPseudoClass(System.String)">
+  MatchesPseudoClass(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L113"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the element is in a state a pseudo-class names, such as <code>hover</code>, <code>focus</code>, <code>checked</code>,
+<code>link</code>, <code>visited</code>, <code>any-link</code>, <code>target</code> or <code>disabled</code>. Defaults to false for every state.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool MatchesPseudoClass(string name)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The pseudo-class name in lowercase, without the colon.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the element is in that state.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/ICssElement.cs/#L28" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

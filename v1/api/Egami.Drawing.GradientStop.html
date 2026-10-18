@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct GradientStop | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct GradientStop | Egami ">
+      
+      <meta name="description" content="One color of a gradient at a position along it, from 0 (the start) to 1 (the end). Two stops at the same offset make a hard edge: the later one applies from that offset on. A gradient whose first stop is after 0 or whose last is before 1 repeats the nearest stop&#39;s color to the end, as CSS does.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_GradientStop.md&amp;value=---%0Auid%3A%20Egami.Drawing.GradientStop%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.GradientStop">
+
+
+
+  <h1 id="Egami_Drawing_GradientStop" data-uid="Egami.Drawing.GradientStop" class="text-break">
+Struct GradientStop  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>One color of a gradient at a position along it, from 0 (the start) to 1 (the end). Two stops at the same offset make a hard
+edge: the later one applies from that offset on. A gradient whose first stop is after 0 or whose last is before 1 repeats the
+nearest stop's color to the end, as CSS does.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct GradientStop : IEquatable&lt;GradientStop&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Drawing.GradientStop.html">GradientStop</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.tostring">ValueType.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_GradientStop_examples">Examples</h2>
+  <pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // Two colors along a line; past the ends the end colors repeat (TileMode.Clamp).
+    canvas.FillRect(new RectF(0, 0, 200, 100), new LinearGradient(new Vector2(0, 0), new Vector2(200, 0), new RgbaF32(0.1f, 0.3f, 0.9f, 1), new RgbaF32(1, 0.8f, 0.2f, 1)));
+
+    // Several stops, mixed in Oklab for even midpoints, repeating every 40 pixels.
+    canvas.FillRect(new RectF(200, 0, 200, 100), new LinearGradient(
+        new Vector2(200, 0),
+        new Vector2(240, 0),
+        new GradientStop(0, new Rgba8(230, 40, 60, 255)),
+        new GradientStop(0.5f, new Rgba8(250, 210, 60, 255)),
+        new GradientStop(1, new Rgba8(230, 40, 60, 255)))
+    {
+        Tile = TileMode.Repeat,
+        Interpolation = GradientInterpolation.Oklab,
+    });
+
+    // A radial gradient stretched into an ellipse by its local matrix, and a sweep around a center.
+    canvas.FillOval(new RectF(10, 110, 180, 80), new RadialGradient(Vector2.Zero, 1, new RgbaF32(1, 1, 1, 1), new RgbaF32(0, 0.4f, 0.2f, 1))
+    {
+        LocalMatrix = Matrix3x2.CreateScale(90, 40) * Matrix3x2.CreateTranslation(100, 150),
+    });
+    canvas.FillCircle(new Vector2(300, 150), 45, new SweepGradient(
+        new Vector2(300, 150),
+        new GradientStop(0, new Rgba8(255, 0, 0, 255)),
+        new GradientStop(0.5f, new Rgba8(0, 0, 255, 255)),
+        new GradientStop(1, new Rgba8(255, 0, 0, 255))));
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Drawing_GradientStop__ctor_" data-uid="Egami.Drawing.GradientStop.#ctor*"></a>
+
+  <h3 id="Egami_Drawing_GradientStop__ctor_System_Single_Egami_Colors_InkColor_" data-uid="Egami.Drawing.GradientStop.#ctor(System.Single,Egami.Colors.InkColor)">
+  GradientStop(float, InkColor)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Drawing.GradientStop.html">GradientStop</a> struct with a colour given as inks: an ink canvas blends the
+inks' tints; every other canvas uses <a class="xref" href="Egami.Drawing.GradientStop.html#Egami_Drawing_GradientStop_Color">Color</a>, the appearance in sRGB.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GradientStop(float offset, InkColor ink)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The position along the gradient, from 0 to 1.</p>
+</dd>
+    <dt><code>ink</code> <a class="xref" href="Egami.Colors.InkColor.html">InkColor</a></dt>
+    <dd><p>The inks and their tints.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">offset</code> is outside 0 to 1.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">ink</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_GradientStop__ctor_" data-uid="Egami.Drawing.GradientStop.#ctor*"></a>
+
+  <h3 id="Egami_Drawing_GradientStop__ctor_System_Single_Egami_Pixels_Rgba8_" data-uid="Egami.Drawing.GradientStop.#ctor(System.Single,Egami.Pixels.Rgba8)">
+  GradientStop(float, Rgba8)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Drawing.GradientStop.html">GradientStop</a> struct.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GradientStop(float offset, Rgba8 color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The position along the gradient, from 0 to 1.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">offset</code> is outside 0 to 1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_GradientStop__ctor_" data-uid="Egami.Drawing.GradientStop.#ctor*"></a>
+
+  <h3 id="Egami_Drawing_GradientStop__ctor_System_Single_Egami_Pixels_RgbaF32_" data-uid="Egami.Drawing.GradientStop.#ctor(System.Single,Egami.Pixels.RgbaF32)">
+  GradientStop(float, RgbaF32)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Drawing.GradientStop.html">GradientStop</a> struct.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GradientStop(float offset, RgbaF32 color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The position along the gradient, from 0 to 1.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a></dt>
+    <dd><p>The color, with straight alpha.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">offset</code> is outside 0 to 1.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>A channel of <code class="paramref">color</code> is not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Drawing_GradientStop_Color_" data-uid="Egami.Drawing.GradientStop.Color*"></a>
+
+  <h3 id="Egami_Drawing_GradientStop_Color" data-uid="Egami.Drawing.GradientStop.Color">
+  Color
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the color, with straight alpha: for an ink stop, its appearance in sRGB.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RgbaF32 Color { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_GradientStop_Ink_" data-uid="Egami.Drawing.GradientStop.Ink*"></a>
+
+  <h3 id="Egami_Drawing_GradientStop_Ink" data-uid="Egami.Drawing.GradientStop.Ink">
+  Ink
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the colour as inks, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for an RGB stop.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public InkColor? Ink { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.InkColor.html">InkColor</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_GradientStop_Offset_" data-uid="Egami.Drawing.GradientStop.Offset*"></a>
+
+  <h3 id="Egami_Drawing_GradientStop_Offset" data-uid="Egami.Drawing.GradientStop.Offset">
+  Offset
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L65"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the position along the gradient, from 0 to 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Offset { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Gradients.cs/#L18" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

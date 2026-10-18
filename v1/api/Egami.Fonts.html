@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Fonts | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Fonts | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts">
+
+  <h1 id="Egami_Fonts" data-uid="Egami.Fonts" class="text-break">Namespace Egami.Fonts</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.BitmapColorGlyph.html">BitmapColorGlyph</a></dt>
+      <dd><p>An sbix or CBDT glyph: its image, the strike's size and where the image goes, in font units with y up, so it scales with the
+font; the drawing code decodes and resamples it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.CffOptions.html">CffOptions</a></dt>
+      <dd><p>What a bare CFF stream lacks and an sfnt would supply, for <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_FromCff_System_ReadOnlyMemory_System_Byte__Egami_Fonts_CffOptions_">FromCff(ReadOnlyMemory&lt;byte&gt;, CffOptions?)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.CffStandardStrings.html">CffStandardStrings</a></dt>
+      <dd><p>The Compact Font Format's predefined data (Adobe Technical Note #5176, appendices A and B): the 391 standard strings that
+string ids (SIDs) below 391 name, and the Standard and Expert encodings as glyph names by code.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.CharacterMap.html">CharacterMap</a></dt>
+      <dd><p>One character map of a face, as stored: a cmap subtable for one (platform, encoding) pair, or a CFF font's own encoding as
+FreeType presents it (platform 7). Codes are the subtable's own: bytes for a Macintosh (1,0) map or a symbol font's
+(3,0) map, never translated to Unicode.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.CidSystemInfo.html">CidSystemInfo</a></dt>
+      <dd><p>The character collection a CID-keyed font's CIDs belong to (its CFF ROS operator), such as Adobe-Japan1-7; PDF's
+CIDSystemInfo dictionary carries the same three values.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorCompositePaint.html">ColorCompositePaint</a></dt>
+      <dd><p>Two paints composited: the source onto the backdrop with a blend or Porter-Duff mode.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorGlyph.html">ColorGlyph</a></dt>
+      <dd><p>A glyph's color description from <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_TryGetColorGlyph_System_UInt16_Egami_Fonts_FontPalette_Egami_Fonts_ColorGlyph__System_Single_">TryGetColorGlyph(ushort, FontPalette?, out ColorGlyph?, float)</a>: a <a class="xref" href="Egami.Fonts.PaintColorGlyph.html">PaintColorGlyph</a> (COLR) or a
+<a class="xref" href="Egami.Fonts.BitmapColorGlyph.html">BitmapColorGlyph</a> (sbix, CBDT).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorGlyphPaint.html">ColorGlyphPaint</a></dt>
+      <dd><p>A paint clipped to a glyph's outline.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorGlyphReferencePaint.html">ColorGlyphReferencePaint</a></dt>
+      <dd><p>Another color glyph's paint graph drawn here, as COLR's PaintColrGlyph reuses it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorLayersPaint.html">ColorLayersPaint</a></dt>
+      <dd><p>Paints drawn one over another, in order.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorLine.html">ColorLine</a></dt>
+      <dd><p>The stops of a color gradient and what happens past them.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorLinearGradientPaint.html">ColorLinearGradientPaint</a></dt>
+      <dd><p>A linear gradient filling the clip: the color line runs from <a class="xref" href="Egami.Fonts.ColorLinearGradientPaint.html#Egami_Fonts_ColorLinearGradientPaint_P0">P0</a> toward <a class="xref" href="Egami.Fonts.ColorLinearGradientPaint.html#Egami_Fonts_ColorLinearGradientPaint_P1">P1</a>, with lines of equal
+color parallel to <a class="xref" href="Egami.Fonts.ColorLinearGradientPaint.html#Egami_Fonts_ColorLinearGradientPaint_P0">P0</a>–<a class="xref" href="Egami.Fonts.ColorLinearGradientPaint.html#Egami_Fonts_ColorLinearGradientPaint_P2">P2</a>, as COLR defines it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorPaint.html">ColorPaint</a></dt>
+      <dd><p>One node of a color glyph's paint graph, in font units with y up: COLR version 1 as OpenType 1.9.1 defines it (version 0 glyphs
+become layers of solid glyph fills), with variable values already taken at the face's position and palette colors resolved.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorRadialGradientPaint.html">ColorRadialGradientPaint</a></dt>
+      <dd><p>A gradient between two circles filling the clip.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorSolidPaint.html">ColorSolidPaint</a></dt>
+      <dd><p>One color filling the clip.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorSweepGradientPaint.html">ColorSweepGradientPaint</a></dt>
+      <dd><p>A gradient around a center filling the clip, angles in degrees counter-clockwise from the x axis (y up).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorTransformPaint.html">ColorTransformPaint</a></dt>
+      <dd><p>A paint under an affine transform in font units: COLR's transform, translate, scale, rotate and skew paints, each as its
+matrix (row vectors, y up).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontCollection.html">FontCollection</a></dt>
+      <dd><p>A set of faces grouped into families: the caller's own, or <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_System">System</a> for the fonts installed on the machine. Finds
+families by name and faces by style with the CSS Fonts Level 4 matching steps.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontFamily.html">FontFamily</a></dt>
+      <dd><p>The faces of one family in a <a class="xref" href="Egami.Fonts.FontCollection.html">FontCollection</a>, matched by style.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontLoadOptions.html">FontLoadOptions</a></dt>
+      <dd><p>How a font file is read: leniently with diagnostics (the default), or strictly.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontLoader.html">FontLoader</a></dt>
+      <dd><p>Tells what font data holds and loads every face of a collection.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontPalette.html">FontPalette</a></dt>
+      <dd><p>The palette a color font draws with: a CPAL palette by index or by the background it suits, with entries overridden, as CSS's
+font-palette and @font-palette-values.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontPaletteInfo.html">FontPaletteInfo</a></dt>
+      <dd><p>One CPAL palette of a face.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontSubset.html">FontSubset</a></dt>
+      <dd><p>A font holding only some glyphs of another, from <a class="xref" href="Egami.Fonts.FontSubsetter.html">FontSubsetter</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontSubsetter.html">FontSubsetter</a></dt>
+      <dd><p>Writes fonts that hold only the glyphs a document uses, as PDF embedding and SVG export want: TrueType, OpenType CFF or bare CFF,
+with composite glyphs and seac accents closed over and unused CFF subroutines dropped.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a></dt>
+      <dd><p>Positioned glyphs of one font, ready to draw: glyph ids, one position per glyph relative to the run's origin (the first
+baseline's left end, y down, in canvas units), and optionally the source text with the UTF-16 index each glyph came from, which
+lets a PDF writer keep text searchable.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.NamedInstance.html">NamedInstance</a></dt>
+      <dd><p>A named instance of a variable font, such as &quot;Bold Condensed&quot;, from its fvar table.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.PaintColorGlyph.html">PaintColorGlyph</a></dt>
+      <dd><p>A COLR glyph: its paint graph and, for version 1, the clip box the font gives.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.SubsetOptions.html">SubsetOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Fonts.FontSubsetter.html#Egami_Fonts_FontSubsetter_Subset_Egami_Fonts_Typeface_System_Collections_Generic_IEnumerable_System_UInt16__Egami_Fonts_SubsetOptions_">Subset(Typeface, IEnumerable&lt;ushort&gt;, SubsetOptions?)</a> writes a subset.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+      <dd><p>One font face: its names, style, metrics, character map, glyph outlines and kerning, read from a TrueType or OpenType font, a
+collection, or a bare CFF stream. Immutable and safe to share across threads, canvases and backends.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.VariationAxis.html">VariationAxis</a></dt>
+      <dd><p>One axis of a variable font, from its fvar table.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.CharacterMapping.html">CharacterMapping</a></dt>
+      <dd><p>A code and the glyph a <a class="xref" href="Egami.Fonts.CharacterMap.html">CharacterMap</a> gives it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorStop.html">ColorStop</a></dt>
+      <dd><p>A stop of a color line.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Font.html">Font</a></dt>
+      <dd><p>A typeface at a size: the em in canvas units (pixels on a raster, points on a PDF page). Scales the face's font-unit metrics and
+turns text into a positioned <a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontExtents.html">FontExtents</a></dt>
+      <dd><p>A face's vertical metrics and decoration positions, with y up: in font units from <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_Extents">Extents</a>, or in canvas
+units from <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Extents">Extents</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontMatch.html">FontMatch</a></dt>
+      <dd><p>A matched face and the styling it lacks, from <a class="xref" href="Egami.Fonts.FontFamily.html#Egami_Fonts_FontFamily_Match_Egami_Fonts_FontStyle_">Match(FontStyle)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontNameRecord.html">FontNameRecord</a></dt>
+      <dd><p>One decoded string of a font's naming table, such as the family name in one language.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontPaletteEntry.html">FontPaletteEntry</a></dt>
+      <dd><p>One palette entry replaced, as CSS's override-colors.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontProbe.html">FontProbe</a></dt>
+      <dd><p>The result of <a class="xref" href="Egami.Fonts.FontLoader.html#Egami_Fonts_FontLoader_Probe_System_ReadOnlySpan_System_Byte__">Probe(ReadOnlySpan&lt;byte&gt;)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontStyle.html">FontStyle</a></dt>
+      <dd><p>A face's style, or the style asked for when matching: weight from 1 to 1000 (400 normal, 700 bold), width from 1 to 9 (5
+normal, as OS/2 usWidthClass), and slant.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a></dt>
+      <dd><p>A four-byte OpenType tag, such as the table tag <code>glyf</code> or the feature tag <code>kern</code>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontVariation.html">FontVariation</a></dt>
+      <dd><p>A position on one axis of a variable font, in the axis's own units, such as weight 650.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.GlyphColor.html">GlyphColor</a></dt>
+      <dd><p>A color in a color glyph: a resolved palette color, or the foreground (palette entry 0xFFFF), which takes the paint's color and
+keeps only this color's alpha as a factor.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.GlyphExtents.html">GlyphExtents</a></dt>
+      <dd><p>A box around ink, such as a glyph's outline, with y up in font units or in a <a class="xref" href="Egami.Fonts.Font.html">Font</a>'s size.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.GlyphTransform.html">GlyphTransform</a></dt>
+      <dd><p>A glyph's placement in a transformed <a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a>: a rotation and uniform scale, then its origin, as Skia's RSXform.
+A point (x, y) of the glyph, y down, goes to (ScaleCos x - ScaleSin y + Tx, ScaleSin x + ScaleCos y + Ty).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.TextBounds.html">TextBounds</a></dt>
+      <dd><p>A box in canvas units with y down, such as the ink of a <a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a> relative to its origin.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.TextMeasure.html">TextMeasure</a></dt>
+      <dd><p>The size of text as <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_MeasureText_System_String_Egami_Fonts_Shaping_ShapingOptions_">MeasureText(string, ShapingOptions?)</a> lays it out, in canvas units.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.VerticalMetrics.html">VerticalMetrics</a></dt>
+      <dd><p>One set of a face's ascent, descent and line gap as stored in a table, in font units with y up.</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.IColorPaintVisitor.html">IColorPaintVisitor</a></dt>
+      <dd><p>Walks a color glyph's paint graph, one method per kind of node.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.IGlyphOutlineSink.html">IGlyphOutlineSink</a></dt>
+      <dd><p>Receives a glyph outline from <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GetGlyphOutline_System_UInt16_Egami_Fonts_IGlyphOutlineSink_">GetGlyphOutline(ushort, IGlyphOutlineSink)</a>, in font units with y up.
+Each contour starts with <a class="xref" href="Egami.Fonts.IGlyphOutlineSink.html#Egami_Fonts_IGlyphOutlineSink_MoveTo_System_Single_System_Single_">MoveTo(float, float)</a> and ends with <a class="xref" href="Egami.Fonts.IGlyphOutlineSink.html#Egami_Fonts_IGlyphOutlineSink_Close">Close()</a>; a closing line back to the start point is implied
+by <a class="xref" href="Egami.Fonts.IGlyphOutlineSink.html#Egami_Fonts_IGlyphOutlineSink_Close">Close()</a> and not sent.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.BitmapGlyphEncoding.html">BitmapGlyphEncoding</a></dt>
+      <dd><p>The encoding of a bitmap glyph's image.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorExtend.html">ColorExtend</a></dt>
+      <dd><p>What a color gradient does past the ends of its color line.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.ColorGlyphFormats.html">ColorGlyphFormats</a></dt>
+      <dd><p>The kinds of color glyph data a face holds.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontEdging.html">FontEdging</a></dt>
+      <dd><p>How a glyph's edges are turned into pixels.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontEmbedding.html">FontEmbedding</a></dt>
+      <dd><p>The embedding permissions a face declares in its OS/2 fsType field. Egami reports them and never enforces them; a caller that
+embeds fonts, such as a PDF writer, decides what to do.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontFileKind.html">FontFileKind</a></dt>
+      <dd><p>What kind of font data some bytes hold, as <a class="xref" href="Egami.Fonts.FontLoader.html#Egami_Fonts_FontLoader_Probe_System_ReadOnlySpan_System_Byte__">Probe(ReadOnlySpan&lt;byte&gt;)</a> sees it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontHinting.html">FontHinting</a></dt>
+      <dd><p>How glyph outlines are fitted to the pixel grid before rasterizing.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontOutlines.html">FontOutlines</a></dt>
+      <dd><p>How a face stores its glyph outlines.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontPaletteBackground.html">FontPaletteBackground</a></dt>
+      <dd><p>Which palettes <a class="xref" href="Egami.Fonts.FontPalette.html">FontPalette</a> prefers by the backgrounds CPAL says they suit.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontSlant.html">FontSlant</a></dt>
+      <dd><p>Whether a face is upright, italic or oblique.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.FontSynthesis.html">FontSynthesis</a></dt>
+      <dd><p>Styling a face lacks, which a matched <a class="xref" href="Egami.Fonts.Font.html">Font</a> asks the renderer to synthesize (drawn from 2.7.2 on).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.GenericFamily.html">GenericFamily</a></dt>
+      <dd><p>A generic family name, matched against fixed per-platform preference lists.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.OpticalSizing.html">OpticalSizing</a></dt>
+      <dd><p>Whether a <a class="xref" href="Egami.Fonts.Font.html">Font</a> sets a variable font's optical size axis from its size.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.SubsetFormat.html">SubsetFormat</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Fonts.FontSubsetter.html">FontSubsetter</a> writes.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

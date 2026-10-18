@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Pixel types | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Pixel types | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/pixel-types.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="pixel-types">Pixel types</h1>
+
+<p>A raster stores one pixel type, chosen when you load or create it. Pick the type your data is in, or the one you will work in:
+loading straight into it converts row by row while decoding, with no full-size copy in between.</p>
+<pre><code class="lang-csharp">// Load straight into the type you will work in: the decoder converts row by row, with no full-size copy in between.
+using Raster&lt;Rgb16&gt; deep = Raster.Load&lt;Rgb16&gt;(&quot;duck.png&quot;);        // 16 bits a channel, no alpha
+using Raster&lt;Alpha8&gt; mask = Raster.Load&lt;Alpha8&gt;(&quot;duck.png&quot;);      // only the alpha channel
+using Raster&lt;RgbaF16&gt; half = Raster.Load&lt;RgbaF16&gt;(&quot;duck.png&quot;);    // half floats, room for HDR values
+
+// Or convert a raster you have; conversions between integer types are exact wherever the target can hold the value.
+using Raster&lt;Bgr565&gt; display = deep.As&lt;Bgr565&gt;();
+</code></pre><h2 id="the-types">The types</h2>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Bytes</th>
+<th>Holds</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Rgba8</code>, <code>Bgra8</code></td>
+<td>4</td>
+<td>8-bit color, straight alpha</td>
+<td>The default working type; Windows and GPU buffers</td>
+</tr>
+<tr>
+<td><code>Argb8</code>, <code>Abgr8</code></td>
+<td>4</td>
+<td>8-bit color, alpha first</td>
+<td>Java and other alpha-first buffers</td>
+</tr>
+<tr>
+<td><code>Rgb8</code>, <code>Bgr8</code></td>
+<td>3</td>
+<td>8-bit color</td>
+<td>Photos without alpha</td>
+</tr>
+<tr>
+<td><code>Gray8</code>, <code>GrayAlpha8</code></td>
+<td>1, 2</td>
+<td>8-bit gray</td>
+<td>Grayscale images</td>
+</tr>
+<tr>
+<td><code>Alpha8</code></td>
+<td>1</td>
+<td>Alpha only</td>
+<td>Masks, glyph coverage</td>
+</tr>
+<tr>
+<td><code>Rgba16</code>, <code>Rgb16</code></td>
+<td>8, 6</td>
+<td>16-bit color, with or without alpha</td>
+<td>16-bit PNG, PPM and TIFF</td>
+</tr>
+<tr>
+<td><code>Gray16</code>, <code>GrayAlpha16</code></td>
+<td>2, 4</td>
+<td>16-bit gray</td>
+<td>16-bit gray PNG and PAM</td>
+</tr>
+<tr>
+<td><code>RgbaF32</code>, <code>RgbF32</code>, <code>GrayF32</code></td>
+<td>16, 12, 4</td>
+<td>32-bit float</td>
+<td>Precise processing, PFM, depth and height maps</td>
+</tr>
+<tr>
+<td><code>RgbaF16</code></td>
+<td>8</td>
+<td>16-bit half float</td>
+<td>HDR, GPU textures</td>
+</tr>
+<tr>
+<td><code>Bgr565</code>, <code>Bgra4444</code>, <code>Rgb10A2</code></td>
+<td>2, 2, 4</td>
+<td>Packed color</td>
+<td>Embedded displays, legacy textures, 10-bit displays</td>
+</tr>
+<tr>
+<td><code>Cmyk8</code>, <code>Cmyk16</code></td>
+<td>4, 8</td>
+<td>Ink amounts</td>
+<td>CMYK JPEG, TIFF and PSD</td>
+</tr>
+<tr>
+<td><code>PremulRgba8</code>, <code>PremulBgra8</code>, <code>PremulRgbaF32</code></td>
+<td>4, 4, 16</td>
+<td>Color premultiplied by alpha</td>
+<td>Compositing, Windows and GPU surfaces</td>
+</tr>
+</tbody>
+</table>
+<p>Packed types are named after their channels from the lowest bit up, as DXGI and Vulkan name formats, so a Direct3D or Vulkan
+texture wraps without a swizzle: <code>Bgr565</code> has blue in bits 0 to 4 and red in 11 to 15, the same memory as Skia's and Android's
+RGB 565.</p>
+<h2 id="conversions">Conversions</h2>
+<p>Every type converts to every other with <code>raster.As&lt;TPixel&gt;()</code> or, for a span, <code>PixelConvert.Convert</code>. Conversions between
+integer types are exact wherever the target can hold the value: 8 to 16 bits multiplies by 257, packed levels round to the
+nearest value both ways, and 16 to 8 bits rounds to nearest, so every value of a narrower type survives a round trip through a
+wider one. Half floats round as <code>(Half)f</code> does.</p>
+<p>Values are sRGB-encoded with straight alpha. Gray types take the Rec. 709 luma in linear light; <code>Alpha8</code> reads as black with its
+alpha, and converting a color to it keeps only alpha.</p>
+<p>Half and float types keep values outside 0..1 through conversions, geometry and saving to PFM; filters and color adjustments
+work in 0..1 and clip, as they do for <code>RgbaF32</code>.</p>
+<pre><code class="lang-csharp">// Half and float types keep values above 1 through conversions and geometry; filters and color adjustments clip to 0..1.
+using Raster&lt;RgbaF16&gt; light = Raster.Create&lt;RgbaF16&gt;(64, 64, RgbaF16.FromScaled(new Vector4(4f, 2f, 0.5f, 1f)));
+light.Apply(ops =&gt; ops.FlipHorizontal().Pad(80, 80, Rgba8.Black));
+
+// PFM keeps floats as they are: save as RGB floats, in linear light by convention.
+light.Save(&quot;light.pfm&quot;);
+using Raster&lt;RgbF32&gt; back = Raster.Load&lt;RgbF32&gt;(&quot;light.pfm&quot;);
+Console.WriteLine($&quot;Red is still {back.Row(40)[40].R} after the round trip&quot;);
+</code></pre><h2 id="cmyk">CMYK</h2>
+<p><code>Cmyk8</code> and <code>Cmyk16</code> hold ink amounts, 0 meaning no ink. Until Egami applies ICC profiles, they convert to and from RGB with the
+plain formula, red = (1 − C)(1 − K) — what the JPEG reader has always used — so print-accurate color needs the file's profile.</p>
+<pre><code class="lang-csharp">// A CMYK JPEG loads as RGB by the plain formula, as before; ask for Cmyk8 to get the file's ink amounts instead.
+using Raster&lt;Cmyk8&gt; inks = Raster.Load&lt;Cmyk8&gt;(&quot;duck-cmyk.jpg&quot;);
+Cmyk8 corner = inks.Row(0)[0];
+Console.WriteLine($&quot;Cyan {corner.C}, magenta {corner.M}, yellow {corner.Y}, black {corner.K} (0 = no ink)&quot;);
+
+// Resizing filters the four inks, so black stays in the black channel; color adjustments go through RGB instead.
+inks.Apply(ops =&gt; ops.Fit(160, 160));
+</code></pre>
+<p>Moving pixels (crop, pad, flip, turning by 90°) copies inks. Resize, blur, sharpen, convolution and free rotation filter the four
+inks as numbers, so black stays in the black channel. Color adjustments are defined on RGB, so they convert to RGB and back and
+rebuild black from the formula. <code>DrawImage</code> onto a CMYK raster turns the source's color into inks and blends inks.</p>
+<h2 id="premultiplied-alpha">Premultiplied alpha</h2>
+<p>The <code>Premul</code> types store each color channel multiplied by alpha, as Skia and GPU surfaces do. Their conversions still take and
+return straight colors, so loading, saving and converting work as for any type. Resize, blur, convolution, rotation and
+<code>DrawImage</code> run on the stored values directly, without multiplying and dividing per pixel: on translucent images resize is about
+30% and <code>DrawImage</code> about 35% faster than on <code>Rgba8</code>.</p>
+<pre><code class="lang-csharp">// A Windows or GPU surface is premultiplied BGRA: wrap its memory as PremulBgra8 and draw into it directly. Drawing and
+// resizing run on the stored values, with no multiply and divide per pixel; conversions still take straight colors.
+using Raster&lt;PremulBgra8&gt; surface = Raster.Wrap&lt;PremulBgra8&gt;(surfaceMemory, 320, 240, byteStride: 320 * 4);
+using Raster&lt;Rgba8&gt; logo = Raster.Load&lt;Rgba8&gt;(&quot;duck.png&quot;);
+logo.Apply(ops =&gt; ops.Fit(120, 120));
+surface.Apply(ops =&gt; ops.FillColor(new Rgba8(30, 60, 90, 255)).DrawImage(logo, new Point(20, 20), opacity: 0.8f));
+</code></pre>
+<p>Unpremultiplying loses precision where alpha is low (a color at alpha 10 has 11 levels), so keep straight types for images you
+will edit color by color.</p>
+<h2 id="packed-types">Packed types</h2>
+<pre><code class="lang-csharp">// A 16-bit display framebuffer: wrap it as Bgr565 and draw a photo into it; each level rounds to the nearest of 32 or 64.
+using Raster&lt;Bgr565&gt; screen = Raster.Wrap&lt;Bgr565&gt;(MemoryMarshal.Cast&lt;ushort, Bgr565&gt;(framebuffer.AsSpan()).ToArray(), 240, 135);
+using Raster&lt;Rgba8&gt; photo = Raster.Load&lt;Rgba8&gt;(&quot;egret.png&quot;);
+photo.Apply(ops =&gt; ops.Cover(240, 135));
+screen.Apply(ops =&gt; ops.DrawImage(photo, new Point(0, 0)));
+Bgr565 pixel = screen.Row(60)[120];
+Console.WriteLine($&quot;Levels: red {pixel.R} of 31, green {pixel.G} of 63, blue {pixel.B} of 31&quot;);
+</code></pre>
+<p><code>Bgr565</code>, <code>Bgra4444</code> and <code>Rgb10A2</code> keep their bits in <code>Value</code>, with level constructors and properties for each channel. BMP
+files with 5-6-5 or 4-4-4-4 bit fields read straight into them.</p>
+<h2 id="your-own-pixel-type">Your own pixel type</h2>
+<p>Implement <code>IPixelType&lt;TSelf&gt;</code> on an unmanaged struct. <code>Layout</code> says how it is stored: a packed layout gives its pixel size and
+channel widths with <code>new PixelLayoutInfo(order, PixelChannelType.Packed, alpha, bitsPerPixel, widths...)</code>, and a layout Egami
+has no name for uses <code>PixelChannelOrder.Other</code>. The 16-bit members <code>ToRgba16</code> and <code>FromRgba16</code> have default bodies; override them
+with exact integer code if your type is wider than 8 bits. See <a href="extending.html">custom operations and formats</a>.</p>
+<h2 id="run-it">Run it</h2>
+<p><a href="https://github.com/inexin/Egami/tree/main/samples/PixelTypes"><code>samples/PixelTypes</code></a> is a console app that does what this guide
+shows on the bundled images: <code>dotnet run --project samples/PixelTypes</code> writes its results to <code>./output</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/pixel-types.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

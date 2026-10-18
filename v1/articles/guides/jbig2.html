@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>JBIG2 | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="JBIG2 | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/jbig2.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="jbig2">JBIG2</h1>
+
+<p>Egami reads JBIG2 (ITU-T T.88 | ISO/IEC 14492), the bi-level format of scanned documents and of the JBIG2Decode images in PDF,
+written from the 2018 edition of T.88 and the PDF specification. <code>Jbig2Format.Info</code> is registered in <code>EgamiContext.Default</code>.
+JBIG2 is never written. Every page of Egami's corpus (made with jbig2enc in each of its modes), of PDFBox's JBIG2 test streams and
+of the T.88 Annex H datastream decodes bit for bit as PDFium and jbig2dec decode it.</p>
+<h2 id="reading-files">Reading files</h2>
+<p>A standalone file starts with the T.88 file header, so <code>Raster.Load</code> recognizes it. Each page loads as <code>Gray8</code>: black 0, white
+255, as 1-bit TIFF does. <code>Load</code> reads the first page, or the one <code>Jbig2ReaderOptions.Page</code> names; <code>LoadAll</code> reads every page
+at its own size, and <code>RasterInfo.ImageCount</code> says how many there are without decoding any.</p>
+<pre><code class="lang-csharp">// A standalone .jb2 file is detected like any other format; each page loads as Gray8, black 0 and white 255.
+using Raster first = Raster.Load(&quot;book.jb2&quot;);
+using RasterList pages = Raster.LoadAll(&quot;book.jb2&quot;);
+using Raster third = Raster.Load(&quot;book.jb2&quot;, options: new Jbig2ReaderOptions { Page = 2 });
+</code></pre><h2 id="images-from-a-pdf">Images from a PDF</h2>
+<p>A PDF holds JBIG2 in T.88's embedded form: segments without a file header, and often a separate JBIG2Globals stream with the
+symbol dictionaries several images share. The embedded form has no signature, so load it with the format named.
+<code>Jbig2Globals.Parse</code> decodes the globals once; the object is immutable and can be shared by every image of the document, on
+any thread.</p>
+<pre><code class="lang-csharp">// A PDF's JBIG2Decode image has no file header, so name the format. Parse the JBIG2Globals stream once and share it:
+// every image of the document that refers to it reuses its decoded symbols.
+Jbig2Globals globals = Jbig2Globals.Parse(globalsStream);
+using Raster image = Raster.Load(imageStream, Jbig2Format.Info, options: new Jbig2ReaderOptions { Globals = globals });
+</code></pre>
+<p>A PDF image's /Decode array and its color space stay the PDF library's business: Egami returns the page as T.88 defines it.</p>
+<h2 id="what-is-decoded">What is decoded</h2>
+<table>
+<thead>
+<tr>
+<th>Segment</th>
+<th>Read</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Generic regions</td>
+<td>Templates 0 to 3 and the extended template, adaptive pixels anywhere, typical prediction, skipped pixels; MMR through Egami's CCITT Group 4 decoder</td>
+</tr>
+<tr>
+<td>Refinement regions</td>
+<td>Templates 0 and 1, typical prediction, against the page or an intermediate region</td>
+</tr>
+<tr>
+<td>Symbol dictionaries, text regions</td>
+<td>Arithmetic and Huffman, refinement and aggregation, every reference corner and transposition, standard tables B.1 to B.15 and code table segments</td>
+</tr>
+<tr>
+<td>Pattern dictionaries, halftone regions</td>
+<td>Arithmetic and MMR gray-scale planes, any grid, skipping</td>
+</tr>
+<tr>
+<td>Pages</td>
+<td>Known and unknown height, striped, every combination operator, intermediate regions; end of file and random-access files</td>
+</tr>
+<tr>
+<td>Extensions</td>
+<td>Comments into <code>Jbig2Details.Comments</code>; others skipped unless marked necessary, which throws <code>NotSupportedException</code></td>
+</tr>
+<tr>
+<td>Colour palettes (T.88 Amendment 3)</td>
+<td>Skipped with a warning; the page decodes as bilevel</td>
+</tr>
+</tbody>
+</table>
+<p><code>Jbig2Details</code> reports, per page, the stream's <code>Jbig2Organization</code>, whether the page used the globals, its striping, default
+pixel and <code>Jbig2CombinationOperator</code>, the <code>Jbig2RegionKinds</code> it is made of and whether it is eventually lossless. The page
+information's resolution goes to <code>RasterMetadata.Resolution</code>.</p>
+<pre><code class="lang-csharp">using Raster page = Raster.Load(&quot;book.jb2&quot;);
+var details = (Jbig2Details)page.Metadata.FormatDetails!;
+Console.WriteLine($&quot;Page {details.PageIndex}, {details.Organization}, regions {details.Regions}&quot;);
+Console.WriteLine($&quot;Default pixel {details.DefaultPixel}, combined by {details.CombinationOperator}, lossless {details.Lossless}&quot;);
+</code></pre><h2 id="damaged-and-hostile-data">Damaged and hostile data</h2>
+<p>JBIG2 decoders are a long-standing attack surface (FORCEDENTRY, in 2021, was an integer overflow in one), so every size is
+checked arithmetic and counted against <code>SafetyLimits</code> before memory is taken: page and region sizes against <code>MaxWidth</code>,
+<code>MaxHeight</code> and <code>MaxPixels</code>; symbols, patterns, tables and every bitmap together against <code>MaxTotalBytes</code>. A segment that refers to
+a segment that is not before it, in the stream or in the globals, always throws. In lenient mode a damaged region is skipped
+with a warning and the rest of the page decodes; strict mode throws <code>CorruptDataException</code>.</p>
+<p>The ITU's own conformance streams for T.88 mostly break the Recommendation (their text regions refer to no symbol dictionary),
+and PDFium and jbig2dec reject them as Egami does; the two that follow it, and the Annex H datastream, decode exactly.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/jbig2.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

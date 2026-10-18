@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Raster&lt;TPixel&gt; | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Raster&lt;TPixel&gt; | Egami ">
+      
+      <meta name="description" content="An image whose pixels are of type TPixel. Pixel access is by row span.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Raster_1.md&amp;value=---%0Auid%3A%20Egami.Raster%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Raster`1">
+
+
+
+  <h1 id="Egami_Raster_1" data-uid="Egami.Raster`1" class="text-break">
+Class Raster&lt;TPixel&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An image whose pixels are of type <code class="typeparamref">TPixel</code>. Pixel access is by row span.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Raster&lt;TPixel&gt; : Raster, IDisposable where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type.</p>
+</dd>
+  </dl>
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Raster.html">Raster</a></div>
+      <div><span class="xref">Raster&lt;TPixel&gt;</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Compare_Egami_Raster_Egami_Raster_Egami_Analysis_CompareOptions_">Raster.Compare(Raster, Raster, CompareOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Difference_Egami_Raster_Egami_Raster_Egami_Analysis_DifferenceStyle_Egami_Analysis_DifferenceOptions_">Raster.Difference(Raster, Raster, DifferenceStyle, DifferenceOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Statistics_System_Int32_">Raster.Statistics(int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Histogram_Egami_Operations_ColorChannel_System_Int32_System_Int32_">Raster.Histogram(ColorChannel, int, int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_CountColors_System_Int32_">Raster.CountColors(int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_GetColors_System_Int32_System_Int32_">Raster.GetColors(int, int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_IsOpaque_System_Int32_">Raster.IsOpaque(int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_IsGray_System_Single_System_Int32_">Raster.IsGray(float, int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Signature">Raster.Signature()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_ExtractChannel_Egami_Operations_ColorChannel_">Raster.ExtractChannel(ColorChannel)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_ExtractChannel__1_Egami_Operations_ColorChannel_">Raster.ExtractChannel&lt;TPixel&gt;(ColorChannel)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_CombineChannels__1_Egami_Raster_Egami_Raster_Egami_Raster_Egami_Raster_">Raster.CombineChannels&lt;TPixel&gt;(Raster, Raster, Raster, Raster)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Append_System_Collections_Generic_IReadOnlyList_Egami_Raster__Egami_Axis_System_Int32_Egami_Pixels_Rgba8_Egami_Alignment_">Raster.Append(IReadOnlyList&lt;Raster&gt;, Axis, int, Rgba8, Alignment)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Grid_System_Collections_Generic_IReadOnlyList_Egami_Raster__System_Int32_System_Nullable_Egami_Size__System_Int32_Egami_Pixels_Rgba8_Egami_Operations_ResampleFilter_">Raster.Grid(IReadOnlyList&lt;Raster&gt;, int, Size?, int, Rgba8, ResampleFilter)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Width">Raster.Width</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Height">Raster.Height</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Metadata">Raster.Metadata</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Context">Raster.Context</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Create__1_System_Int32_System_Int32_Egami_EgamiContext_">Raster.Create&lt;TPixel&gt;(int, int, EgamiContext)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Create__1_System_Int32_System_Int32___0_Egami_EgamiContext_">Raster.Create&lt;TPixel&gt;(int, int, TPixel, EgamiContext)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Wrap__1_System_Memory___0__System_Int32_System_Int32_System_Int32_Egami_EgamiContext_">Raster.Wrap&lt;TPixel&gt;(Memory&lt;TPixel&gt;, int, int, int, EgamiContext)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Wrap__1_System_Memory_System_Byte__System_Int32_System_Int32_System_Int32_System_IDisposable_Egami_EgamiContext_">Raster.Wrap&lt;TPixel&gt;(Memory&lt;byte&gt;, int, int, int, IDisposable, EgamiContext)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_As__1">Raster.As&lt;TTo&gt;()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_ConvertColor__1_Egami_Colors_ColorProfile_Egami_Colors_ColorTransformOptions_">Raster.ConvertColor&lt;TTo&gt;(ColorProfile, ColorTransformOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Dispose">Raster.Dispose()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Load(Stream, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Load(string, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Load(ReadOnlyMemory&lt;byte&gt;, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Load__1_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Load&lt;TPixel&gt;(Stream, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Load__1_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Load&lt;TPixel&gt;(string, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Load__1_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Load&lt;TPixel&gt;(ReadOnlyMemory&lt;byte&gt;, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadInto__1_System_IO_Stream_Egami_Raster___0__Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadInto&lt;TPixel&gt;(Stream, Raster&lt;TPixel&gt;, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadInto__1_System_String_Egami_Raster___0__Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadInto&lt;TPixel&gt;(string, Raster&lt;TPixel&gt;, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadInto__1_System_ReadOnlyMemory_System_Byte__Egami_Raster___0__Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadInto&lt;TPixel&gt;(ReadOnlyMemory&lt;byte&gt;, Raster&lt;TPixel&gt;, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAsync_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">Raster.LoadAsync(Stream, EgamiContext, ReaderOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAsync_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">Raster.LoadAsync(string, EgamiContext, ReaderOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAsync__1_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">Raster.LoadAsync&lt;TPixel&gt;(Stream, EgamiContext, ReaderOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAsync__1_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">Raster.LoadAsync&lt;TPixel&gt;(string, EgamiContext, ReaderOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Probe_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Probe(Stream, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Probe_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Probe(string, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Probe_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Probe(ReadOnlyMemory&lt;byte&gt;, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_ProbeAsync_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">Raster.ProbeAsync(Stream, EgamiContext, ReaderOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_ProbeAsync_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">Raster.ProbeAsync(string, EgamiContext, ReaderOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">Raster.Save(Stream, FormatInfo, WriterOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_System_String_Egami_Formats_WriterOptions_">Raster.Save(Stream, string, WriterOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Save_System_String_Egami_Formats_WriterOptions_">Raster.Save(string, WriterOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAsync_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_Threading_CancellationToken_">Raster.SaveAsync(Stream, FormatInfo, WriterOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAsync_System_IO_Stream_System_String_Egami_Formats_WriterOptions_System_Threading_CancellationToken_">Raster.SaveAsync(Stream, string, WriterOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAsync_System_String_Egami_Formats_WriterOptions_System_Threading_CancellationToken_">Raster.SaveAsync(string, WriterOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_ColorMask_Egami_Pixels_Rgba8_System_Single_">Raster.ColorMask(Rgba8, float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_FloodMask_Egami_Point_System_Single_Egami_Operations_Connectivity_">Raster.FloodMask(Point, float, Connectivity)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_TrimBounds_System_Single_System_Nullable_Egami_Pixels_Rgba8__">Raster.TrimBounds(float, Rgba8?)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_EntropyBounds_System_Single_">Raster.EntropyBounds(float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_DetectSkew_System_Single_">Raster.DetectSkew(float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_IO_Stream_Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Load(Stream, FormatInfo, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_ReadOnlyMemory_System_Byte__Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Load(ReadOnlyMemory&lt;byte&gt;, FormatInfo, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Load__1_System_IO_Stream_Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Load&lt;TPixel&gt;(Stream, FormatInfo, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Load__1_System_ReadOnlyMemory_System_Byte__Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Load&lt;TPixel&gt;(ReadOnlyMemory&lt;byte&gt;, FormatInfo, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_IO_Stream_Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadAll(Stream, FormatInfo, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_ReadOnlyMemory_System_Byte__Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadAll(ReadOnlyMemory&lt;byte&gt;, FormatInfo, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll__1_System_IO_Stream_Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadAll&lt;TPixel&gt;(Stream, FormatInfo, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll__1_System_ReadOnlyMemory_System_Byte__Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadAll&lt;TPixel&gt;(ReadOnlyMemory&lt;byte&gt;, FormatInfo, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Probe_System_IO_Stream_Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Probe(Stream, FormatInfo, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Probe_System_ReadOnlyMemory_System_Byte__Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.Probe(ReadOnlyMemory&lt;byte&gt;, FormatInfo, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadAll(Stream, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadAll(string, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadAll(ReadOnlyMemory&lt;byte&gt;, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll__1_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadAll&lt;TPixel&gt;(Stream, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll__1_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadAll&lt;TPixel&gt;(string, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll__1_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_">Raster.LoadAll&lt;TPixel&gt;(ReadOnlyMemory&lt;byte&gt;, EgamiContext, ReaderOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAllAsync_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">Raster.LoadAllAsync(Stream, EgamiContext, ReaderOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAllAsync_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">Raster.LoadAllAsync(string, EgamiContext, ReaderOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAllAsync__1_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">Raster.LoadAllAsync&lt;TPixel&gt;(Stream, EgamiContext, ReaderOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAllAsync__1_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">Raster.LoadAllAsync&lt;TPixel&gt;(string, EgamiContext, ReaderOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">Raster.SaveAll(IEnumerable&lt;Raster&gt;, Stream, FormatInfo, WriterOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_System_String_Egami_Formats_WriterOptions_">Raster.SaveAll(IEnumerable&lt;Raster&gt;, Stream, string, WriterOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAll_System_Collections_Generic_IEnumerable_Egami_Raster__System_String_Egami_Formats_WriterOptions_">Raster.SaveAll(IEnumerable&lt;Raster&gt;, string, WriterOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_SaveAllAsync_System_Collections_Generic_IEnumerable_Egami_Raster__System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_System_Threading_CancellationToken_">Raster.SaveAllAsync(IEnumerable&lt;Raster&gt;, Stream, FormatInfo, WriterOptions, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_ToIndexed_Egami_Quantization_PaletteOptions_System_Int32_">Raster.ToIndexed(PaletteOptions, int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_DominantColors_System_Int32_Egami_Analysis_DominantColorOptions_">Raster.DominantColors(int, DominantColorOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Stack_System_Collections_Generic_IReadOnlyList_Egami_Raster__Egami_Operations_StackMode_">Raster.Stack(IReadOnlyList&lt;Raster&gt;, StackMode)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_HaldIdentity_System_Int32_">Raster.HaldIdentity(int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_HaldIdentity__1_System_Int32_">Raster.HaldIdentity&lt;TPixel&gt;(int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_MeasureAutoLevel_System_Boolean_">Raster.MeasureAutoLevel(bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_MeasureContrastStretch_System_Single_System_Single_System_Boolean_">Raster.MeasureContrastStretch(float, float, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_MeasureAutoGamma_System_Boolean_">Raster.MeasureAutoGamma(bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_MeasureWhiteBalance_Egami_Operations_WhiteBalanceMethod_">Raster.MeasureWhiteBalance(WhiteBalanceMethod)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_MeasureEqualize_Egami_Operations_EqualizeMode_">Raster.MeasureEqualize(EqualizeMode)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_FindThreshold_Egami_Operations_ThresholdMethod_Egami_Operations_ThresholdMode_">Raster.FindThreshold(ThresholdMethod, ThresholdMode)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Transcode_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_">Raster.Transcode(string, string, Action&lt;RasterOps&gt;, ReaderOptions, WriterOptions, EgamiContext)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_Transcode_System_IO_Stream_System_IO_Stream_Egami_Formats_FormatInfo_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_">Raster.Transcode(Stream, Stream, FormatInfo, Action&lt;RasterOps&gt;, ReaderOptions, WriterOptions, EgamiContext)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_TranscodeAsync_System_String_System_String_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_Threading_CancellationToken_">Raster.TranscodeAsync(string, string, Action&lt;RasterOps&gt;, ReaderOptions, WriterOptions, EgamiContext, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Raster.html#Egami_Raster_TranscodeAsync_System_IO_Stream_System_IO_Stream_Egami_Formats_FormatInfo_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_System_Threading_CancellationToken_">Raster.TranscodeAsync(Stream, Stream, FormatInfo, Action&lt;RasterOps&gt;, ReaderOptions, WriterOptions, EgamiContext, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+  <dl class="typelist extensionMethods">
+    <dt>Extension Methods</dt>
+    <dd>
+  <div>
+      <a class="xref" href="Egami.Drawing.DrawingExtensions.html#Egami_Drawing_DrawingExtensions_CreateCanvas__1_Egami_Raster___0__Egami_Drawing_CanvasOptions_">DrawingExtensions.CreateCanvas&lt;TPixel&gt;(Raster&lt;TPixel&gt;, CanvasOptions?)</a>
+  </div>
+  </dd></dl>
+
+
+  <h2 id="Egami_Raster_1_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Decode straight into the type you want to work in.
+using Raster&lt;Rgba8&gt; rgba = Raster.Load&lt;Rgba8&gt;("duck.png");
+
+// Pixels are a row at a time: each row is a Span&lt;Rgba8&gt;.
+for (int y = 0; y &lt; rgba.Height; y++)
+{
+    Span&lt;Rgba8&gt; row = rgba.Row(y);
+    for (int x = 0; x &lt; row.Length; x++)
+    {
+        row[x].A = 128;
+    }
+}
+
+// Convert a whole raster; the result is a new raster you dispose too.
+using Raster&lt;Gray8&gt; gray = rgba.As&lt;Gray8&gt;();
+gray.Save("duck-gray.png");</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Raster_1_FrameCount_" data-uid="Egami.Raster`1.FrameCount*"></a>
+
+  <h3 id="Egami_Raster_1_FrameCount" data-uid="Egami.Raster`1.FrameCount">
+  FrameCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of frames. Always at least 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int FrameCount { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Raster_1_Frames_" data-uid="Egami.Raster`1.Frames*"></a>
+
+  <h3 id="Egami_Raster_1_Frames" data-uid="Egami.Raster`1.Frames">
+  Frames
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the frames. <code>Frames[0]</code> always exists.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FrameList&lt;TPixel&gt; Frames { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.FrameList-1.html">FrameList</a>&lt;TPixel&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Raster_1_Layout_" data-uid="Egami.Raster`1.Layout*"></a>
+
+  <h3 id="Egami_Raster_1_Layout" data-uid="Egami.Raster`1.Layout">
+  Layout
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the memory layout of the pixel type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override PixelLayoutInfo Layout { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.PixelLayoutInfo.html">PixelLayoutInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Raster_1_Apply_" data-uid="Egami.Raster`1.Apply*"></a>
+
+  <h3 id="Egami_Raster_1_Apply_System_Action_Egami_Operations_RasterOps__System_Threading_CancellationToken_" data-uid="Egami.Raster`1.Apply(System.Action{Egami.Operations.RasterOps},System.Threading.CancellationToken)">
+  Apply(Action&lt;RasterOps&gt;, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Runs a chain of operations on every frame, changing this raster in place. Steps that keep the size work on the existing
+pixels; steps that change it get new pixel memory, and the old memory is returned at once.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Apply(Action&lt;RasterOps&gt; build, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>build</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a>&gt;</dt>
+    <dd><p>Records the chain, for example <code>ops =&gt; ops.Add(operation)</code>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels between steps and between bands of rows.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Raster_1_Apply_System_Action_Egami_Operations_RasterOps__System_Threading_CancellationToken__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Arguments are checked while the chain is recorded, before any pixel changes. If a step fails or the chain is cancelled
+part way, the raster may be left partly changed. Spans from <a class="xref" href="Egami.Raster-1.html#Egami_Raster_1_Row_System_Int32_">Row(int)</a> taken before a size change become invalid.</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>A new plane would break <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p>The token was cancelled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_Copy_" data-uid="Egami.Raster`1.Copy*"></a>
+
+  <h3 id="Egami_Raster_1_Copy" data-uid="Egami.Raster`1.Copy">
+  Copy()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L414"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a deep copy of the raster: every frame and all metadata.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;TPixel&gt; Copy()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The new raster. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_CopyFrame_" data-uid="Egami.Raster`1.CopyFrame*"></a>
+
+  <h3 id="Egami_Raster_1_CopyFrame_System_Int32_" data-uid="Egami.Raster`1.CopyFrame(System.Int32)">
+  CopyFrame(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L393"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a new one-frame raster with a copy of frame <code class="paramref">index</code> and of the raster's metadata.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;TPixel&gt; CopyFrame(int index)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The frame to copy.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The new raster. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">index</code> is not a frame.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_CopyPixelsFrom_" data-uid="Egami.Raster`1.CopyPixelsFrom*"></a>
+
+  <h3 id="Egami_Raster_1_CopyPixelsFrom_System_ReadOnlySpan_System_Byte__" data-uid="Egami.Raster`1.CopyPixelsFrom(System.ReadOnlySpan{System.Byte})">
+  CopyPixelsFrom(ReadOnlySpan&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L383"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Overwrites the first frame's pixels from raw bytes laid out row by row with no gaps.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CopyPixelsFrom(ReadOnlySpan&lt;byte&gt; source)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>source</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes. It must hold at least <a class="xref" href="Egami.Raster.html#Egami_Raster_Width">Width</a> × <a class="xref" href="Egami.Raster.html#Egami_Raster_Height">Height</a> × the pixel size bytes.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">source</code> is too short.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_CopyPixelsFrom_" data-uid="Egami.Raster`1.CopyPixelsFrom*"></a>
+
+  <h3 id="Egami_Raster_1_CopyPixelsFrom_System_ReadOnlySpan__0__" data-uid="Egami.Raster`1.CopyPixelsFrom(System.ReadOnlySpan{`0})">
+  CopyPixelsFrom(ReadOnlySpan&lt;TPixel&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L369"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Overwrites the first frame's pixels from <code class="paramref">source</code>, which holds them row by row with no gaps.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CopyPixelsFrom(ReadOnlySpan&lt;TPixel&gt; source)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>source</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;TPixel&gt;</dt>
+    <dd><p>The pixels. It must hold at least <a class="xref" href="Egami.Raster.html#Egami_Raster_Width">Width</a> × <a class="xref" href="Egami.Raster.html#Egami_Raster_Height">Height</a> pixels.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">source</code> is too short.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_CopyPixelsTo_" data-uid="Egami.Raster`1.CopyPixelsTo*"></a>
+
+  <h3 id="Egami_Raster_1_CopyPixelsTo_System_Span_System_Byte__" data-uid="Egami.Raster`1.CopyPixelsTo(System.Span{System.Byte})">
+  CopyPixelsTo(Span&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L360"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Copies the first frame's pixels as raw bytes, row by row with no gaps, to <code class="paramref">destination</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CopyPixelsTo(Span&lt;byte&gt; destination)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>destination</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>Where to copy. It must hold at least <a class="xref" href="Egami.Raster.html#Egami_Raster_Width">Width</a> × <a class="xref" href="Egami.Raster.html#Egami_Raster_Height">Height</a> × the pixel size bytes.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">destination</code> is too short.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_CopyPixelsTo_" data-uid="Egami.Raster`1.CopyPixelsTo*"></a>
+
+  <h3 id="Egami_Raster_1_CopyPixelsTo_System_Span__0__" data-uid="Egami.Raster`1.CopyPixelsTo(System.Span{`0})">
+  CopyPixelsTo(Span&lt;TPixel&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L346"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Copies the first frame's pixels, row by row with no gaps, to <code class="paramref">destination</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CopyPixelsTo(Span&lt;TPixel&gt; destination)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>destination</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;TPixel&gt;</dt>
+    <dd><p>Where to copy. It must hold at least <a class="xref" href="Egami.Raster.html#Egami_Raster_Width">Width</a> × <a class="xref" href="Egami.Raster.html#Egami_Raster_Height">Height</a> pixels.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">destination</code> is too short.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_Derive_" data-uid="Egami.Raster`1.Derive*"></a>
+
+  <h3 id="Egami_Raster_1_Derive_System_Action_Egami_Operations_RasterOps__System_Threading_CancellationToken_" data-uid="Egami.Raster`1.Derive(System.Action{Egami.Operations.RasterOps},System.Threading.CancellationToken)">
+  Derive(Action&lt;RasterOps&gt;, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L181"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Runs a chain of operations and returns the result as a new raster, leaving this one untouched. The first step reads this
+raster directly, so no full-size copy is made first.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;TPixel&gt; Derive(Action&lt;RasterOps&gt; build, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>build</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a>&gt;</dt>
+    <dd><p>Records the chain, for example <code>ops =&gt; ops.Add(operation)</code>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels between steps and between bands of rows.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The new raster, with a copy of this raster's metadata. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>A new plane would break <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p>The token was cancelled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_Dispose_" data-uid="Egami.Raster`1.Dispose*"></a>
+
+  <h3 id="Egami_Raster_1_Dispose_System_Boolean_" data-uid="Egami.Raster`1.Dispose(System.Boolean)">
+  Dispose(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L535"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Releases the frames' memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void Dispose(bool disposing)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>disposing</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when called from <a class="xref" href="Egami.Raster.html#Egami_Raster_Dispose">Dispose()</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Raster_1_ForEachRow_" data-uid="Egami.Raster`1.ForEachRow*"></a>
+
+  <h3 id="Egami_Raster_1_ForEachRow_Egami_RowAction__0__System_Threading_CancellationToken_" data-uid="Egami.Raster`1.ForEachRow(Egami.RowAction{`0},System.Threading.CancellationToken)">
+  ForEachRow(RowAction&lt;TPixel&gt;, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Calls <code class="paramref">action</code> once for every row of the first frame. Large rasters are processed in bands of rows on several
+threads, up to the context's <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_MaxParallelism">MaxParallelism</a>, so <code class="paramref">action</code> may run concurrently for
+different rows.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ForEachRow(RowAction&lt;TPixel&gt; action, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>action</code> <a class="xref" href="Egami.RowAction-1.html">RowAction</a>&lt;TPixel&gt;</dt>
+    <dd><p>The work to do on each row.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels between bands of rows.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_GetPixel_" data-uid="Egami.Raster`1.GetPixel*"></a>
+
+  <h3 id="Egami_Raster_1_GetPixel_System_Int32_System_Int32_" data-uid="Egami.Raster`1.GetPixel(System.Int32,System.Int32)">
+  GetPixel(int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L324"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads one pixel of the first frame. This is slow; use <a class="xref" href="Egami.Raster-1.html#Egami_Raster_1_Row_System_Int32_">Row(int)</a> for bulk access.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TPixel GetPixel(int x, int y)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The column.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The row.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">TPixel</span></dt>
+    <dd><p>The pixel.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The position is outside the raster.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_Row_" data-uid="Egami.Raster`1.Row*"></a>
+
+  <h3 id="Egami_Raster_1_Row_System_Int32_" data-uid="Egami.Raster`1.Row(System.Int32)">
+  Row(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns one row of the first frame. Do not use the span after the raster is disposed or resized.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Span&lt;TPixel&gt; Row(int y)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The row index, 0 to <a class="xref" href="Egami.Raster.html#Egami_Raster_Height">Height</a> - 1.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;TPixel&gt;</dt>
+    <dd><p>The row, exactly <a class="xref" href="Egami.Raster.html#Egami_Raster_Width">Width</a> pixels long.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">y</code> is outside the raster.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_SetPixel_" data-uid="Egami.Raster`1.SetPixel*"></a>
+
+  <h3 id="Egami_Raster_1_SetPixel_System_Int32_System_Int32__0_" data-uid="Egami.Raster`1.SetPixel(System.Int32,System.Int32,`0)">
+  SetPixel(int, int, TPixel)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L336"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes one pixel of the first frame. This is slow; use <a class="xref" href="Egami.Raster-1.html#Egami_Raster_1_Row_System_Int32_">Row(int)</a> for bulk access.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetPixel(int x, int y, TPixel value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The column.</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The row.</p>
+</dd>
+    <dt><code>value</code> <span class="xref">TPixel</span></dt>
+    <dd><p>The pixel.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The position is outside the raster.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Raster_1_TryGetContiguous_" data-uid="Egami.Raster`1.TryGetContiguous*"></a>
+
+  <h3 id="Egami_Raster_1_TryGetContiguous_System_Span__0___" data-uid="Egami.Raster`1.TryGetContiguous(System.Span{`0}@)">
+  TryGetContiguous(out Span&lt;TPixel&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets all pixels of the first frame as one span, if they are contiguous in memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetContiguous(out Span&lt;TPixel&gt; pixels)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>pixels</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;TPixel&gt;</dt>
+    <dd><p>All pixels, row by row, or an empty span.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the pixels are contiguous.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/RasterOfT.cs/#L15" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

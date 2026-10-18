@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class RasterInfo | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class RasterInfo | Egami ">
+      
+      <meta name="description" content="What a file&#39;s header says, read without decoding pixels.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_RasterInfo.md&amp;value=---%0Auid%3A%20Egami.Formats.RasterInfo%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.RasterInfo">
+
+
+
+  <h1 id="Egami_Formats_RasterInfo" data-uid="Egami.Formats.RasterInfo" class="text-break">
+Class RasterInfo  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L168"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>What a file's header says, read without decoding pixels.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record RasterInfo : IEquatable&lt;RasterInfo&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">RasterInfo</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Formats.RasterInfo.html">RasterInfo</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_RasterInfo_examples">Examples</h2>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;A minimal format: "RAW8", width and height as big-endian numbers, then RGBA rows.&lt;/summary&gt;
+public static class Raw8Format
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = "RAW8",
+        Extensions = ["raw8"],
+        SignatureLength = 4,
+        Matches = header =&gt; header.StartsWith("RAW8"u8),
+        Reader = new Reader(),
+        Writer = new Writer(),
+    };
+
+    private sealed class Reader : IFormatReader
+    {
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height) = Header(input);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            (int width, int height) = Header(input);
+
+            // CreateRaster checks the size against the safety limits before allocating.
+            Raster&lt;TPixel&gt; raster = input.CreateRaster&lt;TPixel&gt;(width, height);
+            using IMemoryOwner&lt;byte&gt; row = input.RentScratch(width * 4);
+            for (int y = 0; y &lt; height; y++)
+            {
+                input.ReadExactly(row.Memory.Span[..(width * 4)]);
+                PixelConvert.Convert&lt;Rgba8, TPixel&gt;(MemoryMarshal.Cast&lt;byte, Rgba8&gt;(row.Memory.Span[..(width * 4)]), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Read&lt;Rgba8&gt;(input, options);
+
+        private static (int Width, int Height) Header(EgamiInput input)
+        {
+            input.Skip(4);
+            return ((int)input.ReadUInt32BigEndian(), (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Writer : IFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            "RAW8"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)raster.Width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)raster.Height);
+            output.Write(header);
+            Rgba8[] row = new Rgba8[raster.Width];
+            for (int y = 0; y &lt; raster.Height; y++)
+            {
+                PixelConvert.Convert&lt;TPixel, Rgba8&gt;(raster.Row(y), row);
+                output.Write(MemoryMarshal.AsBytes(row.AsSpan()));
+            }
+        }
+    }
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_RasterInfo_Access_" data-uid="Egami.Formats.RasterInfo.Access*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_Access" data-uid="Egami.Formats.RasterInfo.Access">
+  Access
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L214"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a <a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a> streams this image's rows or decodes it into a buffer first. Set by
+<a class="xref" href="Egami.Raster.html#Egami_Raster_Probe_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Probe(Stream, EgamiContext?, ReaderOptions?)</a> and the decoder; formats need not set it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RasterAccess Access { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.RasterAccess.html">RasterAccess</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RasterInfo_EstimatedBytes_" data-uid="Egami.Formats.RasterInfo.EstimatedBytes*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_EstimatedBytes" data-uid="Egami.Formats.RasterInfo.EstimatedBytes">
+  EstimatedBytes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L196"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets an estimate of the bytes a full load in the natural pixel type would allocate, so large images can be rejected before decoding.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long EstimatedBytes { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RasterInfo_Format_" data-uid="Egami.Formats.RasterInfo.Format*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_Format" data-uid="Egami.Formats.RasterInfo.Format">
+  Format
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L171"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public required FormatInfo Format { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RasterInfo_FrameCount_" data-uid="Egami.Formats.RasterInfo.FrameCount*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_FrameCount" data-uid="Egami.Formats.RasterInfo.FrameCount">
+  FrameCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L183"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of frames, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> if finding out would need more than the header.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? FrameCount { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RasterInfo_HasMetadata_" data-uid="Egami.Formats.RasterInfo.HasMetadata*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_HasMetadata" data-uid="Egami.Formats.RasterInfo.HasMetadata">
+  HasMetadata
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L193"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the header shows any metadata, such as EXIF, ICC, XMP or text.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HasMetadata { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RasterInfo_Height_" data-uid="Egami.Formats.RasterInfo.Height*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_Height" data-uid="Egami.Formats.RasterInfo.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L177"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the height in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public required int Height { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RasterInfo_ImageCount_" data-uid="Egami.Formats.RasterInfo.ImageCount*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_ImageCount" data-uid="Egami.Formats.RasterInfo.ImageCount">
+  ImageCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many images <a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">LoadAll(Stream, EgamiContext?, ReaderOptions?)</a> would return: 1 for formats that hold
+one image (an animation is one image), the page count of a TIFF, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when finding out would need more
+than the header.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? ImageCount { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RasterInfo_Layout_" data-uid="Egami.Formats.RasterInfo.Layout*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_Layout" data-uid="Egami.Formats.RasterInfo.Layout">
+  Layout
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L180"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the layout of the pixel type <a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a> would return.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public required PixelLayoutInfo Layout { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.PixelLayoutInfo.html">PixelLayoutInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RasterInfo_LoopCount_" data-uid="Egami.Formats.RasterInfo.LoopCount*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_LoopCount" data-uid="Egami.Formats.RasterInfo.LoopCount">
+  LoopCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L208"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many times an animation plays (0 for forever), as <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_LoopCount">LoopCount</a> would say, or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for formats without animation.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? LoopCount { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RasterInfo_Orientation_" data-uid="Egami.Formats.RasterInfo.Orientation*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_Orientation" data-uid="Egami.Formats.RasterInfo.Orientation">
+  Orientation
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L202"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the EXIF orientation: how the stored pixels must be turned to show the image upright. Load returns the pixels as
+stored; apply this with <code>AutoOrient</code>. <a class="xref" href="Egami.Metadata.ImageOrientation.html#Egami_Metadata_ImageOrientation_Normal">Normal</a> when the file says nothing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ImageOrientation Orientation { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.ImageOrientation.html">ImageOrientation</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RasterInfo_Width_" data-uid="Egami.Formats.RasterInfo.Width*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_Width" data-uid="Egami.Formats.RasterInfo.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L174"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public required int Width { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_RasterInfo_WorkingBytes_" data-uid="Egami.Formats.RasterInfo.WorkingBytes*"></a>
+
+  <h3 id="Egami_Formats_RasterInfo_WorkingBytes" data-uid="Egami.Formats.RasterInfo.WorkingBytes">
+  WorkingBytes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L220"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the most bytes a <a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a> holds while decoding with the same options, besides the caller's band or
+target. Set by <a class="xref" href="Egami.Raster.html#Egami_Raster_Probe_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Probe(Stream, EgamiContext?, ReaderOptions?)</a> and the decoder; formats need not set it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long WorkingBytes { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L168" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

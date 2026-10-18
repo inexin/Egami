@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class JpegWriterOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class JpegWriterOptions | Egami ">
+      
+      <meta name="description" content="Options for writing JPEG. The defaults are libjpeg-turbo&#39;s cjpeg defaults: quality 75, 4:2:0 and the standard Huffman tables of T.81 Annex K, so files compare one to one.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Jpeg_JpegWriterOptions.md&amp;value=---%0Auid%3A%20Egami.Formats.Jpeg.JpegWriterOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Jpeg.JpegWriterOptions">
+
+
+
+  <h1 id="Egami_Formats_Jpeg_JpegWriterOptions" data-uid="Egami.Formats.Jpeg.JpegWriterOptions" class="text-break">
+Class JpegWriterOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Jpeg.html">Jpeg</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Options for writing JPEG. The defaults are libjpeg-turbo's <code>cjpeg</code> defaults: quality 75, 4:2:0 and the standard Huffman
+tables of T.81 Annex K, so files compare one to one.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class JpegWriterOptions : WriterOptions</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></div>
+      <div><span class="xref">JpegWriterOptions</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_StripMetadata">WriterOptions.StripMetadata</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_OmitSrgbProfile">WriterOptions.OmitSrgbProfile</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Jpeg_JpegWriterOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">using Raster photo = Raster.Load("duck.jpg", options: new JpegReaderOptions { FastUpsampling = true });
+JpegDetails details = (JpegDetails)photo.Metadata.FormatDetails!;
+Console.WriteLine($"{details.ColorSpace}, progressive: {details.Progressive}, quality about {details.EstimatedQuality}");
+foreach (JpegComponent component in details.Components)
+{
+    Console.WriteLine($"Component {component.Id}: sampled {component.HorizontalSampling} × {component.VerticalSampling}");
+}
+
+// Gray output, and 4:4:4 (no chroma subsampling) for sharp colored edges.
+photo.Save("gray.jpg", new JpegWriterOptions { ColorType = JpegColorType.Gray });
+photo.Save("sharp.jpg", new JpegWriterOptions { Quality = 90, Subsampling = ChromaSubsampling.Subsample444 });</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_Background_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Background*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_Background" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Background">
+  Background
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the color that transparent pixels are composited onto before writing, since JPEG has no alpha, or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to ignore alpha (every pixel written as if opaque). Its own alpha is ignored. Defaults to
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Rgba8? Background { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_ColorType_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.ColorType*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_ColorType" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.ColorType">
+  ColorType
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets which components to write. Defaults to <a class="xref" href="Egami.Formats.Jpeg.JpegColorType.html#Egami_Formats_Jpeg_JpegColorType_Auto">Auto</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public JpegColorType ColorType { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Jpeg.JpegColorType.html">JpegColorType</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_Default_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Default*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_Default" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the default options.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static JpegWriterOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html">JpegWriterOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_GainMap_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.GainMap*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_GainMap" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.GainMap">
+  GainMap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L167"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how to write an HDR raster as an Ultra HDR JPEG (HDR Design question 10), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to
+write its pixels as they are. Set, the raster is tone mapped with <a class="xref" href="Egami.Colors.ToneMapping.html#Egami_Colors_ToneMapping_Bt2390">Bt2390</a> to the SDR base
+image, written at <a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_Quality">Quality</a>, and <a class="xref" href="Egami.Colors.GainMap.html#Egami_Colors_GainMap_Create_Egami_Raster_Egami_Raster_Egami_Colors_GainMapOptions_">Create(Raster, Raster?, GainMapOptions?)</a> makes the map that brings the HDR raster
+back, written after it as <a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_KeepGainMap">KeepGainMap</a> says. To choose the SDR rendition yourself, set
+<a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_GainMap">GainMap</a> of the SDR raster to <a class="xref" href="Egami.Colors.GainMap.html#Egami_Colors_GainMap_Create_Egami_Raster_Egami_Raster_Egami_Colors_GainMapOptions_">Create(Raster, Raster?, GainMapOptions?)</a>'s map and save that.
+Needs the whole raster, so a streamed encode throws <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GainMapOptions? GainMap { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.GainMapOptions.html">GainMapOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Jpeg_JpegWriterOptions_GainMap_examples">Examples</h4>
+  <pre><code class="lang-csharp">// An HDR raster as Ultra HDR: the SDR base, tone mapped with BT.2390, and a gain map that brings the HDR raster back.
+using Raster&lt;RgbaF32&gt; hdr = Raster.Load&lt;RgbaF32&gt;("render.exr");
+hdr.Save("render.jpg", new JpegWriterOptions { Quality = 90, GainMap = new GainMapOptions() });
+
+// Or choose the SDR rendition: the map goes in its metadata, and saving as JPEG writes both.
+using Raster&lt;Rgb8&gt; sdr = hdr.Derive(ops =&gt; ops.ToneMap(ToneMapping.Reinhard)).As&lt;Rgb8&gt;();
+sdr.Metadata.GainMap = GainMap.Create(hdr, sdr, new GainMapOptions { Scale = 4 });
+sdr.Save("graded.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_KeepGainMap_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.KeepGainMap*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_KeepGainMap" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.KeepGainMap">
+  KeepGainMap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L154"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether a gain map the raster carries (<a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_GainMap">GainMap</a>, from an Ultra
+HDR, ISO 21496-1 or Apple file) is written back: the gain map JPEG after the image, an MPF index, ISO 21496-1 metadata and
+Adobe's hdrgm XMP with a GContainer directory, so HDR displays show the HDR rendition. A map read from the file is copied
+as it was stored; one an operation moved is encoded again. <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_StripMetadata">StripMetadata</a> leaves it out too.
+Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool KeepGainMap { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_Jpeg_JpegWriterOptions_KeepGainMap_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Crops, turns, flips and resizes move the gain map with the picture; saving as JPEG writes it back.
+using Raster photo = Raster.Load("ultrahdr.jpg");
+using Raster cropped = photo.Derive(ops =&gt; ops.Crop(16, 16, 200, 150).Rotate(90));
+cropped.Save("cropped.jpg");                                             // still Ultra HDR
+
+// Operations that change pixel values drop it (Operation.GainMapDropped), and so do formats other than JPEG
+// (Save.GainMapDropped); KeepGainMap = false leaves it out on purpose.
+cropped.Save("sdr-only.jpg", new JpegWriterOptions { KeepGainMap = false });</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_OptimizeHuffman_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.OptimizeHuffman*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_OptimizeHuffman" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.OptimizeHuffman">
+  OptimizeHuffman
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether to build Huffman tables for this image in a second pass instead of using the standard ones:
+usually 5 to 10% smaller files, and slower. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool OptimizeHuffman { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_Precision_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Precision*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_Precision" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Precision">
+  Precision
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L120"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bits per sample, 8 or 12. 12 keeps the detail of 16-bit and float images (written as SOF1, or SOF2 when
+progressive, with Huffman tables always optimized), but no browser shows 12-bit JPEG; 8-bit pixel types gain nothing from
+it. Defaults to 8.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Precision { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not 8 or 12.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_Progressive_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Progressive*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_Progressive" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Progressive">
+  Progressive
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether to write a progressive file: libjpeg's standard scan script (ten scans for color, six for
+gray) with Huffman tables optimized for each scan, as <code>cjpeg -progressive</code> writes. Readers show a coarse image first
+and refine it; files are usually a few percent smaller than baseline, and decode to the same pixels. The encoder holds every
+quantized coefficient until the last scan, about 2 bytes per sample, counted against <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>;
+a streamed encode buffers. Re-saving a progressive file writes baseline unless this is set. Defaults to
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Progressive { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_Quality_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Quality*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_Quality" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Quality">
+  Quality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the quality, 1 (smallest) to 100 (best). It scales the example quantization tables of T.81 Annex K with the IJG
+formula, so the same number gives about the same file as other libjpeg-based encoders. Defaults to 75.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Quality { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 1 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_RestartInterval_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.RestartInterval*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_RestartInterval" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.RestartInterval">
+  RestartInterval
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of MCUs between restart markers, or 0 for none. Restart markers let a reader resynchronize after damaged
+data, at 2 bytes each. Defaults to 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int RestartInterval { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 65,535.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jpeg_JpegWriterOptions_Subsampling_" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Subsampling*"></a>
+
+  <h3 id="Egami_Formats_Jpeg_JpegWriterOptions_Subsampling" data-uid="Egami.Formats.Jpeg.JpegWriterOptions.Subsampling">
+  Subsampling
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the chroma subsampling. Defaults to <a class="xref" href="Egami.Formats.Jpeg.ChromaSubsampling.html#Egami_Formats_Jpeg_ChromaSubsampling_Subsample420">Subsample420</a> (4:2:0). Ignored for gray output.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChromaSubsampling Subsampling { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Jpeg.ChromaSubsampling.html">ChromaSubsampling</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg/JpegWriterOptions.cs/#L54" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

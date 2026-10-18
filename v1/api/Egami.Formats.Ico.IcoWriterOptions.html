@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class IcoWriterOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class IcoWriterOptions | Egami ">
+      
+      <meta name="description" content="Options for writing ICO and CUR. Each raster becomes one entry at its own size, or one entry per size in ; entries are 8-bit RGBA, sorted smallest first. EXIF, XMP and IPTC are not written; an ICC profile goes into PNG entries.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Ico_IcoWriterOptions.md&amp;value=---%0Auid%3A%20Egami.Formats.Ico.IcoWriterOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Ico.IcoWriterOptions">
+
+
+
+  <h1 id="Egami_Formats_Ico_IcoWriterOptions" data-uid="Egami.Formats.Ico.IcoWriterOptions" class="text-break">
+Class IcoWriterOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ico/IcoFormat.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Ico.html">Ico</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Options for writing ICO and CUR. Each raster becomes one entry at its own size, or one entry per size in <a class="xref" href="Egami.Formats.Ico.IcoWriterOptions.html#Egami_Formats_Ico_IcoWriterOptions_Sizes">Sizes</a>;
+entries are 8-bit RGBA, sorted smallest first. EXIF, XMP and IPTC are not written; an ICC profile goes into PNG entries.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class IcoWriterOptions : WriterOptions</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></div>
+      <div><span class="xref">IcoWriterOptions</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_StripMetadata">WriterOptions.StripMetadata</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_OmitSrgbProfile">WriterOptions.OmitSrgbProfile</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Ico_IcoWriterOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A favicon: 16, 32 and 48 resized from one raster. A raster that is not square is centred on transparency.
+logo.Save("favicon.ico", new IcoWriterOptions { Sizes = IcoWriterOptions.FaviconSizes });
+
+// Windows' set: 16 to 256, the 256 entry as PNG and the rest as 32-bit BMP, as Microsoft's guidance asks.
+logo.Save("app.ico", new IcoWriterOptions { Sizes = IcoWriterOptions.WindowsSizes, Filter = Egami.Operations.ResampleFilter.Lanczos3 });
+
+// Hand-drawn small sizes: each raster is written at its own size; the 48 comes from the largest raster.
+using Raster&lt;Rgba8&gt; drawn16 = logo.Derive(ops =&gt; ops.Fit(16, 16));
+Raster.SaveAll([logo, drawn16], "drawn.ico", new IcoWriterOptions { Sizes = [16, 48] });</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Ico_IcoWriterOptions_Default_" data-uid="Egami.Formats.Ico.IcoWriterOptions.Default*"></a>
+
+  <h3 id="Egami_Formats_Ico_IcoWriterOptions_Default" data-uid="Egami.Formats.Ico.IcoWriterOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ico/IcoFormat.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the default options.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IcoWriterOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Ico.IcoWriterOptions.html">IcoWriterOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Ico_IcoWriterOptions_Encoding_" data-uid="Egami.Formats.Ico.IcoWriterOptions.Encoding*"></a>
+
+  <h3 id="Egami_Formats_Ico_IcoWriterOptions_Encoding" data-uid="Egami.Formats.Ico.IcoWriterOptions.Encoding">
+  Encoding
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ico/IcoFormat.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how every entry is stored, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to choose per entry: PNG for 256 × 256 entries and
+32-bit BMP with an AND mask below, as Microsoft's icon guidance asks; an entry written at the size of a raster loaded from
+an icon keeps that entry's encoding.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IcoEntryEncoding? Encoding { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Ico.IcoEntryEncoding.html">IcoEntryEncoding</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Ico_IcoWriterOptions_FaviconSizes_" data-uid="Egami.Formats.Ico.IcoWriterOptions.FaviconSizes*"></a>
+
+  <h3 id="Egami_Formats_Ico_IcoWriterOptions_FaviconSizes" data-uid="Egami.Formats.Ico.IcoWriterOptions.FaviconSizes">
+  FaviconSizes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ico/IcoFormat.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sizes of a favicon: 16, 32 and 48.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IReadOnlyList&lt;int&gt; FaviconSizes { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Ico_IcoWriterOptions_Filter_" data-uid="Egami.Formats.Ico.IcoWriterOptions.Filter*"></a>
+
+  <h3 id="Egami_Formats_Ico_IcoWriterOptions_Filter" data-uid="Egami.Formats.Ico.IcoWriterOptions.Filter">
+  Filter
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ico/IcoFormat.cs/#L131"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the filter that resizes rasters to <a class="xref" href="Egami.Formats.Ico.IcoWriterOptions.html#Egami_Formats_Ico_IcoWriterOptions_Sizes">Sizes</a>, as for Resize. Defaults to <a class="xref" href="Egami.Operations.ResampleFilter.html#Egami_Operations_ResampleFilter_Bicubic">Bicubic</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ResampleFilter Filter { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.ResampleFilter.html">ResampleFilter</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Ico_IcoWriterOptions_Hotspot_" data-uid="Egami.Formats.Ico.IcoWriterOptions.Hotspot*"></a>
+
+  <h3 id="Egami_Formats_Ico_IcoWriterOptions_Hotspot" data-uid="Egami.Formats.Ico.IcoWriterOptions.Hotspot">
+  Hotspot
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ico/IcoFormat.cs/#L137"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a cursor's hotspot at the raster's own size, scaled to each entry and kept inside it, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the
+default) for the raster's <a class="xref" href="Egami.Formats.Ico.IcoDetails.html#Egami_Formats_Ico_IcoDetails_Hotspot">Hotspot</a>, else the top-left pixel. Icons ignore it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Point? Hotspot { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Point.html">Point</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Ico_IcoWriterOptions_Sizes_" data-uid="Egami.Formats.Ico.IcoWriterOptions.Sizes*"></a>
+
+  <h3 id="Egami_Formats_Ico_IcoWriterOptions_Sizes" data-uid="Egami.Formats.Ico.IcoWriterOptions.Sizes">
+  Sizes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ico/IcoFormat.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the square sizes to write, 1 to 256, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to write each raster at its own size, a
+raster larger than 256 fitted down to 256 with a warning. Each size comes from a raster of exactly that size when one is
+given, otherwise from the largest raster resized with <a class="xref" href="Egami.Formats.Ico.IcoWriterOptions.html#Egami_Formats_Ico_IcoWriterOptions_Filter">Filter</a>; a raster that is not square is fitted inside
+the square and centred on transparency.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;int&gt;? Sizes { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A size is outside 1 to 256.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The list is empty or names a size twice.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Ico_IcoWriterOptions_WindowsSizes_" data-uid="Egami.Formats.Ico.IcoWriterOptions.WindowsSizes*"></a>
+
+  <h3 id="Egami_Formats_Ico_IcoWriterOptions_WindowsSizes" data-uid="Egami.Formats.Ico.IcoWriterOptions.WindowsSizes">
+  WindowsSizes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ico/IcoFormat.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the sizes Windows' icon guidance asks for: 16, 24, 32, 48, 64 and 256.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IReadOnlyList&lt;int&gt; WindowsSizes { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ico/IcoFormat.cs/#L72" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

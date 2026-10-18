@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Memory and threading | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Memory and threading | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/memory-and-threading.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="memory-and-threading">Memory and threading</h1>
+
+<h2 id="the-context">The context</h2>
+<pre><code class="lang-csharp">// Everything that is not specific to one call lives in an immutable EgamiContext. Change it with `with`.
+EgamiContext context = EgamiContext.Default with
+{
+    MaxParallelism = 4,                                         // threads one operation may use; 1 is sequential
+    Limits = SafetyLimits.Default with { MaxPixels = 50_000_000 },
+};
+
+using Raster image = Raster.Load(&quot;duck.png&quot;, context);
+image.Apply(ops =&gt; ops.Blur(2));                                // uses the raster's context: 4 threads at most
+</code></pre>
+<p>A raster remembers the context it was loaded or created with, and its operations use it. <code>EgamiContext.Default</code> serves every call
+that passes none; <code>EgamiContext.SetDefault</code> replaces it once, at startup, before anything reads it.</p>
+<h2 id="threads">Threads</h2>
+<p>Operations split the image into bands of rows and run them on up to <code>MaxParallelism</code> threads (the processor count by default).
+Small images run on one thread, where splitting would cost more than it saves. Decoding is mostly sequential by nature; JPEG
+splits files at their restart markers, pipelines progressive scans and converts in parallel bands, and animated formats map
+frames in parallel. PNG compresses large images on several threads when
+<code>PngWriterOptions.ParallelCompression</code> is set, with the same bytes at any thread count.</p>
+<p>Rasters are not thread-safe: do not run two chains on the same raster at once. Separate rasters, contexts and loads are
+independent, and readers, writers and contexts can be shared freely.</p>
+<h2 id="streaming">Streaming</h2>
+<p><code>RasterDecoder</code> decodes a band of rows or a frame at a time, so an image never has to exist whole:</p>
+<pre><code class="lang-csharp">// A band of rows at a time: memory is the band plus the format's working set, whatever the image size.
+using RasterDecoder decoder = RasterDecoder.Open(&quot;egret.png&quot;);
+Console.WriteLine($&quot;{decoder.Info.Width}×{decoder.Info.Height}, {decoder.Info.Access}, holding {decoder.Info.WorkingBytes:N0} bytes&quot;);
+using Raster&lt;Gray8&gt; band = Raster.Create&lt;Gray8&gt;(decoder.Info.Width, 64);
+int rows;
+while ((rows = decoder.ReadRows(band)) &gt; 0)
+{
+    for (int y = 0; y &lt; rows; y++)
+    {
+        foreach (Gray8 pixel in band.Row(y))
+        {
+            sum += pixel.L;
+        }
+    }
+}
+</code></pre>
+<p><code>ReaderOptions.Region</code> decodes only a rectangle and <code>MinimumSize</code> a reduced size, in <code>Load</code>, <code>Probe</code> and the decoder alike.
+<code>RasterInfo.Access</code> says whether a format streams its rows (<code>RasterAccess.Streamed</code>) or is decoded into a buffer first
+(<code>RasterAccess.Buffered</code>), and
+<code>WorkingBytes</code> how much the decode holds besides your band:</p>
+<pre><code class="lang-csharp">// Only a rectangle, at a quarter of its size or a little more.
+ReaderOptions options = new() { Region = new Rect(100, 200, 256, 256), MinimumSize = new Size(64, 64) };
+RasterInfo info = Raster.Probe(&quot;egret.png&quot;, options: options);   // Access and WorkingBytes before decoding
+using Raster tile = Raster.Load(&quot;egret.png&quot;, options: options);
+</code></pre>
+<p><code>Raster.LoadInto</code> decodes into a raster you already have, and <code>ReadFrame</code> gives an animation one composed frame at a time:</p>
+<pre><code class="lang-csharp">// Decode into a raster you already have: video frames and pooled images reuse their memory.
+using Raster&lt;Rgb8&gt; reused = Raster.Create&lt;Rgb8&gt;(480, 640);
+Raster.LoadInto(&quot;egret.png&quot;, reused);
+</code></pre><pre><code class="lang-csharp">// An animation one composed frame at a time, into one reused canvas.
+using RasterDecoder gif = RasterDecoder.Open(&quot;pan.gif&quot;);
+using Raster&lt;Rgba8&gt; canvas = Raster.Create&lt;Rgba8&gt;(gif.Info.Width, gif.Info.Height);
+while (gif.ReadFrame(canvas) is Metadata.FrameMetadata frame)
+{
+    Console.WriteLine($&quot;frame {count++}, shown for {frame.Delay.TotalMilliseconds} ms&quot;);
+}
+</code></pre>
+<p><code>RasterDecoder.OpenIncremental</code> decodes while the bytes are still arriving: <code>Append</code> each chunk as it comes, read the rows
+finished so far, and call <code>EndOfInput</code> after the last. <code>Status</code> (a <code>DecodeStatus</code>) says whether rows are ready, more bytes are
+needed, or the frame or image is done, and <code>RenderPreview</code> draws an interlaced PNG, a progressive JPEG or a GIF frame as far
+as it has arrived. Files that are decoded into a buffer first (such as bottom-up BMP and TGA) wait for the end.</p>
+<pre><code class="lang-csharp">// Decode while the bytes arrive, a chunk at a time, as from a download.
+using RasterDecoder decoder = RasterDecoder.OpenIncremental();
+Raster&lt;Rgb8&gt;? band = null;
+foreach (ReadOnlyMemory&lt;byte&gt; chunk in file.Chunk(4096).Select(c =&gt; new ReadOnlyMemory&lt;byte&gt;(c)))
+{
+    decoder.Append(chunk.Span);
+    if (decoder.HeaderRead)
+    {
+        band ??= Raster.Create&lt;Rgb8&gt;(decoder.Info.Width, 16);
+        int rows;
+        while ((rows = decoder.ReadRows(band)) &gt; 0)
+        {
+            rowsSoFar += rows; // the rows finished so far; an interlaced file shows RenderPreview instead
+        }
+    }
+}
+
+decoder.EndOfInput();
+while (decoder.ReadRows(band!) is int rest and &gt; 0)
+{
+    rowsSoFar += rest;
+}
+
+band?.Dispose();
+</code></pre>
+<p>On a server, <code>RasterDecoder.OpenAsync</code> reads an asynchronous stream the same way, and <code>LoadAsync</code> from a stream that cannot seek,
+such as a request body, no longer holds the whole file while it decodes:</p>
+<pre><code class="lang-csharp">// On a server: read rows as the upload arrives, without holding the whole file.
+await using Stream upload = File.OpenRead(&quot;egret.png&quot;);
+using RasterDecoder decoder = await RasterDecoder.OpenAsync(upload, cancellationToken: TestContext.Current.CancellationToken);
+using Raster&lt;Gray8&gt; band = Raster.Create&lt;Gray8&gt;(decoder.Info.Width, 32);
+int rows;
+while ((rows = await decoder.ReadRowsAsync(band, TestContext.Current.CancellationToken)) &gt; 0)
+{
+    for (int y = 0; y &lt; rows; y++)
+    {
+        sum += band.Row(y)[0].L;
+    }
+}
+</code></pre>
+<p><code>RasterEncoder</code> writes the other way: a band of rows or a frame at a time, into a file or stream, with the bytes <code>Save</code> writes.
+Options that need every pixel before the first byte, such as an automatic palette, PNG's <code>Reduce</code> or choosing alpha by looking
+at the pixels, throw <code>NotSupportedException</code> at <code>Create</code> and say what to set instead. BMP and TGA store rows bottom-up: on a
+stream that cannot seek they are written top-down, as is run-length TGA, and an APNG there needs <code>PngWriterOptions.FrameCount</code>.
+An interlaced PNG (<code>PngWriterOptions.Interlace</code>) holds the rows until the last one, since its first pass needs the whole height.</p>
+<pre><code class="lang-csharp">// A huge image written a band at a time: only the band is ever in memory.
+const int Width = 8_000, Height = 6_000;
+using Raster&lt;Rgb8&gt; band = Raster.Create&lt;Rgb8&gt;(Width, 64);
+using RasterEncoder&lt;Rgb8&gt; encoder = RasterEncoder.Create&lt;Rgb8&gt;(&quot;big.png&quot;, Width, Height);
+for (int top = 0; top &lt; Height; top += band.Height)
+{
+    int rows = Math.Min(band.Height, Height - top);
+    for (int y = 0; y &lt; rows; y++)
+    {
+        band.Row(y).Fill(new Rgb8((byte)(top + y), 128, 200));
+    }
+
+    encoder.WriteRows(band, rows);
+}
+
+encoder.Complete(); // writes IEND; without it the file is deleted on dispose
+</code></pre><pre><code class="lang-csharp">// An animation written a frame at a time, each frame from one reused canvas.
+using Raster&lt;Rgba8&gt; canvas = Raster.Create&lt;Rgba8&gt;(120, 80);
+using FileStream file = File.Create(&quot;spinner.gif&quot;);
+using RasterEncoder&lt;Rgba8&gt; gif = RasterEncoder.Create&lt;Rgba8&gt;(file, GifFormat.Info, 120, 80);
+for (int i = 0; i &lt; 12; i++)
+{
+    for (int y = 0; y &lt; canvas.Height; y++)
+    {
+        canvas.Row(y).Fill(new Rgba8(255, 255, 255, 255));
+    }
+
+    canvas.Row(40)[(i * 10)..((i * 10) + 10)].Fill(new Rgba8(200, 0, 0, 255));
+    gif.WriteFrame(canvas, new Metadata.FrameMetadata { Delay = TimeSpan.FromMilliseconds(80) });
+}
+
+gif.Complete();
+</code></pre>
+<p><code>WriteRowsAsync</code> and <code>CompleteAsync</code> write each band out asynchronously, and <code>SaveAsync</code> now does the same instead of
+encoding the whole file into memory first:</p>
+<pre><code class="lang-csharp">// On a server: send each band as it is encoded, without holding the file.
+using RasterDecoder source = RasterDecoder.Open(&quot;egret.png&quot;);
+using Raster&lt;Rgb8&gt; band = Raster.Create&lt;Rgb8&gt;(source.Info.Width, 32);
+using RasterEncoder&lt;Rgb8&gt; encoder = RasterEncoder.Create&lt;Rgb8&gt;(response, JpegFormat.Info, source.Info.Width, source.Info.Height);
+int rows;
+while ((rows = source.ReadRows(band)) &gt; 0)
+{
+    await encoder.WriteRowsAsync(band, rows, TestContext.Current.CancellationToken);
+}
+
+await encoder.CompleteAsync(TestContext.Current.CancellationToken);
+</code></pre>
+<p><code>Raster.Transcode</code> joins the two: rows go from the decoder through a short chain of operations into the encoder, so a thumbnail
+of a 20,000 × 20,000 PNG holds well under a megabyte of pixels instead of 1.6 GB. When the chain starts with <code>Fit</code>, <code>Cover</code> or
+<code>Resize</code>, the decoder already shrinks by a whole factor (<code>MinimumSize</code>), and a leading <code>Crop</code> becomes <code>Region</code>. The chain may
+crop, resize, mirror left to right and adjust colors pixel by pixel; anything that needs rows out of order or the whole image,
+such as <code>Blur</code> or <code>Rotate</code>, throws <code>NotSupportedException</code> before anything is written.</p>
+<pre><code class="lang-csharp">// A thumbnail of a big file without ever holding the full image: the decoder already shrinks by a whole factor.
+Raster.Transcode(&quot;egret.png&quot;, &quot;thumb.jpg&quot;, x =&gt; x.Fit(256, 256).Saturation(1.1f));
+</code></pre><pre><code class="lang-csharp">// On a server: an upload to a 512-pixel PNG preview, streamed both ways.
+await using Stream upload = File.OpenRead(&quot;egret.png&quot;);
+await Raster.TranscodeAsync(upload, response, PngFormat.Info, x =&gt; x.Fit(512, 512), cancellationToken: TestContext.Current.CancellationToken);
+</code></pre><h2 id="pixel-memory">Pixel memory</h2>
+<p>Pixel memory never lives on the garbage-collected heap as large arrays. <code>PooledPixelMemorySource.Shared</code> hands out pooled arrays
+for small blocks and 64-byte-aligned unmanaged memory for large ones, keeps up to 128 MB of freed blocks for reuse, and splits very
+large images into blocks of whole rows. <code>Trim()</code> frees what it keeps.</p>
+<p>You can plug in your own source through <code>EgamiContext.Memory</code> by implementing <code>IPixelMemorySource</code>.</p>
+<h2 id="finding-leaks">Finding leaks</h2>
+<pre><code class="lang-csharp">PixelMemoryUsage usage = PooledPixelMemorySource.Shared.Usage;
+Console.WriteLine($&quot;{usage.LiveBlocks} blocks, {usage.LiveBytes:N0} bytes in use&quot;);
+
+// Looking for a raster someone forgot to dispose: track leaks for a while, with stack traces.
+usage.CaptureStackTraces = true;
+usage.LeakDetected += (_, leak) =&gt; Console.WriteLine($&quot;{leak.Bytes:N0} bytes never disposed, allocated at\n{leak.StackTrace}&quot;);
+usage.TrackLeaks = true;
+</code></pre>
+<p><code>LiveBlocks</code> and <code>LiveBytes</code> are always counted, at the cost of one atomic addition per allocation. <code>TrackLeaks</code> gives each new
+block a small finalizable tracker, so turn it on only while you look; <code>CaptureStackTraces</code> makes allocations much slower still.
+<code>LeakDetected</code> runs on the finalizer thread. Leaks come only through <code>LeakDetected</code>, never through the
+<a href="../diagnostics.html">diagnostics</a> handler, which reports what one call found.</p>
+<h2 id="your-own-memory-source">Your own memory source</h2>
+<pre><code class="lang-csharp">// Every pixel buffer comes from the context's IPixelMemorySource; wrap the pooled one to count what it hands out.
+CountingSource counting = new(PooledPixelMemorySource.Shared);
+EgamiContext context = EgamiContext.Default with { Memory = counting };
+using (Raster&lt;Rgba8&gt; image = Raster.Create&lt;Rgba8&gt;(512, 512, context))
+{
+    image.Apply(ops =&gt; ops.Blur(2));
+}
+
+Console.WriteLine($&quot;{counting.Blocks} blocks, {counting.Bytes:N0} bytes&quot;);
+</code></pre><pre><code class="lang-csharp">private sealed class CountingSource(IPixelMemorySource inner) : IPixelMemorySource
+{
+    public int Blocks;
+    public long Bytes;
+
+    public int MaxBlockBytes =&gt; inner.MaxBlockBytes;
+
+    public IMemoryOwner&lt;byte&gt; Allocate(int byteLength, ClearMode clear)
+    {
+        Interlocked.Increment(ref Blocks);
+        Interlocked.Add(ref Bytes, byteLength);
+        return inner.Allocate(byteLength, clear);   // ClearMode.Zero when the caller needs zeroed memory
+    }
+}
+</code></pre><pre><code class="lang-csharp">// In tests or debug builds: report a raster that was never disposed, and where it was allocated.
+PooledPixelMemorySource memory = new();
+memory.Usage.TrackLeaks = true;
+memory.Usage.CaptureStackTraces = true;
+memory.Usage.LeakDetected += (sender, e) =&gt;
+    Console.Error.WriteLine($&quot;Leaked {e.Bytes:N0} bytes, allocated at:\n{e.StackTrace}&quot;);
+</code></pre><h2 id="run-it">Run it</h2>
+<p><a href="https://github.com/inexin/Egami/tree/main/samples/MemoryAndThreading"><code>samples/MemoryAndThreading</code></a> is a console app that does what this guide shows on the bundled
+images: <code>dotnet run --project samples/MemoryAndThreading</code> writes its results to <code>./output</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/memory-and-threading.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

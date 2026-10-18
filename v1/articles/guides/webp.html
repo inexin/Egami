@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>WebP | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="WebP | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/webp.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="webp">WebP</h1>
+
+<p>Egami reads and writes WebP: lossless (VP8L), lossy (VP8) with or without alpha, and animated, written from RFC 9649 and RFC 6386
+with no native code. <code>WebpFormat.Info</code> is registered in <code>EgamiContext.Default</code>, so <code>Raster.Load</code> recognizes WebP from its first
+bytes and <code>Save(&quot;x.webp&quot;)</code> picks the writer.</p>
+<h2 id="writing">Writing</h2>
+<pre><code class="lang-csharp">// Lossy, the default for rasters not read from WebP: quality 0 to 100 and effort 0 to 6 on cwebp's scales.
+photo.Save(&quot;small.webp&quot;, new WebpWriterOptions { Quality = 80 });
+
+// Lossless: every pixel exact, colors under full transparency included. Effort 0 (fastest) to 6 (smallest).
+photo.Save(&quot;duck.webp&quot;, new WebpWriterOptions { Lossless = true, Effort = 6 });
+
+// A raster read from a WebP file keeps its kind when saved with the defaults.
+using Raster again = Raster.Load(&quot;duck.webp&quot;);
+again.Save(&quot;copy.webp&quot;);
+</code></pre>
+<p><code>WebpWriterOptions</code> follows libwebp's own knobs, so the same numbers give about the same files as <code>cwebp</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Lossless</code></td>
+<td><code>null</code></td>
+<td><code>true</code> writes VP8L, <code>false</code> VP8; <code>null</code> keeps the kind of the WebP file the raster came from (<code>WebpDetails.Lossless</code>) and writes lossy otherwise</td>
+</tr>
+<tr>
+<td><code>Quality</code></td>
+<td>75</td>
+<td>Lossy quality, 0 to 100, cwebp's <code>-q</code> scale</td>
+</tr>
+<tr>
+<td><code>Effort</code></td>
+<td>4</td>
+<td>0 (fastest) to 6 (smallest), cwebp's <code>-m</code>, for both kinds</td>
+</tr>
+<tr>
+<td><code>AlphaQuality</code></td>
+<td>100</td>
+<td>Lossy files with transparency: 100 keeps alpha exact</td>
+</tr>
+<tr>
+<td><code>KeepTransparentColors</code></td>
+<td><code>true</code></td>
+<td>Colors under fully transparent pixels are kept (exactly in lossless files); <code>false</code> lets the encoder change them for smaller files</td>
+</tr>
+<tr>
+<td><code>SharpYuv</code></td>
+<td><code>false</code></td>
+<td>Lossy: a slower color conversion that keeps sharp colored edges</td>
+</tr>
+<tr>
+<td><code>NearLossless</code></td>
+<td>100</td>
+<td>Lossless: below 100 pixel values may move a little before coding</td>
+</tr>
+<tr>
+<td><code>MixedFrames</code></td>
+<td><code>false</code></td>
+<td>Animations: each frame is encoded both ways and the smaller kept</td>
+</tr>
+<tr>
+<td><code>FirstFrameOnly</code></td>
+<td><code>false</code></td>
+<td>Writes only the first frame, as a still</td>
+</tr>
+</tbody>
+</table>
+<p>Lossy files with transparency carry the alpha in an ALPH chunk: compressed losslessly with the filter that gives the smallest
+result (all four tried at effort 5 and 6), and with fewer levels when <code>AlphaQuality</code> is below 100, fully transparent and fully
+opaque pixels always kept exact.</p>
+<p>Lossless WebP holds sides up to 16,384 pixels and lossy up to 16,383; larger rasters throw before any work. Every pixel type can
+be saved: it is converted to 8-bit RGBA first.</p>
+<h2 id="reading">Reading</h2>
+<p><code>Raster.Load</code> gives <code>Rgba8</code> when the file says it has alpha (the VP8X flag, the VP8L hint or an ALPH chunk) and <code>Rgb8</code> otherwise.
+Lossless files decode to exactly libwebp's pixels. Lossy files decode to libwebp's YUV planes sample for sample, and to RGB within
+one level of libwebp's: chroma is brought to full resolution exactly as libwebp's default upsampler does, then converted with the
+BT.601 kernel of the planar YUV guide. <code>YuvRaster.Load</code> returns a lossy file's planes untouched (4:2:0, BT.601, limited range, chroma
+in the centre), with the alpha as a fourth plane. Every kind streams through <code>RasterDecoder</code>, with regions, reductions and
+incremental decode. The same VP8 decoder reads video frames too, inter frames included: see <a href="vp8.html">VP8 video frames</a>.
+<code>WebpReaderOptions</code> adds two choices on top of the general reader options:</p>
+<pre><code class="lang-csharp">using Raster image = Raster.Load(&quot;duck.webp&quot;, options: new WebpReaderOptions
+{
+    UseBackgroundColor = true, // animations: start from the ANIM background color instead of transparent
+    FastUpsampling = true,     // lossy files: repeat chroma samples instead of interpolating
+});
+</code></pre><h2 id="format-details-and-metadata">Format details and metadata</h2>
+<p>ICC profiles, EXIF and XMP are read into <code>RasterMetadata</code> and written back unchanged. WebP has no resolution field, so the
+resolution is read from the EXIF block and written into it, in a minimal EXIF block when the raster has none. IPTC has no place in
+WebP and is not written. <code>WebpDetails</code> says what kind of file it was and keeps chunks Egami does not read, each a <code>WebpChunk</code> with
+its <code>WebpChunkPosition</code>; animation frames carry <code>WebpFrameDetails</code>.</p>
+<pre><code class="lang-csharp">using Raster&lt;Rgba8&gt; image = Raster.Load&lt;Rgba8&gt;(&quot;duck.webp&quot;);
+WebpDetails webp = (WebpDetails)image.Metadata.FormatDetails!;
+Console.WriteLine($&quot;{(webp.Lossless ? &quot;lossless&quot; : &quot;lossy&quot;)}, extended: {webp.Extended}, alpha: {webp.HasAlpha}&quot;);
+
+// Chunks Egami does not read are kept and written back where they were.
+foreach (WebpChunk chunk in webp.OtherChunks)
+{
+    Console.WriteLine($&quot;{chunk.Type}: {chunk.Data.Length} bytes, {chunk.Position}&quot;);
+}
+
+// An animation's frames say whether each was stored lossless.
+foreach (Frame&lt;Rgba8&gt; frame in image.Frames)
+{
+    Console.WriteLine(frame.Metadata.FormatDetails is WebpFrameDetails { Lossless: true } ? &quot;lossless frame&quot; : &quot;lossy frame&quot;);
+}
+</code></pre><h2 id="animation">Animation</h2>
+<p>Animated WebP reads and writes through the same frames as GIF and APNG. Reading composes every frame on a canvas exactly as
+libwebp's animation decoder does (its blending and key frames included), starting transparent unless
+<code>WebpReaderOptions.UseBackgroundColor</code> asks for the ANIM background color; <code>ReaderOptions.Frames</code> and streaming through
+<code>RasterDecoder</code> work as for GIF, holding one canvas whatever the frame count. Writing stores each frame's changed rectangle at
+even offsets, blended over the canvas when its new pixels are opaque and replacing them otherwise, with delays rounded to whole
+milliseconds and capped at 16,777,215.</p>
+<pre><code class="lang-csharp">// A GIF (or APNG) becomes an animated WebP in one Load and one Save: frames, delays and loop count carry over. Each frame
+// stores only what changed; lossless frames are exact, MixedFrames keeps whichever kind is smaller per frame.
+using Raster gif = Raster.Load(&quot;pan.gif&quot;);
+gif.Save(&quot;pan.webp&quot;, new WebpWriterOptions { Lossless = false, MixedFrames = true });
+
+// Read back, every frame is the composed canvas, as with GIF and APNG.
+using Raster&lt;Rgba8&gt; webp = Raster.Load&lt;Rgba8&gt;(&quot;pan.webp&quot;);
+foreach (Frame&lt;Rgba8&gt; frame in webp.Frames)
+{
+    Console.WriteLine($&quot;{frame.Metadata.Delay.TotalMilliseconds} ms, changed {frame.Metadata.Bounds}, blend {frame.Metadata.Blend}&quot;);
+}
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/webp.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

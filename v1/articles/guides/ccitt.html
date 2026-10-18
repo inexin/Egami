@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>CCITT fax | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="CCITT fax | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/ccitt.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="ccitt-fax">CCITT fax</h1>
+
+<p>Egami decodes raw CCITT fax data: modified Huffman and Group 3 (ITU-T T.4, one- and two-dimensional) and Group 4 (ITU-T T.6),
+the bi-level coding of fax machines, of many scanned PDFs and of TIFF compressions 2, 3 and 4. Raw data has no header, so its
+parameters come from outside: in a PDF they are the CCITTFaxDecode filter's DecodeParms dictionary, and <code>CcittFaxParameters</code>
+holds the same eight values with the same defaults. <code>CcittFax.Encode</code> writes Group 4 and one-dimensional Group 3 for PDF
+images; inside TIFF CCITT data is read and written by the TIFF format. Every CCITT stream of a 4,000-file PDF corpus, byte-aligned Group 4 among them, and of a matrix of every parameter
+combination decodes bit for bit as PDFium and pdf.js decode it.</p>
+<h2 id="as-a-pdf-filter">As a PDF filter</h2>
+<p><code>CcittFax.Decode</code> gives what the filter gives: one bit a pixel, most significant first, each row padded to whole bytes, black 0
+and white 1 unless <code>BlackIs1</code> is set. The PDF library then applies the image's /Decode array, /ImageMask and color space, as it
+does after every other filter.</p>
+<pre><code class="lang-csharp">// A PDF image with /Filter /CCITTFaxDecode: its DecodeParms become the parameters, and the result is the filter's
+// output, packed rows with black 0 and white 1, ready for the image's /Decode array and color space.
+CcittFaxParameters parameters = new() { K = -1, EncodedByteAlign = true, Columns = 301, Rows = 48 };
+byte[] rows = CcittFax.Decode(stream, parameters, out int rowCount);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>K</code></td>
+<td>0</td>
+<td>Below 0 Group 4; 0 one-dimensional Group 3; above 0 mixed Group 3, a bit after each EOL picking the next row's coding</td>
+</tr>
+<tr>
+<td><code>EndOfLine</code></td>
+<td>false</td>
+<td>EOLs are required before each row; they are accepted where present either way</td>
+</tr>
+<tr>
+<td><code>EncodedByteAlign</code></td>
+<td>false</td>
+<td>Group 4 rows start on byte boundaries; Group 3 EOLs end on one, after fill bits</td>
+</tr>
+<tr>
+<td><code>Columns</code></td>
+<td>1728</td>
+<td>Row width in pixels</td>
+</tr>
+<tr>
+<td><code>Rows</code></td>
+<td>0</td>
+<td>Row count; 0 decodes until the data or its end-of-block code ends</td>
+</tr>
+<tr>
+<td><code>EndOfBlock</code></td>
+<td>true</td>
+<td>The data ends with RTC (Group 3) or EOFB (Group 4); decoding stops there either way</td>
+</tr>
+<tr>
+<td><code>BlackIs1</code></td>
+<td>false</td>
+<td>The output's bit sense: 1 for black instead of 0</td>
+</tr>
+<tr>
+<td><code>DamagedRowsBeforeError</code></td>
+<td>0</td>
+<td>With EOLs and K 0 or above, how many damaged rows are skipped to the next EOL</td>
+</tr>
+</tbody>
+</table>
+<h2 id="writing">Writing</h2>
+<p><code>CcittFax.Encode</code> is the filter's inverse: it takes packed rows in the same form <code>Decode</code> gives (black 0 unless <code>BlackIs1</code>)
+and writes them with the parameters' coding. K below 0 writes Group 4, which is usually the smallest coding for scanned text,
+often half of Flate's size; K 0 writes one-dimensional Group 3. <code>EndOfLine</code> puts an EOL before each Group 3 row and
+<code>EndOfBlock</code> ends the data with RTC or EOFB. Mixed Group 3 (K above 0) and <code>EncodedByteAlign</code> are not written. The same
+parameters then go in the image's DecodeParms, and <code>Decode</code> gives back the rows exactly.</p>
+<pre><code class="lang-csharp">// A bi-level scan as a PDF image with /Filter /CCITTFaxDecode: pack its rows (0 black, 1 white), then write Group 4.
+int rowBytes = (scan.Width + 7) / 8;
+byte[] rows = new byte[rowBytes * scan.Height];
+for (int y = 0; y &lt; scan.Height; y++)
+{
+    Span&lt;Gray8&gt; row = scan.Row(y);
+    for (int x = 0; x &lt; scan.Width; x++)
+    {
+        if (row[x].L &gt;= 128)
+        {
+            rows[(y * rowBytes) + (x &gt;&gt; 3)] |= (byte)(0x80 &gt;&gt; (x &amp; 7));
+        }
+    }
+}
+
+// These parameters are the image's DecodeParms: &lt;&lt; /K -1 /Columns 301 /Rows 48 &gt;&gt;.
+CcittFaxParameters parameters = new() { K = -1, Columns = scan.Width, Rows = scan.Height };
+byte[] g4 = CcittFax.Encode(rows, parameters);
+</code></pre><h2 id="as-an-image">As an image</h2>
+<p><code>CcittFormat</code> loads the data as <code>Gray8</code>, black 0 and white 255, as 1-bit TIFF and JBIG2 load, whatever <code>BlackIs1</code> says. The
+parameters go in <code>CcittReaderOptions</code>. With <code>Rows</code> given, <code>Raster.Probe</code> reads nothing and <code>RasterDecoder</code> decodes a row at a
+time, holding only the current row and the one above it. The format has no signature, so detection never picks it.</p>
+<pre><code class="lang-csharp">// The same data as an image: Gray8, black 0 and white 255. The data has no header, so name the format.
+CcittReaderOptions options = new() { Parameters = new CcittFaxParameters { K = -1, EncodedByteAlign = true, Columns = 301, Rows = 48 } };
+using Raster image = Raster.Load(stream, CcittFormat.Info, options: options);
+</code></pre><h2 id="damaged-data">Damaged data</h2>
+<p>A row that does not decode ends decoding: the rows before it are kept, the rest are white, and the warning <code>Ccitt.Damaged</code> goes
+to <code>EgamiContext.Diagnostics</code> (or to <code>RasterMetadata.Warnings</code> for a load). With EOLs and K 0 or above, up to
+<code>DamagedRowsBeforeError</code> damaged rows are first skipped to the next EOL, each repeating the row before it (<code>Ccitt.RowsSkipped</code>).
+Data that ends before <code>Rows</code> rows warns <code>Ccitt.Truncated</code>. Only data in which not one row decodes throws
+<code>CorruptDataException</code>; a strict load throws on any of these. PDFium and pdf.js carry on decoding after damage instead, so the
+later rows of a damaged stream differ from theirs.</p>
+<p><code>Columns</code> and <code>Rows</code> are checked against <code>SafetyLimits</code> before memory is taken, and with <code>Rows</code> 0 the output grows only up to
+<code>MaxPixels</code>, so a stream of EOLs cannot use up memory.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/ccitt.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

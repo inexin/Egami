@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class RasterDecoder | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class RasterDecoder | Egami ">
+      
+      <meta name="description" content="One open image, decoded a band of rows or a frame at a time. Opening reads the header and the metadata that comes before the image data;  and  then hand out the image in any pixel type, with  and  applied as in .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_RasterDecoder.md&amp;value=---%0Auid%3A%20Egami.RasterDecoder%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.RasterDecoder">
+
+
+
+  <h1 id="Egami_RasterDecoder" data-uid="Egami.RasterDecoder" class="text-break">
+Class RasterDecoder  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>One open image, decoded a band of rows or a frame at a time. Opening reads the header and the metadata that comes before the
+image data; <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_ReadRows__1_Egami_Raster___0__">ReadRows&lt;TPixel&gt;(Raster&lt;TPixel&gt;)</a> and <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_ReadFrame__1_Egami_Raster___0__">ReadFrame&lt;TPixel&gt;(Raster&lt;TPixel&gt;)</a> then hand out the image in any pixel
+type, with <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> and <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_MinimumSize">MinimumSize</a> applied as in
+<a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class RasterDecoder : IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">RasterDecoder</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_RasterDecoder_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A band of rows at a time: memory is the band plus the format's working set, whatever the image size.
+using RasterDecoder decoder = RasterDecoder.Open("egret.png");
+Console.WriteLine($"{decoder.Info.Width}×{decoder.Info.Height}, {decoder.Info.Access}, holding {decoder.Info.WorkingBytes:N0} bytes");
+using Raster&lt;Gray8&gt; band = Raster.Create&lt;Gray8&gt;(decoder.Info.Width, 64);
+int rows;
+while ((rows = decoder.ReadRows(band)) &gt; 0)
+{
+    for (int y = 0; y &lt; rows; y++)
+    {
+        foreach (Gray8 pixel in band.Row(y))
+        {
+            sum += pixel.L;
+        }
+    }
+}</code></pre>
+
+
+  <h2 id="Egami_RasterDecoder_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>A decoder is one caller's object and is not thread-safe. <a class="xref" href="Egami.Formats.RasterInfo.html#Egami_Formats_RasterInfo_Access">Access</a> says whether the format streams its
+rows or is decoded into a buffer first, and <a class="xref" href="Egami.Formats.RasterInfo.html#Egami_Formats_RasterInfo_WorkingBytes">WorkingBytes</a> how much that holds.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_RasterDecoder_CurrentFrame_" data-uid="Egami.RasterDecoder.CurrentFrame*"></a>
+
+  <h3 id="Egami_RasterDecoder_CurrentFrame" data-uid="Egami.RasterDecoder.CurrentFrame">
+  CurrentFrame
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L189"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the metadata of the frame being read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> after the last frame (or while an incremental decode waits for it).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FrameMetadata? CurrentFrame { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.FrameMetadata.html">FrameMetadata</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_RasterDecoder_HeaderRead_" data-uid="Egami.RasterDecoder.HeaderRead*"></a>
+
+  <h3 id="Egami_RasterDecoder_HeaderRead" data-uid="Egami.RasterDecoder.HeaderRead">
+  HeaderRead
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the header has been read, so <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Info">Info</a> and <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Metadata">Metadata</a> can be used. Always true unless the decode is incremental.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HeaderRead { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_RasterDecoder_Info_" data-uid="Egami.RasterDecoder.Info*"></a>
+
+  <h3 id="Egami_RasterDecoder_Info" data-uid="Egami.RasterDecoder.Info">
+  Info
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what the decoder produces: the size after <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> and <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_MinimumSize">MinimumSize</a>,
+the natural pixel layout, the frame count when known, and how rows are produced.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RasterInfo Info { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.RasterInfo.html">RasterInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>An incremental decode has not received the header yet; see <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_HeaderRead">HeaderRead</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_IsMetadataComplete_" data-uid="Egami.RasterDecoder.IsMetadataComplete*"></a>
+
+  <h3 id="Egami_RasterDecoder_IsMetadataComplete" data-uid="Egami.RasterDecoder.IsMetadataComplete">
+  IsMetadataComplete
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L186"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Metadata">Metadata</a> holds everything the file has. PNG and GIF may put text, EXIF and comments after the
+image data, which arrive once the last frame has been read.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsMetadataComplete { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_RasterDecoder_Metadata_" data-uid="Egami.RasterDecoder.Metadata*"></a>
+
+  <h3 id="Egami_RasterDecoder_Metadata" data-uid="Egami.RasterDecoder.Metadata">
+  Metadata
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L150"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the metadata read so far; see <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_IsMetadataComplete">IsMetadataComplete</a>. When the region or reduction changes the size, the
+EXIF dimensions follow it and the EXIF thumbnail is dropped, as a crop or resize would.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RasterMetadata Metadata { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.RasterMetadata.html">RasterMetadata</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>An incremental decode has not received the header yet; see <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_HeaderRead">HeaderRead</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_Status_" data-uid="Egami.RasterDecoder.Status*"></a>
+
+  <h3 id="Egami_RasterDecoder_Status" data-uid="Egami.RasterDecoder.Status">
+  Status
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L127"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets where the decode stands: rows can be read, it needs more bytes (incremental decodes only), the current frame has been
+read, or every frame has.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DecodeStatus Status { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.DecodeStatus.html">DecodeStatus</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_RasterDecoder_Append_" data-uid="Egami.RasterDecoder.Append*"></a>
+
+  <h3 id="Egami_RasterDecoder_Append_System_ReadOnlySpan_System_Byte__" data-uid="Egami.RasterDecoder.Append(System.ReadOnlySpan{System.Byte})">
+  Append(ReadOnlySpan&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L628"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gives an incremental decode the next bytes of the file, and reads the header once it has all arrived.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Append(ReadOnlySpan&lt;byte&gt; data)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes, in order after those appended before. They are copied.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The decoder is not incremental, or <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_EndOfInput">EndOfInput()</a> was called.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The header breaks the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The header breaks a safety limit.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The decoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_Dispose_" data-uid="Egami.RasterDecoder.Dispose*"></a>
+
+  <h3 id="Egami_RasterDecoder_Dispose" data-uid="Egami.RasterDecoder.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L879"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the source's buffers and closes the file when the decoder opened it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_RasterDecoder_EndOfInput_" data-uid="Egami.RasterDecoder.EndOfInput*"></a>
+
+  <h3 id="Egami_RasterDecoder_EndOfInput" data-uid="Egami.RasterDecoder.EndOfInput">
+  EndOfInput()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L655"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Says the last byte has been appended: from now on, missing bytes are the end of the file, as in a normal read.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EndOfInput()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The decoder is not incremental.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The header breaks the format's rules or is cut off.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The decoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_NextFrame_" data-uid="Egami.RasterDecoder.NextFrame*"></a>
+
+  <h3 id="Egami_RasterDecoder_NextFrame" data-uid="Egami.RasterDecoder.NextFrame">
+  NextFrame()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L736"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Moves to the next frame, leaving any rows of the current one unread.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool NextFrame()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if there is another frame; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> after the last.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The decoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_NextFrameAsync_" data-uid="Egami.RasterDecoder.NextFrameAsync*"></a>
+
+  <h3 id="Egami_RasterDecoder_NextFrameAsync_System_Threading_CancellationToken_" data-uid="Egami.RasterDecoder.NextFrameAsync(System.Threading.CancellationToken)">
+  NextFrameAsync(CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L424"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Moves to the next frame, reading the stream asynchronously as far as it needs. See <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_NextFrame">NextFrame()</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ValueTask&lt;bool&gt; NextFrameAsync(CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels reading.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1">ValueTask</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>&gt;</dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if there is another frame; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> after the last.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_NextFrameAsync_System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// On a server: read rows as the upload arrives, without holding the whole file.
+await using Stream upload = File.OpenRead("egret.png");
+using RasterDecoder decoder = await RasterDecoder.OpenAsync(upload, cancellationToken: TestContext.Current.CancellationToken);
+using Raster&lt;Gray8&gt; band = Raster.Create&lt;Gray8&gt;(decoder.Info.Width, 32);
+int rows;
+while ((rows = await decoder.ReadRowsAsync(band, TestContext.Current.CancellationToken)) &gt; 0)
+{
+    for (int y = 0; y &lt; rows; y++)
+    {
+        sum += band.Row(y)[0].L;
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The decoder was not opened with <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_OpenAsync_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">OpenAsync(Stream, EgamiContext?, ReaderOptions?, CancellationToken)</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_Open_" data-uid="Egami.RasterDecoder.Open*"></a>
+
+  <h3 id="Egami_RasterDecoder_Open_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.RasterDecoder.Open(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Open(Stream, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L213"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Opens an image from a stream: detects the format and reads the header. The stream is read from its current position and
+left open; the decoder does not dispose it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RasterDecoder Open(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The encoded image.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a></dt>
+    <dd><p>The decoder. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_Open_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A band of rows at a time: memory is the band plus the format's working set, whatever the image size.
+using RasterDecoder decoder = RasterDecoder.Open("egret.png");
+Console.WriteLine($"{decoder.Info.Width}×{decoder.Info.Height}, {decoder.Info.Access}, holding {decoder.Info.WorkingBytes:N0} bytes");
+using Raster&lt;Gray8&gt; band = Raster.Create&lt;Gray8&gt;(decoder.Info.Width, 64);
+int rows;
+while ((rows = decoder.ReadRows(band)) &gt; 0)
+{
+    for (int y = 0; y &lt; rows; y++)
+    {
+        foreach (Gray8 pixel in band.Row(y))
+        {
+            sum += pixel.L;
+        }
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The image breaks a safety limit.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> has no area or misses the image.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_Open_" data-uid="Egami.RasterDecoder.Open*"></a>
+
+  <h3 id="Egami_RasterDecoder_Open_System_IO_Stream_Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.RasterDecoder.Open(System.IO.Stream,Egami.Formats.FormatInfo,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Open(Stream, FormatInfo, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L274"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Opens an image of a known format from a stream without detecting it, for data that has no signature of its own. See
+<a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Open_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Open(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RasterDecoder Open(Stream stream, FormatInfo format, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The encoded image, read from its current position and left open.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd><p>The format to read with. It need not be registered in the context.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a></dt>
+    <dd><p>The decoder. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_Open_System_IO_Stream_Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Data without a signature of its own (a TGA here; a JBIG2 stream from a PDF) loads with its format named,
+// which skips detection. Probe, LoadAll and RasterDecoder.Open take the format the same way.
+using Raster image = Raster.Load(data, TgaFormat.Info);
+RasterInfo info = Raster.Probe(data, TgaFormat.Info);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p><code class="paramref">format</code> has no reader.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules, including data of another format.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The image breaks a safety limit.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> has no area or misses the image.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> or <code class="paramref">format</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_Open_" data-uid="Egami.RasterDecoder.Open*"></a>
+
+  <h3 id="Egami_RasterDecoder_Open_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.RasterDecoder.Open(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Open(ReadOnlyMemory&lt;byte&gt;, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L251"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Opens an image from bytes in memory. See <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Open_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Open(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RasterDecoder Open(ReadOnlyMemory&lt;byte&gt; data, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The encoded image.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a></dt>
+    <dd><p>The decoder. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_Open_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A band of rows at a time: memory is the band plus the format's working set, whatever the image size.
+using RasterDecoder decoder = RasterDecoder.Open("egret.png");
+Console.WriteLine($"{decoder.Info.Width}×{decoder.Info.Height}, {decoder.Info.Access}, holding {decoder.Info.WorkingBytes:N0} bytes");
+using Raster&lt;Gray8&gt; band = Raster.Create&lt;Gray8&gt;(decoder.Info.Width, 64);
+int rows;
+while ((rows = decoder.ReadRows(band)) &gt; 0)
+{
+    for (int y = 0; y &lt; rows; y++)
+    {
+        foreach (Gray8 pixel in band.Row(y))
+        {
+            sum += pixel.L;
+        }
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The image breaks a safety limit.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> has no area or misses the image.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_Open_" data-uid="Egami.RasterDecoder.Open*"></a>
+
+  <h3 id="Egami_RasterDecoder_Open_System_ReadOnlyMemory_System_Byte__Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.RasterDecoder.Open(System.ReadOnlyMemory{System.Byte},Egami.Formats.FormatInfo,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Open(ReadOnlyMemory&lt;byte&gt;, FormatInfo, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L293"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Opens an image of a known format from bytes in memory. See <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Open_System_IO_Stream_Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Open(Stream, FormatInfo, EgamiContext?, ReaderOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RasterDecoder Open(ReadOnlyMemory&lt;byte&gt; data, FormatInfo format, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The encoded image.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd><p>The format to read with. It need not be registered in the context.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a></dt>
+    <dd><p>The decoder. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_Open_System_ReadOnlyMemory_System_Byte__Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Data without a signature of its own (a TGA here; a JBIG2 stream from a PDF) loads with its format named,
+// which skips detection. Probe, LoadAll and RasterDecoder.Open take the format the same way.
+using Raster image = Raster.Load(data, TgaFormat.Info);
+RasterInfo info = Raster.Probe(data, TgaFormat.Info);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p><code class="paramref">format</code> has no reader.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules, including data of another format.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The image breaks a safety limit.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> has no area or misses the image.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">format</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_Open_" data-uid="Egami.RasterDecoder.Open*"></a>
+
+  <h3 id="Egami_RasterDecoder_Open_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.RasterDecoder.Open(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Open(string, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L233"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Opens an image file. See <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Open_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Open(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RasterDecoder Open(string path, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file path.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a></dt>
+    <dd><p>The decoder. The caller must dispose it, which closes the file.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_Open_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A band of rows at a time: memory is the band plus the format's working set, whatever the image size.
+using RasterDecoder decoder = RasterDecoder.Open("egret.png");
+Console.WriteLine($"{decoder.Info.Width}×{decoder.Info.Height}, {decoder.Info.Access}, holding {decoder.Info.WorkingBytes:N0} bytes");
+using Raster&lt;Gray8&gt; band = Raster.Create&lt;Gray8&gt;(decoder.Info.Width, 64);
+int rows;
+while ((rows = decoder.ReadRows(band)) &gt; 0)
+{
+    for (int y = 0; y &lt; rows; y++)
+    {
+        foreach (Gray8 pixel in band.Row(y))
+        {
+            sum += pixel.L;
+        }
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The image breaks a safety limit.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> has no area or misses the image.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">path</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.filenotfoundexception">FileNotFoundException</a></dt>
+    <dd><p>The file does not exist.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
+    <dd><p>The file cannot be read.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_OpenAsync_" data-uid="Egami.RasterDecoder.OpenAsync*"></a>
+
+  <h3 id="Egami_RasterDecoder_OpenAsync_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_" data-uid="Egami.RasterDecoder.OpenAsync(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions,System.Threading.CancellationToken)">
+  OpenAsync(Stream, EgamiContext?, ReaderOptions?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L341"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Opens an image from a stream read asynchronously: the header is read before this returns, and
+<a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_ReadRowsAsync__1_Egami_Raster___0__System_Threading_CancellationToken_">ReadRowsAsync&lt;TPixel&gt;(Raster&lt;TPixel&gt;, CancellationToken)</a>, <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_ReadFrameAsync__1_Egami_Raster___0__System_Threading_CancellationToken_">ReadFrameAsync&lt;TPixel&gt;(Raster&lt;TPixel&gt;, CancellationToken)</a> and <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_NextFrameAsync_System_Threading_CancellationToken_">NextFrameAsync(CancellationToken)</a> read on as they need. Only the
+bytes since the decode's last step are held, not the whole file; formats from plugins, and files decoded into a buffer
+first, gather the file and are read at the end. The stream is left open; the decoder does not dispose it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Task&lt;RasterDecoder&gt; OpenAsync(Stream stream, EgamiContext? context = null, ReaderOptions? options = null, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The encoded image, read from its current position.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels reading and, between rows, decoding.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a>&gt;</dt>
+    <dd><p>The decoder, its header read. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_OpenAsync_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// On a server: read rows as the upload arrives, without holding the whole file.
+await using Stream upload = File.OpenRead("egret.png");
+using RasterDecoder decoder = await RasterDecoder.OpenAsync(upload, cancellationToken: TestContext.Current.CancellationToken);
+using Raster&lt;Gray8&gt; band = Raster.Create&lt;Gray8&gt;(decoder.Info.Width, 32);
+int rows;
+while ((rows = await decoder.ReadRowsAsync(band, TestContext.Current.CancellationToken)) &gt; 0)
+{
+    for (int y = 0; y &lt; rows; y++)
+    {
+        sum += band.Row(y)[0].L;
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The header breaks the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The image breaks a safety limit.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_OpenIncremental_" data-uid="Egami.RasterDecoder.OpenIncremental*"></a>
+
+  <h3 id="Egami_RasterDecoder_OpenIncremental_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.RasterDecoder.OpenIncremental(Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  OpenIncremental(EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L317"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Starts an incremental decode: bytes are given with <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Append_System_ReadOnlySpan_System_Byte__">Append(ReadOnlySpan&lt;byte&gt;)</a> as they arrive, and rows, frames and previews come
+out as far as the bytes reach. <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Status">Status</a> says when more bytes are needed and <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_HeaderRead">HeaderRead</a> when
+<a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Info">Info</a> is known; <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_EndOfInput">EndOfInput()</a> says the last byte has come.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RasterDecoder OpenIncremental(EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a></dt>
+    <dd><p>The decoder. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_OpenIncremental_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Decode while the bytes arrive, a chunk at a time, as from a download.
+using RasterDecoder decoder = RasterDecoder.OpenIncremental();
+Raster&lt;Rgb8&gt;? band = null;
+foreach (ReadOnlyMemory&lt;byte&gt; chunk in file.Chunk(4096).Select(c =&gt; new ReadOnlyMemory&lt;byte&gt;(c)))
+{
+    decoder.Append(chunk.Span);
+    if (decoder.HeaderRead)
+    {
+        band ??= Raster.Create&lt;Rgb8&gt;(decoder.Info.Width, 16);
+        int rows;
+        while ((rows = decoder.ReadRows(band)) &gt; 0)
+        {
+            rowsSoFar += rows; // the rows finished so far; an interlaced file shows RenderPreview instead
+        }
+    }
+}
+
+decoder.EndOfInput();
+while (decoder.ReadRows(band!) is int rest and &gt; 0)
+{
+    rowsSoFar += rest;
+}
+
+band?.Dispose();</code></pre>
+
+
+  <h4 class="section" id="Egami_RasterDecoder_OpenIncremental_Egami_EgamiContext_Egami_Formats_ReaderOptions__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Every 1.x format decodes as its bytes arrive, keeping only the bytes since the step it is in (an MCU row, a PNG chunk or
+scanline, a GIF block, a row). Files that are decoded into a buffer first (PFM, plain-text PNM, bottom-up BMP and TGA, a
+32-bit BMP whose alpha may not count, TGA alpha set by a footer) and formats from plugins wait for
+<a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_EndOfInput">EndOfInput()</a> and are then read whole.</p>
+</div>
+
+
+
+
+  <a id="Egami_RasterDecoder_ReadFrameAsync_" data-uid="Egami.RasterDecoder.ReadFrameAsync*"></a>
+
+  <h3 id="Egami_RasterDecoder_ReadFrameAsync__1_Egami_Raster___0__System_Threading_CancellationToken_" data-uid="Egami.RasterDecoder.ReadFrameAsync``1(Egami.Raster{``0},System.Threading.CancellationToken)">
+  ReadFrameAsync&lt;TPixel&gt;(Raster&lt;TPixel&gt;, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L401"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Decodes the rest of the current frame into <code class="paramref">target</code>, reading the stream asynchronously as far as it needs,
+and moves to the next frame. See <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_ReadFrame__1_Egami_Raster___0__">ReadFrame&lt;TPixel&gt;(Raster&lt;TPixel&gt;)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ValueTask&lt;FrameMetadata?&gt; ReadFrameAsync&lt;TPixel&gt;(Raster&lt;TPixel&gt; target, CancellationToken cancellationToken = default) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>target</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>Where to write: <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Info">Info</a>'s size.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels reading.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1">ValueTask</a>&lt;<a class="xref" href="Egami.Metadata.FrameMetadata.html">FrameMetadata</a>&gt;</dt>
+    <dd><p>The frame's metadata, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> after the last frame.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type to produce.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_ReadFrameAsync__1_Egami_Raster___0__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// On a server: read rows as the upload arrives, without holding the whole file.
+await using Stream upload = File.OpenRead("egret.png");
+using RasterDecoder decoder = await RasterDecoder.OpenAsync(upload, cancellationToken: TestContext.Current.CancellationToken);
+using Raster&lt;Gray8&gt; band = Raster.Create&lt;Gray8&gt;(decoder.Info.Width, 32);
+int rows;
+while ((rows = await decoder.ReadRowsAsync(band, TestContext.Current.CancellationToken)) &gt; 0)
+{
+    for (int y = 0; y &lt; rows; y++)
+    {
+        sum += band.Row(y)[0].L;
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The decoder was not opened with <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_OpenAsync_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">OpenAsync(Stream, EgamiContext?, ReaderOptions?, CancellationToken)</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_ReadFrame_" data-uid="Egami.RasterDecoder.ReadFrame*"></a>
+
+  <h3 id="Egami_RasterDecoder_ReadFrame__1" data-uid="Egami.RasterDecoder.ReadFrame``1">
+  ReadFrame&lt;TPixel&gt;()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L801"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Decodes the rest of the current frame into a new raster and moves to the next frame. See <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_ReadFrame__1_Egami_Raster___0__">ReadFrame&lt;TPixel&gt;(Raster&lt;TPixel&gt;)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;TPixel&gt;? ReadFrame&lt;TPixel&gt;() where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The frame, with a copy of <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Metadata">Metadata</a>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> after the last frame. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type to produce.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The raster would break <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The decoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_ReadFrame_" data-uid="Egami.RasterDecoder.ReadFrame*"></a>
+
+  <h3 id="Egami_RasterDecoder_ReadFrame__1_Egami_Raster___0__" data-uid="Egami.RasterDecoder.ReadFrame``1(Egami.Raster{``0})">
+  ReadFrame&lt;TPixel&gt;(Raster&lt;TPixel&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L763"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Decodes the rest of the current frame into <code class="paramref">target</code>, each row at its own place, and moves to the next frame.
+Animations come fully composed, the same pixels <a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a> gives.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FrameMetadata? ReadFrame&lt;TPixel&gt;(Raster&lt;TPixel&gt; target) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>target</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>Where to write: <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Info">Info</a>'s size. Only its first frame is written.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.FrameMetadata.html">FrameMetadata</a></dt>
+    <dd><p>The frame's metadata, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> after the last frame.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type to produce.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_ReadFrame__1_Egami_Raster___0___examples">Examples</h4>
+  <pre><code class="lang-csharp">// An animation one composed frame at a time, into one reused canvas.
+using RasterDecoder gif = RasterDecoder.Open("pan.gif");
+using Raster&lt;Rgba8&gt; canvas = Raster.Create&lt;Rgba8&gt;(gif.Info.Width, gif.Info.Height);
+while (gif.ReadFrame(canvas) is Metadata.FrameMetadata frame)
+{
+    Console.WriteLine($"frame {count++}, shown for {frame.Delay.TotalMilliseconds} ms");
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">target</code> is not <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Info">Info</a>'s size.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The decoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_ReadRowsAsync_" data-uid="Egami.RasterDecoder.ReadRowsAsync*"></a>
+
+  <h3 id="Egami_RasterDecoder_ReadRowsAsync__1_Egami_Raster___0__System_Threading_CancellationToken_" data-uid="Egami.RasterDecoder.ReadRowsAsync``1(Egami.Raster{``0},System.Threading.CancellationToken)">
+  ReadRowsAsync&lt;TPixel&gt;(Raster&lt;TPixel&gt;, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L373"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills <code class="paramref">band</code> with the next rows of the current frame, reading the stream asynchronously as far as they
+need. See <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_ReadRows__1_Egami_Raster___0__">ReadRows&lt;TPixel&gt;(Raster&lt;TPixel&gt;)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ValueTask&lt;int&gt; ReadRowsAsync&lt;TPixel&gt;(Raster&lt;TPixel&gt; band, CancellationToken cancellationToken = default) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>band</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>Where to write: <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Info">Info</a>'s width, any height.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels reading.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1">ValueTask</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd><p>The rows written, at least one unless the frame has ended; 0 at the end of the frame.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type to produce.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_ReadRowsAsync__1_Egami_Raster___0__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// On a server: read rows as the upload arrives, without holding the whole file.
+await using Stream upload = File.OpenRead("egret.png");
+using RasterDecoder decoder = await RasterDecoder.OpenAsync(upload, cancellationToken: TestContext.Current.CancellationToken);
+using Raster&lt;Gray8&gt; band = Raster.Create&lt;Gray8&gt;(decoder.Info.Width, 32);
+int rows;
+while ((rows = await decoder.ReadRowsAsync(band, TestContext.Current.CancellationToken)) &gt; 0)
+{
+    for (int y = 0; y &lt; rows; y++)
+    {
+        sum += band.Row(y)[0].L;
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The decoder was not opened with <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_OpenAsync_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_System_Threading_CancellationToken_">OpenAsync(Stream, EgamiContext?, ReaderOptions?, CancellationToken)</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_ReadRows_" data-uid="Egami.RasterDecoder.ReadRows*"></a>
+
+  <h3 id="Egami_RasterDecoder_ReadRows__1_Egami_Raster___0__" data-uid="Egami.RasterDecoder.ReadRows``1(Egami.Raster{``0})">
+  ReadRows&lt;TPixel&gt;(Raster&lt;TPixel&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L674"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills <code class="paramref">band</code> from its top row with the next rows of the current frame, converting while decoding.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int ReadRows&lt;TPixel&gt;(Raster&lt;TPixel&gt; band) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>band</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>Where to write: <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Info">Info</a>'s width, any height. Only its first frame is written.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The rows written; 0 at the end of the frame. Call <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_NextFrame">NextFrame()</a> to go on to the next frame.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type to produce; it may differ from call to call.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">band</code> is not <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Info">Info</a>'s width.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The decoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_RenderPreview_" data-uid="Egami.RasterDecoder.RenderPreview*"></a>
+
+  <h3 id="Egami_RasterDecoder_RenderPreview__1_Egami_Raster___0__" data-uid="Egami.RasterDecoder.RenderPreview``1(Egami.Raster{``0})">
+  RenderPreview&lt;TPixel&gt;(Raster&lt;TPixel&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L858"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws what is known of the frame in progress: an interlaced PNG from the passes received so far, a progressive JPEG from its
+scans so far, a GIF frame from the rows received so far (interlaced ones repeated over the rows they stand for), each later
+pass sharpening it. Region and
+reduction apply as to rows. The decode does not move on.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool RenderPreview&lt;TPixel&gt;(Raster&lt;TPixel&gt; target) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>target</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>Where to draw: <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Info">Info</a>'s size. Only its first frame is written.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether a preview was drawn; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> before the header or for files that hand out finished rows instead.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type to draw in.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_RasterDecoder_RenderPreview__1_Egami_Raster___0___examples">Examples</h4>
+  <pre><code class="lang-csharp">// Decode while the bytes arrive, a chunk at a time, as from a download.
+using RasterDecoder decoder = RasterDecoder.OpenIncremental();
+Raster&lt;Rgb8&gt;? band = null;
+foreach (ReadOnlyMemory&lt;byte&gt; chunk in file.Chunk(4096).Select(c =&gt; new ReadOnlyMemory&lt;byte&gt;(c)))
+{
+    decoder.Append(chunk.Span);
+    if (decoder.HeaderRead)
+    {
+        band ??= Raster.Create&lt;Rgb8&gt;(decoder.Info.Width, 16);
+        int rows;
+        while ((rows = decoder.ReadRows(band)) &gt; 0)
+        {
+            rowsSoFar += rows; // the rows finished so far; an interlaced file shows RenderPreview instead
+        }
+    }
+}
+
+decoder.EndOfInput();
+while (decoder.ReadRows(band!) is int rest and &gt; 0)
+{
+    rowsSoFar += rest;
+}
+
+band?.Dispose();</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">target</code> is not <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Info">Info</a>'s size.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The decoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_RasterDecoder_SkipRows_" data-uid="Egami.RasterDecoder.SkipRows*"></a>
+
+  <h3 id="Egami_RasterDecoder_SkipRows_System_Int32_" data-uid="Egami.RasterDecoder.SkipRows(System.Int32)">
+  SkipRows(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L714"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Moves past rows of the current frame, decoding them only where the format requires it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int SkipRows(int count)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>count</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The rows to skip.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The rows skipped, fewer than <code class="paramref">count</code> at the end of the frame.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">count</code> is negative.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The decoder has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Streaming/RasterDecoder.cs/#L22" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

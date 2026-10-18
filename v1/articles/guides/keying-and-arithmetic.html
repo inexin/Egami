@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Keying and arithmetic | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Keying and arithmetic | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/keying-and-arithmetic.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="keying-and-arithmetic">Keying and arithmetic</h1>
+
+<p>Operations that ImageMagick users expect: making a color transparent, replacing a color, flood fill, arithmetic with a constant,
+and stacking several images. Each matches its ImageMagick option exactly at 8 and 16 bits.</p>
+<h2 id="color-tolerance">Color tolerance</h2>
+<p>Keying compares colors with ImageMagick's -fuzz distance on the stored values: a tolerance from 0 (the exact color) to 1 (every
+color). Alpha counts three times as much as each color channel, and colors count in proportion to how visible both pixels are, so
+two fully transparent pixels always match.</p>
+<h2 id="make-a-color-transparent">Make a color transparent</h2>
+<pre><code class="lang-csharp">// Remove a green screen: within 0.15 of pure green becomes transparent, and alpha ramps back over the next 0.1 for soft edges.
+photo.Apply(ops =&gt; ops.MakeTransparent(new Rgba8(0, 177, 64, 255), tolerance: 0.15f, softness: 0.1f), Ct);
+</code></pre>
+<p><code>MakeTransparent</code> clears alpha where a pixel lies within the tolerance and keeps its color, as ImageMagick's -transparent does.
+<code>softness</code> ramps alpha back up over the next band of distance, for antialiased edges; with no softness the result is ImageMagick's.</p>
+<h2 id="replace-a-color">Replace a color</h2>
+<pre><code class="lang-csharp">photo.Apply(ops =&gt; ops.ReplaceColor(Rgba8.White, new Rgba8(250, 245, 230, 255), tolerance: 0.05f), Ct);
+</code></pre><h2 id="flood-fill">Flood fill</h2>
+<pre><code class="lang-csharp">// Fill the region around (10, 10) whose colors are close to its own, as a paint bucket does.
+photo.Apply(ops =&gt; ops.FloodFill(new Point(10, 10), Rgba8.White, tolerance: 0.1f), Ct);
+</code></pre>
+<p><code>FloodFill</code> fills the region connected to the seed whose colors lie within the tolerance of the seed's own. It spreads to the four
+side neighbours by default, as ImageMagick does; <code>Connectivity.Eight</code> adds the diagonals. Its visited set, one bit a pixel, counts
+against <code>MaxTotalBytes</code>. Inside a scope, the region is found within the scope's area.</p>
+<h2 id="select-by-color">Select by color</h2>
+<pre><code class="lang-csharp">// Select by color, then edit only the selection: a magic wand from a point, and every pixel close to a color.
+using Raster&lt;Gray8&gt; wand = photo.FloodMask(new Point(30, 30), tolerance: 0.12f);
+using Raster&lt;Gray8&gt; reds = photo.ColorMask(new Rgba8(200, 40, 30, 255), tolerance: 0.2f);
+photo.Apply(ops =&gt; ops
+    .Within(new Mask(wand), o =&gt; o.Blur(4))
+    .Within(new Mask(reds), o =&gt; o.Saturation(1.4f)), Ct);
+</code></pre>
+<p><code>ColorMask</code> and <code>FloodMask</code> return a <code>Gray8</code> mask, 255 inside the selection, for <code>Within(Mask, …)</code>.</p>
+<h2 id="arithmetic-with-a-constant">Arithmetic with a constant</h2>
+<pre><code class="lang-csharp">// Lift the shadows with a log curve, then cap the highlights; values are on a 0 to 1 scale, as ImageMagick's -evaluate.
+photo.Apply(ops =&gt; ops
+    .Arithmetic(PixelMath.Log, 3)
+    .Arithmetic(PixelMath.Min, 0.95f), Ct);
+</code></pre>
+<p><code>Arithmetic</code> applies a <code>PixelMath</code> operator (add, subtract, multiply, divide, pow, log, min, max, set) to the chosen channels, on
+values scaled 0 to 1 and clamped. 8-bit and 16-bit pixels are evaluated as 16-bit samples and rounded as ImageMagick's Q16 build
+rounds them, so the result equals -evaluate exactly.</p>
+<h2 id="stack-images">Stack images</h2>
+<pre><code class="lang-csharp">// Average a burst of photos to smooth noise; the median removes things that appear in only a few frames.
+using Raster mean = Raster.Stack([first, second, third], StackMode.Mean);
+using Raster clean = Raster.Stack([first, second, third], StackMode.Median);
+</code></pre>
+<p><code>Raster.Stack</code> combines the same channel of the same pixel across two or more rasters (<code>StackMode</code>: mean, median, min, max), as
+ImageMagick's -evaluate-sequence does for mean, min and max. The median is taken per channel, as Photoshop's median stack does;
+ImageMagick's picks the whole pixel whose intensity is the median. Stack works a few rows at a time, holding one row of each input.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/keying-and-arithmetic.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

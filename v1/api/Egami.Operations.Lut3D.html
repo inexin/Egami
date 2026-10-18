@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Lut3D | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Lut3D | Egami ">
+      
+      <meta name="description" content="A 3D color lookup table: an N &#215; N &#215; N grid of output RGB values over the input cube, with red varying fastest, as .cube files and Hald images store it, and an optional 1D shaper per channel read before the grid (DaVinci Resolve&#39;s 1D-plus-3D .cube). Read one with  or , and apply it with .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Operations_Lut3D.md&amp;value=---%0Auid%3A%20Egami.Operations.Lut3D%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Operations.Lut3D">
+
+
+
+  <h1 id="Egami_Operations_Lut3D" data-uid="Egami.Operations.Lut3D" class="text-break">
+Class Lut3D  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L17"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Operations.html">Operations</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A 3D color lookup table: an N × N × N grid of output RGB values over the input cube, with red varying fastest, as .cube files
+and Hald images store it, and an optional 1D shaper per channel read before the grid (DaVinci Resolve's 1D-plus-3D .cube). Read
+one with <a class="xref" href="Egami.Operations.CubeFile.html#Egami_Operations_CubeFile_Read_System_String_Egami_EgamiContext_">Read(string, EgamiContext?)</a> or <a class="xref" href="Egami.Operations.Lut3D.html#Egami_Operations_Lut3D_FromHald_Egami_Raster_">FromHald(Raster)</a>, and apply it with <a class="xref" href="Egami.Operations.ColorFilter.html#Egami_Operations_ColorFilter_FromLut_Egami_Operations_Lut3D_Egami_Operations_LutInterpolation_">FromLut(Lut3D, LutInterpolation)</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Lut3D</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Lut3D</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Operations_Lut3D_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Export a grade for DaVinci Resolve or Premiere, then load a .cube file and apply it at 70%.
+ColorFilter grade = ColorFilter.Curves(ToneCurve.FromPoints([(0, 0), (0.25f, 0.2f), (0.75f, 0.82f), (1, 1)]))
+    .Then(ColorFilter.Saturation(1.1f));
+CubeFile.Write("my-grade.cube", grade.ToLut3D(size: 33), title: "My grade");
+
+Lut3D lut = CubeFile.Read("my-grade.cube");
+raster.Apply(o =&gt; o.ApplyFilter(ColorFilter.Lerp(ColorFilter.Identity, ColorFilter.FromLut(lut), 0.7f)), Ct);
+
+// Tables can also be built from a function, and read at any color.
+Lut3D warm = Lut3D.FromFunction(c =&gt; new Vector3(c.X, c.Y * 0.97f, c.Z * 0.9f), size: 17);
+Vector3 gray = warm.Evaluate(new Vector3(0.5f), LutInterpolation.Tetrahedral);</code></pre>
+
+
+  <h2 id="Egami_Operations_Lut3D_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Values are 32-bit floats and may lie outside 0..1; a filter clamps what it reads. Immutable and safe to share between threads.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Operations_Lut3D_DomainMax_" data-uid="Egami.Operations.Lut3D.DomainMax*"></a>
+
+  <h3 id="Egami_Operations_Lut3D_DomainMax" data-uid="Egami.Operations.Lut3D.DomainMax">
+  DomainMax
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the input that maps to the last grid point on each axis (DOMAIN_MAX in a .cube file). Defaults to 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Vector3 DomainMax { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector3">Vector3</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Operations_Lut3D_DomainMin_" data-uid="Egami.Operations.Lut3D.DomainMin*"></a>
+
+  <h3 id="Egami_Operations_Lut3D_DomainMin" data-uid="Egami.Operations.Lut3D.DomainMin">
+  DomainMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the input that maps to the first grid point on each axis (DOMAIN_MIN in a .cube file). Defaults to 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Vector3 DomainMin { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector3">Vector3</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Operations_Lut3D_Item_" data-uid="Egami.Operations.Lut3D.Item*"></a>
+
+  <h3 id="Egami_Operations_Lut3D_Item_System_Int32_System_Int32_System_Int32_" data-uid="Egami.Operations.Lut3D.Item(System.Int32,System.Int32,System.Int32)">
+  this[int, int, int]
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets one grid point's output.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Vector3 this[int red, int green, int blue] { get; }</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>red</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The red index, 0 to <a class="xref" href="Egami.Operations.Lut3D.html#Egami_Operations_Lut3D_Size">Size</a> − 1.</p>
+</dd>
+    <dt><code>green</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The green index.</p>
+</dd>
+    <dt><code>blue</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The blue index.</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector3">Vector3</a></dt>
+    <dd><p>The output color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>An index is out of range.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Lut3D_ShaperSize_" data-uid="Egami.Operations.Lut3D.ShaperSize*"></a>
+
+  <h3 id="Egami_Operations_Lut3D_ShaperSize" data-uid="Egami.Operations.Lut3D.ShaperSize">
+  ShaperSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of entries in the 1D shaper read before the grid, or 0 when there is none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int ShaperSize { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Operations_Lut3D_Size_" data-uid="Egami.Operations.Lut3D.Size*"></a>
+
+  <h3 id="Egami_Operations_Lut3D_Size" data-uid="Egami.Operations.Lut3D.Size">
+  Size
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of grid points along each axis.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Size { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Operations_Lut3D_Evaluate_" data-uid="Egami.Operations.Lut3D.Evaluate*"></a>
+
+  <h3 id="Egami_Operations_Lut3D_Evaluate_System_Numerics_Vector3_Egami_Operations_LutInterpolation_" data-uid="Egami.Operations.Lut3D.Evaluate(System.Numerics.Vector3,Egami.Operations.LutInterpolation)">
+  Evaluate(Vector3, LutInterpolation)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L222"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the table's output for one color.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Vector3 Evaluate(Vector3 color, LutInterpolation interpolation = LutInterpolation.Tetrahedral)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector3">Vector3</a></dt>
+    <dd><p>The input; each channel is clamped to the shaper's range, then to the domain.</p>
+</dd>
+    <dt><code>interpolation</code> <a class="xref" href="Egami.Operations.LutInterpolation.html">LutInterpolation</a></dt>
+    <dd><p>How to read between grid points. Defaults to <a class="xref" href="Egami.Operations.LutInterpolation.html#Egami_Operations_LutInterpolation_Tetrahedral">Tetrahedral</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector3">Vector3</a></dt>
+    <dd><p>The output, unclamped.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">interpolation</code> is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Lut3D_FromFunction_" data-uid="Egami.Operations.Lut3D.FromFunction*"></a>
+
+  <h3 id="Egami_Operations_Lut3D_FromFunction_System_Func_System_Numerics_Vector3_System_Numerics_Vector3__System_Int32_" data-uid="Egami.Operations.Lut3D.FromFunction(System.Func{System.Numerics.Vector3,System.Numerics.Vector3},System.Int32)">
+  FromFunction(Func&lt;Vector3, Vector3&gt;, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a table by sampling <code class="paramref">function</code> at every grid point over 0..1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Lut3D FromFunction(Func&lt;Vector3, Vector3&gt; function, int size = 33)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>function</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector3">Vector3</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector3">Vector3</a>&gt;</dt>
+    <dd><p>The color function; it is called only here.</p>
+</dd>
+    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The points per axis, from 2 to 256. Defaults to 33.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.Lut3D.html">Lut3D</a></dt>
+    <dd><p>The table.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">function</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">size</code> is outside 2 to 256.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The function returned a value that is not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Lut3D_FromHald_" data-uid="Egami.Operations.Lut3D.FromHald*"></a>
+
+  <h3 id="Egami_Operations_Lut3D_FromHald_Egami_Raster_" data-uid="Egami.Operations.Lut3D.FromHald(Egami.Raster)">
+  FromHald(Raster)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L158"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a Hald CLUT image, as ImageMagick, G'MIC and RawTherapee write them: a level-L image is L³ × L³ pixels holding an
+L² table, red fastest, row by row. The image's own color profile is ignored, since it is a table rather than a picture.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Lut3D FromHald(Raster hald)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>hald</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The image; its first frame is read.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.Lut3D.html">Lut3D</a></dt>
+    <dd><p>The table.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">hald</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The image is not square with a side that is a cube from 8 to 4096.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Lut3D_FromValues_" data-uid="Egami.Operations.Lut3D.FromValues*"></a>
+
+  <h3 id="Egami_Operations_Lut3D_FromValues_System_Int32_System_ReadOnlySpan_System_Numerics_Vector3__System_Nullable_System_Numerics_Vector3__System_Nullable_System_Numerics_Vector3__" data-uid="Egami.Operations.Lut3D.FromValues(System.Int32,System.ReadOnlySpan{System.Numerics.Vector3},System.Nullable{System.Numerics.Vector3},System.Nullable{System.Numerics.Vector3})">
+  FromValues(int, ReadOnlySpan&lt;Vector3&gt;, Vector3?, Vector3?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L96"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a table from its grid values, red varying fastest, then green, then blue.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Lut3D FromValues(int size, ReadOnlySpan&lt;Vector3&gt; values, Vector3? domainMin = null, Vector3? domainMax = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The points per axis, from 2 to 256.</p>
+</dd>
+    <dt><code>values</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector3">Vector3</a>&gt;</dt>
+    <dd><p>Exactly <code class="paramref">size</code>³ finite colors.</p>
+</dd>
+    <dt><code>domainMin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector3">Vector3</a>?</dt>
+    <dd><p>The input at the first grid point, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for 0.</p>
+</dd>
+    <dt><code>domainMax</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector3">Vector3</a>?</dt>
+    <dd><p>The input at the last grid point, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for 1; above <code class="paramref">domainMin</code> on every axis.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.Lut3D.html">Lut3D</a></dt>
+    <dd><p>The table.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">size</code> is outside 2 to 256.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The value count is wrong, a value is not finite, or the domain is empty.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Lut3D_ToHald_" data-uid="Egami.Operations.Lut3D.ToHald*"></a>
+
+  <h3 id="Egami_Operations_Lut3D_ToHald_System_Int32_" data-uid="Egami.Operations.Lut3D.ToHald(System.Int32)">
+  ToHald(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L239"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the table as a Hald image of <code class="paramref">level</code>: (level²)³ grid points in a level³ × level³ 16-bit image, for
+grading in an editor and loading back with <a class="xref" href="Egami.Operations.Lut3D.html#Egami_Operations_Lut3D_FromHald_Egami_Raster_">FromHald(Raster)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;Rgba16&gt; ToHald(int level = 8)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>level</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The Hald level, from 2 to 16. Defaults to 8 (a 512 × 512 image holding a 64³ table).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;<a class="xref" href="Egami.Pixels.Rgba16.html">Rgba16</a>&gt;</dt>
+    <dd><p>The image; the caller disposes it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">level</code> is outside 2 to 16.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Lut3D_WithShaper_" data-uid="Egami.Operations.Lut3D.WithShaper*"></a>
+
+  <h3 id="Egami_Operations_Lut3D_WithShaper_System_ReadOnlySpan_System_Numerics_Vector3__System_Single_System_Single_" data-uid="Egami.Operations.Lut3D.WithShaper(System.ReadOnlySpan{System.Numerics.Vector3},System.Single,System.Single)">
+  WithShaper(ReadOnlySpan&lt;Vector3&gt;, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L192"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns this table with a 1D shaper read before it, as the first table of a 1D-plus-3D .cube file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Lut3D WithShaper(ReadOnlySpan&lt;Vector3&gt; shaper, float inputMin = 0, float inputMax = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>shaper</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector3">Vector3</a>&gt;</dt>
+    <dd><p>From 2 to 65,536 finite RGB entries, the first for <code class="paramref">inputMin</code> and the last for <code class="paramref">inputMax</code>.</p>
+</dd>
+    <dt><code>inputMin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The input at the shaper's first entry. Defaults to 0.</p>
+</dd>
+    <dt><code>inputMax</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The input at its last entry, above <code class="paramref">inputMin</code>. Defaults to 1.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.Lut3D.html">Lut3D</a></dt>
+    <dd><p>The table with the shaper, replacing any it had.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The shaper's length or values are out of range, or the range is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Lut3D.cs/#L17" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

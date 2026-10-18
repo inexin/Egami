@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class FontExtensions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class FontExtensions | Egami ">
+      
+      <meta name="description" content="Glyphs and text as s in canvas units, y down, for clipping, stroking or measuring them as shapes.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_FontExtensions.md&amp;value=---%0Auid%3A%20Egami.Drawing.FontExtensions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.FontExtensions">
+
+
+
+  <h1 id="Egami_Drawing_FontExtensions" data-uid="Egami.Drawing.FontExtensions" class="text-break">
+Class FontExtensions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/TextOnPath.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Glyphs and text as <a class="xref" href="Egami.Drawing.Path.html">Path</a>s in canvas units, y down, for clipping, stroking or measuring them as shapes.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class FontExtensions</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">FontExtensions</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_FontExtensions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Text as a shape: outline it, or clip a picture to it.
+Path title = font.GetTextPath("EGAMI", new Vector2(10, 80));
+using Raster&lt;Rgba8&gt; image = Raster.Create(300, 100, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.StrokePath(title, new Stroke(2), Rgba8.Black);
+    canvas.ClipPath(title);
+    canvas.FillRect(new RectF(0, 50, 300, 50), Rgba8.Red);
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Drawing_FontExtensions_GetGlyphPath_" data-uid="Egami.Drawing.FontExtensions.GetGlyphPath*"></a>
+
+  <h3 id="Egami_Drawing_FontExtensions_GetGlyphPath_Egami_Fonts_Font_System_UInt16_" data-uid="Egami.Drawing.FontExtensions.GetGlyphPath(Egami.Fonts.Font,System.UInt16)">
+  GetGlyphPath(Font, ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/FontExtensions.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a glyph's outline at the font's size, with the glyph's origin at (0, 0) on the baseline, y down: slanted 14 degrees
+for synthetic italic and outset for synthetic bold when <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Synthesis">Synthesis</a> asks and <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_AllowSynthesis">AllowSynthesis</a>
+allows.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path GetGlyphPath(this Font font, ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>font</code> <a class="xref" href="Egami.Fonts.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph id.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The outline; empty for a glyph without ink.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_FontExtensions_GetTextPath_" data-uid="Egami.Drawing.FontExtensions.GetTextPath*"></a>
+
+  <h3 id="Egami_Drawing_FontExtensions_GetTextPath_Egami_Fonts_Font_System_String_System_Numerics_Vector2_" data-uid="Egami.Drawing.FontExtensions.GetTextPath(Egami.Fonts.Font,System.String,System.Numerics.Vector2)">
+  GetTextPath(Font, string, Vector2)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/FontExtensions.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the outline of a line of text as <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawText_System_String_System_Numerics_Vector2_Egami_Fonts_Font_Egami_Drawing_Paint_Egami_Fonts_Shaping_ShapingOptions_">DrawText(string, Vector2, Font, Paint, ShapingOptions?)</a> lays it out.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path GetTextPath(this Font font, string text, Vector2 origin)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>font</code> <a class="xref" href="Egami.Fonts.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>origin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>The left end of the first baseline.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The outline of every glyph, in one path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_FontExtensions_ShapeOnPath_" data-uid="Egami.Drawing.FontExtensions.ShapeOnPath*"></a>
+
+  <h3 id="Egami_Drawing_FontExtensions_ShapeOnPath_Egami_Fonts_Font_System_String_Egami_Drawing_Path_Egami_Drawing_TextOnPathOptions_" data-uid="Egami.Drawing.FontExtensions.ShapeOnPath(Egami.Fonts.Font,System.String,Egami.Drawing.Path,Egami.Drawing.TextOnPathOptions)">
+  ShapeOnPath(Font, string, Path, TextOnPathOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/TextOnPath.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Lays text along a path by SVG's textPath rules: the text is shaped as one line, each glyph's advance midpoint is placed on the
+path at the start point plus its distance along the line, and the glyph is turned to the path's direction there and moved by
+the baseline shift along the normal. Glyphs whose midpoint falls before the path's start or past its end are left out, with
+their clusters. Contours are walked one after another as one path.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static GlyphRun ShapeOnPath(this Font font, string text, Path path, TextOnPathOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>font</code> <a class="xref" href="Egami.Fonts.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text; newlines draw nothing.</p>
+</dd>
+    <dt><code>path</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path, in the same coordinates the run is drawn in.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Drawing.TextOnPathOptions.html">TextOnPathOptions</a></dt>
+    <dd><p>Where the text starts and sits, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Drawing.TextOnPathOptions.html#Egami_Drawing_TextOnPathOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a></dt>
+    <dd><p>A run with a <a class="xref" href="Egami.Fonts.GlyphTransform.html">GlyphTransform</a> per glyph, relative to (0, 0).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_FontExtensions_ShapeOnPath_Egami_Fonts_Font_System_String_Egami_Drawing_Path_Egami_Drawing_TextOnPathOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A label along a curve: each glyph's midpoint on the path, turned to its direction, as SVG's textPath. The result is
+// still a glyph run, so a PDF backend writes it as searchable text.
+Path curve = new PathBuilder().MoveTo(20, 150).CubicTo(80, 20, 240, 20, 300, 150).ToPath();
+var font = new Font(face, 18);
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.DrawTextOnPath("Text that follows the curve", curve, font, Rgba8.Black,
+        new TextOnPathOptions { StartFraction = 0.5f, Anchor = TextAnchor.Center, BaselineShift = 4 });
+}
+
+// Or place glyphs yourself, each with its own turn and scale.
+GlyphRun dial = GlyphRun.CreateTransformed(font, [face.GetGlyph('N'), face.GetGlyph('E')],
+    [GlyphTransform.FromRotationScale(1, 0, new Vector2(150, 30)), GlyphTransform.FromRotationScale(1, 90, new Vector2(290, 90))]);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">font</code> has no typeface.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_FontExtensions_ToPath_" data-uid="Egami.Drawing.FontExtensions.ToPath*"></a>
+
+  <h3 id="Egami_Drawing_FontExtensions_ToPath_Egami_Fonts_GlyphRun_System_Numerics_Vector2_" data-uid="Egami.Drawing.FontExtensions.ToPath(Egami.Fonts.GlyphRun,System.Numerics.Vector2)">
+  ToPath(GlyphRun, Vector2)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/FontExtensions.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the outline of every glyph of a run, placed at its position relative to <code class="paramref">origin</code>, with the font's
+synthetic bold and italic.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path ToPath(this GlyphRun run, Vector2 origin)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>run</code> <a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a></dt>
+    <dd><p>The run.</p>
+</dd>
+    <dt><code>origin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>Where the run's origin goes.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The outline, in one path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_FontExtensions_ToPath_" data-uid="Egami.Drawing.FontExtensions.ToPath*"></a>
+
+  <h3 id="Egami_Drawing_FontExtensions_ToPath_Egami_Fonts_Layout_DecorationShape_System_Numerics_Vector2_" data-uid="Egami.Drawing.FontExtensions.ToPath(Egami.Fonts.Layout.DecorationShape,System.Numerics.Vector2)">
+  ToPath(DecorationShape, Vector2)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/FontExtensions.cs/#L141"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a decoration line's outline, the layout's top-left corner at <code class="paramref">origin</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path ToPath(this DecorationShape shape, Vector2 origin)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>shape</code> <a class="xref" href="Egami.Fonts.Layout.DecorationShape.html">DecorationShape</a></dt>
+    <dd><p>The decoration.</p>
+</dd>
+    <dt><code>origin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>Where the layout's top-left corner goes.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The outline.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_FontExtensions_ToPath_" data-uid="Egami.Drawing.FontExtensions.ToPath*"></a>
+
+  <h3 id="Egami_Drawing_FontExtensions_ToPath_Egami_Fonts_Layout_TextLayout_System_Numerics_Vector2_" data-uid="Egami.Drawing.FontExtensions.ToPath(Egami.Fonts.Layout.TextLayout,System.Numerics.Vector2)">
+  ToPath(TextLayout, Vector2)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/FontExtensions.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a laid-out paragraph as one path: every glyph run's outline with its font's synthetic bold and italic, then every
+decoration, the layout's top-left corner at <code class="paramref">origin</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path ToPath(this TextLayout layout, Vector2 origin)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>layout</code> <a class="xref" href="Egami.Fonts.Layout.TextLayout.html">TextLayout</a></dt>
+    <dd><p>The layout.</p>
+</dd>
+    <dt><code>origin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>Where the layout's top-left corner goes.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The outline, in one path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_FontExtensions_ToPath_Egami_Fonts_Layout_TextLayout_System_Numerics_Vector2__examples">Examples</h4>
+  <pre><code class="lang-csharp">ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle
+    {
+        FontFamilies = [family],
+        Size = 18,
+        Color = new Rgba8(30, 30, 60, 255),
+        Shadows = [new TextShadow(new System.Numerics.Vector2(1, 1), 2, new Rgba8(0, 0, 0, 80))],
+    },
+    Align = TextAlign.Justify,
+};
+
+// One call: wrap into a box, centred across the lines.
+TextLayout boxed = canvas.DrawText("Paragraphs wrap, justify and drop shadows.", new RectF(10, 10, 300, 80), style, VerticalAlign.Center);
+
+// Or lay out once and draw where needed, skipping lines outside the visible part.
+TextLayout layout = Paragraph.Create("Laid out once, drawn many times.", style).Layout(300);
+canvas.DrawTextLayout(layout, new System.Numerics.Vector2(10, 110), visibleRect: new RectF(0, 0, 320, 200));
+
+// Inline placeholders (an icon, a badge) are drawn by a painter called with each one's box.
+canvas.DrawTextLayout(layout, new System.Numerics.Vector2(10, 130), placeholderPainter: (c, index, box) =&gt; c.FillRoundRect(new RoundRect(box, 3), new Rgba8(200, 60, 40, 255)));
+
+// The same text as one path: glyphs and decorations.
+Egami.Drawing.Path outline = layout.ToPath(new System.Numerics.Vector2(10, 150));</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_FontExtensions_ToRectF_" data-uid="Egami.Drawing.FontExtensions.ToRectF*"></a>
+
+  <h3 id="Egami_Drawing_FontExtensions_ToRectF_Egami_Fonts_TextBounds_" data-uid="Egami.Drawing.FontExtensions.ToRectF(Egami.Fonts.TextBounds)">
+  ToRectF(TextBounds)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/FontExtensions.cs/#L102"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts text bounds to a rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RectF ToRectF(this TextBounds bounds)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>bounds</code> <a class="xref" href="Egami.Fonts.TextBounds.html">TextBounds</a></dt>
+    <dd><p>The bounds.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/TextOnPath.cs/#L77" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

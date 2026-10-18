@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class JxlWriterOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class JxlWriterOptions | Egami ">
+      
+      <meta name="description" content="Options for writing JPEG XL.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Jxl_JxlWriterOptions.md&amp;value=---%0Auid%3A%20Egami.Formats.Jxl.JxlWriterOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Jxl.JxlWriterOptions">
+
+
+
+  <h1 id="Egami_Formats_Jxl_JxlWriterOptions" data-uid="Egami.Formats.Jxl.JxlWriterOptions" class="text-break">
+Class JxlWriterOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlWriter.cs/#L682"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Jxl.html">Jxl</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Options for writing JPEG XL.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class JxlWriterOptions : WriterOptions</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></div>
+      <div><span class="xref">JxlWriterOptions</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_StripMetadata">WriterOptions.StripMetadata</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_OmitSrgbProfile">WriterOptions.OmitSrgbProfile</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Jxl_JxlWriterOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Lossless JPEG XL, about the size cjxl -d 0 makes at the same effort (1 fastest to 7 smallest, 5 by default).
+using Raster photo = Raster.Load("duck.png");
+photo.Save("duck-lossless.jxl", new JxlWriterOptions { Lossless = true, Effort = 7 });</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Jxl_JxlWriterOptions_AlphaDistance_" data-uid="Egami.Formats.Jxl.JxlWriterOptions.AlphaDistance*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlWriterOptions_AlphaDistance" data-uid="Egami.Formats.Jxl.JxlWriterOptions.AlphaDistance">
+  AlphaDistance
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlWriter.cs/#L798"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the distance alpha is written at in lossy files, on <a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_Distance">Distance</a>'s scale: 0 (the default) keeps alpha
+exact, larger values (up to 25) code it lossy through Modular's squeeze, smaller but with softer edges. From a distance
+of 10 the whole image, alpha included, is coded at half size as cjxl codes it, so alpha is exact only below that.
+Lossless files keep alpha exact.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float AlphaDistance { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 25.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlWriterOptions_Default_" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Default*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlWriterOptions_Default" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlWriter.cs/#L691"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the default options.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static JxlWriterOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html">JxlWriterOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jxl_JxlWriterOptions_Distance_" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Distance*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlWriterOptions_Distance" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Distance">
+  Distance
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlWriter.cs/#L743"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Butteraugli-style distance lossy files are written at, as cjxl -d takes it: 1.0 is visually lossless, larger
+values give smaller files with more visible loss, 0.1 to 25. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, which takes the distance
+from <a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_Quality">Quality</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float? Distance { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0.1 to 25.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlWriterOptions_Effort_" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Effort*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlWriterOptions_Effort" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Effort">
+  Effort
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlWriter.cs/#L701"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how hard the encoder works, 1 (fastest) to 7 (smallest files), on libjxl's effort scale for both kinds, so the same
+number gives about the same file as cjxl -e. Lossless: 1 is libjxl's fast lossless path, 2 and 3 use fixed trees, 4 and
+up learn the tree, and 5 and up also try local palettes and color transforms. Lossy: 1 to 3 use 8×8 DCTs and one
+quantization value, 4 adds finer LF and context modeling, 5 adaptive quantization, chroma from luma, Gaborish and simple
+block sizes, 6 the full block-size search, and 7 patches for repeated shapes such as text. Defaults to 5.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Effort { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 1 to 7.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlWriterOptions_KeepTransparentColors_" data-uid="Egami.Formats.Jxl.JxlWriterOptions.KeepTransparentColors*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlWriterOptions_KeepTransparentColors" data-uid="Egami.Formats.Jxl.JxlWriterOptions.KeepTransparentColors">
+  KeepTransparentColors
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlWriter.cs/#L782"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether lossy files keep the color of fully transparent pixels. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> lets the encoder replace it
+by that of the visible neighbours, which makes files smaller (libjxl does that by default); <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the
+default as for WebP, keeps it as well as lossy coding does. Lossless files always keep it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool KeepTransparentColors { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jxl_JxlWriterOptions_Lossless_" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Lossless*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlWriterOptions_Lossless" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Lossless">
+  Lossless
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlWriter.cs/#L718"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether to write lossless (Modular, every sample exact) or lossy (VarDCT in XYB) data, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
+(the default) to keep the kind of the JPEG XL file the raster was read from (lossless for a Modular file without XYB),
+and write lossy otherwise, as cjxl does for PNG input. <a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_Quality">Quality</a> 100 with no <a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_Distance">Distance</a> also
+writes lossless unless this is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool? Lossless { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jxl_JxlWriterOptions_PhotonNoiseIso_" data-uid="Egami.Formats.Jxl.JxlWriterOptions.PhotonNoiseIso*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlWriterOptions_PhotonNoiseIso" data-uid="Egami.Formats.Jxl.JxlWriterOptions.PhotonNoiseIso">
+  PhotonNoiseIso
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlWriter.cs/#L763"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the ISO speed of film-like photon noise the decoder adds to lossy images, as cjxl --photon_noise_iso takes it (for
+example 3200 for a grainy look); the noise depends on the image size like a 35 mm sensor's. Defaults to
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, no noise. Lossless files ignore it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float? PhotonNoiseIso { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not a positive number up to 10⁷.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlWriterOptions_Progressive_" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Progressive*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlWriterOptions_Progressive" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Progressive">
+  Progressive
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlWriter.cs/#L789"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether lossy files are progressive as cjxl -p makes them: the LF image in a frame of its own (squeezed, so a 1:8
+and smaller preview comes first) and the HF coefficients in three passes by frequency, so a partial file shows a
+coarse image that sharpens. Files grow slightly. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>. Lossless files ignore it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Progressive { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Jxl_JxlWriterOptions_Quality_" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Quality*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlWriterOptions_Quality" data-uid="Egami.Formats.Jxl.JxlWriterOptions.Quality">
+  Quality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlWriter.cs/#L726"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lossy quality, 0 (smallest) to 100 (best), on cjxl's -q scale, so the same number gives about the same file:
+90 is distance 1.0 (visually lossless), each step below 100 adds 0.09 down to 30, and the distance grows faster below.
+100 is lossless. <a class="xref" href="Egami.Formats.Jxl.JxlWriterOptions.html#Egami_Formats_Jxl_JxlWriterOptions_Distance">Distance</a>, when set, takes its place. Defaults to 90.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Quality { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 100.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlWriter.cs/#L682" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

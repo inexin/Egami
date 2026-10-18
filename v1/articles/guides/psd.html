@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>PSD and PSB | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="PSD and PSB | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/psd.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="psd-and-psb">PSD and PSB</h1>
+
+<p>Egami reads Adobe Photoshop documents (.psd) and large documents (.psb), written from Adobe's Photoshop File Format
+Specification. <code>PsdFormat.Info</code> is registered in <code>EgamiContext.Default</code>; PSD is never written. Egami reads the flattened image
+Photoshop stores after the layers, in every color mode and depth, and lists the layers as metadata without their pixels.</p>
+<h2 id="reading-files">Reading files</h2>
+<pre><code class="lang-csharp">// Load gives the flattened image Photoshop stores after the layers, in the type that fits the file: Rgb8 here, Rgba16 for
+// a 16-bit file with transparency, Cmyk8 for CMYK. Save it as anything.
+using Raster flat = Raster.Load(&quot;layered.psd&quot;);
+flat.Save(&quot;layered.png&quot;);
+
+// The ICC profile, resolution, EXIF, XMP and IPTC are in the metadata as for every format.
+using Raster photo = Raster.Load(&quot;photo.psd&quot;);
+ReadOnlyMemory&lt;byte&gt; icc = photo.Metadata.IccProfile;
+Resolution? dpi = photo.Metadata.Resolution;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Color mode</th>
+<th>1-bit</th>
+<th>8-bit</th>
+<th>16-bit</th>
+<th>32-bit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bitmap</td>
+<td><code>Gray8</code>, 1 black</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Grayscale, duotone</td>
+<td></td>
+<td><code>Gray8</code>, <code>GrayAlpha8</code></td>
+<td><code>Gray16</code>, <code>GrayAlpha16</code></td>
+<td><code>GrayF32</code>; <code>RgbaF32</code> with alpha</td>
+</tr>
+<tr>
+<td>Indexed</td>
+<td></td>
+<td><code>Rgb8</code>; <code>Rgba8</code> with a transparent index</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>RGB</td>
+<td></td>
+<td><code>Rgb8</code>, <code>Rgba8</code></td>
+<td><code>Rgb16</code>, <code>Rgba16</code></td>
+<td><code>RgbF32</code>, <code>RgbaF32</code></td>
+</tr>
+<tr>
+<td>CMYK</td>
+<td></td>
+<td><code>Cmyk8</code>; <code>Rgba8</code> with alpha</td>
+<td><code>Cmyk16</code>; <code>Rgba16</code> with alpha</td>
+<td></td>
+</tr>
+<tr>
+<td>Lab</td>
+<td></td>
+<td><code>Rgb8</code>, <code>Rgba8</code>, converted to sRGB</td>
+<td><code>Rgb16</code>, <code>Rgba16</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Multichannel</td>
+<td></td>
+<td><code>Gray8</code> of the first channel</td>
+<td><code>Gray16</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>CMYK loads as ink amounts, with the file's ICC profile, so <code>ConvertColorTo</code> and <code>ConvertColor</code> turn it into RGB through the
+profile as for a CMYK JPEG; with transparency it loads as RGBA by the plain formula. Lab is converted to sRGB from D50 by
+Bradford, as for TIFF's CIELab. 32-bit files are linear light and say so in <code>RasterMetadata.ColorSpace</code>, or carry the file's
+profile. A duotone file loads as its gray channel, its inks kept in <code>PsdDetails.ColorModeData</code>; a multichannel file has no color
+model, so its first channel loads as gray with the <code>Psd.ChannelsDropped</code> warning.</p>
+<p>Transparency is the channel after the color ones when the layer count is negative, as Photoshop marks it; Photoshop stores the
+flattened image flattened onto white, and the white is divided back out, so colors under partial transparency come out as
+painted. ImageMagick does the same for RGB files only, and Pillow not at all. Other extra channels (alpha and spot channels) are
+not loaded; their names are in <code>PsdDetails.ExtraChannels</code>.</p>
+<p><code>PsdDetails</code> says what the file is: PSD or PSB (<code>Version</code>), its <code>PsdColorMode</code>, bits a channel, channel count and the
+<code>PsdCompression</code> of the flattened image.</p>
+<p>The image resources map to metadata: the ICC profile (1039), resolution (1005), EXIF (1058, whose orientation reaches
+<code>RasterInfo.Orientation</code>), XMP (1060) and IPTC (1028). Every other resource, the thumbnail (1036) among them, is kept as it was
+read in <code>PsdDetails.OtherResources</code>.</p>
+<pre><code class="lang-csharp">using Raster image = Raster.Load(&quot;photo.psd&quot;);
+var details = (PsdDetails)image.Metadata.FormatDetails!;
+Console.WriteLine($&quot;{(details.Version == 2 ? &quot;PSB&quot; : &quot;PSD&quot;)}, {details.ColorMode} at {details.BitsPerChannel} bits, {details.ChannelCount} channels, {details.Compression}&quot;);
+if (!details.HasRealComposite)
+{
+    // Saved without Maximize Compatibility: what loaded is Photoshop's placeholder, and a warning says so.
+    Console.WriteLine(&quot;Save the file again with Maximize Compatibility on.&quot;);
+}
+
+foreach (PsdResource resource in details.OtherResources)
+{
+    Console.WriteLine($&quot;Resource {resource.Id}, {resource.Data.Length} bytes&quot;);
+}
+</code></pre><h2 id="no-real-composite">No real composite</h2>
+<p>A file saved without Photoshop's Maximize Compatibility holds no real flattened image, only a placeholder. Egami loads it with
+the <code>Psd.NoComposite</code> warning and <code>PsdDetails.HasRealComposite</code> false; it does not composite the layers itself, which would need
+Photoshop's blend modes, adjustment layers, effects and text. ImageMagick flattens the layers instead.</p>
+<h2 id="layers">Layers</h2>
+<p><code>PsdDetails.Layers</code> lists the layer records bottom to top as the file does: name (the Unicode name when there is one), bounds,
+opacity (0 to 1, as <code>DrawImage</code> takes it), blend mode (Photoshop's key and Egami's <code>BlendMode</code> where there is one), visibility, clipping, and whether the record is a
+layer or one end of a group, with its nesting level. Their pixels are not loaded; <code>LoadAll</code> returns the flattened image only.</p>
+<pre><code class="lang-csharp">// Layer records come as metadata, bottom to top as the file lists them; their pixels are not loaded.
+using Raster image = Raster.Load(&quot;layered.psd&quot;);
+foreach (PsdLayer layer in ((PsdDetails)image.Metadata.FormatDetails!).Layers)
+{
+    if (layer.Kind == PsdLayerKind.GroupEnd)
+    {
+        continue;
+    }
+
+    string kind = layer.Kind == PsdLayerKind.Layer ? &quot;layer&quot; : &quot;group&quot;;
+    Console.WriteLine($&quot;{new string(' ', 2 * layer.Level)}{layer.Name} ({kind}, {layer.BlendModeKey}, opacity {layer.Opacity:P0}{(layer.IsVisible ? &quot;&quot; : &quot;, hidden&quot;)})&quot;);
+}
+</code></pre><h2 id="streaming-and-speed">Streaming and speed</h2>
+<p>Rows come from the channel planes as they are asked for: raw rows at computed offsets and PackBits rows through their byte counts,
+read where they lie on a seekable stream, so <code>Region</code> reads only the rows it needs and the layer data is skipped without being
+read. A stream that cannot seek is read to its end first, and Deflate data is inflated whole. On 12-megapixel files Egami decodes
+three to ten times faster than ImageMagick (Magick.NET).</p>
+<h2 id="damaged-and-hostile-data">Damaged and hostile data</h2>
+<p>The header's size is checked against <code>SafetyLimits</code> before anything else; PSB's sides of up to 300,000 pixels stay behind the
+default limits unless the caller raises them. Every section length is checked against the data that remains, the layer section
+is skipped by its length, the image resources and layer records count against <code>MaxMetadataBytes</code>, and the PackBits row table is
+bounded by the header before it is read. Damaged layer records or resources are warnings (<code>Psd.LayersDamaged</code>,
+<code>Psd.ResourcesDamaged</code>), since the flattened image does not depend on them. Image data that ends early loads with the missing
+pixels 0 and the <code>Psd.DataTruncated</code> warning, and throws <code>CorruptDataException</code> in strict mode. The reader is fuzzed with AFL++
+through whole files and through the image data alone.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/psd.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

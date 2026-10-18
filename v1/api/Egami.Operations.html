@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Operations | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Operations | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Operations">
+
+  <h1 id="Egami_Operations" data-uid="Egami.Operations" class="text-break">Namespace Egami.Operations</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.AnimationOverlayOptions.html">AnimationOverlayOptions</a></dt>
+      <dd><p>Options for <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_DrawAnimation_Egami_Raster_Egami_Point_Egami_Operations_AnimationOverlayOptions_">DrawAnimation(Raster, Point, AnimationOverlayOptions?)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ColorFilter.html">ColorFilter</a></dt>
+      <dd><p>A function of one pixel's color, as a value: build one from a matrix, curves, a 3D table or a tone step, chain filters with
+<a class="xref" href="Egami.Operations.ColorFilter.html#Egami_Operations_ColorFilter_Then_Egami_Operations_ColorFilter_">Then(ColorFilter)</a>, mix two with <a class="xref" href="Egami.Operations.ColorFilter.html#Egami_Operations_ColorFilter_Lerp_Egami_Operations_ColorFilter_Egami_Operations_ColorFilter_System_Single_">Lerp(ColorFilter, ColorFilter, float)</a>, run one with <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_ApplyFilter_Egami_Operations_ColorFilter_">ApplyFilter(ColorFilter)</a> or on your own pixels with
+<a class="xref" href="Egami.Operations.ColorFilter.html#Egami_Operations_ColorFilter_Apply__1_System_Span___0__">Apply&lt;TPixel&gt;(Span&lt;TPixel&gt;)</a>, and save it as a .cube file through <a class="xref" href="Egami.Operations.ColorFilter.html#Egami_Operations_ColorFilter_ToLut3D_System_Int32_">ToLut3D(int)</a>. Like Skia's SkColorFilter, a filter sees
+only the pixel's own straight RGBA: no neighbours, position or image statistics, so any chain of filters runs as one pass.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.Compositor.html">Compositor</a></dt>
+      <dd><p>Blends rows of pixels with a <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a>, for code that composites outside an operation chain: a custom
+<a class="xref" href="Egami.Operations.IRasterOperation.html">IRasterOperation</a>, a rasterizer filling spans, a layer merge. It runs the kernels DrawImage runs, so
+<a class="xref" href="Egami.Operations.Compositor.html#Egami_Operations_Compositor_Blend__1_Egami_Operations_BlendMode_System_ReadOnlySpan___0__System_Span___0__System_Single_Egami_Operations_ColorSpace_">Blend&lt;TPixel&gt;(BlendMode, ReadOnlySpan&lt;TPixel&gt;, Span&lt;TPixel&gt;, float, ColorSpace)</a> on a row gives the pixels
+DrawImage gives there. Every method works for every pixel type, allocates nothing once warm, and is safe to call from many
+threads at once.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ConvolutionKernel.html">ConvolutionKernel</a></dt>
+      <dd><p>A convolution kernel: an odd width and height of weights, applied as laid out (the weight at column 0, row 0 multiplies the
+pixel up and to the left of the center). The sum is divided by <a class="xref" href="Egami.Operations.ConvolutionKernel.html#Egami_Operations_ConvolutionKernel_Divisor">Divisor</a> and <a class="xref" href="Egami.Operations.ConvolutionKernel.html#Egami_Operations_ConvolutionKernel_Offset">Offset</a> is added to the
+color channels.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.CubeFile.html">CubeFile</a></dt>
+      <dd><p>Reads and writes .cube LUT files: the Adobe Cube LUT Specification 1.0 (a 1D or a 3D table, with TITLE, DOMAIN_MIN and
+DOMAIN_MAX), and DaVinci Resolve's variant with a 1D shaper before the 3D table (LUT_1D_INPUT_RANGE and LUT_3D_INPUT_RANGE).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.DistantLight.html">DistantLight</a></dt>
+      <dd><p>A light infinitely far away, shining from one direction on every pixel, as SVG's feDistantLight. The direction toward the light
+is (cos <a class="xref" href="Egami.Operations.DistantLight.html#Egami_Operations_DistantLight_Azimuth">Azimuth</a> · cos <a class="xref" href="Egami.Operations.DistantLight.html#Egami_Operations_DistantLight_Elevation">Elevation</a>, sin <a class="xref" href="Egami.Operations.DistantLight.html#Egami_Operations_DistantLight_Azimuth">Azimuth</a> · cos <a class="xref" href="Egami.Operations.DistantLight.html#Egami_Operations_DistantLight_Elevation">Elevation</a>,
+sin <a class="xref" href="Egami.Operations.DistantLight.html#Egami_Operations_DistantLight_Elevation">Elevation</a>) in the raster's coordinates (y down), which is the vector Skia's DistantLit factories take.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.DropShadowOptions.html">DropShadowOptions</a></dt>
+      <dd><p>The less common settings of <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_DropShadow_System_Single_System_Single_System_Single_Egami_Pixels_Rgba8_Egami_Operations_DropShadowOptions_">DropShadow(float, float, float, Rgba8, DropShadowOptions?)</a>: a different vertical blur, whether the canvas grows, whether
+only the shadow is kept, and how the blur is computed.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.LensBlurOptions.html">LensBlurOptions</a></dt>
+      <dd><p>The aperture and highlights of <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_LensBlur_System_Single_Egami_Operations_LensBlurOptions_">LensBlur(float, LensBlurOptions?)</a>. The defaults give a round aperture
+in linear light with no highlight boost.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.Light.html">Light</a></dt>
+      <dd><p>A light for <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Lighting_Egami_Operations_Light_Egami_Operations_LightingModel_Egami_Operations_LightingOptions_">Lighting(Light, LightingModel, LightingOptions?)</a>: <a class="xref" href="Egami.Operations.DistantLight.html">DistantLight</a>, <a class="xref" href="Egami.Operations.PointLight.html">PointLight</a> or <a class="xref" href="Egami.Operations.SpotLight.html">SpotLight</a>,
+the three light sources of the SVG 1.1 lighting filters (feDistantLight, fePointLight and feSpotLight), with Skia's parameters.
+Positions are in pixels of the raster, x to the right, y down and z up out of the image; a pixel's center is at (x + 0.5, y + 0.5),
+as in Skia.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.LightingOptions.html">LightingOptions</a></dt>
+      <dd><p>The surface and output settings of <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Lighting_Egami_Operations_Light_Egami_Operations_LightingModel_Egami_Operations_LightingOptions_">Lighting(Light, LightingModel, LightingOptions?)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.Lut3D.html">Lut3D</a></dt>
+      <dd><p>A 3D color lookup table: an N × N × N grid of output RGB values over the input cube, with red varying fastest, as .cube files
+and Hald images store it, and an optional 1D shaper per channel read before the grid (DaVinci Resolve's 1D-plus-3D .cube). Read
+one with <a class="xref" href="Egami.Operations.CubeFile.html#Egami_Operations_CubeFile_Read_System_String_Egami_EgamiContext_">Read(string, EgamiContext?)</a> or <a class="xref" href="Egami.Operations.Lut3D.html#Egami_Operations_Lut3D_FromHald_Egami_Raster_">FromHald(Raster)</a>, and apply it with <a class="xref" href="Egami.Operations.ColorFilter.html#Egami_Operations_ColorFilter_FromLut_Egami_Operations_Lut3D_Egami_Operations_LutInterpolation_">FromLut(Lut3D, LutInterpolation)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.OperationInput-1.html">OperationInput&lt;TPixel&gt;</a></dt>
+      <dd><p>Everything an operation gets for one frame.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.PointLight.html">PointLight</a></dt>
+      <dd><p>A light at one point, shining in every direction, as SVG's fePointLight and Skia's PointLit factories.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a></dt>
+      <dd><p>Animation steps: they work on the frames of the whole animation rather than on each frame, so they run in Apply, Derive and
+Transcode (which then decodes the whole animation first) but not inside Within. Frames in memory are already full pictures of
+what is on screen, so there is no Coalesce, and the writers find each frame's changed area themselves, so there is no Optimize.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a></dt>
+      <dd><p>How a transform or warp samples the source: the filter, the color space it blends in, what samples outside the source read,
+and the background color.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.SpotLight.html">SpotLight</a></dt>
+      <dd><p>A light at one point that shines toward a target, as SVG's feSpotLight and Skia's SpotLit factories. Light falls off away
+from the axis as cos(angle)^<a class="xref" href="Egami.Operations.SpotLight.html#Egami_Operations_SpotLight_Exponent">Exponent</a> and stops at <a class="xref" href="Egami.Operations.SpotLight.html#Egami_Operations_SpotLight_ConeAngle">ConeAngle</a>, with Skia's soft cone edge.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ToneCurve.html">ToneCurve</a></dt>
+      <dd><p>A curve from 0..1 to 0..1 for one channel, as a photo editor's curves dialog draws it: inputs outside 0..1 are clamped first and
+results are clamped to 0..1. Use one in <a class="xref" href="Egami.Operations.ColorFilter.html#Egami_Operations_ColorFilter_Curves_Egami_Operations_ToneCurve_">Curves(ToneCurve)</a>; the tone steps (Level, Gamma and the
+rest) are curves too, evaluated exactly.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.TransformOptions.html">TransformOptions</a></dt>
+      <dd><p>How a transform samples the source and how large its result is: <a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a> plus a viewport.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.Warp.html">Warp</a></dt>
+      <dd><p>Makes warps from functions.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.Warps.html">Warps</a></dt>
+      <dd><p>The built-in warps for <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Warp_Egami_Operations_IWarp_Egami_Operations_SamplingOptions_">Warp(IWarp, SamplingOptions?)</a>: lens correction, polar and depolar, arc, swirl, wave and implode with
+ImageMagick's parameter meanings, so its documentation describes them and its results are their reference, and Skia's
+magnifier. Positions are in pixels with pixel centers at +0.5.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ColorMatrix.html">ColorMatrix</a></dt>
+      <dd><p>A 4 × 5 color matrix applied to straight (not premultiplied) RGBA scaled to 0..1:
+each output channel is <code>m[row, 0] × R + m[row, 1] × G + m[row, 2] × B + m[row, 3] × A + m[row, 4]</code>, rows in R, G, B, A order,
+and results are clamped to 0..1. The factories follow the W3C Filter Effects definitions.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.Homography.html">Homography</a></dt>
+      <dd><p>A 3 × 3 projective matrix in double precision, for perspective transforms. It follows <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.matrix3x2">Matrix3x2</a>'s conventions:
+points are row vectors, so <code>[x, y, 1] × H = [X, Y, W]</code> and the point lands at <code>(X / W, Y / W)</code>; <code>A * B</code> applies
+A first, then B. Coordinates are in pixels with the origin at the top-left corner of the top-left pixel, so pixel centers sit
+at +0.5.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.LightingModel.html">LightingModel</a></dt>
+      <dd><p>How a surface reflects light in <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Lighting_Egami_Operations_Light_Egami_Operations_LightingModel_Egami_Operations_LightingOptions_">Lighting(Light, LightingModel, LightingOptions?)</a>: <a class="xref" href="Egami.Operations.LightingModel.html#Egami_Operations_LightingModel_Diffuse_System_Single_">Diffuse(float)</a> (SVG's feDiffuseLighting, Lambert's
+N·L) or <a class="xref" href="Egami.Operations.LightingModel.html#Egami_Operations_LightingModel_Specular_System_Single_System_Single_">Specular(float, float)</a> (feSpecularLighting, Phong–Blinn's (N·H)^shininess), with SVG's and Skia's constants.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.Mask.html">Mask</a></dt>
+      <dd><p>A raster read as coverage, 0 (none) to full, placed on the image being edited: where an operation inside
+<a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Within_Egami_Operations_Mask_System_Action_Egami_Operations_RasterOps__">Within(Mask, Action&lt;RasterOps&gt;)</a> applies and how strongly. The raster may have any size and pixel type;
+outside it coverage is 0, or full when <a class="xref" href="Egami.Operations.Mask.html#Egami_Operations_Mask_Inverted">Inverted</a>. Its first frame is used for every frame. It must stay
+undisposed until the chain has run.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.OperationReach.html">OperationReach</a></dt>
+      <dd><p>How far an operation chain reads past each output pixel, in whole pixels across and down: a pixel of the result can depend on
+input pixels up to <a class="xref" href="Egami.Operations.OperationReach.html#Egami_Operations_OperationReach_X">X</a> columns and <a class="xref" href="Egami.Operations.OperationReach.html#Egami_Operations_OperationReach_Y">Y</a> rows away. A blur of σ reaches about 3σ; a color matrix reaches
+nothing. <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Reach_System_Action_Egami_Operations_RasterOps__">Reach(Action&lt;RasterOps&gt;)</a> measures a chain, so code that runs one on part of a larger picture, such as a canvas
+layer, can include the pixels around it that the chain will read.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.StructuringElement.html">StructuringElement</a></dt>
+      <dd><p>The shape <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Morphology_Egami_Operations_MorphologyOp_Egami_Operations_StructuringElement_System_Int32_">Morphology(MorphologyOp, StructuringElement, int)</a> takes its maximum or minimum over: a set of
+cells around an origin, which sits on the pixel being computed. The factories make the shapes ImageMagick's -morphology kernels
+of the same names make (its Plus is <a class="xref" href="Egami.Operations.StructuringElement.html#Egami_Operations_StructuringElement_Cross_System_Int32_">Cross(int)</a> here). The default value is the origin alone, which changes nothing.</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.IRasterOperation.html">IRasterOperation</a></dt>
+      <dd><p>One step of an operation chain. Built-in operations implement it, and so can callers: add one to a chain with
+<a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Add_Egami_Operations_IRasterOperation_">Add(IRasterOperation)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.IWarp.html">IWarp</a></dt>
+      <dd><p>A general warp: a mapping from each output pixel back to the source point it shows. Egami samples the points with the same
+sampler as <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Transform_Egami_Operations_Homography_Egami_Operations_TransformOptions_">Transform(Homography, TransformOptions?)</a>, so every warp gets antialiasing where it shrinks
+the image, and edge modes. Positions are in pixels with the origin at the top-left corner of the top-left pixel, so pixel
+centers sit at +0.5.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.Anchor.html">Anchor</a></dt>
+      <dd><p>Where an image sits inside a larger area, or which part of it is kept when it is cut down.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.AnimationTiming.html">AnimationTiming</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_DrawAnimation_Egami_Raster_Egami_Point_Egami_Operations_AnimationOverlayOptions_">DrawAnimation(Raster, Point, AnimationOverlayOptions?)</a> pairs the overlay's frames with the base's.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+      <dd><p>How a source color is combined with the destination under it: the twelve Porter–Duff operators, Plus and Modulate, and the
+separable and non-separable blend modes of the W3C Compositing and Blending specification, plus Add and Subtract. Blend modes
+(<a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Multiply">Multiply</a> to <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_Luminosity">Luminosity</a>) blend the colors where both are present, then composite source-over.
+The values are fixed: they never change between releases.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.BlurMethod.html">BlurMethod</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Blur_System_Single_Egami_Operations_ColorSpace_Egami_Operations_BlurMethod_">Blur(float, ColorSpace, BlurMethod)</a> computes a Gaussian blur.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ChannelSource.html">ChannelSource</a></dt>
+      <dd><p>Where an output channel of <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_ShuffleChannels_Egami_Operations_ChannelSource_Egami_Operations_ChannelSource_Egami_Operations_ChannelSource_Egami_Operations_ChannelSource_">ShuffleChannels(ChannelSource, ChannelSource, ChannelSource, ChannelSource)</a> takes its value from.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ColorChannel.html">ColorChannel</a></dt>
+      <dd><p>One channel of a raster's working RGBA, or its luminance, for <a class="xref" href="Egami.Raster.html#Egami_Raster_ExtractChannel_Egami_Operations_ColorChannel_">ExtractChannel(ColorChannel)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ColorChannels.html">ColorChannels</a></dt>
+      <dd><p>A set of a raster's working RGBA channels, for <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_OnChannels_Egami_Operations_ColorChannels_System_Action_Egami_Operations_RasterOps__">OnChannels(ColorChannels, Action&lt;RasterOps&gt;)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ColorSpace.html">ColorSpace</a></dt>
+      <dd><p>The color space in which resizing, blurs and grayscale blend colors: the stored sRGB-encoded values, or linear light.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ColorVisionDeficiency.html">ColorVisionDeficiency</a></dt>
+      <dd><p>A color vision deficiency to simulate.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.Connectivity.html">Connectivity</a></dt>
+      <dd><p>Which neighbours a flood fill spreads to.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ContrastInvert.html">ContrastInvert</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_HighContrast_System_Boolean_Egami_Operations_ContrastInvert_System_Single_">HighContrast(bool, ContrastInvert, float)</a> inverts, as Skia's high-contrast filter does.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.EdgeMode.html">EdgeMode</a></dt>
+      <dd><p>How a convolution reads taps that fall past the image border.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.EdgeOperator.html">EdgeOperator</a></dt>
+      <dd><p>The kernels <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Edges_Egami_Operations_EdgeOperator_System_Boolean_">Edges(EdgeOperator, bool)</a> finds edges with. Every operator is scaled so a full black-to-white
+step gives 1 at its strongest pixel; stronger responses (corners, single bright pixels) clamp to 1.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.EqualizeMode.html">EqualizeMode</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Equalize_Egami_Operations_EqualizeMode_System_Boolean_">Equalize(EqualizeMode, bool)</a> equalizes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.HeightSource.html">HeightSource</a></dt>
+      <dd><p>Which channel <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Lighting_Egami_Operations_Light_Egami_Operations_LightingModel_Egami_Operations_LightingOptions_">Lighting(Light, LightingModel, LightingOptions?)</a> reads as the surface's height.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.LumaWeights.html">LumaWeights</a></dt>
+      <dd><p>The luma weights a grayscale conversion uses.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.LutInterpolation.html">LutInterpolation</a></dt>
+      <dd><p>How a <a class="xref" href="Egami.Operations.Lut3D.html">Lut3D</a> reads between its grid points.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.MaskChannel.html">MaskChannel</a></dt>
+      <dd><p>Which values of a raster a <a class="xref" href="Egami.Operations.Mask.html">Mask</a> reads as coverage.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.MorphologyOp.html">MorphologyOp</a></dt>
+      <dd><p>The operations of <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Morphology_Egami_Operations_MorphologyOp_Egami_Operations_StructuringElement_System_Int32_">Morphology(MorphologyOp, StructuringElement, int)</a>, all flat (gray-level) and per channel.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.NoiseKind.html">NoiseKind</a></dt>
+      <dd><p>The noise <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_AddNoise_Egami_Operations_NoiseKind_System_Single_System_Boolean_System_UInt64_">AddNoise(NoiseKind, float, bool, ulong)</a> adds: ImageMagick's +noise kinds, with values on 0..1 and the amount as
+ImageMagick's -attenuate. At amount 1 the formulas are ImageMagick's Q16 ones.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.PixelMath.html">PixelMath</a></dt>
+      <dd><p>An arithmetic operation with a constant, for <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Arithmetic_Egami_Operations_PixelMath_System_Single_Egami_Operations_ColorChannels_">Arithmetic(PixelMath, float, ColorChannels)</a>: ImageMagick's -evaluate operators.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ResampleFilter.html">ResampleFilter</a></dt>
+      <dd><p>The kernel a resize or rotation uses to blend source pixels.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.StackMode.html">StackMode</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Raster.html#Egami_Raster_Stack_System_Collections_Generic_IReadOnlyList_Egami_Raster__Egami_Operations_StackMode_">Stack(IReadOnlyList&lt;Raster&gt;, StackMode)</a> combines the same channel of the same pixel across rasters.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ThresholdMethod.html">ThresholdMethod</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_AutoThreshold_Egami_Operations_ThresholdMethod_Egami_Operations_ThresholdMode_System_Nullable_Egami_Pixels_Rgba8__System_Nullable_Egami_Pixels_Rgba8__System_Boolean_">AutoThreshold(ThresholdMethod, ThresholdMode, Rgba8?, Rgba8?, bool)</a> and <a class="xref" href="Egami.Raster.html#Egami_Raster_FindThreshold_Egami_Operations_ThresholdMethod_Egami_Operations_ThresholdMode_">FindThreshold(ThresholdMethod, ThresholdMode)</a> choose a level from the histogram.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.ThresholdMode.html">ThresholdMode</a></dt>
+      <dd><p>What a threshold compares with its level.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.WhiteBalanceMethod.html">WhiteBalanceMethod</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_AutoWhiteBalance_Egami_Operations_WhiteBalanceMethod_System_Boolean_">AutoWhiteBalance(WhiteBalanceMethod, bool)</a> finds the cast to remove.</p>
+</dd>
+    </dl>
+    <h3 id="delegates">
+Delegates
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Operations.RowBandAction.html">RowBandAction</a></dt>
+      <dd><p>Processes a band of rows: rows <code class="paramref">start</code> (inclusive) to <code class="paramref">end</code> (exclusive).</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

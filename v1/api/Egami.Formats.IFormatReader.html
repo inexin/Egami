@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Interface IFormatReader | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Interface IFormatReader | Egami ">
+      
+      <meta name="description" content="Reads one file format. Readers are stateless and safe to share across threads. They read only through  and allocate pixel memory only through , which checks the safety limits first, so no reader can allocate before the size has been checked.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_IFormatReader.md&amp;value=---%0Auid%3A%20Egami.Formats.IFormatReader%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.IFormatReader">
+
+
+
+  <h1 id="Egami_Formats_IFormatReader" data-uid="Egami.Formats.IFormatReader" class="text-break">
+Interface IFormatReader  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/IFormatReader.cs/#L13"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Reads one file format. Readers are stateless and safe to share across threads.
+They read only through <a class="xref" href="Egami.Formats.EgamiInput.html">EgamiInput</a> and allocate pixel memory only through <a class="xref" href="Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput_CreateRaster__1_System_Int64_System_Int64_Egami_ClearMode_">CreateRaster&lt;TPixel&gt;(long, long, ClearMode)</a>,
+which checks the safety limits first, so no reader can allocate before the size has been checked.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface IFormatReader</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+  <h2 id="Egami_Formats_IFormatReader_examples">Examples</h2>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;A minimal format: "RAW8", width and height as big-endian numbers, then RGBA rows.&lt;/summary&gt;
+public static class Raw8Format
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = "RAW8",
+        Extensions = ["raw8"],
+        SignatureLength = 4,
+        Matches = header =&gt; header.StartsWith("RAW8"u8),
+        Reader = new Reader(),
+        Writer = new Writer(),
+    };
+
+    private sealed class Reader : IFormatReader
+    {
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height) = Header(input);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            (int width, int height) = Header(input);
+
+            // CreateRaster checks the size against the safety limits before allocating.
+            Raster&lt;TPixel&gt; raster = input.CreateRaster&lt;TPixel&gt;(width, height);
+            using IMemoryOwner&lt;byte&gt; row = input.RentScratch(width * 4);
+            for (int y = 0; y &lt; height; y++)
+            {
+                input.ReadExactly(row.Memory.Span[..(width * 4)]);
+                PixelConvert.Convert&lt;Rgba8, TPixel&gt;(MemoryMarshal.Cast&lt;byte, Rgba8&gt;(row.Memory.Span[..(width * 4)]), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Read&lt;Rgba8&gt;(input, options);
+
+        private static (int Width, int Height) Header(EgamiInput input)
+        {
+            input.Skip(4);
+            return ((int)input.ReadUInt32BigEndian(), (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Writer : IFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            "RAW8"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)raster.Width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)raster.Height);
+            output.Write(header);
+            Rgba8[] row = new Rgba8[raster.Width];
+            for (int y = 0; y &lt; raster.Height; y++)
+            {
+                PixelConvert.Convert&lt;TPixel, Rgba8&gt;(raster.Row(y), row);
+                output.Write(MemoryMarshal.AsBytes(row.AsSpan()));
+            }
+        }
+    }
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_IFormatReader_Read_" data-uid="Egami.Formats.IFormatReader.Read*"></a>
+
+  <h3 id="Egami_Formats_IFormatReader_Read_Egami_Formats_EgamiInput_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.IFormatReader.Read(Egami.Formats.EgamiInput,Egami.Formats.ReaderOptions)">
+  Read(EgamiInput, ReaderOptions)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/IFormatReader.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads the image in the pixel type that best fits the file, such as <a class="xref" href="Egami.Pixels.Gray16.html">Gray16</a> for a 16-bit gray image.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Raster Read(EgamiInput input, ReaderOptions options)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="Egami.Formats.EgamiInput.html">EgamiInput</a></dt>
+    <dd><p>The data, positioned at the start of the image.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The raster.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_IFormatReader_Read_Egami_Formats_EgamiInput_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;A minimal format: "RAW8", width and height as big-endian numbers, then RGBA rows.&lt;/summary&gt;
+public static class Raw8Format
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = "RAW8",
+        Extensions = ["raw8"],
+        SignatureLength = 4,
+        Matches = header =&gt; header.StartsWith("RAW8"u8),
+        Reader = new Reader(),
+        Writer = new Writer(),
+    };
+
+    private sealed class Reader : IFormatReader
+    {
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height) = Header(input);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            (int width, int height) = Header(input);
+
+            // CreateRaster checks the size against the safety limits before allocating.
+            Raster&lt;TPixel&gt; raster = input.CreateRaster&lt;TPixel&gt;(width, height);
+            using IMemoryOwner&lt;byte&gt; row = input.RentScratch(width * 4);
+            for (int y = 0; y &lt; height; y++)
+            {
+                input.ReadExactly(row.Memory.Span[..(width * 4)]);
+                PixelConvert.Convert&lt;Rgba8, TPixel&gt;(MemoryMarshal.Cast&lt;byte, Rgba8&gt;(row.Memory.Span[..(width * 4)]), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Read&lt;Rgba8&gt;(input, options);
+
+        private static (int Width, int Height) Header(EgamiInput input)
+        {
+            input.Skip(4);
+            return ((int)input.ReadUInt32BigEndian(), (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Writer : IFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            "RAW8"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)raster.Width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)raster.Height);
+            output.Write(header);
+            Rgba8[] row = new Rgba8[raster.Width];
+            for (int y = 0; y &lt; raster.Height; y++)
+            {
+                PixelConvert.Convert&lt;TPixel, Rgba8&gt;(raster.Row(y), row);
+                output.Write(MemoryMarshal.AsBytes(row.AsSpan()));
+            }
+        }
+    }
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Formats_IFormatReader_ReadInfo_" data-uid="Egami.Formats.IFormatReader.ReadInfo*"></a>
+
+  <h3 id="Egami_Formats_IFormatReader_ReadInfo_Egami_Formats_EgamiInput_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.IFormatReader.ReadInfo(Egami.Formats.EgamiInput,Egami.Formats.ReaderOptions)">
+  ReadInfo(EgamiInput, ReaderOptions)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/IFormatReader.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads only the header: size, natural pixel layout and whatever else is cheap. <a class="xref" href="Egami.Raster.html#Egami_Raster_Probe_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Probe(Stream, EgamiContext?, ReaderOptions?)</a> stops here.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="Egami.Formats.EgamiInput.html">EgamiInput</a></dt>
+    <dd><p>The data, positioned at the start of the image.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.RasterInfo.html">RasterInfo</a></dt>
+    <dd><p>What the header says.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_IFormatReader_ReadInfo_Egami_Formats_EgamiInput_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;A minimal format: "RAW8", width and height as big-endian numbers, then RGBA rows.&lt;/summary&gt;
+public static class Raw8Format
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = "RAW8",
+        Extensions = ["raw8"],
+        SignatureLength = 4,
+        Matches = header =&gt; header.StartsWith("RAW8"u8),
+        Reader = new Reader(),
+        Writer = new Writer(),
+    };
+
+    private sealed class Reader : IFormatReader
+    {
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height) = Header(input);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            (int width, int height) = Header(input);
+
+            // CreateRaster checks the size against the safety limits before allocating.
+            Raster&lt;TPixel&gt; raster = input.CreateRaster&lt;TPixel&gt;(width, height);
+            using IMemoryOwner&lt;byte&gt; row = input.RentScratch(width * 4);
+            for (int y = 0; y &lt; height; y++)
+            {
+                input.ReadExactly(row.Memory.Span[..(width * 4)]);
+                PixelConvert.Convert&lt;Rgba8, TPixel&gt;(MemoryMarshal.Cast&lt;byte, Rgba8&gt;(row.Memory.Span[..(width * 4)]), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Read&lt;Rgba8&gt;(input, options);
+
+        private static (int Width, int Height) Header(EgamiInput input)
+        {
+            input.Skip(4);
+            return ((int)input.ReadUInt32BigEndian(), (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Writer : IFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            "RAW8"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)raster.Width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)raster.Height);
+            output.Write(header);
+            Rgba8[] row = new Rgba8[raster.Width];
+            for (int y = 0; y &lt; raster.Height; y++)
+            {
+                PixelConvert.Convert&lt;TPixel, Rgba8&gt;(raster.Row(y), row);
+                output.Write(MemoryMarshal.AsBytes(row.AsSpan()));
+            }
+        }
+    }
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Formats_IFormatReader_Read_" data-uid="Egami.Formats.IFormatReader.Read*"></a>
+
+  <h3 id="Egami_Formats_IFormatReader_Read__1_Egami_Formats_EgamiInput_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.IFormatReader.Read``1(Egami.Formats.EgamiInput,Egami.Formats.ReaderOptions)">
+  Read&lt;TPixel&gt;(EgamiInput, ReaderOptions)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/IFormatReader.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads the image, converting to <code class="typeparamref">TPixel</code> row by row while decoding.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="Egami.Formats.EgamiInput.html">EgamiInput</a></dt>
+    <dd><p>The data, positioned at the start of the image.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The raster.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type to produce.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_IFormatReader_Read__1_Egami_Formats_EgamiInput_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;A minimal format: "RAW8", width and height as big-endian numbers, then RGBA rows.&lt;/summary&gt;
+public static class Raw8Format
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = "RAW8",
+        Extensions = ["raw8"],
+        SignatureLength = 4,
+        Matches = header =&gt; header.StartsWith("RAW8"u8),
+        Reader = new Reader(),
+        Writer = new Writer(),
+    };
+
+    private sealed class Reader : IFormatReader
+    {
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height) = Header(input);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            (int width, int height) = Header(input);
+
+            // CreateRaster checks the size against the safety limits before allocating.
+            Raster&lt;TPixel&gt; raster = input.CreateRaster&lt;TPixel&gt;(width, height);
+            using IMemoryOwner&lt;byte&gt; row = input.RentScratch(width * 4);
+            for (int y = 0; y &lt; height; y++)
+            {
+                input.ReadExactly(row.Memory.Span[..(width * 4)]);
+                PixelConvert.Convert&lt;Rgba8, TPixel&gt;(MemoryMarshal.Cast&lt;byte, Rgba8&gt;(row.Memory.Span[..(width * 4)]), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Read&lt;Rgba8&gt;(input, options);
+
+        private static (int Width, int Height) Header(EgamiInput input)
+        {
+            input.Skip(4);
+            return ((int)input.ReadUInt32BigEndian(), (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Writer : IFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            "RAW8"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)raster.Width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)raster.Height);
+            output.Write(header);
+            Rgba8[] row = new Rgba8[raster.Width];
+            for (int y = 0; y &lt; raster.Height; y++)
+            {
+                PixelConvert.Convert&lt;TPixel, Rgba8&gt;(raster.Row(y), row);
+                output.Write(MemoryMarshal.AsBytes(row.AsSpan()));
+            }
+        }
+    }
+}</code></pre>
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/IFormatReader.cs/#L13" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

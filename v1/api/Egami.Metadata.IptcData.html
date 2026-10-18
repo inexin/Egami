@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class IptcData | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class IptcData | Egami ">
+      
+      <meta name="description" content="Parsed IPTC-IIM datasets (IPTC-IIM 4.2), as news agencies, stock libraries and Lightroom write them next to XMP, with typed getters for the common ones. Shaped like : an unedited block writes back byte for byte; after an edit it is rebuilt in record and dataset order, record 1 first, with the coded character set (1:90) set to UTF-8 whenever a value is not plain ASCII.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Metadata_IptcData.md&amp;value=---%0Auid%3A%20Egami.Metadata.IptcData%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Metadata.IptcData">
+
+
+
+  <h1 id="Egami_Metadata_IptcData" data-uid="Egami.Metadata.IptcData" class="text-break">
+Class IptcData  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L17"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Metadata.html">Metadata</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Parsed IPTC-IIM datasets (IPTC-IIM 4.2), as news agencies, stock libraries and Lightroom write them next to XMP, with typed
+getters for the common ones. Shaped like <a class="xref" href="Egami.Metadata.ExifData.html">ExifData</a>: an unedited block writes back byte for byte; after an edit
+it is rebuilt in record and dataset order, record 1 first, with the coded character set (1:90) set to UTF-8 whenever a value
+is not plain ASCII.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class IptcData</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">IptcData</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Metadata_IptcData_examples">Examples</h2>
+  <pre><code class="lang-csharp">using Raster photo = Raster.Load("sideways.jpg");
+IptcData iptc = photo.Metadata.Iptc ?? new IptcData();
+iptc.Headline = "Harbour at dawn";
+iptc.Keywords = [.. iptc.Keywords, "harbour", "Bergen"];
+
+// Any dataset by its key; Add appends to the repeatable ones.
+iptc.Set(IptcKey.City, "Bergen");
+
+// Text that is not ASCII sets the coded character set (1:90) to UTF-8, so other programs read it right.
+iptc.Caption = "Fishing boats at Bryggen, Bergen — first light";
+foreach (IptcEntry entry in iptc.Entries)
+{
+    Console.WriteLine($"{entry.Key} {entry.AsString()}");
+}
+
+// JPEG saves it in its Photoshop resource block (APP13), with the digest Photoshop and Lightroom check.
+photo.Metadata.Iptc = iptc;
+photo.Save("captioned.jpg");</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Metadata_IptcData__ctor_" data-uid="Egami.Metadata.IptcData.#ctor*"></a>
+
+  <h3 id="Egami_Metadata_IptcData__ctor" data-uid="Egami.Metadata.IptcData.#ctor">
+  IptcData()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates an empty block, to fill with <a class="xref" href="Egami.Metadata.IptcData.html#Egami_Metadata_IptcData_Set_Egami_Metadata_IptcKey_System_String_">Set(IptcKey, string)</a> and <a class="xref" href="Egami.Metadata.IptcData.html#Egami_Metadata_IptcData_Add_Egami_Metadata_IptcKey_System_String_">Add(IptcKey, string)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IptcData()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Metadata_IptcData_Bylines_" data-uid="Egami.Metadata.IptcData.Bylines*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Bylines" data-uid="Egami.Metadata.IptcData.Bylines">
+  Bylines
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the creators (2:80), in order. Setting an empty list removes them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; Bylines { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>A name set is longer than 32 bytes in UTF-8.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_IptcData_Caption_" data-uid="Egami.Metadata.IptcData.Caption*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Caption" data-uid="Egami.Metadata.IptcData.Caption">
+  Caption
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the caption (2:120), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>. Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Caption { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The value set is longer than 2,000 bytes in UTF-8.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_IptcData_Copyright_" data-uid="Egami.Metadata.IptcData.Copyright*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Copyright" data-uid="Egami.Metadata.IptcData.Copyright">
+  Copyright
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the copyright notice (2:116), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>. Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Copyright { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The value set is longer than 128 bytes in UTF-8.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_IptcData_Credit_" data-uid="Egami.Metadata.IptcData.Credit*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Credit" data-uid="Egami.Metadata.IptcData.Credit">
+  Credit
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L95"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the credit (2:110), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>. Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Credit { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The value set is longer than 32 bytes in UTF-8.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_IptcData_DateCreated_" data-uid="Egami.Metadata.IptcData.DateCreated*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_DateCreated" data-uid="Egami.Metadata.IptcData.DateCreated">
+  DateCreated
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets when the content was created, from the date (2:55) and time (2:60): midnight UTC when there is no valid time,
+and <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when there is no valid date. Setting writes both (CCYYMMDD and HHMMSS±HHMM); setting
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes both.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DateTimeOffset? DateCreated { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetimeoffset">DateTimeOffset</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_IptcData_Entries_" data-uid="Egami.Metadata.IptcData.Entries*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Entries" data-uid="Egami.Metadata.IptcData.Entries">
+  Entries
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L48"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets every dataset in the order stored.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;IptcEntry&gt; Entries { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Metadata.IptcEntry.html">IptcEntry</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_IptcData_Headline_" data-uid="Egami.Metadata.IptcData.Headline*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Headline" data-uid="Egami.Metadata.IptcData.Headline">
+  Headline
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the headline (2:105), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>. Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Headline { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The value set is longer than 256 bytes in UTF-8.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_IptcData_IsDamaged_" data-uid="Egami.Metadata.IptcData.IsDamaged*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_IsDamaged" data-uid="Egami.Metadata.IptcData.IsDamaged">
+  IsDamaged
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the block was damaged when read: a dataset running past the end, bytes that are not datasets, or more data than
+allowed. What could be read is available; the original bytes are written back unless the block is edited.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsDamaged { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_IptcData_IsUtf8_" data-uid="Egami.Metadata.IptcData.IsUtf8*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_IsUtf8" data-uid="Egami.Metadata.IptcData.IsUtf8">
+  IsUtf8
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether text is UTF-8: the coded character set (1:90) is ESC % G.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsUtf8 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_IptcData_Keywords_" data-uid="Egami.Metadata.IptcData.Keywords*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Keywords" data-uid="Egami.Metadata.IptcData.Keywords">
+  Keywords
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the keywords (2:25), in order. Setting an empty list removes them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; Keywords { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>A keyword set is longer than 64 bytes in UTF-8.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_IptcData_Warnings_" data-uid="Egami.Metadata.IptcData.Warnings*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Warnings" data-uid="Egami.Metadata.IptcData.Warnings">
+  Warnings
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what was wrong with the block when read (damage, values longer than the specification allows), as sentences.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; Warnings { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Metadata_IptcData_Add_" data-uid="Egami.Metadata.IptcData.Add*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Add_Egami_Metadata_IptcKey_System_String_" data-uid="Egami.Metadata.IptcData.Add(Egami.Metadata.IptcKey,System.String)">
+  Add(IptcKey, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L221"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds one more value to a repeatable dataset, such as a keyword.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Add(IptcKey key, string value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.IptcKey.html">IptcKey</a></dt>
+    <dd><p>The record and dataset.</p>
+</dd>
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text, stored as UTF-8 (with 1:90 set to UTF-8 when it is not ASCII).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The dataset is not repeatable (<a class="xref" href="Egami.Metadata.IptcKey.html#Egami_Metadata_IptcKey_IsRepeatable">IsRepeatable</a>), or the value is longer than <a class="xref" href="Egami.Metadata.IptcKey.html#Egami_Metadata_IptcKey_MaxLength">MaxLength</a> in UTF-8.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_IptcData_Copy_" data-uid="Egami.Metadata.IptcData.Copy*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Copy" data-uid="Egami.Metadata.IptcData.Copy">
+  Copy()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L254"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns an independent copy.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IptcData Copy()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.IptcData.html">IptcData</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_IptcData_Get_" data-uid="Egami.Metadata.IptcData.Get*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Get_Egami_Metadata_IptcKey_" data-uid="Egami.Metadata.IptcData.Get(Egami.Metadata.IptcKey)">
+  Get(IptcKey)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L177"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the first value of <code class="paramref">key</code> as text, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Get(IptcKey key)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.IptcKey.html">IptcKey</a></dt>
+    <dd><p>The record and dataset.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_IptcData_GetAll_" data-uid="Egami.Metadata.IptcData.GetAll*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_GetAll_Egami_Metadata_IptcKey_" data-uid="Egami.Metadata.IptcData.GetAll(Egami.Metadata.IptcKey)">
+  GetAll(IptcKey)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L182"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns every value of <code class="paramref">key</code> as text, in order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; GetAll(IptcKey key)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.IptcKey.html">IptcKey</a></dt>
+    <dd><p>The record and dataset.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>The values; empty when there are none.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_IptcData_Parse_" data-uid="Egami.Metadata.IptcData.Parse*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Parse_System_ReadOnlySpan_System_Byte__Egami_SafetyLimits_" data-uid="Egami.Metadata.IptcData.Parse(System.ReadOnlySpan{System.Byte},Egami.SafetyLimits)">
+  Parse(ReadOnlySpan&lt;byte&gt;, SafetyLimits?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads IPTC-IIM datasets: tag markers 0x1C, each with a record, a dataset, a length and the value. Never throws: a block that
+runs past its end or past <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxMetadataBytes">MaxMetadataBytes</a> keeps what was read and is marked damaged.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IptcData Parse(ReadOnlySpan&lt;byte&gt; iim, SafetyLimits? limits = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>iim</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The datasets, without any Photoshop resource wrapper.</p>
+</dd>
+    <dt><code>limits</code> <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a></dt>
+    <dd><p>The limits whose <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxMetadataBytes">MaxMetadataBytes</a> caps the values copied. Defaults to <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.IptcData.html">IptcData</a></dt>
+    <dd><p>The parsed block; <a class="xref" href="Egami.Metadata.IptcData.html#Egami_Metadata_IptcData_IsDamaged">IsDamaged</a> says whether it was all readable.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Metadata_IptcData_Parse_System_ReadOnlySpan_System_Byte__Egami_SafetyLimits__examples">Examples</h4>
+  <pre><code class="lang-csharp">// IPTC datasets from somewhere other than an image file, with a cap on the bytes of values read.
+IptcData iptc = IptcData.Parse(iim.Span, SafetyLimits.Default with { MaxMetadataBytes = 64 * 1024 });
+Console.WriteLine($"{iptc.Get(IptcKey.ObjectName)}: {iptc.Entries.Count} datasets, damaged: {iptc.IsDamaged}");</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Metadata_IptcData_Remove_" data-uid="Egami.Metadata.IptcData.Remove*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Remove_Egami_Metadata_IptcKey_" data-uid="Egami.Metadata.IptcData.Remove(Egami.Metadata.IptcKey)">
+  Remove(IptcKey)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L237"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes every value of <code class="paramref">key</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Remove(IptcKey key)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.IptcKey.html">IptcKey</a></dt>
+    <dd><p>The record and dataset.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether there was any.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_IptcData_Set_" data-uid="Egami.Metadata.IptcData.Set*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_Set_Egami_Metadata_IptcKey_System_String_" data-uid="Egami.Metadata.IptcData.Set(Egami.Metadata.IptcKey,System.String)">
+  Set(IptcKey, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L208"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Replaces every value of <code class="paramref">key</code> with one value.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Set(IptcKey key, string value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.IptcKey.html">IptcKey</a></dt>
+    <dd><p>The record and dataset.</p>
+</dd>
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text, stored as UTF-8 (with 1:90 set to UTF-8 when it is not ASCII).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The value is longer than <a class="xref" href="Egami.Metadata.IptcKey.html#Egami_Metadata_IptcKey_MaxLength">MaxLength</a> in UTF-8; long text belongs in XMP. Or the key is the coded character set, which Egami keeps.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_IptcData_ToBytes_" data-uid="Egami.Metadata.IptcData.ToBytes*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_ToBytes" data-uid="Egami.Metadata.IptcData.ToBytes">
+  ToBytes()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L250"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the datasets as stored in a file: the original bytes when unedited, otherwise rebuilt.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;byte&gt; ToBytes()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_IptcData_TryGet_" data-uid="Egami.Metadata.IptcData.TryGet*"></a>
+
+  <h3 id="Egami_Metadata_IptcData_TryGet_Egami_Metadata_IptcKey_Egami_Metadata_IptcEntry__" data-uid="Egami.Metadata.IptcData.TryGet(Egami.Metadata.IptcKey,Egami.Metadata.IptcEntry@)">
+  TryGet(IptcKey, out IptcEntry?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L168"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the entry for the first dataset with <code class="paramref">key</code>, if the block has one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGet(IptcKey key, out IptcEntry? entry)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="Egami.Metadata.IptcKey.html">IptcKey</a></dt>
+    <dd><p>The record and dataset.</p>
+</dd>
+    <dt><code>entry</code> <a class="xref" href="Egami.Metadata.IptcEntry.html">IptcEntry</a></dt>
+    <dd><p>The entry, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the block has the dataset.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/IptcData.cs/#L17" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

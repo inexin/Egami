@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class ParagraphStyle | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class ParagraphStyle | Egami ">
+      
+      <meta name="description" content="How a paragraph is laid out: its default text style, direction, alignment, line breaking, line filling, hyphens, ellipsis and line limits, line box rules, tabs and writing mode. The defaults follow CSS: start-aligned, greedy filling, normal line height, tab stops every 8 spaces, horizontal lines.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_Layout_ParagraphStyle.md&amp;value=---%0Auid%3A%20Egami.Fonts.Layout.ParagraphStyle%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.Layout.ParagraphStyle">
+
+
+
+  <h1 id="Egami_Fonts_Layout_ParagraphStyle" data-uid="Egami.Fonts.Layout.ParagraphStyle" class="text-break">
+Class ParagraphStyle  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L14"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a>.<a class="xref" href="Egami.Fonts.Layout.html">Layout</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>How a paragraph is laid out: its default text style, direction, alignment, line breaking, line filling, hyphens, ellipsis
+and line limits, line box rules, tabs and writing mode. The defaults follow CSS: start-aligned, greedy filling, normal line
+height, tab stops every 8 spaces, horizontal lines.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record ParagraphStyle : IEquatable&lt;ParagraphStyle&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">ParagraphStyle</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html">ParagraphStyle</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Fonts_Layout_ParagraphStyle_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Font families come from a collection; later families cover what the first lacks.
+FontCollection fonts = new();
+fonts.AddFile(System.IO.Path.Combine(folder, "NotoSans-Regular.ttf"));
+fonts.AddFile(System.IO.Path.Combine(folder, "NotoSansArabic-Regular.ttf"));
+fonts.TryGetFamily("Noto Sans", out FontFamily latin);
+fonts.TryGetFamily("Noto Sans Arabic", out FontFamily arabic);
+
+// Styles nest: the inner span keeps the outer one's size and adds a color and an underline.
+RichText text = new RichTextBuilder()
+    .Append("Peace is ")
+    .Push(new TextStyle { Size = 20 })
+    .Append("\u0633\u0644\u0627\u0645 ")
+    .Push(new TextStyle { Color = new Rgba8(200, 30, 30, 255), Decoration = new TextDecoration() })
+    .Append("in Arabic")
+    .Pop()
+    .Pop()
+    .AddPlaceholder(new Placeholder(16, 16, PlaceholderAlignment.Middle))
+    .ToRichText();
+
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [latin, arabic], Size = 16, LineHeight = LineHeight.Multiple(1.4f) },
+    Align = TextAlign.Justify,
+    LineBreaking = new LineBreakOptions(WordBreak: WordBreak.Normal),
+};
+
+// Shaped once: lay it out at any width later.
+Paragraph paragraph = Paragraph.Create(text, style);</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_Align_" data-uid="Egami.Fonts.Layout.ParagraphStyle.Align*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_Align" data-uid="Egami.Fonts.Layout.ParagraphStyle.Align">
+  Align
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how lines align in the layout width.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextAlign Align { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.TextAlign.html">TextAlign</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_AlignLast_" data-uid="Egami.Fonts.Layout.ParagraphStyle.AlignLast*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_AlignLast" data-uid="Egami.Fonts.Layout.ParagraphStyle.AlignLast">
+  AlignLast
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how the last line, and lines before a hard break, align.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextAlignLast AlignLast { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.TextAlignLast.html">TextAlignLast</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_Default_" data-uid="Egami.Fonts.Layout.ParagraphStyle.Default*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_Default" data-uid="Egami.Fonts.Layout.ParagraphStyle.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L21"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the default paragraph style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ParagraphStyle Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html">ParagraphStyle</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_DefaultStyle_" data-uid="Egami.Fonts.Layout.ParagraphStyle.DefaultStyle*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_DefaultStyle" data-uid="Egami.Fonts.Layout.ParagraphStyle.DefaultStyle">
+  DefaultStyle
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the text style spans inherit unset fields from; its <a class="xref" href="Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_FontFamilies">FontFamilies</a> must be set when a
+span's are not.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextStyle DefaultStyle { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.TextStyle.html">TextStyle</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_Direction_" data-uid="Egami.Fonts.Layout.ParagraphStyle.Direction*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_Direction" data-uid="Egami.Fonts.Layout.ParagraphStyle.Direction">
+  Direction
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the paragraph direction; <a class="xref" href="Egami.Fonts.Unicode.TextDirection.html#Egami_Fonts_Unicode_TextDirection_Auto">Auto</a> takes each paragraph's from its first strong
+character (UAX #9 rules P2 and P3).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextDirection Direction { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.TextDirection.html">TextDirection</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_Ellipsis_" data-uid="Egami.Fonts.Layout.ParagraphStyle.Ellipsis*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_Ellipsis" data-uid="Egami.Fonts.Layout.ParagraphStyle.Ellipsis">
+  Ellipsis
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the text that ends the last line when <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_MaxLines">MaxLines</a> or <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_MaxHeight">MaxHeight</a> cuts text: U+2026,
+a custom string, or null to cut without one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Ellipsis { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_Fallback_" data-uid="Egami.Fonts.Layout.ParagraphStyle.Fallback*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_Fallback" data-uid="Egami.Fonts.Layout.ParagraphStyle.Fallback">
+  Fallback
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L95"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the families and resolver tried after a style's own families.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontFallback Fallback { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Shaping.FontFallback.html">FontFallback</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_Hyphen_" data-uid="Egami.Fonts.Layout.ParagraphStyle.Hyphen*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_Hyphen" data-uid="Egami.Fonts.Layout.ParagraphStyle.Hyphen">
+  Hyphen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L48"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the text drawn where a line ends at a soft hyphen: U+2010 (U+002D when the font has none), a custom
+string, or null for none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Hyphen { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_Justify_" data-uid="Egami.Fonts.Layout.ParagraphStyle.Justify*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_Justify" data-uid="Egami.Fonts.Layout.ParagraphStyle.Justify">
+  Justify
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how justified lines stretch.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextJustify Justify { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.TextJustify.html">TextJustify</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_LineBreaking_" data-uid="Egami.Fonts.Layout.ParagraphStyle.LineBreaking*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_LineBreaking" data-uid="Egami.Fonts.Layout.ParagraphStyle.LineBreaking">
+  LineBreaking
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets where lines may break.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public LineBreakOptions LineBreaking { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.LineBreakOptions.html">LineBreakOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_LineFill_" data-uid="Egami.Fonts.Layout.ParagraphStyle.LineFill*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_LineFill" data-uid="Egami.Fonts.Layout.ParagraphStyle.LineFill">
+  LineFill
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how lines are filled.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public LineFill LineFill { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.LineFill.html">LineFill</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_MaxHeight_" data-uid="Egami.Fonts.Layout.ParagraphStyle.MaxHeight*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_MaxHeight" data-uid="Egami.Fonts.Layout.ParagraphStyle.MaxHeight">
+  MaxHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the height the lines must fit in, in canvas units, or null for no limit.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float? MaxHeight { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is negative or not a number.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_MaxLines_" data-uid="Egami.Fonts.Layout.ParagraphStyle.MaxLines*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_MaxLines" data-uid="Egami.Fonts.Layout.ParagraphStyle.MaxLines">
+  MaxLines
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the most lines laid out, or null for no limit.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? MaxLines { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is less than 1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_Strut_" data-uid="Egami.Fonts.Layout.ParagraphStyle.Strut*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_Strut" data-uid="Egami.Fonts.Layout.ParagraphStyle.Strut">
+  Strut
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the minimum (or, with <a class="xref" href="Egami.Fonts.Layout.Strut.html#Egami_Fonts_Layout_Strut_Force">Force</a>, exact) line box every line has.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Strut? Strut { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.Strut.html">Strut</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_TabSize_" data-uid="Egami.Fonts.Layout.ParagraphStyle.TabSize*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_TabSize" data-uid="Egami.Fonts.Layout.ParagraphStyle.TabSize">
+  TabSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the distance between default tab stops, in spaces of the default font.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float TabSize { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is negative or not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_TabStops_" data-uid="Egami.Fonts.Layout.ParagraphStyle.TabStops*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_TabStops" data-uid="Egami.Fonts.Layout.ParagraphStyle.TabStops">
+  TabStops
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets explicit tab stops; past the last one, tabs fall back to <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_TabSize">TabSize</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;TabStop&gt;? TabStops { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.Layout.TabStop.html">TabStop</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_TextOrientation_" data-uid="Egami.Fonts.Layout.ParagraphStyle.TextOrientation*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_TextOrientation" data-uid="Egami.Fonts.Layout.ParagraphStyle.TextOrientation">
+  TextOrientation
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how characters stand in vertical lines.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextOrientation TextOrientation { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.TextOrientation.html">TextOrientation</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_TrimEdges_" data-uid="Egami.Fonts.Layout.ParagraphStyle.TrimEdges*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_TrimEdges" data-uid="Egami.Fonts.Layout.ParagraphStyle.TrimEdges">
+  TrimEdges
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the first line's space above its ascent and the last line's below its descent are dropped
+(CSS <code>text-box-trim</code>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TrimEdges { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_ParagraphStyle_WritingMode_" data-uid="Egami.Fonts.Layout.ParagraphStyle.WritingMode*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_WritingMode" data-uid="Egami.Fonts.Layout.ParagraphStyle.WritingMode">
+  WritingMode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether lines run horizontally or vertically.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public WritingMode WritingMode { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.WritingMode.html">WritingMode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L14" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

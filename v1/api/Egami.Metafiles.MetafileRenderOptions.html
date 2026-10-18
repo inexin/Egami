@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class MetafileRenderOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class MetafileRenderOptions | Egami ">
+      
+      <meta name="description" content="How  and  draw a metafile.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Metafiles_MetafileRenderOptions.md&amp;value=---%0Auid%3A%20Egami.Metafiles.MetafileRenderOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Metafiles.MetafileRenderOptions">
+
+
+
+  <h1 id="Egami_Metafiles_MetafileRenderOptions" data-uid="Egami.Metafiles.MetafileRenderOptions" class="text-break">
+Class MetafileRenderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Metafiles.html">Metafiles</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Metafiles.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>How <a class="xref" href="Egami.Metafiles.Metafile.html#Egami_Metafiles_Metafile_Draw_Egami_Drawing_Canvas_System_Nullable_Egami_Drawing_RectF__Egami_Metafiles_MetafileRenderOptions_">Draw(Canvas, RectF?, MetafileRenderOptions?)</a> and <a class="xref" href="Egami.Metafiles.Metafile.html#Egami_Metafiles_Metafile_Rasterize__1_Egami_Metafiles_MetafileRenderOptions_">Rasterize&lt;TPixel&gt;(MetafileRenderOptions?)</a> draw a metafile.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record MetafileRenderOptions : IEquatable&lt;MetafileRenderOptions&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">MetafileRenderOptions</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Metafiles.MetafileRenderOptions.html">MetafileRenderOptions</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Metafiles_MetafileRenderOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Faces the machine lacks: the built-in table maps Calibri to Carlito, Arial to Liberation Sans and so on; add your own.
+Metafile picture = Metafile.Load(path);
+using Raster&lt;Rgba8&gt; image = picture.Rasterize&lt;Rgba8&gt;(new MetafileRenderOptions
+{
+    FontSubstitutions = new Dictionary&lt;string, string&gt; { ["Segoe UI"] = "Noto Sans" },
+    Antialias = false, // GDI's own aliased look, for comparing with Windows
+});</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_Antialias_" data-uid="Egami.Metafiles.MetafileRenderOptions.Antialias*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_Antialias" data-uid="Egami.Metafiles.MetafileRenderOptions.Antialias">
+  Antialias
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether GDI records are drawn antialiased; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> by default (design question 6).
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> gives GDI's own aliased look, for comparing pixels with Windows. EMF+ records follow the file's
+own smoothing mode either way.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Antialias { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_Background_" data-uid="Egami.Metafiles.MetafileRenderOptions.Background*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_Background" data-uid="Egami.Metafiles.MetafileRenderOptions.Background">
+  Background
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the color the raster starts with; transparent by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RgbaF32 Background { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_CanvasOptions_" data-uid="Egami.Metafiles.MetafileRenderOptions.CanvasOptions*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_CanvasOptions" data-uid="Egami.Metafiles.MetafileRenderOptions.CanvasOptions">
+  CanvasOptions
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the options of the raster canvas <a class="xref" href="Egami.Metafiles.Metafile.html#Egami_Metafiles_Metafile_Rasterize__1_Egami_Metafiles_MetafileRenderOptions_">Rasterize&lt;TPixel&gt;(MetafileRenderOptions?)</a> draws on, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CanvasOptions? CanvasOptions { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.CanvasOptions.html">CanvasOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_Context_" data-uid="Egami.Metafiles.MetafileRenderOptions.Context*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_Context" data-uid="Egami.Metafiles.MetafileRenderOptions.Context">
+  Context
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the context of the raster <a class="xref" href="Egami.Metafiles.Metafile.html#Egami_Metafiles_Metafile_Rasterize__1_Egami_Metafiles_MetafileRenderOptions_">Rasterize&lt;TPixel&gt;(MetafileRenderOptions?)</a> creates, for its limits and memory, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the metafile's.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public EgamiContext? Context { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_Default_" data-uid="Egami.Metafiles.MetafileRenderOptions.Default*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_Default" data-uid="Egami.Metafiles.MetafileRenderOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the defaults: 96 DPI, transparent, antialiased, the installed fonts, played as GDI+ plays it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static MetafileRenderOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metafiles.MetafileRenderOptions.html">MetafileRenderOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_Dpi_" data-uid="Egami.Metafiles.MetafileRenderOptions.Dpi*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_Dpi" data-uid="Egami.Metafiles.MetafileRenderOptions.Dpi">
+  Dpi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the resolution <a class="xref" href="Egami.Metafiles.Metafile.html#Egami_Metafiles_Metafile_Rasterize__1_Egami_Metafiles_MetafileRenderOptions_">Rasterize&lt;TPixel&gt;(MetafileRenderOptions?)</a> draws the picture's
+<a class="xref" href="Egami.Metafiles.Metafile.html#Egami_Metafiles_Metafile_Size">Size</a> at when neither <a class="xref" href="Egami.Metafiles.MetafileRenderOptions.html#Egami_Metafiles_MetafileRenderOptions_Width">Width</a> nor <a class="xref" href="Egami.Metafiles.MetafileRenderOptions.html#Egami_Metafiles_MetafileRenderOptions_Height">Height</a> is set; 96 by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Dpi { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not positive and finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_FontSubstitutions_" data-uid="Egami.Metafiles.MetafileRenderOptions.FontSubstitutions*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_FontSubstitutions" data-uid="Egami.Metafiles.MetafileRenderOptions.FontSubstitutions">
+  FontSubstitutions
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets faces to use for faces the fonts lack, by name (case-insensitive), tried after the built-in table of
+metric-compatible open fonts (Arial to Liberation Sans, Calibri to Carlito and so on; design question 8).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyDictionary&lt;string, string&gt;? FontSubstitutions { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2">IReadOnlyDictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_Fonts_" data-uid="Egami.Metafiles.MetafileRenderOptions.Fonts*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_Fonts" data-uid="Egami.Metafiles.MetafileRenderOptions.Fonts">
+  Fonts
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the fonts text is drawn with, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, the default, for <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_System">System</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontCollection? Fonts { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontCollection.html">FontCollection</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_Height_" data-uid="Egami.Metafiles.MetafileRenderOptions.Height*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_Height" data-uid="Egami.Metafiles.MetafileRenderOptions.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the raster's height in pixels, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to take it from <a class="xref" href="Egami.Metafiles.MetafileRenderOptions.html#Egami_Metafiles_MetafileRenderOptions_Width">Width</a> and the aspect ratio, or
+from <a class="xref" href="Egami.Metafiles.MetafileRenderOptions.html#Egami_Metafiles_MetafileRenderOptions_Dpi">Dpi</a>. With both set, the picture is stretched to fill, as Word stretches it to its frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? Height { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not positive.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_Playback_" data-uid="Egami.Metafiles.MetafileRenderOptions.Playback*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_Playback" data-uid="Egami.Metafiles.MetafileRenderOptions.Playback">
+  Playback
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets which records of an EMF+ dual file play; <a class="xref" href="Egami.Metafiles.MetafilePlayback.html#Egami_Metafiles_MetafilePlayback_Auto">Auto</a> by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MetafilePlayback Playback { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metafiles.MetafilePlayback.html">MetafilePlayback</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_TextAsPaths_" data-uid="Egami.Metafiles.MetafileRenderOptions.TextAsPaths*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_TextAsPaths" data-uid="Egami.Metafiles.MetafileRenderOptions.TextAsPaths">
+  TextAsPaths
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether text is drawn as outlines instead of glyph runs, for callers that need paths. On a raster
+both look the same; a PDF or SVG backend then holds no selectable text.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TextAsPaths { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metafiles_MetafileRenderOptions_Width_" data-uid="Egami.Metafiles.MetafileRenderOptions.Width*"></a>
+
+  <h3 id="Egami_Metafiles_MetafileRenderOptions_Width" data-uid="Egami.Metafiles.MetafileRenderOptions.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the raster's width in pixels, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to take it from <a class="xref" href="Egami.Metafiles.MetafileRenderOptions.html#Egami_Metafiles_MetafileRenderOptions_Height">Height</a> and the aspect ratio, or from <a class="xref" href="Egami.Metafiles.MetafileRenderOptions.html#Egami_Metafiles_MetafileRenderOptions_Dpi">Dpi</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? Width { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not positive.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/MetafileRenderOptions.cs/#L24" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

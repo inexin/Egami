@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class GlyphRun | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class GlyphRun | Egami ">
+      
+      <meta name="description" content="Positioned glyphs of one font, ready to draw: glyph ids, one position per glyph relative to the run&#39;s origin (the first baseline&#39;s left end, y down, in canvas units), and optionally the source text with the UTF-16 index each glyph came from, which lets a PDF writer keep text searchable.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_GlyphRun.md&amp;value=---%0Auid%3A%20Egami.Fonts.GlyphRun%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.GlyphRun">
+
+
+
+  <h1 id="Egami_Fonts_GlyphRun" data-uid="Egami.Fonts.GlyphRun" class="text-break">
+Class GlyphRun  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L13"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Positioned glyphs of one font, ready to draw: glyph ids, one position per glyph relative to the run's origin (the first
+baseline's left end, y down, in canvas units), and optionally the source text with the UTF-16 index each glyph came from, which
+lets a PDF writer keep text searchable.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class GlyphRun</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">GlyphRun</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+  <dl class="typelist extensionMethods">
+    <dt>Extension Methods</dt>
+    <dd>
+  <div>
+      <a class="xref" href="Egami.Drawing.FontExtensions.html#Egami_Drawing_FontExtensions_ToPath_Egami_Fonts_GlyphRun_System_Numerics_Vector2_">FontExtensions.ToPath(GlyphRun, Vector2)</a>
+  </div>
+  </dd></dl>
+
+
+  <h2 id="Egami_Fonts_GlyphRun_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A caption on a photo: white text with a dark shadow, its baseline 24 pixels above the bottom.
+using Raster&lt;Rgba8&gt; photo = Raster.Create(640, 360, new Rgba8(90, 120, 160, 255));
+var font = new Font(Typeface.FromFile(FontFile), 28);
+using (RasterCanvas&lt;Rgba8&gt; canvas = photo.CreateCanvas())
+{
+    var origin = new Vector2(24, photo.Height - 24);
+    canvas.DrawText("Lofoten, March", origin + new Vector2(2, 2), font, new Rgba8(0, 0, 0, 160));
+    canvas.DrawText("Lofoten, March", origin, font, Rgba8.White);
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_GlyphRun_Advance_" data-uid="Egami.Fonts.GlyphRun.Advance*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Advance" data-uid="Egami.Fonts.GlyphRun.Advance">
+  Advance
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the end of the last glyph's advance on its line: the pen position after the run (for a transformed run, along x from each glyph's origin).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Advance { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_GlyphRun_BidiLevel_" data-uid="Egami.Fonts.GlyphRun.BidiLevel*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_BidiLevel" data-uid="Egami.Fonts.GlyphRun.BidiLevel">
+  BidiLevel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bidi embedding level the run was shaped at: odd for right to left, 0 for a run not built by the shaper.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int BidiLevel { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_GlyphRun_Bounds_" data-uid="Egami.Fonts.GlyphRun.Bounds*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Bounds" data-uid="Egami.Fonts.GlyphRun.Bounds">
+  Bounds
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the exact box around the run's ink, relative to its origin, y down; empty when nothing has ink.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextBounds Bounds { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.TextBounds.html">TextBounds</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_GlyphRun_Clusters_" data-uid="Egami.Fonts.GlyphRun.Clusters*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Clusters" data-uid="Egami.Fonts.GlyphRun.Clusters">
+  Clusters
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the index in <a class="xref" href="Egami.Fonts.GlyphRun.html#Egami_Fonts_GlyphRun_Text">Text</a> each glyph came from; empty when there is no text.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlySpan&lt;int&gt; Clusters { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_GlyphRun_Count_" data-uid="Egami.Fonts.GlyphRun.Count*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Count" data-uid="Egami.Fonts.GlyphRun.Count">
+  Count
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of glyphs.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Count { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_GlyphRun_Font_" data-uid="Egami.Fonts.GlyphRun.Font*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Font" data-uid="Egami.Fonts.GlyphRun.Font">
+  Font
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the font every glyph is drawn in.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Font Font { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Font.html">Font</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_GlyphRun_Glyphs_" data-uid="Egami.Fonts.GlyphRun.Glyphs*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Glyphs" data-uid="Egami.Fonts.GlyphRun.Glyphs">
+  Glyphs
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the glyph ids.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlySpan&lt;ushort&gt; Glyphs { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_GlyphRun_Language_" data-uid="Egami.Fonts.GlyphRun.Language*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Language" data-uid="Egami.Fonts.GlyphRun.Language">
+  Language
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the BCP 47 language tag the run was shaped with, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Language { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_GlyphRun_Positions_" data-uid="Egami.Fonts.GlyphRun.Positions*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Positions" data-uid="Egami.Fonts.GlyphRun.Positions">
+  Positions
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets each glyph's origin on its baseline, relative to the run's origin, y down; for a run with <a class="xref" href="Egami.Fonts.GlyphRun.html#Egami_Fonts_GlyphRun_Transforms">Transforms</a>, the
+translation of each glyph's transform.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlySpan&lt;Vector2&gt; Positions { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_GlyphRun_Script_" data-uid="Egami.Fonts.GlyphRun.Script*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Script" data-uid="Egami.Fonts.GlyphRun.Script">
+  Script
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the script the run was shaped as, or <a class="xref" href="Egami.Fonts.Unicode.Script.html#Egami_Fonts_Unicode_Script_Common">Common</a> when it is not one script.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Script Script { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_GlyphRun_Text_" data-uid="Egami.Fonts.GlyphRun.Text*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Text" data-uid="Egami.Fonts.GlyphRun.Text">
+  Text
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the source text, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the run was built from glyphs alone.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Text { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_GlyphRun_Transforms_" data-uid="Egami.Fonts.GlyphRun.Transforms*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Transforms" data-uid="Egami.Fonts.GlyphRun.Transforms">
+  Transforms
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets each glyph's rotation, scale and origin, which replace <a class="xref" href="Egami.Fonts.GlyphRun.html#Egami_Fonts_GlyphRun_Positions">Positions</a> when present (a run from
+<a class="xref" href="Egami.Fonts.GlyphRun.html#Egami_Fonts_GlyphRun_CreateTransformed_Egami_Fonts_Font_System_ReadOnlySpan_System_UInt16__System_ReadOnlySpan_Egami_Fonts_GlyphTransform__System_String_System_ReadOnlySpan_System_Int32__">CreateTransformed(Font, ReadOnlySpan&lt;ushort&gt;, ReadOnlySpan&lt;GlyphTransform&gt;, string?, ReadOnlySpan&lt;int&gt;)</a>, such as text on a path); empty for a run of plain positions.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlySpan&lt;GlyphTransform&gt; Transforms { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Fonts.GlyphTransform.html">GlyphTransform</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Fonts_GlyphRun_Create_" data-uid="Egami.Fonts.GlyphRun.Create*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_Create_Egami_Fonts_Font_System_ReadOnlySpan_System_UInt16__System_ReadOnlySpan_System_Numerics_Vector2__System_String_System_ReadOnlySpan_System_Int32__" data-uid="Egami.Fonts.GlyphRun.Create(Egami.Fonts.Font,System.ReadOnlySpan{System.UInt16},System.ReadOnlySpan{System.Numerics.Vector2},System.String,System.ReadOnlySpan{System.Int32})">
+  Create(Font, ReadOnlySpan&lt;ushort&gt;, ReadOnlySpan&lt;Vector2&gt;, string?, ReadOnlySpan&lt;int&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a run from glyphs and positions, such as a layout engine's or a PDF content stream's.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static GlyphRun Create(Font font, ReadOnlySpan&lt;ushort&gt; glyphs, ReadOnlySpan&lt;Vector2&gt; positions, string? text = null, ReadOnlySpan&lt;int&gt; clusters = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>font</code> <a class="xref" href="Egami.Fonts.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>glyphs</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>&gt;</dt>
+    <dd><p>The glyph ids.</p>
+</dd>
+    <dt><code>positions</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>&gt;</dt>
+    <dd><p>One position per glyph, relative to the run's origin, y down.</p>
+</dd>
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The source text, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>clusters</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd><p>The index in <code class="paramref">text</code> of each glyph; empty when <code class="paramref">text</code> is null.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a></dt>
+    <dd><p>The run, holding copies of the spans.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The spans differ in length, or clusters are given without text or point outside it.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_GlyphRun_CreateTransformed_" data-uid="Egami.Fonts.GlyphRun.CreateTransformed*"></a>
+
+  <h3 id="Egami_Fonts_GlyphRun_CreateTransformed_Egami_Fonts_Font_System_ReadOnlySpan_System_UInt16__System_ReadOnlySpan_Egami_Fonts_GlyphTransform__System_String_System_ReadOnlySpan_System_Int32__" data-uid="Egami.Fonts.GlyphRun.CreateTransformed(Egami.Fonts.Font,System.ReadOnlySpan{System.UInt16},System.ReadOnlySpan{Egami.Fonts.GlyphTransform},System.String,System.ReadOnlySpan{System.Int32})">
+  CreateTransformed(Font, ReadOnlySpan&lt;ushort&gt;, ReadOnlySpan&lt;GlyphTransform&gt;, string?, ReadOnlySpan&lt;int&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a run whose glyphs each have their own rotation, uniform scale and origin, as Skia's RSXform runs: text on a path,
+or labels around a dial. Glyphs that only move are drawn as any run's; turned or scaled ones fill as paths.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static GlyphRun CreateTransformed(Font font, ReadOnlySpan&lt;ushort&gt; glyphs, ReadOnlySpan&lt;GlyphTransform&gt; transforms, string? text = null, ReadOnlySpan&lt;int&gt; clusters = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>font</code> <a class="xref" href="Egami.Fonts.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+    <dt><code>glyphs</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>&gt;</dt>
+    <dd><p>The glyph ids.</p>
+</dd>
+    <dt><code>transforms</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Fonts.GlyphTransform.html">GlyphTransform</a>&gt;</dt>
+    <dd><p>One transform per glyph, relative to the run's origin, y down.</p>
+</dd>
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The source text, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>clusters</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd><p>The index in <code class="paramref">text</code> of each glyph; empty when <code class="paramref">text</code> is null.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a></dt>
+    <dd><p>The run, holding copies of the spans.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_GlyphRun_CreateTransformed_Egami_Fonts_Font_System_ReadOnlySpan_System_UInt16__System_ReadOnlySpan_Egami_Fonts_GlyphTransform__System_String_System_ReadOnlySpan_System_Int32___examples">Examples</h4>
+  <pre><code class="lang-csharp">// A label along a curve: each glyph's midpoint on the path, turned to its direction, as SVG's textPath. The result is
+// still a glyph run, so a PDF backend writes it as searchable text.
+Path curve = new PathBuilder().MoveTo(20, 150).CubicTo(80, 20, 240, 20, 300, 150).ToPath();
+var font = new Font(face, 18);
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.DrawTextOnPath("Text that follows the curve", curve, font, Rgba8.Black,
+        new TextOnPathOptions { StartFraction = 0.5f, Anchor = TextAnchor.Center, BaselineShift = 4 });
+}
+
+// Or place glyphs yourself, each with its own turn and scale.
+GlyphRun dial = GlyphRun.CreateTransformed(font, [face.GetGlyph('N'), face.GetGlyph('E')],
+    [GlyphTransform.FromRotationScale(1, 0, new Vector2(150, 30)), GlyphTransform.FromRotationScale(1, 90, new Vector2(290, 90))]);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The spans differ in length, a transform is not finite, or clusters are given without text or point outside it.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/GlyphRun.cs/#L13" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

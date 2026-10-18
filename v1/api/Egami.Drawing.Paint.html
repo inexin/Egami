@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Paint | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Paint | Egami ">
+      
+      <meta name="description" content="What a drawing call puts on the canvas, and how it combines with what is there: the colors (from the subclass), the , an , whether edges are antialiased, and for shapes an optional . The kinds are , the gradients (, , , ), , , ,  and . A color converts to a solid paint where a paint is expected. A paint is an , so a paragraph&#39;s text style can carry it.  A paint other than a solid one has its own coordinates:  maps them into the canvas&#39;s local coordinates, so a gradient or an image turns and scales with the canvas transform, and further with its own matrix.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_Paint.md&amp;value=---%0Auid%3A%20Egami.Drawing.Paint%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.Paint">
+
+
+
+  <h1 id="Egami_Drawing_Paint" data-uid="Egami.Drawing.Paint" class="text-break">
+Class Paint  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>What a drawing call puts on the canvas, and how it combines with what is there: the colors (from the subclass), the
+<a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_BlendMode">BlendMode</a>, an <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Opacity">Opacity</a>, whether edges are antialiased, and for shapes an optional <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Blur">Blur</a>.
+The kinds are <a class="xref" href="Egami.Drawing.SolidPaint.html">SolidPaint</a>, the gradients (<a class="xref" href="Egami.Drawing.LinearGradient.html">LinearGradient</a>, <a class="xref" href="Egami.Drawing.RadialGradient.html">RadialGradient</a>,
+<a class="xref" href="Egami.Drawing.ConicalGradient.html">ConicalGradient</a>, <a class="xref" href="Egami.Drawing.SweepGradient.html">SweepGradient</a>), <a class="xref" href="Egami.Drawing.ImagePaint.html">ImagePaint</a>, <a class="xref" href="Egami.Drawing.NoisePaint.html">NoisePaint</a>,
+<a class="xref" href="Egami.Drawing.BlendPaint.html">BlendPaint</a>, <a class="xref" href="Egami.Drawing.ColorMatrixPaint.html">ColorMatrixPaint</a> and <a class="xref" href="Egami.Drawing.CustomPaint.html">CustomPaint</a>. A color converts to a solid paint where a
+paint is expected. A paint is an <a class="xref" href="Egami.Fonts.Layout.ITextPaint.html">ITextPaint</a>, so a paragraph's text style can carry it.</p>
+<p>
+A paint other than a solid one has its own coordinates: <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_LocalMatrix">LocalMatrix</a> maps them into the canvas's local
+coordinates, so a gradient or an image turns and scales with the canvas transform, and further with its own matrix.
+</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract record Paint : ITextPaint, IEquatable&lt;Paint&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Paint</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Fonts.Layout.ITextPaint.html">ITextPaint</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Drawing.Paint.html">Paint</a>&gt;</div>
+    </dd>
+  </dl>
+
+  <dl class="typelist derived">
+    <dt>Derived</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Drawing.BlendPaint.html">BlendPaint</a></div>
+      <div><a class="xref" href="Egami.Drawing.ColorMatrixPaint.html">ColorMatrixPaint</a></div>
+      <div><a class="xref" href="Egami.Drawing.CustomPaint.html">CustomPaint</a></div>
+      <div><a class="xref" href="Egami.Drawing.Gradient.html">Gradient</a></div>
+      <div><a class="xref" href="Egami.Drawing.ImagePaint.html">ImagePaint</a></div>
+      <div><a class="xref" href="Egami.Drawing.NoisePaint.html">NoisePaint</a></div>
+      <div><a class="xref" href="Egami.Drawing.PicturePaint.html">PicturePaint</a></div>
+      <div><a class="xref" href="Egami.Drawing.SolidPaint.html">SolidPaint</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_Paint_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A color converts to a SolidPaint. A paint also carries a blend mode, an opacity and whether edges are antialiased.
+canvas.FillRect(new RectF(0, 0, 200, 100), Rgba8.White);
+SolidPaint glaze = new(new RgbaF32(0.9f, 0.2f, 0.1f, 1)) { BlendMode = BlendMode.Multiply, Opacity = 0.6f };
+canvas.FillCircle(new Vector2(60, 50), 40, glaze);
+
+// Pixel art: no antialiasing, so every pixel is fully drawn or not at all.
+canvas.FillCircle(new Vector2(150, 50), 30, new SolidPaint(Rgba8.Black) { Antialias = false });</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Drawing_Paint_Antialias_" data-uid="Egami.Drawing.Paint.Antialias*"></a>
+
+  <h3 id="Egami_Drawing_Paint_Antialias" data-uid="Egami.Drawing.Paint.Antialias">
+  Antialias
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether edges are antialiased: each pixel gets its exact covered area. When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>,
+a pixel is drawn fully when its center is inside and not at all otherwise, for pixel art and masks that must stay binary.
+Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Antialias { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Paint_BlendMode_" data-uid="Egami.Drawing.Paint.BlendMode*"></a>
+
+  <h3 id="Egami_Drawing_Paint_BlendMode" data-uid="Egami.Drawing.Paint.BlendMode">
+  BlendMode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how the paint combines with the pixels under it. Defaults to <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_SourceOver">SourceOver</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BlendMode BlendMode { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Paint_Blur_" data-uid="Egami.Drawing.Paint.Blur*"></a>
+
+  <h3 id="Egami_Drawing_Paint_Blur" data-uid="Egami.Drawing.Paint.Blur">
+  Blur
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L101"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a blur of the shape's coverage, applied before the paint is: a soft-edged shape, or with <a class="xref" href="Egami.Drawing.BlurStyle.html#Egami_Drawing_BlurStyle_Outer">Outer</a> a
+glow around it. It applies to shapes, paths and text, not to images. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) draws sharp edges.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MaskBlur? Blur { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.MaskBlur.html">MaskBlur</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Paint_Dither_" data-uid="Egami.Drawing.Paint.Dither*"></a>
+
+  <h3 id="Egami_Drawing_Paint_Dither" data-uid="Egami.Drawing.Paint.Dither">
+  Dither
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether colors are dithered when they are rounded to 8 bits: a 4×4 ordered pattern of less than half
+a level is added before rounding, which hides the banding of large soft gradients and never changes a flat area of an exact
+level. Only shaded paints on 8-bit targets dither; solid paints and deeper targets do not. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>,
+as in Skia.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Dither { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Paint_LocalMatrix_" data-uid="Egami.Drawing.Paint.LocalMatrix*"></a>
+
+  <h3 id="Egami_Drawing_Paint_LocalMatrix" data-uid="Egami.Drawing.Paint.LocalMatrix">
+  LocalMatrix
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the transform from the paint's own coordinates to the canvas's local coordinates, applied before the canvas transform.
+A gradient's points, an image's pixels and noise's lattice are in paint coordinates, so this stretches a radial gradient into
+an ellipse or turns a pattern. A matrix that cannot be inverted draws nothing. A solid paint ignores it. Defaults to the
+identity.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Matrix3x2 LocalMatrix { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.matrix3x2">Matrix3x2</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>An element is not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Paint_Opacity_" data-uid="Egami.Drawing.Paint.Opacity*"></a>
+
+  <h3 id="Egami_Drawing_Paint_Opacity" data-uid="Egami.Drawing.Paint.Opacity">
+  Opacity
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the paint's opacity, 0 to 1, which multiplies its alpha. Defaults to 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Opacity { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Paint_Overprint_" data-uid="Egami.Drawing.Paint.Overprint*"></a>
+
+  <h3 id="Egami_Drawing_Paint_Overprint" data-uid="Egami.Drawing.Paint.Overprint">
+  Overprint
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets which plates the paint prints on an ink canvas, as PDF's overprint: <a class="xref" href="Egami.Drawing.Overprint.html#Egami_Drawing_Overprint_Off">Off</a> (the default) paints
+every plate, knocking out what is below; <a class="xref" href="Egami.Drawing.Overprint.html#Egami_Drawing_Overprint_On">On</a> only the inks the colour names; <a class="xref" href="Egami.Drawing.Overprint.html#Egami_Drawing_Overprint_NonZero">NonZero</a>
+as On, leaving the plates of a CMYK colour's zero components alone (PDF's overprint mode 1). RGB canvases ignore it, as PDF
+viewers do by default.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Overprint Overprint { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Overprint.html">Overprint</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Drawing_Paint_WithColorMatrix_" data-uid="Egami.Drawing.Paint.WithColorMatrix*"></a>
+
+  <h3 id="Egami_Drawing_Paint_WithColorMatrix_Egami_Operations_ColorMatrix_" data-uid="Egami.Drawing.Paint.WithColorMatrix(Egami.Operations.ColorMatrix)">
+  WithColorMatrix(ColorMatrix)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a paint that runs a color matrix on this paint's colors, as Skia's color-filtered shader: each color, with straight
+alpha, goes through the matrix and is clamped to 0 to 1. A solid paint gives a solid paint of the transformed color.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Paint WithColorMatrix(ColorMatrix matrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>matrix</code> <a class="xref" href="Egami.Operations.ColorMatrix.html">ColorMatrix</a></dt>
+    <dd><p>The matrix, as Egami's ColorMatrix operation uses it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The new paint, with this paint's blend mode, opacity, antialiasing, dithering and blur.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="operators">Operators
+</h2>
+
+
+  <a id="Egami_Drawing_Paint_op_Implicit_" data-uid="Egami.Drawing.Paint.op_Implicit*"></a>
+
+  <h3 id="Egami_Drawing_Paint_op_Implicit_Egami_Pixels_Rgba8__Egami_Drawing_Paint" data-uid="Egami.Drawing.Paint.op_Implicit(Egami.Pixels.Rgba8)~Egami.Drawing.Paint">
+  implicit operator Paint(Rgba8)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L105"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts a color to a <a class="xref" href="Egami.Drawing.SolidPaint.html">SolidPaint</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static implicit operator Paint(Rgba8 color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Paint_op_Implicit_" data-uid="Egami.Drawing.Paint.op_Implicit*"></a>
+
+  <h3 id="Egami_Drawing_Paint_op_Implicit_Egami_Pixels_RgbaF32__Egami_Drawing_Paint" data-uid="Egami.Drawing.Paint.op_Implicit(Egami.Pixels.RgbaF32)~Egami.Drawing.Paint">
+  implicit operator Paint(RgbaF32)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts a float color to a <a class="xref" href="Egami.Drawing.SolidPaint.html">SolidPaint</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static implicit operator Paint(RgbaF32 color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Paint.cs/#L25" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

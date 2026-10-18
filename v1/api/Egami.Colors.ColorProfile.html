@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class ColorProfile | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class ColorProfile | Egami ">
+      
+      <meta name="description" content="What a raster&#39;s numbers mean: the color model, the primaries and white point, and the transfer function. Immutable; the built-ins cover the common encodings, and  makes any other RGB encoding.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Colors_ColorProfile.md&amp;value=---%0Auid%3A%20Egami.Colors.ColorProfile%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Colors.ColorProfile">
+
+
+
+  <h1 id="Egami_Colors_ColorProfile" data-uid="Egami.Colors.ColorProfile" class="text-break">
+Class ColorProfile  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Colors.html">Colors</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>What a raster's numbers mean: the color model, the primaries and white point, and the transfer function. Immutable; the
+built-ins cover the common encodings, and <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_Create_Egami_Colors_ColorPrimaries_Egami_Colors_TransferFunction_System_String_">Create(ColorPrimaries, TransferFunction, string?)</a> makes any other RGB encoding.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class ColorProfile</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">ColorProfile</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Colors_ColorProfile_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A ColorProfile says what a raster's numbers mean. The built-ins cover the common encodings...
+ColorProfile web = ColorProfile.Srgb;
+ColorProfile wide = ColorProfile.DisplayP3;
+ColorProfile hdr = ColorProfile.Rec2100Pq;
+
+// ...and Create makes any other RGB encoding from primaries and a transfer function.
+ColorProfile camera = ColorProfile.Create(ColorPrimaries.AdobeRgb, TransferFunction.Gamma(2.2), "Camera RGB");
+Console.WriteLine($"{camera.Name}: {camera.Model}, HDR {camera.IsHdr}, same as Adobe RGB: {camera.IsEquivalentTo(ColorProfile.AdobeRgb)}");</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Colors_ColorProfile_AdobeRgb_" data-uid="Egami.Colors.ColorProfile.AdobeRgb*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_AdobeRgb" data-uid="Egami.Colors.ColorProfile.AdobeRgb">
+  AdobeRgb
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets Adobe RGB (1998): its primaries, D65, a 563/256 (about 2.2) power curve.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile AdobeRgb { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_ChannelCount_" data-uid="Egami.Colors.ColorProfile.ChannelCount*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_ChannelCount" data-uid="Egami.Colors.ColorProfile.ChannelCount">
+  ChannelCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of channels: 3 for RGB, 1 for gray, 4 for CMYK, 2 to 15 for an n-colour profile.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int ChannelCount { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_ColorantNames_" data-uid="Egami.Colors.ColorProfile.ColorantNames*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_ColorantNames" data-uid="Egami.Colors.ColorProfile.ColorantNames">
+  ColorantNames
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the names of an output profile's inks, from its colorant table (<code>clrt</code>), in channel order; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
+when the profile has none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt;? ColorantNames { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_DisplayP3_" data-uid="Egami.Colors.ColorProfile.DisplayP3*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_DisplayP3" data-uid="Egami.Colors.ColorProfile.DisplayP3">
+  DisplayP3
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets Display P3: the P3 primaries, D65, the sRGB curve, as Apple devices and CSS Color 4 use it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile DisplayP3 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_Fogra39_" data-uid="Egami.Colors.ColorProfile.Fogra39*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_Fogra39" data-uid="Egami.Colors.ColorProfile.Fogra39">
+  Fogra39
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets FOGRA39L: offset printing on coated paper (ISO 12647-2, paper types 1 and 2), Europe's usual press condition, built for a
+300% total ink limit. The profile is colord's, built by ArgyllCMS from Fogra's measurements, as the CTAN colorprofiles
+package ships it (ICC version 2.2, free of known copyright restrictions); <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_ToIcc">ToIcc()</a> returns its bytes unchanged.
+It is read on first use. CMYK files without a profile still convert by the plain formula, not through this one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile Fogra39 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Colors_ColorProfile_Fogra39_examples">Examples</h4>
+  <pre><code class="lang-csharp">// The inks a press would use for a color, and the color it would print, through the press's CMYK profile: here the
+// built-in FOGRA39 (coated offset paper); ColorProfile.FromIcc reads any other.
+ColorProfile print = ColorProfile.Fogra39;
+CmykColor inks = CmykColor.From(new Rgba8(200, 60, 30, 255), print, new ColorTransformOptions { Intent = RenderingIntent.RelativeColorimetric });
+Rgba8 proof = inks.ToRgba8(print);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_GrayLinear_" data-uid="Egami.Colors.ColorProfile.GrayLinear*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_GrayLinear" data-uid="Egami.Colors.ColorProfile.GrayLinear">
+  GrayLinear
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets linear gray with D65 white.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile GrayLinear { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_GraySrgb_" data-uid="Egami.Colors.ColorProfile.GraySrgb*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_GraySrgb" data-uid="Egami.Colors.ColorProfile.GraySrgb">
+  GraySrgb
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets gray with the sRGB curve and D65 white: what a gray file without color information means.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile GraySrgb { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_Icc_" data-uid="Egami.Colors.ColorProfile.Icc*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_Icc" data-uid="Egami.Colors.ColorProfile.Icc">
+  Icc
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the ICC profile this encoding was read from, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IccData? Icc { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.IccData.html">IccData</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_IsHdr_" data-uid="Egami.Colors.ColorProfile.IsHdr*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_IsHdr" data-uid="Egami.Colors.ColorProfile.IsHdr">
+  IsHdr
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L124"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether the encoding is HDR (a PQ or HLG curve).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsHdr { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_LinearSrgb_" data-uid="Egami.Colors.ColorProfile.LinearSrgb*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_LinearSrgb" data-uid="Egami.Colors.ColorProfile.LinearSrgb">
+  LinearSrgb
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets linear sRGB: BT.709 primaries, D65, no curve.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile LinearSrgb { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_Model_" data-uid="Egami.Colors.ColorProfile.Model*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_Model" data-uid="Egami.Colors.ColorProfile.Model">
+  Model
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the color model.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorModel Model { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorModel.html">ColorModel</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_Name_" data-uid="Egami.Colors.ColorProfile.Name*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_Name" data-uid="Egami.Colors.ColorProfile.Name">
+  Name
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a short name for the encoding, such as &quot;sRGB&quot; or the description of an ICC profile.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string Name { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_Primaries_" data-uid="Egami.Colors.ColorProfile.Primaries*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_Primaries" data-uid="Egami.Colors.ColorProfile.Primaries">
+  Primaries
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the primaries of an RGB encoding, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for gray, CMYK, and ICC profiles that convert through
+tables rather than a matrix.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorPrimaries? Primaries { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorPrimaries.html">ColorPrimaries</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_ProPhotoRgb_" data-uid="Egami.Colors.ColorProfile.ProPhotoRgb*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_ProPhotoRgb" data-uid="Egami.Colors.ColorProfile.ProPhotoRgb">
+  ProPhotoRgb
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets ProPhoto RGB (ROMM RGB): its primaries, D50, a 1.8 power with a linear segment below 1/32.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile ProPhotoRgb { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_Rec2020_" data-uid="Egami.Colors.ColorProfile.Rec2020*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_Rec2020" data-uid="Egami.Colors.ColorProfile.Rec2020">
+  Rec2020
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets Rec. 2020: BT.2020 primaries, D65, the BT.709/BT.2020 curve.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile Rec2020 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_Rec2100Hlg_" data-uid="Egami.Colors.ColorProfile.Rec2100Hlg*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_Rec2100Hlg" data-uid="Egami.Colors.ColorProfile.Rec2100Hlg">
+  Rec2100Hlg
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L65"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets Rec. 2100 HLG: BT.2020 primaries, D65, the HLG curve (HDR).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile Rec2100Hlg { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_Rec2100Pq_" data-uid="Egami.Colors.ColorProfile.Rec2100Pq*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_Rec2100Pq" data-uid="Egami.Colors.ColorProfile.Rec2100Pq">
+  Rec2100Pq
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets Rec. 2100 PQ: BT.2020 primaries, D65, the PQ curve (HDR).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile Rec2100Pq { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_Srgb_" data-uid="Egami.Colors.ColorProfile.Srgb*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_Srgb" data-uid="Egami.Colors.ColorProfile.Srgb">
+  Srgb
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets sRGB (IEC 61966-2-1): BT.709 primaries, D65, the sRGB curve. What a file without color information means.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile Srgb { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_Transfer_" data-uid="Egami.Colors.ColorProfile.Transfer*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_Transfer" data-uid="Egami.Colors.ColorProfile.Transfer">
+  Transfer
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the transfer function of an RGB or gray encoding, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for CMYK, ICC profiles that convert
+through tables, and ICC profiles whose three curves differ.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TransferFunction? Transfer { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_White_" data-uid="Egami.Colors.ColorProfile.White*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_White" data-uid="Egami.Colors.ColorProfile.White">
+  White
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the white point.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Chromaticity White { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.Chromaticity.html">Chromaticity</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Colors_ColorProfile_Create_" data-uid="Egami.Colors.ColorProfile.Create*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_Create_Egami_Colors_ColorPrimaries_Egami_Colors_TransferFunction_System_String_" data-uid="Egami.Colors.ColorProfile.Create(Egami.Colors.ColorPrimaries,Egami.Colors.TransferFunction,System.String)">
+  Create(ColorPrimaries, TransferFunction, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns an RGB encoding from primaries and a transfer function.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile Create(ColorPrimaries primaries, TransferFunction transfer, string? name = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>primaries</code> <a class="xref" href="Egami.Colors.ColorPrimaries.html">ColorPrimaries</a></dt>
+    <dd><p>The primaries, with the white point.</p>
+</dd>
+    <dt><code>transfer</code> <a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd><p>The transfer function.</p>
+</dd>
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A name, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for a generated one.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd><p>The encoding.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">primaries</code> or <code class="paramref">transfer</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The primaries cannot form a color space (<a class="xref" href="Egami.Colors.ColorPrimaries.html#Egami_Colors_ColorPrimaries_IsValid">IsValid</a> is false).</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Colors_ColorProfile_CreateGray_" data-uid="Egami.Colors.ColorProfile.CreateGray*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_CreateGray_Egami_Colors_TransferFunction_System_Nullable_Egami_Colors_Chromaticity__System_String_" data-uid="Egami.Colors.ColorProfile.CreateGray(Egami.Colors.TransferFunction,System.Nullable{Egami.Colors.Chromaticity},System.String)">
+  CreateGray(TransferFunction, Chromaticity?, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L151"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a gray encoding from a transfer function and a white point.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile CreateGray(TransferFunction transfer, Chromaticity? white = null, string? name = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>transfer</code> <a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+    <dd><p>The transfer function.</p>
+</dd>
+    <dt><code>white</code> <a class="xref" href="Egami.Colors.Chromaticity.html">Chromaticity</a>?</dt>
+    <dd><p>The white point, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for D65.</p>
+</dd>
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A name, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for a generated one.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd><p>The encoding.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">transfer</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Colors_ColorProfile_FromCodePoints_" data-uid="Egami.Colors.ColorProfile.FromCodePoints*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_FromCodePoints_Egami_Colors_ColorCodePoints_" data-uid="Egami.Colors.ColorProfile.FromCodePoints(Egami.Colors.ColorCodePoints)">
+  FromCodePoints(ColorCodePoints)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L233"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the RGB encoding that H.273 code points name, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when Egami does not implement the primaries
+or the transfer they name, or when the matrix code is not RGB (0).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile? FromCodePoints(ColorCodePoints codePoints)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>codePoints</code> <a class="xref" href="Egami.Colors.ColorCodePoints.html">ColorCodePoints</a></dt>
+    <dd><p>The code points.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd><p>The encoding, a built-in one where it matches, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_FromIcc_" data-uid="Egami.Colors.ColorProfile.FromIcc*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_FromIcc_Egami_Colors_IccData_" data-uid="Egami.Colors.ColorProfile.FromIcc(Egami.Colors.IccData)">
+  FromIcc(IccData)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the encoding an ICC profile describes. A matrix-shaper profile gets its primaries (un-adapted from D50 by its
+<code>chad</code> tag or its white point) and its curve, so <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_IsEquivalentTo_Egami_Colors_ColorProfile_">IsEquivalentTo(ColorProfile)</a> recognizes sRGB, Display P3 and the
+other built-ins written as ICC; a version 4.4 <code>cicp</code> tag naming a known encoding wins over the rest, as it does for
+HDR profiles. Profiles that convert through tables, and CMYK, keep only the model and white.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile FromIcc(IccData icc)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>icc</code> <a class="xref" href="Egami.Colors.IccData.html">IccData</a></dt>
+    <dd><p>The parsed profile.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd><p>The encoding, with <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_Icc">Icc</a> set.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">icc</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The profile is damaged where conversion needs it.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The profile is not an RGB, gray or CMYK input, display, output or color space profile.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Colors_ColorProfile_FromIcc_" data-uid="Egami.Colors.ColorProfile.FromIcc*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_FromIcc_System_ReadOnlySpan_System_Byte__" data-uid="Egami.Colors.ColorProfile.FromIcc(System.ReadOnlySpan{System.Byte})">
+  FromIcc(ReadOnlySpan&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads an ICC profile: <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_FromIcc_Egami_Colors_IccData_">FromIcc(IccData)</a> of <a class="xref" href="Egami.Colors.IccData.html#Egami_Colors_IccData_Parse_System_ReadOnlySpan_System_Byte__Egami_SafetyLimits_">Parse(ReadOnlySpan&lt;byte&gt;, SafetyLimits?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ColorProfile FromIcc(ReadOnlySpan&lt;byte&gt; profile)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>profile</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The profile's bytes.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd><p>The encoding.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The profile is damaged where conversion needs it.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The profile is not an RGB, gray or CMYK input, display, output or color space profile.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Colors_ColorProfile_IsEquivalentTo_" data-uid="Egami.Colors.ColorProfile.IsEquivalentTo*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_IsEquivalentTo_Egami_Colors_ColorProfile_" data-uid="Egami.Colors.ColorProfile.IsEquivalentTo(Egami.Colors.ColorProfile)">
+  IsEquivalentTo(ColorProfile)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L284"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns whether two encodings mean the same colors: the same model, primaries and white within 1e-4, and curves that agree
+within 1e-4 (so an ICC profile written for sRGB is equivalent to <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_Srgb">Srgb</a>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsEquivalentTo(ColorProfile other)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd><p>The other encoding.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if they are equivalent.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_ToCodePoints_" data-uid="Egami.Colors.ColorProfile.ToCodePoints*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_ToCodePoints" data-uid="Egami.Colors.ColorProfile.ToCodePoints">
+  ToCodePoints()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L256"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the H.273 code points of this encoding, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when its primaries or curve have none (Adobe RGB,
+ProPhoto, gray, CMYK, parametric and sampled curves).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorCodePoints? ToCodePoints()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorCodePoints.html">ColorCodePoints</a>?</dt>
+    <dd><p>The code points, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_ToIcc_" data-uid="Egami.Colors.ColorProfile.ToIcc*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_ToIcc" data-uid="Egami.Colors.ColorProfile.ToIcc">
+  ToIcc()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L225"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns an ICC profile for this encoding: the bytes it was read from, or a small version 4 profile written for it (4.3 with
+parametric curves for SDR encodings, 4.4 with a <code>cicp</code> tag for PQ and HLG), which Little CMS, browsers and image
+tools read.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public byte[] ToIcc()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>[]</dt>
+    <dd><p>A new array holding the profile.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Colors_ColorProfile_ToIcc_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Any RGB or gray encoding as a small ICC profile, for files and other software.
+byte[] p3 = ColorProfile.DisplayP3.ToIcc();
+bool same = ColorProfile.FromIcc(p3).IsEquivalentTo(ColorProfile.DisplayP3);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Colors_ColorProfile_ToString_" data-uid="Egami.Colors.ColorProfile.ToString*"></a>
+
+  <h3 id="Egami_Colors_ColorProfile_ToString" data-uid="Egami.Colors.ColorProfile.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L318"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a string that represents the current object.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A string that represents the current object.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorProfile.cs/#L34" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

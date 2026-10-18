@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Resizing and geometry | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Resizing and geometry | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/resizing-and-geometry.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="resizing-and-geometry">Resizing and geometry</h1>
+
+<p>Every operation is a step in a chain you record in a lambda. <code>Apply</code> runs the chain in place; <code>Derive</code> returns a new raster and
+leaves the source alone. Both take a <code>CancellationToken</code>, checked between steps and between bands of rows.</p>
+<h2 id="resize-fit-and-cover">Resize, fit and cover</h2>
+<pre><code class="lang-csharp">// Exactly 400 × 300, stretching if the aspect ratio differs.
+using Raster stretched = photo.Derive(ops =&gt; ops.Resize(400, 300), Ct);
+
+// 400 wide; 0 for one side keeps the aspect ratio.
+using Raster wide = photo.Derive(ops =&gt; ops.Resize(400, 0), Ct);
+
+// Fit inside 400 × 400 with the aspect ratio kept; enlarge: false never scales up.
+using Raster fitted = photo.Derive(ops =&gt; ops.Fit(400, 400, enlarge: false), Ct);
+
+// Cover 400 × 400 and crop what sticks out, keeping the top of the image.
+using Raster covered = photo.Derive(ops =&gt; ops.Cover(400, 400, Anchor.Top), Ct);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Output size</th>
+<th>Aspect ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Resize(w, h)</code></td>
+<td>Exactly w × h; 0 for one side derives it</td>
+<td>Kept only when a side is 0</td>
+</tr>
+<tr>
+<td><code>Fit(w, h)</code></td>
+<td>At most w × h</td>
+<td>Kept; the image fits inside</td>
+</tr>
+<tr>
+<td><code>Cover(w, h, anchor)</code></td>
+<td>Exactly w × h</td>
+<td>Kept; the image covers the box, and <code>anchor</code> picks the part kept</td>
+</tr>
+</tbody>
+</table>
+<p><code>Cover</code> reads only the part it keeps: nothing is cropped first.</p>
+<h2 id="filters-and-linear-light">Filters and linear light</h2>
+<pre><code class="lang-csharp">// Lanczos3 is sharper than the default Bicubic; Nearest keeps hard pixel edges (pixel art, masks).
+using Raster sharp = photo.Derive(ops =&gt; ops.Resize(200, 0, ResampleFilter.Lanczos3), Ct);
+
+// Blending in linear light keeps fine bright detail on dark backgrounds from going dim when reduced.
+using Raster linear = photo.Derive(ops =&gt; ops.Resize(200, 0, ResampleFilter.Mitchell, ColorSpace.Linear), Ct);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Filter</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Bicubic</code> (default)</td>
+<td>Catmull-Rom: sharp and fast, the usual choice</td>
+</tr>
+<tr>
+<td><code>Lanczos3</code></td>
+<td>Sharpest, for downscaling photos</td>
+</tr>
+<tr>
+<td><code>Mitchell</code></td>
+<td>Softer, fewer halos, good for upscaling</td>
+</tr>
+<tr>
+<td><code>Bilinear</code>, <code>Box</code></td>
+<td>Fast, soft</td>
+</tr>
+<tr>
+<td><code>Nearest</code></td>
+<td>No blending: pixel art, masks, label images</td>
+</tr>
+</tbody>
+</table>
+<p><code>ColorSpace.Linear</code> converts to linear light, resamples and converts back. It costs a little time and matters most for small
+bright detail on dark backgrounds, such as text or stars.</p>
+<p>Four more filters follow ImageMagick's definitions: <code>Lanczos2</code> (a two-lobe windowed sinc, nearly as sharp as <code>Lanczos3</code> with less
+ringing), <code>Hermite</code> (a one-pixel cubic with no ringing), <code>Gaussian</code> (σ = ½, soft) and <code>Spline</code> (the cubic B-spline, the smoothest).
+They work everywhere a filter does: resizes, rotations, transforms and warps.</p>
+<h3 id="many-sizes-from-one-image">Many sizes from one image</h3>
+<p><code>MipChain</code> halves an image again and again, averaging 2 × 2 blocks, and resizes each target from the smallest level at least twice
+its size, so a set of thumbnails reads each source pixel about once. Results stay within 40 dB of a direct resize.</p>
+<pre><code class="lang-csharp">// A responsive image set: one chain, then each width from the smallest level at least twice its size.
+using MipChain chain = MipChain.Build(photo);
+foreach (int width in (int[])[320, 240, 160, 120, 80])
+{
+    using Raster thumbnail = chain.Fit(width, width, ResampleFilter.Lanczos2);
+    thumbnail.Save($&quot;egret-{width}.png&quot;);
+}
+</code></pre><h2 id="crop-pad-rotate-flip">Crop, pad, rotate, flip</h2>
+<pre><code class="lang-csharp">photo.Apply(ops =&gt; ops
+    .Crop(10, 10, 120, 90)                                  // keep a rectangle
+    .Pad(140, 110, Rgba8.White, Anchor.Center)              // add a white border
+    .Rotate(90)                                             // exact for multiples of 90°
+    .Rotate(-3.5f, ResampleFilter.Bicubic, Rgba8.Transparent) // resampled for other angles
+    .FlipHorizontal(), Ct);
+</code></pre>
+<p><code>Crop</code>, <code>Pad</code>, <code>FlipHorizontal</code>, <code>FlipVertical</code> and rotations by multiples of 90° move pixels exactly. Other angles resample onto
+a canvas the size of the rotated bounding box, with the corners filled with the background color. <code>FillColor</code> paints a rectangle,
+or the whole image.</p>
+<h2 id="transforms-and-perspective">Transforms and perspective</h2>
+<p><code>Transform</code> takes any affine matrix (<code>Matrix3x2</code>), perspective matrix (<code>Homography</code>) or 3D matrix (<code>Matrix4x4</code>, projected as CSS
+<code>matrix3d</code> draws a flat element). Matrices map source positions to destination positions, with the origin at the image's top-left
+corner and pixel centers at +0.5, as Skia and ImageMagick's <code>-distort</code> do; they compose with <code>*</code>, left first.</p>
+<pre><code class="lang-csharp">// Turn by 20° and shrink to 40% in one pass. Matrices map source positions to destination positions and compose with *,
+// left first; shrinking averages each pixel's footprint, so fine detail fades instead of aliasing.
+Matrix3x2 matrix = Matrix3x2.CreateRotation(MathF.PI / 9) * Matrix3x2.CreateScale(0.4f);
+using Raster turned = photo.Derive(ops =&gt; ops.Transform(matrix), Ct);
+
+// A 3D tilt, as CSS draws a flat element: rotate about the vertical axis and look at it from 800 pixels away.
+Matrix4x4 tilt = Matrix4x4.CreateTranslation(-320, -240, 0) * Matrix4x4.CreateRotationY(0.5f) * new Matrix4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -1f / 800, 0, 0, 0, 1);
+using Raster tilted = photo.Derive(ops =&gt; ops.Transform(tilt), Ct);
+</code></pre>
+<p>The result is the transformed image's bounding box, rounded to whole pixels, unless <code>TransformOptions.Viewport</code> picks a rectangle
+of the destination plane. Where the image keeps or gains size, each output pixel blends the filter's kernel around its source point,
+exactly as <code>Rotate</code> does; where it shrinks or tilts away, the filter weighs an ellipse covering the pixel's footprint in the source
+(elliptical weighted averaging, as ImageMagick's <code>-distort</code> does), so fine detail fades to its average instead of aliasing into
+moiré. Footprints are capped at 32 source pixels, so a plane stretching to the horizon aliases slightly in the far distance. A
+transform that only scales equals <code>Resize</code>, and a pure rotation equals <code>Rotate</code>, pixel for pixel.</p>
+<p><code>Homography.FromQuad</code> builds the perspective that moves four points onto four others, such as a photographed page onto an upright
+canvas:</p>
+<pre><code class="lang-csharp">// The four corners of a page photographed at an angle, top-left first and clockwise...
+Vector2[] corners = [new(120, 60), new(560, 40), new(600, 430), new(80, 420)];
+
+// ...go to the corners of an upright 420 × 594 (A4-shaped) canvas.
+Homography straighten = Homography.FromQuad(corners, new Rect(0, 0, 420, 594));
+using Raster page = photo.Derive(ops =&gt; ops.Transform(straighten, new TransformOptions { Viewport = new Rect(0, 0, 420, 594) }), Ct);
+
+// Homography maps points too, and inverts.
+Vector2 middle = straighten.Map(new Vector2(340, 240));
+bool invertible = straighten.TryInvert(out Homography back);
+</code></pre>
+<p><code>TransformOptions</code> (a <code>SamplingOptions</code> with a viewport) chooses the filter, the color space it blends in, what samples outside
+the source read (<code>Edges</code>: transparent background, or the image clamped, mirrored or wrapped), and the background color:</p>
+<pre><code class="lang-csharp">// Keep the input's size (and the matrix's translation), fill the uncovered corners with white, blend in linear light.
+TransformOptions keep = new()
+{
+    Viewport = new Rect(0, 0, photo.Width, photo.Height),
+    Background = Rgba8.White,
+    ColorSpace = ColorSpace.Linear,
+};
+photo.Apply(ops =&gt; ops.Transform(Matrix3x2.CreateRotation(0.2f, new Vector2(photo.Width / 2f, photo.Height / 2f)), keep), Ct);
+
+// Wrap extends the image as a tiling, so a turned copy fills the whole canvas.
+using Raster&lt;Rgba8&gt; pattern = photo.Derive(ops =&gt; ops.Transform(Matrix3x2.CreateRotation(0.5f), new TransformOptions
+{
+    Viewport = new Rect(0, 0, 800, 600),
+    Edges = EdgeMode.Wrap,
+    Filter = ResampleFilter.Lanczos3,
+}), Ct);
+</code></pre>
+<p><code>Skew</code> shears about the image center and <code>QuadDistort</code> moves the image's four corners to four points:</p>
+<pre><code class="lang-csharp">// Lean a banner 12° to the right, filling the uncovered corners with white; the canvas grows to fit.
+using Raster banner = photo.Derive(ops =&gt; ops.Skew(12, 0, new TransformOptions { Background = Rgba8.White }), Ct);
+
+// Skew a region in place: a viewport the size of the area keeps it the same size inside Within.
+using Raster region = photo.Derive(ops =&gt; ops.Within(new Rect(100, 100, 200, 120), s =&gt; s.Skew(0, 8, new TransformOptions { Viewport = new Rect(0, 0, 200, 120) })), Ct);
+</code></pre><pre><code class="lang-csharp">// Pin the image onto a trapezoid, as if it lay on a table: its corners go to these four points (pixel edges, so the
+// image's own corners are (0, 0) and (640, 480)).
+using Raster onTable = photo.Derive(ops =&gt; ops.QuadDistort(new(200, 0), new(440, 0), new(640, 300), new(0, 300)), Ct);
+</code></pre>
+<p>A transform whose viewport has the input's size keeps the size, so it runs inside <code>Within</code>. A perspective that sends a corner of
+the image to infinity or behind the viewer has no finite bounds, so it needs a viewport. Like <code>Rotate</code>, a transform sets the EXIF
+orientation to Normal, updates the dimensions, drops the thumbnail and moves the subject area through the matrix.</p>
+<h2 id="warps">Warps</h2>
+<p>A warp maps every output pixel back to a source point, and Egami samples those points as it samples transforms, so warps get
+antialiasing where they shrink the image, and edge modes. <code>Warps</code> holds ImageMagick's distortions with ImageMagick's parameters
+(<code>Barrel</code> and <code>BarrelInverse</code> lens correction, <code>Polar</code>, <code>DePolar</code>, <code>Arc</code>, <code>Swirl</code>, <code>Wave</code>, <code>Implode</code>), so their documentation applies
+and their pixels land where ImageMagick's do, and Skia's <code>Magnifier</code>:</p>
+<pre><code class="lang-csharp">// Correct a wide-angle lens with the PanoTools coefficients a lens database gives (ImageMagick's Barrel), then swirl a
+// square region in place; size-keeping warps run inside Within.
+using Raster corrected = photo.Derive(ops =&gt; ops
+    .Warp(Warps.Barrel(0.0, -0.018, 0.0))
+    .Within(new Rect(300, 200, 200, 200), s =&gt; s.Warp(Warps.Swirl(90))), Ct);
+
+// Size-changing ones: wrap the image into a circle, or bend it into an arc.
+using Raster disc = photo.Derive(ops =&gt; ops.Warp(Warps.Polar(), new SamplingOptions { Background = Rgba8.White }), Ct);
+using Raster arc = photo.Derive(ops =&gt; ops.Warp(Warps.Arc(120)), Ct);
+
+// A magnifying glass over the duck's head, blending into the photo over 12 pixels.
+using Raster loupe = photo.Derive(ops =&gt; ops.Warp(Warps.Magnifier(new Rect(380, 60, 160, 160), 2.5f, 12)), Ct);
+</code></pre>
+<p>Your own warp is an <code>IWarp</code>, which maps a whole output row per call, or <code>Warp.FromFunction</code> for a quick experiment:</p>
+<pre><code class="lang-csharp">// Any mapping from output points back to source points; the sampler antialiases wherever it shrinks the image.
+IWarp ripple = Warp.FromFunction(p =&gt; new Vector2(p.X + (6 * MathF.Sin(p.Y / 15)), p.Y));
+using Raster rippled = photo.Derive(ops =&gt; ops.Warp(ripple, new SamplingOptions { Edges = EdgeMode.Mirror }), Ct);
+
+// The same as an IWarp, mapping a whole row per call: no per-pixel delegate, so it is faster.
+using Raster again = photo.Derive(ops =&gt; ops.Warp(new Ripple(6, 15), new SamplingOptions { Edges = EdgeMode.Mirror }), Ct);
+</code></pre>
+<p><code>Displace</code> moves each pixel by a displacement map's channels, as Skia's <code>DisplacementMap</code> and ImageMagick's <code>-displace</code> do:</p>
+<pre><code class="lang-csharp">// A displacement map the image's size: mid-gray moves nothing, red moves pixels sideways and green up and down.
+using Raster&lt;Rgba8&gt; map = Raster.Create&lt;Rgba8&gt;(photo.Width, photo.Height);
+map.ForEachRow((row, y) =&gt;
+{
+    for (int x = 0; x &lt; row.Length; x++)
+    {
+        byte wave = (byte)(128 + (100 * Math.Sin((x + y) / 12.0)));
+        row[x] = new Rgba8(wave, 128, 128, 255);
+    }
+});
+using Raster&lt;Rgba8&gt; rippled = photo.Derive(ops =&gt; ops.Displace(map, 16, 0), Ct);
+</code></pre>
+<p><code>Offset</code> moves the image by whole pixels with no resampling, wrapping round by default as ImageMagick's <code>-roll</code> does, and <code>Tile</code> fills
+a new canvas with copies of the image or a rectangle of it:</p>
+<pre><code class="lang-csharp">// Roll the image half way round, so its edges meet in the middle, which shows whether it tiles seamlessly.
+using Raster rolled = photo.Derive(ops =&gt; ops.Offset(photo.Width / 2, photo.Height / 2), Ct);
+
+// Fill a 1920 × 1080 wallpaper with copies of the duck's head.
+using Raster wallpaper = photo.Derive(ops =&gt; ops.Tile(1920, 1080, source: new Rect(380, 60, 160, 160)), Ct);
+</code></pre>
+<p>Warps that keep the size (<code>Barrel</code>, <code>Swirl</code>, <code>Implode</code>, <code>Magnifier</code>, <code>Displace</code>, <code>Offset</code>) run inside <code>Within</code>; <code>Polar</code>, <code>DePolar</code>,
+<code>Arc</code>, <code>Wave</code> and <code>Tile</code> change it and throw there. A warp can move the subject anywhere, so it drops the EXIF subject area.</p>
+<h2 id="trimming-and-content-crops">Trimming and content crops</h2>
+<p><code>Trim</code> cuts away the border: the edge rows and columns whose pixels all lie within a tolerance of the border color (the top-left
+pixel's, or one you give), by ImageMagick's <code>-fuzz</code> distance, so its rectangle equals ImageMagick's <code>-trim</code>. <code>EntropyCrop</code> keeps the
+busiest part of the image: the 16 × 16 tiles whose luminance entropy reaches a threshold.
+<code>Raster.TrimBounds</code> and <code>Raster.EntropyBounds</code> return the rectangles without changing anything.</p>
+<pre><code class="lang-csharp">// Cut away the white margin, counting near-white (within 10% by ImageMagick's -fuzz distance) as margin too.
+Rect content = scan.TrimBounds(tolerance: 0.1f);
+scan.Apply(ops =&gt; ops.Trim(tolerance: 0.1f).Fit(400, 400), Ct);
+</code></pre><pre><code class="lang-csharp">// Keep the part with detail in it: flat tiles (a plain backdrop) fall away.
+Rect busy = padded.EntropyBounds();
+using Raster&lt;Rgba8&gt; cropped = padded.Derive(ops =&gt; ops.EntropyCrop(), Ct);
+</code></pre>
+<p>Their size depends on the pixels, so the chain runs up to them, measures, and plans the rest from the real size; it is still one
+<code>Apply</code> or <code>Derive</code>. Every frame of an animation is measured and the union of their rectangles kept, so frames keep one size. An
+image that is all border, or has no busy tile, is left as it is. They cannot run inside <code>Within</code>, and <code>Transcode</code> decodes the
+whole image before running a chain that holds one.</p>
+<h3 id="straightening-pages">Straightening pages</h3>
+<p><code>Deskew</code> finds the tilt of a scanned or photographed page's text lines and turns it back, keeping the page size with the corners in
+the border color; <code>Raster.DetectSkew</code> returns the angle alone. A gray copy about 1,500 pixels on its long side is binarized with
+Otsu's threshold and each angle up to <code>maxAngle</code> (15° by default) is scored by how sharply the ink's projection piles up in rows,
+first in half-degree steps and then to 0.05°. A picture, noise or an already straight page returns 0 and is left alone.</p>
+<pre><code class="lang-csharp">// Measure the tilt first, if you want to show it or decide yourself...
+float tilt = photo.DetectSkew(maxAngle: 10);
+
+// ...or straighten in one step, keeping the page size with white corners.
+using Raster straight = photo.Derive(ops =&gt; ops.Deskew(background: Rgba8.White), Ct);
+</code></pre><h2 id="combining-images">Combining images</h2>
+<p><code>Raster.Append</code> lays images side by side or stacks them, as ImageMagick's <code>+append</code> and <code>-append</code> do; <code>Raster.Grid</code> makes a contact
+sheet, as <code>montage</code> does; <code>SpriteSheet.Pack</code> packs images into one sheet with the MaxRects algorithm and returns every sprite's
+rectangle. The result takes the first image's pixel type, metadata and color profile, and each input's first frame is used.</p>
+<pre><code class="lang-csharp">// Side by side with a 10-pixel white gap, the shorter image centered vertically (ImageMagick's +append).
+using Raster strip = Raster.Append([duck, egret], Axis.Horizontal, spacing: 10, background: Rgba8.White, alignment: Alignment.Center);
+
+// Stacked, as -append does.
+using Raster column = Raster.Append([duck, egret], Axis.Vertical);
+</code></pre><pre><code class="lang-csharp">// A contact sheet three cells wide; each photo shrinks to fit a 200 × 200 cell and sits in its middle.
+using Raster sheet = Raster.Grid(photos, columns: 3, cell: new Size(200, 200), spacing: 8, background: Rgba8.White);
+</code></pre><pre><code class="lang-csharp">// Pack sprites with a 2-pixel gap and 1 pixel of extruded edge, so GPU filtering never bleeds between them.
+using SpriteSheet sheet = SpriteSheet.Pack([small, tiny, small, tiny], new SpritePackOptions { Padding = 2, Extrude = 1, PowerOfTwo = true });
+sheet.Image.Save(&quot;sprites.png&quot;);
+
+// The rectangles are plain data: writing them for a game engine is one line of System.Text.Json.
+File.WriteAllText(&quot;sprites.json&quot;, JsonSerializer.Serialize(sheet.Frames.Select(f =&gt; new { f.X, f.Y, w = f.Width, h = f.Height })));
+</code></pre>
+<p>Sprites are never rotated, and the same inputs always give the same sheet. <code>SpritePackOptions</code> sets the largest width, the gap
+between sprites, edge extrusion for GPU sampling, power-of-two sizes and trimming of each sprite's transparent border, whose
+offsets <code>SpriteSheet.Offsets</code> returns.</p>
+<h2 id="orientation">Orientation</h2>
+<pre><code class="lang-csharp">// Load returns pixels as stored. A phone photo stored sideways says so in its EXIF orientation.
+RasterInfo info = Raster.Probe(&quot;sideways.jpg&quot;);
+Console.WriteLine(info.Orientation);   // Rotate90
+
+// AutoOrient turns the pixels upright and resets the tag. Followed by a resize, the resize runs first, on the stored image,
+// so only the small result is turned.
+using Raster photo = Raster.Load(&quot;sideways.jpg&quot;);
+photo.Apply(ops =&gt; ops.AutoOrient().Fit(300, 300), Ct);
+</code></pre>
+<p>Rotating and flipping keep the EXIF orientation honest, and resizing and cropping update the EXIF pixel dimensions and drop the
+embedded thumbnail, which no longer matches.</p>
+<h2 id="planning">Planning</h2>
+<pre><code class="lang-csharp">// The whole chain is planned before any pixel changes: a bad argument throws first, a Crop before a resize reads only the
+// crop, and adjacent color steps run as one pass. Each step runs in parallel bands of rows.
+try
+{
+    photo.Apply(ops =&gt; ops.Fit(100, 100).Crop(0, 0, 500, 500), Ct);
+}
+catch (ArgumentOutOfRangeException)
+{
+    Console.WriteLine(&quot;The crop does not fit the 100-pixel result; the photo is unchanged.&quot;);
+}
+</code></pre>
+<p>Animations: every step runs on every frame. See the <a href="animation.html">animation guide</a>.</p>
+<h2 id="run-it">Run it</h2>
+<p><a href="https://github.com/inexin/Egami/tree/main/samples/Geometry"><code>samples/Geometry</code></a> is a console app that does what this guide shows on the bundled
+images: <code>dotnet run --project samples/Geometry</code> writes its results to <code>./output</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/resizing-and-geometry.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

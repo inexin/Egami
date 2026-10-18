@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Comparing and measuring images | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Comparing and measuring images | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/analysis.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="comparing-and-measuring-images">Comparing and measuring images</h1>
+
+<p>Calls that look at images rather than change them: comparison metrics and a picture of the differences, per-channel statistics
+and histograms, unique colors, opacity and gray checks, perceptual hashes for near-duplicates, and a pixel signature. They take
+any pixel type and match ImageMagick's numbers (Python's imagehash for the hashes). Types live in <code>Egami.Analysis</code>.</p>
+<h2 id="compare-two-images">Compare two images</h2>
+<pre><code class="lang-csharp">// Every cheap metric in one pass, per channel and overall, on the 0 to 1 scale; SSIM on request.
+CompareResult result = Raster.Compare(expected, actual, new CompareOptions { Ssim = true, Fuzz = 0.02f });
+Console.WriteLine($&quot;PSNR {result.Overall.Psnr:F1} dB, SSIM {result.Overall.Ssim:F4}, {result.DifferentPixels} pixels off by more than 2%&quot;);
+bool sameLook = result.Overall.Psnr &gt;= 40;
+</code></pre>
+<p><code>Raster.Compare</code> reads both images once and returns a <code>CompareResult</code>: for red, green, blue, alpha and overall, a
+<code>ChannelDifference</code> with the mean absolute
+error, mean squared error, RMSE, PSNR (+∞ for equal images) and the peak error, all on the 0 to 1 scale, so 8-bit and 16-bit
+results line up; and <code>DifferentPixels</code>, the pixels with a channel off by more than <code>Fuzz</code> (ImageMagick's AE). <code>Overall</code> averages the
+color channels, plus alpha when either image has it, as ImageMagick's &quot;all&quot; line.</p>
+<p>The images must be the same size but may have different pixel types: an <code>Rgb8</code> and an <code>Rgba8</code> copy of one picture are identical.
+Color profiles are not reconciled, so convert both with <code>ConvertColor</code> first when they differ.</p>
+<p><strong>Alpha.</strong> Colors are premultiplied by alpha first (<code>AlphaCompare.Premultiplied</code>, the default), so two fully transparent pixels are
+equal whatever color is stored under them, which is what a viewer sees and what ImageMagick 7's metrics do. <code>AlphaCompare.Straight</code>
+compares the stored channels.</p>
+<p><strong>SSIM.</strong> With <code>Ssim = true</code>, each channel also gets the structural similarity of Wang et al. (2004) with an 11 × 11 Gaussian window
+(σ 1.5) and DSSIM = (1 − SSIM) / 2. It costs about as much as four blurs. ImageMagick 7.1 computes SSIM on straight channels, so
+use <code>AlphaCompare.Straight</code> to reproduce its numbers on images with transparency.</p>
+<p><code>Region</code> compares one rectangle and <code>Frame</code> another frame. Results do not depend on the thread count.</p>
+<h2 id="visual-regression-tests">Visual regression tests</h2>
+<pre><code class="lang-csharp">// A visual regression check: pass when the render is close to the stored baseline, else save a picture of what moved.
+CompareResult result = Raster.Compare(baseline, rendered, new CompareOptions { Fuzz = 0.05f });
+if (result.DifferentPixels &gt; 0 || result.Overall.Psnr &lt; 45)
+{
+    using Raster where = Raster.Difference(baseline, rendered, DifferenceStyle.Highlight, new DifferenceOptions { Fuzz = 0.05f });
+    where.Save(&quot;regression.png&quot;);
+}
+</code></pre><h2 id="a-picture-of-the-differences">A picture of the differences</h2>
+<pre><code class="lang-csharp">// ImageMagick compare's red-over-faded picture, and the plain per-channel difference turned up 8 times.
+using Raster highlight = Raster.Difference(a, b);
+using Raster gaps = Raster.Difference(a, b, DifferenceStyle.Absolute, new DifferenceOptions { Amplify = 8 });
+highlight.Save(&quot;highlight.png&quot;);
+gaps.Save(&quot;gaps.png&quot;);
+</code></pre>
+<p><code>DifferenceStyle.Highlight</code> is ImageMagick compare's picture: pixels that differ in <code>HighlightColor</code> (#F1001E) and the rest in
+<code>LowlightColor</code> (white), with 20% of the first image, flattened onto white, showing through (<code>LowlightOpacity</code>). Set
+<code>LowlightOpacity = 0</code> for a plain mask. <code>DifferenceStyle.Absolute</code> shows |a − b| per color channel, times <code>Amplify</code>.</p>
+<h2 id="statistics">Statistics</h2>
+<pre><code class="lang-csharp">// Per-channel statistics on the 0 to 1 scale, as identify -verbose prints them.
+RasterStatistics stats = photo.Statistics();
+Console.WriteLine($&quot;red mean {stats.Red.Mean:F3} ± {stats.Red.StdDev:F3}, luma {stats.Luma.Min:F2} to {stats.Luma.Max:F2}&quot;);
+bool dark = stats.Luma.Mean &lt; 0.25;
+</code></pre>
+<p><code>Statistics</code> returns a <code>RasterStatistics</code> with a <code>ChannelStatistics</code> for red, green, blue, alpha and the Rec. 709 luma: the minimum, maximum, mean, sample standard deviation,
+skewness, excess kurtosis and entropy, as ImageMagick's identify -verbose reports them. Entropy is the Shannon entropy of the values
+at 16-bit precision divided by its largest possible value for the number of distinct values present, so it is 1 when every
+distinct value is equally common.</p>
+<h2 id="histograms">Histograms</h2>
+<pre><code class="lang-csharp">// How the brightness is spread: 256 bins, and the levels below which 1% and 99% of the pixels lie.
+Histogram histogram = photo.Histogram(ColorChannel.Luminance);
+double shadows = histogram.Percentile(0.01), highlights = histogram.Percentile(0.99);
+long midtones = histogram.Counts.Skip(64).Take(128).Sum();
+</code></pre>
+<p><code>Histogram</code> counts pixels in equal bins over 0 to 1 (256 by default, one per 8-bit value) for one channel or the luma.
+<code>Percentile(p)</code> and <code>Median</code> return the level of the bin where the running count reaches that fraction.</p>
+<h2 id="colors-opacity-and-gray">Colors, opacity and gray</h2>
+<pre><code class="lang-csharp">// Unique colors, the palette of a small image, and quick checks before choosing an output format.
+long count = photo.CountColors();
+IReadOnlyList&lt;Rgba16&gt;? palette = photo.GetColors(256);   // null: more than 256 colors
+bool needsAlpha = !photo.IsOpaque();
+bool grayscale = photo.IsGray(tolerance: 1 / 255f);
+</code></pre>
+<p><code>CountColors</code> counts the distinct stored values exactly, as ImageMagick's %k. Pixel types of up to 3 bytes use a 2 MB table;
+wider types keep a set of the colors seen, and its worst case (every pixel distinct, about 24 bytes a pixel) counts against
+<code>MaxTotalBytes</code>. <code>GetColors(limit)</code> returns the colors as <code>Rgba16</code> when there are at most <code>limit</code>, and stops scanning once there are
+more. <code>IsOpaque</code> and <code>IsGray</code> stop at the first pixel that fails and answer at once for types without alpha and gray types; both
+check every frame unless given one.</p>
+<pre><code class="lang-csharp">// A scan that is gray in all but name can be stored as one channel: a third of the size, no visible change.
+if (gray.IsGray(tolerance: 2 / 255f))
+{
+    using Raster&lt;Gray8&gt; oneChannel = gray.As&lt;Gray8&gt;();
+    oneChannel.Save(&quot;scan-gray.png&quot;);
+}
+</code></pre><h2 id="near-duplicates">Near-duplicates</h2>
+<pre><code class="lang-csharp">// Find near-duplicate photos: hash each once, store the 64-bit keys, and call a pair a duplicate within about 10 bits.
+ulong a = PerceptualHash.Dct(original), b = PerceptualHash.Dct(copy), c = PerceptualHash.Dct(other);
+bool duplicate = PerceptualHash.Distance(a, b) &lt;= 10;
+bool unrelated = PerceptualHash.Distance(a, c) &gt; 10;
+string key = a.ToString(&quot;x16&quot;, System.Globalization.CultureInfo.InvariantCulture);
+</code></pre>
+<p><code>PerceptualHash.Dct</code> (pHash style) and <code>PerceptualHash.Difference</code> (dHash) reduce the first frame's brightness, flattened onto
+white, to 32 × 32 or 9 × 8 with a Lanczos filter and keep one bit per low frequency or neighbour pair. The same picture after JPEG
+recompression, resizing or a small brightness change stays within about 6 bits; unrelated photos average about 32 bits apart.
+The bits are in reading order, so <code>ToString(&quot;x16&quot;)</code> matches Python imagehash's hex string to within a few bits.</p>
+<h2 id="signatures">Signatures</h2>
+<pre><code class="lang-csharp">// The same pixels give the same signature, whatever the file or pixel type: dedupe exact copies.
+using Raster&lt;Rgba16&gt; wide = png.As&lt;Rgba16&gt;();
+bool same = png.Signature() == wide.Signature();
+</code></pre>
+<p><code>Signature</code> is the SHA-256 of the size, the frame count and each frame's delay and pixels as 16-bit RGBA, as 64 hex digits: equal
+exactly when the pixels are, whatever the file or pixel type. It is not ImageMagick's %#, whose bytes vary between versions.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/analysis.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Mesh | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Mesh | Egami ">
+      
+      <meta name="description" content="Triangles with an optional color, texture coordinate or value at each vertex, for : Gouraud-shaded triangles, textured triangles (a paint mapped through the texture coordinates) and PDF&#39;s free-form and lattice-form shadings (one value per vertex, mapped through gradient stops). Immutable: the constructor copies what it is given.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_Mesh.md&amp;value=---%0Auid%3A%20Egami.Drawing.Mesh%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.Mesh">
+
+
+
+  <h1 id="Egami_Drawing_Mesh" data-uid="Egami.Drawing.Mesh" class="text-break">
+Class Mesh  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Triangles with an optional color, texture coordinate or value at each vertex, for <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__">DrawMesh(Mesh, Paint?, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)</a>: Gouraud-shaded
+triangles, textured triangles (a paint mapped through the texture coordinates) and PDF's free-form and lattice-form shadings
+(one value per vertex, mapped through gradient stops). Immutable: the constructor copies what it is given.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Mesh</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Mesh</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_Mesh_examples">Examples</h2>
+  <pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // Gouraud shading: a color at each corner, blended across each triangle without cracks between them.
+    Vector2[] quad = [new(10, 10), new(140, 20), new(130, 140), new(20, 120)];
+    RgbaF32[] colors = [new(1, 0.2f, 0.2f, 1), new(1, 0.9f, 0.2f, 1), new(0.2f, 0.6f, 1, 1), new(0.6f, 0.2f, 0.9f, 1)];
+    canvas.DrawMesh(new Mesh(MeshMode.Fan, quad, colors), Rgba8.White);
+
+    // A textured mesh: each vertex says which point of the paint lands on it, here bending a photo into a trapezoid.
+    Vector2[] trapezoid = [new(170, 20), new(280, 30), new(290, 140), new(160, 130)];
+    Vector2[] corners = [new(0, 0), new(64, 0), new(64, 64), new(0, 64)];
+    canvas.DrawMesh(new Mesh(MeshMode.Fan, trapezoid, texCoords: corners), new ImagePaint(photo));
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Drawing_Mesh__ctor_" data-uid="Egami.Drawing.Mesh.#ctor*"></a>
+
+  <h3 id="Egami_Drawing_Mesh__ctor_Egami_Drawing_MeshMode_System_ReadOnlySpan_System_Numerics_Vector2__System_ReadOnlySpan_Egami_Pixels_RgbaF32__System_ReadOnlySpan_System_Numerics_Vector2__System_ReadOnlySpan_System_Single__System_ReadOnlySpan_System_Int32__" data-uid="Egami.Drawing.Mesh.#ctor(Egami.Drawing.MeshMode,System.ReadOnlySpan{System.Numerics.Vector2},System.ReadOnlySpan{Egami.Pixels.RgbaF32},System.ReadOnlySpan{System.Numerics.Vector2},System.ReadOnlySpan{System.Single},System.ReadOnlySpan{System.Int32})">
+  Mesh(MeshMode, ReadOnlySpan&lt;Vector2&gt;, ReadOnlySpan&lt;RgbaF32&gt;, ReadOnlySpan&lt;Vector2&gt;, ReadOnlySpan&lt;float&gt;, ReadOnlySpan&lt;int&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Drawing.Mesh.html">Mesh</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Mesh(MeshMode mode, ReadOnlySpan&lt;Vector2&gt; positions, ReadOnlySpan&lt;RgbaF32&gt; colors = default, ReadOnlySpan&lt;Vector2&gt; texCoords = default, ReadOnlySpan&lt;float&gt; values = default, ReadOnlySpan&lt;int&gt; indices = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.Drawing.MeshMode.html">MeshMode</a></dt>
+    <dd><p>How the vertices make triangles.</p>
+</dd>
+    <dt><code>positions</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>&gt;</dt>
+    <dd><p>The vertices, in the canvas's local coordinates.</p>
+</dd>
+    <dt><code>colors</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a>&gt;</dt>
+    <dd><p>One straight-alpha color per vertex, or empty for none.</p>
+</dd>
+    <dt><code>texCoords</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>&gt;</dt>
+    <dd><p>One point in the paint's coordinates per vertex, or empty for none: the paint is mapped onto each triangle through them.</p>
+</dd>
+    <dt><code>values</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>&gt;</dt>
+    <dd><p>One value per vertex, or empty for none: interpolated, then mapped to a color through the stops given to <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__">DrawMesh(Mesh, Paint?, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)</a>. A mesh has colors or values, not both.</p>
+</dd>
+    <dt><code>indices</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd><p>Indices into the vertices, read by <code class="paramref">mode</code> in place of the vertices themselves, or empty to read the vertices in order.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">mode</code> is not defined, or an index is outside the vertices.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>A per-vertex list's length differs from the positions', both colors and values are given, or a number is not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Drawing_Mesh_Bounds_" data-uid="Egami.Drawing.Mesh.Bounds*"></a>
+
+  <h3 id="Egami_Drawing_Mesh_Bounds" data-uid="Egami.Drawing.Mesh.Bounds">
+  Bounds
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bounds of the vertices.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RectF Bounds { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Mesh_Colors_" data-uid="Egami.Drawing.Mesh.Colors*"></a>
+
+  <h3 id="Egami_Drawing_Mesh_Colors" data-uid="Egami.Drawing.Mesh.Colors">
+  Colors
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the vertex colors, or empty when there are none: for a mesh with inks, their appearances in sRGB.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;RgbaF32&gt; Colors { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Mesh_Indices_" data-uid="Egami.Drawing.Mesh.Indices*"></a>
+
+  <h3 id="Egami_Drawing_Mesh_Indices" data-uid="Egami.Drawing.Mesh.Indices">
+  Indices
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the indices, or empty when the vertices are read in order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;int&gt; Indices { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Mesh_Inks_" data-uid="Egami.Drawing.Mesh.Inks*"></a>
+
+  <h3 id="Egami_Drawing_Mesh_Inks" data-uid="Egami.Drawing.Mesh.Inks">
+  Inks
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L120"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the vertex colours as inks, or empty when the mesh has none (see <a class="xref" href="Egami.Drawing.Mesh.html#Egami_Drawing_Mesh_WithInks_System_ReadOnlySpan_Egami_Colors_InkColor__">WithInks(ReadOnlySpan&lt;InkColor&gt;)</a>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;InkColor&gt; Inks { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="Egami.Colors.InkColor.html">InkColor</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Mesh_Mode_" data-uid="Egami.Drawing.Mesh.Mode*"></a>
+
+  <h3 id="Egami_Drawing_Mesh_Mode" data-uid="Egami.Drawing.Mesh.Mode">
+  Mode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how the vertices make triangles.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MeshMode Mode { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.MeshMode.html">MeshMode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Mesh_Positions_" data-uid="Egami.Drawing.Mesh.Positions*"></a>
+
+  <h3 id="Egami_Drawing_Mesh_Positions" data-uid="Egami.Drawing.Mesh.Positions">
+  Positions
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the vertices.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;Vector2&gt; Positions { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Mesh_TexCoords_" data-uid="Egami.Drawing.Mesh.TexCoords*"></a>
+
+  <h3 id="Egami_Drawing_Mesh_TexCoords" data-uid="Egami.Drawing.Mesh.TexCoords">
+  TexCoords
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L123"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the texture coordinates, or empty when there are none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;Vector2&gt; TexCoords { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Mesh_TriangleCount_" data-uid="Egami.Drawing.Mesh.TriangleCount*"></a>
+
+  <h3 id="Egami_Drawing_Mesh_TriangleCount" data-uid="Egami.Drawing.Mesh.TriangleCount">
+  TriangleCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of triangles the mode makes, degenerate ones included.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int TriangleCount { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Mesh_Values_" data-uid="Egami.Drawing.Mesh.Values*"></a>
+
+  <h3 id="Egami_Drawing_Mesh_Values" data-uid="Egami.Drawing.Mesh.Values">
+  Values
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the vertex values, or empty when there are none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;float&gt; Values { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Drawing_Mesh_WithInks_" data-uid="Egami.Drawing.Mesh.WithInks*"></a>
+
+  <h3 id="Egami_Drawing_Mesh_WithInks_System_ReadOnlySpan_Egami_Colors_InkColor__" data-uid="Egami.Drawing.Mesh.WithInks(System.ReadOnlySpan{Egami.Colors.InkColor})">
+  WithInks(ReadOnlySpan&lt;InkColor&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns this mesh with a colour given as inks for each vertex: an ink canvas blends their tints across each triangle (an ink
+a vertex does not name counts as 0 there); other canvases use the appearances in sRGB, which become <a class="xref" href="Egami.Drawing.Mesh.html#Egami_Drawing_Mesh_Colors">Colors</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Mesh WithInks(ReadOnlySpan&lt;InkColor&gt; inks)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Colors.InkColor.html">InkColor</a>&gt;</dt>
+    <dd><p>One colour per vertex.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Mesh.html">Mesh</a></dt>
+    <dd><p>The new mesh.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The count differs from the vertices', or the mesh has values.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>A colour is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Mesh.cs/#L32" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

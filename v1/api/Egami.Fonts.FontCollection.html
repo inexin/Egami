@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class FontCollection | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class FontCollection | Egami ">
+      
+      <meta name="description" content="A set of faces grouped into families: the caller&#39;s own, or  for the fonts installed on the machine. Finds families by name and faces by style with the CSS Fonts Level 4 matching steps.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_FontCollection.md&amp;value=---%0Auid%3A%20Egami.Fonts.FontCollection%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.FontCollection">
+
+
+
+  <h1 id="Egami_Fonts_FontCollection" data-uid="Egami.Fonts.FontCollection" class="text-break">
+Class FontCollection  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A set of faces grouped into families: the caller's own, or <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_System">System</a> for the fonts installed on the machine. Finds
+families by name and faces by style with the CSS Fonts Level 4 matching steps.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class FontCollection : IReadOnlyCollection&lt;FontFamily&gt;, IEnumerable&lt;FontFamily&gt;, IEnumerable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">FontCollection</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1">IReadOnlyCollection</a>&lt;<a class="xref" href="Egami.Fonts.FontFamily.html">FontFamily</a>&gt;</div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Egami.Fonts.FontFamily.html">FontFamily</a>&gt;</div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.ienumerable">IEnumerable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Fonts_FontCollection_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Installed fonts, found without native calls and indexed on first use; a style is matched by the CSS rules.
+FontMatch? match = FontCollection.System.Match(GenericFamily.SansSerif, FontStyle.Bold);
+
+// Your own fonts work the same way; System is read-only, so add the installed fonts to your collection to have both.
+var fonts = new FontCollection();
+fonts.AddFile(FontFile);
+fonts.AddSystemFonts();
+FontMatch noto = fonts.Match("Noto Sans", FontStyle.BoldItalic)!.Value;
+Font font = noto.ToFont(16);</code></pre>
+
+
+  <h2 id="Egami_Fonts_FontCollection_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+Faces group under their typographic family (name ID 16, else 1). A name lookup tries, in order, the typographic family, the
+legacy family (ID 1), the full name (ID 4) and the PostScript name (ID 6), comparing case-insensitively in every language the
+fonts hold. A name not found returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>: nothing is swapped in silently.
+</p>
+<p>
+Files added by path are indexed from their name and OS/2 tables only and loaded when a face is matched. Adding is thread-safe;
+lookups see the faces added before they started.
+</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Fonts_FontCollection__ctor_" data-uid="Egami.Fonts.FontCollection.#ctor*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection__ctor_Egami_Fonts_FontLoadOptions_" data-uid="Egami.Fonts.FontCollection.#ctor(Egami.Fonts.FontLoadOptions)">
+  FontCollection(FontLoadOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes an empty collection.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontCollection(FontLoadOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.Fonts.FontLoadOptions.html">FontLoadOptions</a></dt>
+    <dd><p>How faces are loaded when matched, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Fonts.FontLoadOptions.html#Egami_Fonts_FontLoadOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_FontCollection__ctor_Egami_Fonts_FontLoadOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Installed fonts, found without native calls and indexed on first use; a style is matched by the CSS rules.
+FontMatch? match = FontCollection.System.Match(GenericFamily.SansSerif, FontStyle.Bold);
+
+// Your own fonts work the same way; System is read-only, so add the installed fonts to your collection to have both.
+var fonts = new FontCollection();
+fonts.AddFile(FontFile);
+fonts.AddSystemFonts();
+FontMatch noto = fonts.Match("Noto Sans", FontStyle.BoldItalic)!.Value;
+Font font = noto.ToFont(16);</code></pre>
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_FontCollection_Count_" data-uid="Egami.Fonts.FontCollection.Count*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_Count" data-uid="Egami.Fonts.FontCollection.Count">
+  Count
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L120"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of families.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Count { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_FontCollection_Families_" data-uid="Egami.Fonts.FontCollection.Families*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_Families" data-uid="Egami.Fonts.FontCollection.Families">
+  Families
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L101"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the families, sorted by name.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FontFamily&gt; Families { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.FontFamily.html">FontFamily</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_FontCollection_Options_" data-uid="Egami.Fonts.FontCollection.Options*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_Options" data-uid="Egami.Fonts.FontCollection.Options">
+  Options
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L98"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the options faces are loaded with.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontLoadOptions Options { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontLoadOptions.html">FontLoadOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_FontCollection_System_" data-uid="Egami.Fonts.FontCollection.System*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_System" data-uid="Egami.Fonts.FontCollection.System">
+  System
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L95"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the fonts installed on this machine, found without native calls by scanning the platform's font directories (Windows:
+the Windows and per-user Fonts folders; macOS: the System, Library and user Fonts folders; Linux: the fontconfig dir
+entries and the usual share/fonts folders). Indexed on first use; <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_Refresh">Refresh()</a> rescans. It is read-only: to match
+your own fonts beside the installed ones, call <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_AddSystemFonts">AddSystemFonts()</a> on a collection of your own.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static FontCollection System { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontCollection.html">FontCollection</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Fonts_FontCollection_Add_" data-uid="Egami.Fonts.FontCollection.Add*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_Add_Egami_Fonts_Typeface_" data-uid="Egami.Fonts.FontCollection.Add(Egami.Fonts.Typeface)">
+  Add(Typeface)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L151"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds a loaded face.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Add(Typeface typeface)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeface</code> <a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd><p>The face.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The collection is <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_System">System</a>, which is read-only.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_FontCollection_AddDirectory_" data-uid="Egami.Fonts.FontCollection.AddDirectory*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_AddDirectory_System_String_System_Boolean_" data-uid="Egami.Fonts.FontCollection.AddDirectory(System.String,System.Boolean)">
+  AddDirectory(string, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L180"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds every font file in a directory; files that cannot be read are skipped with a <code>Font.FileSkipped</code> diagnostic.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int AddDirectory(string path, bool recursive = true)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The directory.</p>
+</dd>
+    <dt><code>recursive</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to look in subdirectories too.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of faces added.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.directorynotfoundexception">DirectoryNotFoundException</a></dt>
+    <dd><p>The directory does not exist.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The collection is <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_System">System</a>, which is read-only.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_FontCollection_AddFile_" data-uid="Egami.Fonts.FontCollection.AddFile*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_AddFile_System_String_" data-uid="Egami.Fonts.FontCollection.AddFile(System.String)">
+  AddFile(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L164"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds every face of a font file, indexed from its names and loaded when matched.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int AddFile(string path)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A .ttf, .otf, .ttc, .otc, .woff or .woff2 file; a web font is decompressed and loaded at once.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of faces added.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The file is not a TrueType or OpenType font or collection.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The file's headers cannot be read.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The collection is <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_System">System</a>, which is read-only.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_FontCollection_AddSystemFonts_" data-uid="Egami.Fonts.FontCollection.AddSystemFonts*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_AddSystemFonts" data-uid="Egami.Fonts.FontCollection.AddSystemFonts">
+  AddSystemFonts()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L204"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds the installed fonts, as <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_System">System</a> has indexed them (indexing them first if it has not yet), so they can be
+matched beside your own. The faces load with this collection's <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_Options">Options</a>; <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_Refresh">Refresh()</a> on
+<a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_System">System</a> later does not change them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int AddSystemFonts()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of faces added.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_FontCollection_AddSystemFonts_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Installed fonts, found without native calls and indexed on first use; a style is matched by the CSS rules.
+FontMatch? match = FontCollection.System.Match(GenericFamily.SansSerif, FontStyle.Bold);
+
+// Your own fonts work the same way; System is read-only, so add the installed fonts to your collection to have both.
+var fonts = new FontCollection();
+fonts.AddFile(FontFile);
+fonts.AddSystemFonts();
+FontMatch noto = fonts.Match("Noto Sans", FontStyle.BoldItalic)!.Value;
+Font font = noto.ToFont(16);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The collection is <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_System">System</a>, which is read-only.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_FontCollection_GetEnumerator_" data-uid="Egami.Fonts.FontCollection.GetEnumerator*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_GetEnumerator" data-uid="Egami.Fonts.FontCollection.GetEnumerator">
+  GetEnumerator()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L144"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the families, sorted by name.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IEnumerator&lt;FontFamily&gt; GetEnumerator()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1">IEnumerator</a>&lt;<a class="xref" href="Egami.Fonts.FontFamily.html">FontFamily</a>&gt;</dt>
+    <dd><p>The enumerator.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_FontCollection_Match_" data-uid="Egami.Fonts.FontCollection.Match*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_Match_Egami_Fonts_GenericFamily_Egami_Fonts_FontStyle_" data-uid="Egami.Fonts.FontCollection.Match(Egami.Fonts.GenericFamily,Egami.Fonts.FontStyle)">
+  Match(GenericFamily, FontStyle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L256"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Matches a generic family through the platform's preference list, then the other platforms' lists.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontMatch? Match(GenericFamily generic, FontStyle style)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>generic</code> <a class="xref" href="Egami.Fonts.GenericFamily.html">GenericFamily</a></dt>
+    <dd><p>The generic family.</p>
+</dd>
+    <dt><code>style</code> <a class="xref" href="Egami.Fonts.FontStyle.html">FontStyle</a></dt>
+    <dd><p>The style wanted.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontMatch.html">FontMatch</a>?</dt>
+    <dd><p>The best face of the first listed family present, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when none is present.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_FontCollection_Match_" data-uid="Egami.Fonts.FontCollection.Match*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_Match_System_String_Egami_Fonts_FontStyle_" data-uid="Egami.Fonts.FontCollection.Match(System.String,Egami.Fonts.FontStyle)">
+  Match(string, FontStyle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L250"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds a family by name and matches a style in it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontMatch? Match(string familyName, FontStyle style)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>familyName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The family, full or PostScript name.</p>
+</dd>
+    <dt><code>style</code> <a class="xref" href="Egami.Fonts.FontStyle.html">FontStyle</a></dt>
+    <dd><p>The style wanted.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontMatch.html">FontMatch</a>?</dt>
+    <dd><p>The best face and the synthesis it wants, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when no face has the name.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_FontCollection_MatchTypeface_" data-uid="Egami.Fonts.FontCollection.MatchTypeface*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_MatchTypeface_System_String_Egami_Fonts_FontStyle_" data-uid="Egami.Fonts.FontCollection.MatchTypeface(System.String,Egami.Fonts.FontStyle)">
+  MatchTypeface(string, FontStyle)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L273"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds a family by name and returns the face that best matches a style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Typeface? MatchTypeface(string familyName, FontStyle style)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>familyName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The family, full or PostScript name.</p>
+</dd>
+    <dt><code>style</code> <a class="xref" href="Egami.Fonts.FontStyle.html">FontStyle</a></dt>
+    <dd><p>The style wanted.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd><p>The face, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when no face has the name.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_FontCollection_Refresh_" data-uid="Egami.Fonts.FontCollection.Refresh*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_Refresh" data-uid="Egami.Fonts.FontCollection.Refresh">
+  Refresh()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L214"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Rescans the installed fonts (for <a class="xref" href="Egami.Fonts.FontCollection.html#Egami_Fonts_FontCollection_System">System</a>); a collection of the caller's own is left as it is.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Refresh()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_FontCollection_TryGetFamily_" data-uid="Egami.Fonts.FontCollection.TryGetFamily*"></a>
+
+  <h3 id="Egami_Fonts_FontCollection_TryGetFamily_System_String_Egami_Fonts_FontFamily__" data-uid="Egami.Fonts.FontCollection.TryGetFamily(System.String,Egami.Fonts.FontFamily@)">
+  TryGetFamily(string, out FontFamily)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L232"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds a family by name: typographic family, legacy family, full name or PostScript name, in that order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetFamily(string name, out FontFamily family)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The name, compared case-insensitively.</p>
+</dd>
+    <dt><code>family</code> <a class="xref" href="Egami.Fonts.FontFamily.html">FontFamily</a></dt>
+    <dd><p>The family, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if a face has the name.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontCollection.cs/#L61" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Fonts.Shaping | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Fonts.Shaping | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.Shaping">
+
+  <h1 id="Egami_Fonts_Shaping" data-uid="Egami.Fonts.Shaping" class="text-break">Namespace Egami.Fonts.Shaping</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.FontFallback.html">FontFallback</a></dt>
+      <dd><p>Where characters the font does not map go: the caller's font families first, matched to the font's style, then a resolver.
+Without fallback (<a class="xref" href="Egami.Fonts.Shaping.FontFallback.html#Egami_Fonts_Shaping_FontFallback_None">None</a>, the default) shaping depends only on the fonts passed, never on the machine.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.GlyphBuffer.html">GlyphBuffer</a></dt>
+      <dd><p>A reusable buffer of shaped glyphs: glyph ids, the UTF-16 index of the text each came from, glyph flags and positions, in
+visual order. <a class="xref" href="Egami.Fonts.Shaping.TextShaper.html#Egami_Fonts_Shaping_TextShaper_ShapeRun_System_ReadOnlySpan_System_Char__System_Int32_System_Int32_Egami_Fonts_Font_Egami_Fonts_Shaping_RunProperties_Egami_Fonts_Shaping_GlyphBuffer_">ShapeRun(ReadOnlySpan&lt;char&gt;, int, int, Font, RunProperties, GlyphBuffer)</a> fills it; reuse one buffer for many runs to avoid allocations.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.OpenTypeLayout.html">OpenTypeLayout</a></dt>
+      <dd><p>What a face's OpenType layout tables (GSUB and GPOS) offer: the scripts, language systems and features they list, and the
+glyphs GSUB can produce from a set of glyphs. A table whose structure is damaged is left out whole, as the shaper leaves it
+out.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.ShapedLine.html">ShapedLine</a></dt>
+      <dd><p>One line of <a class="xref" href="Egami.Fonts.Shaping.ShapedText.html">ShapedText</a>: its range and its runs in visual order.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.ShapedRun.html">ShapedRun</a></dt>
+      <dd><p>A run of a <a class="xref" href="Egami.Fonts.Shaping.ShapedLine.html">ShapedLine</a>: one font, one bidi level, one script, one language, and its glyphs.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.ShapedText.html">ShapedText</a></dt>
+      <dd><p>Text shaped by <a class="xref" href="Egami.Fonts.Shaping.TextShaper.html#Egami_Fonts_Shaping_TextShaper_Shape_System_String_Egami_Fonts_Font_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, Font, ShapingOptions?)</a>: one <a class="xref" href="Egami.Fonts.Shaping.ShapedLine.html">ShapedLine</a> per line between hard
+breaks, each with its runs in visual order. Nothing wraps.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.ShapingOptions.html">ShapingOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Fonts.Shaping.TextShaper.html#Egami_Fonts_Shaping_TextShaper_Shape_System_String_Egami_Fonts_Font_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, Font, ShapingOptions?)</a> shapes text: the paragraph direction, the language, script and
+features of the whole text, the fonts that take characters the font lacks, the cluster level, and styled spans.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.SystemFontFallback.html">SystemFontFallback</a></dt>
+      <dd><p>The installed-font resolver of <a class="xref" href="Egami.Fonts.Shaping.FontFallback.html#Egami_Fonts_Shaping_FontFallback_System">System</a>: fixed families for each script on Windows, macOS and Linux
+(Segoe UI Emoji, Apple Color Emoji or Noto Color Emoji for emoji; the language picks Japanese, Chinese or Korean faces for Han),
+then any installed face that maps the cluster, found once and remembered for the process.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.TextShaper.html">TextShaper</a></dt>
+      <dd><p>OpenType text shaping in managed code: a run of text in one font becomes positioned glyphs with GSUB substitutions, GPOS
+positioning and the script rules HarfBuzz applies.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.FontFeature.html">FontFeature</a></dt>
+      <dd><p>An OpenType feature setting: a feature tag, a value and the range of UTF-16 units it applies to, in HarfBuzz's model. A value
+of 0 turns a feature off (such as default ligatures), 1 turns it on, and higher values pick an alternate.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.GlyphPosition.html">GlyphPosition</a></dt>
+      <dd><p>How a shaped glyph moves the pen and sits relative to it, in the units of the <a class="xref" href="Egami.Fonts.Font.html">Font</a> it was shaped with.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.RunProperties.html">RunProperties</a></dt>
+      <dd><p>What one run of text is shaped as: its script, language, direction, features and cluster level.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.TextSpan.html">TextSpan</a></dt>
+      <dd><p>A range of text with its own font, language or features, for <a class="xref" href="Egami.Fonts.Shaping.ShapingOptions.html#Egami_Fonts_Shaping_ShapingOptions_Spans">Spans</a>.</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.IFontFallbackResolver.html">IFontFallbackResolver</a></dt>
+      <dd><p>Finds a face for a grapheme cluster no listed font maps, such as <a class="xref" href="Egami.Fonts.Shaping.SystemFontFallback.html">SystemFontFallback</a>.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.ClusterLevel.html">ClusterLevel</a></dt>
+      <dd><p>Which characters a glyph's cluster covers, as HarfBuzz's cluster levels.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Shaping.GlyphFlags.html">GlyphFlags</a></dt>
+      <dd><p>What a shaped glyph says about breaking the text next to it, as HarfBuzz's glyph flags.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

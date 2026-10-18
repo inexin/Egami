@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class CssComputedStyle | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class CssComputedStyle | Egami ">
+      
+      <meta name="description" content="An element&#39;s computed style, as far as CSS defines it generically: CSS-wide keywords resolved, inheritance applied, custom properties and var() substituted. Values stay component values; the consumer parses each property by its type (and resolves relative units, percentages and currentcolor).">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Css_CssComputedStyle.md&amp;value=---%0Auid%3A%20Egami.Css.CssComputedStyle%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Css.CssComputedStyle">
+
+
+
+  <h1 id="Egami_Css_CssComputedStyle" data-uid="Egami.Css.CssComputedStyle" class="text-break">
+Class CssComputedStyle  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Css.html">Css</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Css.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An element's computed style, as far as CSS defines it generically: CSS-wide keywords resolved, inheritance applied, custom
+properties and <code>var()</code> substituted. Values stay component values; the consumer parses each property by its type (and
+resolves relative units, percentages and <code>currentcolor</code>).</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class CssComputedStyle : IEnumerable&lt;KeyValuePair&lt;string, IReadOnlyList&lt;CssComponentValue&gt;&gt;&gt;, IEnumerable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">CssComputedStyle</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.keyvaluepair-2">KeyValuePair</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Css.CssComponentValue.html">CssComponentValue</a>&gt;&gt;&gt;</div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.ienumerable">IEnumerable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Css_CssComputedStyle_examples">Examples</h2>
+  <pre><code class="lang-csharp">// The registry says which properties inherit and their initial values; consumers add their own.
+CssPropertyRegistry registry = CssPropertyRegistry.CreateDefault();
+registry.Register(new CssPropertyDefinition("fill", Inherited: true, InitialValue: "black")
+{
+    Validate = value =&gt; CssColor.TryParse(value, out _),
+});
+registry.RegisterShorthand(new CssShorthandDefinition("marker", ["marker-start", "marker-end"],
+    value =&gt; [new CssDeclaration("marker-start", value), new CssDeclaration("marker-end", value)]));
+
+CssStyleSheet userAgent = CssStyleSheet.Parse("rect { fill: gray }");
+CssStyleSheet author = CssStyleSheet.Parse("""
+    svg { --accent: teal; font: 12px sans-serif }
+    .layer { fill: var(--accent) }
+    #r { fill: inherit; opacity: 0.5 }
+    """);
+var cascade = new CssCascade(
+    [(userAgent, CssOrigin.UserAgent), (author, CssOrigin.Author)],
+    new CssCascadeOptions { Registry = registry, Media = new CssMediaContext { Width = 800 } });
+
+// Cascade each element (presentation attributes as hints, the style attribute as inline style), then compute it
+// from its parent's computed style.
+CssComputedStyle rootStyle = cascade.Compute(cascade.Cascade(root), null);
+CssComputedStyle groupStyle = cascade.Compute(cascade.Cascade(group), rootStyle);
+CssCascadedStyle cascaded = cascade.Cascade(rect,
+    presentationHints: [CssDeclaration.Create("fill", "red")],
+    inlineStyle: CssDeclaration.ParseList("stroke: blue"));
+CssComputedStyle style = cascade.Compute(cascaded, groupStyle);
+
+cascaded.TryGetDeclaration("fill", out CssDeclaration? winner, out CssOrigin origin); // fill: inherit, Author
+string? fill = style.GetValueText("fill");           // "teal": inherited, var() substituted
+string? fontSize = style.GetValueText("font-size");  // "12px": from the font shorthand, inherited
+if (style.TryGetValue("opacity", out IReadOnlyList&lt;CssComponentValue&gt;? opacity))
+{
+    // The consumer parses each property by its type.
+}</code></pre>
+
+
+  <h2 id="Egami_Css_CssComputedStyle_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>A computed style stores only what its element sets and shares the rest with its parent: inherited properties are looked
+up through the parent chain, and the others fall back to their initial value from the registry. Enumerating a computed
+style lists the properties with a value that the element or an ancestor set (not initial values).</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Css_CssComputedStyle_Parent_" data-uid="Egami.Css.CssComputedStyle.Parent*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_Parent" data-uid="Egami.Css.CssComputedStyle.Parent">
+  Parent
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the parent element's computed style, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the root.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssComputedStyle? Parent { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssComputedStyle.html">CssComputedStyle</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Css_CssComputedStyle_Compute_" data-uid="Egami.Css.CssComputedStyle.Compute*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_Compute_Egami_Css_CssCascadedStyle_Egami_Css_CssComputedStyle_Egami_Css_CssPropertyRegistry_" data-uid="Egami.Css.CssComputedStyle.Compute(Egami.Css.CssCascadedStyle,Egami.Css.CssComputedStyle,Egami.Css.CssPropertyRegistry)">
+  Compute(CssCascadedStyle, CssComputedStyle?, CssPropertyRegistry)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Computes an element's style: resolves <code>inherit</code>, <code>initial</code>, <code>unset</code>, <code>revert</code> and
+<code>revert-layer</code> (treated as <code>revert</code>), applies inheritance, and substitutes <code>var()</code> with fallbacks and
+cycle detection. A property whose substitution fails is invalid at computed-value time and behaves as <code>unset</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static CssComputedStyle Compute(CssCascadedStyle cascaded, CssComputedStyle? parent, CssPropertyRegistry registry)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>cascaded</code> <a class="xref" href="Egami.Css.CssCascadedStyle.html">CssCascadedStyle</a></dt>
+    <dd><p>The element's cascaded style.</p>
+</dd>
+    <dt><code>parent</code> <a class="xref" href="Egami.Css.CssComputedStyle.html">CssComputedStyle</a></dt>
+    <dd><p>The parent element's computed style, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the root.</p>
+</dd>
+    <dt><code>registry</code> <a class="xref" href="Egami.Css.CssPropertyRegistry.html">CssPropertyRegistry</a></dt>
+    <dd><p>The property registry (inheritance, initial values, shorthands, validation).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssComputedStyle.html">CssComputedStyle</a></dt>
+    <dd><p>The computed style.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_CreateInherited_" data-uid="Egami.Css.CssComputedStyle.CreateInherited*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_CreateInherited_Egami_Css_CssComputedStyle_Egami_Css_CssPropertyRegistry_" data-uid="Egami.Css.CssComputedStyle.CreateInherited(Egami.Css.CssComputedStyle,Egami.Css.CssPropertyRegistry)">
+  CreateInherited(CssComputedStyle?, CssPropertyRegistry)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates the computed style of an element no declaration applies to.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static CssComputedStyle CreateInherited(CssComputedStyle? parent, CssPropertyRegistry registry)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>parent</code> <a class="xref" href="Egami.Css.CssComputedStyle.html">CssComputedStyle</a></dt>
+    <dd><p>The parent's computed style, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the root.</p>
+</dd>
+    <dt><code>registry</code> <a class="xref" href="Egami.Css.CssPropertyRegistry.html">CssPropertyRegistry</a></dt>
+    <dd><p>The property registry.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssComputedStyle.html">CssComputedStyle</a></dt>
+    <dd><p>The computed style: inherited and initial values only.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_GetEnumerator_" data-uid="Egami.Css.CssComputedStyle.GetEnumerator*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_GetEnumerator" data-uid="Egami.Css.CssComputedStyle.GetEnumerator">
+  GetEnumerator()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Enumerates the properties with a value that this element or an ancestor set.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IEnumerator&lt;KeyValuePair&lt;string, IReadOnlyList&lt;CssComponentValue&gt;&gt;&gt; GetEnumerator()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1">IEnumerator</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.keyvaluepair-2">KeyValuePair</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Css.CssComponentValue.html">CssComponentValue</a>&gt;&gt;&gt;</dt>
+    <dd><p>The properties and their values.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_GetValueText_" data-uid="Egami.Css.CssComputedStyle.GetValueText*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_GetValueText_System_String_" data-uid="Egami.Css.CssComputedStyle.GetValueText(System.String)">
+  GetValueText(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a property's computed value as CSS text, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when it has none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? GetValueText(string name)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The value text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_IsSetOnElement_" data-uid="Egami.Css.CssComputedStyle.IsSetOnElement*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_IsSetOnElement_System_String_" data-uid="Egami.Css.CssComputedStyle.IsSetOnElement(System.String)">
+  IsSetOnElement(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the element itself sets the property (rather than inheriting it or taking its initial value).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsSetOnElement(string name)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the element's own declarations set it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_TryGetValue_" data-uid="Egami.Css.CssComputedStyle.TryGetValue*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_TryGetValue_System_String_System_Collections_Generic_IReadOnlyList_Egami_Css_CssComponentValue___" data-uid="Egami.Css.CssComputedStyle.TryGetValue(System.String,System.Collections.Generic.IReadOnlyList{Egami.Css.CssComponentValue}@)">
+  TryGetValue(string, out IReadOnlyList&lt;CssComponentValue&gt;?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a property's computed value.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetValue(string name, out IReadOnlyList&lt;CssComponentValue&gt;? value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name (lowercase, or a custom property name as written).</p>
+</dd>
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Css.CssComponentValue.html">CssComponentValue</a>&gt;</dt>
+    <dd><p>The value as component values.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the property has a value: set, inherited or initial.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L18" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

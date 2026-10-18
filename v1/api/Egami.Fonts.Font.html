@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct Font | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct Font | Egami ">
+      
+      <meta name="description" content="A typeface at a size: the em in canvas units (pixels on a raster, points on a PDF page). Scales the face&#39;s font-unit metrics and turns text into a positioned .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_Font.md&amp;value=---%0Auid%3A%20Egami.Fonts.Font%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.Font">
+
+
+
+  <h1 id="Egami_Fonts_Font" data-uid="Egami.Fonts.Font" class="text-break">
+Struct Font  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A typeface at a size: the em in canvas units (pixels on a raster, points on a PDF page). Scales the face's font-unit metrics and
+turns text into a positioned <a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct Font : IEquatable&lt;Font&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Fonts.Font.html">Font</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.tostring">ValueType.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+  <dl class="typelist extensionMethods">
+    <dt>Extension Methods</dt>
+    <dd>
+  <div>
+      <a class="xref" href="Egami.Drawing.FontExtensions.html#Egami_Drawing_FontExtensions_GetGlyphPath_Egami_Fonts_Font_System_UInt16_">FontExtensions.GetGlyphPath(Font, ushort)</a>
+  </div>
+  <div>
+      <a class="xref" href="Egami.Drawing.FontExtensions.html#Egami_Drawing_FontExtensions_GetTextPath_Egami_Fonts_Font_System_String_System_Numerics_Vector2_">FontExtensions.GetTextPath(Font, string, Vector2)</a>
+  </div>
+  <div>
+      <a class="xref" href="Egami.Drawing.FontExtensions.html#Egami_Drawing_FontExtensions_ShapeOnPath_Egami_Fonts_Font_System_String_Egami_Drawing_Path_Egami_Drawing_TextOnPathOptions_">FontExtensions.ShapeOnPath(Font, string, Path, TextOnPathOptions?)</a>
+  </div>
+  </dd></dl>
+
+
+  <h2 id="Egami_Fonts_Font_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A caption on a photo: white text with a dark shadow, its baseline 24 pixels above the bottom.
+using Raster&lt;Rgba8&gt; photo = Raster.Create(640, 360, new Rgba8(90, 120, 160, 255));
+var font = new Font(Typeface.FromFile(FontFile), 28);
+using (RasterCanvas&lt;Rgba8&gt; canvas = photo.CreateCanvas())
+{
+    var origin = new Vector2(24, photo.Height - 24);
+    canvas.DrawText("Lofoten, March", origin + new Vector2(2, 2), font, new Rgba8(0, 0, 0, 160));
+    canvas.DrawText("Lofoten, March", origin, font, Rgba8.White);
+}</code></pre>
+
+
+  <h2 id="Egami_Fonts_Font_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+There is no DPI: a 12-unit font on a raster is 12 pixels per em, and the canvas transform scales it like any other drawing. Use
+<a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_FromPoints_Egami_Fonts_Typeface_System_Single_System_Single_">FromPoints(Typeface, float, float)</a> to size from points at a resolution.
+</p>
+<p>
+<code>default(Font)</code> has no typeface: its <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Typeface">Typeface</a> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, its <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Scale">Scale</a> 0, and the
+members that need the face (metrics, advances, shaping and measuring) throw <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a>. Create
+fonts with the constructor or <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_FromPoints_Egami_Fonts_Typeface_System_Single_System_Single_">FromPoints(Typeface, float, float)</a>.
+</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Fonts_Font__ctor_" data-uid="Egami.Fonts.Font.#ctor*"></a>
+
+  <h3 id="Egami_Fonts_Font__ctor_Egami_Fonts_Typeface_System_Single_" data-uid="Egami.Fonts.Font.#ctor(Egami.Fonts.Typeface,System.Single)">
+  Font(Typeface, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a font.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Font(Typeface typeface, float size)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeface</code> <a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd><p>The face.</p>
+</dd>
+    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The em size in canvas units, finite and at least 0.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">typeface</code> is null.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">size</code> is negative, infinite or NaN.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_Font_AllowSynthesis_" data-uid="Egami.Fonts.Font.AllowSynthesis*"></a>
+
+  <h3 id="Egami_Fonts_Font_AllowSynthesis" data-uid="Egami.Fonts.Font.AllowSynthesis">
+  AllowSynthesis
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Synthesis">Synthesis</a> is applied. Defaults to true.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AllowSynthesis { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Font_ColorGlyphs_" data-uid="Egami.Fonts.Font.ColorGlyphs*"></a>
+
+  <h3 id="Egami_Fonts_Font_ColorGlyphs" data-uid="Egami.Fonts.Font.ColorGlyphs">
+  ColorGlyphs
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether color glyphs (COLR, sbix, CBDT) draw in color; false draws every glyph's outline in the paint. Defaults to true.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ColorGlyphs { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Font_Edging_" data-uid="Egami.Fonts.Font.Edging*"></a>
+
+  <h3 id="Egami_Fonts_Font_Edging" data-uid="Egami.Fonts.Font.Edging">
+  Edging
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how glyph edges become pixels on a raster. Defaults to <a class="xref" href="Egami.Fonts.FontEdging.html#Egami_Fonts_FontEdging_Antialias">Antialias</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontEdging Edging { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontEdging.html">FontEdging</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_EffectiveTypeface_" data-uid="Egami.Fonts.Font.EffectiveTypeface*"></a>
+
+  <h3 id="Egami_Fonts_Font_EffectiveTypeface" data-uid="Egami.Fonts.Font.EffectiveTypeface">
+  EffectiveTypeface
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the face glyphs are drawn and measured from: <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Typeface">Typeface</a>, or with <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_OpticalSizing">OpticalSizing</a> on a face with
+an opsz axis it does not set, the face at opsz = <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Size">Size</a>. A PDF writer embeds this face.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Typeface EffectiveTypeface { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The font is <code>default(Font)</code>, which has no typeface.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_Extents_" data-uid="Egami.Fonts.Font.Extents*"></a>
+
+  <h3 id="Egami_Fonts_Font_Extents" data-uid="Egami.Fonts.Font.Extents">
+  Extents
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the face's extents at this size, y up.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontExtents Extents { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontExtents.html">FontExtents</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The font is <code>default(Font)</code>, which has no typeface.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_Hinting_" data-uid="Egami.Fonts.Font.Hinting*"></a>
+
+  <h3 id="Egami_Fonts_Font_Hinting" data-uid="Egami.Fonts.Font.Hinting">
+  Hinting
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how outlines are fitted to the pixel grid on a raster. Defaults to <a class="xref" href="Egami.Fonts.FontHinting.html#Egami_Fonts_FontHinting_None">None</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontHinting Hinting { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontHinting.html">FontHinting</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_Kerning_" data-uid="Egami.Fonts.Font.Kerning*"></a>
+
+  <h3 id="Egami_Fonts_Font_Kerning" data-uid="Egami.Fonts.Font.Kerning">
+  Kerning
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether pair kerning is applied when shaping. Defaults to true.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Kerning { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Font_LineHeight_" data-uid="Egami.Fonts.Font.LineHeight*"></a>
+
+  <h3 id="Egami_Fonts_Font_LineHeight" data-uid="Egami.Fonts.Font.LineHeight">
+  LineHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the distance from one baseline to the next at this size.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float LineHeight { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The font is <code>default(Font)</code>, which has no typeface.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_OpticalSizing_" data-uid="Egami.Fonts.Font.OpticalSizing*"></a>
+
+  <h3 id="Egami_Fonts_Font_OpticalSizing" data-uid="Egami.Fonts.Font.OpticalSizing">
+  OpticalSizing
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L131"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a variable face's optical size axis follows <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Size">Size</a>: <a class="xref" href="Egami.Fonts.OpticalSizing.html#Egami_Fonts_OpticalSizing_Auto">Auto</a> (the
+default) sets opsz to the size in canvas units, clamped to the axis, unless the typeface sets opsz itself.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public OpticalSizing OpticalSizing { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.OpticalSizing.html">OpticalSizing</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_Palette_" data-uid="Egami.Fonts.Font.Palette*"></a>
+
+  <h3 id="Egami_Fonts_Font_Palette" data-uid="Egami.Fonts.Font.Palette">
+  Palette
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the palette color glyphs draw with. Defaults to <a class="xref" href="Egami.Fonts.FontPalette.html#Egami_Fonts_FontPalette_Default">Default</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontPalette Palette { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontPalette.html">FontPalette</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>The value is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_Scale_" data-uid="Egami.Fonts.Font.Scale*"></a>
+
+  <h3 id="Egami_Fonts_Font_Scale" data-uid="Egami.Fonts.Font.Scale">
+  Scale
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L152"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the factor from font units to canvas units: <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Size">Size</a> over units per em.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Scale { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Font_Size_" data-uid="Egami.Fonts.Font.Size*"></a>
+
+  <h3 id="Egami_Fonts_Font_Size" data-uid="Egami.Fonts.Font.Size">
+  Size
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the em size in canvas units.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Size { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Font_Subpixel_" data-uid="Egami.Fonts.Font.Subpixel*"></a>
+
+  <h3 id="Egami_Fonts_Font_Subpixel" data-uid="Egami.Fonts.Font.Subpixel">
+  Subpixel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L104"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether glyph origins keep quarter-pixel x positions on a raster (four cached phases; y snaps to whole pixels), or
+snap to whole pixels as in 2.7.1. Defaults to true. Measuring never depends on it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Subpixel { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Font_Synthesis_" data-uid="Egami.Fonts.Font.Synthesis*"></a>
+
+  <h3 id="Egami_Fonts_Font_Synthesis" data-uid="Egami.Fonts.Font.Synthesis">
+  Synthesis
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the styling the face lacks and matching asked for: bold outsets the outline (em/24 at 9 pixels per em down to em/32 at
+36 and above, advances unchanged) and italic slants it 14 degrees. Drawn, measured as ink and returned by glyph paths unless
+<a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_AllowSynthesis">AllowSynthesis</a> is off.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontSynthesis Synthesis { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontSynthesis.html">FontSynthesis</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Font_Typeface_" data-uid="Egami.Fonts.Font.Typeface*"></a>
+
+  <h3 id="Egami_Fonts_Font_Typeface" data-uid="Egami.Fonts.Font.Typeface">
+  Typeface
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the face; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> only for <code>default(Font)</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Typeface Typeface { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Fonts_Font_FromPoints_" data-uid="Egami.Fonts.Font.FromPoints*"></a>
+
+  <h3 id="Egami_Fonts_Font_FromPoints_Egami_Fonts_Typeface_System_Single_System_Single_" data-uid="Egami.Fonts.Font.FromPoints(Egami.Fonts.Typeface,System.Single,System.Single)">
+  FromPoints(Typeface, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L170"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a font sized in points at a resolution: <code>points * dpi / 72</code> canvas units per em.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Font FromPoints(Typeface typeface, float points, float dpi)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>typeface</code> <a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd><p>The face.</p>
+</dd>
+    <dt><code>points</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The size in points.</p>
+</dd>
+    <dt><code>dpi</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The canvas units per inch, such as 96 for a screen or 72 for a PDF page.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Font.html">Font</a></dt>
+    <dd><p>The font.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The size is negative, infinite or NaN, or <code class="paramref">dpi</code> is not positive.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_GetAdvance_" data-uid="Egami.Fonts.Font.GetAdvance*"></a>
+
+  <h3 id="Egami_Fonts_Font_GetAdvance_System_UInt16_" data-uid="Egami.Fonts.Font.GetAdvance(System.UInt16)">
+  GetAdvance(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L184"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a glyph's advance at this size.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float GetAdvance(ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph id.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The advance in canvas units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The font is <code>default(Font)</code>, which has no typeface.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_GetGlyphExtents_" data-uid="Egami.Fonts.Font.GetGlyphExtents*"></a>
+
+  <h3 id="Egami_Fonts_Font_GetGlyphExtents_System_UInt16_" data-uid="Egami.Fonts.Font.GetGlyphExtents(System.UInt16)">
+  GetGlyphExtents(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the box around a glyph's ink at this size, y up from the baseline, synthetic bold and italic included.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GlyphExtents GetGlyphExtents(ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph id.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.GlyphExtents.html">GlyphExtents</a></dt>
+    <dd><p>The box in canvas units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The font is <code>default(Font)</code>, which has no typeface.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_MeasureText_" data-uid="Egami.Fonts.Font.MeasureText*"></a>
+
+  <h3 id="Egami_Fonts_Font_MeasureText_System_ReadOnlySpan_System_Char__Egami_Fonts_Shaping_ShapingOptions_" data-uid="Egami.Fonts.Font.MeasureText(System.ReadOnlySpan{System.Char},Egami.Fonts.Shaping.ShapingOptions)">
+  MeasureText(ReadOnlySpan&lt;char&gt;, ShapingOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L316"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text as <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, ShapingOptions?)</a> lays it out, as <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_MeasureText_System_String_Egami_Fonts_Shaping_ShapingOptions_">MeasureText(string, ShapingOptions?)</a>
+does, without making a string of it: a slice of a larger text or a buffer you reuse.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextMeasure MeasureText(ReadOnlySpan&lt;char&gt; text, ShapingOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Fonts.Shaping.ShapingOptions.html">ShapingOptions</a></dt>
+    <dd><p>The shaping options, as for <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, ShapingOptions?)</a>; span ranges index
+<code class="paramref">text</code>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.TextMeasure.html">TextMeasure</a></dt>
+    <dd><p>The widest line's advance, the exact ink bounds, the line count and the vertical metrics.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Font_MeasureText_System_ReadOnlySpan_System_Char__Egami_Fonts_Shaping_ShapingOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Measure each word of a longer text in place: a span is measured without making a string of it.
+ReadOnlySpan&lt;char&gt; text = "Measure every word of this sentence";
+float widest = 0;
+foreach (Range word in text.Split(' '))
+{
+    widest = Math.Max(widest, font.MeasureText(text[word]).Advance);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">options</code> asks for fallback or a span in another font.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The font is <code>default(Font)</code>, which has no typeface.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_MeasureText_" data-uid="Egami.Fonts.Font.MeasureText*"></a>
+
+  <h3 id="Egami_Fonts_Font_MeasureText_System_String_Egami_Fonts_Shaping_ShapingOptions_" data-uid="Egami.Fonts.Font.MeasureText(System.String,Egami.Fonts.Shaping.ShapingOptions)">
+  MeasureText(string, ShapingOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L297"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures text as <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, ShapingOptions?)</a> lays it out, so a measured width always equals the drawn advance.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextMeasure MeasureText(string text, ShapingOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Fonts.Shaping.ShapingOptions.html">ShapingOptions</a></dt>
+    <dd><p>The shaping options, as for <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, ShapingOptions?)</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.TextMeasure.html">TextMeasure</a></dt>
+    <dd><p>The widest line's advance, the exact ink bounds, the line count and the vertical metrics.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Font_MeasureText_System_String_Egami_Fonts_Shaping_ShapingOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A label shrunk until it fits a 200-pixel button, then centred on it.
+const string label = "Download the full report";
+var box = new RectF(20, 20, 200, 40);
+var font = new Font(face, 24);
+while (font.MeasureText(label).Advance &gt; box.Width - 16 &amp;&amp; font.Size &gt; 8)
+{
+    font = new Font(face, font.Size - 1);
+}
+
+TextMeasure size = font.MeasureText(label);
+var origin = new Vector2(
+    box.X + ((box.Width - size.Advance) / 2),
+    box.Y + ((box.Height - size.Height) / 2) + size.Ascent);
+using Raster&lt;Rgba8&gt; image = Raster.Create(240, 80, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.FillRoundRect(new RoundRect(box, 8), new Rgba8(30, 90, 200, 255));
+    canvas.DrawText(label, origin, font, Rgba8.White);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">text</code> is null.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">options</code> asks for fallback or a span in another font.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The font is <code>default(Font)</code>, which has no typeface.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Font_Shape_" data-uid="Egami.Fonts.Font.Shape*"></a>
+
+  <h3 id="Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions_" data-uid="Egami.Fonts.Font.Shape(System.String,Egami.Fonts.Shaping.ShapingOptions)">
+  Shape(string, ShapingOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L226"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Turns text into a glyph run with the full shaper (<a class="xref" href="Egami.Fonts.Shaping.TextShaper.html#Egami_Fonts_Shaping_TextShaper_Shape_System_String_Egami_Fonts_Font_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, Font, ShapingOptions?)</a>): ligatures,
+kerning, marks and the script rules of the font's GSUB and GPOS, bidi order, one glyph run for every line. <code>\n</code>,
+<code>\r\n</code>, <code>\r</code>, U+0085, U+2028 and U+2029 start a new line one <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_LineHeight">LineHeight</a> lower at x = 0 (a vertical
+line one <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_LineHeight">LineHeight</a> to the left); other control characters give no glyph; characters the face lacks give .notdef.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GlyphRun Shape(string text, ShapingOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Fonts.Shaping.ShapingOptions.html">ShapingOptions</a></dt>
+    <dd><p>The direction, language, script, features and spans, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for
+<a class="xref" href="Egami.Fonts.Shaping.ShapingOptions.html#Egami_Fonts_Shaping_ShapingOptions_Default">Default</a>. One run has one font, so the options may not ask for fallback or span fonts; draw such
+text from <a class="xref" href="Egami.Fonts.Shaping.TextShaper.html#Egami_Fonts_Shaping_TextShaper_Shape_System_String_Egami_Fonts_Font_Egami_Fonts_Shaping_ShapingOptions_">Shape(string, Font, ShapingOptions?)</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a></dt>
+    <dd><p>The run, with the text and a cluster per glyph; positions are relative to the first baseline's left end, y down.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Font_Shape_System_String_Egami_Fonts_Shaping_ShapingOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A caption on a photo: white text with a dark shadow, its baseline 24 pixels above the bottom.
+using Raster&lt;Rgba8&gt; photo = Raster.Create(640, 360, new Rgba8(90, 120, 160, 255));
+var font = new Font(Typeface.FromFile(FontFile), 28);
+using (RasterCanvas&lt;Rgba8&gt; canvas = photo.CreateCanvas())
+{
+    var origin = new Vector2(24, photo.Height - 24);
+    canvas.DrawText("Lofoten, March", origin + new Vector2(2, 2), font, new Rgba8(0, 0, 0, 160));
+    canvas.DrawText("Lofoten, March", origin, font, Rgba8.White);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">text</code> is null.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">options</code> asks for fallback or a span in another font.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The font is <code>default(Font)</code>, which has no typeface.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Font.cs/#L43" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

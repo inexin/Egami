@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class YuvRaster | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class YuvRaster | Egami ">
+      
+      <meta name="description" content="A picture held as separate luma (Y) and chroma (U, V) planes, plus an optional alpha plane, the way video codecs, AVIF, lossy WebP and JPEG store it. This base class is used when the sample type is not known at compile time;  gives the planes. Convert to and from a  with ,  and .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_YuvRaster.md&amp;value=---%0Auid%3A%20Egami.YuvRaster%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.YuvRaster">
+
+
+
+  <h1 id="Egami_YuvRaster" data-uid="Egami.YuvRaster" class="text-break">
+Class YuvRaster  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L8"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A picture held as separate luma (Y) and chroma (U, V) planes, plus an optional alpha plane, the way video codecs, AVIF, lossy
+WebP and JPEG store it. This base class is used when the sample type is not known at compile time;
+<a class="xref" href="Egami.YuvRaster-1.html">YuvRaster&lt;TSample&gt;</a> gives the planes. Convert to and from a <a class="xref" href="Egami.Raster.html">Raster</a> with <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_ToRaster_Egami_YuvConvertOptions_">ToRaster(YuvConvertOptions?)</a>,
+<a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_CopyTo__1_Egami_Raster___0__Egami_YuvConvertOptions_System_Threading_CancellationToken_">CopyTo&lt;TPixel&gt;(Raster&lt;TPixel&gt;, YuvConvertOptions?, CancellationToken)</a> and <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_FromRaster_Egami_Raster_Egami_Pixels_ChromaFormat_Egami_Pixels_YuvColor_System_Boolean_Egami_YuvConvertOptions_">FromRaster(Raster, ChromaFormat, YuvColor, bool, YuvConvertOptions?)</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract class YuvRaster : IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">YuvRaster</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist derived">
+    <dt>Derived</dt>
+    <dd>
+      <div><a class="xref" href="Egami.YuvRaster-1.html">YuvRaster</a>&lt;TSample&gt;</div>
+    </dd>
+  </dl>
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_YuvRaster_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A 1080p frame as video stores it: full-size luma, chroma at half width and height, BT.709 at limited range.
+using YuvRaster&lt;byte&gt; frame = YuvRaster.Create(1920, 1080, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+
+// 10-bit HDR planes hold samples 0 to 1023 in ushorts; an alpha plane is optional.
+using YuvRaster&lt;ushort&gt; hdr = YuvRaster.Create(3840, 2160, ChromaFormat.Yuv420, 10, YuvColor.Bt2020Limited, alpha: true);
+Console.WriteLine($"Chroma planes are {frame.U!.Width}×{frame.U.Height}");</code></pre>
+
+
+  <h2 id="Egami_YuvRaster_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>A YUV raster is not a <a class="xref" href="Egami.Raster.html">Raster</a>: one pixel is spread over planes of different sizes. Operations other than
+<code>Crop</code> and <code>Resize</code> run on a <a class="xref" href="Egami.Raster.html">Raster</a> after conversion. It is not thread-safe for writing, like a raster.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_YuvRaster_BitDepth_" data-uid="Egami.YuvRaster.BitDepth*"></a>
+
+  <h3 id="Egami_YuvRaster_BitDepth" data-uid="Egami.YuvRaster.BitDepth">
+  BitDepth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L48"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bits per sample: 8 for <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a> samples; 10, 12 or 16 for <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a> samples.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int BitDepth { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_YuvRaster_ChromaFormat_" data-uid="Egami.YuvRaster.ChromaFormat*"></a>
+
+  <h3 id="Egami_YuvRaster_ChromaFormat" data-uid="Egami.YuvRaster.ChromaFormat">
+  ChromaFormat
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the chroma resolution against luma.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChromaFormat ChromaFormat { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.ChromaFormat.html">ChromaFormat</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_YuvRaster_Color_" data-uid="Egami.YuvRaster.Color*"></a>
+
+  <h3 id="Egami_YuvRaster_Color" data-uid="Egami.YuvRaster.Color">
+  Color
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how the samples turn into RGB: matrix, range and chroma siting.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public YuvColor Color { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.YuvColor.html">YuvColor</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_YuvRaster_HasAlpha_" data-uid="Egami.YuvRaster.HasAlpha*"></a>
+
+  <h3 id="Egami_YuvRaster_HasAlpha" data-uid="Egami.YuvRaster.HasAlpha">
+  HasAlpha
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether the raster has an alpha plane.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract bool HasAlpha { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_YuvRaster_Height_" data-uid="Egami.YuvRaster.Height*"></a>
+
+  <h3 id="Egami_YuvRaster_Height" data-uid="Egami.YuvRaster.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the height of the luma plane in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_YuvRaster_Metadata_" data-uid="Egami.YuvRaster.Metadata*"></a>
+
+  <h3 id="Egami_YuvRaster_Metadata" data-uid="Egami.YuvRaster.Metadata">
+  Metadata
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the metadata (EXIF, ICC, XMP and the rest), carried to and from a <a class="xref" href="Egami.Raster.html">Raster</a> on conversion.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RasterMetadata Metadata { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.RasterMetadata.html">RasterMetadata</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_YuvRaster_Width_" data-uid="Egami.YuvRaster.Width*"></a>
+
+  <h3 id="Egami_YuvRaster_Width" data-uid="Egami.YuvRaster.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width of the luma plane in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_YuvRaster_CopyFromPacked_" data-uid="Egami.YuvRaster.CopyFromPacked*"></a>
+
+  <h3 id="Egami_YuvRaster_CopyFromPacked_Egami_Pixels_YuvPackedFormat_System_ReadOnlySpan_System_Byte__System_Int32_System_ReadOnlySpan_System_Byte__System_Int32_" data-uid="Egami.YuvRaster.CopyFromPacked(Egami.Pixels.YuvPackedFormat,System.ReadOnlySpan{System.Byte},System.Int32,System.ReadOnlySpan{System.Byte},System.Int32)">
+  CopyFromPacked(YuvPackedFormat, ReadOnlySpan&lt;byte&gt;, int, ReadOnlySpan&lt;byte&gt;, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvPacked.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Copies a frame in an interleaved layout into this raster's planes, with one SIMD pass. The raster must match the layout:
+4:2:0 8-bit for NV12 and NV21, 4:2:0 10-bit for P010, 4:2:0 at 10, 12 or 16 bits for P016, 4:2:2 8-bit for YUYV and UYVY.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CopyFromPacked(YuvPackedFormat format, ReadOnlySpan&lt;byte&gt; data, int stride = 0, ReadOnlySpan&lt;byte&gt; chroma = default, int chromaStride = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>format</code> <a class="xref" href="Egami.Pixels.YuvPackedFormat.html">YuvPackedFormat</a></dt>
+    <dd><p>The layout.</p>
+</dd>
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The frame: the luma plane for two-plane layouts, or the only plane for packed 4:2:2.</p>
+</dd>
+    <dt><code>stride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The distance between rows of <code class="paramref">data</code>, in bytes. 0 means rows are packed.</p>
+</dd>
+    <dt><code>chroma</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The interleaved chroma plane of a two-plane layout, or empty when it follows the luma rows in <code class="paramref">data</code>
+(at <code class="paramref">stride</code> × <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Height">Height</a>). Ignored for YUYV and UYVY.</p>
+</dd>
+    <dt><code>chromaStride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The distance between chroma rows, in bytes. 0 means the luma stride, or the packed chroma row when an odd width makes
+that longer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_CopyFromPacked_Egami_Pixels_YuvPackedFormat_System_ReadOnlySpan_System_Byte__System_Int32_System_ReadOnlySpan_System_Byte__System_Int32__examples">Examples</h4>
+  <pre><code class="lang-csharp">// An NV12 frame from Media Foundation or MediaCodec: Y rows, then interleaved U, V rows, both at the same stride.
+int width = 640, height = 360, stride = 704;
+byte[] nv12 = new byte[stride * height * 3 / 2];
+using YuvRaster&lt;byte&gt; frame = YuvRaster.Create(width, height, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+frame.CopyFromPacked(YuvPackedFormat.Nv12, nv12, stride);
+
+// A webcam's YUYV, 4:2:2 in one plane, the other way.
+using YuvRaster&lt;byte&gt; webcam = YuvRaster.Create(width, height, ChromaFormat.Yuv422, YuvColor.Bt601Limited);
+byte[] yuyv = new byte[width * 2 * height];
+webcam.CopyToPacked(YuvPackedFormat.Yuyv, yuyv);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The raster does not match the layout.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A stride is too small or a span too short.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_CopyFrom_" data-uid="Egami.YuvRaster.CopyFrom*"></a>
+
+  <h3 id="Egami_YuvRaster_CopyFrom__1_Egami_Raster___0__Egami_YuvConvertOptions_System_Threading_CancellationToken_" data-uid="Egami.YuvRaster.CopyFrom``1(Egami.Raster{``0},Egami.YuvConvertOptions,System.Threading.CancellationToken)">
+  CopyFrom&lt;TPixel&gt;(Raster&lt;TPixel&gt;, YuvConvertOptions?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L301"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts the first frame of a raster of the same size into this one, with no allocation after the first call. The alpha
+plane, if any, takes the source's alpha (opaque for sources without). This raster's metadata is left alone.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CopyFrom&lt;TPixel&gt;(Raster&lt;TPixel&gt; source, YuvConvertOptions? options = null, CancellationToken cancellationToken = default) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>source</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The raster to read.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.YuvConvertOptions.html">YuvConvertOptions</a></dt>
+    <dd><p>The chroma filters, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.YuvConvertOptions.html#Egami_YuvConvertOptions_Default">Default</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels between bands of rows.</p>
+</dd>
+  </dl>
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The source's pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_CopyFrom__1_Egami_Raster___0__Egami_YuvConvertOptions_System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A player converts every frame into the same raster: after the first frame, nothing is allocated.
+using YuvRaster&lt;byte&gt; frame = YuvRaster.Create(1280, 720, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+using Raster&lt;Bgra8&gt; screen = Raster.Create&lt;Bgra8&gt;(1280, 720);
+for (int i = 0; i &lt; 3; i++)
+{
+    // ... the decoder writes frame's planes ...
+    frame.CopyTo(screen);
+}
+
+// And the other way, for an encoder: CopyFrom fills existing planes.
+frame.CopyFrom(screen);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">source</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The source is not the same size.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>Either raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_CopyToPacked_" data-uid="Egami.YuvRaster.CopyToPacked*"></a>
+
+  <h3 id="Egami_YuvRaster_CopyToPacked_Egami_Pixels_YuvPackedFormat_System_Span_System_Byte__System_Int32_System_Span_System_Byte__System_Int32_" data-uid="Egami.YuvRaster.CopyToPacked(Egami.Pixels.YuvPackedFormat,System.Span{System.Byte},System.Int32,System.Span{System.Byte},System.Int32)">
+  CopyToPacked(YuvPackedFormat, Span&lt;byte&gt;, int, Span&lt;byte&gt;, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvPacked.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Copies this raster's planes into a frame in an interleaved layout, with one SIMD pass. See
+<a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_CopyFromPacked_Egami_Pixels_YuvPackedFormat_System_ReadOnlySpan_System_Byte__System_Int32_System_ReadOnlySpan_System_Byte__System_Int32_">CopyFromPacked(YuvPackedFormat, ReadOnlySpan&lt;byte&gt;, int, ReadOnlySpan&lt;byte&gt;, int)</a> for the layouts each raster matches.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CopyToPacked(YuvPackedFormat format, Span&lt;byte&gt; data, int stride = 0, Span&lt;byte&gt; chroma = default, int chromaStride = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>format</code> <a class="xref" href="Egami.Pixels.YuvPackedFormat.html">YuvPackedFormat</a></dt>
+    <dd><p>The layout.</p>
+</dd>
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The frame: the luma plane for two-plane layouts, or the only plane for packed 4:2:2.</p>
+</dd>
+    <dt><code>stride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The distance between rows of <code class="paramref">data</code>, in bytes. 0 means rows are packed.</p>
+</dd>
+    <dt><code>chroma</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The interleaved chroma plane of a two-plane layout, or empty to write it after the luma rows in <code class="paramref">data</code>
+(at <code class="paramref">stride</code> × <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Height">Height</a>). Ignored for YUYV and UYVY.</p>
+</dd>
+    <dt><code>chromaStride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The distance between chroma rows, in bytes. 0 means the luma stride, or the packed chroma row when an odd width makes
+that longer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The raster does not match the layout.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A stride is too small or a span too short.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_CopyTo_" data-uid="Egami.YuvRaster.CopyTo*"></a>
+
+  <h3 id="Egami_YuvRaster_CopyTo__1_Egami_Raster___0__Egami_YuvConvertOptions_System_Threading_CancellationToken_" data-uid="Egami.YuvRaster.CopyTo``1(Egami.Raster{``0},Egami.YuvConvertOptions,System.Threading.CancellationToken)">
+  CopyTo&lt;TPixel&gt;(Raster&lt;TPixel&gt;, YuvConvertOptions?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L273"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts into the first frame of an existing raster of the same size, with no allocation after the first call, so a video
+can reuse one raster for every frame. The target's metadata is left alone.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CopyTo&lt;TPixel&gt;(Raster&lt;TPixel&gt; target, YuvConvertOptions? options = null, CancellationToken cancellationToken = default) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>target</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The raster to write.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.YuvConvertOptions.html">YuvConvertOptions</a></dt>
+    <dd><p>The chroma filters, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.YuvConvertOptions.html#Egami_YuvConvertOptions_Default">Default</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancels between bands of rows.</p>
+</dd>
+  </dl>
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The target's pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_CopyTo__1_Egami_Raster___0__Egami_YuvConvertOptions_System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A player converts every frame into the same raster: after the first frame, nothing is allocated.
+using YuvRaster&lt;byte&gt; frame = YuvRaster.Create(1280, 720, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+using Raster&lt;Bgra8&gt; screen = Raster.Create&lt;Bgra8&gt;(1280, 720);
+for (int i = 0; i &lt; 3; i++)
+{
+    // ... the decoder writes frame's planes ...
+    frame.CopyTo(screen);
+}
+
+// And the other way, for an encoder: CopyFrom fills existing planes.
+frame.CopyFrom(screen);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">target</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The target is not the same size.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>Either raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p><code class="paramref">cancellationToken</code> was canceled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Create_" data-uid="Egami.YuvRaster.Create*"></a>
+
+  <h3 id="Egami_YuvRaster_Create_System_Int32_System_Int32_Egami_Pixels_ChromaFormat_Egami_Pixels_YuvColor_System_Boolean_Egami_EgamiContext_" data-uid="Egami.YuvRaster.Create(System.Int32,System.Int32,Egami.Pixels.ChromaFormat,Egami.Pixels.YuvColor,System.Boolean,Egami.EgamiContext)">
+  Create(int, int, ChromaFormat, YuvColor, bool, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates an 8-bit raster with every sample zero.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRaster&lt;byte&gt; Create(int width, int height, ChromaFormat chromaFormat, YuvColor color, bool alpha = false, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The luma width in pixels, at least 1.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The luma height in pixels, at least 1.</p>
+</dd>
+    <dt><code>chromaFormat</code> <a class="xref" href="Egami.Pixels.ChromaFormat.html">ChromaFormat</a></dt>
+    <dd><p>The chroma resolution.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.YuvColor.html">YuvColor</a></dt>
+    <dd><p>How the samples turn into RGB.</p>
+</dd>
+    <dt><code>alpha</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to add a full-size alpha plane.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context to allocate from, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster-1.html">YuvRaster</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The new raster. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A size is less than 1, or an enum value is undefined.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The size or memory breaks the context's <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Create_" data-uid="Egami.YuvRaster.Create*"></a>
+
+  <h3 id="Egami_YuvRaster_Create_System_Int32_System_Int32_Egami_Pixels_ChromaFormat_System_Int32_Egami_Pixels_YuvColor_System_Boolean_Egami_EgamiContext_" data-uid="Egami.YuvRaster.Create(System.Int32,System.Int32,Egami.Pixels.ChromaFormat,System.Int32,Egami.Pixels.YuvColor,System.Boolean,Egami.EgamiContext)">
+  Create(int, int, ChromaFormat, int, YuvColor, bool, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a 10-, 12- or 16-bit raster with every sample zero.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRaster&lt;ushort&gt; Create(int width, int height, ChromaFormat chromaFormat, int bitDepth, YuvColor color, bool alpha = false, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The luma width in pixels, at least 1.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The luma height in pixels, at least 1.</p>
+</dd>
+    <dt><code>chromaFormat</code> <a class="xref" href="Egami.Pixels.ChromaFormat.html">ChromaFormat</a></dt>
+    <dd><p>The chroma resolution.</p>
+</dd>
+    <dt><code>bitDepth</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The bits per sample: 10, 12 or 16.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.YuvColor.html">YuvColor</a></dt>
+    <dd><p>How the samples turn into RGB.</p>
+</dd>
+    <dt><code>alpha</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to add a full-size alpha plane.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context to allocate from, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster-1.html">YuvRaster</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>&gt;</dt>
+    <dd><p>The new raster. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A size is less than 1, the bit depth is not 10, 12 or 16, or an enum value is undefined.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The size or memory breaks the context's <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Crop_" data-uid="Egami.YuvRaster.Crop*"></a>
+
+  <h3 id="Egami_YuvRaster_Crop_Egami_Rect_" data-uid="Egami.YuvRaster.Crop(Egami.Rect)">
+  Crop(Rect)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a new raster holding <code class="paramref">rect</code> of this one. The rectangle's corner must fall on a chroma sample: even
+x and y for 4:2:0, even x for 4:2:2. Chroma is copied exactly, with no filtering.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public YuvRaster Crop(Rect rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="Egami.Rect.html">Rect</a></dt>
+    <dd><p>The area to keep, in luma pixels.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster.html">YuvRaster</a></dt>
+    <dd><p>The new raster, with a copy of the metadata. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Crop_Egami_Rect__examples">Examples</h4>
+  <pre><code class="lang-csharp">using YuvRaster&lt;byte&gt; frame = YuvRaster.Create(1920, 1080, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+
+// Scale the planes before converting, as video does; crops start on a chroma sample (even x and y at 4:2:0).
+using YuvRaster&lt;byte&gt; small = frame.Resize(1280, 720, ResampleFilter.Bicubic);
+using YuvRaster&lt;byte&gt; center = small.Crop(new Rect(320, 180, 640, 360));
+
+// A player scales every frame into the same raster.
+using YuvRaster&lt;byte&gt; screen = YuvRaster.Create(960, 540, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+frame.ResizeTo(screen);
+
+// Everything else (rotate, color adjustments, drawing) runs on a Raster after conversion.
+using Raster&lt;Rgba8&gt; rgb = center.ToRaster&lt;Rgba8&gt;();
+rgb.Apply(ops =&gt; ops.Rotate(90));</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The rectangle is empty or reaches outside the raster.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The rectangle's corner is not on a chroma sample.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Dispose_" data-uid="Egami.YuvRaster.Dispose*"></a>
+
+  <h3 id="Egami_YuvRaster_Dispose" data-uid="Egami.YuvRaster.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L315"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the planes' memory to its source, or disposes the owner of wrapped planes. Calling it again does nothing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_YuvRaster_FromRaster_" data-uid="Egami.YuvRaster.FromRaster*"></a>
+
+  <h3 id="Egami_YuvRaster_FromRaster_Egami_Raster_Egami_Pixels_ChromaFormat_Egami_Pixels_YuvColor_System_Boolean_Egami_YuvConvertOptions_" data-uid="Egami.YuvRaster.FromRaster(Egami.Raster,Egami.Pixels.ChromaFormat,Egami.Pixels.YuvColor,System.Boolean,Egami.YuvConvertOptions)">
+  FromRaster(Raster, ChromaFormat, YuvColor, bool, YuvConvertOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L179"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts the first frame of a raster to a new 8-bit YUV raster. Metadata is copied.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRaster&lt;byte&gt; FromRaster(Raster source, ChromaFormat chromaFormat, YuvColor color, bool alpha = false, YuvConvertOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>source</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The raster to convert, of any pixel type.</p>
+</dd>
+    <dt><code>chromaFormat</code> <a class="xref" href="Egami.Pixels.ChromaFormat.html">ChromaFormat</a></dt>
+    <dd><p>The chroma resolution.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.YuvColor.html">YuvColor</a></dt>
+    <dd><p>The matrix, range and siting to encode with.</p>
+</dd>
+    <dt><code>alpha</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to add an alpha plane, holding the source's alpha (opaque for sources without). Defaults to
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>: alpha is dropped.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.YuvConvertOptions.html">YuvConvertOptions</a></dt>
+    <dd><p>The chroma filters, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.YuvConvertOptions.html#Egami_YuvConvertOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster-1.html">YuvRaster</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The new raster, allocated from the source's context. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_FromRaster_Egami_Raster_Egami_Pixels_ChromaFormat_Egami_Pixels_YuvColor_System_Boolean_Egami_YuvConvertOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Raster photo = Raster.Load("duck.png");
+
+// RGB to planes and back. RGB comes out in the picture's own transfer (BT.709 video gives BT.709-encoded RGB).
+using YuvRaster&lt;byte&gt; yuv = YuvRaster.FromRaster(photo, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+using Raster rgba = yuv.ToRaster();                        // Rgba8 for 8-bit planes, Rgba16 for more
+using Raster&lt;Rgb8&gt; rgb = yuv.ToRaster&lt;Rgb8&gt;();             // or any pixel type</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">source</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p><code class="paramref">source</code> has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_FromRaster_" data-uid="Egami.YuvRaster.FromRaster*"></a>
+
+  <h3 id="Egami_YuvRaster_FromRaster_Egami_Raster_Egami_Pixels_ChromaFormat_System_Int32_Egami_Pixels_YuvColor_System_Boolean_Egami_YuvConvertOptions_" data-uid="Egami.YuvRaster.FromRaster(Egami.Raster,Egami.Pixels.ChromaFormat,System.Int32,Egami.Pixels.YuvColor,System.Boolean,Egami.YuvConvertOptions)">
+  FromRaster(Raster, ChromaFormat, int, YuvColor, bool, YuvConvertOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L204"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts the first frame of a raster to a new 10-, 12- or 16-bit YUV raster. Metadata is copied.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRaster&lt;ushort&gt; FromRaster(Raster source, ChromaFormat chromaFormat, int bitDepth, YuvColor color, bool alpha = false, YuvConvertOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>source</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The raster to convert, of any pixel type.</p>
+</dd>
+    <dt><code>chromaFormat</code> <a class="xref" href="Egami.Pixels.ChromaFormat.html">ChromaFormat</a></dt>
+    <dd><p>The chroma resolution.</p>
+</dd>
+    <dt><code>bitDepth</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The bits per sample: 10, 12 or 16.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.YuvColor.html">YuvColor</a></dt>
+    <dd><p>The matrix, range and siting to encode with.</p>
+</dd>
+    <dt><code>alpha</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to add an alpha plane, holding the source's alpha (opaque for sources without). Defaults to
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>: alpha is dropped.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.YuvConvertOptions.html">YuvConvertOptions</a></dt>
+    <dd><p>The chroma filters, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.YuvConvertOptions.html#Egami_YuvConvertOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster-1.html">YuvRaster</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>&gt;</dt>
+    <dd><p>The new raster, allocated from the source's context. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_FromRaster_Egami_Raster_Egami_Pixels_ChromaFormat_System_Int32_Egami_Pixels_YuvColor_System_Boolean_Egami_YuvConvertOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Raster photo = Raster.Load("duck.png");
+
+// RGB to planes and back. RGB comes out in the picture's own transfer (BT.709 video gives BT.709-encoded RGB).
+using YuvRaster&lt;byte&gt; yuv = YuvRaster.FromRaster(photo, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+using Raster rgba = yuv.ToRaster();                        // Rgba8 for 8-bit planes, Rgba16 for more
+using Raster&lt;Rgb8&gt; rgb = yuv.ToRaster&lt;Rgb8&gt;();             // or any pixel type</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">source</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The bit depth is not 10, 12 or 16.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p><code class="paramref">source</code> has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Load_" data-uid="Egami.YuvRaster.Load*"></a>
+
+  <h3 id="Egami_YuvRaster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.YuvRaster.Load(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Load(Stream, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Decodes a format's own planes, with no color conversion or chroma upsampling: for JPEG, a YCbCr file's planes at its own
+sampling (4:2:0, 4:2:2 or 4:4:4; other samplings are replicated up to 4:4:4) and a gray file's as 4:0:0, all
+<a class="xref" href="Egami.Pixels.YuvColor.html#Egami_Pixels_YuvColor_Jpeg">Jpeg</a>. <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_MinimumSize">MinimumSize</a> decodes at a reduced scale (1/2, 1/4 or 1/8).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRaster Load(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The encoded image. It is read from its current position and left open.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster.html">YuvRaster</a></dt>
+    <dd><p>The raster. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG's own planes, as decoded: no chroma upsampling and no color conversion.
+YuvRasterInfo info = YuvRaster.Probe("duck.jpg");
+Console.WriteLine($"{info.Info.Width}×{info.Info.Height}, planes: {info.ChromaFormat}");
+using YuvRaster planes = YuvRaster.Load("duck.jpg");
+
+// Saving JPEG-colored 8-bit planes skips color conversion and downsampling; other planes are converted first.
+planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The format, or this file (a CMYK, YCCK or RGB JPEG), has no YUV planes; <a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a>
+converts it. Also thrown for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> and <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_ConvertColorTo">ConvertColorTo</a>.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The image breaks a safety limit.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Load_" data-uid="Egami.YuvRaster.Load*"></a>
+
+  <h3 id="Egami_YuvRaster_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.YuvRaster.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Load(ReadOnlyMemory&lt;byte&gt;, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads an image's planes from bytes in memory. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRaster Load(ReadOnlyMemory&lt;byte&gt; data, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The encoded image.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster.html">YuvRaster</a></dt>
+    <dd><p>The raster. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG's own planes, as decoded: no chroma upsampling and no color conversion.
+YuvRasterInfo info = YuvRaster.Probe("duck.jpg");
+Console.WriteLine($"{info.Info.Width}×{info.Info.Height}, planes: {info.ChromaFormat}");
+using YuvRaster planes = YuvRaster.Load("duck.jpg");
+
+// Saving JPEG-colored 8-bit planes skips color conversion and downsampling; other planes are converted first.
+planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The format or file has no YUV planes.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The image breaks a safety limit.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Load_" data-uid="Egami.YuvRaster.Load*"></a>
+
+  <h3 id="Egami_YuvRaster_Load_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.YuvRaster.Load(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Load(string, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads an image file's planes. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRaster Load(string path, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file path.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster.html">YuvRaster</a></dt>
+    <dd><p>The raster. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Load_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG's own planes, as decoded: no chroma upsampling and no color conversion.
+YuvRasterInfo info = YuvRaster.Probe("duck.jpg");
+Console.WriteLine($"{info.Info.Width}×{info.Info.Height}, planes: {info.ChromaFormat}");
+using YuvRaster planes = YuvRaster.Load("duck.jpg");
+
+// Saving JPEG-colored 8-bit planes skips color conversion and downsampling; other planes are converted first.
+planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The format or file has no YUV planes.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The image breaks a safety limit.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.filenotfoundexception">FileNotFoundException</a></dt>
+    <dd><p>The file does not exist.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Probe_" data-uid="Egami.YuvRaster.Probe*"></a>
+
+  <h3 id="Egami_YuvRaster_Probe_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.YuvRaster.Probe(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Probe(Stream, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads only the header, as <a class="xref" href="Egami.Raster.html#Egami_Raster_Probe_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Probe(Stream, EgamiContext?, ReaderOptions?)</a> does, and says whether
+<a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a> would give planes and in what chroma format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRasterInfo Probe(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The encoded image.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRasterInfo.html">YuvRasterInfo</a></dt>
+    <dd><p>What the header says.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Probe_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG's own planes, as decoded: no chroma upsampling and no color conversion.
+YuvRasterInfo info = YuvRaster.Probe("duck.jpg");
+Console.WriteLine($"{info.Info.Width}×{info.Info.Height}, planes: {info.ChromaFormat}");
+using YuvRaster planes = YuvRaster.Load("duck.jpg");
+
+// Saving JPEG-colored 8-bit planes skips color conversion and downsampling; other planes are converted first.
+planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The header breaks the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Probe_" data-uid="Egami.YuvRaster.Probe*"></a>
+
+  <h3 id="Egami_YuvRaster_Probe_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.YuvRaster.Probe(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Probe(ReadOnlyMemory&lt;byte&gt;, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L134"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads only the header of an image in memory. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Probe_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Probe(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRasterInfo Probe(ReadOnlyMemory&lt;byte&gt; data, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The encoded image.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRasterInfo.html">YuvRasterInfo</a></dt>
+    <dd><p>What the header says.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Probe_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG's own planes, as decoded: no chroma upsampling and no color conversion.
+YuvRasterInfo info = YuvRaster.Probe("duck.jpg");
+Console.WriteLine($"{info.Info.Width}×{info.Info.Height}, planes: {info.ChromaFormat}");
+using YuvRaster planes = YuvRaster.Load("duck.jpg");
+
+// Saving JPEG-colored 8-bit planes skips color conversion and downsampling; other planes are converted first.
+planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The header breaks the format's rules.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Probe_" data-uid="Egami.YuvRaster.Probe*"></a>
+
+  <h3 id="Egami_YuvRaster_Probe_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.YuvRaster.Probe(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Probe(string, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads only the header of an image file. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Probe_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Probe(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRasterInfo Probe(string path, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file path.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRasterInfo.html">YuvRasterInfo</a></dt>
+    <dd><p>What the header says.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Probe_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG's own planes, as decoded: no chroma upsampling and no color conversion.
+YuvRasterInfo info = YuvRaster.Probe("duck.jpg");
+Console.WriteLine($"{info.Info.Width}×{info.Info.Height}, planes: {info.ChromaFormat}");
+using YuvRaster planes = YuvRaster.Load("duck.jpg");
+
+// Saving JPEG-colored 8-bit planes skips color conversion and downsampling; other planes are converted first.
+planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches the data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The header breaks the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.filenotfoundexception">FileNotFoundException</a></dt>
+    <dd><p>The file does not exist.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Resize_" data-uid="Egami.YuvRaster.Resize*"></a>
+
+  <h3 id="Egami_YuvRaster_Resize_System_Int32_System_Int32_Egami_Operations_ResampleFilter_" data-uid="Egami.YuvRaster.Resize(System.Int32,System.Int32,Egami.Operations.ResampleFilter)">
+  Resize(int, int, ResampleFilter)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a new raster with every plane resized by <code class="paramref">filter</code>, as a <a class="xref" href="Egami.Pixels.Gray8.html">Gray8</a> or <a class="xref" href="Egami.Pixels.Gray16.html">Gray16</a>
+resize would, keeping the chroma format, siting and color. Samples are clamped to the bit depth, since some filters
+overshoot. Scaling planes before converting costs half as much at 4:2:0 as scaling RGB after.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public YuvRaster Resize(int width, int height, ResampleFilter filter = ResampleFilter.Bicubic)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The new luma width, at least 1.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The new luma height, at least 1.</p>
+</dd>
+    <dt><code>filter</code> <a class="xref" href="Egami.Operations.ResampleFilter.html">ResampleFilter</a></dt>
+    <dd><p>The resampling kernel. Defaults to <a class="xref" href="Egami.Operations.ResampleFilter.html#Egami_Operations_ResampleFilter_Bicubic">Bicubic</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster.html">YuvRaster</a></dt>
+    <dd><p>The new raster, with a copy of the metadata. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Resize_System_Int32_System_Int32_Egami_Operations_ResampleFilter__examples">Examples</h4>
+  <pre><code class="lang-csharp">using YuvRaster&lt;byte&gt; frame = YuvRaster.Create(1920, 1080, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+
+// Scale the planes before converting, as video does; crops start on a chroma sample (even x and y at 4:2:0).
+using YuvRaster&lt;byte&gt; small = frame.Resize(1280, 720, ResampleFilter.Bicubic);
+using YuvRaster&lt;byte&gt; center = small.Crop(new Rect(320, 180, 640, 360));
+
+// A player scales every frame into the same raster.
+using YuvRaster&lt;byte&gt; screen = YuvRaster.Create(960, 540, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+frame.ResizeTo(screen);
+
+// Everything else (rotate, color adjustments, drawing) runs on a Raster after conversion.
+using Raster&lt;Rgba8&gt; rgb = center.ToRaster&lt;Rgba8&gt;();
+rgb.Apply(ops =&gt; ops.Rotate(90));</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A size is less than 1.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The new raster breaks the context's <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_ResizeTo_" data-uid="Egami.YuvRaster.ResizeTo*"></a>
+
+  <h3 id="Egami_YuvRaster_ResizeTo_Egami_YuvRaster_Egami_Operations_ResampleFilter_" data-uid="Egami.YuvRaster.ResizeTo(Egami.YuvRaster,Egami.Operations.ResampleFilter)">
+  ResizeTo(YuvRaster, ResampleFilter)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Resizes every plane into an existing raster of the size wanted, as <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Resize_System_Int32_System_Int32_Egami_Operations_ResampleFilter_">Resize(int, int, ResampleFilter)</a> does, so a
+video can scale every frame into the same raster. The target must have the same sample type, chroma format, bit depth and
+color. An alpha plane is resized when both have one; a target alpha plane with no source alpha is made opaque. The target's
+metadata is left alone.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ResizeTo(YuvRaster target, ResampleFilter filter = ResampleFilter.Bicubic)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>target</code> <a class="xref" href="Egami.YuvRaster.html">YuvRaster</a></dt>
+    <dd><p>The raster to write, of any size.</p>
+</dd>
+    <dt><code>filter</code> <a class="xref" href="Egami.Operations.ResampleFilter.html">ResampleFilter</a></dt>
+    <dd><p>The resampling kernel. Defaults to <a class="xref" href="Egami.Operations.ResampleFilter.html#Egami_Operations_ResampleFilter_Bicubic">Bicubic</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_ResizeTo_Egami_YuvRaster_Egami_Operations_ResampleFilter__examples">Examples</h4>
+  <pre><code class="lang-csharp">using YuvRaster&lt;byte&gt; frame = YuvRaster.Create(1920, 1080, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+
+// Scale the planes before converting, as video does; crops start on a chroma sample (even x and y at 4:2:0).
+using YuvRaster&lt;byte&gt; small = frame.Resize(1280, 720, ResampleFilter.Bicubic);
+using YuvRaster&lt;byte&gt; center = small.Crop(new Rect(320, 180, 640, 360));
+
+// A player scales every frame into the same raster.
+using YuvRaster&lt;byte&gt; screen = YuvRaster.Create(960, 540, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+frame.ResizeTo(screen);
+
+// Everything else (rotate, color adjustments, drawing) runs on a Raster after conversion.
+using Raster&lt;Rgba8&gt; rgb = center.ToRaster&lt;Rgba8&gt;();
+rgb.Apply(ops =&gt; ops.Rotate(90));</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">target</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The target is this raster, or differs in sample type, chroma format, bit depth or color.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>Either raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Save_" data-uid="Egami.YuvRaster.Save*"></a>
+
+  <h3 id="Egami_YuvRaster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_" data-uid="Egami.YuvRaster.Save(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions)">
+  Save(Stream, FormatInfo, WriterOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L154"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes the picture in <code class="paramref">format</code>. JPEG encodes the planes straight, with no color conversion or chroma
+downsampling, when they are 8-bit BT.601 at full range (4:2:0, 4:2:2 and 4:4:4 keep their sampling, 4:0:0 is gray); other
+planes are converted to that first. Other formats are saved from <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_ToRaster_Egami_YuvConvertOptions_">ToRaster(YuvConvertOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream stream, FormatInfo format, WriterOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write, from its current position. It is left open.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd><p>The format.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults. JPEG's subsampling comes from the planes.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG's own planes, as decoded: no chroma upsampling and no color conversion.
+YuvRasterInfo info = YuvRaster.Probe("duck.jpg");
+Console.WriteLine($"{info.Info.Width}×{info.Info.Height}, planes: {info.ChromaFormat}");
+using YuvRaster planes = YuvRaster.Load("duck.jpg");
+
+// Saving JPEG-colored 8-bit planes skips color conversion and downsampling; other planes are converted first.
+planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The format has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">stream</code> or <code class="paramref">format</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Save_" data-uid="Egami.YuvRaster.Save*"></a>
+
+  <h3 id="Egami_YuvRaster_Save_System_IO_Stream_System_String_Egami_Formats_WriterOptions_" data-uid="Egami.YuvRaster.Save(System.IO.Stream,System.String,Egami.Formats.WriterOptions)">
+  Save(Stream, string, WriterOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L187"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes the picture in the registered format with this name or file extension. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">Save(Stream, FormatInfo, WriterOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream stream, string formatNameOrExtension, WriterOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write, from its current position. It is left open.</p>
+</dd>
+    <dt><code>formatNameOrExtension</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The format's name or one of its extensions, ignoring case.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Save_System_IO_Stream_System_String_Egami_Formats_WriterOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG's own planes, as decoded: no chroma upsampling and no color conversion.
+YuvRasterInfo info = YuvRaster.Probe("duck.jpg");
+Console.WriteLine($"{info.Info.Width}×{info.Info.Height}, planes: {info.ChromaFormat}");
+using YuvRaster planes = YuvRaster.Load("duck.jpg");
+
+// Saving JPEG-colored 8-bit planes skips color conversion and downsampling; other planes are converted first.
+planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format matches, or it has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Save_" data-uid="Egami.YuvRaster.Save*"></a>
+
+  <h3 id="Egami_YuvRaster_Save_System_String_Egami_Formats_WriterOptions_" data-uid="Egami.YuvRaster.Save(System.String,Egami.Formats.WriterOptions)">
+  Save(string, WriterOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L205"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes the picture to a file, choosing the format from the extension. An existing file is replaced; if encoding fails,
+the partly written file is deleted. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">Save(Stream, FormatInfo, WriterOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(string path, WriterOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file path.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
+    <dd><p>The format's options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its defaults.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Save_System_String_Egami_Formats_WriterOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG's own planes, as decoded: no chroma upsampling and no color conversion.
+YuvRasterInfo info = YuvRaster.Probe("duck.jpg");
+Console.WriteLine($"{info.Info.Width}×{info.Info.Height}, planes: {info.ChromaFormat}");
+using YuvRaster planes = YuvRaster.Load("duck.jpg");
+
+// Saving JPEG-colored 8-bit planes skips color conversion and downsampling; other planes are converted first.
+planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>No registered format uses the extension, or it has no writer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.ioexception">IOException</a></dt>
+    <dd><p>The file cannot be written.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_ToRaster_" data-uid="Egami.YuvRaster.ToRaster*"></a>
+
+  <h3 id="Egami_YuvRaster_ToRaster_Egami_YuvConvertOptions_" data-uid="Egami.YuvRaster.ToRaster(Egami.YuvConvertOptions)">
+  ToRaster(YuvConvertOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L220"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts to a new raster in the natural pixel type: <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a> for 8-bit samples, <a class="xref" href="Egami.Pixels.Rgba16.html">Rgba16</a> for more.
+RGB comes out in the picture's own transfer function; nothing is linearized or tone mapped.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster ToRaster(YuvConvertOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.YuvConvertOptions.html">YuvConvertOptions</a></dt>
+    <dd><p>The chroma filters, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.YuvConvertOptions.html#Egami_YuvConvertOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The new raster, with a copy of the metadata. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_ToRaster_Egami_YuvConvertOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Raster photo = Raster.Load("duck.png");
+
+// RGB to planes and back. RGB comes out in the picture's own transfer (BT.709 video gives BT.709-encoded RGB).
+using YuvRaster&lt;byte&gt; yuv = YuvRaster.FromRaster(photo, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+using Raster rgba = yuv.ToRaster();                        // Rgba8 for 8-bit planes, Rgba16 for more
+using Raster&lt;Rgb8&gt; rgb = yuv.ToRaster&lt;Rgb8&gt;();             // or any pixel type</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_ToRaster_" data-uid="Egami.YuvRaster.ToRaster*"></a>
+
+  <h3 id="Egami_YuvRaster_ToRaster__1_Egami_YuvConvertOptions_" data-uid="Egami.YuvRaster.ToRaster``1(Egami.YuvConvertOptions)">
+  ToRaster&lt;TPixel&gt;(YuvConvertOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L234"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts to a new raster of <code class="typeparamref">TPixel</code>. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_ToRaster_Egami_YuvConvertOptions_">ToRaster(YuvConvertOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;TPixel&gt; ToRaster&lt;TPixel&gt;(YuvConvertOptions? options = null) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.YuvConvertOptions.html">YuvConvertOptions</a></dt>
+    <dd><p>The chroma filters, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.YuvConvertOptions.html#Egami_YuvConvertOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The new raster, with a copy of the metadata. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_ToRaster__1_Egami_YuvConvertOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">using Raster photo = Raster.Load("duck.png");
+
+// RGB to planes and back. RGB comes out in the picture's own transfer (BT.709 video gives BT.709-encoded RGB).
+using YuvRaster&lt;byte&gt; yuv = YuvRaster.FromRaster(photo, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
+using Raster rgba = yuv.ToRaster();                        // Rgba8 for 8-bit planes, Rgba16 for more
+using Raster&lt;Rgb8&gt; rgb = yuv.ToRaster&lt;Rgb8&gt;();             // or any pixel type</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The new raster breaks the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Wrap_" data-uid="Egami.YuvRaster.Wrap*"></a>
+
+  <h3 id="Egami_YuvRaster_Wrap__1_System_Memory___0__System_Int32_System_Memory___0__System_Int32_System_Memory___0__System_Int32_System_Int32_System_Int32_Egami_Pixels_ChromaFormat_System_Int32_Egami_Pixels_YuvColor_System_IDisposable_Egami_EgamiContext_" data-uid="Egami.YuvRaster.Wrap``1(System.Memory{``0},System.Int32,System.Memory{``0},System.Int32,System.Memory{``0},System.Int32,System.Int32,System.Int32,Egami.Pixels.ChromaFormat,System.Int32,Egami.Pixels.YuvColor,System.IDisposable,Egami.EgamiContext)">
+  Wrap&lt;TSample&gt;(Memory&lt;TSample&gt;, int, Memory&lt;TSample&gt;, int, Memory&lt;TSample&gt;, int, int, int, ChromaFormat, int, YuvColor, IDisposable?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a raster over planes the caller owns, such as a decoder's or the operating system's frame buffers, without copying.
+When <code class="paramref">owner</code> is given, disposing the raster disposes it; otherwise the caller keeps the memory alive while
+the raster is used. Sizes and strides are checked up front; <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a> do not apply to wrapped memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRaster&lt;TSample&gt; Wrap&lt;TSample&gt;(Memory&lt;TSample&gt; y, int yStride, Memory&lt;TSample&gt; u, int uStride, Memory&lt;TSample&gt; v, int vStride, int width, int height, ChromaFormat chromaFormat, int bitDepth, YuvColor color, IDisposable? owner = null, EgamiContext? context = null) where TSample : unmanaged</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.memory-1">Memory</a>&lt;TSample&gt;</dt>
+    <dd><p>The luma plane.</p>
+</dd>
+    <dt><code>yStride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The distance between luma rows, in samples. 0 means rows are packed.</p>
+</dd>
+    <dt><code>u</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.memory-1">Memory</a>&lt;TSample&gt;</dt>
+    <dd><p>The U (Cb) plane, or empty for 4:0:0.</p>
+</dd>
+    <dt><code>uStride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The distance between U rows, in samples. 0 means rows are packed.</p>
+</dd>
+    <dt><code>v</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.memory-1">Memory</a>&lt;TSample&gt;</dt>
+    <dd><p>The V (Cr) plane, or empty for 4:0:0.</p>
+</dd>
+    <dt><code>vStride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The distance between V rows, in samples. 0 means rows are packed.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The luma width in pixels, at least 1.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The luma height in pixels, at least 1.</p>
+</dd>
+    <dt><code>chromaFormat</code> <a class="xref" href="Egami.Pixels.ChromaFormat.html">ChromaFormat</a></dt>
+    <dd><p>The chroma resolution.</p>
+</dd>
+    <dt><code>bitDepth</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The bits per sample: 8 for bytes; 10, 12 or 16 for <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.YuvColor.html">YuvColor</a></dt>
+    <dd><p>How the samples turn into RGB.</p>
+</dd>
+    <dt><code>owner</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></dt>
+    <dd><p>What to dispose with the raster, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context for later allocations, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster-1.html">YuvRaster</a>&lt;TSample&gt;</dt>
+    <dd><p>The raster.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TSample</code></dt>
+    <dd><p><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a> for 8 bits, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a> for 10, 12 and 16 bits.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_YuvRaster_Wrap__1_System_Memory___0__System_Int32_System_Memory___0__System_Int32_System_Memory___0__System_Int32_System_Int32_System_Int32_Egami_Pixels_ChromaFormat_System_Int32_Egami_Pixels_YuvColor_System_IDisposable_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A decoder's 10-bit frame, rows padded to 64 samples: wrapped without a copy. Disposing the raster disposes the owner.
+int width = 50, height = 30, stride = 64, chromaStride = 32;
+ushort[] y = new ushort[stride * height], u = new ushort[chromaStride * 15], v = new ushort[chromaStride * 15];
+using YuvRaster&lt;ushort&gt; wrapped = YuvRaster.Wrap&lt;ushort&gt;(
+    y, stride, u, chromaStride, v, chromaStride, width, height, ChromaFormat.Yuv420, bitDepth: 10, YuvColor.Bt2020Limited, owner: null);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A size, stride or bit depth is out of range, or a plane is too short.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>Chroma planes are given for 4:0:0, or missing for another format.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p><code class="typeparamref">TSample</code> is not <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a> or <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_YuvRaster_Wrap_" data-uid="Egami.YuvRaster.Wrap*"></a>
+
+  <h3 id="Egami_YuvRaster_Wrap__1_System_Memory___0__System_Int32_System_Memory___0__System_Int32_System_Memory___0__System_Int32_System_Memory___0__System_Int32_System_Int32_System_Int32_Egami_Pixels_ChromaFormat_System_Int32_Egami_Pixels_YuvColor_System_IDisposable_Egami_EgamiContext_" data-uid="Egami.YuvRaster.Wrap``1(System.Memory{``0},System.Int32,System.Memory{``0},System.Int32,System.Memory{``0},System.Int32,System.Memory{``0},System.Int32,System.Int32,System.Int32,Egami.Pixels.ChromaFormat,System.Int32,Egami.Pixels.YuvColor,System.IDisposable,Egami.EgamiContext)">
+  Wrap&lt;TSample&gt;(Memory&lt;TSample&gt;, int, Memory&lt;TSample&gt;, int, Memory&lt;TSample&gt;, int, Memory&lt;TSample&gt;, int, int, int, ChromaFormat, int, YuvColor, IDisposable?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L154"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a raster over planes the caller owns, with an alpha plane, without copying. See
+<a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Wrap__1_System_Memory___0__System_Int32_System_Memory___0__System_Int32_System_Memory___0__System_Int32_System_Int32_System_Int32_Egami_Pixels_ChromaFormat_System_Int32_Egami_Pixels_YuvColor_System_IDisposable_Egami_EgamiContext_">Wrap&lt;TSample&gt;(Memory&lt;TSample&gt;, int, Memory&lt;TSample&gt;, int, Memory&lt;TSample&gt;, int, int, int, ChromaFormat, int, YuvColor, IDisposable?, EgamiContext?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvRaster&lt;TSample&gt; Wrap&lt;TSample&gt;(Memory&lt;TSample&gt; y, int yStride, Memory&lt;TSample&gt; u, int uStride, Memory&lt;TSample&gt; v, int vStride, Memory&lt;TSample&gt; alpha, int alphaStride, int width, int height, ChromaFormat chromaFormat, int bitDepth, YuvColor color, IDisposable? owner = null, EgamiContext? context = null) where TSample : unmanaged</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.memory-1">Memory</a>&lt;TSample&gt;</dt>
+    <dd><p>The luma plane.</p>
+</dd>
+    <dt><code>yStride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The distance between luma rows, in samples. 0 means rows are packed.</p>
+</dd>
+    <dt><code>u</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.memory-1">Memory</a>&lt;TSample&gt;</dt>
+    <dd><p>The U (Cb) plane, or empty for 4:0:0.</p>
+</dd>
+    <dt><code>uStride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The distance between U rows, in samples. 0 means rows are packed.</p>
+</dd>
+    <dt><code>v</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.memory-1">Memory</a>&lt;TSample&gt;</dt>
+    <dd><p>The V (Cr) plane, or empty for 4:0:0.</p>
+</dd>
+    <dt><code>vStride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The distance between V rows, in samples. 0 means rows are packed.</p>
+</dd>
+    <dt><code>alpha</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.memory-1">Memory</a>&lt;TSample&gt;</dt>
+    <dd><p>The full-size alpha plane, straight (not premultiplied), at the same bit depth.</p>
+</dd>
+    <dt><code>alphaStride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The distance between alpha rows, in samples. 0 means rows are packed.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The luma width in pixels, at least 1.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The luma height in pixels, at least 1.</p>
+</dd>
+    <dt><code>chromaFormat</code> <a class="xref" href="Egami.Pixels.ChromaFormat.html">ChromaFormat</a></dt>
+    <dd><p>The chroma resolution.</p>
+</dd>
+    <dt><code>bitDepth</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The bits per sample: 8 for bytes; 10, 12 or 16 for <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.YuvColor.html">YuvColor</a></dt>
+    <dd><p>How the samples turn into RGB.</p>
+</dd>
+    <dt><code>owner</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></dt>
+    <dd><p>What to dispose with the raster, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context for later allocations, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster-1.html">YuvRaster</a>&lt;TSample&gt;</dt>
+    <dd><p>The raster.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TSample</code></dt>
+    <dd><p><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a> for 8 bits, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a> for 10, 12 and 16 bits.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A size, stride or bit depth is out of range, or a plane is too short.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>Chroma planes are given for 4:0:0, or missing for another format.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p><code class="typeparamref">TSample</code> is not <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a> or <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L8" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

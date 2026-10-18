@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Custom operations and formats | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Custom operations and formats | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/extending.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="custom-operations-and-formats">Custom operations and formats</h1>
+
+<p>Everything here uses only Egami's public API; Egami's own test suite has an outside project that does each of these things.</p>
+<h2 id="operations">Operations</h2>
+<p>An operation implements <code>IRasterOperation</code>: it says what size it makes and fills the destination rows.</p>
+<pre><code class="lang-csharp">/// &lt;summary&gt;Swaps red and blue, in parallel bands of rows.&lt;/summary&gt;
+public sealed class SwapRedBlue : IRasterOperation
+{
+    public Size OutputSize(Size input) =&gt; input;
+
+    public void Run&lt;TPixel&gt;(OperationInput&lt;TPixel&gt; input)
+        where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+    {
+        input.ForEachBand((start, end) =&gt;
+        {
+            for (int y = start; y &lt; end; y++)
+            {
+                Span&lt;TPixel&gt; source = input.Source.Row(y);
+                Span&lt;TPixel&gt; destination = input.Destination.Row(y);
+                for (int x = 0; x &lt; source.Length; x++)
+                {
+                    Vector4 v = source[x].ToScaled();
+                    destination[x] = TPixel.FromScaled(new Vector4(v.Z, v.Y, v.X, v.W));
+                }
+            }
+        });
+    }
+}
+</code></pre><pre><code class="lang-csharp">image.Apply(ops =&gt; ops.Fit(100, 100).Add(new SwapRedBlue()), TestContext.Current.CancellationToken);
+</code></pre>
+<ul>
+<li><code>OutputSize</code> is asked while the chain is planned, before any pixel changes. Throw there for arguments that cannot work.</li>
+<li>When the size stays the same, <code>Source</code> and <code>Destination</code> may be the same plane (<code>IsInPlace</code>); read a row before you write it.</li>
+<li><code>ForEachBand</code> runs bands of rows on up to <code>EgamiContext.MaxParallelism</code> threads and checks the cancellation token between
+bands.</li>
+<li>A step that changes the size updates the EXIF dimensions and drops the thumbnail, as the built-in resizes do.</li>
+<li><code>TPixel.Layout</code> tells you the pixel type, so you can take a fast path for the types you know and fall back to <code>ToScaled</code> and
+<code>FromScaled</code> for the rest. Check <code>Layout.Alpha</code> before you assume straight alpha.</li>
+</ul>
+<p>To run a chain on part of a larger picture, such as a tile or a canvas layer, pad the part by how far the chain reads:
+<code>RasterOps.Reach</code> returns that as an <code>OperationReach</code>, or <code>null</code> when a step reads the whole image (a resize, a turn, a custom
+operation).</p>
+<pre><code class="lang-csharp">// How far a chain reads around each pixel: run it on a part of a picture padded by this much, and the part comes out as it
+// would in the whole picture.
+OperationReach? reach = RasterOps.Reach(ops =&gt; ops.Blur(3).Glow(4, Rgba8.White));
+if (reach is OperationReach r)
+{
+    Console.WriteLine($&quot;pad by {r.X} × {r.Y}&quot;);
+}
+
+// A resize reads the whole image: its reach is unknown.
+Assert.Null(RasterOps.Reach(ops =&gt; ops.Resize(100, 100)));
+</code></pre><h2 id="formats">Formats</h2>
+<p>A format is a <code>FormatInfo</code>: a name, extensions, a signature check, a reader and a writer.</p>
+<pre><code class="lang-csharp">/// &lt;summary&gt;A minimal format: &quot;RAW8&quot;, width and height as big-endian numbers, then RGBA rows.&lt;/summary&gt;
+public static class Raw8Format
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = &quot;RAW8&quot;,
+        Extensions = [&quot;raw8&quot;],
+        SignatureLength = 4,
+        Matches = header =&gt; header.StartsWith(&quot;RAW8&quot;u8),
+        Reader = new Reader(),
+        Writer = new Writer(),
+    };
+
+    private sealed class Reader : IFormatReader
+    {
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height) = Header(input);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            (int width, int height) = Header(input);
+
+            // CreateRaster checks the size against the safety limits before allocating.
+            Raster&lt;TPixel&gt; raster = input.CreateRaster&lt;TPixel&gt;(width, height);
+            using IMemoryOwner&lt;byte&gt; row = input.RentScratch(width * 4);
+            for (int y = 0; y &lt; height; y++)
+            {
+                input.ReadExactly(row.Memory.Span[..(width * 4)]);
+                PixelConvert.Convert&lt;Rgba8, TPixel&gt;(MemoryMarshal.Cast&lt;byte, Rgba8&gt;(row.Memory.Span[..(width * 4)]), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Read&lt;Rgba8&gt;(input, options);
+
+        private static (int Width, int Height) Header(EgamiInput input)
+        {
+            input.Skip(4);
+            return ((int)input.ReadUInt32BigEndian(), (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Writer : IFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            &quot;RAW8&quot;u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)raster.Width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)raster.Height);
+            output.Write(header);
+            Rgba8[] row = new Rgba8[raster.Width];
+            for (int y = 0; y &lt; raster.Height; y++)
+            {
+                PixelConvert.Convert&lt;TPixel, Rgba8&gt;(raster.Row(y), row);
+                output.Write(MemoryMarshal.AsBytes(row.AsSpan()));
+            }
+        }
+    }
+}
+</code></pre><pre><code class="lang-csharp">// Register it in a context...
+EgamiContext context = EgamiContext.Default.WithFormat(Raw8Format.Info);
+using (FileStream output = File.Create(&quot;duck.raw8&quot;))
+{
+    image.Save(output, Raw8Format.Info);
+}
+
+using Raster back = Raster.Load(&quot;duck.raw8&quot;, context);
+
+// ...or, once at startup before any other Egami call, make it part of the default context:
+// EgamiContext.SetDefault(new EgamiContext().WithFormat(Raw8Format.Info));
+</code></pre>
+<p>Readers read only through <code>EgamiInput</code>, which keeps them inside the safety limits:</p>
+<table>
+<thead>
+<tr>
+<th>Member</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Peek</code>, <code>Read</code>, <code>ReadExactly</code>, <code>Skip</code>, <code>ReadByte</code>, <code>ReadUInt16/32…</code></td>
+<td>Read the data; a short read throws <code>CorruptDataException</code></td>
+</tr>
+<tr>
+<td><code>CreateRaster&lt;TPixel&gt;(width, height)</code></td>
+<td>The raster you decode into, size-checked before any allocation</td>
+</tr>
+<tr>
+<td><code>AddFrame(raster)</code></td>
+<td>Another frame for animated formats, counted against <code>MaxFrames</code> and the memory budget</td>
+</tr>
+<tr>
+<td><code>RentScratch(bytes)</code></td>
+<td>Working memory counted against the same budget</td>
+</tr>
+<tr>
+<td><code>CheckMemory</code>, <code>CheckFrameCount</code>, <code>CheckMetadataBytes</code></td>
+<td>Check a number from the header before acting on it</td>
+</tr>
+<tr>
+<td><code>Warn(raster, id, text)</code></td>
+<td>Note something a lenient read recovered from, with a stable id such as <code>Pcx.PaletteMissing</code></td>
+</tr>
+<tr>
+<td><code>Corrupt(offset, problem)</code></td>
+<td>The exception to throw for data that breaks the format's rules</td>
+</tr>
+</tbody>
+</table>
+<p>Respect <code>ReaderOptions.Recovery</code>: in <code>Lenient</code> mode keep what decoded and warn; in <code>Strict</code> mode throw. The writer gets the
+raster and a stream; options come as your own <code>WriterOptions</code> subclass.</p>
+<h3 id="streaming">Streaming</h3>
+<p>Two optional interfaces let a format stream. A reader that also implements <code>IRowFormatReader</code> returns a <code>RowReader&lt;TNatural&gt;</code>
+from <code>Open</code>: the open image hands out rows as <code>RasterDecoder</code> asks for them (top-down, never going back within a frame) and
+moves through frames with <code>NextFrame</code>. The decoder applies <code>Region</code>, <code>MinimumSize</code> and the pixel conversion after it. A writer
+that also implements <code>IRowFormatWriter</code> returns a <code>RowEncoder&lt;TPixel&gt;</code> from <code>Start</code>, which takes rows (or frames, for an
+animation) one at a time; <code>Save</code>, <code>SaveAsync</code>, <code>RasterEncoder</code> and <code>Transcode</code> then all write through it. When streaming,
+<code>EncodeStart.Whole</code> is <code>null</code>: an option that needs every pixel before the first byte should call <code>EncodeStart.Refuse</code>.</p>
+<pre><code class="lang-csharp">/// &lt;summary&gt;The same RAW8 format, streaming: rows go in and out one at a time, so RasterDecoder, RasterEncoder and Transcode stream it.&lt;/summary&gt;
+public static class StreamingRaw8Format
+{
+    public static FormatInfo Info { get; } = Raw8Format.Info with { Reader = new Reader(), Writer = new Writer() };
+
+    private sealed class Reader : IFormatReader, IRowFormatReader
+    {
+        private static readonly IFormatReader Whole = Raw8Format.Info.Reader!;
+
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options) =&gt; Whole.ReadInfo(input, options) with { Access = RasterAccess.Streamed };
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; Whole.Read&lt;TPixel&gt;(input, options);
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Whole.Read(input, options);
+
+        // The open image reads each row when it is asked for; the decoder crops, reduces and converts after it.
+        public RowReader Open(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(4);
+            int width = (int)input.ReadUInt32BigEndian();
+            return new Rows(input, width, (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Rows(EgamiInput input, int width, int height) : RowReader&lt;Rgba8&gt;
+    {
+        private readonly Rgba8[] _row = new Rgba8[width];
+        private int _next;
+        private bool _started;
+
+        public override int Width =&gt; width;
+
+        public override int Height =&gt; height;
+
+        public override Metadata.RasterMetadata Metadata { get; } = new();
+
+        public override Metadata.FrameMetadata? NextFrame()
+        {
+            if (_started)
+            {
+                return null;
+            }
+
+            _started = true;
+            return new Metadata.FrameMetadata();
+        }
+
+        public override void ReadRow&lt;TPixel&gt;(int y, int x, Span&lt;TPixel&gt; destination)
+        {
+            for (; _next &lt;= y; _next++)
+            {
+                input.ReadExactly(MemoryMarshal.AsBytes(_row.AsSpan()));
+            }
+
+            PixelConvert.Convert&lt;Rgba8, TPixel&gt;(_row.AsSpan(x, destination.Length), destination);
+        }
+    }
+
+    private sealed class Writer : IFormatWriter, IRowFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; Raw8Format.Info.Writer!.Write(raster, output, options);
+
+        // Save, SaveAsync, RasterEncoder and Transcode all write through the encoder.
+        public RowEncoder&lt;TPixel&gt; Start&lt;TPixel&gt;(Stream output, EncodeStart&lt;TPixel&gt; start)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; new Encoder&lt;TPixel&gt;(output, start.Width, start.Height);
+    }
+
+    private sealed class Encoder&lt;TPixel&gt; : RowEncoder&lt;TPixel&gt;
+        where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+    {
+        private readonly Stream _output;
+        private readonly Rgba8[] _row;
+
+        public Encoder(Stream output, int width, int height)
+        {
+            _output = output;
+            _row = new Rgba8[width];
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            &quot;RAW8&quot;u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)height);
+            output.Write(header);
+        }
+
+        public override void WriteRow(ReadOnlySpan&lt;TPixel&gt; row)
+        {
+            PixelConvert.Convert&lt;TPixel, Rgba8&gt;(row, _row);
+            _output.Write(MemoryMarshal.AsBytes(_row.AsSpan()));
+        }
+
+        public override void Complete()
+        {
+        }
+    }
+}
+</code></pre>
+<p>A format without them still works everywhere: the decoder reads the whole image with <code>Read</code> and serves rows from it, and the
+encoder gathers the image and calls <code>Write</code> at the end.</p>
+<h2 id="pixel-types">Pixel types</h2>
+<p>A pixel type is an unmanaged struct implementing <code>IPixelType&lt;TSelf&gt;</code>. Its <code>Layout</code> says how it is stored: a layout Egami knows
+(<code>Rgba</code> with <code>Unorm8</code>, say) lets Egami take its fast paths; anything else uses <code>PixelChannelOrder.Other</code>, and Egami converts it
+only through its own <code>ToScaled</code> and <code>FromScaled</code>.</p>
+<h2 id="wrapping-memory">Wrapping memory</h2>
+<p><code>Raster.Wrap</code> puts a raster over memory you own, without copying: a <code>Memory&lt;TPixel&gt;</code> with a stride in pixels, or a <code>Memory&lt;byte&gt;</code>
+with a stride in bytes, such as a video frame whose rows are padded. Pass an <code>IDisposable</code> owner to have the raster release the
+memory when it is disposed.</p>
+<h2 id="rows-and-planes">Rows and planes</h2>
+<p>For a one-off pass over pixels, <code>ForEachRow</code> runs a lambda on each row in parallel; no operation class needed.</p>
+<pre><code class="lang-csharp">using Raster&lt;Rgba8&gt; image = Raster.Create&lt;Rgba8&gt;(256, 64);
+
+// A horizontal gradient; rows run in parallel, each row is a Span over the pixels.
+image.ForEachRow((row, y) =&gt;
+{
+    for (int x = 0; x &lt; row.Length; x++)
+    {
+        row[x] = new Rgba8((byte)x, (byte)(y * 4), 128, 255);
+    }
+});
+</code></pre>
+<p>Each frame's pixels are a <code>PixelPlane&lt;TPixel&gt;</code>: rows of <code>Span&lt;TPixel&gt;</code>, and the whole frame as one span when it is stored in one
+block.</p>
+<pre><code class="lang-csharp">PixelPlane&lt;Rgba8&gt; plane = image.Frames[0].Plane;
+if (plane.TryGetContiguous(out Span&lt;Rgba8&gt; all))
+{
+    all.Fill(Rgba8.White);  // one Span over every pixel when the rows are stored back to back
+}
+else
+{
+    for (int y = 0; y &lt; plane.Height; y++)
+    {
+        plane.Row(y).Fill(Rgba8.White);
+    }
+}
+</code></pre>
+<p><code>RasterOps</code> records each step of a chain; built-in steps and your own mix freely.</p>
+<pre><code class="lang-csharp">// RasterOps records steps; Apply runs them in one pass where it can, in place when the size stays.
+using Raster photo = Raster.Load(&quot;egret.png&quot;);
+photo.Apply(ops =&gt; ops
+    .AutoOrient()
+    .Cover(400, 300, Anchor.Center)
+    .Saturation(1.1f)
+    .Sharpen(1, 0.6f));
+</code></pre><pre><code class="lang-csharp">/// &lt;summary&gt;Black or white per pixel: ForEachBand gives each worker a band of rows from start to end.&lt;/summary&gt;
+private sealed class Threshold(float level) : IRasterOperation
+{
+    public Size OutputSize(Size input) =&gt; input;
+
+    public void Run&lt;TPixel&gt;(OperationInput&lt;TPixel&gt; input)
+        where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+    {
+        RowBandAction band = (start, end) =&gt;
+        {
+            for (int y = start; y &lt; end; y++)
+            {
+                Span&lt;TPixel&gt; source = input.Source.Row(y), destination = input.Destination.Row(y);
+                for (int x = 0; x &lt; source.Length; x++)
+                {
+                    Vector4 v = source[x].ToScaled();
+                    float on = ((0.2126f * v.X) + (0.7152f * v.Y) + (0.0722f * v.Z)) &gt;= level ? 1 : 0;
+                    destination[x] = TPixel.FromScaled(new Vector4(on, on, on, v.W));
+                }
+            }
+        };
+        input.ForEachBand(band);
+    }
+}
+</code></pre><h2 id="run-it">Run it</h2>
+<p><a href="https://github.com/inexin/Egami/tree/main/samples/Extending"><code>samples/Extending</code></a> is a console app that does what this guide shows on the bundled
+images: <code>dotnet run --project samples/Extending</code> writes its results to <code>./output</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/extending.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

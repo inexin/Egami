@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class ReaderOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class ReaderOptions | Egami ">
+      
+      <meta name="description" content="Options for reading. The defaults read everything leniently. Formats with options of their own derive from it, such as JpegReaderOptions.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_ReaderOptions.md&amp;value=---%0Auid%3A%20Egami.Formats.ReaderOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.ReaderOptions">
+
+
+
+  <h1 id="Egami_Formats_ReaderOptions" data-uid="Egami.Formats.ReaderOptions" class="text-break">
+Class ReaderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Options for reading. The defaults read everything leniently. Formats with options of their own derive from it, such as JpegReaderOptions.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public record ReaderOptions : IEquatable&lt;ReaderOptions&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">ReaderOptions</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a>&gt;</div>
+    </dd>
+  </dl>
+
+  <dl class="typelist derived">
+    <dt>Derived</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Formats.Avif.AvifReaderOptions.html">AvifReaderOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Ccitt.CcittReaderOptions.html">CcittReaderOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Exr.ExrReaderOptions.html">ExrReaderOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Ico.IcoReaderOptions.html">IcoReaderOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Jbig2.Jbig2ReaderOptions.html">Jbig2ReaderOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Jpeg.JpegReaderOptions.html">JpegReaderOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Jpeg2000.Jpeg2000ReaderOptions.html">Jpeg2000ReaderOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Jxl.JxlReaderOptions.html">JxlReaderOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Tiff.TiffReaderOptions.html">TiffReaderOptions</a></div>
+      <div><a class="xref" href="Egami.Formats.Webp.WebpReaderOptions.html">WebpReaderOptions</a></div>
+      <div><a class="xref" href="Egami.Metafiles.MetafileDecodeOptions.html">MetafileDecodeOptions</a></div>
+      <div><a class="xref" href="Egami.Svg.SvgDecodeOptions.html">SvgDecodeOptions</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_ReaderOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// At least 100 × 75 from the stored JPEG, decoded at 1/2, 1/4 or 1/8 scale straight from the DCT.
+using Raster preview = Raster.Load("duck.jpg", options: new ReaderOptions { MinimumSize = new Size(100, 75) });</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_ReaderOptions_ConvertColorTo_" data-uid="Egami.Formats.ReaderOptions.ConvertColorTo*"></a>
+
+  <h3 id="Egami_Formats_ReaderOptions_ConvertColorTo" data-uid="Egami.Formats.ReaderOptions.ConvertColorTo">
+  ConvertColorTo
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the encoding to convert the pixels to while loading, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to load them as stored.
+Loading with it gives the same pixels and metadata as loading without it and then calling
+<a class="xref" href="Egami.Raster.html#Egami_Raster_ConvertColor__1_Egami_Colors_ColorProfile_Egami_Colors_ColorTransformOptions_">ConvertColor&lt;TTo&gt;(ColorProfile, ColorTransformOptions?)</a> with the type asked for; loading in the natural type keeps the type when the model
+stays the same, and otherwise picks the target model's type of the same depth (a CMYK JPEG converted to sRGB loads as
+<a class="xref" href="Egami.Pixels.Rgb8.html">Rgb8</a>). Conversion uses <a class="xref" href="Egami.Colors.ColorTransformOptions.html#Egami_Colors_ColorTransformOptions_Default">Default</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorProfile? ConvertColorTo { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_ReaderOptions_ConvertColorTo_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Load straight into sRGB: the same pixels as loading and then calling ConvertColor.
+using Raster web = Raster.Load(path, options: new ReaderOptions { ConvertColorTo = ColorProfile.Srgb });</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Formats_ReaderOptions_Default_" data-uid="Egami.Formats.ReaderOptions.Default*"></a>
+
+  <h3 id="Egami_Formats_ReaderOptions_Default" data-uid="Egami.Formats.ReaderOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the default options.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ReaderOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_ReaderOptions_Frames_" data-uid="Egami.Formats.ReaderOptions.Frames*"></a>
+
+  <h3 id="Egami_Formats_ReaderOptions_Frames" data-uid="Egami.Formats.ReaderOptions.Frames">
+  Frames
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the frames to read. Defaults to all of them. Use <code>..1</code> for only the first frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Range Frames { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.range">Range</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_ReaderOptions_Hdr_" data-uid="Egami.Formats.ReaderOptions.Hdr*"></a>
+
+  <h3 id="Egami_Formats_ReaderOptions_Hdr" data-uid="Egami.Formats.ReaderOptions.Hdr">
+  Hdr
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how to read the HDR rendition of a file that carries a gain map (Ultra HDR, ISO 21496-1 and Apple JPEGs), or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to read the SDR base image as stored, with the map kept in
+<a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_GainMap">GainMap</a>. Set, the load gives linear <a class="xref" href="Egami.Pixels.RgbaF16.html">RgbaF16</a> with 1.0 as SDR
+white; a file without a gain map loads as it would without it. <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> and <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_MinimumSize">MinimumSize</a> cannot
+be combined with it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public HdrDecode? Hdr { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.HdrDecode.html">HdrDecode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Formats_ReaderOptions_Hdr_examples">Examples</h4>
+  <pre><code class="lang-csharp">// As stored: the SDR base image, with the gain map in the metadata.
+using Raster sdr = Raster.Load("ultrahdr.jpg");
+GainMap? map = sdr.Metadata.GainMap;                                     // null for a plain JPEG
+
+// The HDR rendition for a display 4x as bright as SDR white: linear half floats, 1.0 = SDR white.
+using Raster&lt;RgbaF16&gt; hdr = Raster.Load&lt;RgbaF16&gt;("ultrahdr.jpg", options: new ReaderOptions { Hdr = new HdrDecode { Headroom = 4 } });
+
+// The same from a raster in hand, at the map's full capacity.
+using Raster&lt;RgbaF16&gt; full = map!.Apply(sdr);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Formats_ReaderOptions_MinimumSize_" data-uid="Egami.Formats.ReaderOptions.MinimumSize*"></a>
+
+  <h3 id="Egami_Formats_ReaderOptions_MinimumSize" data-uid="Egami.Formats.ReaderOptions.MinimumSize">
+  MinimumSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the smallest size the caller needs, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for full size. The image is decoded reduced by the largest
+whole factor N that keeps it at least this big: ceil(width / N) by ceil(height / N), each pixel the alpha-weighted average
+of an N × N block of encoded values (partial blocks at the right and bottom edges average the pixels they have). JPEG keeps
+its IDCT scaling by 1/2, 1/4 or 1/8 and averages blocks only beyond 1/8. With <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> the factor is chosen
+for the region.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Size? MinimumSize { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Size.html">Size</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Egami_Formats_ReaderOptions_MinimumSize_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Before 1.x 2.2, formats other than JPEG ignored this.</p>
+</div>
+
+
+
+
+  <a id="Egami_Formats_ReaderOptions_ReadMetadata_" data-uid="Egami.Formats.ReaderOptions.ReadMetadata*"></a>
+
+  <h3 id="Egami_Formats_ReaderOptions_ReadMetadata" data-uid="Egami.Formats.ReaderOptions.ReadMetadata">
+  ReadMetadata
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether metadata such as EXIF, ICC, XMP and text is read. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ReadMetadata { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_ReaderOptions_Recovery_" data-uid="Egami.Formats.ReaderOptions.Recovery*"></a>
+
+  <h3 id="Egami_Formats_ReaderOptions_Recovery" data-uid="Egami.Formats.ReaderOptions.Recovery">
+  Recovery
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how damaged data is handled. Defaults to <a class="xref" href="Egami.Formats.RecoveryMode.html#Egami_Formats_RecoveryMode_Lenient">Lenient</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RecoveryMode Recovery { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.RecoveryMode.html">RecoveryMode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_ReaderOptions_Region_" data-uid="Egami.Formats.ReaderOptions.Region*"></a>
+
+  <h3 id="Egami_Formats_ReaderOptions_Region" data-uid="Egami.Formats.ReaderOptions.Region">
+  Region
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the rectangle to decode, in stored pixels (before EXIF orientation), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the whole image.
+It is clipped to the image and applied before <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_MinimumSize">MinimumSize</a>; the result is exactly the clipped rectangle, never
+widened to a block boundary. For JPEG with a reduced scale the result is the scaled image cropped to the scaled rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Rect? Region { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Rect.html">Rect</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Egami_Formats_ReaderOptions_Region_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>A rectangle that misses the image entirely, or has no area, throws <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a>.</p>
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Options.cs/#L25" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

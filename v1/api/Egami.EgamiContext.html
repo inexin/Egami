@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class EgamiContext | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class EgamiContext | Egami ">
+      
+      <meta name="description" content="Every setting that is not specific to one call: where memory comes from, how many threads an operation may use, and the safety limits. Contexts are immutable and safe to share. Change one with a with expression.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_EgamiContext.md&amp;value=---%0Auid%3A%20Egami.EgamiContext%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.EgamiContext">
+
+
+
+  <h1 id="Egami_EgamiContext" data-uid="Egami.EgamiContext" class="text-break">
+Class EgamiContext  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Every setting that is not specific to one call: where memory comes from, how many threads an operation may use, and the safety limits.
+Contexts are immutable and safe to share. Change one with a <code>with</code> expression.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record EgamiContext : IEquatable&lt;EgamiContext&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">EgamiContext</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.EgamiContext.html">EgamiContext</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_EgamiContext_examples">Examples</h2>
+  <pre><code class="lang-csharp">var context = EgamiContext.Default with
+{
+    Limits = SafetyLimits.Default with { MaxPixels = 100_000_000 },
+    MaxParallelism = 4,
+};</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_EgamiContext_Default_" data-uid="Egami.EgamiContext.Default*"></a>
+
+  <h3 id="Egami_EgamiContext_Default" data-uid="Egami.EgamiContext.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the context used when a call passes none. The first read fixes it: <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_SetDefault_Egami_EgamiContext_">SetDefault(EgamiContext)</a> works only before that.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static EgamiContext Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_EgamiContext_DiagnosticLevel_" data-uid="Egami.EgamiContext.DiagnosticLevel*"></a>
+
+  <h3 id="Egami_EgamiContext_DiagnosticLevel" data-uid="Egami.EgamiContext.DiagnosticLevel">
+  DiagnosticLevel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lowest level <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Diagnostics">Diagnostics</a> receives. Defaults to <a class="xref" href="Egami.DiagnosticLevel.html#Egami_DiagnosticLevel_Warning">Warning</a>; events below
+it are never built.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DiagnosticLevel DiagnosticLevel { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.DiagnosticLevel.html">DiagnosticLevel</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value set is not a defined level.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_EgamiContext_Diagnostics_" data-uid="Egami.EgamiContext.Diagnostics*"></a>
+
+  <h3 id="Egami_EgamiContext_Diagnostics" data-uid="Egami.EgamiContext.Diagnostics">
+  Diagnostics
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the handler that receives Egami's warnings and notable decisions, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for none, which
+costs nothing. It runs inline, possibly on several decode threads at once, so it must be quick and thread-safe. An exception
+it throws fails the call, which turns warnings into errors. Warnings a load raises arrive in
+<a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_Warnings">Warnings</a> order as the call ends; Info and Debug events arrive as they happen. One id is
+delivered at most 10 times per call, then once more as a count of the rest.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Action&lt;EgamiDiagnostic&gt;? Diagnostics { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="Egami.EgamiDiagnostic.html">EgamiDiagnostic</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_EgamiContext_Diagnostics_examples">Examples</h4>
+  <pre><code class="lang-csharp">// With Microsoft.Extensions.Logging: one line at startup sends every call's warnings to the app's log, with the id as
+// a property to filter and count on. Egami itself has no logging dependency.
+EgamiContext.SetDefault(new EgamiContext
+{
+    Diagnostics = d =&gt; logger.Log(d.Level.ToLogLevel(), "{Source} {Id} at {Offset}: {Message}", d.Source, d.Id, d.Offset, d.Message),
+});</code></pre>
+
+
+
+
+
+
+  <a id="Egami_EgamiContext_Formats_" data-uid="Egami.EgamiContext.Formats*"></a>
+
+  <h3 id="Egami_EgamiContext_Formats" data-uid="Egami.EgamiContext.Formats">
+  Formats
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L110"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the registered formats, in detection order. Defaults to PNG, JPEG, GIF, WebP, BMP, QOI, PNM, TIFF, JBIG2, JPEG 2000 and TGA.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FormatInfo&gt; Formats { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_EgamiContext_Limits_" data-uid="Egami.EgamiContext.Limits*"></a>
+
+  <h3 id="Egami_EgamiContext_Limits" data-uid="Egami.EgamiContext.Limits">
+  Limits
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the safety limits applied when reading. Defaults to <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_Default">Default</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SafetyLimits Limits { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>The value set is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_EgamiContext_MaxParallelism_" data-uid="Egami.EgamiContext.MaxParallelism*"></a>
+
+  <h3 id="Egami_EgamiContext_MaxParallelism" data-uid="Egami.EgamiContext.MaxParallelism">
+  MaxParallelism
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the most threads one operation may use. 1 means fully sequential. Defaults to the processor count.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MaxParallelism { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value set is less than 1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_EgamiContext_Memory_" data-uid="Egami.EgamiContext.Memory*"></a>
+
+  <h3 id="Egami_EgamiContext_Memory" data-uid="Egami.EgamiContext.Memory">
+  Memory
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the source of all pixel memory. Defaults to <a class="xref" href="Egami.PooledPixelMemorySource.html#Egami_PooledPixelMemorySource_Shared">Shared</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IPixelMemorySource Memory { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.IPixelMemorySource.html">IPixelMemorySource</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>The value set is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_EgamiContext_SetDefault_" data-uid="Egami.EgamiContext.SetDefault*"></a>
+
+  <h3 id="Egami_EgamiContext_SetDefault_Egami_EgamiContext_" data-uid="Egami.EgamiContext.SetDefault(Egami.EgamiContext)">
+  SetDefault(EgamiContext)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Replaces <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>, once, at startup, so that format plugins, memory sources and limits apply to every call that
+passes no context.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void SetDefault(EgamiContext context)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context to use as the default.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p><a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a> was already read or set.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_EgamiContext_StartDiagnostics_" data-uid="Egami.EgamiContext.StartDiagnostics*"></a>
+
+  <h3 id="Egami_EgamiContext_StartDiagnostics" data-uid="Egami.EgamiContext.StartDiagnostics">
+  StartDiagnostics()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L107"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Starts reporting for one call outside Egami's own loads and saves, such as a video decode or a plug-in's own entry point,
+with the same <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_DiagnosticLevel">DiagnosticLevel</a> filter and per-id cap. Dispose it when the call ends.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DiagnosticReporter StartDiagnostics()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.DiagnosticReporter.html">DiagnosticReporter</a></dt>
+    <dd><p>A reporter for the call; a shared one that does nothing when <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Diagnostics">Diagnostics</a> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_EgamiContext_StartDiagnostics_examples">Examples</h4>
+  <pre><code class="lang-csharp">// A decoder outside Egami (a video demuxer, a format plug-in's own entry point) reports through the same handler, with the
+// same level filter and the same cap of 10 per id per call. Dispose the reporter when the call ends.
+using (DiagnosticReporter diagnostics = context.StartDiagnostics())
+{
+    if (diagnostics.IsEnabled(DiagnosticLevel.Warning))
+    {
+        diagnostics.Report(DiagnosticLevel.Warning, "Avi.IndexRebuilt", "The index was missing; it was rebuilt from the frames.", offset: 4096);
+    }
+
+    diagnostics.Report(DiagnosticLevel.Info, "Mjpeg.DhtInserted", "Frames have no Huffman tables; the standard ones were used.");
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_EgamiContext_WithFormat_" data-uid="Egami.EgamiContext.WithFormat*"></a>
+
+  <h3 id="Egami_EgamiContext_WithFormat_Egami_Formats_FormatInfo_" data-uid="Egami.EgamiContext.WithFormat(Egami.Formats.FormatInfo)">
+  WithFormat(FormatInfo)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a copy of this context with <code class="paramref">format</code> registered. A format with the same name is replaced in place;
+otherwise the new format is detected last.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public EgamiContext WithFormat(FormatInfo format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>format</code> <a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
+    <dd><p>The format to add.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The new context.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Context/EgamiContext.cs/#L18" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

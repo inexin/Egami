@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class TextLayout | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class TextLayout | Egami ">
+      
+      <meta name="description" content="A paragraph laid out at a width: its lines of glyph runs and the size of its layout box. Positions are in canvas units relative to the box&#39;s top-left corner, y down; nothing is rounded to pixels. Immutable and safe to share between threads.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_Layout_TextLayout.md&amp;value=---%0Auid%3A%20Egami.Fonts.Layout.TextLayout%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.Layout.TextLayout">
+
+
+
+  <h1 id="Egami_Fonts_Layout_TextLayout" data-uid="Egami.Fonts.Layout.TextLayout" class="text-break">
+Class TextLayout  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a>.<a class="xref" href="Egami.Fonts.Layout.html">Layout</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A paragraph laid out at a width: its lines of glyph runs and the size of its layout box. Positions are in canvas units
+relative to the box's top-left corner, y down; nothing is rounded to pixels. Immutable and safe to share between threads.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class TextLayout</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">TextLayout</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+  <dl class="typelist extensionMethods">
+    <dt>Extension Methods</dt>
+    <dd>
+  <div>
+      <a class="xref" href="Egami.Drawing.FontExtensions.html#Egami_Drawing_FontExtensions_ToPath_Egami_Fonts_Layout_TextLayout_System_Numerics_Vector2_">FontExtensions.ToPath(TextLayout, Vector2)</a>
+  </div>
+  </dd></dl>
+
+
+  <h2 id="Egami_Fonts_Layout_TextLayout_examples">Examples</h2>
+  <pre><code class="lang-csharp">ParagraphStyle style = new() { DefaultStyle = new TextStyle { FontFamilies = [family], Size = 16 } };
+Paragraph paragraph = Paragraph.Create("A paragraph is shaped once and laid out at any width.", style);
+
+// Each width gives an immutable layout: lines of glyph runs, positioned from the box's top-left corner.
+TextLayout narrow = paragraph.Layout(120);
+TextLayout wide = paragraph.Layout(400);
+foreach (TextLine line in narrow.Lines)
+{
+    string text = paragraph.Text[line.Start..line.End];   // the line's text, its trailing space included
+    float baseline = line.Baseline;                        // y of the baseline
+    foreach (LayoutRun run in line.Runs)
+    {
+        GlyphRun? glyphs = run.Glyphs;                     // glyphs at their layout positions
+    }
+}
+
+// No wrapping: the box is as wide as the longest line.
+TextLayout unbounded = paragraph.Layout(float.PositiveInfinity);</code></pre>
+
+
+  <h2 id="Egami_Fonts_Layout_TextLayout_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>In vertical layouts (<a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_WritingMode">WritingMode</a>) the width given is the lines' length, which runs down the box:
+<a class="xref" href="Egami.Fonts.Layout.TextLayout.html#Egami_Fonts_Layout_TextLayout_Height">Height</a> is that length and <a class="xref" href="Egami.Fonts.Layout.TextLayout.html#Egami_Fonts_Layout_TextLayout_Width">Width</a> the lines' thicknesses added up. Positions along a line (a line's
+<a class="xref" href="Egami.Fonts.Layout.TextLine.html#Egami_Fonts_Layout_TextLine_Left">Left</a> and <a class="xref" href="Egami.Fonts.Layout.TextLine.html#Egami_Fonts_Layout_TextLine_Width">Width</a>, a run's <a class="xref" href="Egami.Fonts.Layout.LayoutRun.html#Egami_Fonts_Layout_LayoutRun_X">X</a>, a caret's
+<a class="xref" href="Egami.Fonts.Layout.CaretLine.html#Egami_Fonts_Layout_CaretLine_X">X</a>) are then y, and positions across the lines (a line's <a class="xref" href="Egami.Fonts.Layout.TextLine.html#Egami_Fonts_Layout_TextLine_Top">Top</a>,
+<a class="xref" href="Egami.Fonts.Layout.TextLine.html#Egami_Fonts_Layout_TextLine_Baseline">Baseline</a> and <a class="xref" href="Egami.Fonts.Layout.TextLine.html#Egami_Fonts_Layout_TextLine_Bottom">Bottom</a>) are x; glyph runs, ink, placeholder and selection
+rectangles stay in x and y.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_Decorations_" data-uid="Egami.Fonts.Layout.TextLayout.Decorations*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_Decorations" data-uid="Egami.Fonts.Layout.TextLayout.Decorations">
+  Decorations
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Decorations.cs/#L183"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the decoration lines, line by line: underlines and overlines (with skip-ink gaps cut) and line-throughs, each over a
+stretch of text with one decoration. Vertical layouts have none yet.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;DecorationShape&gt; Decorations { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.Layout.DecorationShape.html">DecorationShape</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_TextLayout_Decorations_examples">Examples</h4>
+  <pre><code class="lang-csharp">TextStyle underlined = new()
+{
+    FontFamilies = [family],
+    Decoration = new TextDecoration { Lines = TextDecorationLines.Underline, Style = TextDecorationStyle.Wavy },
+};
+TextLayout layout = Paragraph.Create("Typography, quickly", new ParagraphStyle { DefaultStyle = underlined }).Layout(400);
+
+foreach (DecorationShape line in layout.Decorations)
+{
+    // Top and Thickness place the line; Segments skip the descenders of y, p, g and q.
+    System.Console.WriteLine($"{line.Line} at {line.Top}: {line.Segments.Count} pieces");
+}
+
+// Or everything as outlines, to fill with any path renderer.
+PathRecorder path = new();
+layout.ToPath(path);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_DidExceed_" data-uid="Egami.Fonts.Layout.TextLayout.DidExceed*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_DidExceed" data-uid="Egami.Fonts.Layout.TextLayout.DidExceed">
+  DidExceed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_MaxLines">MaxLines</a> or <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_MaxHeight">MaxHeight</a> cut text off.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool DidExceed { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_FirstBaseline_" data-uid="Egami.Fonts.Layout.TextLayout.FirstBaseline*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_FirstBaseline" data-uid="Egami.Fonts.Layout.TextLayout.FirstBaseline">
+  FirstBaseline
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L69"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the first line's baseline, for aligning the box on it; 0 when there are no lines.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FirstBaseline { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_Height_" data-uid="Egami.Fonts.Layout.TextLayout.Height*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_Height" data-uid="Egami.Fonts.Layout.TextLayout.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the layout box's height: the bottom of the last line.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_HiddenRange_" data-uid="Egami.Fonts.Layout.TextLayout.HiddenRange*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_HiddenRange" data-uid="Egami.Fonts.Layout.TextLayout.HiddenRange">
+  HiddenRange
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L181"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the text a line limit hid, the ellipsis's room included, or null when nothing was cut.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextSegment? HiddenRange { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.TextSegment.html">TextSegment</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_InkBounds_" data-uid="Egami.Fonts.Layout.TextLayout.InkBounds*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_InkBounds" data-uid="Egami.Fonts.Layout.TextLayout.InkBounds">
+  InkBounds
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the union of the glyphs' ink and the placeholders' boxes, which may reach past the layout box.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextBounds InkBounds { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.TextBounds.html">TextBounds</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_LastBaseline_" data-uid="Egami.Fonts.Layout.TextLayout.LastBaseline*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_LastBaseline" data-uid="Egami.Fonts.Layout.TextLayout.LastBaseline">
+  LastBaseline
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the last line's baseline; 0 when there are no lines.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float LastBaseline { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_Lines_" data-uid="Egami.Fonts.Layout.TextLayout.Lines*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_Lines" data-uid="Egami.Fonts.Layout.TextLayout.Lines">
+  Lines
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lines, top to bottom.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;TextLine&gt; Lines { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.Layout.TextLine.html">TextLine</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_LongestLine_" data-uid="Egami.Fonts.Layout.TextLayout.LongestLine*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_LongestLine" data-uid="Egami.Fonts.Layout.TextLayout.LongestLine">
+  LongestLine
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the widest line's width, without its hanging trailing spaces.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float LongestLine { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_MaxIntrinsicWidth_" data-uid="Egami.Fonts.Layout.TextLayout.MaxIntrinsicWidth*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_MaxIntrinsicWidth" data-uid="Egami.Fonts.Layout.TextLayout.MaxIntrinsicWidth">
+  MaxIntrinsicWidth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width of the widest line laid out without wrapping (CSS max-content).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float MaxIntrinsicWidth { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_MinIntrinsicWidth_" data-uid="Egami.Fonts.Layout.TextLayout.MinIntrinsicWidth*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_MinIntrinsicWidth" data-uid="Egami.Fonts.Layout.TextLayout.MinIntrinsicWidth">
+  MinIntrinsicWidth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width of the widest piece that cannot break (CSS min-content): the narrowest box the text fits without
+overflowing. <a class="xref" href="Egami.Fonts.Layout.OverflowWrap.html#Egami_Fonts_Layout_OverflowWrap_Anywhere">Anywhere</a> lowers it to the widest grapheme cluster.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float MinIntrinsicWidth { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_Paragraph_" data-uid="Egami.Fonts.Layout.TextLayout.Paragraph*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_Paragraph" data-uid="Egami.Fonts.Layout.TextLayout.Paragraph">
+  Paragraph
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the paragraph that was laid out.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Paragraph Paragraph { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.Paragraph.html">Paragraph</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_PlaceholderRects_" data-uid="Egami.Fonts.Layout.TextLayout.PlaceholderRects*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_PlaceholderRects" data-uid="Egami.Fonts.Layout.TextLayout.PlaceholderRects">
+  PlaceholderRects
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets one box per placeholder of the rich text, in order; an empty box for one hidden by a line limit.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;TextBounds&gt; PlaceholderRects { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.TextBounds.html">TextBounds</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_Width_" data-uid="Egami.Fonts.Layout.TextLayout.Width*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_Width" data-uid="Egami.Fonts.Layout.TextLayout.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the layout box's width: the width given, or <a class="xref" href="Egami.Fonts.Layout.TextLayout.html#Egami_Fonts_Layout_TextLayout_LongestLine">LongestLine</a> when it was unbounded.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_GetCaret_" data-uid="Egami.Fonts.Layout.TextLayout.GetCaret*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_GetCaret_Egami_Fonts_Layout_TextPosition_" data-uid="Egami.Fonts.Layout.TextLayout.GetCaret(Egami.Fonts.Layout.TextPosition)">
+  GetCaret(TextPosition)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L170"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets where a caret at a position is drawn.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Caret GetCaret(TextPosition position)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>position</code> <a class="xref" href="Egami.Fonts.Layout.TextPosition.html">TextPosition</a></dt>
+    <dd><p>The position; an index inside a grapheme cluster moves to the cluster's start.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.Caret.html">Caret</a></dt>
+    <dd><p>The caret: its primary segment for the position's affinity, and a secondary one at a bidi boundary.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_TextLayout_GetCaret_Egami_Fonts_Layout_TextPosition__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A click: the nearest caret position, then where to draw the caret.
+TextPosition position = layout.HitTest(new System.Numerics.Vector2(40, 30));
+Caret caret = layout.GetCaret(position);
+CaretLine bar = caret.Primary;                     // x, top and bottom; Secondary at a bidi boundary
+
+// Arrow keys: logical moves, and line moves that keep the column.
+TextPosition right = layout.MoveCaret(position, CaretMove.NextGrapheme);
+TextPosition down = layout.MoveCaret(position, CaretMove.LineDown, preferredX: bar.X);
+
+// A selection: rectangles to fill, one per visually contiguous piece on each line.
+IReadOnlyList&lt;TextBounds&gt; highlight = layout.GetSelectionRects(position.Index, down.Index);
+Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(position.Index); // double-click</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The index is negative or past the end of the text.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_GetLineAt_" data-uid="Egami.Fonts.Layout.TextLayout.GetLineAt*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_GetLineAt_System_Int32_" data-uid="Egami.Fonts.Layout.TextLayout.GetLineAt(System.Int32)">
+  GetLineAt(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds the line holding a UTF-16 index.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int GetLineAt(int index)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>An index from 0 to the text's length; the end of the text belongs to the last line.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The line's index in <a class="xref" href="Egami.Fonts.Layout.TextLayout.html#Egami_Fonts_Layout_TextLayout_Lines">Lines</a>, or -1 when the index is hidden by a line limit or there are no lines.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">index</code> is negative or past the end of the text.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_GetLineAtY_" data-uid="Egami.Fonts.Layout.TextLayout.GetLineAtY*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_GetLineAtY_System_Single_" data-uid="Egami.Fonts.Layout.TextLayout.GetLineAtY(System.Single)">
+  GetLineAtY(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds the line at a position across the lines; points outside the lines take the nearest.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int GetLineAtY(float y)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>A y in layout coordinates, or in vertical layouts an x.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The line's index in <a class="xref" href="Egami.Fonts.Layout.TextLayout.html#Egami_Fonts_Layout_TextLayout_Lines">Lines</a>, or -1 when there are no lines.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_GetLineBoundary_" data-uid="Egami.Fonts.Layout.TextLayout.GetLineBoundary*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_GetLineBoundary_System_Int32_" data-uid="Egami.Fonts.Layout.TextLayout.GetLineBoundary(System.Int32)">
+  GetLineBoundary(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L396"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the line holding an index, as a range: its text, trailing spaces and hard break.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextSegment GetLineBoundary(int index)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>A UTF-16 index; the end of the text belongs to the last line.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.TextSegment.html">TextSegment</a></dt>
+    <dd><p>The line's range, or an empty one at 0 when there are no lines.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_TextLayout_GetLineBoundary_System_Int32__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A click: the nearest caret position, then where to draw the caret.
+TextPosition position = layout.HitTest(new System.Numerics.Vector2(40, 30));
+Caret caret = layout.GetCaret(position);
+CaretLine bar = caret.Primary;                     // x, top and bottom; Secondary at a bidi boundary
+
+// Arrow keys: logical moves, and line moves that keep the column.
+TextPosition right = layout.MoveCaret(position, CaretMove.NextGrapheme);
+TextPosition down = layout.MoveCaret(position, CaretMove.LineDown, preferredX: bar.X);
+
+// A selection: rectangles to fill, one per visually contiguous piece on each line.
+IReadOnlyList&lt;TextBounds&gt; highlight = layout.GetSelectionRects(position.Index, down.Index);
+Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(position.Index); // double-click</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">index</code> is negative or past the end of the text.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_GetSelectionRects_" data-uid="Egami.Fonts.Layout.TextLayout.GetSelectionRects*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_GetSelectionRects_System_Int32_System_Int32_Egami_Fonts_Layout_SelectionHeight_" data-uid="Egami.Fonts.Layout.TextLayout.GetSelectionRects(System.Int32,System.Int32,Egami.Fonts.Layout.SelectionHeight)">
+  GetSelectionRects(int, int, SelectionHeight)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L318"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the rectangles that cover a range of text: one per run of visually adjacent clusters on each line.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;TextBounds&gt; GetSelectionRects(int start, int end, SelectionHeight height = SelectionHeight.Line)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>start</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The range's first UTF-16 index.</p>
+</dd>
+    <dt><code>end</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The index just past the range.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="Egami.Fonts.Layout.SelectionHeight.html">SelectionHeight</a></dt>
+    <dd><p>Whether the rectangles cover the line boxes or the fonts' ascent and descent.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.TextBounds.html">TextBounds</a>&gt;</dt>
+    <dd><p>The rectangles, line by line, left to right.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_TextLayout_GetSelectionRects_System_Int32_System_Int32_Egami_Fonts_Layout_SelectionHeight__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A click: the nearest caret position, then where to draw the caret.
+TextPosition position = layout.HitTest(new System.Numerics.Vector2(40, 30));
+Caret caret = layout.GetCaret(position);
+CaretLine bar = caret.Primary;                     // x, top and bottom; Secondary at a bidi boundary
+
+// Arrow keys: logical moves, and line moves that keep the column.
+TextPosition right = layout.MoveCaret(position, CaretMove.NextGrapheme);
+TextPosition down = layout.MoveCaret(position, CaretMove.LineDown, preferredX: bar.X);
+
+// A selection: rectangles to fill, one per visually contiguous piece on each line.
+IReadOnlyList&lt;TextBounds&gt; highlight = layout.GetSelectionRects(position.Index, down.Index);
+Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(position.Index); // double-click</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The range is not inside the text.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_GetWordBoundary_" data-uid="Egami.Fonts.Layout.TextLayout.GetWordBoundary*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_GetWordBoundary_System_Int32_" data-uid="Egami.Fonts.Layout.TextLayout.GetWordBoundary(System.Int32)">
+  GetWordBoundary(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L370"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the word (UAX #29 segment) holding an index: a word, or the spaces or punctuation between words.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextSegment GetWordBoundary(int index)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>A UTF-16 index; the end of the text gives the last segment.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.TextSegment.html">TextSegment</a></dt>
+    <dd><p>The segment.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_TextLayout_GetWordBoundary_System_Int32__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A click: the nearest caret position, then where to draw the caret.
+TextPosition position = layout.HitTest(new System.Numerics.Vector2(40, 30));
+Caret caret = layout.GetCaret(position);
+CaretLine bar = caret.Primary;                     // x, top and bottom; Secondary at a bidi boundary
+
+// Arrow keys: logical moves, and line moves that keep the column.
+TextPosition right = layout.MoveCaret(position, CaretMove.NextGrapheme);
+TextPosition down = layout.MoveCaret(position, CaretMove.LineDown, preferredX: bar.X);
+
+// A selection: rectangles to fill, one per visually contiguous piece on each line.
+IReadOnlyList&lt;TextBounds&gt; highlight = layout.GetSelectionRects(position.Index, down.Index);
+Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(position.Index); // double-click</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">index</code> is negative or past the end of the text.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_HitTest_" data-uid="Egami.Fonts.Layout.TextLayout.HitTest*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_HitTest_System_Numerics_Vector2_" data-uid="Egami.Fonts.Layout.TextLayout.HitTest(System.Numerics.Vector2)">
+  HitTest(Vector2)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L119"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds the caret position nearest a point; points outside the lines go to the nearest line, and points left or
+right of a line to its visual ends.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextPosition HitTest(Vector2 point)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>point</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>A point in layout coordinates.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.TextPosition.html">TextPosition</a></dt>
+    <dd><p>The position, at a grapheme cluster boundary.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_TextLayout_HitTest_System_Numerics_Vector2__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A click: the nearest caret position, then where to draw the caret.
+TextPosition position = layout.HitTest(new System.Numerics.Vector2(40, 30));
+Caret caret = layout.GetCaret(position);
+CaretLine bar = caret.Primary;                     // x, top and bottom; Secondary at a bidi boundary
+
+// Arrow keys: logical moves, and line moves that keep the column.
+TextPosition right = layout.MoveCaret(position, CaretMove.NextGrapheme);
+TextPosition down = layout.MoveCaret(position, CaretMove.LineDown, preferredX: bar.X);
+
+// A selection: rectangles to fill, one per visually contiguous piece on each line.
+IReadOnlyList&lt;TextBounds&gt; highlight = layout.GetSelectionRects(position.Index, down.Index);
+Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(position.Index); // double-click</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_MoveCaret_" data-uid="Egami.Fonts.Layout.TextLayout.MoveCaret*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_MoveCaret_Egami_Fonts_Layout_TextPosition_Egami_Fonts_Layout_CaretMove_System_Single_" data-uid="Egami.Fonts.Layout.TextLayout.MoveCaret(Egami.Fonts.Layout.TextPosition,Egami.Fonts.Layout.CaretMove,System.Single)">
+  MoveCaret(TextPosition, CaretMove, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L241"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Moves a caret.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextPosition MoveCaret(TextPosition position, CaretMove move, float preferredX = NaN)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>position</code> <a class="xref" href="Egami.Fonts.Layout.TextPosition.html">TextPosition</a></dt>
+    <dd><p>The caret's position.</p>
+</dd>
+    <dt><code>move</code> <a class="xref" href="Egami.Fonts.Layout.CaretMove.html">CaretMove</a></dt>
+    <dd><p>How to move it.</p>
+</dd>
+    <dt><code>preferredX</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>For <a class="xref" href="Egami.Fonts.Layout.CaretMove.html#Egami_Fonts_Layout_CaretMove_LineUp">LineUp</a> and <a class="xref" href="Egami.Fonts.Layout.CaretMove.html#Egami_Fonts_Layout_CaretMove_LineDown">LineDown</a>, the x to keep across
+lines of different lengths; <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single.nan">NaN</a> for the caret's own.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.TextPosition.html">TextPosition</a></dt>
+    <dd><p>The new position; at the ends of the text, the end itself.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_TextLayout_MoveCaret_Egami_Fonts_Layout_TextPosition_Egami_Fonts_Layout_CaretMove_System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A click: the nearest caret position, then where to draw the caret.
+TextPosition position = layout.HitTest(new System.Numerics.Vector2(40, 30));
+Caret caret = layout.GetCaret(position);
+CaretLine bar = caret.Primary;                     // x, top and bottom; Secondary at a bidi boundary
+
+// Arrow keys: logical moves, and line moves that keep the column.
+TextPosition right = layout.MoveCaret(position, CaretMove.NextGrapheme);
+TextPosition down = layout.MoveCaret(position, CaretMove.LineDown, preferredX: bar.X);
+
+// A selection: rectangles to fill, one per visually contiguous piece on each line.
+IReadOnlyList&lt;TextBounds&gt; highlight = layout.GetSelectionRects(position.Index, down.Index);
+Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(position.Index); // double-click</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The index is negative or past the end of the text, or the move is not
+defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_ToPath_" data-uid="Egami.Fonts.Layout.TextLayout.ToPath*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_ToPath_Egami_Fonts_IGlyphOutlineSink_" data-uid="Egami.Fonts.Layout.TextLayout.ToPath(Egami.Fonts.IGlyphOutlineSink)">
+  ToPath(IGlyphOutlineSink)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Decorations.cs/#L193"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the whole layout as outlines: every glyph (color glyphs as their outlines) at its place, then the decorations.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ToPath(IGlyphOutlineSink sink)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>sink</code> <a class="xref" href="Egami.Fonts.IGlyphOutlineSink.html">IGlyphOutlineSink</a></dt>
+    <dd><p>Where the outlines go, in layout coordinates with y down.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_TextLayout_ToPath_Egami_Fonts_IGlyphOutlineSink__examples">Examples</h4>
+  <pre><code class="lang-csharp">TextStyle underlined = new()
+{
+    FontFamilies = [family],
+    Decoration = new TextDecoration { Lines = TextDecorationLines.Underline, Style = TextDecorationStyle.Wavy },
+};
+TextLayout layout = Paragraph.Create("Typography, quickly", new ParagraphStyle { DefaultStyle = underlined }).Layout(400);
+
+foreach (DecorationShape line in layout.Decorations)
+{
+    // Top and Thickness place the line; Segments skip the descenders of y, p, g and q.
+    System.Console.WriteLine($"{line.Line} at {line.Top}: {line.Segments.Count} pieces");
+}
+
+// Or everything as outlines, to fill with any path renderer.
+PathRecorder path = new();
+layout.ToPath(path);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">sink</code> is null.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L100" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

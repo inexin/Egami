@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Tone and color | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Tone and color | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/tone-and-color.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="tone-and-color">Tone and color</h1>
+
+<p>Egami has the tone and color tools photo editors have: levels, gamma, curves and sigmoidal contrast; posterize, solarize,
+colorize, tint, duotone, thresholds and an accessibility filter; 3D lookup tables from .cube files and Hald images; and the
+adjustments that read the image first, from auto levels to white balance, equalization, CLAHE and local contrast.</p>
+<p>The tone steps follow ImageMagick's formulas, with values from 0 to 1 where ImageMagick takes percentages: <code>Level(0.1f, 0.9f)</code> is
+<code>-level 10%,90%</code>. They work on the stored, gamma-encoded values, as photo editors and LUT files do, change red, green and blue,
+keep alpha, and clamp to 0..1 after each step.</p>
+<h2 id="tone-steps">Tone steps</h2>
+<pre><code class="lang-csharp">// A basic tone panel: levels with a midtone lift, a gentle S-curve, and a warm tint in the midtones. The three steps run as
+// one pass over the pixels.
+raster.Apply(o =&gt; o
+    .Level(black: 0.04f, white: 0.96f, gamma: 1.1f)
+    .SigmoidalContrast(4, midpoint: 0.5f)
+    .Tint(new Rgba8(255, 200, 150, 255), 0.15f), Ct);
+raster.Save(&quot;duck-toned.jpg&quot;);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Does</th>
+<th>ImageMagick</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Level(black, white, gamma, outputBlack, outputWhite)</code></td>
+<td>Stretches black..white to outputBlack..outputWhite with a midtone gamma</td>
+<td><code>-level</code>, <code>+level</code></td>
+</tr>
+<tr>
+<td><code>Gamma(gamma)</code></td>
+<td>v^(1/gamma): 2.2 brightens</td>
+<td><code>-gamma</code></td>
+</tr>
+<tr>
+<td><code>SigmoidalContrast(contrast, midpoint, increase)</code></td>
+<td>An S-curve that adds contrast without clipping, or its inverse</td>
+<td><code>±sigmoidal-contrast</code></td>
+</tr>
+<tr>
+<td><code>Posterize(levels, dither)</code></td>
+<td>Rounds each channel to evenly spaced levels, optionally with ordered or Floyd–Steinberg dithering</td>
+<td><code>-posterize</code></td>
+</tr>
+<tr>
+<td><code>Solarize(threshold)</code></td>
+<td>Inverts values above the threshold</td>
+<td><code>-solarize</code></td>
+</tr>
+<tr>
+<td><code>Threshold(level, mode, below, above)</code></td>
+<td>Two colors, by luminance, saturation, chroma or each channel (<code>ThresholdMode</code>)</td>
+<td><code>-threshold</code></td>
+</tr>
+<tr>
+<td><code>Colorize(color, amount)</code></td>
+<td>Blends toward a color</td>
+<td><code>-colorize</code></td>
+</tr>
+<tr>
+<td><code>Tint(color, amount)</code></td>
+<td>Pushes the midtones toward a color, keeping black and white</td>
+<td><code>-tint</code></td>
+</tr>
+<tr>
+<td><code>Duotone(shadows, highlights)</code></td>
+<td>Maps luminance onto a line between two colors</td>
+<td><code>-grayscale</code> then <code>+level-colors</code></td>
+</tr>
+<tr>
+<td><code>HighContrast(grayscale, invert, contrast)</code></td>
+<td>Skia's high-contrast accessibility filter (<code>ContrastInvert</code>)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>SimulateColorBlindness(kind, severity)</code></td>
+<td>Machado, Oliveira and Fernandes (2009), from mild anomaly to full -opia (<code>ColorVisionDeficiency</code>)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Every one of these matches ImageMagick 7 to within one level at 8 bits, and thresholds are identical, including where a pixel lies
+exactly on the level. Adjacent tone steps, color matrices and filters fuse into one pass over the pixels; on 8- and 16-bit
+images a fused chain is a lookup table per channel, rounded between steps, so it gives exactly the pixels the steps give one by one.</p>
+<pre><code class="lang-csharp">// A two-color poster, then a check of how it reads to someone with deuteranopia.
+raster.Apply(o =&gt; o.Duotone(Rgba8.FromHex(&quot;#1b2a49&quot;), Rgba8.FromHex(&quot;#f2c14e&quot;)).Posterize(4, DitherMode.Ordered), Ct);
+using Raster&lt;Rgba8&gt; preview = raster.Derive(o =&gt; o.SimulateColorBlindness(ColorVisionDeficiency.Deuteranopia), Ct);
+
+// High contrast for low vision: gray, lightness inverted so dark becomes light, and more contrast.
+using Raster&lt;Rgba8&gt; readable = raster.Derive(o =&gt; o.HighContrast(grayscale: true, ContrastInvert.Lightness, contrast: 0.3f), Ct);
+</code></pre><h2 id="color-filters">Color filters</h2>
+<p>A <code>ColorFilter</code> is a color adjustment as a value, as Skia's color filters are: a function of one pixel's color, with no
+neighbours, position or statistics. Every tone step and color matrix has a factory; <code>Curves</code> takes <code>ToneCurve</code>s, <code>FromLut</code> a 3D
+table; <code>Then</code> chains filters and <code>Lerp</code> mixes two, so a look can be applied at any strength. Run one with <code>ApplyFilter</code>, on your
+own pixels with <code>Apply</code>, or save it as a .cube file with <code>ToLut3D</code>.</p>
+<pre><code class="lang-csharp">// A look as a value: build it once, mix it in at 70%, apply it to any image or to your own pixels.
+ColorFilter look = ColorFilter.Level(0.03f, 0.97f).Then(ColorFilter.Saturation(1.2f)).Then(ColorFilter.Tint(new Rgba8(255, 190, 140, 255), 0.2f));
+ColorFilter subtle = ColorFilter.Lerp(ColorFilter.Identity, look, 0.7f);
+raster.Apply(o =&gt; o.ApplyFilter(subtle), Ct);
+
+Span&lt;Rgba8&gt; swatch = [new Rgba8(200, 120, 80, 255), new Rgba8(40, 60, 90, 255)];
+subtle.Apply(swatch);
+</code></pre>
+<p><code>ToneCurve.FromPoints</code> draws a curve as photo editors do, a monotone cubic through the points (Fritsch and Carlson) that never
+overshoots; <code>FromTable</code> and <code>FromFunction</code> take a table or a function.</p>
+<pre><code class="lang-csharp">// Curves as a photo editor draws them: a smooth curve through the points that never overshoots, here a mild S on all
+// three channels and a lift in the blue shadows.
+ToneCurve s = ToneCurve.FromPoints([(0, 0), (0.25f, 0.2f), (0.75f, 0.82f), (1, 1)]);
+ToneCurve blue = ToneCurve.FromPoints([(0, 0.06f), (0.5f, 0.5f), (1, 1)]);
+raster.Apply(o =&gt; o.ApplyFilter(ColorFilter.Curves(s, s, s.Then(blue))), Ct);
+</code></pre><h2 id="3d-lookup-tables">3D lookup tables</h2>
+<p>A <code>Lut3D</code> is an N × N × N grid of output colors, with an optional 1D shaper before it. <code>CubeFile</code> reads and writes .cube files
+(Adobe's 1.0 specification and DaVinci Resolve's 1D-plus-3D form); the reader is strict and checks the limits before it allocates.
+<code>Lut3D.FromHald</code> and <code>ToHald</code> read and write Hald CLUT images, and <code>Raster.HaldIdentity</code> makes the identity to grade in an editor.
+<code>LutInterpolation.Tetrahedral</code> (the default, as Resolve and OpenColorIO read tables) keeps grays neutral; <code>Trilinear</code> matches
+ImageMagick's <code>-hald-clut</code> to within a level.</p>
+<pre><code class="lang-csharp">// Export a grade for DaVinci Resolve or Premiere, then load a .cube file and apply it at 70%.
+ColorFilter grade = ColorFilter.Curves(ToneCurve.FromPoints([(0, 0), (0.25f, 0.2f), (0.75f, 0.82f), (1, 1)]))
+    .Then(ColorFilter.Saturation(1.1f));
+CubeFile.Write(&quot;my-grade.cube&quot;, grade.ToLut3D(size: 33), title: &quot;My grade&quot;);
+
+Lut3D lut = CubeFile.Read(&quot;my-grade.cube&quot;);
+raster.Apply(o =&gt; o.ApplyFilter(ColorFilter.Lerp(ColorFilter.Identity, ColorFilter.FromLut(lut), 0.7f)), Ct);
+
+// Tables can also be built from a function, and read at any color.
+Lut3D warm = Lut3D.FromFunction(c =&gt; new Vector3(c.X, c.Y * 0.97f, c.Z * 0.9f), size: 17);
+Vector3 gray = warm.Evaluate(new Vector3(0.5f), LutInterpolation.Tetrahedral);
+</code></pre><pre><code class="lang-csharp">// Export the identity Hald image, grade it in any editor, and load the graded image back as a table.
+using Raster&lt;Rgba8&gt; identity = Raster.HaldIdentity(level: 8);   // 512 × 512, a 64³ table
+identity.Save(&quot;hald.png&quot;);
+
+using Raster graded = Raster.Load(&quot;hald.png&quot;);
+Lut3D fromHald = Lut3D.FromHald(graded);
+using Raster&lt;Rgba16&gt; back = fromHald.ToHald(level: 8);
+</code></pre><h2 id="adjustments-that-read-the-image">Adjustments that read the image</h2>
+<p><code>AutoLevel</code>, <code>ContrastStretch</code>, <code>Normalize</code>, <code>AutoGamma</code>, <code>AutoWhiteBalance</code>, <code>Equalize</code> and <code>AutoThreshold</code> measure the image
+before they change it: the chain runs up to the step, the step measures the result, and it becomes a plain filter for the rest of
+the chain. Inside <code>Within</code> or <code>OnChannels</code> they measure only the scope; transparent pixels do not count. An animation is measured
+as a whole, so its frames get one correction and do not flicker; <code>perFrame: true</code> measures each frame alone, as ImageMagick does.
+Black and white points, gammas and threshold levels equal ImageMagick's.</p>
+<pre><code class="lang-csharp">// Fix a dull scan: stretch it to the full range, clipping the darkest 2% and lightest 1%, then set the midtones.
+raster.Apply(o =&gt; o.Normalize().AutoGamma(), Ct);
+
+// Or stretch each channel on its own, which also removes a cast.
+raster.Apply(o =&gt; o.AutoLevel(linked: false), Ct);
+
+// Measured steps measure only their scope: here the sky alone is stretched.
+raster.Apply(o =&gt; o.Within(new Rect(0, 0, raster.Width, raster.Height / 3), sky =&gt; sky.AutoLevel()), Ct);
+</code></pre>
+<p><code>linked: true</code> (the default) gives red, green and blue one pair of points, which keeps colors; <code>false</code> gives each channel its own,
+which also removes a cast. Each step has a <code>Raster.Measure…</code> helper that returns the filter without changing anything, to apply
+one correction to many images.</p>
+<pre><code class="lang-csharp">// Measure once on a reference shot, then apply the same correction to the whole shoot.
+ColorFilter fix = reference.MeasureAutoLevel().Then(reference.MeasureWhiteBalance());
+foreach (Raster&lt;Rgba8&gt; shot in shoot)
+{
+    shot.Apply(o =&gt; o.ApplyFilter(fix), Ct);
+}
+
+// The other measured steps have their Measure helpers too.
+ColorFilter stretch = reference.MeasureContrastStretch(0.02f, 0.01f);
+ColorFilter midtones = reference.MeasureAutoGamma();
+ColorFilter spread = reference.MeasureEqualize();
+</code></pre><h2 id="white-balance">White balance</h2>
+<p><code>WhiteBalance(temperature, tint)</code> corrects for a light of a known color temperature with the Bradford transform, as a raw
+editor's sliders do; <code>WhiteBalance(neutral)</code> makes a picked color gray; <code>AutoWhiteBalance</code> finds the cast itself
+(<code>WhiteBalanceMethod.GrayWorld</code>, ImageMagick's <code>-white-balance</code>, or <code>WhitePatch</code>). Both fixed corrections are also filters,
+<code>ColorFilter.WhiteBalance(neutral)</code> and <code>ColorFilter.WhiteBalance(temperature, tint)</code>, so they can join a chain or a paint.</p>
+<pre><code class="lang-csharp">// Correct a tungsten-lit photo, as a raw editor's temperature slider does.
+raster.Apply(o =&gt; o.WhiteBalance(temperature: 3200), Ct);
+
+// Or pick a gray card's color and make it neutral.
+raster.Apply(o =&gt; o.WhiteBalance(new Rgba8(182, 170, 151, 255)), Ct);
+
+// Or let the image tell: ImageMagick's gray world, or the brightest pixels as white.
+raster.Apply(o =&gt; o.AutoWhiteBalance(WhiteBalanceMethod.GrayWorld), Ct);
+raster.Apply(o =&gt; o.AutoWhiteBalance(WhiteBalanceMethod.WhitePatch), Ct);
+</code></pre><h2 id="equalization-clahe-and-local-contrast">Equalization, CLAHE and local contrast</h2>
+<p><code>Equalize</code> spreads the values evenly: of L* by default, so colors hold (<code>EqualizeMode.Luminance</code>), or of each channel as
+ImageMagick's <code>-equalize</code> (<code>EqualizeMode.Channels</code>). <code>Clahe</code> equalizes each tile of the image with a clipped histogram and blends
+the tiles smoothly (Zuiderveld's CLAHE, on L* as ImageMagick runs it); <code>LocalContrast</code> is ImageMagick's <code>-local-contrast</code>. Both
+look at neighbours, and each frame is its own.</p>
+<pre><code class="lang-csharp">// Spread the lightness evenly without shifting colors, or each channel on its own as ImageMagick's -equalize.
+using Raster&lt;Rgba8&gt; even = raster.Derive(o =&gt; o.Equalize(EqualizeMode.Luminance), Ct);
+using Raster&lt;Rgba8&gt; strong = raster.Derive(o =&gt; o.Equalize(EqualizeMode.Channels), Ct);
+</code></pre><pre><code class="lang-csharp">// Bring out detail in a flat, foggy landscape: CLAHE on 8 × 8 tiles, then ImageMagick's local contrast.
+raster.Apply(o =&gt; o.Clahe(tilesX: 8, tilesY: 8, clipLimit: 2).LocalContrast(radius: 0.1f, strength: 0.15f), Ct);
+</code></pre><h2 id="thresholds">Thresholds</h2>
+<p><code>AutoThreshold</code> finds the level with Otsu's, the triangle or Kapur's method (<code>ThresholdMethod</code>), as ImageMagick's
+<code>-auto-threshold</code>; <code>Raster.FindThreshold</code> returns the level alone. <code>AdaptiveThreshold</code> compares each pixel with the mean of the
+window around it (Bradley and Roth), for pages under uneven light.</p>
+<pre><code class="lang-csharp">// Two colors: navy below half luminance, cream above; alpha is kept.
+using Raster&lt;Rgba8&gt; stamp = raster.Derive(o =&gt; o.Threshold(0.5f, ThresholdMode.Luminance, Rgba8.Navy, new Rgba8(250, 240, 220, 255)), Ct);
+</code></pre><pre><code class="lang-csharp">// Threshold a scanned page for OCR: Otsu's level for an evenly lit page, or Bradley's local threshold for uneven light.
+float level = page.FindThreshold(ThresholdMethod.Otsu);
+using Raster&lt;Gray8&gt; even = page.Derive(o =&gt; o.AutoThreshold(ThresholdMethod.Otsu), Ct);
+using Raster&lt;Gray8&gt; uneven = page.Derive(o =&gt; o.AdaptiveThreshold(limit: 0.15f), Ct);
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/tone-and-color.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

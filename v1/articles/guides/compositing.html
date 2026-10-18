@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Compositing | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Compositing | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/compositing.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="compositing">Compositing</h1>
+
+<p><code>DrawImage</code> draws one raster onto another with source-over blending: the normal way a layer covers what is under it.</p>
+<pre><code class="lang-csharp">// Source-over blending, clipped to the overlap; the logo may be any pixel type.
+photo.Apply(ops =&gt; ops.DrawImage(logo, new Point(photo.Width - logo.Width - 10, 10), opacity: 0.9f), Ct);
+</code></pre>
+<ul>
+<li>The image may sit partly or wholly outside; only the overlap changes.</li>
+<li>It may be any pixel type; its first frame is drawn onto every frame of the target.</li>
+<li><code>opacity</code> multiplies its alpha: 1 draws it as it is, 0 draws nothing.</li>
+<li>For <code>Rgba8</code> and <code>Bgra8</code> targets the blend is exact integer math: every result is the true value rounded to nearest.</li>
+</ul>
+<h2 id="part-of-an-image">Part of an image</h2>
+<pre><code class="lang-csharp">// Draw part of an image, such as one tile of a sprite sheet: no copy is made.
+Rect tile = new(0, 0, 32, 32);
+photo.Apply(ops =&gt; ops.DrawImage(logo, tile, new Point(10, 10)), Ct);
+</code></pre>
+<p>The area is clipped to the image; an area that does not overlap it throws <code>ArgumentOutOfRangeException</code>. Drawing an area costs
+the same as drawing an image of that size.</p>
+<h2 id="blend-modes">Blend modes</h2>
+<p>Pass a <code>BlendMode</code> to choose how each pixel combines with the one under it: the twelve Porter–Duff operators, Plus and Modulate,
+and the W3C blend modes from Multiply to Luminosity, plus Add and Subtract.</p>
+<pre><code class="lang-csharp">// Print the photo onto paper: Multiply keeps the paper's texture under every color.
+paper.Apply(ops =&gt; ops.DrawImage(photo, new Point(0, 0), BlendMode.Multiply), Ct);
+
+// Or lighten it in linear light at half strength; only where the photo overlaps changes.
+paper.Apply(ops =&gt; ops.DrawImage(photo, new Point(10, 10), BlendMode.Screen, 0.5f, ColorSpace.Linear), Ct);
+</code></pre>
+<ul>
+<li>Only the overlap changes, as when drawing a layer: <code>DestinationIn</code> cuts the image's shape out of the overlap and leaves the rest.</li>
+<li><code>SourceOver</code> on stored values is exactly the plain <code>DrawImage</code>.</li>
+<li>Blends use the stored values, as browsers and editors do; pass <code>ColorSpace.Linear</code> to blend light instead, with the raster's own curve.</li>
+<li>On <code>PremulRgba8</code>, <code>PremulBgra8</code>, <code>Rgba8</code> and <code>Bgra8</code> the Porter–Duff operators, Plus, Modulate and the product-and-sum modes are exact
+integer math; ColorDodge, ColorBurn, SoftLight and the four non-separable modes are within a level of exact, with alpha exact.</li>
+</ul>
+<pre><code class="lang-csharp">// One enum names every mode. Blend modes (Multiply to Luminosity) blend the colors, then cover what is under them.
+BlendMode[] darkening = [BlendMode.Multiply, BlendMode.Darken, BlendMode.ColorBurn];
+BlendMode[] cutting = [BlendMode.DestinationIn, BlendMode.DestinationOut];   // shape the destination by the image's alpha
+</code></pre><h2 id="blend-a-color">Blend a color</h2>
+<pre><code class="lang-csharp">// Warm the photo with an orange tint, and give it a gray-blue color grade.
+photo.Apply(ops =&gt; ops
+    .BlendColor(new Rgba8(255, 200, 150, 255), BlendMode.Multiply)
+    .BlendColor(new Rgba8(60, 80, 110, 255), BlendMode.Color, opacity: 0.3f), Ct);
+</code></pre>
+<p><code>BlendColor</code> is <code>DrawImage</code> of a solid image the size of the raster, without making one.</p>
+<h2 id="arithmetic-composite">Arithmetic composite</h2>
+<pre><code class="lang-csharp">// Average two images: each channel becomes 0.5·S + 0.5·D.
+photo.Apply(ops =&gt; ops.DrawArithmetic(other, new Point(0, 0), k1: 0, k2: 0.5f, k3: 0.5f, k4: 0), Ct);
+</code></pre>
+<p>Each premultiplied channel becomes k1·S·D + k2·S + k3·D + k4, as SVG's feComposite arithmetic operator and Skia's arithmetic
+blender define it, kept a valid premultiplied pixel unless <code>clamp</code> is false.</p>
+<h2 id="blend-rows-in-your-own-code">Blend rows in your own code</h2>
+<p><code>Compositor</code> runs the same kernels on spans of any pixel type, with optional per-pixel coverage for antialiased edges. It allocates
+nothing once warm and is safe to call from many threads.</p>
+<pre><code class="lang-csharp">// Blend rows in your own code: a source row, a destination row, and coverage from an antialiased edge.
+Rgba8[] source = new Rgba8[256], destination = new Rgba8[256];
+byte[] coverage = new byte[256];
+for (int x = 0; x &lt; 256; x++)
+{
+    source[x] = new Rgba8((byte)x, 80, 200, 255);
+    destination[x] = new Rgba8(250, 250, 240, 255);
+    coverage[x] = (byte)Math.Clamp((x - 100) * 8, 0, 255);   // a soft edge from x = 100 to 132
+}
+
+Compositor.Blend&lt;Rgba8&gt;(BlendMode.Multiply, source, destination, coverage);
+
+// One color through coverage, the way a rasterizer fills a shape's spans.
+Compositor.Blend(BlendMode.SourceOver, new Rgba8(255, 0, 0, 128), destination.AsSpan(), coverage);
+</code></pre><h2 id="run-it">Run it</h2>
+<p><a href="https://github.com/inexin/Egami/tree/main/samples/Compositing"><code>samples/Compositing</code></a> is a console app that does what this guide shows on the bundled
+images: <code>dotnet run --project samples/Compositing</code> writes its results to <code>./output</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/compositing.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

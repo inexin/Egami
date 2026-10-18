@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Colors | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Colors | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Colors">
+
+  <h1 id="Egami_Colors" data-uid="Egami.Colors" class="text-break">Namespace Egami.Colors</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.ColorConvert.html">ColorConvert</a></dt>
+      <dd><p>Converts between color values (<a class="xref" href="Egami.Colors.IColorValue-1.html">IColorValue&lt;TSelf&gt;</a>), through XYZ D65, and between rows of pixels and color values.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.ColorPrimaries.html">ColorPrimaries</a></dt>
+      <dd><p>The chromaticities of an RGB color space's red, green and blue primaries and of its white. With a transfer function they
+make a <a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+      <dd><p>What a raster's numbers mean: the color model, the primaries and white point, and the transfer function. Immutable; the
+built-ins cover the common encodings, and <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_Create_Egami_Colors_ColorPrimaries_Egami_Colors_TransferFunction_System_String_">Create(ColorPrimaries, TransferFunction, string?)</a> makes any other RGB encoding.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.ColorTransform.html">ColorTransform</a></dt>
+      <dd><p>A conversion from one color encoding to another, compiled once and then applied to spans of pixels of any type. Reusable and
+safe to share between threads. Transforms are cached per <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a>, so creating the same one again is cheap.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.ColorTransformOptions.html">ColorTransformOptions</a></dt>
+      <dd><p>How a color conversion maps colors: the rendering intent, black point compensation, and for HDR sources, tone mapping, the
+source peak and reference white.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.Colorant.html">Colorant</a></dt>
+      <dd><p>A named ink: a process ink, a spot colour or a technical ink, with how it looks for backends that cannot print it. Names are
+matched exactly (ordinal, case-sensitive), as PDF matches them; the names <code>Cyan</code>, <code>Magenta</code>, <code>Yellow</code> and
+<code>Black</code> always mean the process inks, as in PDF's DeviceN. Two colorants are equal when their names are.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.GainMap.html">GainMap</a></dt>
+      <dd><p>An HDR gain map: a small image that, with <a class="xref" href="Egami.Colors.GainMapInfo.html">GainMapInfo</a>, turns an SDR base image into its HDR rendition (or the
+reverse). Read from Ultra HDR, ISO 21496-1 and Apple JPEG files into <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_GainMap">GainMap</a>; written
+back by the JPEG writer. Immutable, so rasters can share it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.GainMapInfo.html">GainMapInfo</a></dt>
+      <dd><p>How a gain map turns its base image into another rendition, in ISO 21496-1's terms: for a gain map sample g (0 to 1) after
+gamma, the log2 boost is lerp(<a class="xref" href="Egami.Colors.GainMapInfo.html#Egami_Colors_GainMapInfo_GainMapMin">GainMapMin</a>, <a class="xref" href="Egami.Colors.GainMapInfo.html#Egami_Colors_GainMapInfo_GainMapMax">GainMapMax</a>, g), applied as
+(base + <a class="xref" href="Egami.Colors.GainMapInfo.html#Egami_Colors_GainMapInfo_OffsetSdr">OffsetSdr</a>) × 2^(boost × weight) − <a class="xref" href="Egami.Colors.GainMapInfo.html#Egami_Colors_GainMapInfo_OffsetHdr">OffsetHdr</a>, where the weight rises from 0 at a display
+headroom of <a class="xref" href="Egami.Colors.GainMapInfo.html#Egami_Colors_GainMapInfo_HdrCapacityMin">HdrCapacityMin</a> to 1 at <a class="xref" href="Egami.Colors.GainMapInfo.html#Egami_Colors_GainMapInfo_HdrCapacityMax">HdrCapacityMax</a>. Boosts and capacities are log2 values.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.GainMapOptions.html">GainMapOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Colors.GainMap.html#Egami_Colors_GainMap_Create_Egami_Raster_Egami_Raster_Egami_Colors_GainMapOptions_">Create(Raster, Raster?, GainMapOptions?)</a> and <a class="xref" href="Egami.Formats.Jpeg.JpegWriterOptions.html#Egami_Formats_Jpeg_JpegWriterOptions_GainMap">GainMap</a> make a gain map (HDR Design question
+10). The defaults are libultrahdr's: a full-size map with a gain for each of red, green and blue, gamma 1, encoded at quality 95.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.HdrMetadata.html">HdrMetadata</a></dt>
+      <dd><p>What an HDR file says about the display it was mastered on and the light levels in it (SMPTE ST 2086 and CTA-861.3, as PNG's
+mDCV and cLLI chunks store them). Tone mapping takes its source peak from here. Luminances are in cd/m².</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.IccData.html">IccData</a></dt>
+      <dd><p>A parsed ICC profile (ICC.1, versions 2 and 4): the header fields, the description and copyright text, and every tag with its
+bytes. Read-only; <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_FromIcc_Egami_Colors_IccData_">FromIcc(IccData)</a> turns it into an encoding that conversion can use.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.InkColor.html">InkColor</a></dt>
+      <dd><p>A colour given as inks: named colorants with tints, as PDF's Separation and DeviceN colours, plus the appearance other
+backends draw. An ink canvas paints each named ink's plate; an RGB canvas, SVG or a raster without the ink draws
+<a class="xref" href="Egami.Colors.InkColor.html#Egami_Colors_InkColor_Appearance">Appearance</a>. Immutable.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.InkSet.html">InkSet</a></dt>
+      <dd><p>The inks a printed page uses, fixed when an ink raster is made: the process inks of an output profile, then named spot and
+technical inks, at most <a class="xref" href="Egami.Colors.InkSet.html#Egami_Colors_InkSet_MaxInks">MaxInks</a> in all. Colours naming an ink the set lacks are drawn through their appearance
+into the process inks, as PDF does for a device without that colorant. Immutable: <a class="xref" href="Egami.Colors.InkSet.html#Egami_Colors_InkSet_WithSpot_System_String_System_Nullable_Egami_Colors_InkAppearance__Egami_Colors_ColorantKind_">WithSpot(string, InkAppearance?, ColorantKind)</a>
+and <a class="xref" href="Egami.Colors.InkSet.html#Egami_Colors_InkSet_WithDisabled_System_String_">WithDisabled(string)</a> return a new set.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.TransferFunction.html">TransferFunction</a></dt>
+      <dd><p>How a color space encodes light: the curve from stored values to linear light and back. Single values use exact double
+arithmetic; rows of floats use a vectorized form within 1e-5 of it (PQ rows use the double form), the same on every CPU with
+or without SIMD.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.Chromaticity.html">Chromaticity</a></dt>
+      <dd><p>A CIE 1931 chromaticity: the x and y coordinates of a color with its brightness left out.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.CmykColor.html">CmykColor</a></dt>
+      <dd><p>A CMYK color: ink amounts 0 to 1, 0 being no ink, by the plain formula (K = 1 − max(R, G, B), C = (1 − R − K) / (1 − K)) on
+encoded sRGB. Real inks need a print profile: <a class="xref" href="Egami.Colors.CmykColor.html#Egami_Colors_CmykColor_From_Egami_Pixels_Rgba8_Egami_Colors_ColorProfile_Egami_Colors_ColorTransformOptions_">From(Rgba8, ColorProfile, ColorTransformOptions?)</a> converts
+through one.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.ColorCodePoints.html">ColorCodePoints</a></dt>
+      <dd><p>The ITU-T H.273 code points that PNG's cICP chunk, AVIF and JPEG XL use to name a color encoding: colour primaries, transfer
+characteristics, matrix coefficients and the full-range flag, kept exactly as stored so codes Egami does not know round-trip.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.GainMapValues.html">GainMapValues</a></dt>
+      <dd><p>A value for each of red, green and blue; a one-channel gain map has the same three.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.HslColor.html">HslColor</a></dt>
+      <dd><p>An HSL color: hue, saturation and lightness of encoded sRGB, as CSS hsl() defines them.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.HsvColor.html">HsvColor</a></dt>
+      <dd><p>An HSV (HSB) color: hue, saturation and value of encoded sRGB, as color pickers use them.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.IccTag.html">IccTag</a></dt>
+      <dd><p>One tag of an ICC profile: its signature, the type signature its data starts with, and the data.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.InkAppearance.html">InkAppearance</a></dt>
+      <dd><p>How an ink looks at full tint where it cannot be printed: on an RGB canvas, in SVG, in a proof of a raster without its plate,
+or drawn into the process inks of a raster that lacks it. A process CMYK colour, an sRGB colour or a Lab colour, as PDF's
+alternate colour spaces allow.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.InkTint.html">InkTint</a></dt>
+      <dd><p>One ink of an <a class="xref" href="Egami.Colors.InkColor.html">InkColor</a> and its tint.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.LabColor.html">LabColor</a></dt>
+      <dd><p>A CIE L<em>a</em>b* color relative to D50, as ICC and CSS Color 4 define Lab.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.LchColor.html">LchColor</a></dt>
+      <dd><p>A CIE LCh color: the polar form of <a class="xref" href="Egami.Colors.LabColor.html">LabColor</a> (D50), with chroma and hue instead of a and b.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.OklabColor.html">OklabColor</a></dt>
+      <dd><p>An Oklab color (Björn Ottosson, 2020): a perceptual space built on linear sRGB, where equal distances look about equally
+different and hues stay put when lightness or chroma changes. CSS Color 4's oklab().</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.OklchColor.html">OklchColor</a></dt>
+      <dd><p>An Oklch color: the polar form of <a class="xref" href="Egami.Colors.OklabColor.html">OklabColor</a>, CSS Color 4's oklch().</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.XyzColor.html">XyzColor</a></dt>
+      <dd><p>A CIE 1931 XYZ color relative to D65 white (Y = 1 for white), CSS Color 4's XYZ; <a class="xref" href="Egami.Colors.XyzColor.html#Egami_Colors_XyzColor_ToD50">ToD50()</a> adapts it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.YCbCrColor.html">YCbCrColor</a></dt>
+      <dd><p>A Y'CbCr color: luma and two chroma differences of encoded sRGB, scaled as 8-bit codes / 255: at full range chroma is
+centered on 128 / 255, as JPEG and H.273 store it, so a byte reads as <code>value × 255</code>. The members without options use
+BT.601 at full range, as JPEG does; overloads take a <a class="xref" href="Egami.Pixels.YuvMatrix.html">YuvMatrix</a> and <a class="xref" href="Egami.Pixels.YuvRange.html">YuvRange</a>, from the
+coefficient table planar YUV images share.</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.IColorValue-1.html">IColorValue&lt;TSelf&gt;</a></dt>
+      <dd><p>A color value in one color model, convertible to and from CIE XYZ (D65) and sRGB pixels, so <a class="xref" href="Egami.Colors.ColorConvert.html">ColorConvert</a> can
+convert between any two models and between pixels and values.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.ColorModel.html">ColorModel</a></dt>
+      <dd><p>Whether a color encoding has three RGB channels, one gray channel, four CMYK inks, or the inks of an n-colour press.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.ColorantKind.html">ColorantKind</a></dt>
+      <dd><p>What a colorant is for, as PDF and ICC name inks.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.GainMapFormat.html">GainMapFormat</a></dt>
+      <dd><p>Where a gain map's metadata came from.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.IccProfileClass.html">IccProfileClass</a></dt>
+      <dd><p>What an ICC profile describes, from its header's class field.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.InkAppearanceKind.html">InkAppearanceKind</a></dt>
+      <dd><p>The colour model an <a class="xref" href="Egami.Colors.InkAppearance.html">InkAppearance</a> is given in.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.RenderingIntent.html">RenderingIntent</a></dt>
+      <dd><p>How a color conversion handles colors the target cannot show, with the ICC numbering (0 to 3).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Colors.ToneMapping.html">ToneMapping</a></dt>
+      <dd><p>How HDR light above reference white is brought into the 0..1 range of an SDR encoding.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

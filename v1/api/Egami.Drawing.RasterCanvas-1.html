@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class RasterCanvas&lt;TPixel&gt; | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class RasterCanvas&lt;TPixel&gt; | Egami ">
+      
+      <meta name="description" content="The raster backend: a canvas that draws into a raster&#39;s pixels, with exact-area antialiasing, blended through Egami&#39;s Compositor in the pixel type&#39;s own precision. A clip that is a pixel-aligned rectangle stays a rectangle; any other clip becomes a coverage mask over the clip&#39;s bounds. A call whose area exceeds 256 KiB of destination rows spreads its rows over up to  cores, with the same pixels at any core count.  A layer from  is premultiplied in the raster&#39;s class (PremulRgba8 for 8-bit rasters, PremulRgbaF32 for deeper ones) and covers only its bounds inside the clip, grown by its filter&#39;s reach; its memory comes from the raster&#39;s  and is released at .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_RasterCanvas_1.md&amp;value=---%0Auid%3A%20Egami.Drawing.RasterCanvas%601%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.RasterCanvas`1">
+
+
+
+  <h1 id="Egami_Drawing_RasterCanvas_1" data-uid="Egami.Drawing.RasterCanvas`1" class="text-break">
+Class RasterCanvas&lt;TPixel&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.Text.cs/#L10"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The raster backend: a canvas that draws into a raster's pixels, with exact-area antialiasing, blended through Egami's
+Compositor in the pixel type's own precision. A clip that is a pixel-aligned rectangle stays a rectangle; any other clip
+becomes a coverage mask over the clip's bounds. A call whose area exceeds 256 KiB of destination rows spreads its rows over
+up to <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_MaxParallelism">MaxParallelism</a> cores, with the same pixels at any core count.</p>
+<p>
+A layer from <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_Egami_Drawing_LayerOptions_">SaveLayer(LayerOptions?)</a> is premultiplied in the raster's class (PremulRgba8 for 8-bit
+rasters, PremulRgbaF32 for deeper ones) and covers only its bounds inside the clip, grown by its filter's reach; its memory
+comes from the raster's <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a> and is released at <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Restore()</a>.
+</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class RasterCanvas&lt;TPixel&gt; : Canvas, IDisposable where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The raster's pixel type.</p>
+</dd>
+  </dl>
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a></div>
+      <div><span class="xref">RasterCanvas&lt;TPixel&gt;</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImageNinePatch_Egami_Raster_Egami_Rect_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImageNinePatch(Raster, Rect, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImageLattice_Egami_Raster_Egami_Drawing_Lattice_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImageLattice(Raster, Lattice, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawAtlas_Egami_Raster_System_ReadOnlySpan_Egami_Drawing_SpriteTransform__System_ReadOnlySpan_Egami_Drawing_RectF__System_ReadOnlySpan_Egami_Pixels_RgbaF32__Egami_Operations_BlendMode_Egami_Operations_SamplingOptions_System_Nullable_Egami_Drawing_RectF__Egami_Drawing_Paint_">Canvas.DrawAtlas(Raster, ReadOnlySpan&lt;SpriteTransform&gt;, ReadOnlySpan&lt;RectF&gt;, ReadOnlySpan&lt;RgbaF32&gt;, BlendMode, SamplingOptions, RectF?, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__">Canvas.DrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPatch_Egami_Drawing_Patch_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__">Canvas.DrawPatch(Patch, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPicture_Egami_Drawing_Picture_System_Nullable_System_Numerics_Matrix3x2__Egami_Drawing_Paint_System_Boolean_">Canvas.DrawPicture(Picture, Matrix3x2?, Paint, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Width">Canvas.Width</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Height">Canvas.Height</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Matrix">Canvas.Matrix</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveCount">Canvas.SaveCount</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DeviceClipBounds">Canvas.DeviceClipBounds</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_LocalClipBounds">Canvas.LocalClipBounds</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Save">Canvas.Save()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Canvas.Restore()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_RestoreToCount_System_Int32_">Canvas.RestoreToCount(int)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Translate_System_Single_System_Single_">Canvas.Translate(float, float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Scale_System_Single_System_Single_">Canvas.Scale(float, float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Scale_System_Single_">Canvas.Scale(float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Rotate_System_Single_">Canvas.Rotate(float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Rotate_System_Single_System_Numerics_Vector2_">Canvas.Rotate(float, Vector2)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Skew_System_Single_System_Single_">Canvas.Skew(float, float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Concat_System_Numerics_Matrix3x2_">Canvas.Concat(Matrix3x2)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SetMatrix_System_Numerics_Matrix3x2_">Canvas.SetMatrix(Matrix3x2)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_ResetMatrix">Canvas.ResetMatrix()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_ClipRect_Egami_Drawing_RectF_Egami_Drawing_ClipOp_System_Boolean_">Canvas.ClipRect(RectF, ClipOp, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_ClipRoundRect_Egami_Drawing_RoundRect_Egami_Drawing_ClipOp_System_Boolean_">Canvas.ClipRoundRect(RoundRect, ClipOp, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_ClipPath_Egami_Drawing_Path_Egami_Drawing_ClipOp_System_Boolean_">Canvas.ClipPath(Path, ClipOp, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_QuickReject_Egami_Drawing_RectF_">Canvas.QuickReject(RectF)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_QuickReject_Egami_Drawing_Path_">Canvas.QuickReject(Path)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillRect_Egami_Drawing_RectF_Egami_Drawing_Paint_">Canvas.FillRect(RectF, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokeRect_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokeRect(RectF, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillRoundRect_Egami_Drawing_RoundRect_Egami_Drawing_Paint_">Canvas.FillRoundRect(RoundRect, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokeRoundRect_Egami_Drawing_RoundRect_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokeRoundRect(RoundRect, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillOval_Egami_Drawing_RectF_Egami_Drawing_Paint_">Canvas.FillOval(RectF, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokeOval_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokeOval(RectF, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillCircle_System_Numerics_Vector2_System_Single_Egami_Drawing_Paint_">Canvas.FillCircle(Vector2, float, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokeCircle_System_Numerics_Vector2_System_Single_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokeCircle(Vector2, float, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillArc_Egami_Drawing_RectF_System_Single_System_Single_Egami_Drawing_Paint_">Canvas.FillArc(RectF, float, float, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokeArc_Egami_Drawing_RectF_System_Single_System_Single_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokeArc(RectF, float, float, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillRing_Egami_Drawing_RoundRect_Egami_Drawing_RoundRect_Egami_Drawing_Paint_">Canvas.FillRing(RoundRect, RoundRect, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillPath_Egami_Drawing_Path_Egami_Drawing_Paint_">Canvas.FillPath(Path, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_StrokePath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.StrokePath(Path, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawLine_System_Numerics_Vector2_System_Numerics_Vector2_Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.DrawLine(Vector2, Vector2, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPoints_Egami_Drawing_PointMode_System_ReadOnlySpan_System_Numerics_Vector2__Egami_Drawing_Stroke_Egami_Drawing_Paint_">Canvas.DrawPoints(PointMode, ReadOnlySpan&lt;Vector2&gt;, Stroke, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPaint_Egami_Drawing_Paint_">Canvas.DrawPaint(Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Clear_Egami_Pixels_RgbaF32_">Canvas.Clear(RgbaF32)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Clear_Egami_Pixels_Rgba8_">Canvas.Clear(Rgba8)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Raster_System_Numerics_Vector2_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImage(Raster, Vector2, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImage(Raster, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImage(Raster, RectF, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Dispose">Canvas.Dispose()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_MarkedContentDepth">Canvas.MarkedContentDepth</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Drawing_EncodedImage_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImage(EncodedImage, RectF, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Drawing_EncodedImage_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">Canvas.DrawImage(EncodedImage, RectF, SamplingOptions, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImageMask_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_Paint_Egami_Operations_SamplingOptions_">Canvas.DrawImageMask(Raster, RectF, Paint, SamplingOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawAnnotation_Egami_Drawing_RectF_Egami_Drawing_Annotation_">Canvas.DrawAnnotation(RectF, Annotation)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_BeginMarkedContent_Egami_Drawing_MarkedContent_">Canvas.BeginMarkedContent(MarkedContent)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_EndMarkedContent">Canvas.EndMarkedContent()</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_Egami_Drawing_LayerOptions_">Canvas.SaveLayer(LayerOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_System_Single_">Canvas.SaveLayer(float)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawShadow_Egami_Drawing_Path_Egami_Drawing_ShadowOptions_">Canvas.DrawShadow(Path, ShadowOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawText_System_String_System_Numerics_Vector2_Egami_Fonts_Font_Egami_Drawing_Paint_Egami_Fonts_Shaping_ShapingOptions_">Canvas.DrawText(string, Vector2, Font, Paint, ShapingOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawShapedText_Egami_Fonts_Shaping_ShapedText_System_Numerics_Vector2_Egami_Drawing_Paint_">Canvas.DrawShapedText(ShapedText, Vector2, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawTextOnPath_System_String_Egami_Drawing_Path_Egami_Fonts_Font_Egami_Drawing_Paint_Egami_Drawing_TextOnPathOptions_">Canvas.DrawTextOnPath(string, Path, Font, Paint, TextOnPathOptions)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawGlyphRun_Egami_Fonts_GlyphRun_System_Numerics_Vector2_Egami_Drawing_Paint_">Canvas.DrawGlyphRun(GlyphRun, Vector2, Paint)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawTextLayout_Egami_Fonts_Layout_TextLayout_System_Numerics_Vector2_System_Nullable_Egami_Drawing_RectF__Egami_Drawing_PlaceholderPainter_">Canvas.DrawTextLayout(TextLayout, Vector2, RectF?, PlaceholderPainter)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawText_System_String_Egami_Drawing_RectF_Egami_Fonts_Layout_ParagraphStyle_Egami_Drawing_VerticalAlign_">Canvas.DrawText(string, RectF, ParagraphStyle, VerticalAlign)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawText_Egami_Fonts_Layout_RichText_Egami_Drawing_RectF_Egami_Fonts_Layout_ParagraphStyle_Egami_Drawing_VerticalAlign_">Canvas.DrawText(RichText, RectF, ParagraphStyle, VerticalAlign)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_RasterCanvas_1_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A canvas draws onto a raster. Calls draw when they are made; dispose the canvas when done.
+using Raster&lt;Rgba8&gt; raster = Raster.Create(400, 300, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    canvas.FillRect(new RectF(20, 20, 160, 100), new Rgba8(30, 90, 200, 255));
+
+    // Save and Restore bracket transform and clip changes.
+    canvas.Save();
+    canvas.Translate(260, 150);
+    canvas.Rotate(30);
+    canvas.FillRect(new RectF(-50, -30, 100, 60), new Rgba8(200, 60, 30, 200));
+    canvas.Restore();
+
+    canvas.FillCircle(new Vector2(100, 220), 50, Rgba8.Black);
+}
+
+// Blend edges in linear light, which keeps thin lines and translucent colors from darkening.
+using RasterCanvas&lt;Rgba8&gt; linear = raster.CreateCanvas(new CanvasOptions { ColorSpace = ColorSpace.Linear });</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Drawing_RasterCanvas_1__ctor_" data-uid="Egami.Drawing.RasterCanvas`1.#ctor*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1__ctor_Egami_Raster__0__Egami_Drawing_CanvasOptions_" data-uid="Egami.Drawing.RasterCanvas`1.#ctor(Egami.Raster{`0},Egami.Drawing.CanvasOptions)">
+  RasterCanvas(Raster&lt;TPixel&gt;, CanvasOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Drawing.RasterCanvas-1.html">RasterCanvas&lt;TPixel&gt;</a> class over a raster's first frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RasterCanvas(Raster&lt;TPixel&gt; raster, CanvasOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>raster</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The raster to draw on.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Drawing.CanvasOptions.html">CanvasOptions</a></dt>
+    <dd><p>The settings, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1__ctor_Egami_Raster__0__Egami_Drawing_CanvasOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A canvas draws onto a raster. Calls draw when they are made; dispose the canvas when done.
+using Raster&lt;Rgba8&gt; raster = Raster.Create(400, 300, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    canvas.FillRect(new RectF(20, 20, 160, 100), new Rgba8(30, 90, 200, 255));
+
+    // Save and Restore bracket transform and clip changes.
+    canvas.Save();
+    canvas.Translate(260, 150);
+    canvas.Rotate(30);
+    canvas.FillRect(new RectF(-50, -30, 100, 60), new Rgba8(200, 60, 30, 200));
+    canvas.Restore();
+
+    canvas.FillCircle(new Vector2(100, 220), 50, Rgba8.Black);
+}
+
+// Blend edges in linear light, which keeps thin lines and translucent colors from darkening.
+using RasterCanvas&lt;Rgba8&gt; linear = raster.CreateCanvas(new CanvasOptions { ColorSpace = ColorSpace.Linear });</code></pre>
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_ColorGlyphRenderer_" data-uid="Egami.Drawing.RasterCanvas`1.ColorGlyphRenderer*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_ColorGlyphRenderer" data-uid="Egami.Drawing.RasterCanvas`1.ColorGlyphRenderer">
+  ColorGlyphRenderer
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.Text.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the renderer for color glyph formats the canvas does not draw itself, such as OpenType SVG glyphs; none by default. A
+backend overrides it to draw those glyphs, as the raster backend returns <a class="xref" href="Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_ColorGlyphRenderer">ColorGlyphRenderer</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override IColorGlyphRenderer? ColorGlyphRenderer { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.IColorGlyphRenderer.html">IColorGlyphRenderer</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_Options_" data-uid="Egami.Drawing.RasterCanvas`1.Options*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_Options" data-uid="Egami.Drawing.RasterCanvas`1.Options">
+  Options
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the canvas's settings.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CanvasOptions Options { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.CanvasOptions.html">CanvasOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_Dispose_" data-uid="Egami.Drawing.RasterCanvas`1.Dispose*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_Dispose_System_Boolean_" data-uid="Egami.Drawing.RasterCanvas`1.Dispose(System.Boolean)">
+  Dispose(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Releases the backend's resources; called once by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Dispose">Dispose()</a> after every state is restored.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void Dispose(bool disposing)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>disposing</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Always <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>: the canvas has no finalizer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnClipPath_" data-uid="Egami.Drawing.RasterCanvas`1.OnClipPath*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnClipPath_Egami_Drawing_Path_Egami_Drawing_ClipOp_System_Boolean_" data-uid="Egami.Drawing.RasterCanvas`1.OnClipPath(Egami.Drawing.Path,Egami.Drawing.ClipOp,System.Boolean)">
+  OnClipPath(Path, ClipOp, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L239"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clips by a path's fill.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnClipPath(Path path, ClipOp op, bool antialias)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path in local coordinates.</p>
+</dd>
+    <dt><code>op</code> <a class="xref" href="Egami.Drawing.ClipOp.html">ClipOp</a></dt>
+    <dd><p>Whether to keep the inside or the outside.</p>
+</dd>
+    <dt><code>antialias</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the edges are antialiased.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnClipRect_" data-uid="Egami.Drawing.RasterCanvas`1.OnClipRect*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnClipRect_Egami_Drawing_RectF_Egami_Drawing_ClipOp_System_Boolean_" data-uid="Egami.Drawing.RasterCanvas`1.OnClipRect(Egami.Drawing.RectF,Egami.Drawing.ClipOp,System.Boolean)">
+  OnClipRect(RectF, ClipOp, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L221"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clips by a rectangle. By default it goes to <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnClipPath_Egami_Drawing_Path_Egami_Drawing_ClipOp_System_Boolean_">OnClipPath(Path, ClipOp, bool)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnClipRect(RectF rect, ClipOp op, bool antialias)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The rectangle in local coordinates, under <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Matrix">Matrix</a>.</p>
+</dd>
+    <dt><code>op</code> <a class="xref" href="Egami.Drawing.ClipOp.html">ClipOp</a></dt>
+    <dd><p>Whether to keep the inside or the outside.</p>
+</dd>
+    <dt><code>antialias</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the edges are antialiased.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnDrawAtlas_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawAtlas*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnDrawAtlas_Egami_Raster_System_ReadOnlySpan_Egami_Drawing_SpriteTransform__System_ReadOnlySpan_Egami_Drawing_RectF__System_ReadOnlySpan_Egami_Pixels_RgbaF32__Egami_Operations_BlendMode_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawAtlas(Egami.Raster,System.ReadOnlySpan{Egami.Drawing.SpriteTransform},System.ReadOnlySpan{Egami.Drawing.RectF},System.ReadOnlySpan{Egami.Pixels.RgbaF32},Egami.Operations.BlendMode,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
+  OnDrawAtlas(Raster, ReadOnlySpan&lt;SpriteTransform&gt;, ReadOnlySpan&lt;RectF&gt;, ReadOnlySpan&lt;RgbaF32&gt;, BlendMode, SamplingOptions, Paint?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.Advanced.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws sprites from one image; the lists have equal lengths and colors is empty or as long. By default a sprite without a
+color is a <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">DrawImage(Raster, RectF, RectF, SamplingOptions?, Paint?)</a> under its transform, and a tinted one a
+two-triangle textured <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__">OnDrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)</a> call, one sprite at a time.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawAtlas(Raster image, ReadOnlySpan&lt;SpriteTransform&gt; transforms, ReadOnlySpan&lt;RectF&gt; sources, ReadOnlySpan&lt;RgbaF32&gt; colors, BlendMode colorBlend, SamplingOptions sampling, Paint? paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The sprite sheet.</p>
+</dd>
+    <dt><code>transforms</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Drawing.SpriteTransform.html">SpriteTransform</a>&gt;</dt>
+    <dd><p>Where each sprite goes.</p>
+</dd>
+    <dt><code>sources</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Drawing.RectF.html">RectF</a>&gt;</dt>
+    <dd><p>Each sprite's part of the image.</p>
+</dd>
+    <dt><code>colors</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a>&gt;</dt>
+    <dd><p>One color per sprite, or empty.</p>
+</dd>
+    <dt><code>colorBlend</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How a sprite combines with its color.</p>
+</dd>
+    <dt><code>sampling</code> <a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a></dt>
+    <dd><p>How the image is sampled.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The blend mode, opacity and antialiasing, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawAtlas_Egami_Raster_System_ReadOnlySpan_Egami_Drawing_SpriteTransform__System_ReadOnlySpan_Egami_Drawing_RectF__System_ReadOnlySpan_Egami_Pixels_RgbaF32__Egami_Operations_BlendMode_Egami_Operations_SamplingOptions_Egami_Drawing_Paint__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Pack the sprites once, then draw thousands of them in one call: each with its own place, turn, scale and tint.
+using SpriteSheet sheet = SpriteSheet.Pack([spark, star], new SpritePackOptions { Padding = 1 });
+Random random = new(7);
+SpriteTransform[] transforms = new SpriteTransform[2000];
+RectF[] sources = new RectF[transforms.Length];
+RgbaF32[] tints = new RgbaF32[transforms.Length];
+for (int i = 0; i &lt; transforms.Length; i++)
+{
+    Rect frame = sheet.Frames[i % 2];
+    sources[i] = frame;
+    transforms[i] = SpriteTransform.FromRotationScale(
+        scale: 0.3f + random.NextSingle(),
+        degrees: random.NextSingle() * 360,
+        position: new Vector2(random.NextSingle() * 320, random.NextSingle() * 200),
+        anchor: new Vector2(frame.Width / 2f, frame.Height / 2f));
+    tints[i] = new RgbaF32(1, 0.5f + (random.NextSingle() / 2), random.NextSingle(), 0.8f);
+}
+
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // Plus adds the sprites up, as light does.
+    canvas.DrawAtlas(sheet.Image, transforms, sources, tints, BlendMode.Modulate, paint: new SolidPaint(Rgba8.White) { BlendMode = BlendMode.Plus });
+}</code></pre>
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawAtlas_Egami_Raster_System_ReadOnlySpan_Egami_Drawing_SpriteTransform__System_ReadOnlySpan_Egami_Drawing_RectF__System_ReadOnlySpan_Egami_Pixels_RgbaF32__Egami_Operations_BlendMode_Egami_Operations_SamplingOptions_Egami_Drawing_Paint__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Each sprite is two textured triangles filled on its own; the sheet's texels are prepared once for the whole call.</p>
+</div>
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnDrawGlyphRun_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawGlyphRun*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnDrawGlyphRun_Egami_Fonts_GlyphRun_System_Numerics_Vector2_Egami_Drawing_Paint_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawGlyphRun(Egami.Fonts.GlyphRun,System.Numerics.Vector2,Egami.Drawing.Paint)">
+  OnDrawGlyphRun(GlyphRun, Vector2, Paint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.Text.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws a glyph run. The default turns the glyphs into one path, with the font's synthetic bold and italic, and calls
+<a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_">OnDrawPath(Path, Stroke?, Paint)</a>, aliased for <a class="xref" href="Egami.Fonts.FontEdging.html#Egami_Fonts_FontEdging_Alias">Alias</a>, so every backend draws text; a
+backend with text of its own, such as a PDF page writing text operators, overrides it and can use
+<a class="xref" href="Egami.Fonts.GlyphRun.html#Egami_Fonts_GlyphRun_Text">Text</a> and <a class="xref" href="Egami.Fonts.GlyphRun.html#Egami_Fonts_GlyphRun_Clusters">Clusters</a> to keep the text searchable.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawGlyphRun(GlyphRun run, Vector2 origin, Paint paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>run</code> <a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a></dt>
+    <dd><p>The glyphs, never empty.</p>
+</dd>
+    <dt><code>origin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>Where the run's origin goes, in local coordinates.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawGlyphRun_Egami_Fonts_GlyphRun_System_Numerics_Vector2_Egami_Drawing_Paint__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Under a scale-and-translate transform, glyphs up to 256 device pixels per em are drawn from <a class="xref" href="Egami.Drawing.GlyphCache.html">GlyphCache</a> masks:
+with <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Subpixel">Subpixel</a> their x origins round to quarter pixels (each phase its own mask) and y to whole pixels,
+else both to whole pixels; <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Hinting">Hinting</a>, <a class="xref" href="Egami.Fonts.Font.html#Egami_Fonts_Font_Edging">Edging</a> and synthetic bold and italic are applied
+when the mask is made, its curves flattened to 0.01 pixel (or the canvas tolerance when finer). Any other glyph run fills as
+one path at the canvas tolerance, with synthesis, aliased for <a class="xref" href="Egami.Fonts.FontEdging.html#Egami_Fonts_FontEdging_Alias">Alias</a>.</p>
+</div>
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnDrawImage_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawImage*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawImage(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
+  OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L364"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws part of an image into a local rectangle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>source</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The part to draw, inside the image.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>Where it goes, in local coordinates.</p>
+</dd>
+    <dt><code>sampling</code> <a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a></dt>
+    <dd><p>How it is sampled.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The blend mode, opacity and antialiasing, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for source-over.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A backend overrides hooks; the base class has already checked the arguments and tracks the transform and clip bounds.
+// This one writes SVG elements, keeping rectangles as rectangles and strokes as stroke settings.
+public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
+{
+    private readonly System.Text.StringBuilder _body = new();
+
+    public string Document =&gt; $"&lt;svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{Width}\" height=\"{Height}\"&gt;{_body}&lt;/svg&gt;";
+
+    protected override void OnDrawRect(RectF rect, Stroke? stroke, Paint paint)
+        =&gt; _body.Append(FormattableString.Invariant($"&lt;rect x=\"{rect.X}\" y=\"{rect.Y}\" width=\"{rect.Width}\" height=\"{rect.Height}\" {Style(stroke, paint)}/&gt;"));
+
+    protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)
+    {
+        System.Text.StringBuilder d = new();
+        int p = 0;
+        foreach (PathVerb verb in path.Verbs)
+        {
+            int count = verb switch { PathVerb.Quad =&gt; 2, PathVerb.Cubic =&gt; 3, PathVerb.Close =&gt; 0, _ =&gt; 1 };
+            d.Append(verb switch { PathVerb.Move =&gt; "M", PathVerb.Line =&gt; "L", PathVerb.Quad =&gt; "Q", PathVerb.Cubic =&gt; "C", _ =&gt; "Z" });
+            foreach (Vector2 point in path.Points.Slice(p, count))
+            {
+                d.Append(FormattableString.Invariant($"{point.X},{point.Y} "));
+            }
+
+            p += count;
+        }
+
+        _body.Append(System.Globalization.CultureInfo.InvariantCulture, $"&lt;path d=\"{d}\" {Style(stroke, paint)}/&gt;");
+    }
+
+    protected override void OnClipPath(Path path, ClipOp op, bool antialias)
+    {
+        // Clips would become &lt;clipPath&gt; elements; this sketch leaves them out.
+    }
+
+    protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
+    {
+        // An image would be embedded as a PNG data URI.
+    }
+
+    private string Style(Stroke? stroke, Paint paint)
+    {
+        Rgba8 c = paint is SolidPaint solid ? solid.Color.ToRgba8() : Rgba8.Black;
+        string color = $"#{c.R:x2}{c.G:x2}{c.B:x2}";
+        string transform = Matrix.IsIdentity ? "" : FormattableString.Invariant($" transform=\"matrix({Matrix.M11} {Matrix.M12} {Matrix.M21} {Matrix.M22} {Matrix.M31} {Matrix.M32})\"");
+        return stroke is null
+            ? $"fill=\"{color}\"{transform}"
+            : FormattableString.Invariant($"fill=\"none\" stroke=\"{color}\" stroke-width=\"{stroke.Width}\" stroke-linecap=\"{stroke.Cap.ToString().ToLowerInvariant()}\"{transform}");
+    }
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnDrawImageLattice_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawImageLattice*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnDrawImageLattice_Egami_Raster_Egami_Drawing_Lattice_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawImageLattice(Egami.Raster,Egami.Drawing.Lattice,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
+  OnDrawImageLattice(Raster, Lattice, RectF, SamplingOptions, Paint?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.Advanced.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws an image through a lattice; the lattice fits the image. By default each cell is an <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint?)</a> call of
+its part of the image, sampled only inside that part, and each fixed-color cell an <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawRect_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_">OnDrawRect(RectF, Stroke?, Paint)</a> call; a PDF
+backend gets one image per cell this way. The raster backend draws the cells as one mesh instead, so they meet without seams.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawImageLattice(Raster image, Lattice lattice, RectF destination, SamplingOptions sampling, Paint? paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>lattice</code> <a class="xref" href="Egami.Drawing.Lattice.html">Lattice</a></dt>
+    <dd><p>The grid.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>Where the image goes, in local coordinates; not empty.</p>
+</dd>
+    <dt><code>sampling</code> <a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a></dt>
+    <dd><p>How the image is sampled.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The blend mode, opacity and antialiasing, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawImageLattice_Egami_Raster_Egami_Drawing_Lattice_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint__examples">Examples</h4>
+  <pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // An Android .9.png: its one-pixel border marks what stretches. The corners stay sharp at any size.
+    (Raster inner, Lattice lattice, Rect? padding) = NinePatch.FromAndroid(file);
+    canvas.DrawImageLattice(inner, lattice, new RectF(10, 10, 180, 48));
+    inner.Dispose();
+
+    // A nine-patch from a plain image: the 8-pixel corners keep their size, the edges and center stretch.
+    canvas.DrawImageNinePatch(frame, new Rect(8, 8, 8, 8), new RectF(10, 70, 120, 40));
+
+    // A lattice can leave cells out or fill them with a color: here the center becomes a flat panel.
+    LatticeCellKind[] kinds = [.. Enumerable.Repeat(LatticeCellKind.Default, 9)];
+    kinds[4] = LatticeCellKind.FixedColor;
+    RgbaF32[] colors = new RgbaF32[9];
+    colors[4] = new RgbaF32(0.95f, 0.95f, 0.9f, 1);
+    canvas.DrawImageLattice(frame, new Lattice([8, 16], [8, 16]) { CellKinds = kinds, CellColors = colors }, new RectF(150, 70, 140, 40));
+}</code></pre>
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawImageLattice_Egami_Raster_Egami_Drawing_Lattice_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The cells are one mesh, each cell's triangles textured from a copy of its part of the image, so samples stay inside the cell
+as in Skia and neighboring cells still meet without seams; fixed-color cells are part of the same mesh.</p>
+</div>
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnDrawImageMask_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawImageMask*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnDrawImageMask_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_Paint_Egami_Operations_SamplingOptions_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawImageMask(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.Paint,Egami.Operations.SamplingOptions)">
+  OnDrawImageMask(Raster, RectF, Paint, SamplingOptions)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.Advanced.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Paints through an image mask. A PDF backend writes it as a stencil mask. By default the paint fills the rectangle in a layer
+and the mask's coverage, as an image drawn with <a class="xref" href="Egami.Operations.BlendMode.html#Egami_Operations_BlendMode_DestinationIn">DestinationIn</a>, cuts it out.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawImageMask(Raster mask, RectF destination, Paint paint, SamplingOptions sampling)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mask</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The mask image.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>Where the mask goes, in local coordinates; not empty.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>What fills the covered pixels.</p>
+</dd>
+    <dt><code>sampling</code> <a class="xref" href="Egami.Operations.SamplingOptions.html">SamplingOptions</a></dt>
+    <dd><p>How the mask is sampled.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawImageMask_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_Paint_Egami_Operations_SamplingOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A 1-bit scan as a stencil: its white pixels paint in ink, its black ones leave the page as it is.
+using Raster&lt;Gray8&gt; scan = Raster.Create(32, 16, new Gray8(255));
+canvas.DrawImageMask(scan, new RectF(160, 20, 64, 32), new Rgba8(20, 40, 120, 255), new SamplingOptions { Filter = ResampleFilter.Nearest });
+
+// A knockout group: each shape composites with what the group started as, so overlapping translucent shapes do not darken.
+canvas.SaveLayer(new LayerOptions { Knockout = true });
+canvas.FillCircle(new Vector2(180, 100), 20, new RgbaF32(1, 0, 0, 0.5f));
+canvas.FillCircle(new Vector2(200, 100), 20, new RgbaF32(0, 0, 1, 0.5f));
+canvas.Restore();</code></pre>
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawImageMask_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_Paint_Egami_Operations_SamplingOptions__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The rectangle's coverage is multiplied by the mask's, sampled at each pixel, and the paint fills through it: no layer.</p>
+</div>
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnDrawMesh_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawMesh*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnDrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawMesh(Egami.Drawing.Mesh,Egami.Drawing.Paint,Egami.Operations.BlendMode,System.ReadOnlySpan{Egami.Drawing.GradientStop})">
+  OnDrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.Advanced.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws a mesh with at least one triangle; a mesh with values comes with stops. A PDF backend can write it as a free-form or
+lattice-form shading (types 4 and 5). By default it is drawn through <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_RasterizeFallback_System_Action_Egami_Drawing_Canvas__System_Single_">RasterizeFallback(Action&lt;Canvas&gt;, float)</a> at one raster pixel per
+device unit, over the mesh's bounds, and placed with <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawMesh(Mesh mesh, Paint paint, BlendMode colorBlend, ReadOnlySpan&lt;GradientStop&gt; valueStops)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mesh</code> <a class="xref" href="Egami.Drawing.Mesh.html">Mesh</a></dt>
+    <dd><p>The mesh, in local coordinates.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+    <dt><code>colorBlend</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How the vertex colors combine with the paint.</p>
+</dd>
+    <dt><code>valueStops</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Drawing.GradientStop.html">GradientStop</a>&gt;</dt>
+    <dd><p>The stops vertex values map through, or empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop___remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The triangles' union is filled once through the exact-area rasterizer, so only its outer edges are antialiased and shared
+edges leave no cracks; each pixel takes its color from the triangle that owns it.</p>
+</div>
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnDrawPaint_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawPaint*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnDrawPaint_Egami_Drawing_Paint_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawPaint(Egami.Drawing.Paint)">
+  OnDrawPaint(Paint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L286"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills the clip. By default it fills the device clip bounds mapped back to local coordinates.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawPaint(Paint paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawPaint_Egami_Drawing_Paint__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Fills the clip's whole pixels directly, through its mask when it has one.</p>
+</div>
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnDrawPath_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawPath*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawPath(Egami.Drawing.Path,Egami.Drawing.Stroke,Egami.Drawing.Paint)">
+  OnDrawPath(Path, Stroke?, Paint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L316"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills a path by its fill rule, or strokes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path in local coordinates.</p>
+</dd>
+    <dt><code>stroke</code> <a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a></dt>
+    <dd><p>The pen, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to fill.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A backend overrides hooks; the base class has already checked the arguments and tracks the transform and clip bounds.
+// This one writes SVG elements, keeping rectangles as rectangles and strokes as stroke settings.
+public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
+{
+    private readonly System.Text.StringBuilder _body = new();
+
+    public string Document =&gt; $"&lt;svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{Width}\" height=\"{Height}\"&gt;{_body}&lt;/svg&gt;";
+
+    protected override void OnDrawRect(RectF rect, Stroke? stroke, Paint paint)
+        =&gt; _body.Append(FormattableString.Invariant($"&lt;rect x=\"{rect.X}\" y=\"{rect.Y}\" width=\"{rect.Width}\" height=\"{rect.Height}\" {Style(stroke, paint)}/&gt;"));
+
+    protected override void OnDrawPath(Path path, Stroke? stroke, Paint paint)
+    {
+        System.Text.StringBuilder d = new();
+        int p = 0;
+        foreach (PathVerb verb in path.Verbs)
+        {
+            int count = verb switch { PathVerb.Quad =&gt; 2, PathVerb.Cubic =&gt; 3, PathVerb.Close =&gt; 0, _ =&gt; 1 };
+            d.Append(verb switch { PathVerb.Move =&gt; "M", PathVerb.Line =&gt; "L", PathVerb.Quad =&gt; "Q", PathVerb.Cubic =&gt; "C", _ =&gt; "Z" });
+            foreach (Vector2 point in path.Points.Slice(p, count))
+            {
+                d.Append(FormattableString.Invariant($"{point.X},{point.Y} "));
+            }
+
+            p += count;
+        }
+
+        _body.Append(System.Globalization.CultureInfo.InvariantCulture, $"&lt;path d=\"{d}\" {Style(stroke, paint)}/&gt;");
+    }
+
+    protected override void OnClipPath(Path path, ClipOp op, bool antialias)
+    {
+        // Clips would become &lt;clipPath&gt; elements; this sketch leaves them out.
+    }
+
+    protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
+    {
+        // An image would be embedded as a PNG data URI.
+    }
+
+    private string Style(Stroke? stroke, Paint paint)
+    {
+        Rgba8 c = paint is SolidPaint solid ? solid.Color.ToRgba8() : Rgba8.Black;
+        string color = $"#{c.R:x2}{c.G:x2}{c.B:x2}";
+        string transform = Matrix.IsIdentity ? "" : FormattableString.Invariant($" transform=\"matrix({Matrix.M11} {Matrix.M12} {Matrix.M21} {Matrix.M22} {Matrix.M31} {Matrix.M32})\"");
+        return stroke is null
+            ? $"fill=\"{color}\"{transform}"
+            : FormattableString.Invariant($"fill=\"none\" stroke=\"{color}\" stroke-width=\"{stroke.Width}\" stroke-linecap=\"{stroke.Cap.ToString().ToLowerInvariant()}\"{transform}");
+    }
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnDrawRect_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawRect*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnDrawRect_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_" data-uid="Egami.Drawing.RasterCanvas`1.OnDrawRect(Egami.Drawing.RectF,Egami.Drawing.Stroke,Egami.Drawing.Paint)">
+  OnDrawRect(RectF, Stroke?, Paint)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L302"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills or strokes a rectangle. By default it goes to <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_">OnDrawPath(Path, Stroke?, Paint)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnDrawRect(RectF rect, Stroke? stroke, Paint paint)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+    <dt><code>stroke</code> <a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a></dt>
+    <dd><p>The pen, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to fill.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The paint.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnDrawRect_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>An axis-aligned rectangle with a normal <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Blur">Blur</a> is blurred exactly, from the error function.</p>
+</div>
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnRestore_" data-uid="Egami.Drawing.RasterCanvas`1.OnRestore*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnRestore" data-uid="Egami.Drawing.RasterCanvas`1.OnRestore">
+  OnRestore()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L95"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Restore()</a> after the state is popped; <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Matrix">Matrix</a> and <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DeviceClipBounds">DeviceClipBounds</a> are already the restored ones.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnRestore()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnRestoreLayer_" data-uid="Egami.Drawing.RasterCanvas`1.OnRestoreLayer*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnRestoreLayer" data-uid="Egami.Drawing.RasterCanvas`1.OnRestoreLayer">
+  OnRestoreLayer()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L179"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Restore()</a> for a state saved by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_Egami_Drawing_LayerOptions_">SaveLayer(LayerOptions?)</a>, after it is popped, so
+<a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Matrix">Matrix</a> and <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DeviceClipBounds">DeviceClipBounds</a> are those the layer was started with: the raster backend merges the
+layer through that clip. By default it calls <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnRestore">OnRestore()</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnRestoreLayer()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnRestoreLayer_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Filters the layer, multiplies it by its soft mask, and merges it with its opacity and blend mode through the restored clip.</p>
+</div>
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnSave_" data-uid="Egami.Drawing.RasterCanvas`1.OnSave*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnSave" data-uid="Egami.Drawing.RasterCanvas`1.OnSave">
+  OnSave()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Save">Save()</a> after the state is pushed.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnSave()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_RasterCanvas_1_OnSaveLayer_" data-uid="Egami.Drawing.RasterCanvas`1.OnSaveLayer*"></a>
+
+  <h3 id="Egami_Drawing_RasterCanvas_1_OnSaveLayer_Egami_Drawing_LayerOptions_" data-uid="Egami.Drawing.RasterCanvas`1.OnSaveLayer(Egami.Drawing.LayerOptions)">
+  OnSaveLayer(LayerOptions)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_Egami_Drawing_LayerOptions_">SaveLayer(LayerOptions?)</a> after the state is pushed; <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DeviceClipBounds">DeviceClipBounds</a> is already limited
+by the options' bounds. The raster backend allocates the layer; a PDF backend would begin a transparency group. By default it
+calls <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnSave">OnSave()</a>, so a backend without layers draws their contents directly.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void OnSaveLayer(LayerOptions options)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.Drawing.LayerOptions.html">LayerOptions</a></dt>
+    <dd><p>How the layer is merged.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnSaveLayer_Egami_Drawing_LayerOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // Group opacity: the overlapping circles fade as one shape, with no darker overlap.
+    canvas.SaveLayer(0.5f);
+    canvas.FillCircle(new Vector2(80, 100), 60, new Rgba8(200, 30, 30, 255));
+    canvas.FillCircle(new Vector2(140, 100), 60, new Rgba8(200, 30, 30, 255));
+    canvas.Restore();
+
+    // A group blended with Multiply and blurred as a whole; the layer grows by the blur's reach, so nothing is cut.
+    canvas.SaveLayer(new LayerOptions { BlendMode = BlendMode.Multiply, Filter = ops =&gt; ops.Blur(4) });
+    canvas.FillRect(new RectF(180, 40, 90, 120), new Rgba8(40, 120, 220, 255));
+    canvas.FillCircle(new Vector2(225, 100), 30, Rgba8.White);
+    canvas.Restore();
+}</code></pre>
+
+
+  <h4 class="section" id="Egami_Drawing_RasterCanvas_1_OnSaveLayer_Egami_Drawing_LayerOptions__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Allocates the layer over the options' bounds inside the clip, grown by the filter's reach (the whole bounds, or the raster,
+when the reach is unknown), and starts it transparent, as a copy of the backdrop, or as the filtered backdrop. Inside the
+layer the clip is the layer's rectangle: the clip of this call applies once, when the layer is merged.</p>
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/RasterCanvas.Text.cs/#L10" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Color | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Color | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/color.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="color">Color</h1>
+
+<p>Color operations follow the W3C Filter Effects definitions, so they match what a browser's CSS <code>filter</code> does.</p>
+<pre><code class="lang-csharp">photo.Apply(ops =&gt; ops
+    .Brightness(1.05f)     // 1 changes nothing
+    .Contrast(1.1f)
+    .Saturation(1.2f)
+    .HueRotate(10), Ct);    // these four run as one pass
+
+using Raster bw = photo.Derive(ops =&gt; ops.Grayscale(LumaWeights.Rec709), Ct);
+using Raster old = photo.Derive(ops =&gt; ops.Sepia(0.8f).Opacity(0.9f), Ct);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>1 (or 0°)</th>
+<th>Range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Brightness(amount)</code></td>
+<td>No change</td>
+<td>0 gives black; above 1 brightens</td>
+</tr>
+<tr>
+<td><code>Contrast(amount)</code></td>
+<td>No change</td>
+<td>0 gives flat gray</td>
+</tr>
+<tr>
+<td><code>Saturation(amount)</code></td>
+<td>No change</td>
+<td>0 gives gray; above 1 oversaturates</td>
+</tr>
+<tr>
+<td><code>HueRotate(degrees)</code></td>
+<td>No change at 0° and 360°</td>
+<td>Any angle</td>
+</tr>
+<tr>
+<td><code>Sepia(amount)</code></td>
+<td>Full sepia</td>
+<td>0 to 1</td>
+</tr>
+<tr>
+<td><code>Grayscale(weights, amount, colorSpace)</code></td>
+<td>Full gray</td>
+<td>0 to 1; <code>LumaWeights.Rec709</code> (default) or <code>Rec601</code></td>
+</tr>
+<tr>
+<td><code>Invert(amount)</code></td>
+<td>Full inversion</td>
+<td>0 to 1</td>
+</tr>
+<tr>
+<td><code>Opacity(amount)</code></td>
+<td>No change</td>
+<td>0 to 1, multiplies alpha</td>
+</tr>
+</tbody>
+</table>
+<p>Adjacent color steps are multiplied together and run as one pass over the pixels.</p>
+<h2 id="color-matrices">Color matrices</h2>
+<pre><code class="lang-csharp">// A ColorMatrix is 4 rows of 5 values: each output channel is a weighted sum of R, G, B, A plus an offset.
+// Combine the ready-made ones with Then; no clamping happens in between.
+ColorMatrix warm = ColorMatrix.Saturation(1.1f).Then(new ColorMatrix(
+[
+    1.05f, 0, 0, 0, 0,
+    0, 1, 0, 0, 0,
+    0, 0, 0.92f, 0, 0,
+    0, 0, 0, 1, 0,
+]));
+photo.Apply(ops =&gt; ops.ColorMatrix(warm), Ct);
+</code></pre>
+<p><code>default(ColorMatrix)</code> is the identity, so an uninitialized matrix changes nothing.</p>
+<h2 id="encoded-or-linear">Encoded or linear</h2>
+<p><code>Grayscale</code> takes a <code>ColorSpace</code>: <code>Encoded</code> (the default) weighs the stored sRGB values as most software does; <code>Linear</code> weighs
+light, which keeps the perceived brightness of saturated colors. Converting a color raster to <code>Gray8</code> with <code>As&lt;Gray8&gt;()</code> uses
+Rec. 709 luma in linear light.</p>
+<h2 id="run-it">Run it</h2>
+<p><a href="https://github.com/inexin/Egami/tree/main/samples/Color"><code>samples/Color</code></a> is a console app that does what this guide shows on the bundled
+images: <code>dotnet run --project samples/Color</code> writes its results to <code>./output</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/color.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

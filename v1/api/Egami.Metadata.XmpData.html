@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class XmpData | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class XmpData | Egami ">
+      
+      <meta name="description" content="A parsed XMP packet: its properties by namespace URI and local name, each a simple value, an  or an , with typed getters and setters for what apps ask for most (Dublin Core, XMP Basic, Photoshop and TIFF properties). An unedited packet writes back byte for byte; an edited one is written as canonical RDF/XML with padding, keeping every property it does not know, qualifiers included.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Metadata_XmpData.md&amp;value=---%0Auid%3A%20Egami.Metadata.XmpData%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Metadata.XmpData">
+
+
+
+  <h1 id="Egami_Metadata_XmpData" data-uid="Egami.Metadata.XmpData" class="text-break">
+Class XmpData  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Metadata.html">Metadata</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A parsed XMP packet: its properties by namespace URI and local name, each a simple value, an <a class="xref" href="Egami.Metadata.XmpArray.html">XmpArray</a> or an
+<a class="xref" href="Egami.Metadata.XmpStruct.html">XmpStruct</a>, with typed getters and setters for what apps ask for most (Dublin Core, XMP Basic, Photoshop and
+TIFF properties). An unedited packet writes back byte for byte; an edited one is written as canonical RDF/XML with padding,
+keeping every property it does not know, qualifiers included.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class XmpData : XmpStruct</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Metadata.XmpStruct.html">XmpStruct</a></div>
+      <div><span class="xref">XmpData</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Metadata.XmpStruct.html#Egami_Metadata_XmpStruct_Names">XmpStruct.Names</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Metadata.XmpStruct.html#Egami_Metadata_XmpStruct_Count">XmpStruct.Count</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Metadata.XmpStruct.html#Egami_Metadata_XmpStruct_TryGet_Egami_Metadata_XmpName_System_Object__">XmpStruct.TryGet(XmpName, out object)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Metadata.XmpStruct.html#Egami_Metadata_XmpStruct_GetText_Egami_Metadata_XmpName_">XmpStruct.GetText(XmpName)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Metadata.XmpStruct.html#Egami_Metadata_XmpStruct_TryGetInt_Egami_Metadata_XmpName_System_Int64__">XmpStruct.TryGetInt(XmpName, out long)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Metadata.XmpStruct.html#Egami_Metadata_XmpStruct_TryGetRational_Egami_Metadata_XmpName_System_Double__">XmpStruct.TryGetRational(XmpName, out double)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Metadata.XmpStruct.html#Egami_Metadata_XmpStruct_TryGetDate_Egami_Metadata_XmpName_System_DateTimeOffset__">XmpStruct.TryGetDate(XmpName, out DateTimeOffset)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Metadata.XmpStruct.html#Egami_Metadata_XmpStruct_Set_Egami_Metadata_XmpName_System_String_">XmpStruct.Set(XmpName, string)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Metadata.XmpStruct.html#Egami_Metadata_XmpStruct_Set_Egami_Metadata_XmpName_Egami_Metadata_XmpArray_">XmpStruct.Set(XmpName, XmpArray)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Metadata.XmpStruct.html#Egami_Metadata_XmpStruct_Set_Egami_Metadata_XmpName_Egami_Metadata_XmpStruct_">XmpStruct.Set(XmpName, XmpStruct)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Metadata.XmpStruct.html#Egami_Metadata_XmpStruct_Remove_Egami_Metadata_XmpName_">XmpStruct.Remove(XmpName)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Metadata_XmpData_examples">Examples</h2>
+  <pre><code class="lang-csharp">XmpData xmp = new()
+{
+    Title = "Harbour at dawn",
+    Creators = ["A. Photographer"],
+    Keywords = ["harbour", "Bergen"],
+    Rating = 4,
+};
+
+// Any property, by namespace URI and local name; structures and arrays nest.
+XmpStruct contact = new();
+contact.Set(new XmpName(XmpNamespaces.IptcCore, "CiEmailWork"), "photo@example.com");
+xmp.Set(new XmpName(XmpNamespaces.IptcCore, "CreatorContactInfo"), contact);
+if (xmp.TryGet(new XmpName(XmpNamespaces.DublinCore, "title"), out object? title) &amp;&amp; title is XmpArray languages)
+{
+    languages.SetLanguage("nb-NO", "Havn ved daggry");
+}
+
+ReadOnlyMemory&lt;byte&gt; packet = xmp.ToBytes();   // canonical RDF/XML with padding</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Metadata_XmpData__ctor_" data-uid="Egami.Metadata.XmpData.#ctor*"></a>
+
+  <h3 id="Egami_Metadata_XmpData__ctor" data-uid="Egami.Metadata.XmpData.#ctor">
+  XmpData()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates an empty packet, to fill with the setters.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public XmpData()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Metadata_XmpData_City_" data-uid="Egami.Metadata.XmpData.City*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_City" data-uid="Egami.Metadata.XmpData.City">
+  City
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the city shown (photoshop:City). Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? City { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Country_" data-uid="Egami.Metadata.XmpData.Country*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Country" data-uid="Egami.Metadata.XmpData.Country">
+  Country
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L123"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the country shown (photoshop:Country). Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Country { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_CreateDate_" data-uid="Egami.Metadata.XmpData.CreateDate*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_CreateDate" data-uid="Egami.Metadata.XmpData.CreateDate">
+  CreateDate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets when the content was created (xmp:CreateDate). Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DateTimeOffset? CreateDate { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetimeoffset">DateTimeOffset</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_CreatorTool_" data-uid="Egami.Metadata.XmpData.CreatorTool*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_CreatorTool" data-uid="Egami.Metadata.XmpData.CreatorTool">
+  CreatorTool
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the software that made the file (xmp:CreatorTool). Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? CreatorTool { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Creators_" data-uid="Egami.Metadata.XmpData.Creators*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Creators" data-uid="Egami.Metadata.XmpData.Creators">
+  Creators
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the creators (dc:creator), in order. Setting an empty list removes them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; Creators { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Credit_" data-uid="Egami.Metadata.XmpData.Credit*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Credit" data-uid="Egami.Metadata.XmpData.Credit">
+  Credit
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L130"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the provider credited (photoshop:Credit). Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Credit { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Description_" data-uid="Egami.Metadata.XmpData.Description*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Description" data-uid="Egami.Metadata.XmpData.Description">
+  Description
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the description or caption (dc:description), the x-default item. Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Description { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Headline_" data-uid="Egami.Metadata.XmpData.Headline*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Headline" data-uid="Egami.Metadata.XmpData.Headline">
+  Headline
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the headline (photoshop:Headline). Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Headline { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_IsDamaged_" data-uid="Egami.Metadata.XmpData.IsDamaged*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_IsDamaged" data-uid="Egami.Metadata.XmpData.IsDamaged">
+  IsDamaged
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the packet could not be read: XML that is not well-formed, no rdf:RDF, or more data than allowed. It then has no
+properties, and its original bytes are written back unless properties are set.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsDamaged { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Keywords_" data-uid="Egami.Metadata.XmpData.Keywords*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Keywords" data-uid="Egami.Metadata.XmpData.Keywords">
+  Keywords
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the keywords (dc:subject). Setting an empty list removes them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; Keywords { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Label_" data-uid="Egami.Metadata.XmpData.Label*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Label" data-uid="Egami.Metadata.XmpData.Label">
+  Label
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L102"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the color label (xmp:Label), such as &quot;Red&quot;. Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Label { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_ModifyDate_" data-uid="Egami.Metadata.XmpData.ModifyDate*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_ModifyDate" data-uid="Egami.Metadata.XmpData.ModifyDate">
+  ModifyDate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets when the file was last changed (xmp:ModifyDate). Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DateTimeOffset? ModifyDate { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetimeoffset">DateTimeOffset</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Orientation_" data-uid="Egami.Metadata.XmpData.Orientation*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Orientation" data-uid="Egami.Metadata.XmpData.Orientation">
+  Orientation
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the orientation (tiff:Orientation), the XMP copy of EXIF's; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when absent or not 1 to 8.
+Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ImageOrientation? Orientation { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.ImageOrientation.html">ImageOrientation</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Rating_" data-uid="Egami.Metadata.XmpData.Rating*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Rating" data-uid="Egami.Metadata.XmpData.Rating">
+  Rating
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the rating (xmp:Rating): -1 for rejected, 0 for unrated, 1 to 5 stars. Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? Rating { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value set is not -1 to 5.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metadata_XmpData_Rights_" data-uid="Egami.Metadata.XmpData.Rights*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Rights" data-uid="Egami.Metadata.XmpData.Rights">
+  Rights
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the rights statement (dc:rights), the x-default item. Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Rights { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Source_" data-uid="Egami.Metadata.XmpData.Source*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Source" data-uid="Egami.Metadata.XmpData.Source">
+  Source
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L137"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the original owner (photoshop:Source). Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Source { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Title_" data-uid="Egami.Metadata.XmpData.Title*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Title" data-uid="Egami.Metadata.XmpData.Title">
+  Title
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the title (dc:title), the x-default item of its language alternatives. Setting <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> removes it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Title { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Warnings_" data-uid="Egami.Metadata.XmpData.Warnings*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Warnings" data-uid="Egami.Metadata.XmpData.Warnings">
+  Warnings
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what was wrong with the packet when read, as sentences.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; Warnings { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Metadata_XmpData_Copy_" data-uid="Egami.Metadata.XmpData.Copy*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Copy" data-uid="Egami.Metadata.XmpData.Copy">
+  Copy()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L200"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns an independent copy.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public XmpData Copy()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.XmpData.html">XmpData</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_Parse_" data-uid="Egami.Metadata.XmpData.Parse*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_Parse_System_ReadOnlySpan_System_Byte__Egami_SafetyLimits_" data-uid="Egami.Metadata.XmpData.Parse(System.ReadOnlySpan{System.Byte},Egami.SafetyLimits)">
+  Parse(ReadOnlySpan&lt;byte&gt;, SafetyLimits?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads an XMP packet (RDF/XML, with or without its xpacket wrapper). Never throws: a packet that is not well-formed or is
+over <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxMetadataBytes">MaxMetadataBytes</a> is marked damaged and keeps its bytes. DTDs are refused and nothing is
+resolved, so external entities and entity expansion cannot run.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static XmpData Parse(ReadOnlySpan&lt;byte&gt; packet, SafetyLimits? limits = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>packet</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The packet's bytes, UTF-8 or UTF-16.</p>
+</dd>
+    <dt><code>limits</code> <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a></dt>
+    <dd><p>The limits whose <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxMetadataBytes">MaxMetadataBytes</a> caps the packet. Defaults to <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.XmpData.html">XmpData</a></dt>
+    <dd><p>The parsed packet; <a class="xref" href="Egami.Metadata.XmpData.html#Egami_Metadata_XmpData_IsDamaged">IsDamaged</a> says whether it was readable.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Metadata_XmpData_Parse_System_ReadOnlySpan_System_Byte__Egami_SafetyLimits__examples">Examples</h4>
+  <pre><code class="lang-csharp">// An XMP packet from a sidecar file or a database; DTDs are refused and nothing outside it is read.
+XmpData xmp = XmpData.Parse(packet.Span, SafetyLimits.Default with { MaxMetadataBytes = 1024 * 1024 });
+Console.WriteLine(xmp.IsDamaged ? string.Join(" ", xmp.Warnings) : $"Label: {xmp.Label}");</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Metadata_XmpData_ToBytes_" data-uid="Egami.Metadata.XmpData.ToBytes*"></a>
+
+  <h3 id="Egami_Metadata_XmpData_ToBytes" data-uid="Egami.Metadata.XmpData.ToBytes">
+  ToBytes()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L196"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the packet: the original bytes when unedited, otherwise written as canonical RDF/XML with padding.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;byte&gt; ToBytes()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Metadata/XmpData.cs/#L12" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

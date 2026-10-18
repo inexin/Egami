@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct FontFeature | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct FontFeature | Egami ">
+      
+      <meta name="description" content="An OpenType feature setting: a feature tag, a value and the range of UTF-16 units it applies to, in HarfBuzz&#39;s model. A value of 0 turns a feature off (such as default ligatures), 1 turns it on, and higher values pick an alternate.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_Shaping_FontFeature.md&amp;value=---%0Auid%3A%20Egami.Fonts.Shaping.FontFeature%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.Shaping.FontFeature">
+
+
+
+  <h1 id="Egami_Fonts_Shaping_FontFeature" data-uid="Egami.Fonts.Shaping.FontFeature" class="text-break">
+Struct FontFeature  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a>.<a class="xref" href="Egami.Fonts.Shaping.html">Shaping</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An OpenType feature setting: a feature tag, a value and the range of UTF-16 units it applies to, in HarfBuzz's model. A value
+of 0 turns a feature off (such as default ligatures), 1 turns it on, and higher values pick an alternate.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct FontFeature : IEquatable&lt;FontFeature&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Fonts.Shaping.FontFeature.html">FontFeature</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Fonts_Shaping_FontFeature_examples">Examples</h2>
+  <pre><code class="lang-csharp">// HarfBuzz's feature syntax, or the presets.
+FontFeature noLigatures = FontFeature.Parse("liga=0");
+FontFeature figures = FontFeature.TabularFigures;
+FontFeature alternates = FontFeature.StylisticSet(1);
+FontFeature someKerning = FontFeature.Parse("kern[0:3]=0"); // off for the first three characters only
+
+var properties = new RunProperties { Features = [noLigatures, figures] };
+TextShaper.ShapeRun(text, 0, text.Length, font, properties, glyphs);</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature__ctor_" data-uid="Egami.Fonts.Shaping.FontFeature.#ctor*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature__ctor_Egami_Fonts_FontTag_System_UInt32_System_Int32_System_Int32_" data-uid="Egami.Fonts.Shaping.FontFeature.#ctor(Egami.Fonts.FontTag,System.UInt32,System.Int32,System.Int32)">
+  FontFeature(FontTag, uint, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>An OpenType feature setting: a feature tag, a value and the range of UTF-16 units it applies to, in HarfBuzz's model. A value
+of 0 turns a feature off (such as default ligatures), 1 turns it on, and higher values pick an alternate.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontFeature(FontTag Tag, uint Value = 1, int Start = 0, int End = 2147483647)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>Tag</code> <a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a></dt>
+    <dd><p>The feature tag, such as <code>liga</code>, <code>kern</code> or <code>ss01</code>.</p>
+</dd>
+    <dt><code>Value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint32">uint</a></dt>
+    <dd><p>The value: 0 off, 1 on, 2 and up an alternate.</p>
+</dd>
+    <dt><code>Start</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The first UTF-16 index the setting applies to.</p>
+</dd>
+    <dt><code>End</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The index just past the last one it applies to; <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32.maxvalue">MaxValue</a> for the end of the text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Shaping_FontFeature__ctor_Egami_Fonts_FontTag_System_UInt32_System_Int32_System_Int32__examples">Examples</h4>
+  <pre><code class="lang-csharp">// HarfBuzz's feature syntax, or the presets.
+FontFeature noLigatures = FontFeature.Parse("liga=0");
+FontFeature figures = FontFeature.TabularFigures;
+FontFeature alternates = FontFeature.StylisticSet(1);
+FontFeature someKerning = FontFeature.Parse("kern[0:3]=0"); // off for the first three characters only
+
+var properties = new RunProperties { Features = [noLigatures, figures] };
+TextShaper.ShapeRun(text, 0, text.Length, font, properties, glyphs);</code></pre>
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_End_" data-uid="Egami.Fonts.Shaping.FontFeature.End*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_End" data-uid="Egami.Fonts.Shaping.FontFeature.End">
+  End
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The index just past the last one it applies to; <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32.maxvalue">MaxValue</a> for the end of the text.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int End { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_IsGlobal_" data-uid="Egami.Fonts.Shaping.FontFeature.IsGlobal*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_IsGlobal" data-uid="Egami.Fonts.Shaping.FontFeature.IsGlobal">
+  IsGlobal
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the setting applies to the whole text.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsGlobal { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_NoKerning_" data-uid="Egami.Fonts.Shaping.FontFeature.NoKerning*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_NoKerning" data-uid="Egami.Fonts.Shaping.FontFeature.NoKerning">
+  NoKerning
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the setting for kerning (<code>kern</code>) off.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static FontFeature NoKerning { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Shaping.FontFeature.html">FontFeature</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_SmallCaps_" data-uid="Egami.Fonts.Shaping.FontFeature.SmallCaps*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_SmallCaps" data-uid="Egami.Fonts.Shaping.FontFeature.SmallCaps">
+  SmallCaps
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the setting for small capitals (<code>smcp</code>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static FontFeature SmallCaps { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Shaping.FontFeature.html">FontFeature</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_Start_" data-uid="Egami.Fonts.Shaping.FontFeature.Start*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_Start" data-uid="Egami.Fonts.Shaping.FontFeature.Start">
+  Start
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The first UTF-16 index the setting applies to.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Start { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_TabularFigures_" data-uid="Egami.Fonts.Shaping.FontFeature.TabularFigures*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_TabularFigures" data-uid="Egami.Fonts.Shaping.FontFeature.TabularFigures">
+  TabularFigures
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the setting for tabular figures (<code>tnum</code>): digits of one width, for columns.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static FontFeature TabularFigures { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Shaping.FontFeature.html">FontFeature</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_Tag_" data-uid="Egami.Fonts.Shaping.FontFeature.Tag*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_Tag" data-uid="Egami.Fonts.Shaping.FontFeature.Tag">
+  Tag
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The feature tag, such as <code>liga</code>, <code>kern</code> or <code>ss01</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FontTag Tag { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_Value_" data-uid="Egami.Fonts.Shaping.FontFeature.Value*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_Value" data-uid="Egami.Fonts.Shaping.FontFeature.Value">
+  Value
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The value: 0 off, 1 on, 2 and up an alternate.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public uint Value { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint32">uint</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_Ligatures_" data-uid="Egami.Fonts.Shaping.FontFeature.Ligatures*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_Ligatures_System_Boolean_" data-uid="Egami.Fonts.Shaping.FontFeature.Ligatures(System.Boolean)">
+  Ligatures(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Turns standard ligatures (<code>liga</code>) on or off.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static FontFeature Ligatures(bool enabled)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>enabled</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether ligatures are formed.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Shaping.FontFeature.html">FontFeature</a></dt>
+    <dd><p>The setting.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_Parse_" data-uid="Egami.Fonts.Shaping.FontFeature.Parse*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_Parse_System_String_" data-uid="Egami.Fonts.Shaping.FontFeature.Parse(System.String)">
+  Parse(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses HarfBuzz's feature syntax: <code>kern</code>, <code>+kern</code>, <code>-liga</code>, <code>aalt=2</code>, <code>ss01=on</code>, <code>kern[3:5]=0</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static FontFeature Parse(string text)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The setting.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Shaping.FontFeature.html">FontFeature</a></dt>
+    <dd><p>The feature setting.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">text</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.formatexception">FormatException</a></dt>
+    <dd><p><code class="paramref">text</code> is not a feature setting.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_StylisticSet_" data-uid="Egami.Fonts.Shaping.FontFeature.StylisticSet*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_StylisticSet_System_Int32_" data-uid="Egami.Fonts.Shaping.FontFeature.StylisticSet(System.Int32)">
+  StylisticSet(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Turns on a stylistic set, <code>ss01</code> to <code>ss20</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static FontFeature StylisticSet(int number)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>number</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The set, 1 to 20.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Shaping.FontFeature.html">FontFeature</a></dt>
+    <dd><p>The setting.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">number</code> is outside 1 to 20.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_ToString_" data-uid="Egami.Fonts.Shaping.FontFeature.ToString*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_ToString" data-uid="Egami.Fonts.Shaping.FontFeature.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the setting in HarfBuzz's syntax, such as <code>liga=0</code> or <code>kern[3:5]=0</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_FontFeature_TryParse_" data-uid="Egami.Fonts.Shaping.FontFeature.TryParse*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_FontFeature_TryParse_System_String_Egami_Fonts_Shaping_FontFeature__" data-uid="Egami.Fonts.Shaping.FontFeature.TryParse(System.String,Egami.Fonts.Shaping.FontFeature@)">
+  TryParse(string?, out FontFeature)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses HarfBuzz's feature syntax, returning false instead of throwing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool TryParse(string? text, out FontFeature feature)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The setting.</p>
+</dd>
+    <dt><code>feature</code> <a class="xref" href="Egami.Fonts.Shaping.FontFeature.html">FontFeature</a></dt>
+    <dd><p>The feature setting, or the default value.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when <code class="paramref">text</code> is a feature setting.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/FontFeature.cs/#L16" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

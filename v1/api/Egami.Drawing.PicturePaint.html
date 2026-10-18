@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class PicturePaint | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class PicturePaint | Egami ">
+      
+      <meta name="description" content="A  as a paint: a tiling pattern, the shape of PDF&#39;s and SVG&#39;s tiling patterns and Skia&#39;s picture shader. The  rectangle of the picture, in its own coordinates, is repeated by  and  under  and the canvas transform. The raster backend renders one tile at the device scale the paint is drawn at and keeps it with the picture, so a pattern stays sharp when zoomed and is rendered once for repeated fills at one scale. A tile is at most 4096 pixels a side.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_PicturePaint.md&amp;value=---%0Auid%3A%20Egami.Drawing.PicturePaint%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.PicturePaint">
+
+
+
+  <h1 id="Egami_Drawing_PicturePaint" data-uid="Egami.Drawing.PicturePaint" class="text-break">
+Class PicturePaint  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PicturePaint.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A <a class="xref" href="Egami.Drawing.PicturePaint.html#Egami_Drawing_PicturePaint_Picture">Picture</a> as a paint: a tiling pattern, the shape of PDF's and SVG's tiling patterns and Skia's picture shader.
+The <a class="xref" href="Egami.Drawing.PicturePaint.html#Egami_Drawing_PicturePaint_Tile">Tile</a> rectangle of the picture, in its own coordinates, is repeated by <a class="xref" href="Egami.Drawing.PicturePaint.html#Egami_Drawing_PicturePaint_TileX">TileX</a> and
+<a class="xref" href="Egami.Drawing.PicturePaint.html#Egami_Drawing_PicturePaint_TileY">TileY</a> under <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_LocalMatrix">LocalMatrix</a> and the canvas transform. The raster backend renders one tile at the
+device scale the paint is drawn at and keeps it with the picture, so a pattern stays sharp when zoomed and is rendered once
+for repeated fills at one scale. A tile is at most 4096 pixels a side.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record PicturePaint : Paint, ITextPaint, IEquatable&lt;Paint&gt;, IEquatable&lt;PicturePaint&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Drawing.Paint.html">Paint</a></div>
+      <div><span class="xref">PicturePaint</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Fonts.Layout.ITextPaint.html">ITextPaint</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Drawing.Paint.html">Paint</a>&gt;</div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Drawing.PicturePaint.html">PicturePaint</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_BlendMode">Paint.BlendMode</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Opacity">Paint.Opacity</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Antialias">Paint.Antialias</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_LocalMatrix">Paint.LocalMatrix</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Dither">Paint.Dither</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Overprint">Paint.Overprint</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Blur">Paint.Blur</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_WithColorMatrix_Egami_Operations_ColorMatrix_">Paint.WithColorMatrix(ColorMatrix)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_PicturePaint_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A tile drawn once as vectors fills any shape, repeated, and stays sharp when the canvas is zoomed.
+PictureRecorder tile = new(new RectF(0, 0, 20, 20));
+tile.FillCircle(new Vector2(10, 10), 4, new Rgba8(220, 60, 60, 255));
+tile.StrokeRect(new RectF(0.5f, 0.5f, 19, 19), new Stroke(1), new Rgba8(230, 230, 230, 255));
+PicturePaint dots = new(tile.Finish(), TileMode.Repeat, TileMode.Repeat) { LocalMatrix = Matrix3x2.CreateRotation(MathF.PI / 8) };
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    canvas.FillRoundRect(new RoundRect(new RectF(10, 10, 280, 180), 24), dots);
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Drawing_PicturePaint__ctor_" data-uid="Egami.Drawing.PicturePaint.#ctor*"></a>
+
+  <h3 id="Egami_Drawing_PicturePaint__ctor_Egami_Drawing_Picture_Egami_Drawing_TileMode_Egami_Drawing_TileMode_System_Nullable_Egami_Drawing_RectF__" data-uid="Egami.Drawing.PicturePaint.#ctor(Egami.Drawing.Picture,Egami.Drawing.TileMode,Egami.Drawing.TileMode,System.Nullable{Egami.Drawing.RectF})">
+  PicturePaint(Picture, TileMode, TileMode, RectF?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PicturePaint.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Drawing.PicturePaint.html">PicturePaint</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PicturePaint(Picture picture, TileMode tileX = TileMode.Repeat, TileMode tileY = TileMode.Repeat, RectF? tile = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>picture</code> <a class="xref" href="Egami.Drawing.Picture.html">Picture</a></dt>
+    <dd><p>The picture.</p>
+</dd>
+    <dt><code>tileX</code> <a class="xref" href="Egami.Drawing.TileMode.html">TileMode</a></dt>
+    <dd><p>What lies left and right of the tile.</p>
+</dd>
+    <dt><code>tileY</code> <a class="xref" href="Egami.Drawing.TileMode.html">TileMode</a></dt>
+    <dd><p>What lies above and below it.</p>
+</dd>
+    <dt><code>tile</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a>?</dt>
+    <dd><p>The tile, in the picture's coordinates; the picture's bounds when <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_PicturePaint__ctor_Egami_Drawing_Picture_Egami_Drawing_TileMode_Egami_Drawing_TileMode_System_Nullable_Egami_Drawing_RectF___examples">Examples</h4>
+  <pre><code class="lang-csharp">// A tile drawn once as vectors fills any shape, repeated, and stays sharp when the canvas is zoomed.
+PictureRecorder tile = new(new RectF(0, 0, 20, 20));
+tile.FillCircle(new Vector2(10, 10), 4, new Rgba8(220, 60, 60, 255));
+tile.StrokeRect(new RectF(0.5f, 0.5f, 19, 19), new Stroke(1), new Rgba8(230, 230, 230, 255));
+PicturePaint dots = new(tile.Finish(), TileMode.Repeat, TileMode.Repeat) { LocalMatrix = Matrix3x2.CreateRotation(MathF.PI / 8) };
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    canvas.FillRoundRect(new RoundRect(new RectF(10, 10, 280, 180), 24), dots);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">picture</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">tile</code> is empty or not finite.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A tile mode is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Drawing_PicturePaint_Picture_" data-uid="Egami.Drawing.PicturePaint.Picture*"></a>
+
+  <h3 id="Egami_Drawing_PicturePaint_Picture" data-uid="Egami.Drawing.PicturePaint.Picture">
+  Picture
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PicturePaint.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the picture.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Picture Picture { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Picture.html">Picture</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>The value is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_PicturePaint_Tile_" data-uid="Egami.Drawing.PicturePaint.Tile*"></a>
+
+  <h3 id="Egami_Drawing_PicturePaint_Tile" data-uid="Egami.Drawing.PicturePaint.Tile">
+  Tile
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PicturePaint.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the tile, in the picture's coordinates: the part of the picture repeated, which may be larger than its bounds to space the copies.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RectF Tile { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The value is empty or not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_PicturePaint_TileX_" data-uid="Egami.Drawing.PicturePaint.TileX*"></a>
+
+  <h3 id="Egami_Drawing_PicturePaint_TileX" data-uid="Egami.Drawing.PicturePaint.TileX">
+  TileX
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PicturePaint.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what lies left and right of the tile.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TileMode TileX { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.TileMode.html">TileMode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_PicturePaint_TileY_" data-uid="Egami.Drawing.PicturePaint.TileY*"></a>
+
+  <h3 id="Egami_Drawing_PicturePaint_TileY" data-uid="Egami.Drawing.PicturePaint.TileY">
+  TileY
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PicturePaint.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what lies above and below the tile.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TileMode TileY { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.TileMode.html">TileMode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PicturePaint.cs/#L18" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

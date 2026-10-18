@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Getting started | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Getting started | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/getting-started.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="getting-started">Getting started</h1>
+
+<p>Egami loads, edits and saves images in .NET 10, in fully managed code. This page takes you from install to a saved file.</p>
+<h2 id="install">Install</h2>
+<pre><code class="lang-sh">dotnet add package Egami
+</code></pre>
+<p>One package holds everything: every format, operation and pixel type. It has no dependencies and works with trimming and
+Native AOT.</p>
+<h2 id="load-edit-save">Load, edit, save</h2>
+<pre><code class="lang-csharp">// Load in the pixel type that best fits the file (here Rgba8: this PNG stores alpha).
+using Raster image = Raster.Load(&quot;duck.png&quot;);
+Console.WriteLine($&quot;{image.Width} × {image.Height}, {image.Layout.ChannelOrder}&quot;);
+
+// Make a thumbnail that fits 200 × 200, keeping the aspect ratio, and save it as JPEG.
+image.Apply(ops =&gt; ops.Fit(200, 200));
+image.Save(&quot;duck-small.jpg&quot;);
+</code></pre>
+<p><code>Raster.Load</code> detects the format from the file's first bytes and returns a <code>Raster</code> in the pixel type that holds the file without
+loss. <code>Apply</code> runs a chain of operations in place. <code>Save</code> picks the writer from the file extension.</p>
+<h2 id="pixel-types">Pixel types</h2>
+<p>A raster is a grid of one pixel type, such as <code>Rgba8</code> (8-bit red, green, blue and alpha) or <code>Gray16</code>. Ask for the type you want
+to work in, and rows come back as spans of it.</p>
+<pre><code class="lang-csharp">// Decode straight into the type you want to work in.
+using Raster&lt;Rgba8&gt; rgba = Raster.Load&lt;Rgba8&gt;(&quot;duck.png&quot;);
+
+// Pixels are a row at a time: each row is a Span&lt;Rgba8&gt;.
+for (int y = 0; y &lt; rgba.Height; y++)
+{
+    Span&lt;Rgba8&gt; row = rgba.Row(y);
+    for (int x = 0; x &lt; row.Length; x++)
+    {
+        row[x].A = 128;
+    }
+}
+
+// Convert a whole raster; the result is a new raster you dispose too.
+using Raster&lt;Gray8&gt; gray = rgba.As&lt;Gray8&gt;();
+gray.Save(&quot;duck-gray.png&quot;);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Channels</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Rgba8</code>, <code>Bgra8</code></td>
+<td>8-bit color with alpha</td>
+<td>The default working type; interop with Windows and GPU buffers</td>
+</tr>
+<tr>
+<td><code>Rgb8</code>, <code>Bgr8</code></td>
+<td>8-bit color</td>
+<td>Photos without alpha</td>
+</tr>
+<tr>
+<td><code>Argb8</code>, <code>Abgr8</code></td>
+<td>8-bit color with alpha first</td>
+<td>Interop with alpha-first buffers</td>
+</tr>
+<tr>
+<td><code>Alpha8</code></td>
+<td>Alpha only</td>
+<td>Masks and glyph coverage</td>
+</tr>
+<tr>
+<td><code>Gray8</code>, <code>Gray16</code>, <code>GrayAlpha8</code>, <code>GrayAlpha16</code></td>
+<td>Gray</td>
+<td>Grayscale images and masks</td>
+</tr>
+<tr>
+<td><code>Rgba16</code>, <code>Rgb16</code></td>
+<td>16-bit color, with or without alpha</td>
+<td>16-bit PNG and PPM</td>
+</tr>
+<tr>
+<td><code>RgbaF32</code>, <code>RgbF32</code>, <code>GrayF32</code></td>
+<td>32-bit float color or gray</td>
+<td>High-precision processing, PFM, depth maps</td>
+</tr>
+<tr>
+<td><code>RgbaF16</code></td>
+<td>16-bit half-float color with alpha</td>
+<td>HDR and GPU textures</td>
+</tr>
+<tr>
+<td><code>Bgr565</code>, <code>Bgra4444</code>, <code>Rgb10A2</code></td>
+<td>Packed 16 and 32-bit color</td>
+<td>Embedded displays, legacy textures, 10-bit displays</td>
+</tr>
+<tr>
+<td><code>Cmyk8</code>, <code>Cmyk16</code></td>
+<td>Cyan, magenta, yellow and black ink</td>
+<td>CMYK JPEG, TIFF and PSD</td>
+</tr>
+<tr>
+<td><code>PremulRgba8</code>, <code>PremulBgra8</code>, <code>PremulRgbaF32</code></td>
+<td>Color premultiplied by alpha</td>
+<td>Compositing; Windows and GPU surfaces</td>
+</tr>
+</tbody>
+</table>
+<p>Values are sRGB-encoded with straight (not premultiplied) alpha, except in the <code>Premul</code> types, which store color multiplied by
+alpha; their conversions still take and return straight colors, and resize, blur, rotation and <code>DrawImage</code> run on them without
+multiplying first. <code>raster.As&lt;TPixel&gt;()</code> converts a whole raster;
+<code>PixelConvert.Convert</code> converts a span.</p>
+<h2 id="disposal">Disposal</h2>
+<pre><code class="lang-csharp">// Every raster owns its pixel memory: dispose it when done, best with a using declaration.
+using Raster photo = Raster.Load(&quot;duck.png&quot;);
+
+// Copy, As and Derive return new rasters, which you dispose as well. Everything else works in place.
+using Raster copy = photo.Derive(ops =&gt; ops.Resize(100, 0));
+photo.Apply(ops =&gt; ops.Grayscale());
+</code></pre>
+<p>Pixel memory comes from a pool, not the garbage-collected heap, so a raster you forget to dispose holds its memory until the next
+collection. Methods that return a new raster say so in their name: <code>Copy</code>, <code>As</code> and <code>Derive</code>.</p>
+<h2 id="sync-and-async">Sync and async</h2>
+<pre><code class="lang-csharp">// Every Load, Probe and Save has an async twin. Async reads the stream into a pooled buffer first,
+// then decodes (decoding is CPU work, so it is synchronous either way).
+await using FileStream stream = File.OpenRead(&quot;duck.png&quot;);
+using Raster image = await Raster.LoadAsync(stream, cancellationToken: cancellationToken);
+await image.SaveAsync(&quot;duck-copy.png&quot;, cancellationToken: cancellationToken);
+</code></pre><h2 id="choosing-a-format">Choosing a format</h2>
+<pre><code class="lang-csharp">// Save(path) picks the writer from the file extension...
+image.Save(&quot;duck-copy.qoi&quot;);
+
+// ...or name the format, with its options.
+using FileStream output = File.Create(&quot;duck-q90.jpg&quot;);
+image.Save(output, Egami.Formats.Jpeg.JpegFormat.Info, new Egami.Formats.Jpeg.JpegWriterOptions { Quality = 90 });
+
+// Loading never looks at the extension: the format is detected from the first bytes.
+RasterInfo info = Raster.Probe(&quot;duck.png&quot;);
+Console.WriteLine(info.Format.Name);   // PNG
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Use</th>
+<th>Format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Photos for the web</td>
+<td>JPEG (or PNG when you need alpha)</td>
+</tr>
+<tr>
+<td>Screenshots, diagrams, anything with sharp edges or alpha</td>
+<td>PNG</td>
+</tr>
+<tr>
+<td>Short animations</td>
+<td>GIF for reach, APNG for full color and alpha</td>
+</tr>
+<tr>
+<td>Fast lossless storage</td>
+<td>QOI</td>
+</tr>
+<tr>
+<td>Interchange with older tools</td>
+<td>BMP, TGA, PNM</td>
+</tr>
+</tbody>
+</table>
+<p>Next: the <a href="guides/formats.html">formats guide</a> lists what each format reads and writes, and the <a href="cookbook/index.html">cookbook</a> has
+task-sized recipes.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/getting-started.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

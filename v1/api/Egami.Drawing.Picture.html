@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Picture | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Picture | Egami ">
+      
+      <meta name="description" content="Recorded canvas calls, from a  or : replay them on any canvas with  or , fill shapes with them through a , render them with , or keep them in an .egdr file with . Replay is always vector, so a picture stays sharp at any scale. Immutable, and safe to replay on several threads and canvases at once.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_Picture.md&amp;value=---%0Auid%3A%20Egami.Drawing.Picture%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.Picture">
+
+
+
+  <h1 id="Egami_Drawing_Picture" data-uid="Egami.Drawing.Picture" class="text-break">
+Class Picture  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Picture.Egdr.cs/#L5"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Recorded canvas calls, from a <a class="xref" href="Egami.Drawing.PictureRecorder.html">PictureRecorder</a> or <a class="xref" href="Egami.Drawing.Picture.html#Egami_Drawing_Picture_Load_System_IO_Stream_Egami_EgamiContext_">Load(Stream, EgamiContext?)</a>: replay them on any canvas with
+<a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPicture_Egami_Drawing_Picture_System_Nullable_System_Numerics_Matrix3x2__Egami_Drawing_Paint_System_Boolean_">DrawPicture(Picture, Matrix3x2?, Paint?, bool)</a> or <a class="xref" href="Egami.Drawing.Picture.html#Egami_Drawing_Picture_Playback_Egami_Drawing_Canvas_">Playback(Canvas)</a>, fill shapes with them through a <a class="xref" href="Egami.Drawing.PicturePaint.html">PicturePaint</a>, render
+them with <a class="xref" href="Egami.Drawing.Picture.html#Egami_Drawing_Picture_ToRaster__1_System_Single_Egami_Drawing_CanvasOptions_Egami_EgamiContext_">ToRaster&lt;TPixel&gt;(float, CanvasOptions?, EgamiContext?)</a>, or keep them in an .egdr file with <a class="xref" href="Egami.Drawing.Picture.html#Egami_Drawing_Picture_Save_System_IO_Stream_">Save(Stream)</a>. Replay is always vector, so a
+picture stays sharp at any scale. Immutable, and safe to replay on several threads and canvases at once.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Picture</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Picture</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_Picture_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Record any picture code once...
+PictureRecorder recorder = new(new RectF(0, 0, 40, 40));
+DrawLogo(recorder);
+Picture logo = recorder.Finish();
+
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // ...and replay it anywhere, at any scale, still sharp: replay is vector.
+    canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(10, 10));
+    canvas.DrawPicture(logo, Matrix3x2.CreateScale(4) * Matrix3x2.CreateTranslation(60, 10));
+
+    // A paint with an opacity merges the whole picture as one layer.
+    canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(240, 10), new SolidPaint(Rgba8.White) { Opacity = 0.4f });
+
+    // Drawn many times at one scale, a cached image is cheaper than replaying.
+    for (int i = 0; i &lt; 6; i++)
+    {
+        canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(230 + (i * 25), 150), cacheAsImage: true);
+    }
+}
+
+using Raster&lt;Rgba8&gt; icon = logo.ToRaster&lt;Rgba8&gt;(scale: 2);</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Drawing_Picture_Bounds_" data-uid="Egami.Drawing.Picture.Bounds*"></a>
+
+  <h3 id="Egami_Drawing_Picture_Bounds" data-uid="Egami.Drawing.Picture.Bounds">
+  Bounds
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Picture.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the picture's bounds in its own coordinates, as the recorder was given them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RectF Bounds { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Picture_CallCount_" data-uid="Egami.Drawing.Picture.CallCount*"></a>
+
+  <h3 id="Egami_Drawing_Picture_CallCount" data-uid="Egami.Drawing.Picture.CallCount">
+  CallCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Picture.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of recorded calls, saves and transforms included; nested pictures count as one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int CallCount { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Drawing_Picture_Load_" data-uid="Egami.Drawing.Picture.Load*"></a>
+
+  <h3 id="Egami_Drawing_Picture_Load_System_IO_Stream_Egami_EgamiContext_" data-uid="Egami.Drawing.Picture.Load(System.IO.Stream,Egami.EgamiContext)">
+  Load(Stream, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Picture.Egdr.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads an Egami picture file. The file is untrusted input: its images go through the PNG reader with the context's
+<a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a>, what it decodes counts toward <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>, and pictures may nest 64
+deep and replay at most 50 million calls with nested pictures expanded.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Picture Load(Stream stream, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream to read from, to its end.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context whose limits apply, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Picture.html">Picture</a></dt>
+    <dd><p>The picture.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Picture_Load_System_IO_Stream_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Keep a picture in Egami's own documented format, and load it later; a loaded file is untrusted, so the context's
+// safety limits apply.
+using (FileStream file = File.Create("logo.egdr"))
+{
+    logo.Save(file);
+}
+
+Picture loaded;
+using (FileStream file = File.OpenRead("logo.egdr"))
+{
+    loaded = Picture.Load(file);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The data is not an .egdr file, or is a major version this reader does not know.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The file is damaged.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The file is larger, or nests deeper, than the limits allow.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Picture_Playback_" data-uid="Egami.Drawing.Picture.Playback*"></a>
+
+  <h3 id="Egami_Drawing_Picture_Playback_Egami_Drawing_Canvas_" data-uid="Egami.Drawing.Picture.Playback(Egami.Drawing.Canvas)">
+  Playback(Canvas)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Picture.cs/#L48"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Replays the calls on a canvas through its public calls, between a <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Save">Save()</a> and a
+<a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Restore()</a>; recorded transforms apply after the canvas's transform at the start.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Playback(Canvas canvas)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>canvas</code> <a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a></dt>
+    <dd><p>The canvas.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Picture_Playback_Egami_Drawing_Canvas__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Record any picture code once...
+PictureRecorder recorder = new(new RectF(0, 0, 40, 40));
+DrawLogo(recorder);
+Picture logo = recorder.Finish();
+
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // ...and replay it anywhere, at any scale, still sharp: replay is vector.
+    canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(10, 10));
+    canvas.DrawPicture(logo, Matrix3x2.CreateScale(4) * Matrix3x2.CreateTranslation(60, 10));
+
+    // A paint with an opacity merges the whole picture as one layer.
+    canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(240, 10), new SolidPaint(Rgba8.White) { Opacity = 0.4f });
+
+    // Drawn many times at one scale, a cached image is cheaper than replaying.
+    for (int i = 0; i &lt; 6; i++)
+    {
+        canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(230 + (i * 25), 150), cacheAsImage: true);
+    }
+}
+
+using Raster&lt;Rgba8&gt; icon = logo.ToRaster&lt;Rgba8&gt;(scale: 2);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_Picture_Save_" data-uid="Egami.Drawing.Picture.Save*"></a>
+
+  <h3 id="Egami_Drawing_Picture_Save_System_IO_Stream_" data-uid="Egami.Drawing.Picture.Save(System.IO.Stream)">
+  Save(Stream)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Picture.Egdr.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the picture as an Egami picture file (.egdr), Egami's own documented binary format: a signature and version, then
+chunks that a reader skips when it does not know them. Images are kept as PNG (so a float image is kept at 16 bits), paths
+and numbers as 32-bit floats, nested pictures once however often they are used, and text as its outlines, since a file holds
+no fonts. A picture that loads back replays the same calls and draws the same pixels, except that text comes back as
+outline fills, which the raster backend draws as paths rather than from its glyph cache.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream stream)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream to write to.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Picture_Save_System_IO_Stream__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Keep a picture in Egami's own documented format, and load it later; a loaded file is untrusted, so the context's
+// safety limits apply.
+using (FileStream file = File.Create("logo.egdr"))
+{
+    logo.Save(file);
+}
+
+Picture loaded;
+using (FileStream file = File.OpenRead("logo.egdr"))
+{
+    loaded = Picture.Load(file);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>A call holds C# code a file cannot: a <a class="xref" href="Egami.Drawing.CustomPaint.html">CustomPaint</a>, or a layer's filter, backdrop or soft mask. The message
+gives the call's index. Nothing is written in that case.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Picture_ToRaster_" data-uid="Egami.Drawing.Picture.ToRaster*"></a>
+
+  <h3 id="Egami_Drawing_Picture_ToRaster__1_System_Single_Egami_Drawing_CanvasOptions_Egami_EgamiContext_" data-uid="Egami.Drawing.Picture.ToRaster``1(System.Single,Egami.Drawing.CanvasOptions,Egami.EgamiContext)">
+  ToRaster&lt;TPixel&gt;(float, CanvasOptions?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Picture.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Renders the picture's <a class="xref" href="Egami.Drawing.Picture.html#Egami_Drawing_Picture_Bounds">Bounds</a> into a new raster, over transparency.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;TPixel&gt; ToRaster&lt;TPixel&gt;(float scale = 1, CanvasOptions? options = null, EgamiContext? context = null) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>scale</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Raster pixels per picture unit.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Drawing.CanvasOptions.html">CanvasOptions</a></dt>
+    <dd><p>The canvas settings, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context the raster is made in, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>A raster of the bounds' size times the scale, rounded up.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The raster's pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Picture_ToRaster__1_System_Single_Egami_Drawing_CanvasOptions_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Record any picture code once...
+PictureRecorder recorder = new(new RectF(0, 0, 40, 40));
+DrawLogo(recorder);
+Picture logo = recorder.Finish();
+
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    // ...and replay it anywhere, at any scale, still sharp: replay is vector.
+    canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(10, 10));
+    canvas.DrawPicture(logo, Matrix3x2.CreateScale(4) * Matrix3x2.CreateTranslation(60, 10));
+
+    // A paint with an opacity merges the whole picture as one layer.
+    canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(240, 10), new SolidPaint(Rgba8.White) { Opacity = 0.4f });
+
+    // Drawn many times at one scale, a cached image is cheaper than replaying.
+    for (int i = 0; i &lt; 6; i++)
+    {
+        canvas.DrawPicture(logo, Matrix3x2.CreateTranslation(230 + (i * 25), 150), cacheAsImage: true);
+    }
+}
+
+using Raster&lt;Rgba8&gt; icon = logo.ToRaster&lt;Rgba8&gt;(scale: 2);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">scale</code> is not positive and finite, or the raster would be too large.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Picture.Egdr.cs/#L5" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

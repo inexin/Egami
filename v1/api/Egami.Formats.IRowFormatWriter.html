@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Interface IRowFormatWriter | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Interface IRowFormatWriter | Egami ">
+      
+      <meta name="description" content="An optional interface for a format&#39;s writer: an encoder that takes rows and frames one at a time. A writer that implements it streams through  and , and  and SaveAsync use it in place of , so all of them write the same bytes. A writer without it still works everywhere: the encoder gathers the image and calls  at the end.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_IRowFormatWriter.md&amp;value=---%0Auid%3A%20Egami.Formats.IRowFormatWriter%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.IRowFormatWriter">
+
+
+
+  <h1 id="Egami_Formats_IRowFormatWriter" data-uid="Egami.Formats.IRowFormatWriter" class="text-break">
+Interface IRowFormatWriter  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An optional interface for a format's writer: an encoder that takes rows and frames one at a time. A writer that implements it
+streams through <a class="xref" href="Egami.RasterEncoder-1.html">RasterEncoder&lt;TPixel&gt;</a> and <a class="xref" href="Egami.Raster.html#Egami_Raster_Transcode_System_IO_Stream_System_IO_Stream_Egami_Formats_FormatInfo_System_Action_Egami_Operations_RasterOps__Egami_Formats_ReaderOptions_Egami_Formats_WriterOptions_Egami_EgamiContext_">Transcode(Stream, Stream, FormatInfo, Action&lt;RasterOps&gt;?, ReaderOptions?, WriterOptions?, EgamiContext?)</a>,
+and <a class="xref" href="Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">Save(Stream, FormatInfo, WriterOptions?)</a> and SaveAsync use it in place of
+<a class="xref" href="Egami.Formats.IFormatWriter.html#Egami_Formats_IFormatWriter_Write__1_Egami_Raster___0__System_IO_Stream_Egami_Formats_WriterOptions_">Write&lt;TPixel&gt;(Raster&lt;TPixel&gt;, Stream, WriterOptions)</a>, so all of them write the same bytes. A writer without it still works everywhere: the
+encoder gathers the image and calls <a class="xref" href="Egami.Formats.IFormatWriter.html#Egami_Formats_IFormatWriter_Write__1_Egami_Raster___0__System_IO_Stream_Egami_Formats_WriterOptions_">Write&lt;TPixel&gt;(Raster&lt;TPixel&gt;, Stream, WriterOptions)</a> at the end.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface IRowFormatWriter</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+  <h2 id="Egami_Formats_IRowFormatWriter_examples">Examples</h2>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;The same RAW8 format, streaming: rows go in and out one at a time, so RasterDecoder, RasterEncoder and Transcode stream it.&lt;/summary&gt;
+public static class StreamingRaw8Format
+{
+    public static FormatInfo Info { get; } = Raw8Format.Info with { Reader = new Reader(), Writer = new Writer() };
+
+    private sealed class Reader : IFormatReader, IRowFormatReader
+    {
+        private static readonly IFormatReader Whole = Raw8Format.Info.Reader!;
+
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options) =&gt; Whole.ReadInfo(input, options) with { Access = RasterAccess.Streamed };
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; Whole.Read&lt;TPixel&gt;(input, options);
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Whole.Read(input, options);
+
+        // The open image reads each row when it is asked for; the decoder crops, reduces and converts after it.
+        public RowReader Open(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(4);
+            int width = (int)input.ReadUInt32BigEndian();
+            return new Rows(input, width, (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Rows(EgamiInput input, int width, int height) : RowReader&lt;Rgba8&gt;
+    {
+        private readonly Rgba8[] _row = new Rgba8[width];
+        private int _next;
+        private bool _started;
+
+        public override int Width =&gt; width;
+
+        public override int Height =&gt; height;
+
+        public override Metadata.RasterMetadata Metadata { get; } = new();
+
+        public override Metadata.FrameMetadata? NextFrame()
+        {
+            if (_started)
+            {
+                return null;
+            }
+
+            _started = true;
+            return new Metadata.FrameMetadata();
+        }
+
+        public override void ReadRow&lt;TPixel&gt;(int y, int x, Span&lt;TPixel&gt; destination)
+        {
+            for (; _next &lt;= y; _next++)
+            {
+                input.ReadExactly(MemoryMarshal.AsBytes(_row.AsSpan()));
+            }
+
+            PixelConvert.Convert&lt;Rgba8, TPixel&gt;(_row.AsSpan(x, destination.Length), destination);
+        }
+    }
+
+    private sealed class Writer : IFormatWriter, IRowFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; Raw8Format.Info.Writer!.Write(raster, output, options);
+
+        // Save, SaveAsync, RasterEncoder and Transcode all write through the encoder.
+        public RowEncoder&lt;TPixel&gt; Start&lt;TPixel&gt;(Stream output, EncodeStart&lt;TPixel&gt; start)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; new Encoder&lt;TPixel&gt;(output, start.Width, start.Height);
+    }
+
+    private sealed class Encoder&lt;TPixel&gt; : RowEncoder&lt;TPixel&gt;
+        where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+    {
+        private readonly Stream _output;
+        private readonly Rgba8[] _row;
+
+        public Encoder(Stream output, int width, int height)
+        {
+            _output = output;
+            _row = new Rgba8[width];
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            "RAW8"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)height);
+            output.Write(header);
+        }
+
+        public override void WriteRow(ReadOnlySpan&lt;TPixel&gt; row)
+        {
+            PixelConvert.Convert&lt;TPixel, Rgba8&gt;(row, _row);
+            _output.Write(MemoryMarshal.AsBytes(_row.AsSpan()));
+        }
+
+        public override void Complete()
+        {
+        }
+    }
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_IRowFormatWriter_Start_" data-uid="Egami.Formats.IRowFormatWriter.Start*"></a>
+
+  <h3 id="Egami_Formats_IRowFormatWriter_Start__1_System_IO_Stream_Egami_Formats_EncodeStart___0__" data-uid="Egami.Formats.IRowFormatWriter.Start``1(System.IO.Stream,Egami.Formats.EncodeStart{``0})">
+  Start&lt;TPixel&gt;(Stream, EncodeStart&lt;TPixel&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Starts an encode into <code class="paramref">output</code>, writing what goes before the image data. An option that needs every pixel
+before the first byte throws <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a> here when <a class="xref" href="Egami.Formats.EncodeStart-1.html#Egami_Formats_EncodeStart_1_Streaming">Streaming</a>, as
+<a class="xref" href="Egami.Formats.EncodeStart-1.html#Egami_Formats_EncodeStart_1_Refuse_System_String_System_String_System_String_">Refuse(string, string, string)</a> does, before anything is written.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">RowEncoder&lt;TPixel&gt; Start&lt;TPixel&gt;(Stream output, EncodeStart&lt;TPixel&gt; start) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write. The encoder leaves it open.</p>
+</dd>
+    <dt><code>start</code> <a class="xref" href="Egami.Formats.EncodeStart-1.html">EncodeStart</a>&lt;TPixel&gt;</dt>
+    <dd><p>The size, metadata, options and, for Save, the whole image.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.RowEncoder-1.html">RowEncoder</a>&lt;TPixel&gt;</dt>
+    <dd><p>The encode in progress, which the caller disposes.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type of the rows and frames.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_IRowFormatWriter_Start__1_System_IO_Stream_Egami_Formats_EncodeStart___0___examples">Examples</h4>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;The same RAW8 format, streaming: rows go in and out one at a time, so RasterDecoder, RasterEncoder and Transcode stream it.&lt;/summary&gt;
+public static class StreamingRaw8Format
+{
+    public static FormatInfo Info { get; } = Raw8Format.Info with { Reader = new Reader(), Writer = new Writer() };
+
+    private sealed class Reader : IFormatReader, IRowFormatReader
+    {
+        private static readonly IFormatReader Whole = Raw8Format.Info.Reader!;
+
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options) =&gt; Whole.ReadInfo(input, options) with { Access = RasterAccess.Streamed };
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; Whole.Read&lt;TPixel&gt;(input, options);
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Whole.Read(input, options);
+
+        // The open image reads each row when it is asked for; the decoder crops, reduces and converts after it.
+        public RowReader Open(EgamiInput input, ReaderOptions options)
+        {
+            input.Skip(4);
+            int width = (int)input.ReadUInt32BigEndian();
+            return new Rows(input, width, (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Rows(EgamiInput input, int width, int height) : RowReader&lt;Rgba8&gt;
+    {
+        private readonly Rgba8[] _row = new Rgba8[width];
+        private int _next;
+        private bool _started;
+
+        public override int Width =&gt; width;
+
+        public override int Height =&gt; height;
+
+        public override Metadata.RasterMetadata Metadata { get; } = new();
+
+        public override Metadata.FrameMetadata? NextFrame()
+        {
+            if (_started)
+            {
+                return null;
+            }
+
+            _started = true;
+            return new Metadata.FrameMetadata();
+        }
+
+        public override void ReadRow&lt;TPixel&gt;(int y, int x, Span&lt;TPixel&gt; destination)
+        {
+            for (; _next &lt;= y; _next++)
+            {
+                input.ReadExactly(MemoryMarshal.AsBytes(_row.AsSpan()));
+            }
+
+            PixelConvert.Convert&lt;Rgba8, TPixel&gt;(_row.AsSpan(x, destination.Length), destination);
+        }
+    }
+
+    private sealed class Writer : IFormatWriter, IRowFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; Raw8Format.Info.Writer!.Write(raster, output, options);
+
+        // Save, SaveAsync, RasterEncoder and Transcode all write through the encoder.
+        public RowEncoder&lt;TPixel&gt; Start&lt;TPixel&gt;(Stream output, EncodeStart&lt;TPixel&gt; start)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt; =&gt; new Encoder&lt;TPixel&gt;(output, start.Width, start.Height);
+    }
+
+    private sealed class Encoder&lt;TPixel&gt; : RowEncoder&lt;TPixel&gt;
+        where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+    {
+        private readonly Stream _output;
+        private readonly Rgba8[] _row;
+
+        public Encoder(Stream output, int width, int height)
+        {
+            _output = output;
+            _row = new Rgba8[width];
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            "RAW8"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)height);
+            output.Write(header);
+        }
+
+        public override void WriteRow(ReadOnlySpan&lt;TPixel&gt; row)
+        {
+            PixelConvert.Convert&lt;TPixel, Rgba8&gt;(row, _row);
+            _output.Write(MemoryMarshal.AsBytes(_row.AsSpan()));
+        }
+
+        public override void Complete()
+        {
+        }
+    }
+}</code></pre>
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/RowEncoder.cs/#L16" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

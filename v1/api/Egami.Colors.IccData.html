@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class IccData | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class IccData | Egami ">
+      
+      <meta name="description" content="A parsed ICC profile (ICC.1, versions 2 and 4): the header fields, the description and copyright text, and every tag with its bytes. Read-only;  turns it into an encoding that conversion can use.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Colors_IccData.md&amp;value=---%0Auid%3A%20Egami.Colors.IccData%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Colors.IccData">
+
+
+
+  <h1 id="Egami_Colors_IccData" data-uid="Egami.Colors.IccData" class="text-break">
+Class IccData  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Colors.html">Colors</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A parsed ICC profile (ICC.1, versions 2 and 4): the header fields, the description and copyright text, and every tag with its
+bytes. Read-only; <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_FromIcc_Egami_Colors_IccData_">FromIcc(IccData)</a> turns it into an encoding that conversion can use.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class IccData</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">IccData</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Colors_IccData_examples">Examples</h2>
+  <pre><code class="lang-csharp">// IccData reads a profile's header and tags; it never throws, and says what was wrong with a damaged one.
+IccData icc = IccData.Parse(bytes);
+Console.WriteLine($"{icc.Description}: version {icc.Version}, {icc.ProfileClass}, {icc.DataSpace} to {icc.ConnectionSpace}, damaged: {icc.IsDamaged}");
+foreach (IccTag tag in icc.Tags)
+{
+    Console.WriteLine($"  {tag.Signature} ({tag.Type}), {tag.Data.Length} bytes");
+}
+
+// ColorProfile.FromIcc makes an encoding from it: a matrix profile gets its primaries and curve, so an ICC profile written
+// for Display P3 is equivalent to the built-in.
+ColorProfile profile = ColorProfile.FromIcc(icc);
+bool isP3 = profile.IsEquivalentTo(ColorProfile.DisplayP3);</code></pre>
+
+
+  <h2 id="Egami_Colors_IccData_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Parsing never throws. A profile with offsets or sizes outside it, a missing signature, or more bytes than
+<a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxMetadataBytes">MaxMetadataBytes</a> is marked damaged; what could be read is available, and <a class="xref" href="Egami.Colors.IccData.html#Egami_Colors_IccData_ToBytes">ToBytes()</a>
+returns the bytes given.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Colors_IccData_CodePoints_" data-uid="Egami.Colors.IccData.CodePoints*"></a>
+
+  <h3 id="Egami_Colors_IccData_CodePoints" data-uid="Egami.Colors.IccData.CodePoints">
+  CodePoints
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the H.273 code points of a version 4.4 <code>cicp</code> tag, which HDR profiles use to name PQ or HLG exactly, or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorCodePoints? CodePoints { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorCodePoints.html">ColorCodePoints</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_ConnectionSpace_" data-uid="Egami.Colors.IccData.ConnectionSpace*"></a>
+
+  <h3 id="Egami_Colors_IccData_ConnectionSpace" data-uid="Egami.Colors.IccData.ConnectionSpace">
+  ConnectionSpace
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the profile connection space signature without trailing spaces: &quot;XYZ&quot; or &quot;Lab&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string ConnectionSpace { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_Copyright_" data-uid="Egami.Colors.IccData.Copyright*"></a>
+
+  <h3 id="Egami_Colors_IccData_Copyright" data-uid="Egami.Colors.IccData.Copyright">
+  Copyright
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the copyright text (the <code>cprt</code> tag), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Copyright { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_Created_" data-uid="Egami.Colors.IccData.Created*"></a>
+
+  <h3 id="Egami_Colors_IccData_Created" data-uid="Egami.Colors.IccData.Created">
+  Created
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets when the profile was created, as UTC, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the header's date is not a valid one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DateTime? Created { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetime">DateTime</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_DataSpace_" data-uid="Egami.Colors.IccData.DataSpace*"></a>
+
+  <h3 id="Egami_Colors_IccData_DataSpace" data-uid="Egami.Colors.IccData.DataSpace">
+  DataSpace
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the data color space signature without trailing spaces, such as &quot;RGB&quot;, &quot;GRAY&quot;, &quot;CMYK&quot; or &quot;Lab&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string DataSpace { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_Description_" data-uid="Egami.Colors.IccData.Description*"></a>
+
+  <h3 id="Egami_Colors_IccData_Description" data-uid="Egami.Colors.IccData.Description">
+  Description
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the description (the <code>desc</code> tag, English when it has several languages), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Description { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_IsDamaged_" data-uid="Egami.Colors.IccData.IsDamaged*"></a>
+
+  <h3 id="Egami_Colors_IccData_IsDamaged" data-uid="Egami.Colors.IccData.IsDamaged">
+  IsDamaged
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the profile was damaged when read: a missing <code>acsp</code> signature, a size or offset outside it, or more
+bytes than allowed. What could be read is available.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsDamaged { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_Model_" data-uid="Egami.Colors.IccData.Model*"></a>
+
+  <h3 id="Egami_Colors_IccData_Model" data-uid="Egami.Colors.IccData.Model">
+  Model
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the color model of the data space, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when it is not RGB, gray, CMYK or 2 to 15 colorants
+(2CLR to FCLR), the spaces Egami converts.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorModel? Model { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorModel.html">ColorModel</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_ProfileClass_" data-uid="Egami.Colors.IccData.ProfileClass*"></a>
+
+  <h3 id="Egami_Colors_IccData_ProfileClass" data-uid="Egami.Colors.IccData.ProfileClass">
+  ProfileClass
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the profile class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IccProfileClass ProfileClass { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.IccProfileClass.html">IccProfileClass</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_RenderingIntent_" data-uid="Egami.Colors.IccData.RenderingIntent*"></a>
+
+  <h3 id="Egami_Colors_IccData_RenderingIntent" data-uid="Egami.Colors.IccData.RenderingIntent">
+  RenderingIntent
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the rendering intent the header suggests.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RenderingIntent RenderingIntent { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.RenderingIntent.html">RenderingIntent</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_Tags_" data-uid="Egami.Colors.IccData.Tags*"></a>
+
+  <h3 id="Egami_Colors_IccData_Tags" data-uid="Egami.Colors.IccData.Tags">
+  Tags
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets every tag, in the order of the tag table.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;IccTag&gt; Tags { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Colors.IccTag.html">IccTag</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_Version_" data-uid="Egami.Colors.IccData.Version*"></a>
+
+  <h3 id="Egami_Colors_IccData_Version" data-uid="Egami.Colors.IccData.Version">
+  Version
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the profile version, such as 2.1 or 4.3.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Version Version { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.version">Version</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_Warnings_" data-uid="Egami.Colors.IccData.Warnings*"></a>
+
+  <h3 id="Egami_Colors_IccData_Warnings" data-uid="Egami.Colors.IccData.Warnings">
+  Warnings
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what was wrong with a damaged profile, as sentences.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; Warnings { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Colors_IccData_Parse_" data-uid="Egami.Colors.IccData.Parse*"></a>
+
+  <h3 id="Egami_Colors_IccData_Parse_System_ReadOnlySpan_System_Byte__Egami_SafetyLimits_" data-uid="Egami.Colors.IccData.Parse(System.ReadOnlySpan{System.Byte},Egami.SafetyLimits)">
+  Parse(ReadOnlySpan&lt;byte&gt;, SafetyLimits?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads an ICC profile. Never throws: a profile larger than <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxMetadataBytes">MaxMetadataBytes</a> is kept but not
+read, and anything outside the bytes given is skipped; either way the profile is marked damaged.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IccData Parse(ReadOnlySpan&lt;byte&gt; profile, SafetyLimits? limits = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>profile</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The profile, as stored in a PNG iCCP chunk, JPEG APP2 segments or a TIFF tag.</p>
+</dd>
+    <dt><code>limits</code> <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a></dt>
+    <dd><p>The limits whose <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxMetadataBytes">MaxMetadataBytes</a> caps the profile size. Defaults to <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.IccData.html">IccData</a></dt>
+    <dd><p>The parsed profile; <a class="xref" href="Egami.Colors.IccData.html#Egami_Colors_IccData_IsDamaged">IsDamaged</a> says whether it was all readable.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Colors_IccData_Parse_System_ReadOnlySpan_System_Byte__Egami_SafetyLimits__examples">Examples</h4>
+  <pre><code class="lang-csharp">// IccData reads a profile's header and tags; it never throws, and says what was wrong with a damaged one.
+IccData icc = IccData.Parse(bytes);
+Console.WriteLine($"{icc.Description}: version {icc.Version}, {icc.ProfileClass}, {icc.DataSpace} to {icc.ConnectionSpace}, damaged: {icc.IsDamaged}");
+foreach (IccTag tag in icc.Tags)
+{
+    Console.WriteLine($"  {tag.Signature} ({tag.Type}), {tag.Data.Length} bytes");
+}
+
+// ColorProfile.FromIcc makes an encoding from it: a matrix profile gets its primaries and curve, so an ICC profile written
+// for Display P3 is equivalent to the built-in.
+ColorProfile profile = ColorProfile.FromIcc(icc);
+bool isP3 = profile.IsEquivalentTo(ColorProfile.DisplayP3);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_ToBytes_" data-uid="Egami.Colors.IccData.ToBytes*"></a>
+
+  <h3 id="Egami_Colors_IccData_ToBytes" data-uid="Egami.Colors.IccData.ToBytes">
+  ToBytes()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L130"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the profile's bytes, exactly as given to <a class="xref" href="Egami.Colors.IccData.html#Egami_Colors_IccData_Parse_System_ReadOnlySpan_System_Byte__Egami_SafetyLimits_">Parse(ReadOnlySpan&lt;byte&gt;, SafetyLimits?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlyMemory&lt;byte&gt; ToBytes()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_ToString_" data-uid="Egami.Colors.IccData.ToString*"></a>
+
+  <h3 id="Egami_Colors_IccData_ToString" data-uid="Egami.Colors.IccData.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a string that represents the current object.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A string that represents the current object.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Colors_IccData_TryGetTag_" data-uid="Egami.Colors.IccData.TryGetTag*"></a>
+
+  <h3 id="Egami_Colors_IccData_TryGetTag_System_String_Egami_Colors_IccTag__" data-uid="Egami.Colors.IccData.TryGetTag(System.String,Egami.Colors.IccTag@)">
+  TryGetTag(string, out IccTag)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the tag with this signature, if the profile has it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetTag(string signature, out IccTag tag)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>signature</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The tag signature, such as &quot;rTRC&quot;; trailing spaces are optional.</p>
+</dd>
+    <dt><code>tag</code> <a class="xref" href="Egami.Colors.IccTag.html">IccTag</a></dt>
+    <dd><p>The tag, or the default value.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the profile has the tag.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/IccData.cs/#L18" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

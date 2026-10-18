@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>SVG | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="SVG | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/svg.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="svg">SVG</h1>
+
+<p>Egami.Svg reads SVG 1.1 and SVG 2 files into an editable element tree, saves them back, and draws them through Egami.Drawing's
+canvas, so the same document renders to a raster, to a PDF page or back out as SVG. It is fully managed and opens nothing
+outside the file unless you allow it.</p>
+<p>Egami.Svg is at 1.0 (1.0.0): reading, saving, styles, drawing, filters, text, color fonts, SVG output and
+<code>Raster.Load</code> support are in, and its API is stable: 1.x versions add to it without breaking code that uses it.</p>
+<h2 id="loading">Loading</h2>
+<p><code>SvgDocument.Load</code> reads an .svg or .svgz file or stream (gzip is detected by its first bytes), and <code>SvgDocument.Parse</code> reads
+markup from a string. Loading is lenient, as browsers and resvg read SVG: what cannot be used is skipped, listed in
+<code>SvgDocument.Warnings</code> and sent to the context's diagnostics as <code>Svg.*</code> events.</p>
+<pre><code class="lang-csharp">// .svg and .svgz alike; nothing outside the file is opened unless a resolver allows it.
+SvgDocument document = SvgDocument.Load(path);
+Console.WriteLine($&quot;{document.Title}: {document.Root.Descendants().Count()} elements&quot;);
+
+// What a lenient load skipped is in Warnings, and in the context's diagnostics.
+foreach (EgamiDiagnostic warning in document.Warnings)
+{
+    Console.WriteLine($&quot;{warning.Id}: {warning.Message}&quot;);
+}
+</code></pre>
+<p><code>SvgLoadOptions.Strict</code> throws an <code>SvgException</code> with the line and column instead, for checking files you produce:</p>
+<pre><code class="lang-csharp">// Strict turns everything a lenient load would skip into an exception with the line and column.
+try
+{
+    SvgDocument.Parse(&quot;&lt;svg&gt;\n  &lt;rect width='10' height='10'/&gt;\n&lt;/svg&gt;&quot;, new SvgLoadOptions { Strict = true });
+}
+catch (SvgException e)
+{
+    Console.WriteLine($&quot;Line {e.Line}, column {e.Column}: {e.Problem}&quot;);
+}
+</code></pre><h2 id="the-element-tree">The element tree</h2>
+<p>The document is a tree of <code>SvgElement</code>s, like XDocument's: each has a <code>Name</code> and <code>Namespace</code>, an <code>SvgAttributeCollection</code> of
+<code>SvgAttribute</code>s and an <code>SvgContentList</code> of <code>SvgContent</code> items in file order (child elements, <code>SvgTextContent</code> for text and
+CDATA, <code>SvgComment</code> and <code>SvgProcessingInstruction</code>). Elements and attributes Egami does not draw, such as Inkscape's and
+Illustrator's, are kept. <code>SvgNamespaces</code> names the SVG, XLink, XML and xmlns namespaces. <code>FindById</code> finds an element by its
+<code>id</code>.</p>
+<pre><code class="lang-csharp">SvgDocument document = SvgDocument.Parse(Icon);
+
+// Elements, attributes and text are an editable tree, like XDocument's.
+SvgElement body = document.FindById(&quot;body&quot;)!;
+body.Attributes[&quot;fill&quot;] = &quot;#c33&quot;;
+body.Attributes.Set(&quot;href&quot;, &quot;#other&quot;, SvgNamespaces.XLink, &quot;xlink&quot;);
+
+SvgElement dot = new(&quot;circle&quot;);
+dot.Attributes[&quot;cx&quot;] = &quot;12&quot;;
+dot.Attributes[&quot;cy&quot;] = &quot;12&quot;;
+dot.Attributes[&quot;r&quot;] = &quot;3&quot;;
+document.Root.Children.Add(dot);
+document.Root.Children.Add(new SvgComment(&quot; added in code &quot;));
+
+foreach (SvgElement element in document.Root.Elements())
+{
+    Console.WriteLine($&quot;{element.Name}: {element.Attributes.Count} attributes&quot;);
+}
+</code></pre>
+<p><code>Save</code> writes the tree back as SVG, with everything read from the file (unknown elements, foreign namespaces, comments, the
+DOCTYPE), so a load and save without edits keeps the document's meaning; entities come out expanded, and attribute order and
+whitespace inside tags may change. <code>SvgSaveOptions</code> sets indentation (only where whitespace means nothing, never inside text),
+the decimals of numbers and paths set in code, and gzip for .svgz.</p>
+<pre><code class="lang-csharp">// Numbers and paths set in code are written with Precision decimals; what was read keeps its text.
+document.FindById(&quot;body&quot;)!.Attributes.Set(&quot;width&quot;, 17.666666);
+document.Save(path, new SvgSaveOptions { Precision = 2, Gzip = true });
+
+using var stream = new MemoryStream();
+document.Save(stream);
+</code></pre>
+<p>Every edit marks the document for re-resolving on its next draw. The tree is not safe for writes from several threads at once,
+like XDocument.</p>
+<h2 id="drawing">Drawing</h2>
+<p><code>Rasterize</code> draws the document into a new raster at its own size (<code>SvgDocument.Size</code>: the root's width and height, a
+percentage or missing side taken of the viewBox, or 100 by 100 when there is none, as resvg sizes documents), scaled, or at a
+target width or height; <code>SvgRenderOptions</code> also sets the background and the canvas options.</p>
+<pre><code class="lang-csharp">// At the document's own size, scaled, or at a target width (the height keeps the aspect ratio).
+using Raster&lt;Rgba8&gt; icon = document.Rasterize&lt;Rgba8&gt;();
+using Raster&lt;Rgba8&gt; large = document.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { Width = 512 });
+using Raster&lt;Rgba8&gt; onWhite = document.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { Scale = 2, Background = new RgbaF32(1, 1, 1, 1) });
+</code></pre>
+<p><code>Draw</code> draws on any Egami.Drawing canvas: a raster canvas, a PDF page, a <code>PictureRecorder</code>. It calls only the public canvas
+API, so every backend receives the same calls; a box fits the document in by the root's preserveAspectRatio, and an id draws
+one element, such as a <code>symbol</code> of a sprite sheet. Drawing never throws on content: what cannot be drawn was reported when
+the document was read.</p>
+<pre><code class="lang-csharp">// Fitted into a box by the root's preserveAspectRatio; a PDF page or SvgCanvas receives the same calls.
+document.Draw(canvas, new RectF(10, 10, 180, 180));
+
+// One element of a sprite sheet, fitted into its own box.
+document.Draw(canvas, &quot;body&quot;, new RectF(200, 10, 48, 48));
+</code></pre>
+<p>Rendering follows resvg, the closest static SVG renderer, where SVG leaves a choice open, and is checked against resvg's
+test suite. Styles come from Egami.Css: style sheets in <code>style</code> elements (with media queries), the <code>style</code> attribute and
+presentation attributes, with selectors up to Selectors level 4.</p>
+<p>Paint servers are linear and radial gradients, patterns and the mesh gradients Inkscape writes (<code>meshgradient</code>, SVG 2's
+draft): each patch is a Coons patch with a color at each corner, blended bilinearly or, with <code>type=&quot;bicubic&quot;</code>, smoothly
+across patches. Outside its patches a mesh paints nothing. A mesh that names another with <code>href</code> takes its rows and keeps
+its own x and y, as Inkscape reads it.</p>
+<h2 id="text">Text</h2>
+<p>Text is laid out when the document is read: characters are placed by the x, y, dx, dy and rotate lists, shaped in their
+fonts (bidi, ligatures, kerning, fallback for characters a font lacks), spaced by letter-spacing, word-spacing and
+textLength, anchored, put on a textPath or set vertically, and shifted to their baselines, as resvg lays text out. Each run
+of glyphs becomes an <code>SvgTextRun</code> drawn with <code>DrawGlyphRun</code>, so a PDF page or an SVG canvas keeps real text;
+<code>SvgRenderOptions.TextAsPaths</code> draws the outlines instead, for a plotter or a cutter.</p>
+<p>Wrapped text from SVG 2 is laid out by Egami.Fonts' paragraph layout: <code>inline-size</code> fills lines of that length from the
+text's x and y, aligned by text-anchor, and <code>shape-inside</code> flows the text into shapes (less <code>shape-subtract</code> and its
+<code>shape-margin</code>, inside <code>shape-padding</code>), filling one shape after another as Inkscape's flowed text does. <code>white-space</code> keeps
+spaces and line breaks for pre, pre-wrap and pre-line.</p>
+<p>Fonts come from <code>SvgFontOptions</code>: the caller's collection first, then the document's <code>@font-face</code> rules (data URIs, or files
+the load options' resolver allows), then the fonts installed on the machine unless
+<code>UseSystemFonts</code> is off, then the serif family. A server that renders files it did not write should pass its own fonts and
+turn system fonts off, so the output does not depend on the machine.</p>
+<pre><code class="lang-csharp">// A server passes its own fonts and turns the machine's off, so text renders the same everywhere.
+Egami.Fonts.FontCollection fonts = new();
+fonts.AddFile(System.IO.Path.Combine(folder, &quot;NotoSans-Regular.ttf&quot;));
+SvgLoadOptions options = new()
+{
+    Fonts = new SvgFontOptions { Collection = fonts, UseSystemFonts = false, DefaultFamily = &quot;Noto Sans&quot; },
+};
+SvgDocument label = SvgDocument.Parse(
+    &quot;&lt;svg xmlns='http://www.w3.org/2000/svg' width='120' height='40'&gt;&lt;text x='60' y='26' text-anchor='middle'&gt;Label&lt;/text&gt;&lt;/svg&gt;&quot;,
+    options);
+using Raster&lt;Rgba8&gt; raster = label.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { TextAsPaths = false });
+</code></pre>
+<p>Color fonts with an OpenType SVG table, such as many emoji fonts, draw in color through <code>SvgGlyphRenderer</code>, an
+<code>IColorGlyphRenderer</code> that Egami.Drawing asks when <code>CanvasOptions.ColorGlyphRenderer</code> holds it: each glyph's document is read once
+per font. A glyph that also has a COLR version 1 form draws that instead; COLR version 0, sbix and CBDT come after SVG.
+<code>Rasterize</code> uses the renderer already; set it yourself on any other raster canvas.</p>
+<pre><code class="lang-csharp">// Emoji and other glyphs from an OpenType SVG table draw in color on a canvas given the renderer.
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas(new CanvasOptions { ColorGlyphRenderer = SvgGlyphRenderer.Instance }))
+{
+    canvas.DrawText(&quot;Hello&quot;, new System.Numerics.Vector2(10, 35), font, new SolidPaint(new RgbaF32(0, 0, 0, 1)));
+}
+</code></pre><h2 id="loading-svg-as-a-raster">Loading SVG as a raster</h2>
+<p><code>SvgFormat.Info</code> makes SVG an Egami format: register it with <code>EgamiContext.WithFormat</code>, and <code>Raster.Load</code> reads .svg and
+.svgz files drawn at their own size, <code>Raster.Probe</code> gives that size without drawing, and <code>RasterDecoder</code> and the rest of
+Egami's loading take them like any image. It is found by content, not by extension: an <code>svg</code> root element after any XML
+declaration, comments and DOCTYPE, or gzip data that starts so. <code>SvgDecodeOptions.Scale</code> draws at a multiple of the size,
+for icons on high-density screens, and <code>Recovery = Strict</code> throws on what a lenient load skips; a lenient load keeps the
+<code>Svg.*</code> warnings in the raster's <code>Metadata.Warnings</code>. The context's safety limits apply, and nothing outside the file is
+opened, so images it links are not drawn; text uses the machine's fonts. The format never writes: save SVG with
+<code>SvgDocument.Save</code> or <code>SvgCanvas</code>. For a resolver, your own fonts, a target size or a background, load an <code>SvgDocument</code> and
+call <code>Rasterize</code>.</p>
+<pre><code class="lang-csharp">// SVG as an Egami format: Raster.Load draws a file at its own size, Raster.Probe reads the size without drawing.
+EgamiContext context = EgamiContext.Default.WithFormat(SvgFormat.Info);
+RasterInfo info = Raster.Probe(path, context);
+using Raster&lt;Rgba8&gt; icon = Raster.Load&lt;Rgba8&gt;(path, context);
+
+// Twice the size, for a high-density screen.
+using Raster&lt;Rgba8&gt; sharp = Raster.Load&lt;Rgba8&gt;(path, context, new SvgDecodeOptions { Scale = 2 });
+</code></pre><h2 id="the-render-tree">The render tree</h2>
+<p>Drawing works from the render tree, <code>SvgDocument.RenderTree</code>: the elements with their styles applied, units in pixels, <code>use</code>
+copies expanded, paint servers, clip paths, masks and markers linked, and shapes turned into Egami.Drawing paths. It is built
+when the document is read and again after an edit, and it is immutable, so a document can be drawn on many threads at once.
+Its nodes are <code>SvgNode</code>s: <code>SvgGroup</code> for containers, <code>SvgPath</code> for shapes (fill, stroke and markers, in <code>SvgPaintOrder</code>),
+<code>SvgImage</code> for images and <code>SvgTextRun</code> for text, each with its transform, opacity, blend mode, <code>SvgClip</code>, <code>SvgMask</code> and
+<code>SvgFilter</code>, and a link back to its <code>SvgElement</code>. A later 1.x release may add node kinds, so a <code>switch</code> over nodes should keep a
+default case.</p>
+<pre><code class="lang-csharp">// The resolved tree: groups, paths with their paints and strokes, images; styles applied and units in pixels.
+static void Walk(SvgNode node, int depth)
+{
+    string what = node switch
+    {
+        SvgPath path =&gt; $&quot;path {path.Path.Bounds} fill {path.Fill}&quot;,
+        SvgGroup group =&gt; $&quot;group of {group.Children.Count}&quot;,
+        SvgImage image =&gt; $&quot;image {image.Destination}&quot;,
+        _ =&gt; node.GetType().Name,
+    };
+    Console.WriteLine($&quot;{new string(' ', depth * 2)}{node.Id} {what} opacity {node.Opacity}&quot;);
+    if (node is SvgGroup g)
+    {
+        foreach (SvgNode child in g.Children)
+        {
+            Walk(child, depth + 1);
+        }
+    }
+}
+
+Walk(document.RenderTree, 0);
+</code></pre><h2 id="untrusted-files">Untrusted files</h2>
+<p>An SVG file is untrusted input. A load honors the context's <code>SafetyLimits</code>: the file, after gzip, is bounded by
+<code>MaxTotalBytes</code> (a gzip bomb stops there), entity expansion by <code>MaxMetadataBytes</code> (so a billion-laughs DTD stops), the number
+of elements grows with <code>MaxTotalBytes</code>, and elements nest at most 256 deep. Internal DTD entities are expanded, because
+Illustrator writes them; external entities and DTDs are never opened. Images, style sheets and fonts the file refers to open
+only through <code>SvgLoadOptions.Resolver</code>; <code>SvgResolvers.SameDirectory</code> allows files in one folder and nothing else, and <code>data:</code>
+URIs always work. Egami never opens a network connection itself.</p>
+<pre><code class="lang-csharp">// Images, style sheets and fonts the file refers to open only through a resolver; data: URIs always work.
+var options = new SvgLoadOptions
+{
+    Resolver = SvgResolvers.SameDirectory(folder),
+    Dpi = 96,
+    Context = EgamiContext.Default with { Limits = SafetyLimits.Default with { MaxTotalBytes = 64L &lt;&lt; 20 } },
+};
+SvgDocument document = SvgDocument.Parse(Icon, options);
+</code></pre><h2 id="writing-svg">Writing SVG</h2>
+<p><code>SvgCanvas</code> is a <code>Canvas</code> that writes SVG: anything drawn on it, by your code or by a <code>Picture</code>, becomes a vector file that
+browsers, Inkscape and Egami.Svg read. Disposing it writes the file to the stream, which stays open. Each call becomes a
+<code>path</code>, <code>use</code>, <code>image</code> or <code>text</code> element with the canvas transform; equal gradients, clips, masks and patterns are written
+once in <code>defs</code> and shared, an image or a picture drawn many times is stored once, and clips add no nesting (each clip path's
+shape is clipped by the one before, and a chain longer than 16 is written as one intersected shape, since readers limit how
+deep references nest), so a deep save/restore stack stays flat. Gradients mixed in linear light, or between stops of
+different alpha, get extra stops mixed as Egami mixes them, so every viewer draws them alike. Layers become groups with <code>opacity</code>, CSS <code>mix-blend-mode</code> and <code>isolation</code>, and soft masks
+become <code>mask</code> elements.</p>
+<pre><code class="lang-csharp">// Anything drawn on a Canvas can be written as SVG: gradients, clips, images and pictures go once into defs.
+using (SvgCanvas canvas = new(file, 200, 120, new SvgWriteOptions { Precision = 2, ImageFormat = SvgImageFormat.Png }))
+{
+    canvas.FillRoundRect(new RoundRect(new RectF(10, 10, 180, 100), 12), new LinearGradient(new Vector2(10, 0), new Vector2(190, 0), new RgbaF32(0.1f, 0.4f, 0.9f, 1), new RgbaF32(0.9f, 0.2f, 0.5f, 1)));
+    canvas.SaveLayer(0.5f);
+    canvas.StrokePath(Egami.Drawing.Path.Oval(new RectF(30, 30, 140, 60)), new Stroke(6) { Dash = new DashPattern([10, 5]) }, new Rgba8(255, 255, 255, 255));
+    canvas.Restore();
+
+    // A sweep gradient has no SVG form: it is drawn by Egami and embedded as a PNG (Svg.FallbackImage).
+    canvas.FillCircle(new Vector2(100, 60), 20, new SweepGradient(new Vector2(100, 60), [new GradientStop(0, new RgbaF32(1, 1, 0, 1)), new GradientStop(1, new RgbaF32(0, 1, 1, 1))]));
+}
+
+// Disposing writes the file; the stream stays open.
+</code></pre>
+<p><code>SvgWriteOptions</code> sets the number of decimals (<code>Precision</code>), <code>Compact</code> output, the <code>SvgImageFormat</code> drawn images are embedded
+in (PNG, or JPEG for opaque images) and the resolution of fallback images. What SVG cannot express is drawn by Egami into a
+PNG over the area it covers, at <code>FallbackScale</code> pixels per unit, and reported as <code>Svg.FallbackImage</code> to the options' context:
+sweep gradients, noise, blend and color matrix paints, custom paints, gradients mixed in Oklab or Oklch, clamped images
+drawn past their edges, two-point conical gradients whose start circle is not inside the end circle, inner and outer mask
+blurs, meshes and patches, and layers with a filter, a backdrop or a mask transfer function. Blend modes CSS lacks (the
+Porter-Duff modes other than source-over and plus) are drawn as source-over and reported as <code>Svg.Approximated</code>.</p>
+<p>Text is written as glyph outlines by default (<code>SvgTextMode.Outlines</code>): each glyph's outline is in <code>defs</code> once, in font units,
+and every use of it scales it, so the file looks the same everywhere. <code>SvgTextMode.Text</code> writes <code>text</code> elements with the font's
+family, size, weight and style and each cluster's position, so the text stays searchable and lines up with Egami's layout;
+with <code>EmbedSubset</code> each font's glyphs used are embedded as an OpenType subset in an <code>@font-face</code> rule (unless the font's license
+forbids it, reported as <code>Svg.FontNotEmbedded</code>). Synthetic bold and italic are drawn as Egami draws them, as a stroke and a slant.</p>
+<pre><code class="lang-csharp">// By default text is glyph outlines, each written once and reused, so the file needs no fonts.
+// SvgTextMode.Text writes text elements instead, searchable and selectable; EmbedSubset adds the glyphs used as a font.
+SvgWriteOptions options = new() { Text = SvgTextMode.Text, EmbedSubset = true };
+using (SvgCanvas canvas = new(file, 300, 60, options))
+{
+    canvas.DrawText(&quot;Hello, SVG&quot;, new Vector2(10, 40), new Font(face, 28), new Rgba8(20, 20, 20, 255));
+}
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/svg.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

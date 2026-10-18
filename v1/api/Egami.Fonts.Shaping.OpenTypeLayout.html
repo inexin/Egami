@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class OpenTypeLayout | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class OpenTypeLayout | Egami ">
+      
+      <meta name="description" content="What a face&#39;s OpenType layout tables (GSUB and GPOS) offer: the scripts, language systems and features they list, and the glyphs GSUB can produce from a set of glyphs. A table whose structure is damaged is left out whole, as the shaper leaves it out.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_Shaping_OpenTypeLayout.md&amp;value=---%0Auid%3A%20Egami.Fonts.Shaping.OpenTypeLayout%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.Shaping.OpenTypeLayout">
+
+
+
+  <h1 id="Egami_Fonts_Shaping_OpenTypeLayout" data-uid="Egami.Fonts.Shaping.OpenTypeLayout" class="text-break">
+Class OpenTypeLayout  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/OpenTypeLayout.cs/#L11"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a>.<a class="xref" href="Egami.Fonts.Shaping.html">Shaping</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>What a face's OpenType layout tables (GSUB and GPOS) offer: the scripts, language systems and features they list, and the
+glyphs GSUB can produce from a set of glyphs. A table whose structure is damaged is left out whole, as the shaper leaves it
+out.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class OpenTypeLayout</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">OpenTypeLayout</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Fonts_Shaping_OpenTypeLayout_examples">Examples</h2>
+  <pre><code class="lang-csharp">// What the font's layout tables list.
+OpenTypeLayout layout = face.Layout;
+IReadOnlyList&lt;FontTag&gt; scripts = layout.Scripts;                                // DFLT, cyrl, grek, latn
+IReadOnlyList&lt;FontTag&gt; languages = layout.GetLanguageSystems(new FontTag("latn"));
+IReadOnlyList&lt;FontTag&gt; features = layout.GetFeatures(new FontTag("latn"));      // liga, kern, ...</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_Shaping_OpenTypeLayout_DefaultClosureFeatures_" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.DefaultClosureFeatures*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_OpenTypeLayout_DefaultClosureFeatures" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.DefaultClosureFeatures">
+  DefaultClosureFeatures
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/OpenTypeLayout.cs/#L113"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the layout features hb-subset keeps by default, which <a class="xref" href="Egami.Fonts.Shaping.OpenTypeLayout.html#Egami_Fonts_Shaping_OpenTypeLayout_GetClosure_System_Collections_Generic_IEnumerable_System_UInt16__System_Collections_Generic_IEnumerable_Egami_Fonts_FontTag__">GetClosure(IEnumerable&lt;ushort&gt;, IEnumerable&lt;FontTag&gt;?)</a> follows when no features are given: the
+common ones (such as <code>ccmp</code>, <code>liga</code>, <code>locl</code>, <code>calt</code> and <code>kern</code>), fractions, vertical forms,
+East Asian spacing, and those the Arabic, Hangul, Tibetan and Indic shapers apply; not discretionary ones such as
+<code>smcp</code>, <code>dlig</code> or <code>ss01</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IReadOnlyList&lt;FontTag&gt; DefaultClosureFeatures { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_OpenTypeLayout_Features_" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.Features*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_OpenTypeLayout_Features" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.Features">
+  Features
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/OpenTypeLayout.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets every feature tag GSUB and GPOS list, in tag order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FontTag&gt; Features { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_OpenTypeLayout_HasGlyphClasses_" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.HasGlyphClasses*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_OpenTypeLayout_HasGlyphClasses" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.HasGlyphClasses">
+  HasGlyphClasses
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/OpenTypeLayout.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the face has a usable GDEF table with glyph classes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HasGlyphClasses { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_OpenTypeLayout_HasGpos_" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.HasGpos*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_OpenTypeLayout_HasGpos" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.HasGpos">
+  HasGpos
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/OpenTypeLayout.cs/#L21"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the face has a usable GPOS table (positioning such as kerning and mark placement).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HasGpos { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_OpenTypeLayout_HasGsub_" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.HasGsub*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_OpenTypeLayout_HasGsub" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.HasGsub">
+  HasGsub
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/OpenTypeLayout.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the face has a usable GSUB table (substitutions such as ligatures and contextual forms).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HasGsub { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_OpenTypeLayout_Scripts_" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.Scripts*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_OpenTypeLayout_Scripts" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.Scripts">
+  Scripts
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/OpenTypeLayout.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the script tags GSUB and GPOS list, such as <code>latn</code>, <code>arab</code> or <code>DFLT</code>, in tag order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FontTag&gt; Scripts { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Fonts_Shaping_OpenTypeLayout_GetClosure_" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.GetClosure*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_OpenTypeLayout_GetClosure_System_Collections_Generic_IEnumerable_System_UInt16__System_Collections_Generic_IEnumerable_Egami_Fonts_FontTag__" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.GetClosure(System.Collections.Generic.IEnumerable{System.UInt16},System.Collections.Generic.IEnumerable{Egami.Fonts.FontTag})">
+  GetClosure(IEnumerable&lt;ushort&gt;, IEnumerable&lt;FontTag&gt;?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/OpenTypeLayout.cs/#L148"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the glyphs the face's GSUB substitutions can produce from <code class="paramref">glyphs</code>: the glyphs themselves and every
+glyph a lookup of the given features (in any script and language system, with the lookups their contextual rules call
+and their feature variations) can substitute for them, repeated until nothing is added. This is the layout closure
+hb-subset computes, so a subset that keeps these glyphs can be shaped again as the full face would be.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlySet&lt;ushort&gt; GetClosure(IEnumerable&lt;ushort&gt; glyphs, IEnumerable&lt;FontTag&gt;? features = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyphs</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>&gt;</dt>
+    <dd><p>The glyph ids to start from, such as those of the characters a page uses; ids the face does not have are ignored.</p>
+</dd>
+    <dt><code>features</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a>&gt;</dt>
+    <dd><p>The feature tags whose lookups are followed, or null for <a class="xref" href="Egami.Fonts.Shaping.OpenTypeLayout.html#Egami_Fonts_Shaping_OpenTypeLayout_DefaultClosureFeatures">DefaultClosureFeatures</a>; pass <a class="xref" href="Egami.Fonts.Shaping.OpenTypeLayout.html#Egami_Fonts_Shaping_OpenTypeLayout_Features">Features</a>
+to follow every feature and an empty list to follow none.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1">IReadOnlySet</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>&gt;</dt>
+    <dd><p>The glyph ids, ascending when enumerated.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Shaping_OpenTypeLayout_GetClosure_System_Collections_Generic_IEnumerable_System_UInt16__System_Collections_Generic_IEnumerable_Egami_Fonts_FontTag___examples">Examples</h4>
+  <pre><code class="lang-csharp">// The glyphs a web font subset needs so that it shapes "office" as the full font does: the characters' glyphs and every
+// glyph GSUB can turn them into (the "ffi" ligature, for one).
+ushort[] used = [0, .. "office".Select(c =&gt; face.GetGlyph(c))];
+IReadOnlySet&lt;ushort&gt; keep = face.Layout.GetClosure(used);                           // hb-subset's default features
+IReadOnlySet&lt;ushort&gt; all = face.Layout.GetClosure(used, face.Layout.Features);      // every feature, small caps too</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_OpenTypeLayout_GetFeatures_" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.GetFeatures*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_OpenTypeLayout_GetFeatures_Egami_Fonts_FontTag_System_Nullable_Egami_Fonts_FontTag__" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.GetFeatures(Egami.Fonts.FontTag,System.Nullable{Egami.Fonts.FontTag})">
+  GetFeatures(FontTag, FontTag?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/OpenTypeLayout.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the feature tags a language system lists, including its required feature, in tag order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FontTag&gt; GetFeatures(FontTag script, FontTag? language = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>script</code> <a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a></dt>
+    <dd><p>The script tag.</p>
+</dd>
+    <dt><code>language</code> <a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a>?</dt>
+    <dd><p>The language system tag, or null for the script's default system.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a>&gt;</dt>
+    <dd><p>The tags; empty when no table lists the script.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Shaping_OpenTypeLayout_GetLanguageSystems_" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.GetLanguageSystems*"></a>
+
+  <h3 id="Egami_Fonts_Shaping_OpenTypeLayout_GetLanguageSystems_Egami_Fonts_FontTag_" data-uid="Egami.Fonts.Shaping.OpenTypeLayout.GetLanguageSystems(Egami.Fonts.FontTag)">
+  GetLanguageSystems(FontTag)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/OpenTypeLayout.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the language system tags a script lists, such as <code>URD</code> or <code>SRB</code>; the default system is not listed.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FontTag&gt; GetLanguageSystems(FontTag script)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>script</code> <a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a></dt>
+    <dd><p>The script tag.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a>&gt;</dt>
+    <dd><p>The tags, in tag order; empty when no table lists the script.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Shaping/OpenTypeLayout.cs/#L11" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

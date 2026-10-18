@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Paragraph layout | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Paragraph layout | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/paragraph-layout.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="paragraph-layout">Paragraph layout</h1>
+
+<p>Egami.Fonts lays out paragraphs in the <code>Egami.Fonts.Layout</code> namespace: it finds where lines may break (UAX #14), turns styled
+text into shaped runs with the shaper from <a href="unicode-text.html">Unicode text and shaping</a>, and builds lines at a width, with
+alignment and justification, line height, spacing, tabs, max lines and ellipsis, inline placeholders, vertical lines,
+decorations and shadows, and carets and selection for editors. The result is plain geometry (lines of <code>GlyphRun</code>s and
+decoration shapes), so Egami.Drawing's canvas, a PDF canvas and SVG draw it the same way.</p>
+<h2 id="line-breaking">Line breaking</h2>
+<p><code>LineBreaks.Enumerate</code> walks a text's break opportunities through a <code>LineBreakEnumerator</code> that allocates nothing. Each
+<code>LineBreak</code> gives the index the next line would start at, whether the line must end there (after a newline, CR LF, NEL, VT,
+FF, U+2028 or U+2029) and whether the break follows a soft hyphen (U+00AD), which shows a hyphen when a line ends there. The
+last break is always at the end of the text.</p>
+<pre><code class="lang-csharp">// Where lines may end: after spaces and hyphens, and always at the end; a line must end after a newline.
+List&lt;int&gt; breaks = [];
+foreach (LineBreak b in LineBreaks.Enumerate(&quot;A well-known fact.\nNext&quot;))
+{
+    breaks.Add(b.Index);                       // 2, 7, 13, 19 (mandatory), 23
+}
+
+// CSS switches: break-all lets letters break like ideographs.
+LineBreakOptions breakAll = new(WordBreak: WordBreak.BreakAll);
+int count = 0;
+foreach (LineBreak b in LineBreaks.Enumerate(&quot;word&quot;, breakAll))
+{
+    count++;                                   // 4: after every letter
+}
+</code></pre>
+<p>The rules are Unicode's line breaking algorithm (UAX #14) from Egami's own Unicode 17.0 tables, with each character's
+<code>LineBreakClass</code> from <code>UnicodeData.GetLineBreakClass</code>. <code>LineBreakOptions</code> adds CSS Text 3's switches:</p>
+<ul>
+<li><code>WordBreak.BreakAll</code> lets letters and digits of any script break like ideographs; <code>WordBreak.KeepAll</code> keeps ideographs,
+kana and Hangul together like the letters of a word, for Korean text with spaces.</li>
+<li><code>LineBreakStrictness</code> sets how Chinese and Japanese text breaks. <code>Auto</code> is CSS's default and the same as <code>Normal</code>: a line may
+start with a small kana, and in Chinese and Japanese (<code>Language</code> &quot;zh&quot; or &quot;ja&quot;) with the hyphens U+2010, U+2013, U+301C and
+U+30A0. <code>Loose</code> also lets iteration marks, centred punctuation, wide prefixes and suffixes and inseparable characters
+break in Chinese and Japanese. <code>Strict</code> is UAX #14's own rules, which pass Unicode's LineBreakTest.txt in full. <code>Anywhere</code>
+breaks between any two grapheme clusters.</li>
+<li><code>OverflowWrap</code> says whether a piece too wide for its line may break between grapheme clusters; line filling uses it.</li>
+</ul>
+<p>Thai, Lao, Khmer and Myanmar text breaks only at spaces and zero width spaces: Egami has no dictionaries. An object
+replacement character (U+FFFC, as placeholders use) breaks before and after.</p>
+<h2 id="rich-text-and-paragraphs">Rich text and paragraphs</h2>
+<p>A <code>RichText</code> is a string with <code>StyleSpan</code>s over it (start and length in UTF-16 units, never overlapping) and a <code>Placeholder</code>
+for each object replacement character (U+FFFC). <code>RichTextBuilder</code> builds one: <code>Push</code> a <code>TextStyle</code>, <code>Append</code> text,
+<code>AddPlaceholder</code> for an inline box, <code>Pop</code> back. Pushed styles nest, and the result has one flat span per stretch of equal style.</p>
+<pre><code class="lang-csharp">// Font families come from a collection; later families cover what the first lacks.
+FontCollection fonts = new();
+fonts.AddFile(System.IO.Path.Combine(folder, &quot;NotoSans-Regular.ttf&quot;));
+fonts.AddFile(System.IO.Path.Combine(folder, &quot;NotoSansArabic-Regular.ttf&quot;));
+fonts.TryGetFamily(&quot;Noto Sans&quot;, out FontFamily latin);
+fonts.TryGetFamily(&quot;Noto Sans Arabic&quot;, out FontFamily arabic);
+
+// Styles nest: the inner span keeps the outer one's size and adds a color and an underline.
+RichText text = new RichTextBuilder()
+    .Append(&quot;Peace is &quot;)
+    .Push(new TextStyle { Size = 20 })
+    .Append(&quot;\u0633\u0644\u0627\u0645 &quot;)
+    .Push(new TextStyle { Color = new Rgba8(200, 30, 30, 255), Decoration = new TextDecoration() })
+    .Append(&quot;in Arabic&quot;)
+    .Pop()
+    .Pop()
+    .AddPlaceholder(new Placeholder(16, 16, PlaceholderAlignment.Middle))
+    .ToRichText();
+
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [latin, arabic], Size = 16, LineHeight = LineHeight.Multiple(1.4f) },
+    Align = TextAlign.Justify,
+    LineBreaking = new LineBreakOptions(WordBreak: WordBreak.Normal),
+};
+
+// Shaped once: lay it out at any width later.
+Paragraph paragraph = Paragraph.Create(text, style);
+</code></pre>
+<p>Every <code>TextStyle</code> field is optional. An unset field takes the enclosing builder style's, then the <code>ParagraphStyle</code>'s
+<code>DefaultStyle</code>, then Egami's default (16 units, black, normal line height):</p>
+<ul>
+<li>Fonts: <code>FontFamilies</code> in order of preference (later families and the paragraph's <code>Fallback</code> cover what the first lacks,
+per grapheme cluster), <code>Size</code>, <code>FontStyle</code>, <code>Variations</code>, <code>Language</code> and OpenType <code>Features</code>.</li>
+<li>Paint: <code>Color</code> (an <code>Rgba8</code>), or a <code>Paint</code>, which is any <code>ITextPaint</code>; Egami.Drawing's <code>Paint</code> is one, so gradients and image
+paints reach text. <code>Background</code> or <code>BackgroundPaint</code> fill behind the text, <code>Decoration</code> adds a <code>TextDecoration</code> (its
+<code>TextDecorationLines</code>, <code>TextDecorationStyle</code> and <code>TextDecorationSkipInk</code>), and <code>Shadows</code> a list of <code>TextShadow</code>s.</li>
+<li>Spacing: <code>LetterSpacing</code> after each grapheme cluster (which turns optional ligatures off), <code>WordSpacing</code>, a <code>LineHeight</code>
+(<code>Normal</code>, a <code>Multiple</code> of the font size or an <code>Absolute</code> height, by its <code>LineHeightKind</code>) and a <code>BaselineShift</code>.</li>
+</ul>
+<p>A <code>Placeholder</code> has a width, a height and a <code>PlaceholderAlignment</code>: on the baseline at a given offset, above or below it, or at
+the line box's top, bottom or middle. Bidi, line breaking and indexes treat it as one character.</p>
+<p><code>ParagraphStyle</code> holds the rest: the <code>DefaultStyle</code>, the paragraph <code>Direction</code>, <code>TextAlign</code>, <code>TextAlignLast</code> and <code>TextJustify</code>,
+the <code>LineBreakOptions</code> in <code>LineBreaking</code>, <code>LineFill</code> (greedy or balanced), the <code>Hyphen</code> and <code>Ellipsis</code> strings, <code>MaxLines</code> and
+<code>MaxHeight</code>, a <code>Strut</code>, <code>TrimEdges</code>, <code>TabSize</code> or <code>TabStop</code>s with their <code>TabAlignment</code>, the <code>WritingMode</code> and
+<code>TextOrientation</code>, and the font <code>Fallback</code>.</p>
+<p><code>Paragraph.Create</code> prepares the text once: it resolves the styles, finds the bidi levels and break opportunities, splits the text
+into runs where the bidi level, script, font or a shaping field changes, and shapes each run. Paint fields never split a run, so
+a color change inside a ligature keeps the ligature. A paragraph is immutable and safe to share between threads.</p>
+<h2 id="laying-out-lines">Laying out lines</h2>
+<p><code>Paragraph.Layout</code> lays a paragraph out at a width and returns a <code>TextLayout</code>: its <code>Width</code> and <code>Height</code>, the <code>LongestLine</code>, and
+its <code>Lines</code>. Each <code>TextLine</code> has its text range (<code>Start</code>, <code>Length</code>), its line box (<code>Top</code>, <code>Ascent</code>, <code>Descent</code>, <code>Baseline</code>), its
+content's <code>Left</code> and <code>Width</code> (trailing spaces hang outside it), whether it ends at a <code>HardBreak</code>, and its <code>LayoutRun</code>s in visual
+order. A run is glyphs (<code>Glyphs</code>, a <code>GlyphRun</code> already at its layout position), a placeholder's box, a tab or a break, by its
+<code>LayoutRunKind</code>, with its <code>BidiLevel</code> and <code>StyleIndex</code>.</p>
+<pre><code class="lang-csharp">ParagraphStyle style = new() { DefaultStyle = new TextStyle { FontFamilies = [family], Size = 16 } };
+Paragraph paragraph = Paragraph.Create(&quot;A paragraph is shaped once and laid out at any width.&quot;, style);
+
+// Each width gives an immutable layout: lines of glyph runs, positioned from the box's top-left corner.
+TextLayout narrow = paragraph.Layout(120);
+TextLayout wide = paragraph.Layout(400);
+foreach (TextLine line in narrow.Lines)
+{
+    string text = paragraph.Text[line.Start..line.End];   // the line's text, its trailing space included
+    float baseline = line.Baseline;                        // y of the baseline
+    foreach (LayoutRun run in line.Runs)
+    {
+        GlyphRun? glyphs = run.Glyphs;                     // glyphs at their layout positions
+    }
+}
+
+// No wrapping: the box is as wide as the longest line.
+TextLayout unbounded = paragraph.Layout(float.PositiveInfinity);
+</code></pre>
+<ul>
+<li>Lines fill greedily, as browsers do: each takes the text up to the last break opportunity that fits. A taken soft hyphen
+shows the <code>Hyphen</code> string, counted in the line's width. A piece too wide for any line overflows, or with <code>OverflowWrap</code>
+breaks between grapheme clusters.</li>
+<li>Where a line breaks inside a shaped run at a point the shaper marks unsafe (an Arabic join, a contextual substitution),
+the pieces on each side are shaped again, so a line has the glyphs it would have on its own.</li>
+<li>Each line reorders its own bidi runs (UAX #9 rules L1 and L2): trailing spaces take the paragraph's direction.</li>
+<li><code>LineFill.Balanced</code> evens the lines of a short paragraph (up to 6 lines): of the breaks that fit, the ones that leave the
+least squared space on every line, the last included, as Chromium's <code>text-wrap: balance</code> does.</li>
+<li><code>float.PositiveInfinity</code> lays the paragraph out without wrapping; the box is then as wide as the longest line.</li>
+</ul>
+<h3 id="line-boxes-and-spacing">Line boxes and spacing</h3>
+<p>Line boxes follow CSS Inline Layout 3, with the numbers browsers use:</p>
+<ul>
+<li>Each run's inline box is its font's ascent and descent, rounded to whole units as browsers round them, plus the leading
+its <code>LineHeight</code> adds: <code>Normal</code> adds the font's line gap, <code>Multiple</code> and <code>Absolute</code> set the height (a computed height is
+floored to 1/64 unit, browsers' layout unit, so stacked lines do not drift). The leading is split half above and half below,
+the top half rounded down. A <code>BaselineShift</code> moves the box down (or up, when negative).</li>
+<li>Every line also holds the root inline box, from the paragraph's <code>DefaultStyle</code>, as CSS's strut does; a <code>Strut</code> adds a
+minimum box of its own, and with <code>Force</code> it alone sets every line box, for line grids.</li>
+<li>Placeholders sit by their alignment: on the baseline at an offset, above or below it, or at the middle (half the default
+font's x-height above the baseline, as CSS's <code>middle</code>); boxes aligned to the line's top or bottom stretch it last.</li>
+<li><code>TrimEdges</code> drops the space above the first line's text and below the last one's (CSS <code>text-box-trim</code>).</li>
+<li>Letter spacing follows each grapheme cluster and word spacing each word separator; tabs advance to the next of the
+<code>TabStops</code>, which align the text after them at their start, end, centre or first decimal separator, or else to the next
+multiple of <code>TabSize</code> spaces, at least half a space on.</li>
+<li>Characters take the first family that has them, as CSS matches fonts, so spaces and punctuation between words of another
+script stay in the first family.</li>
+</ul>
+<p>Line boxes equal Chromium's within 0.01 unit on every line-height, strut, spacing, tab, placeholder and mixed-font case, and
+glyph positions equal its within 0.01 once its 1/64 layout unit is allowed for.</p>
+<h3 id="alignment-and-justification">Alignment and justification</h3>
+<p><code>TextAlign</code> places each line: <code>Start</code> and <code>End</code> follow the paragraph's direction, <code>Left</code>, <code>Right</code> and <code>Center</code> do not, and
+<code>Justify</code> stretches lines to the full width. The last line, and lines before a hard break, use <code>TextAlignLast</code>, whose <code>Auto</code>
+is the start for justified paragraphs. Trailing spaces hang past the line's end and never count for alignment.</p>
+<p><code>TextJustify</code> says where justified lines stretch: <code>InterWord</code> at word separators, <code>InterCharacter</code> between any two grapheme
+clusters except inside cursive scripts such as Arabic, and <code>Auto</code> (the default) at word separators and around Chinese,
+Japanese and Korean characters, as browsers justify. <code>None</code> leaves justified lines at the start. Arabic is justified at its
+word spaces; kashida stretching waits for real demand.</p>
+<h3 id="line-limits-and-the-ellipsis">Line limits and the ellipsis</h3>
+<p><code>MaxLines</code> and <code>MaxHeight</code> stop the lines: at the limit, or before the line whose bottom would pass the height. When text is
+cut, <code>TextLayout.DidExceed</code> is true and <code>HiddenRange</code> says what was hidden; the last kept line drops whole grapheme clusters
+from its end until its text and the <code>Ellipsis</code> (U+2026 by default, shaped in the style of the last kept character) fit, and
+the ellipsis ends the line in the paragraph's direction, flagged <code>Ellipsized</code>; a line with room keeps its trailing space before
+it, as Chromium's line clamp does. A null <code>Ellipsis</code> cuts at the line's end. Ellipses sit where Chromium's <code>-webkit-line-clamp</code>
+puts them in Latin, Arabic and Chinese.</p>
+<h3 id="metrics">Metrics</h3>
+<p>A <code>TextLayout</code> also answers how big its text is: <code>MinIntrinsicWidth</code> (CSS min-content, the widest piece that cannot break;
+<code>OverflowWrap.Anywhere</code> lowers it to the widest grapheme cluster) and <code>MaxIntrinsicWidth</code> (max-content, the widest line
+without wrapping), equal to Chromium's; <code>FirstBaseline</code> and <code>LastBaseline</code> for aligning boxes on text; <code>InkBounds</code>, the union
+of the glyphs' ink and placeholder boxes, which can reach past the layout box; <code>PlaceholderRects</code>, one <code>TextBounds</code> per
+placeholder in order, where the caller draws them; and <code>GetLineAt</code> and <code>GetLineAtY</code> to find the line holding a character or
+a height.</p>
+<h3 id="hit-testing-carets-and-selection">Hit testing, carets and selection</h3>
+<p>Editors and selectable text build on four queries, all read-only and safe from any thread:</p>
+<ul>
+<li><code>HitTest</code> turns a point into the nearest <code>TextPosition</code>: a UTF-16 index at a grapheme cluster boundary and a <code>TextAffinity</code>
+that says which side it belongs to where an index has two places (the end of one line and the start of the next, or a
+direction change). Points outside the lines go to the nearest one; at a direction change, the position is the one the
+surrounding text gives the edge, as browsers resolve it.</li>
+<li><code>GetCaret</code> says where to draw a <code>Caret</code>: its primary <code>CaretLine</code>, and at a bidi boundary a secondary one at the other
+direction's edge. Inside a ligature, carets use the font's GDEF caret values, or split the ligature evenly by grapheme.</li>
+<li><code>MoveCaret</code> steps by <code>CaretMove</code>: grapheme, word, line start and end, paragraph start and end, and line up and down keeping
+a preferred x across short lines.</li>
+<li><code>GetSelectionRects</code> covers a range with rectangles, one per visually contiguous piece on each line, as tall as the line box
+or, with <code>SelectionHeight.Tight</code>, the fonts' ascent and descent. <code>GetWordBoundary</code> and <code>GetLineBoundary</code> give the word and
+line around an index.</li>
+</ul>
+<pre><code class="lang-csharp">// A click: the nearest caret position, then where to draw the caret.
+TextPosition position = layout.HitTest(new System.Numerics.Vector2(40, 30));
+Caret caret = layout.GetCaret(position);
+CaretLine bar = caret.Primary;                     // x, top and bottom; Secondary at a bidi boundary
+
+// Arrow keys: logical moves, and line moves that keep the column.
+TextPosition right = layout.MoveCaret(position, CaretMove.NextGrapheme);
+TextPosition down = layout.MoveCaret(position, CaretMove.LineDown, preferredX: bar.X);
+
+// A selection: rectangles to fill, one per visually contiguous piece on each line.
+IReadOnlyList&lt;TextBounds&gt; highlight = layout.GetSelectionRects(position.Index, down.Index);
+Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(position.Index); // double-click
+</code></pre>
+<p>Hit tests, carets and selection rectangles equal Chromium's (<code>caretPositionFromPoint</code>, collapsed ranges and
+<code>Range.getClientRects</code>) on Latin with ligatures, mixed bidi, Arabic, a right-to-left paragraph, emoji, hard breaks and a
+clamped paragraph.</p>
+<h3 id="decorations">Decorations</h3>
+<p>A <code>TextDecoration</code> on a <code>TextStyle</code> draws underlines, overlines and line-throughs, solid, double, dotted, dashed or wavy.
+<code>TextLayout.Decorations</code> gives each as a <code>DecorationShape</code> per decorated stretch of a line: one position and thickness for the
+stretch, and its <code>Segments</code> (each a <code>DecorationSegment</code> from left to right), with gaps cut where glyph ink crosses an underline
+or overline (<code>SkipInk.Auto</code>, the default; Chinese, Japanese and Korean glyphs never cut). <code>AddTo</code> writes a shape's outline, and <code>TextLayout.ToPath</code> writes the whole layout,
+glyphs then decorations, to any <code>IGlyphOutlineSink</code>.</p>
+<pre><code class="lang-csharp">TextStyle underlined = new()
+{
+    FontFamilies = [family],
+    Decoration = new TextDecoration { Lines = TextDecorationLines.Underline, Style = TextDecorationStyle.Wavy },
+};
+TextLayout layout = Paragraph.Create(&quot;Typography, quickly&quot;, new ParagraphStyle { DefaultStyle = underlined }).Layout(400);
+
+foreach (DecorationShape line in layout.Decorations)
+{
+    // Top and Thickness place the line; Segments skip the descenders of y, p, g and q.
+    System.Console.WriteLine($&quot;{line.Line} at {line.Top}: {line.Segments.Count} pieces&quot;);
+}
+
+// Or everything as outlines, to fill with any path renderer.
+PathRecorder path = new();
+layout.ToPath(path);
+</code></pre>
+<p>Positions follow Chromium's <code>text-decoration</code> rules rather than the font's underline values: the thickness is a tenth of the
+font size, floored to whole pixels; the underline sits half a thickness below the baseline (or <code>UnderlineOffset</code> below it);
+the overline on the ascent; the line-through a third of the ascent up. Thicknesses, positions and skip-ink gaps equal
+Chromium's ink within half a pixel on sans and serif text. Vertical layouts have no decorations yet.</p>
+<h3 id="drawing-paragraphs">Drawing paragraphs</h3>
+<p><code>Canvas.DrawTextLayout</code> (Egami.Drawing) draws a layout with its top-left corner at a point, line by line in CSS's order: text
+shadows, run backgrounds, underlines and overlines, glyphs and placeholders, then line-throughs. A run's paint is its style's
+<code>Paint</code> (an Egami.Drawing <code>Paint</code>) or <code>Color</code>; shadows blur with a standard deviation of half their blur radius, as CSS. Lines
+outside the clip or the optional visible rectangle are skipped, and a <code>PlaceholderPainter</code> draws each placeholder in its box.
+<code>Canvas.DrawText</code> into a <code>RectF</code> lays out and draws in one call, placing the lines by <code>VerticalAlign</code>, and
+<code>TextLayout.ToPath(origin)</code> gives glyphs and decorations as one <code>Path</code>. On a PDF canvas the glyph runs keep their text, and an
+ellipsis or a soft hyphen's hyphen is marked content whose ActualText is the text it stands for.</p>
+<pre><code class="lang-csharp">ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle
+    {
+        FontFamilies = [family],
+        Size = 18,
+        Color = new Rgba8(30, 30, 60, 255),
+        Shadows = [new TextShadow(new System.Numerics.Vector2(1, 1), 2, new Rgba8(0, 0, 0, 80))],
+    },
+    Align = TextAlign.Justify,
+};
+
+// One call: wrap into a box, centred across the lines.
+TextLayout boxed = canvas.DrawText(&quot;Paragraphs wrap, justify and drop shadows.&quot;, new RectF(10, 10, 300, 80), style, VerticalAlign.Center);
+
+// Or lay out once and draw where needed, skipping lines outside the visible part.
+TextLayout layout = Paragraph.Create(&quot;Laid out once, drawn many times.&quot;, style).Layout(300);
+canvas.DrawTextLayout(layout, new System.Numerics.Vector2(10, 110), visibleRect: new RectF(0, 0, 320, 200));
+
+// Inline placeholders (an icon, a badge) are drawn by a painter called with each one's box.
+canvas.DrawTextLayout(layout, new System.Numerics.Vector2(10, 130), placeholderPainter: (c, index, box) =&gt; c.FillRoundRect(new RoundRect(box, 3), new Rgba8(200, 60, 40, 255)));
+
+// The same text as one path: glyphs and decorations.
+Egami.Drawing.Path outline = layout.ToPath(new System.Numerics.Vector2(10, 150));
+</code></pre><h3 id="vertical-lines">Vertical lines</h3>
+<p><code>WritingMode.VerticalRl</code> stacks top-to-bottom lines from right to left, as Chinese and Japanese books, and <code>VerticalLr</code> from
+left to right. <code>TextOrientation.Mixed</code> (the default) stands each character as UAX #50's Vertical_Orientation says: Chinese,
+Japanese and Korean upright, shaped top to bottom with the font's vertical metrics and alternates, and Latin turned a quarter
+clockwise on the central baseline; <code>Upright</code> stands everything upright and <code>Sideways</code> turns whole lines. The width given to
+<code>Layout</code> is the lines' length; the layout's <code>Height</code> is that length and its <code>Width</code> the columns added up. Along a line,
+positions are y (a line's <code>Left</code> and <code>Width</code>, a run's <code>X</code>, a caret's <code>X</code>), across the lines x (a line's <code>Top</code>, <code>Baseline</code> and
+<code>Bottom</code>); glyph runs and rectangles stay in x and y. Line breaks, line boxes, positions, hit tests, carets and selections equal
+Chromium's <code>writing-mode</code> output on Japanese, Chinese and mixed Latin.</p>
+<p><code>LineFlow</code> lays a paragraph out one line at a time, each at its own width, to flow text across columns and pages or around
+images: <code>Paragraph.CreateFlow</code>, then <code>NextLine</code> until it returns null. Each line's top is 0; place it where it goes, and
+<code>Rewind</code> to a line's start to take back a line that does not fit.</p>
+<pre><code class="lang-csharp">// One line at a time, each at its own width: two columns of four lines, the second wrapping around an image.
+LineFlow flow = paragraph.CreateFlow();
+List&lt;TextLine&gt; first = [], second = [];
+while (first.Count &lt; 4 &amp;&amp; flow.NextLine(150) is TextLine line)
+{
+    first.Add(line);
+}
+
+while (flow.NextLine(second.Count &lt; 2 ? 90 : 150) is TextLine line)
+{
+    second.Add(line);                                     // narrower beside the image
+}
+</code></pre>
+<p>Line breaks equal headless Chromium's on a corpus of eleven scripts at five widths each, and on the feature cases; the few
+differences are Chromium's own (its older quotation mark rule, no break at U+2028, no break after a slash in URLs, letter
+spacing in Arabic).</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/paragraph-layout.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

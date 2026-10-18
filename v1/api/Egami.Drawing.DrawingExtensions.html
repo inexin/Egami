@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class DrawingExtensions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class DrawingExtensions | Egami ">
+      
+      <meta name="description" content="Ways into a canvas from Egami&#39;s rasters and operation chains.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_DrawingExtensions.md&amp;value=---%0Auid%3A%20Egami.Drawing.DrawingExtensions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.DrawingExtensions">
+
+
+
+  <h1 id="Egami_Drawing_DrawingExtensions" data-uid="Egami.Drawing.DrawingExtensions" class="text-break">
+Class DrawingExtensions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/DrawingExtensions.cs/#L10"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Ways into a canvas from Egami's rasters and operation chains.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class DrawingExtensions</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">DrawingExtensions</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_DrawingExtensions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Draw as a step in an operation chain: inside Within the canvas covers the area, with its origin at the area's corner.
+raster.Apply(ops =&gt; ops
+    .Draw(canvas =&gt; canvas.FillRect(new RectF(0, 0, 300, 200), new Rgba8(240, 240, 255, 255)))
+    .Within(new Rect(100, 50, 100, 100), area =&gt; area.Draw(canvas =&gt; canvas.FillCircle(new Vector2(50, 50), 40, Rgba8.Red))),
+    Ct);
+
+// On an animation the step runs once per frame, and can be told which.
+raster.Apply(ops =&gt; ops.Draw((canvas, frame) =&gt; canvas.FillCircle(new Vector2(20 + (frame * 4), 20), 10, Rgba8.Black)), Ct);</code></pre>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Drawing_DrawingExtensions_CreateCanvas_" data-uid="Egami.Drawing.DrawingExtensions.CreateCanvas*"></a>
+
+  <h3 id="Egami_Drawing_DrawingExtensions_CreateCanvas__1_Egami_Raster___0__Egami_Drawing_CanvasOptions_" data-uid="Egami.Drawing.DrawingExtensions.CreateCanvas``1(Egami.Raster{``0},Egami.Drawing.CanvasOptions)">
+  CreateCanvas&lt;TPixel&gt;(Raster&lt;TPixel&gt;, CanvasOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/DrawingExtensions.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a canvas that draws on a raster's first frame. Dispose it when done.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RasterCanvas&lt;TPixel&gt; CreateCanvas&lt;TPixel&gt;(this Raster&lt;TPixel&gt; raster, CanvasOptions? options = null) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>raster</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The raster.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Drawing.CanvasOptions.html">CanvasOptions</a></dt>
+    <dd><p>The settings, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.RasterCanvas-1.html">RasterCanvas</a>&lt;TPixel&gt;</dt>
+    <dd><p>The canvas.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The raster's pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_DrawingExtensions_CreateCanvas__1_Egami_Raster___0__Egami_Drawing_CanvasOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A canvas draws onto a raster. Calls draw when they are made; dispose the canvas when done.
+using Raster&lt;Rgba8&gt; raster = Raster.Create(400, 300, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
+{
+    canvas.FillRect(new RectF(20, 20, 160, 100), new Rgba8(30, 90, 200, 255));
+
+    // Save and Restore bracket transform and clip changes.
+    canvas.Save();
+    canvas.Translate(260, 150);
+    canvas.Rotate(30);
+    canvas.FillRect(new RectF(-50, -30, 100, 60), new Rgba8(200, 60, 30, 200));
+    canvas.Restore();
+
+    canvas.FillCircle(new Vector2(100, 220), 50, Rgba8.Black);
+}
+
+// Blend edges in linear light, which keeps thin lines and translucent colors from darkening.
+using RasterCanvas&lt;Rgba8&gt; linear = raster.CreateCanvas(new CanvasOptions { ColorSpace = ColorSpace.Linear });</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_DrawingExtensions_Draw_" data-uid="Egami.Drawing.DrawingExtensions.Draw*"></a>
+
+  <h3 id="Egami_Drawing_DrawingExtensions_Draw_Egami_Operations_RasterOps_System_Action_Egami_Drawing_Canvas_System_Int32__Egami_Drawing_CanvasOptions_" data-uid="Egami.Drawing.DrawingExtensions.Draw(Egami.Operations.RasterOps,System.Action{Egami.Drawing.Canvas,System.Int32},Egami.Drawing.CanvasOptions)">
+  Draw(RasterOps, Action&lt;Canvas, int&gt;, CanvasOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/DrawingExtensions.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds a step that draws on each frame, passing the frame's index, for animations.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RasterOps Draw(this RasterOps operations, Action&lt;Canvas, int&gt; draw, CanvasOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>operations</code> <a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a></dt>
+    <dd><p>The chain.</p>
+</dd>
+    <dt><code>draw</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-2">Action</a>&lt;<a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd><p>The drawing, called once per frame with its index.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Drawing.CanvasOptions.html">CanvasOptions</a></dt>
+    <dd><p>The canvas settings, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a></dt>
+    <dd><p>The chain.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_DrawingExtensions_Draw_Egami_Operations_RasterOps_System_Action_Egami_Drawing_Canvas_System_Int32__Egami_Drawing_CanvasOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Draw as a step in an operation chain: inside Within the canvas covers the area, with its origin at the area's corner.
+raster.Apply(ops =&gt; ops
+    .Draw(canvas =&gt; canvas.FillRect(new RectF(0, 0, 300, 200), new Rgba8(240, 240, 255, 255)))
+    .Within(new Rect(100, 50, 100, 100), area =&gt; area.Draw(canvas =&gt; canvas.FillCircle(new Vector2(50, 50), 40, Rgba8.Red))),
+    Ct);
+
+// On an animation the step runs once per frame, and can be told which.
+raster.Apply(ops =&gt; ops.Draw((canvas, frame) =&gt; canvas.FillCircle(new Vector2(20 + (frame * 4), 20), 10, Rgba8.Black)), Ct);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_DrawingExtensions_Draw_" data-uid="Egami.Drawing.DrawingExtensions.Draw*"></a>
+
+  <h3 id="Egami_Drawing_DrawingExtensions_Draw_Egami_Operations_RasterOps_System_Action_Egami_Drawing_Canvas__Egami_Drawing_CanvasOptions_" data-uid="Egami.Drawing.DrawingExtensions.Draw(Egami.Operations.RasterOps,System.Action{Egami.Drawing.Canvas},Egami.Drawing.CanvasOptions)">
+  Draw(RasterOps, Action&lt;Canvas&gt;, CanvasOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/DrawingExtensions.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Adds a step that draws on each frame with a canvas over the step's pixels. It keeps the image's size, so it composes with
+<code>Within</code> (the canvas then covers the area, with its origin at the area's corner), channel scopes and animations.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RasterOps Draw(this RasterOps operations, Action&lt;Canvas&gt; draw, CanvasOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>operations</code> <a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a></dt>
+    <dd><p>The chain.</p>
+</dd>
+    <dt><code>draw</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a>&gt;</dt>
+    <dd><p>The drawing, called once per frame.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Drawing.CanvasOptions.html">CanvasOptions</a></dt>
+    <dd><p>The canvas settings, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a></dt>
+    <dd><p>The chain.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_DrawingExtensions_Draw_Egami_Operations_RasterOps_System_Action_Egami_Drawing_Canvas__Egami_Drawing_CanvasOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Draw as a step in an operation chain: inside Within the canvas covers the area, with its origin at the area's corner.
+raster.Apply(ops =&gt; ops
+    .Draw(canvas =&gt; canvas.FillRect(new RectF(0, 0, 300, 200), new Rgba8(240, 240, 255, 255)))
+    .Within(new Rect(100, 50, 100, 100), area =&gt; area.Draw(canvas =&gt; canvas.FillCircle(new Vector2(50, 50), 40, Rgba8.Red))),
+    Ct);
+
+// On an animation the step runs once per frame, and can be told which.
+raster.Apply(ops =&gt; ops.Draw((canvas, frame) =&gt; canvas.FillCircle(new Vector2(20 + (frame * 4), 20), 10, Rgba8.Black)), Ct);</code></pre>
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/DrawingExtensions.cs/#L10" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

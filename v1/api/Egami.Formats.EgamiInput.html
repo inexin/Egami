@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class EgamiInput | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class EgamiInput | Egami ">
+      
+      <meta name="description" content="The data a reader decodes: the caller&#39;s stream behind a pooled 64 KB buffer, with exact-read helpers. It also carries the context, limits and cancellation token for the load, and is the only way a reader allocates pixel memory.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_EgamiInput.md&amp;value=---%0Auid%3A%20Egami.Formats.EgamiInput%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.EgamiInput">
+
+
+
+  <h1 id="Egami_Formats_EgamiInput" data-uid="Egami.Formats.EgamiInput" class="text-break">
+Class EgamiInput  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L17"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The data a reader decodes: the caller's stream behind a pooled 64 KB buffer, with exact-read helpers.
+It also carries the context, limits and cancellation token for the load, and is the only way a reader allocates pixel memory.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class EgamiInput</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">EgamiInput</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_EgamiInput_examples">Examples</h2>
+  <pre><code class="lang-csharp">/// &lt;summary&gt;A minimal format: "RAW8", width and height as big-endian numbers, then RGBA rows.&lt;/summary&gt;
+public static class Raw8Format
+{
+    public static FormatInfo Info { get; } = new()
+    {
+        Name = "RAW8",
+        Extensions = ["raw8"],
+        SignatureLength = 4,
+        Matches = header =&gt; header.StartsWith("RAW8"u8),
+        Reader = new Reader(),
+        Writer = new Writer(),
+    };
+
+    private sealed class Reader : IFormatReader
+    {
+        public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+        {
+            (int width, int height) = Header(input);
+            return new RasterInfo { Format = Info, Width = width, Height = height, Layout = Rgba8.Layout, FrameCount = 1, EstimatedBytes = 4L * width * height };
+        }
+
+        public Raster&lt;TPixel&gt; Read&lt;TPixel&gt;(EgamiInput input, ReaderOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            (int width, int height) = Header(input);
+
+            // CreateRaster checks the size against the safety limits before allocating.
+            Raster&lt;TPixel&gt; raster = input.CreateRaster&lt;TPixel&gt;(width, height);
+            using IMemoryOwner&lt;byte&gt; row = input.RentScratch(width * 4);
+            for (int y = 0; y &lt; height; y++)
+            {
+                input.ReadExactly(row.Memory.Span[..(width * 4)]);
+                PixelConvert.Convert&lt;Rgba8, TPixel&gt;(MemoryMarshal.Cast&lt;byte, Rgba8&gt;(row.Memory.Span[..(width * 4)]), raster.Row(y));
+            }
+
+            return raster;
+        }
+
+        public Raster Read(EgamiInput input, ReaderOptions options) =&gt; Read&lt;Rgba8&gt;(input, options);
+
+        private static (int Width, int Height) Header(EgamiInput input)
+        {
+            input.Skip(4);
+            return ((int)input.ReadUInt32BigEndian(), (int)input.ReadUInt32BigEndian());
+        }
+    }
+
+    private sealed class Writer : IFormatWriter
+    {
+        public void Write&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, Stream output, WriterOptions options)
+            where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+        {
+            Span&lt;byte&gt; header = stackalloc byte[12];
+            "RAW8"u8.CopyTo(header);
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], (uint)raster.Width);
+            BinaryPrimitives.WriteUInt32BigEndian(header[8..], (uint)raster.Height);
+            output.Write(header);
+            Rgba8[] row = new Rgba8[raster.Width];
+            for (int y = 0; y &lt; raster.Height; y++)
+            {
+                PixelConvert.Convert&lt;TPixel, Rgba8&gt;(raster.Row(y), row);
+                output.Write(MemoryMarshal.AsBytes(row.AsSpan()));
+            }
+        }
+    }
+}</code></pre>
+
+
+  <h2 id="Egami_Formats_EgamiInput_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Readers never call the stream directly. Egami never disposes the caller's stream.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_EgamiInput_CancellationToken_" data-uid="Egami.Formats.EgamiInput.CancellationToken*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_CancellationToken" data-uid="Egami.Formats.EgamiInput.CancellationToken">
+  CancellationToken
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the token that cancels the load. Readers check it between rows.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CancellationToken CancellationToken { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_EgamiInput_Context_" data-uid="Egami.Formats.EgamiInput.Context*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_Context" data-uid="Egami.Formats.EgamiInput.Context">
+  Context
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the context of the load.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public EgamiContext Context { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_EgamiInput_Diagnostics_" data-uid="Egami.Formats.EgamiInput.Diagnostics*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_Diagnostics" data-uid="Egami.Formats.EgamiInput.Diagnostics">
+  Diagnostics
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the load's link to <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Diagnostics">Diagnostics</a>, for a reader's Info and Debug events. Warnings go through
+<a class="xref" href="Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput_Warn_Egami_Raster_System_String_System_String_System_Nullable_System_Int64__">Warn(Raster, string, string, long?)</a>, so they are also listed in <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_Warnings">Warnings</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DiagnosticReporter Diagnostics { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.DiagnosticReporter.html">DiagnosticReporter</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_EgamiInput_FormatName_" data-uid="Egami.Formats.EgamiInput.FormatName*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_FormatName" data-uid="Egami.Formats.EgamiInput.FormatName">
+  FormatName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the name of the format being read, used in <a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a> messages.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string FormatName { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_EgamiInput_Limits_" data-uid="Egami.Formats.EgamiInput.Limits*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_Limits" data-uid="Egami.Formats.EgamiInput.Limits">
+  Limits
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the safety limits of the load.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SafetyLimits Limits { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_EgamiInput_Position_" data-uid="Egami.Formats.EgamiInput.Position*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_Position" data-uid="Egami.Formats.EgamiInput.Position">
+  Position
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of bytes consumed since the start of the image.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long Position { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_EgamiInput_AddFrame_" data-uid="Egami.Formats.EgamiInput.AddFrame*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_AddFrame__1_Egami_Raster___0__Egami_ClearMode_" data-uid="Egami.Formats.EgamiInput.AddFrame``1(Egami.Raster{``0},Egami.ClearMode)">
+  AddFrame&lt;TPixel&gt;(Raster&lt;TPixel&gt;, ClearMode)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L246"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Appends a new frame the raster's size to a raster this load created with <a class="xref" href="Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput_CreateRaster__1_System_Int64_System_Int64_Egami_ClearMode_">CreateRaster&lt;TPixel&gt;(long, long, ClearMode)</a>, for readers of animated
+formats. The frame counts against <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxFrames">MaxFrames</a> and the load's memory budget. Unless
+<code class="paramref">clear</code> asks for it, its pixels are not cleared.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Frame&lt;TPixel&gt; AddFrame&lt;TPixel&gt;(Raster&lt;TPixel&gt; raster, ClearMode clear = ClearMode.None) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>raster</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The raster being read.</p>
+</dd>
+    <dt><code>clear</code> <a class="xref" href="Egami.ClearMode.html">ClearMode</a></dt>
+    <dd><p>Whether to zero the pixels first.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Frame-1.html">Frame</a>&lt;TPixel&gt;</dt>
+    <dd><p>The new frame, last in <a class="xref" href="Egami.Raster-1.html#Egami_Raster_1_Frames">Frames</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The frame count or the memory budget would be exceeded.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_CheckFrameCount_" data-uid="Egami.Formats.EgamiInput.CheckFrameCount*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_CheckFrameCount_System_Int64_" data-uid="Egami.Formats.EgamiInput.CheckFrameCount(System.Int64)">
+  CheckFrameCount(long)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L283"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Checks a frame count against <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxFrames">MaxFrames</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CheckFrameCount(long frames)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frames</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>The frames the file says it has, or will have.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>There are too many.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_CheckMemory_" data-uid="Egami.Formats.EgamiInput.CheckMemory*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_CheckMemory_System_Int64_" data-uid="Egami.Formats.EgamiInput.CheckMemory(System.Int64)">
+  CheckMemory(long)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L275"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Checks that <code class="paramref">bytes</code> more would fit the load's memory budget, without allocating.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CheckMemory(long bytes)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>bytes</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>The bytes about to be needed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>They would not fit.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_CheckMetadataBytes_" data-uid="Egami.Formats.EgamiInput.CheckMetadataBytes*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_CheckMetadataBytes_System_Int64_" data-uid="Egami.Formats.EgamiInput.CheckMetadataBytes(System.Int64)">
+  CheckMetadataBytes(long)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L291"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Checks a metadata size against <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxMetadataBytes">MaxMetadataBytes</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CheckMetadataBytes(long bytes)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>bytes</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>The metadata bytes kept so far, or about to be read.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>They are too many.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_Corrupt_" data-uid="Egami.Formats.EgamiInput.Corrupt*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_Corrupt_System_Int64_System_String_" data-uid="Egami.Formats.EgamiInput.Corrupt(System.Int64,System.String)">
+  Corrupt(long, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L464"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a <a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a> for this format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CorruptDataException Corrupt(long offset, string problem)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>The byte offset of the problem, or -1 if unknown.</p>
+</dd>
+    <dt><code>problem</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>What is wrong, as a sentence.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The exception, for the reader to throw.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_EgamiInput_CreateRaster_" data-uid="Egami.Formats.EgamiInput.CreateRaster*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_CreateRaster__1_System_Int64_System_Int64_Egami_ClearMode_" data-uid="Egami.Formats.EgamiInput.CreateRaster``1(System.Int64,System.Int64,Egami.ClearMode)">
+  CreateRaster&lt;TPixel&gt;(long, long, ClearMode)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L222"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates the raster a reader decodes into, after checking the size against <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a> and the memory budget.
+Unless <code class="paramref">clear</code> asks for it, pixels are not cleared and the reader must write every one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;TPixel&gt; CreateRaster&lt;TPixel&gt;(long width, long height, ClearMode clear = ClearMode.None) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>The width from the header.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>The height from the header.</p>
+</dd>
+    <dt><code>clear</code> <a class="xref" href="Egami.ClearMode.html">ClearMode</a></dt>
+    <dd><p>Whether to zero the pixels first. Readers that write every pixel skip it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>A one-frame raster. The reader owns it until it returns it, and must dispose it if decoding fails.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The size breaks a safety limit.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The width or height is zero or negative.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_Peek_" data-uid="Egami.Formats.EgamiInput.Peek*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_Peek_System_Int32_" data-uid="Egami.Formats.EgamiInput.Peek(System.Int32)">
+  Peek(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns up to <code class="paramref">count</code> upcoming bytes without consuming them. The span is shorter only at the end of the data.
+It is valid until the next read.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlySpan&lt;byte&gt; Peek(int count)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>count</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>How many bytes to look at, at most 64 KB.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The upcoming bytes.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">count</code> is negative or above 64 KB.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_Read_" data-uid="Egami.Formats.EgamiInput.Read*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_Read_System_Span_System_Byte__" data-uid="Egami.Formats.EgamiInput.Read(System.Span{System.Byte})">
+  Read(Span&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L97"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads as many bytes as are available, up to the length of <code class="paramref">destination</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Read(Span&lt;byte&gt; destination)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>destination</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>Where to put the bytes.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of bytes read. Less than requested only at the end of the data.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_EgamiInput_ReadByte_" data-uid="Egami.Formats.EgamiInput.ReadByte*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_ReadByte" data-uid="Egami.Formats.EgamiInput.ReadByte">
+  ReadByte()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L168"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads one byte.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public byte ReadByte()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>The byte.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data has ended.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_ReadExactly_" data-uid="Egami.Formats.EgamiInput.ReadExactly*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_ReadExactly_System_Span_System_Byte__" data-uid="Egami.Formats.EgamiInput.ReadExactly(System.Span{System.Byte})">
+  ReadExactly(Span&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads exactly <code class="paramref">destination</code>.Length bytes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ReadExactly(Span&lt;byte&gt; destination)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>destination</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>Where to put the bytes.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data ends first.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_ReadUInt16BigEndian_" data-uid="Egami.Formats.EgamiInput.ReadUInt16BigEndian*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_ReadUInt16BigEndian" data-uid="Egami.Formats.EgamiInput.ReadUInt16BigEndian">
+  ReadUInt16BigEndian()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L182"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a big-endian 16-bit unsigned integer.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ushort ReadUInt16BigEndian()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data ends first.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_ReadUInt16LittleEndian_" data-uid="Egami.Formats.EgamiInput.ReadUInt16LittleEndian*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_ReadUInt16LittleEndian" data-uid="Egami.Formats.EgamiInput.ReadUInt16LittleEndian">
+  ReadUInt16LittleEndian()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a little-endian 16-bit unsigned integer.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ushort ReadUInt16LittleEndian()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data ends first.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_ReadUInt32BigEndian_" data-uid="Egami.Formats.EgamiInput.ReadUInt32BigEndian*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_ReadUInt32BigEndian" data-uid="Egami.Formats.EgamiInput.ReadUInt32BigEndian">
+  ReadUInt32BigEndian()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L198"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a big-endian 32-bit unsigned integer.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public uint ReadUInt32BigEndian()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint32">uint</a></dt>
+    <dd><p>The value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data ends first.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_ReadUInt32LittleEndian_" data-uid="Egami.Formats.EgamiInput.ReadUInt32LittleEndian*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_ReadUInt32LittleEndian" data-uid="Egami.Formats.EgamiInput.ReadUInt32LittleEndian">
+  ReadUInt32LittleEndian()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L206"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a little-endian 32-bit unsigned integer.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public uint ReadUInt32LittleEndian()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint32">uint</a></dt>
+    <dd><p>The value.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data ends first.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_RentScratch_" data-uid="Egami.Formats.EgamiInput.RentScratch*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_RentScratch_System_Int32_Egami_ClearMode_" data-uid="Egami.Formats.EgamiInput.RentScratch(System.Int32,Egami.ClearMode)">
+  RentScratch(int, ClearMode)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L266"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Rents scratch memory (a canvas row, a previous frame, a decompression buffer) counted against the load's memory budget
+with the raster. Dispose it when done.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IMemoryOwner&lt;byte&gt; RentScratch(int byteLength, ClearMode clear = ClearMode.None)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>byteLength</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The size in bytes.</p>
+</dd>
+    <dt><code>clear</code> <a class="xref" href="Egami.ClearMode.html">ClearMode</a></dt>
+    <dd><p>Whether to zero it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.buffers.imemoryowner-1">IMemoryOwner</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The memory.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The memory budget would be exceeded.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_Skip_" data-uid="Egami.Formats.EgamiInput.Skip*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_Skip_System_Int64_" data-uid="Egami.Formats.EgamiInput.Skip(System.Int64)">
+  Skip(long)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Skips <code class="paramref">count</code> bytes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Skip(long count)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>count</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>How many bytes to skip.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data ends first.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_EgamiInput_Warn_" data-uid="Egami.Formats.EgamiInput.Warn*"></a>
+
+  <h3 id="Egami_Formats_EgamiInput_Warn_Egami_Raster_System_String_System_String_System_Nullable_System_Int64__" data-uid="Egami.Formats.EgamiInput.Warn(Egami.Raster,System.String,System.String,System.Nullable{System.Int64})">
+  Warn(Raster, string, string, long?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L308"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Notes a problem a lenient read recovered from in the raster's <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_Warnings">Warnings</a>, which also sends it to
+<a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Diagnostics">Diagnostics</a> when the load ends.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Warn(Raster raster, string id, string warning, long? offset = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>raster</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The raster being read.</p>
+</dd>
+    <dt><code>id</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A stable id of the form <code>Source.Name</code>, such as <code>&quot;Pcx.PaletteMissing&quot;</code>; <a class="xref" href="Egami.EgamiDiagnostic.html#Egami_EgamiDiagnostic_Source">Source</a> is the
+part before the dot. Keep ids the same from version to version so apps can filter on them.</p>
+</dd>
+    <dt><code>warning</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>What was wrong and what the reader did, as a sentence.</p>
+</dd>
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a>?</dt>
+    <dd><p>The byte offset in the input the problem is at, if known.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">id</code> has no dot, or <code class="paramref">warning</code> is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/EgamiInput.cs/#L17" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Enum LineBreakClass | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Enum LineBreakClass | Egami ">
+      
+      <meta name="description" content="A code point&#39;s Line_Break class (UAX #14), which line breaking starts from.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_Unicode_LineBreakClass.md&amp;value=---%0Auid%3A%20Egami.Fonts.Unicode.LineBreakClass%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.Unicode.LineBreakClass">
+
+
+
+
+  <h1 id="Egami_Fonts_Unicode_LineBreakClass" data-uid="Egami.Fonts.Unicode.LineBreakClass" class="text-break">
+Enum LineBreakClass  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/UnicodeEnums.g.cs/#L771"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a>.<a class="xref" href="Egami.Fonts.Unicode.html">Unicode</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A code point's Line_Break class (UAX #14), which line breaking starts from.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public enum LineBreakClass</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h2 id="fields">Fields
+</h2>
+  <dl class="parameters">
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Aksara"><code>Aksara = 2</code></dt>
+  
+  <dd><p>Line_Break AK (Aksara).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_AksaraPrebase"><code>AksaraPrebase = 4</code></dt>
+  
+  <dd><p>Line_Break AP (Aksara_Prebase).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_AksaraStart"><code>AksaraStart = 5</code></dt>
+  
+  <dd><p>Line_Break AS (Aksara_Start).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Alphabetic"><code>Alphabetic = 3</code></dt>
+  
+  <dd><p>Line_Break AL (Alphabetic).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Ambiguous"><code>Ambiguous = 1</code></dt>
+  
+  <dd><p>Line_Break AI (Ambiguous).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_BreakAfter"><code>BreakAfter = 7</code></dt>
+  
+  <dd><p>Line_Break BA (Break_After).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_BreakBefore"><code>BreakBefore = 8</code></dt>
+  
+  <dd><p>Line_Break BB (Break_Before).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_BreakBoth"><code>BreakBoth = 6</code></dt>
+  
+  <dd><p>Line_Break B2 (Break_Both).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_BreakSymbols"><code>BreakSymbols = 43</code></dt>
+  
+  <dd><p>Line_Break SY (Break_Symbols).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_CarriageReturn"><code>CarriageReturn = 15</code></dt>
+  
+  <dd><p>Line_Break CR (Carriage_Return).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_CloseParenthesis"><code>CloseParenthesis = 14</code></dt>
+  
+  <dd><p>Line_Break CP (Close_Parenthesis).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_ClosePunctuation"><code>ClosePunctuation = 12</code></dt>
+  
+  <dd><p>Line_Break CL (Close_Punctuation).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_CombiningMark"><code>CombiningMark = 13</code></dt>
+  
+  <dd><p>Line_Break CM (Combining_Mark).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_ComplexContext"><code>ComplexContext = 40</code></dt>
+  
+  <dd><p>Line_Break SA (Complex_Context).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_ConditionalJapaneseStarter"><code>ConditionalJapaneseStarter = 11</code></dt>
+  
+  <dd><p>Line_Break CJ (Conditional_Japanese_Starter).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_ContingentBreak"><code>ContingentBreak = 10</code></dt>
+  
+  <dd><p>Line_Break CB (Contingent_Break).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_EBase"><code>EBase = 16</code></dt>
+  
+  <dd><p>Line_Break EB (E_Base).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_EModifier"><code>EModifier = 17</code></dt>
+  
+  <dd><p>Line_Break EM (E_Modifier).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Exclamation"><code>Exclamation = 18</code></dt>
+  
+  <dd><p>Line_Break EX (Exclamation).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Glue"><code>Glue = 19</code></dt>
+  
+  <dd><p>Line_Break GL (Glue).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_H2"><code>H2 = 20</code></dt>
+  
+  <dd><p>Line_Break H2 (H2).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_H3"><code>H3 = 21</code></dt>
+  
+  <dd><p>Line_Break H3 (H3).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_HebrewLetter"><code>HebrewLetter = 23</code></dt>
+  
+  <dd><p>Line_Break HL (Hebrew_Letter).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Hyphen"><code>Hyphen = 24</code></dt>
+  
+  <dd><p>Line_Break HY (Hyphen).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Ideographic"><code>Ideographic = 25</code></dt>
+  
+  <dd><p>Line_Break ID (Ideographic).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_InfixNumeric"><code>InfixNumeric = 27</code></dt>
+  
+  <dd><p>Line_Break IS (Infix_Numeric).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Inseparable"><code>Inseparable = 26</code></dt>
+  
+  <dd><p>Line_Break IN (Inseparable).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_JL"><code>JL = 28</code></dt>
+  
+  <dd><p>Line_Break JL (JL).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_JT"><code>JT = 29</code></dt>
+  
+  <dd><p>Line_Break JT (JT).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_JV"><code>JV = 30</code></dt>
+  
+  <dd><p>Line_Break JV (JV).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_LineFeed"><code>LineFeed = 31</code></dt>
+  
+  <dd><p>Line_Break LF (Line_Feed).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_MandatoryBreak"><code>MandatoryBreak = 9</code></dt>
+  
+  <dd><p>Line_Break BK (Mandatory_Break).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_NextLine"><code>NextLine = 32</code></dt>
+  
+  <dd><p>Line_Break NL (Next_Line).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Nonstarter"><code>Nonstarter = 33</code></dt>
+  
+  <dd><p>Line_Break NS (Nonstarter).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Numeric"><code>Numeric = 34</code></dt>
+  
+  <dd><p>Line_Break NU (Numeric).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_OpenPunctuation"><code>OpenPunctuation = 35</code></dt>
+  
+  <dd><p>Line_Break OP (Open_Punctuation).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_PostfixNumeric"><code>PostfixNumeric = 36</code></dt>
+  
+  <dd><p>Line_Break PO (Postfix_Numeric).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_PrefixNumeric"><code>PrefixNumeric = 37</code></dt>
+  
+  <dd><p>Line_Break PR (Prefix_Numeric).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Quotation"><code>Quotation = 38</code></dt>
+  
+  <dd><p>Line_Break QU (Quotation).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_RegionalIndicator"><code>RegionalIndicator = 39</code></dt>
+  
+  <dd><p>Line_Break RI (Regional_Indicator).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Space"><code>Space = 42</code></dt>
+  
+  <dd><p>Line_Break SP (Space).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Surrogate"><code>Surrogate = 41</code></dt>
+  
+  <dd><p>Line_Break SG (Surrogate).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_UnambiguousHyphen"><code>UnambiguousHyphen = 22</code></dt>
+  
+  <dd><p>Line_Break HH (Unambiguous_Hyphen).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Unknown"><code>Unknown = 0</code></dt>
+  
+  <dd><p>Line_Break XX (Unknown).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_Virama"><code>Virama = 45</code></dt>
+  
+  <dd><p>Line_Break VI (Virama).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_ViramaFinal"><code>ViramaFinal = 44</code></dt>
+  
+  <dd><p>Line_Break VF (Virama_Final).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_WordJoiner"><code>WordJoiner = 46</code></dt>
+  
+  <dd><p>Line_Break WJ (Word_Joiner).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_ZWJ"><code>ZWJ = 48</code></dt>
+  
+  <dd><p>Line_Break ZWJ (ZWJ).</p>
+</dd>
+    <dt id="Egami_Fonts_Unicode_LineBreakClass_ZWSpace"><code>ZWSpace = 47</code></dt>
+  
+  <dd><p>Line_Break ZW (ZWSpace).</p>
+</dd>
+  </dl>
+
+  <h2 id="Egami_Fonts_Unicode_LineBreakClass_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Egami's own Unicode 17.0 tables: the same answer on every runtime and machine.
+Script script = UnicodeData.GetScript('\u0915');                          // Devanagari
+ReadOnlySpan&lt;FontTag&gt; tags = script.OpenTypeTags;                         // dev2, then deva
+BidiClass bidi = UnicodeData.GetBidiClass('\u0627');                      // ArabicLetter
+JoiningType joining = UnicodeData.GetJoiningType('\u0628');               // DualJoining
+JoiningGroup group = UnicodeData.GetJoiningGroup('\u0628');               // Beh
+VerticalOrientation upright = UnicodeData.GetVerticalOrientation('\u6F22');   // Upright
+EastAsianWidth width = UnicodeData.GetEastAsianWidth('\u6F22');               // Wide
+bool emoji = UnicodeData.IsEmojiPresentation(0x1F600);                    // true
+UnicodeData.TryGetBidiMirroringGlyph('(', out int mirror);                // ')'
+BidiPairedBracketType bracket = UnicodeData.GetBidiPairedBracketType('['); // Open</code></pre>
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/UnicodeEnums.g.cs/#L771" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

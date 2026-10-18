@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Fonts and text | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Fonts and text | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/text.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="fonts-and-text">Fonts and text</h1>
+
+<p>Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2 and variable fonts in managed code: faces, glyph
+outlines, metrics, kerning, installed fonts and subsets. Egami.Drawing uses it to draw and measure a line of text on a canvas. Egami.Drawing and Egami.Fonts are at
+1.0 and their APIs are frozen. Egami ships no font: text needs a face from a file, a stream,
+memory or the installed fonts.</p>
+<h2 id="faces">Faces</h2>
+<p>A <code>Typeface</code> is one face, immutable and shared by every thread. <code>Typeface.FromFile</code>, <code>FromStream</code> and <code>FromMemory</code> read TrueType
+(.ttf), OpenType CFF and CFF2 (.otf), collections (.ttc, .otc, with a face index), WOFF and WOFF2 (.woff, .woff2, collections
+too) and bare CFF; <code>FromCff</code> reads a bare CFF stream as PDF
+embeds it, with <code>CffOptions</code> for the units per em and widths it lacks. <code>FontLoader.Probe</code> tells a <code>FontProbe</code> (its <code>FontFileKind</code>,
+face count and <code>FontOutlines</code>) from the header, and <code>FontLoader.LoadAll</code> loads every face of a collection.</p>
+<pre><code class="lang-csharp">// One face from a file; a collection takes an index. The bytes are read once and every table is parsed when first needed.
+Typeface face = Typeface.FromFile(FontFile);
+Console.WriteLine($&quot;{face.FamilyName} {face.SubfamilyName}, {face.GlyphCount} glyphs, {face.UnitsPerEm} units per em&quot;);
+
+// What a file holds, from its header alone.
+FontProbe probe = FontLoader.Probe(File.ReadAllBytes(FontFile));
+Console.WriteLine($&quot;{probe.Kind}, {probe.FaceCount} face(s), {probe.Outlines} outlines&quot;);
+
+// Damaged fonts load leniently with diagnostics; Strict throws instead.
+var seen = new List&lt;EgamiDiagnostic&gt;();
+var options = new FontLoadOptions { Context = EgamiContext.Default with { Diagnostics = seen.Add } };
+Typeface lenient = Typeface.FromMemory(File.ReadAllBytes(FontFile), 0, options);
+</code></pre>
+<ul>
+<li>The file is read into memory once and every table is a slice of it; tables are parsed when first used.</li>
+<li>Loading is lenient: a missing or damaged name, OS/2, hhea, hmtx, post or cmap table gets a documented default and a
+<code>Font.MissingTable</code> or <code>Font.BadTable</code> diagnostic, and a broken glyph draws empty with <code>Font.BadGlyph</code>. Only a font with no
+readable glyph data throws <code>CorruptDataException</code>. <code>FontLoadOptions.Strict</code> throws on the first problem instead.</li>
+<li>A WOFF or WOFF2 file is unwrapped once into an ordinary font in new memory (zlib, and Brotli through .NET's own decoder, with
+WOFF2's glyf, loca and hmtx transforms); the compressed bytes are not kept. <code>Container</code> says where a face came from, and
+<code>GetWoffMetadata</code> and <code>GetWoffPrivateData</code> return the file's own blocks. Every decoded table equals the reference decoders'.</li>
+<li><code>GetNames</code> returns every <code>FontNameRecord</code>; <code>TryGetTable</code> returns any table's bytes by <code>FontTag</code>. <code>Embedding</code> reports the
+<code>FontEmbedding</code> permissions, which Egami never enforces.</li>
+</ul>
+<pre><code class="lang-csharp">// A CFF stream as a PDF embeds it (FontFile3): no character map, glyphs by id; widths from the PDF when it gives them.
+Typeface embedded = Typeface.FromCff(fontFile3, new CffOptions { UnitsPerEm = 1000 });
+float width = embedded.GetAdvance(1);
+</code></pre><pre><code class="lang-csharp">// WOFF and WOFF2 files load like any font: they are unwrapped into an ordinary font in memory once.
+Typeface face = Typeface.FromFile(WebFile);
+FontFileKind container = face.Container;
+string? metadata = face.GetWoffMetadata();
+</code></pre><h2 id="variable-fonts">Variable fonts</h2>
+<p>A variable font is one file that holds a range of designs along its axes, such as weight from 100 to 900. <code>IsVariable</code>,
+<code>VariationAxes</code> (each a <code>VariationAxis</code> with its range) and <code>NamedInstances</code> (each a <code>NamedInstance</code>, such as &quot;Bold&quot;) describe it.
+<code>WithVariations</code> returns the face at a position, given as <code>FontVariation</code> values, and <code>WithNamedInstance</code> at a named one: an
+ordinary immutable <code>Typeface</code> sharing the file's memory, whose outlines, advances, extents, kerning, names and subsets all answer
+for that position. <code>Variations</code> gives a face's position.</p>
+<pre><code class="lang-csharp">// A variable font's axes and named instances, and the face at any position on them.
+Typeface flex = Typeface.FromFile(VariableFile);
+foreach (VariationAxis axis in flex.VariationAxes)
+{
+    Console.WriteLine($&quot;{axis.Tag} {axis.Name}: {axis.Min} to {axis.Max}, default {axis.Default}&quot;);
+}
+
+Typeface semiBold = flex.WithVariations(FontVariation.Weight(600), FontVariation.Width(90));
+Typeface black = flex.WithNamedInstance(flex.NamedInstances.Count - 1);
+
+// The optical size follows the font size unless the face sets it (OpticalSizing.None turns that off).
+var caption = new Font(semiBold, 11);
+Typeface drawn = caption.EffectiveTypeface;
+
+// For a PDF, the subset is a static font at the face's position, which every viewer draws as it is.
+FontSubset subset = FontSubsetter.Subset(semiBold, caption.Shape(&quot;Static at 600&quot;).Glyphs.ToArray());
+</code></pre>
+<ul>
+<li>Positions clamp to each axis; axes the font lacks are ignored, and the default position is the face itself. Faces at a position
+are cached, so drawing at one position costs what a static font costs.</li>
+<li>Outlines vary through gvar (TrueType) or CFF2's blends, advances through HVAR (or phantom points), the extents through MVAR and
+kerning through GDEF's deltas, with avar versions 1 and 2. At 25 positions in each test font every outline and advance equals
+fontTools' within 1/64 unit.</li>
+<li>A named instance takes the instance's names; another position keeps the default's names and gets a PostScript name of its own
+(Adobe Technical Note 5902), such as <code>NotoSans_650wght</code>.</li>
+<li><code>FontCollection</code> lists a variable face's named instances as faces, and <code>FontFamily.Match</code> places the face anywhere its weight,
+width and slant or italic axes reach, as CSS does: weight 450 is drawn at 450, not snapped to 400.</li>
+<li>With <code>Font.OpticalSizing</code> at <code>OpticalSizing.Auto</code> (the default), a face with an opsz axis it leaves at the default is drawn at
+opsz equal to the size in canvas units; <code>Font.EffectiveTypeface</code> is the face drawn.</li>
+<li><code>SubsetOptions.Variations</code> (by default the face's own position) makes the subset a static font at that position, written as an
+instancer would: the varied outlines rounded to whole units, metrics, OS/2 and post at the position, CFF2 written as CFF and the
+variation tables left out. Its outlines, advances and bearings equal fontTools' instancer's, so a PDF shows the position.</li>
+<li>A variable font's GSUB feature variations (glyph swaps by position) arrive with shaping in 2.8.</li>
+</ul>
+<h2 id="glyphs-and-metrics">Glyphs and metrics</h2>
+<p>Everything a face returns is in font units with y up. <code>GetGlyph</code> maps a code point (with a variation selector, through cmap format
+14), <code>GetGlyphOutline</code> sends an outline to an <code>IGlyphOutlineSink</code>, and <code>GetAdvance</code>, <code>GetGlyphExtents</code> (a <code>GlyphExtents</code> box) and
+<code>GetKerning</code> give the numbers. Glyph ids are <code>ushort</code> throughout, as OpenType caps a face at 65,535 glyphs.</p>
+<pre><code class="lang-csharp">// Character map, advance, ink box and kerning, all in font units with y up.
+ushort a = face.GetGlyph('A'), v = face.GetGlyph('V');
+float advance = face.GetAdvance(a);
+GlyphExtents ink = face.GetGlyphExtents(a);
+float kern = face.GetKerning(a, v);
+FontExtents extents = face.Extents;
+
+// An outline arrives through a sink: lines and quadratics for TrueType, lines and cubics for CFF.
+var counter = new SegmentCounter();
+face.GetGlyphOutline(a, counter);
+</code></pre>
+<ul>
+<li>TrueType outlines arrive as lines and quadratic curves and CFF outlines as lines and cubic curves, exactly as stored: every outline
+of the test fonts equals fontTools' point for point.</li>
+<li><code>Extents</code> is a <code>FontExtents</code> with ascent, descent, line gap, cap and x heights, decoration lines and the italic angle, by the
+browsers' rule: OS/2 typo metrics when the face sets USE_TYPO_METRICS, else hhea. <code>HheaMetrics</code>, <code>TypoMetrics</code> and
+<code>WinMetrics</code> give each stored <code>VerticalMetrics</code> set.</li>
+<li><code>Typeface.GetKerning</code> is GPOS pair positioning under the kern feature (the DFLT and latn scripts), else the kern table. Text
+drawn on a canvas is shaped with all of the font's OpenType features (see <a href="unicode-text.html">Unicode text and shaping</a>).</li>
+</ul>
+<h2 id="text-on-a-canvas">Text on a canvas</h2>
+<p>A <code>Font</code> is a typeface at a size, the em in canvas units: pixels on a raster, points on a PDF page. <code>Font.FromPoints</code> sizes from
+points at a resolution. <code>Canvas.DrawText</code> puts the left end of the first line's alphabetic baseline at the origin. <code>Font</code> is a
+value type; <code>default(Font)</code> has no typeface, and its metrics, shaping and measuring throw <code>InvalidOperationException</code>.</p>
+<pre><code class="lang-csharp">// A caption on a photo: white text with a dark shadow, its baseline 24 pixels above the bottom.
+using Raster&lt;Rgba8&gt; photo = Raster.Create(640, 360, new Rgba8(90, 120, 160, 255));
+var font = new Font(Typeface.FromFile(FontFile), 28);
+using (RasterCanvas&lt;Rgba8&gt; canvas = photo.CreateCanvas())
+{
+    var origin = new Vector2(24, photo.Height - 24);
+    canvas.DrawText(&quot;Lofoten, March&quot;, origin + new Vector2(2, 2), font, new Rgba8(0, 0, 0, 160));
+    canvas.DrawText(&quot;Lofoten, March&quot;, origin, font, Rgba8.White);
+}
+</code></pre>
+<ul>
+<li><code>Font.Shape</code> turns text into a <code>GlyphRun</code> with the full shaper: ligatures, kerning, marks, the script rules, bidi order, and a new
+line at each hard break (<code>\n</code>, <code>\r\n</code>, <code>\r</code>, U+0085, U+2028, U+2029). <code>ShapingOptions</code> set the direction, language, features
+and spans. A run has one font, so text that falls back to other fonts is shaped by <code>TextShaper.Shape</code> and drawn with
+<code>Canvas.DrawShapedText</code>; <code>Canvas.DrawText</code> does that by itself when the options ask for fallback. Nothing wraps; without
+fallback a missing character draws .notdef.</li>
+<li>A <code>ShapedText</code> drawn with <code>Canvas.DrawShapedText</code> is shaped once, so it can be measured, kept and drawn again.</li>
+</ul>
+<pre><code class="lang-csharp">// Shape once, measure the result, draw it centred: no second shaping pass.
+using Raster&lt;Rgba8&gt; banner = Raster.Create(640, 120, Rgba8.White);
+Egami.Fonts.Shaping.ShapedText title = Egami.Fonts.Shaping.TextShaper.Shape(&quot;Office hours: 9 to 17&quot;, font);
+var origin = new Vector2((banner.Width - title.Advance) / 2, 70);
+using (RasterCanvas&lt;Rgba8&gt; canvas = banner.CreateCanvas())
+{
+    canvas.DrawShapedText(title, origin, Rgba8.Black);
+}
+</code></pre>
+<ul>
+<li>A run carries the source text and a cluster per glyph, so a PDF backend keeps text searchable. <code>Canvas.DrawGlyphRun</code> draws a
+run built elsewhere with <code>GlyphRun.Create</code>.</li>
+<li>Small glyphs are drawn from the <code>GlyphCache</code> of coverage masks, at whole device pixels, by the same rasterizer as paths, so caching
+changes speed, not pixels. Glyphs over 256 pixels per em, or under a rotation or skew, fill as paths.</li>
+</ul>
+<pre><code class="lang-csharp">// Small text draws from a process-wide cache of glyph masks; give it more room for many fonts and sizes.
+GlyphCache.ByteLimit = 16 * 1024 * 1024;
+GlyphCache.Clear();
+</code></pre><h2 id="rendering-quality">Rendering quality</h2>
+<p>Four switches on a <code>Font</code> change how a raster draws it, never how it measures: <code>MeasureText</code> gives the same numbers whatever they
+are.</p>
+<pre><code class="lang-csharp">// Small text for a screen: light hinting (vertical only), quarter-pixel origins (the default) and, for an RGB display
+// the image will not leave, LCD edging.
+var screen = new Font(face, 13) { Hinting = FontHinting.Light, Edging = FontEdging.Lcd };
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas(new CanvasOptions { PixelGeometry = PixelGeometry.RgbHorizontal }))
+{
+    canvas.DrawText(&quot;Crisp caption&quot;, new Vector2(8, 24), screen, Rgba8.Black);
+
+    // A face matched for bold italic it lacks is emboldened and slanted, unless AllowSynthesis is off.
+    var synthetic = new Font(face, 13) { Synthesis = FontSynthesis.Bold | FontSynthesis.Italic };
+    canvas.DrawText(&quot;Synthetic bold italic&quot;, new Vector2(8, 48), synthetic, Rgba8.Black);
+}
+</code></pre>
+<ul>
+<li><code>Font.Subpixel</code> (on by default) keeps glyph origins at quarter pixels horizontally, each quarter its own cached mask, so small
+text is evenly spaced; off, origins snap to whole pixels as in 2.7.1. Vertical positions always snap to whole pixels.</li>
+<li><code>Font.Hinting</code> = <code>FontHinting.Light</code> snaps the baseline, x-height and cap-height zones (a CFF font's blue zones, else zones
+measured from the face's own glyphs) to whole pixels, up to 48 pixels per em; x values and advances never move. There is no
+TrueType bytecode hinting.</li>
+<li><code>Font.Edging</code> picks <code>FontEdging.Antialias</code> (the default), <code>Alias</code> (one bit, pixel centres inside the outline) or <code>Lcd</code>: three
+samples per pixel along the canvas's <code>CanvasOptions.PixelGeometry</code>, filtered and blended per channel. LCD text draws only onto
+an 8-bit RGB canvas outside layers with a solid source-over paint; anything else falls back to grayscale with one
+<code>Text.LcdFallback</code> diagnostic per canvas. Images that leave the screen they were made for carry the colour fringes with them,
+so LCD is opt-in.</li>
+<li><code>Font.Synthesis</code> (set by matching) is drawn: bold outsets the outline by em/24 at 9 pixels down to em/32 at 36 and above,
+advances unchanged, and italic slants 14 degrees, CSS's default oblique. Glyph paths and ink bounds include it;
+<code>Font.AllowSynthesis = false</code> turns it off.</li>
+</ul>
+<h2 id="color-fonts">Color fonts</h2>
+<p>Emoji and other color glyphs draw in color by themselves. Per glyph, the first format the font has wins: COLR version 1 (a
+graph of layers, gradients, transforms and compositing), COLR version 0 (layers of solid outlines), sbix, then CBDT and CBLC
+(images); anything else draws its outline in the paint. <code>Typeface.ColorFormats</code> says what a face holds.</p>
+<pre><code class="lang-csharp">// Color glyphs draw in color by themselves: COLR (layers and gradients), sbix and CBDT (images), per glyph.
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.DrawText(&quot;Ship it&quot;, new Vector2(8, 40), new Font(text, 24), Rgba8.Black);
+    canvas.DrawText(&quot;\U0001F680\U0001F389&quot;, new Vector2(100, 42), new Font(emoji, 32), Rgba8.Black);
+}
+
+// The palette is a font setting; the paint's color fills a glyph's foreground parts and its alpha the whole glyph.
+var darkMode = new Font(emoji, 32) { Palette = FontPalette.Dark };
+ColorGlyphFormats formats = emoji.ColorFormats;
+
+// The paint graph is there to walk, for writers that draw color glyphs their own way.
+emoji.TryGetColorGlyph(emoji.GetGlyph(0x1F680), darkMode.Palette, out ColorGlyph? rocket);
+</code></pre>
+<ul>
+<li><code>Font.Palette</code> picks a CPAL palette by index or by <code>FontPaletteBackground</code> (<code>FontPalette.Light</code>, <code>FontPalette.Dark</code>), with
+<code>FontPaletteEntry</code> overrides; <code>Typeface.Palettes</code> lists each <code>FontPaletteInfo</code>. <code>Font.ColorGlyphs = false</code> draws outlines.</li>
+<li>The paint's color fills the glyph's foreground parts and its alpha and blend mode apply to the whole glyph, drawn as one group.</li>
+<li><code>Typeface.TryGetColorGlyph</code> returns a <code>ColorGlyph</code>: a <code>PaintColorGlyph</code> whose <code>ColorPaint</code> graph an <code>IColorPaintVisitor</code>
+walks, with variable values taken at the face's position: <code>ColorLayersPaint</code>, <code>ColorSolidPaint</code> (a <code>GlyphColor</code>),
+<code>ColorLinearGradientPaint</code>, <code>ColorRadialGradientPaint</code> and <code>ColorSweepGradientPaint</code> (over a <code>ColorLine</code> of <code>ColorStop</code>s with a
+<code>ColorExtend</code>), <code>ColorGlyphPaint</code> (a glyph-outline clip), <code>ColorGlyphReferencePaint</code>, <code>ColorTransformPaint</code> and
+<code>ColorCompositePaint</code>; or a <code>BitmapColorGlyph</code> with its image (<code>BitmapGlyphEncoding</code>) and placement, from the strike nearest
+above the size.</li>
+<li>Every canvas draws color glyphs: the default glyph hook turns them into clips, fills, gradients, layers and images, so a PDF page
+gets vector color. A raster caches them, up to 256 pixels per em, as color images keyed by palette.</li>
+<li>OpenType SVG glyphs are not drawn: <code>Typeface.TryGetSvgDocument</code> returns the document for callers with an SVG renderer, and such
+glyphs fall back to their COLR, bitmap or outline data. Drawing them arrives with Egami.Svg.</li>
+</ul>
+<h2 id="text-on-a-path">Text on a path</h2>
+<p><code>Canvas.DrawTextOnPath</code> lays a line of text along a <code>Path</code> by SVG's textPath rules, through <code>Font.ShapeOnPath</code>: each glyph's
+advance midpoint sits on the path, turned to its direction, and glyphs past either end are left out. <code>TextOnPathOptions</code> sets
+the start (<code>StartOffset</code> in canvas units plus <code>StartFraction</code> of the length), the <code>TextAnchor</code>, the <code>BaselineShift</code> along the
+normal, the <code>TextPathSide</code> and whether a closed contour wraps.</p>
+<pre><code class="lang-csharp">// A label along a curve: each glyph's midpoint on the path, turned to its direction, as SVG's textPath. The result is
+// still a glyph run, so a PDF backend writes it as searchable text.
+Path curve = new PathBuilder().MoveTo(20, 150).CubicTo(80, 20, 240, 20, 300, 150).ToPath();
+var font = new Font(face, 18);
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.DrawTextOnPath(&quot;Text that follows the curve&quot;, curve, font, Rgba8.Black,
+        new TextOnPathOptions { StartFraction = 0.5f, Anchor = TextAnchor.Center, BaselineShift = 4 });
+}
+
+// Or place glyphs yourself, each with its own turn and scale.
+GlyphRun dial = GlyphRun.CreateTransformed(font, [face.GetGlyph('N'), face.GetGlyph('E')],
+    [GlyphTransform.FromRotationScale(1, 0, new Vector2(150, 30)), GlyphTransform.FromRotationScale(1, 90, new Vector2(290, 90))]);
+</code></pre>
+<ul>
+<li>The result is a <code>GlyphRun</code> with a <code>GlyphTransform</code> per glyph (a rotation and uniform scale, then an origin, as Skia's RSXform),
+so a PDF backend writes it as real, searchable text; <code>GlyphRun.CreateTransformed</code> builds such runs by hand.</li>
+<li>Glyphs that are only moved draw from the glyph cache like any text; turned or scaled ones fill as paths. Text is not warped:
+each glyph keeps its shape, as SVG and browsers draw it.</li>
+</ul>
+<h2 id="measuring">Measuring</h2>
+<p><code>Font.MeasureText</code> lays text out exactly as <code>DrawText</code> does and returns a <code>TextMeasure</code>: the widest line's advance, the exact ink
+box as <code>TextBounds</code>, the line count and the vertical metrics.</p>
+<pre><code class="lang-csharp">// A label shrunk until it fits a 200-pixel button, then centred on it.
+const string label = &quot;Download the full report&quot;;
+var box = new RectF(20, 20, 200, 40);
+var font = new Font(face, 24);
+while (font.MeasureText(label).Advance &gt; box.Width - 16 &amp;&amp; font.Size &gt; 8)
+{
+    font = new Font(face, font.Size - 1);
+}
+
+TextMeasure size = font.MeasureText(label);
+var origin = new Vector2(
+    box.X + ((box.Width - size.Advance) / 2),
+    box.Y + ((box.Height - size.Height) / 2) + size.Ascent);
+using Raster&lt;Rgba8&gt; image = Raster.Create(240, 80, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.FillRoundRect(new RoundRect(box, 8), new Rgba8(30, 90, 200, 255));
+    canvas.DrawText(label, origin, font, Rgba8.White);
+}
+</code></pre>
+<p><code>MeasureText</code> also takes a <code>ReadOnlySpan&lt;char&gt;</code>, so a slice of a longer text or a reused buffer is measured without making a
+string of it.</p>
+<pre><code class="lang-csharp">// Measure each word of a longer text in place: a span is measured without making a string of it.
+ReadOnlySpan&lt;char&gt; text = &quot;Measure every word of this sentence&quot;;
+float widest = 0;
+foreach (Range word in text.Split(' '))
+{
+    widest = Math.Max(widest, font.MeasureText(text[word]).Advance);
+}
+</code></pre><h2 id="text-as-paths">Text as paths</h2>
+<p><code>FontExtensions</code> holds <code>GetGlyphPath</code>, <code>GetTextPath</code> and <code>GlyphRun.ToPath</code>, which give <code>Path</code>s in canvas units, y down, to stroke, clip to or combine.</p>
+<pre><code class="lang-csharp">// Text as a shape: outline it, or clip a picture to it.
+Path title = font.GetTextPath(&quot;EGAMI&quot;, new Vector2(10, 80));
+using Raster&lt;Rgba8&gt; image = Raster.Create(300, 100, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.StrokePath(title, new Stroke(2), Rgba8.Black);
+    canvas.ClipPath(title);
+    canvas.FillRect(new RectF(0, 50, 300, 50), Rgba8.Red);
+}
+</code></pre><h2 id="installed-fonts-and-matching">Installed fonts and matching</h2>
+<p><code>FontCollection.System</code> finds the installed fonts without native calls, by scanning the platform's font folders (and fontconfig's
+dir entries on Linux), and indexes them on first use from the name and OS/2 tables only. It is read-only. A <code>FontCollection</code> of
+your own takes faces, files and folders, and <code>AddSystemFonts</code> copies the installed fonts into it, so your fonts and the machine's
+are matched together. Families are found by typographic, legacy, full or PostScript name in any language, and
+<code>FontFamily.Match</code> picks a face by the CSS Fonts 4 rules for a <code>FontStyle</code> (weight, width and <code>FontSlant</code>). The <code>FontMatch</code>
+records the <code>FontSynthesis</code> a lighter or upright face would need; <code>GenericFamily</code> names fixed per-platform lists.</p>
+<pre><code class="lang-csharp">// Installed fonts, found without native calls and indexed on first use; a style is matched by the CSS rules.
+FontMatch? match = FontCollection.System.Match(GenericFamily.SansSerif, FontStyle.Bold);
+
+// Your own fonts work the same way; System is read-only, so add the installed fonts to your collection to have both.
+var fonts = new FontCollection();
+fonts.AddFile(FontFile);
+fonts.AddSystemFonts();
+FontMatch noto = fonts.Match(&quot;Noto Sans&quot;, FontStyle.BoldItalic)!.Value;
+Font font = noto.ToFont(16);
+</code></pre><h2 id="subsets">Subsets</h2>
+<p><code>FontSubsetter.Subset</code> writes a font with only some glyphs, as PDF embedding and SVG export want: TrueType, OpenType CFF or a bare
+CID-keyed CFF stream (<code>SubsetFormat</code>), closed over composites and accents, with unused CFF subroutines dropped. <code>SubsetOptions</code>
+sets the format, dense or kept glyph ids, the character map, extra tables and the subset tag; the <code>FontSubset</code> holds the bytes and
+the glyph map.</p>
+<pre><code class="lang-csharp">// Keep only the glyphs a page uses, as a PDF writer embeds them: renumbered from 0, with the map to write the text with.
+GlyphRun run = new Font(face, 12).Shape(&quot;Invoice 2026-10&quot;);
+FontSubset subset = FontSubsetter.Subset(face, run.Glyphs.ToArray(), new SubsetOptions
+{
+    FontNamePrefix = &quot;ABCDEF+&quot;,
+    KeepCmap = false,
+});
+byte[] fontFile2 = subset.Data.ToArray();
+ushort first = subset.GlyphMap[run.Glyphs[0]];
+
+// The face's embedding permissions are reported, never enforced: the writer decides.
+bool restricted = face.Embedding.HasFlag(FontEmbedding.Restricted);
+</code></pre>
+<p>A PDF needs only the glyphs it draws. A subset that is to be shaped again, such as a web font for a known set of pages, sets
+<code>SubsetOptions.LayoutClosure</code>: the kept glyphs gain every glyph GSUB can substitute for them (<code>OpenTypeLayout.GetClosure</code> with the
+default features), and GSUB, GPOS and GDEF are copied unchanged. The copied tables use the old glyph ids, so it needs
+<code>RetainGlyphIds</code>.</p>
+<pre><code class="lang-csharp">// Keep what the text's characters can become (ligatures, contextual forms) and the layout tables, so the subset shapes
+// the text as the full face does; the copied tables use the old glyph ids, so the ids are kept.
+ushort[] glyphs = [.. &quot;office&quot;.Select(c =&gt; face.GetGlyph(c))];
+FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+GlyphRun shaped = new Font(subset.ToTypeface(), 12).Shape(&quot;office&quot;);
+</code></pre><h2 id="font-data-for-pdf">Font data for PDF</h2>
+<p>A PDF font reaches its glyphs in ways a text layout never does: by glyph name, by CID, through one particular cmap subtable or
+through the font program's own encoding. <code>Typeface</code> gives each as FreeType does, so a PDF reader built on Egami finds the glyphs
+PDFium finds.</p>
+<ul>
+<li><code>GetGlyphName</code> and <code>TryGetGlyphByName</code> read a name-keyed CFF font's charset, else the post table (versions 1, 2 and 2.5). A
+simple font's <code>/Differences</code> array names glyphs this way. When two glyphs share a name the lower id wins.</li>
+</ul>
+<pre><code class="lang-csharp">// A PDF simple font's /Differences array names glyphs: find each by name, and get names back for a ToUnicode guess.
+ushort aacute = face.TryGetGlyphByName(&quot;aacute&quot;, out ushort g) ? g : (ushort)0;
+string? name = face.GetGlyphName(aacute);
+</code></pre>
+<ul>
+<li><code>CidSystemInfo</code>, <code>GetCid</code> and <code>TryGetGlyphByCid</code> read a CID-keyed CFF font's ROS and charset, for CIDFontType0 fonts.</li>
+</ul>
+<pre><code class="lang-csharp">// A CIDFontType0 font with /CIDToGIDMap absent reaches glyphs by CID through the CFF charset.
+CidSystemInfo? collection = cjk.CidSystemInfo;            // Adobe-Identity-0 for this font
+ushort glyph = cjk.TryGetGlyphByCid(1, out ushort byCid) ? byCid : (ushort)0;
+int cid = cjk.GetCid(glyph);
+</code></pre>
+<ul>
+<li><code>CharacterMaps</code> lists every cmap subtable as stored and <code>FindCharacterMap</code> picks one by platform and encoding; a
+<code>CharacterMap</code> maps the subtable's own codes (bytes for (1,0) and (3,0)), never translated, and <code>GetMappings</code> lists them all as
+<code>CharacterMapping</code>s. <code>BuiltInEncoding</code> is a name-keyed
+CFF font's own encoding as a platform 7 map (0 Standard, 1 Expert, 2 custom). <code>GetGlyph(codePoint)</code> keeps choosing its one
+Unicode subtable as before.</li>
+</ul>
+<pre><code class="lang-csharp">// A symbolic TrueType font in PDF looks a code up in (3,0) first, then (1,0); a non-symbolic one uses (3,1).
+CharacterMap? map = trueType.FindCharacterMap(3, 0) ?? trueType.FindCharacterMap(1, 0) ?? trueType.FindCharacterMap(3, 1);
+ushort forA = map?.GetGlyph('A') ?? 0;
+
+// A Type1C font without /Encoding uses the CFF program's own encoding.
+CharacterMap? own = face.BuiltInEncoding;                  // platform 7, encoding 0: the Standard Encoding
+ushort forB = own?.GetGlyph('B') ?? 0;
+
+// Every code the map gives a glyph, in code order, for a PDF writer's /Widths or a ToUnicode table.
+int mapped = map?.GetMappings().Count() ?? 0;
+</code></pre>
+<ul>
+<li><code>CffStandardStrings</code> has the 391 standard strings and the Standard and Expert encodings, for writing CFF (a Type 1 font
+converted for embedding, say).</li>
+</ul>
+<pre><code class="lang-csharp">// Converting a Type 1 font to CFF: standard glyph names take their standard SIDs, others go in the String INDEX.
+int sid = CffStandardStrings.TryGetSid(&quot;Aacute&quot;, out int standard) ? standard : -1;
+string atCode65 = CffStandardStrings.StandardEncoding[65];   // &quot;A&quot;
+</code></pre>
+<p>Everything is read on first use, once per face, and is safe from several threads. Damaged data never throws: a name the post
+table cannot give is null, a subtable that cannot be read maps nothing, and each reports a warning (<code>Font.BadTable</code>) through the
+context's diagnostics, unless <code>FontLoadOptions.Strict</code> asks for an exception. On the 1,723 font programs embedded in Egap's
+corpus, names, CIDs, subtables and built-in encodings equal FreeType's and fontTools' (FreeType's where the two differ).</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/text.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

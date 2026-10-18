@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Path | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Path | Egami ">
+      
+      <meta name="description" content="An outline of contours made of lines, quadratic and cubic B&#233;zier curves, with the  that says which points it covers when filled. A path never changes after it is built, so one path can be drawn from many threads and kept by any canvas backend. Coordinates are float pixels, y down. Build one with  or a shape helper such as .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_Path.md&amp;value=---%0Auid%3A%20Egami.Drawing.Path%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.Path">
+
+
+
+  <h1 id="Egami_Drawing_Path" data-uid="Egami.Drawing.Path" class="text-break">
+Class Path  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PathOps.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An outline of contours made of lines, quadratic and cubic Bézier curves, with the <a class="xref" href="Egami.Drawing.FillRule.html">FillRule</a> that says which
+points it covers when filled. A path never changes after it is built, so one path can be drawn from many threads and kept by any
+canvas backend. Coordinates are float pixels, y down. Build one with <a class="xref" href="Egami.Drawing.PathBuilder.html">PathBuilder</a> or a shape helper such as
+<a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Circle_System_Numerics_Vector2_System_Single_">Circle(Vector2, float)</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Path</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Path</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_Path_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A path is built once and never changes, so it can be drawn many times and from many threads.
+Path heart = new PathBuilder()
+    .MoveTo(150, 60)
+    .CubicTo(150, 30, 100, 20, 90, 60)
+    .CubicTo(80, 100, 130, 130, 150, 160)
+    .CubicTo(170, 130, 220, 100, 210, 60)
+    .CubicTo(200, 20, 150, 30, 150, 60)
+    .Close()
+    .ToPath();
+canvas.FillPath(heart, Rgba8.Red);
+
+// SVG's arc command, and the even-odd rule: an inner contour becomes a hole.
+Path frame = new PathBuilder()
+    .AddRect(new RectF(10, 10, 60, 60))
+    .AddCircle(new Vector2(40, 40), 20)
+    .MoveTo(10, 120)
+    .ArcTo(radii: new Vector2(30, 20), rotationDegrees: 0, largeArc: false, clockwise: true, end: new Vector2(70, 120))
+    .Close()
+    .ToPath(FillRule.EvenOdd);
+canvas.FillPath(frame, Rgba8.Black);
+
+bool hit = heart.Contains(new Vector2(150, 100));   // hit testing on the curves themselves
+RectF box = heart.TightBounds;                       // curves measured at their extremes</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Drawing_Path_Bounds_" data-uid="Egami.Drawing.Path.Bounds*"></a>
+
+  <h3 id="Egami_Drawing_Path_Bounds" data-uid="Egami.Drawing.Path.Bounds">
+  Bounds
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bounds of every point, control points included: cheap, and never smaller than the outline.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RectF Bounds { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Contours_" data-uid="Egami.Drawing.Path.Contours*"></a>
+
+  <h3 id="Egami_Drawing_Path_Contours" data-uid="Egami.Drawing.Path.Contours">
+  Contours
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the contours, each as a path of its own with this path's fill rule.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Path&gt; Contours { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Drawing.Path.html">Path</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Empty_" data-uid="Egami.Drawing.Path.Empty*"></a>
+
+  <h3 id="Egami_Drawing_Path_Empty" data-uid="Egami.Drawing.Path.Empty">
+  Empty
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a path with no contours.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path Empty { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_FillRule_" data-uid="Egami.Drawing.Path.FillRule*"></a>
+
+  <h3 id="Egami_Drawing_Path_FillRule" data-uid="Egami.Drawing.Path.FillRule">
+  FillRule
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets which points the path covers when filled.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FillRule FillRule { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.FillRule.html">FillRule</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_IsConvex_" data-uid="Egami.Drawing.Path.IsConvex*"></a>
+
+  <h3 id="Egami_Drawing_Path_IsConvex" data-uid="Egami.Drawing.Path.IsConvex">
+  IsConvex
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether the path is one convex contour: every turn goes the same way and it winds around once. A
+path that is a line, a point or empty counts as convex.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsConvex { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_IsEmpty_" data-uid="Egami.Drawing.Path.IsEmpty*"></a>
+
+  <h3 id="Egami_Drawing_Path_IsEmpty" data-uid="Egami.Drawing.Path.IsEmpty">
+  IsEmpty
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether the path draws nothing: it has no line or curve.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsEmpty { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Points_" data-uid="Egami.Drawing.Path.Points*"></a>
+
+  <h3 id="Egami_Drawing_Path_Points" data-uid="Egami.Drawing.Path.Points">
+  Points
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the points, in order: one for each move and line, two for each quadratic and three for each cubic.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlySpan&lt;Vector2&gt; Points { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_TightBounds_" data-uid="Egami.Drawing.Path.TightBounds*"></a>
+
+  <h3 id="Egami_Drawing_Path_TightBounds" data-uid="Egami.Drawing.Path.TightBounds">
+  TightBounds
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the exact bounds of the outline: curves are measured at their extremes, not their control points.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RectF TightBounds { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Verbs_" data-uid="Egami.Drawing.Path.Verbs*"></a>
+
+  <h3 id="Egami_Drawing_Path_Verbs" data-uid="Egami.Drawing.Path.Verbs">
+  Verbs
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the commands, in order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlySpan&lt;PathVerb&gt; Verbs { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Drawing.PathVerb.html">PathVerb</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Drawing_Path_Apply_" data-uid="Egami.Drawing.Path.Apply*"></a>
+
+  <h3 id="Egami_Drawing_Path_Apply_Egami_Drawing_PathEffect_" data-uid="Egami.Drawing.Path.Apply(Egami.Drawing.PathEffect)">
+  Apply(PathEffect)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L176"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the path an effect makes of this one, such as its dashes or its corners rounded.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path Apply(PathEffect effect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>effect</code> <a class="xref" href="Egami.Drawing.PathEffect.html">PathEffect</a></dt>
+    <dd><p>The effect.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The new path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Path_Apply_Egami_Drawing_PathEffect__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A hand-drawn chart line: jittered the same way on every run, then its corners rounded.
+Path data = Path.Polygon([new(10, 80), new(50, 30), new(90, 60), new(130, 20), new(170, 50)], close: false);
+PathEffect sketchy = PathEffect.Jitter(segmentLength: 6, deviation: 1.5f, seed: 7).Then(PathEffect.Corner(3));
+using Raster&lt;Rgba8&gt; chart = Raster.Create(180, 100, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = chart.CreateCanvas())
+{
+    canvas.StrokePath(data, new Stroke(2) { Effect = sketchy }, new Rgba8(40, 40, 40, 255));
+
+    // Dots along the line, and hatching inside a circle.
+    canvas.FillPath(data.Apply(PathEffect.Stamp(Path.Circle(Vector2.Zero, 2), advance: 12, style: StampStyle.Translate)), Rgba8.Black);
+    canvas.FillPath(Path.Circle(new Vector2(150, 75), 20).Apply(PathEffect.Hatch(Matrix3x2.CreateScale(1, 5) * Matrix3x2.CreateRotation(0.6f), width: 1)), Rgba8.Black);
+}
+
+// A line that draws itself: trim it to a growing fraction of its length, frame by frame.
+Path frame30 = data.Apply(PathEffect.Trim(0, 0.3f));</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Arc_" data-uid="Egami.Drawing.Path.Arc*"></a>
+
+  <h3 id="Egami_Drawing_Path_Arc_Egami_Drawing_RectF_System_Single_System_Single_" data-uid="Egami.Drawing.Path.Arc(Egami.Drawing.RectF,System.Single,System.Single)">
+  Arc(RectF, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Shapes.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates the open arc of an ellipse; 0 degrees is the right end of the horizontal axis and positive angles turn clockwise.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path Arc(RectF oval, float startDegrees, float sweepDegrees)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>oval</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The rectangle the ellipse fills.</p>
+</dd>
+    <dt><code>startDegrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Where the arc starts.</p>
+</dd>
+    <dt><code>sweepDegrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How far it turns, at most a full turn either way.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Circle_" data-uid="Egami.Drawing.Path.Circle*"></a>
+
+  <h3 id="Egami_Drawing_Path_Circle_System_Numerics_Vector2_System_Single_" data-uid="Egami.Drawing.Path.Circle(System.Numerics.Vector2,System.Single)">
+  Circle(Vector2, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Shapes.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a circle, clockwise.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path Circle(Vector2 center, float radius)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>center</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>The center.</p>
+</dd>
+    <dt><code>radius</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The radius.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Combine_" data-uid="Egami.Drawing.Path.Combine*"></a>
+
+  <h3 id="Egami_Drawing_Path_Combine_System_Collections_Generic_IEnumerable_Egami_Drawing_Path__Egami_Drawing_PathOp_System_Single_" data-uid="Egami.Drawing.Path.Combine(System.Collections.Generic.IEnumerable{Egami.Drawing.Path},Egami.Drawing.PathOp,System.Single)">
+  Combine(IEnumerable&lt;Path&gt;, PathOp, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PathOps.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Combines any number of paths with one operation in a single pass, as if it were applied in order, left to right:
+((a op b) op c) and so on. Far faster than chaining <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single_">Op(Path, PathOp, float)</a> for many paths, since every outline is cut and
+sorted once. The result is as <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single_">Op(Path, PathOp, float)</a> describes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path Combine(IEnumerable&lt;Path&gt; paths, PathOp op, float tolerance = 0.05)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>paths</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Egami.Drawing.Path.html">Path</a>&gt;</dt>
+    <dd><p>The paths; each keeps its own fill rule.</p>
+</dd>
+    <dt><code>op</code> <a class="xref" href="Egami.Drawing.PathOp.html">PathOp</a></dt>
+    <dd><p>The operation.</p>
+</dd>
+    <dt><code>tolerance</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How close, in path units, points must be to count as the same, as <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single_">Op(Path, PathOp, float)</a> describes.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The combined path; empty when there are no paths.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Path_Combine_System_Collections_Generic_IEnumerable_Egami_Drawing_Path__Egami_Drawing_PathOp_System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A frame: one round rectangle cut out of another, kept as curves, so a PDF or SVG backend writes it exactly.
+Path frame = Path.RoundRect(new RoundRect(new RectF(0, 0, 200, 140), 24))
+    .Difference(Path.RoundRect(new RoundRect(new RectF(20, 20, 160, 100), 12)));
+
+// Many shapes in one pass, applied left to right; overlaps and self-intersections removed; an area grown by 4 units.
+Path dots = Path.Combine([Path.Circle(new Vector2(40, 40), 30), Path.Circle(new Vector2(80, 40), 30), Path.Circle(new Vector2(60, 75), 30)], PathOp.Union);
+Path clean = Path.Star(new Vector2(50, 50), 45, 20, 5).Simplify();
+Path halo = dots.Inflate(4, LineJoin.Round);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">op</code> is not defined, or <code class="paramref">tolerance</code> is not positive and finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Path_Contains_" data-uid="Egami.Drawing.Path.Contains*"></a>
+
+  <h3 id="Egami_Drawing_Path_Contains_System_Numerics_Vector2_" data-uid="Egami.Drawing.Path.Contains(System.Numerics.Vector2)">
+  Contains(Vector2)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns whether the filled path covers a point, by the winding number of the outline itself, curves included, and the fill
+rule. Open contours count as closed. A point exactly on the outline counts as inside, as in Skia.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Contains(Vector2 point)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>point</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>The point.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the point is covered.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Difference_" data-uid="Egami.Drawing.Path.Difference*"></a>
+
+  <h3 id="Egami_Drawing_Path_Difference_Egami_Drawing_Path_System_Single_" data-uid="Egami.Drawing.Path.Difference(Egami.Drawing.Path,System.Single)">
+  Difference(Path, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PathOps.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the area of this path without the other, as <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single_">Op(Path, PathOp, float)</a> describes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path Difference(Path other, float tolerance = 0.05)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path to cut away.</p>
+</dd>
+    <dt><code>tolerance</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How close points must be to count as the same.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The difference.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Inflate_" data-uid="Egami.Drawing.Path.Inflate*"></a>
+
+  <h3 id="Egami_Drawing_Path_Inflate_System_Single_Egami_Drawing_LineJoin_System_Single_" data-uid="Egami.Drawing.Path.Inflate(System.Single,Egami.Drawing.LineJoin,System.Single)">
+  Inflate(float, LineJoin, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PathOps.cs/#L150"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the area grown outwards by a distance, or for a negative distance shrunk inwards: the union of the path and the
+outline of a pen twice the distance wide, or the difference. Corners grow by the join: round keeps the distance everywhere,
+miter keeps them sharp up to the miter limit. Open contours count as closed, as fills close them. The grown or cut parts
+are straight pieces within a hundredth of the distance (at most a tenth of a unit); the rest keeps its curves.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path Inflate(float distance, LineJoin join = LineJoin.Round, float miterLimit = 4)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>distance</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How far to grow; negative to shrink.</p>
+</dd>
+    <dt><code>join</code> <a class="xref" href="Egami.Drawing.LineJoin.html">LineJoin</a></dt>
+    <dd><p>How grown corners look.</p>
+</dd>
+    <dt><code>miterLimit</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The longest miter, in multiples of twice the distance, as <a class="xref" href="Egami.Drawing.Stroke.html#Egami_Drawing_Stroke_MiterLimit">MiterLimit</a> defines it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The offset path, simplified; empty when it shrinks away.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Path_Inflate_System_Single_Egami_Drawing_LineJoin_System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A frame: one round rectangle cut out of another, kept as curves, so a PDF or SVG backend writes it exactly.
+Path frame = Path.RoundRect(new RoundRect(new RectF(0, 0, 200, 140), 24))
+    .Difference(Path.RoundRect(new RoundRect(new RectF(20, 20, 160, 100), 12)));
+
+// Many shapes in one pass, applied left to right; overlaps and self-intersections removed; an area grown by 4 units.
+Path dots = Path.Combine([Path.Circle(new Vector2(40, 40), 30), Path.Circle(new Vector2(80, 40), 30), Path.Circle(new Vector2(60, 75), 30)], PathOp.Union);
+Path clean = Path.Star(new Vector2(50, 50), 45, 20, 5).Simplify();
+Path halo = dots.Inflate(4, LineJoin.Round);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A value is not finite, <code class="paramref">join</code> is not defined, or <code class="paramref">miterLimit</code> is below 1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Path_Intersect_" data-uid="Egami.Drawing.Path.Intersect*"></a>
+
+  <h3 id="Egami_Drawing_Path_Intersect_Egami_Drawing_Path_System_Single_" data-uid="Egami.Drawing.Path.Intersect(Egami.Drawing.Path,System.Single)">
+  Intersect(Path, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PathOps.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the area of both this path and the other, as <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single_">Op(Path, PathOp, float)</a> describes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path Intersect(Path other, float tolerance = 0.05)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The other path.</p>
+</dd>
+    <dt><code>tolerance</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How close points must be to count as the same.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The intersection.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Line_" data-uid="Egami.Drawing.Path.Line*"></a>
+
+  <h3 id="Egami_Drawing_Path_Line_System_Numerics_Vector2_System_Numerics_Vector2_" data-uid="Egami.Drawing.Path.Line(System.Numerics.Vector2,System.Numerics.Vector2)">
+  Line(Vector2, Vector2)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Shapes.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a straight line, for stroking.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path Line(Vector2 start, Vector2 end)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>start</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>Where it starts.</p>
+</dd>
+    <dt><code>end</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>Where it ends.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Op_" data-uid="Egami.Drawing.Path.Op*"></a>
+
+  <h3 id="Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single_" data-uid="Egami.Drawing.Path.Op(Egami.Drawing.Path,Egami.Drawing.PathOp,System.Single)">
+  Op(Path, PathOp, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PathOps.cs/#L105"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Combines this path's area with another's. Each keeps its own fill rule; open contours count as closed, as fills close them.
+The result keeps the inputs' lines, quadratics and cubics, split exactly where outlines cross, so it is exact for PDF and SVG
+output; its outer contours run clockwise on screen and its holes counterclockwise, with the nonzero fill rule, and none of
+them cross.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path Op(Path other, PathOp op, float tolerance = 0.05)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The other path.</p>
+</dd>
+    <dt><code>op</code> <a class="xref" href="Egami.Drawing.PathOp.html">PathOp</a></dt>
+    <dd><p>The operation.</p>
+</dd>
+    <dt><code>tolerance</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How close, in path units, points must be to count as the same: crossings are found to well within it, and ends, crossings
+and curves closer than it merge, which keeps nearly touching or overlapping outlines from making slivers. A caller who will
+draw the result ten times larger passes a tenth of it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The combined path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A frame: one round rectangle cut out of another, kept as curves, so a PDF or SVG backend writes it exactly.
+Path frame = Path.RoundRect(new RoundRect(new RectF(0, 0, 200, 140), 24))
+    .Difference(Path.RoundRect(new RoundRect(new RectF(20, 20, 160, 100), 12)));
+
+// Many shapes in one pass, applied left to right; overlaps and self-intersections removed; an area grown by 4 units.
+Path dots = Path.Combine([Path.Circle(new Vector2(40, 40), 30), Path.Circle(new Vector2(80, 40), 30), Path.Circle(new Vector2(60, 75), 30)], PathOp.Union);
+Path clean = Path.Star(new Vector2(50, 50), 45, 20, 5).Simplify();
+Path halo = dots.Inflate(4, LineJoin.Round);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">op</code> is not defined, or <code class="paramref">tolerance</code> is not positive and finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Path_Oval_" data-uid="Egami.Drawing.Path.Oval*"></a>
+
+  <h3 id="Egami_Drawing_Path_Oval_Egami_Drawing_RectF_" data-uid="Egami.Drawing.Path.Oval(Egami.Drawing.RectF)">
+  Oval(RectF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Shapes.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates the ellipse that fills a rectangle, clockwise.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path Oval(RectF bounds)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>bounds</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_ParseSvg_" data-uid="Egami.Drawing.Path.ParseSvg*"></a>
+
+  <h3 id="Egami_Drawing_Path_ParseSvg_System_ReadOnlySpan_System_Char__Egami_Drawing_FillRule_System_Boolean_" data-uid="Egami.Drawing.Path.ParseSvg(System.ReadOnlySpan{System.Char},Egami.Drawing.FillRule,System.Boolean)">
+  ParseSvg(ReadOnlySpan&lt;char&gt;, FillRule, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Svg.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads SVG path data, the grammar of an SVG <code>d</code> attribute (SVG 1.1 and SVG 2): every command (M, L, H, V, C, S, Q, T,
+A, Z and their relative forms), implicit repeats, compact numbers such as <code>0.5.5</code> and arc flags without separators.
+Arcs become cubic curves, as <a class="xref" href="Egami.Drawing.PathBuilder.html#Egami_Drawing_PathBuilder_ArcTo_System_Numerics_Vector2_System_Single_System_Boolean_System_Boolean_System_Numerics_Vector2_">ArcTo(Vector2, float, bool, bool, Vector2)</a> makes them. Empty or
+blank data is an empty path.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path ParseSvg(ReadOnlySpan&lt;char&gt; data, FillRule fillRule = FillRule.NonZero, bool lenient = false)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The path data.</p>
+</dd>
+    <dt><code>fillRule</code> <a class="xref" href="Egami.Drawing.FillRule.html">FillRule</a></dt>
+    <dd><p>The fill rule of the path; SVG's <code>fill-rule</code> is not part of the data.</p>
+</dd>
+    <dt><code>lenient</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to keep every complete command before the first error instead of throwing, as SVG tells renderers to draw a path
+with an error in it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Path_ParseSvg_System_ReadOnlySpan_System_Char__Egami_Drawing_FillRule_System_Boolean__examples">Examples</h4>
+  <pre><code class="lang-csharp">// An icon from SVG path data, drawn four times larger, and written back as compact relative data.
+Path heart = Path.ParseSvg("M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09" +
+                           "C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z");
+string d = heart.Transform(Matrix3x2.CreateScale(4)).ToSvg(new SvgPathFormat { Relative = true, Compact = true });
+
+// Untrusted data: TryParseSvg says whether it is valid; lenient keeps what comes before an error, as browsers draw it.
+bool valid = Path.TryParseSvg("M0 0 L10 10 L20", out Path? strict);
+Path drawn = Path.ParseSvg("M0 0 L10 10 L20", lenient: true);
+try
+{
+    Path.ParseSvg("M0 0 X");
+}
+catch (SvgPathException e)
+{
+    Console.WriteLine($"{e.Problem} at character {e.Position}");
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.SvgPathException.html">SvgPathException</a></dt>
+    <dd><p>The data breaks the grammar and <code class="paramref">lenient</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">fillRule</code> is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Path_Pie_" data-uid="Egami.Drawing.Path.Pie*"></a>
+
+  <h3 id="Egami_Drawing_Path_Pie_Egami_Drawing_RectF_System_Single_System_Single_" data-uid="Egami.Drawing.Path.Pie(Egami.Drawing.RectF,System.Single,System.Single)">
+  Pie(RectF, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Shapes.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a pie slice: the arc of an ellipse closed through its center.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path Pie(RectF oval, float startDegrees, float sweepDegrees)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>oval</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The rectangle the ellipse fills.</p>
+</dd>
+    <dt><code>startDegrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Where the arc starts.</p>
+</dd>
+    <dt><code>sweepDegrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How far it turns.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Polygon_" data-uid="Egami.Drawing.Path.Polygon*"></a>
+
+  <h3 id="Egami_Drawing_Path_Polygon_System_ReadOnlySpan_System_Numerics_Vector2__System_Boolean_" data-uid="Egami.Drawing.Path.Polygon(System.ReadOnlySpan{System.Numerics.Vector2},System.Boolean)">
+  Polygon(ReadOnlySpan&lt;Vector2&gt;, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Shapes.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a polygon through the points.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path Polygon(ReadOnlySpan&lt;Vector2&gt; points, bool close = true)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>points</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a>&gt;</dt>
+    <dd><p>The corners, in order.</p>
+</dd>
+    <dt><code>close</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the last point joins the first.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Rect_" data-uid="Egami.Drawing.Path.Rect*"></a>
+
+  <h3 id="Egami_Drawing_Path_Rect_Egami_Drawing_RectF_" data-uid="Egami.Drawing.Path.Rect(Egami.Drawing.RectF)">
+  Rect(RectF)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Shapes.cs/#L14"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a rectangle, clockwise from its top-left corner.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path Rect(RectF rect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>rect</code> <a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+    <dd><p>The rectangle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Path_Rect_Egami_Drawing_RectF__examples">Examples</h4>
+  <pre><code class="lang-csharp">canvas.FillRect(new RectF(10, 10, 80, 40), Rgba8.Red);
+canvas.FillRoundRect(new RoundRect(new RectF(100, 10, 80, 40), 12), new Rgba8(0, 128, 0, 255));
+
+// Each corner can have its own radii; radii that would overlap are scaled down together, as CSS does.
+CornerRadii tab = new(topLeft: 16, topRight: 16, bottomRight: 0, bottomLeft: 0);
+canvas.FillRoundRect(new RoundRect(new RectF(190, 10, 100, 40), tab), Rgba8.Black);
+
+canvas.FillOval(new RectF(10, 60, 120, 60), new Rgba8(255, 200, 0, 255));
+canvas.FillCircle(new Vector2(170, 90), 30, new Rgba8(80, 80, 200, 255));
+canvas.FillArc(new RectF(210, 60, 60, 60), startDegrees: -90, sweepDegrees: 120, Rgba8.Red);
+canvas.FillRing(new RoundRect(new RectF(10, 130, 60, 60), 30), new RoundRect(new RectF(25, 145, 30, 30), 15), Rgba8.Black);
+
+// The same shapes as paths, to build on or to reuse.
+Path hexagon = Path.RegularPolygon(new Vector2(120, 160), 30, sides: 6);
+Path star = Path.Star(new Vector2(200, 160), outerRadius: 30, innerRadius: 12, points: 5);
+canvas.FillPath(hexagon, new Rgba8(0, 150, 150, 255));
+canvas.FillPath(star, new Rgba8(220, 160, 0, 255));</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_RegularPolygon_" data-uid="Egami.Drawing.Path.RegularPolygon*"></a>
+
+  <h3 id="Egami_Drawing_Path_RegularPolygon_System_Numerics_Vector2_System_Single_System_Int32_System_Single_" data-uid="Egami.Drawing.Path.RegularPolygon(System.Numerics.Vector2,System.Single,System.Int32,System.Single)">
+  RegularPolygon(Vector2, float, int, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Shapes.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a regular polygon with its first corner straight up from the center, turned clockwise by <code class="paramref">rotationDegrees</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path RegularPolygon(Vector2 center, float radius, int sides, float rotationDegrees = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>center</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>The center.</p>
+</dd>
+    <dt><code>radius</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The distance from the center to each corner.</p>
+</dd>
+    <dt><code>sides</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of sides, at least 3.</p>
+</dd>
+    <dt><code>rotationDegrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The clockwise turn.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">sides</code> is below 3.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Path_Reverse_" data-uid="Egami.Drawing.Path.Reverse*"></a>
+
+  <h3 id="Egami_Drawing_Path_Reverse" data-uid="Egami.Drawing.Path.Reverse">
+  Reverse()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L159"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the path with each contour running the other way; contours keep their order and closed state.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path Reverse()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The reversed path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Ring_" data-uid="Egami.Drawing.Path.Ring*"></a>
+
+  <h3 id="Egami_Drawing_Path_Ring_Egami_Drawing_RoundRect_Egami_Drawing_RoundRect_" data-uid="Egami.Drawing.Path.Ring(Egami.Drawing.RoundRect,Egami.Drawing.RoundRect)">
+  Ring(RoundRect, RoundRect)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Shapes.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates the ring between two round rectangles: <code class="paramref">outer</code> clockwise and <code class="paramref">inner</code> counterclockwise,
+with <a class="xref" href="Egami.Drawing.FillRule.html#Egami_Drawing_FillRule_EvenOdd">EvenOdd</a>, which is what Skia's drawDRRect draws and what PDF writes directly. The inner shape
+should lie inside the outer one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path Ring(RoundRect outer, RoundRect inner)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>outer</code> <a class="xref" href="Egami.Drawing.RoundRect.html">RoundRect</a></dt>
+    <dd><p>The outer edge.</p>
+</dd>
+    <dt><code>inner</code> <a class="xref" href="Egami.Drawing.RoundRect.html">RoundRect</a></dt>
+    <dd><p>The inner edge: the hole.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_RoundRect_" data-uid="Egami.Drawing.Path.RoundRect*"></a>
+
+  <h3 id="Egami_Drawing_Path_RoundRect_Egami_Drawing_RoundRect_" data-uid="Egami.Drawing.Path.RoundRect(Egami.Drawing.RoundRect)">
+  RoundRect(RoundRect)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Shapes.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a round rectangle, clockwise.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path RoundRect(RoundRect roundRect)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>roundRect</code> <a class="xref" href="Egami.Drawing.RoundRect.html">RoundRect</a></dt>
+    <dd><p>The round rectangle.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Simplify_" data-uid="Egami.Drawing.Path.Simplify*"></a>
+
+  <h3 id="Egami_Drawing_Path_Simplify_System_Single_" data-uid="Egami.Drawing.Path.Simplify(System.Single)">
+  Simplify(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PathOps.cs/#L194"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the same area as this path, by its fill rule, as contours that neither overlap nor cross themselves or each other:
+outer contours clockwise on screen, holes counterclockwise, with the nonzero fill rule, curves kept as <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single_">Op(Path, PathOp, float)</a> keeps
+them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path Simplify(float tolerance = 0.05)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>tolerance</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How close points must be to count as the same, as <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single_">Op(Path, PathOp, float)</a> describes.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The simplified path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Path_Simplify_System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A frame: one round rectangle cut out of another, kept as curves, so a PDF or SVG backend writes it exactly.
+Path frame = Path.RoundRect(new RoundRect(new RectF(0, 0, 200, 140), 24))
+    .Difference(Path.RoundRect(new RoundRect(new RectF(20, 20, 160, 100), 12)));
+
+// Many shapes in one pass, applied left to right; overlaps and self-intersections removed; an area grown by 4 units.
+Path dots = Path.Combine([Path.Circle(new Vector2(40, 40), 30), Path.Circle(new Vector2(80, 40), 30), Path.Circle(new Vector2(60, 75), 30)], PathOp.Union);
+Path clean = Path.Star(new Vector2(50, 50), 45, 20, 5).Simplify();
+Path halo = dots.Inflate(4, LineJoin.Round);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">tolerance</code> is not positive and finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Path_Star_" data-uid="Egami.Drawing.Path.Star*"></a>
+
+  <h3 id="Egami_Drawing_Path_Star_System_Numerics_Vector2_System_Single_System_Single_System_Int32_System_Single_" data-uid="Egami.Drawing.Path.Star(System.Numerics.Vector2,System.Single,System.Single,System.Int32,System.Single)">
+  Star(Vector2, float, float, int, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Shapes.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a star whose points lie on <code class="paramref">outerRadius</code> and whose inner corners lie on <code class="paramref">innerRadius</code>,
+the first point straight up, turned clockwise by <code class="paramref">rotationDegrees</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Path Star(Vector2 center, float outerRadius, float innerRadius, int points, float rotationDegrees = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>center</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.vector2">Vector2</a></dt>
+    <dd><p>The center.</p>
+</dd>
+    <dt><code>outerRadius</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The distance to each point.</p>
+</dd>
+    <dt><code>innerRadius</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The distance to each inner corner.</p>
+</dd>
+    <dt><code>points</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of points, at least 2.</p>
+</dd>
+    <dt><code>rotationDegrees</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The clockwise turn.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">points</code> is below 2.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Path_ToString_" data-uid="Egami.Drawing.Path.ToString*"></a>
+
+  <h3 id="Egami_Drawing_Path_ToString" data-uid="Egami.Drawing.Path.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L197"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a string that represents the current object.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A string that represents the current object.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_ToSvg_" data-uid="Egami.Drawing.Path.ToSvg*"></a>
+
+  <h3 id="Egami_Drawing_Path_ToSvg_Egami_Drawing_SvgPathFormat_" data-uid="Egami.Drawing.Path.ToSvg(Egami.Drawing.SvgPathFormat)">
+  ToSvg(SvgPathFormat?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Svg.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the path as SVG path data, for a <code>d</code> attribute. Lines, quadratics and cubics are written as L, Q and C (H and V
+for straight lines along an axis when compact); arcs were cubics already. The fill rule is not part of path data.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string ToSvg(SvgPathFormat? format = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>format</code> <a class="xref" href="Egami.Drawing.SvgPathFormat.html">SvgPathFormat</a></dt>
+    <dd><p>How to write it; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for absolute commands with three decimals.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The path data.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Path_ToSvg_Egami_Drawing_SvgPathFormat__examples">Examples</h4>
+  <pre><code class="lang-csharp">// An icon from SVG path data, drawn four times larger, and written back as compact relative data.
+Path heart = Path.ParseSvg("M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09" +
+                           "C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z");
+string d = heart.Transform(Matrix3x2.CreateScale(4)).ToSvg(new SvgPathFormat { Relative = true, Compact = true });
+
+// Untrusted data: TryParseSvg says whether it is valid; lenient keeps what comes before an error, as browsers draw it.
+bool valid = Path.TryParseSvg("M0 0 L10 10 L20", out Path? strict);
+Path drawn = Path.ParseSvg("M0 0 L10 10 L20", lenient: true);
+try
+{
+    Path.ParseSvg("M0 0 X");
+}
+catch (SvgPathException e)
+{
+    Console.WriteLine($"{e.Problem} at character {e.Position}");
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Transform_" data-uid="Egami.Drawing.Path.Transform*"></a>
+
+  <h3 id="Egami_Drawing_Path_Transform_Egami_Operations_Homography_" data-uid="Egami.Drawing.Path.Transform(Egami.Operations.Homography)">
+  Transform(Homography)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L144"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the path under a perspective transform. Lines stay lines; curves are split until each piece's projected cubic stays
+within a hundredth of a unit of the true projection, since a projected Bézier curve is no longer polynomial.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path Transform(Homography homography)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>homography</code> <a class="xref" href="Egami.Operations.Homography.html">Homography</a></dt>
+    <dd><p>The transform.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The transformed path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>A point maps to infinity or behind the viewer.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Path_Transform_" data-uid="Egami.Drawing.Path.Transform*"></a>
+
+  <h3 id="Egami_Drawing_Path_Transform_System_Numerics_Matrix3x2_" data-uid="Egami.Drawing.Path.Transform(System.Numerics.Matrix3x2)">
+  Transform(Matrix3x2)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the path with every point transformed; the fill rule is kept.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path Transform(Matrix3x2 matrix)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>matrix</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.numerics.matrix3x2">Matrix3x2</a></dt>
+    <dd><p>The affine transform.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The transformed path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_TryParseSvg_" data-uid="Egami.Drawing.Path.TryParseSvg*"></a>
+
+  <h3 id="Egami_Drawing_Path_TryParseSvg_System_ReadOnlySpan_System_Char__Egami_Drawing_Path__" data-uid="Egami.Drawing.Path.TryParseSvg(System.ReadOnlySpan{System.Char},Egami.Drawing.Path@)">
+  TryParseSvg(ReadOnlySpan&lt;char&gt;, out Path?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.Svg.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads SVG path data as <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_ParseSvg_System_ReadOnlySpan_System_Char__Egami_Drawing_FillRule_System_Boolean_">ParseSvg(ReadOnlySpan&lt;char&gt;, FillRule, bool)</a> does, returning whether it was valid instead of throwing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool TryParseSvg(ReadOnlySpan&lt;char&gt; data, out Path? path)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The path data.</p>
+</dd>
+    <dt><code>path</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path, with the nonzero fill rule, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the data breaks the grammar.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the data was valid.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Path_TryParseSvg_System_ReadOnlySpan_System_Char__Egami_Drawing_Path___examples">Examples</h4>
+  <pre><code class="lang-csharp">// An icon from SVG path data, drawn four times larger, and written back as compact relative data.
+Path heart = Path.ParseSvg("M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09" +
+                           "C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z");
+string d = heart.Transform(Matrix3x2.CreateScale(4)).ToSvg(new SvgPathFormat { Relative = true, Compact = true });
+
+// Untrusted data: TryParseSvg says whether it is valid; lenient keeps what comes before an error, as browsers draw it.
+bool valid = Path.TryParseSvg("M0 0 L10 10 L20", out Path? strict);
+Path drawn = Path.ParseSvg("M0 0 L10 10 L20", lenient: true);
+try
+{
+    Path.ParseSvg("M0 0 X");
+}
+catch (SvgPathException e)
+{
+    Console.WriteLine($"{e.Problem} at character {e.Position}");
+}</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_Union_" data-uid="Egami.Drawing.Path.Union*"></a>
+
+  <h3 id="Egami_Drawing_Path_Union_Egami_Drawing_Path_System_Single_" data-uid="Egami.Drawing.Path.Union(Egami.Drawing.Path,System.Single)">
+  Union(Path, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PathOps.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the area of this path or the other, as <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single_">Op(Path, PathOp, float)</a> describes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path Union(Path other, float tolerance = 0.05)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The other path.</p>
+</dd>
+    <dt><code>tolerance</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How close points must be to count as the same.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The union.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Path_WithFillRule_" data-uid="Egami.Drawing.Path.WithFillRule*"></a>
+
+  <h3 id="Egami_Drawing_Path_WithFillRule_Egami_Drawing_FillRule_" data-uid="Egami.Drawing.Path.WithFillRule(Egami.Drawing.FillRule)">
+  WithFillRule(FillRule)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Path.cs/#L186"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the same outline with another fill rule.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path WithFillRule(FillRule fillRule)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>fillRule</code> <a class="xref" href="Egami.Drawing.FillRule.html">FillRule</a></dt>
+    <dd><p>The fill rule.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path; this one when the rule is the same.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">fillRule</code> is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Path_Xor_" data-uid="Egami.Drawing.Path.Xor*"></a>
+
+  <h3 id="Egami_Drawing_Path_Xor_Egami_Drawing_Path_System_Single_" data-uid="Egami.Drawing.Path.Xor(Egami.Drawing.Path,System.Single)">
+  Xor(Path, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PathOps.cs/#L134"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the area of exactly one of this path and the other, as <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single_">Op(Path, PathOp, float)</a> describes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path Xor(Path other, float tolerance = 0.05)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The other path.</p>
+</dd>
+    <dt><code>tolerance</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How close points must be to count as the same.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The exclusive or.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/PathOps.cs/#L70" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

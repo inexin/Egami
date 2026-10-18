@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class InkRaster | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class InkRaster | Egami ">
+      
+      <meta name="description" content="A printed page as plates: one plane per ink of an  (a disabled spot has none) plus one alpha plane, each 8 or 16 bits. A plane holds the ink as it prints over paper, 0 for none to the depth&#39;s maximum for full ink: drawing translucently leaves less ink, so the planes are premultiplied by the alpha plane, and a plate is ready to print as it is. A new raster is blank: no ink, alpha 0.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_InkRaster.md&amp;value=---%0Auid%3A%20Egami.InkRaster%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.InkRaster">
+
+
+
+  <h1 id="Egami_InkRaster" data-uid="Egami.InkRaster" class="text-break">
+Class InkRaster  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.Proof.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A printed page as plates: one plane per ink of an <a class="xref" href="Egami.Colors.InkSet.html">InkSet</a> (a disabled spot has none) plus one alpha plane, each
+8 or 16 bits. A plane holds the ink as it prints over paper, 0 for none to the depth's maximum for full ink: drawing
+translucently leaves less ink, so the planes are premultiplied by the alpha plane, and a plate is ready to print as it is.
+A new raster is blank: no ink, alpha 0.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class InkRaster : IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">InkRaster</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_InkRaster_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A page as plates: CMYK and the spot, 8 bits each, plus alpha. Rows are written in place; a plate is also a gray raster.
+using InkRaster page = new(inks, 200, 100, InkDepth.Unorm8);
+page.Plate("PANTONE 186 C")!.Row8(10).Fill(255);              // a full-tint line of the spot
+page.Alpha.Row8(10).Fill(255);
+using Raster&lt;Gray8&gt; spot = page.Plate("PANTONE 186 C")!.AsRaster&lt;Gray8&gt;();   // no copy: 0 = no ink, 255 = full ink</code></pre>
+
+
+  <h2 id="Egami_InkRaster_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Planar storage lets a plate come out as a <a class="xref" href="Egami.Raster-1.html">Raster&lt;TPixel&gt;</a> of <a class="xref" href="Egami.Pixels.Gray8.html">Gray8</a> or <a class="xref" href="Egami.Pixels.Gray16.html">Gray16</a> without
+copying (<a class="xref" href="Egami.InkPlate.html#Egami_InkPlate_AsRaster__1">AsRaster&lt;TPixel&gt;()</a>), and lets blend modes run one plane at a time. An A4 page at 300 dpi with
+CMYK and two spots takes 61 MB at 8 bits. Not thread-safe, like <a class="xref" href="Egami.Raster.html">Raster</a>.</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_InkRaster__ctor_" data-uid="Egami.InkRaster.#ctor*"></a>
+
+  <h3 id="Egami_InkRaster__ctor_Egami_Colors_InkSet_System_Int32_System_Int32_Egami_InkDepth_Egami_EgamiContext_" data-uid="Egami.InkRaster.#ctor(Egami.Colors.InkSet,System.Int32,System.Int32,Egami.InkDepth,Egami.EgamiContext)">
+  InkRaster(InkSet, int, int, InkDepth, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a blank ink raster.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public InkRaster(InkSet inks, int width, int height, InkDepth depth = InkDepth.Unorm8, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inks</code> <a class="xref" href="Egami.Colors.InkSet.html">InkSet</a></dt>
+    <dd><p>The inks, fixed for the raster's life.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width in pixels, at least 1.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The height in pixels, at least 1.</p>
+</dd>
+    <dt><code>depth</code> <a class="xref" href="Egami.InkDepth.html">InkDepth</a></dt>
+    <dd><p>The bits per plane.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context to allocate from and whose <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a> apply, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">inks</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">width</code> or <code class="paramref">height</code> is less than 1, or <code class="paramref">depth</code> is not defined.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The size breaks <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxWidth">MaxWidth</a>, <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxHeight">MaxHeight</a> or <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxPixels">MaxPixels</a>, or the planes together break <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_InkRaster_Alpha_" data-uid="Egami.InkRaster.Alpha*"></a>
+
+  <h3 id="Egami_InkRaster_Alpha" data-uid="Egami.InkRaster.Alpha">
+  Alpha
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L138"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the alpha plane: 0 where nothing was drawn to the maximum where the page is covered.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public InkPlate Alpha { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.InkPlate.html">InkPlate</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_InkRaster_Context_" data-uid="Egami.InkRaster.Context*"></a>
+
+  <h3 id="Egami_InkRaster_Context" data-uid="Egami.InkRaster.Context">
+  Context
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the context the raster allocated from.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public EgamiContext Context { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_InkRaster_Depth_" data-uid="Egami.InkRaster.Depth*"></a>
+
+  <h3 id="Egami_InkRaster_Depth" data-uid="Egami.InkRaster.Depth">
+  Depth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bits per plane.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public InkDepth Depth { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.InkDepth.html">InkDepth</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_InkRaster_Height_" data-uid="Egami.InkRaster.Height*"></a>
+
+  <h3 id="Egami_InkRaster_Height" data-uid="Egami.InkRaster.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the height in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_InkRaster_Inks_" data-uid="Egami.InkRaster.Inks*"></a>
+
+  <h3 id="Egami_InkRaster_Inks" data-uid="Egami.InkRaster.Inks">
+  Inks
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L120"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the inks.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public InkSet Inks { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.InkSet.html">InkSet</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_InkRaster_Plates_" data-uid="Egami.InkRaster.Plates*"></a>
+
+  <h3 id="Egami_InkRaster_Plates" data-uid="Egami.InkRaster.Plates">
+  Plates
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the plates, one per ink in the set's order, without disabled spots.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;InkPlate&gt; Plates { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.InkPlate.html">InkPlate</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_InkRaster_Width_" data-uid="Egami.InkRaster.Width*"></a>
+
+  <h3 id="Egami_InkRaster_Width" data-uid="Egami.InkRaster.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L123"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_InkRaster_Dispose_" data-uid="Egami.InkRaster.Dispose*"></a>
+
+  <h3 id="Egami_InkRaster_Dispose" data-uid="Egami.InkRaster.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L216"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the planes' memory to the context's memory source. Plate rasters taken from it stop working.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_InkRaster_Load_" data-uid="Egami.InkRaster.Load*"></a>
+
+  <h3 id="Egami_InkRaster_Load_System_IO_Stream_Egami_Colors_ColorProfile_Egami_EgamiContext_" data-uid="Egami.InkRaster.Load(System.IO.Stream,Egami.Colors.ColorProfile,Egami.EgamiContext)">
+  Load(Stream, ColorProfile?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L209"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads a separated TIFF (PhotometricInterpretation 5) as an ink raster: 8 or 16-bit strips, chunky or planar, uncompressed,
+LZW, Deflate or PackBits. The inks are those of the file's embedded CMYK or n-colour profile (else
+<code class="paramref">profile</code>, else FOGRA39), plus a spot, without appearance, for each ink it names that the profile lacks;
+planes are matched by name. Without an alpha extra sample the page counts as covered (alpha at its maximum).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static InkRaster Load(Stream stream, ColorProfile? profile = null, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream to read, from its position.</p>
+</dd>
+    <dt><code>profile</code> <a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd><p>The output profile when the file has none, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for FOGRA39.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context to allocate from and whose limits apply, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.InkRaster.html">InkRaster</a></dt>
+    <dd><p>The raster. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The file is not a separated TIFF of a kind read here.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The file is damaged.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_InkRaster_Load_" data-uid="Egami.InkRaster.Load*"></a>
+
+  <h3 id="Egami_InkRaster_Load_System_String_Egami_Colors_ColorProfile_Egami_EgamiContext_" data-uid="Egami.InkRaster.Load(System.String,Egami.Colors.ColorProfile,Egami.EgamiContext)">
+  Load(string, ColorProfile?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L199"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads a separated TIFF (PhotometricInterpretation 5) as an ink raster: 8 or 16-bit strips, chunky or planar, uncompressed,
+LZW, Deflate or PackBits. The inks are those of the file's embedded CMYK or n-colour profile (else
+<code class="paramref">profile</code>, else FOGRA39), plus a spot, without appearance, for each ink it names that the profile lacks;
+planes are matched by name. Without an alpha extra sample the page counts as covered (alpha at its maximum).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static InkRaster Load(string path, ColorProfile? profile = null, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file to read.</p>
+</dd>
+    <dt><code>profile</code> <a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd><p>The output profile when the file has none, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for FOGRA39.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context to allocate from and whose limits apply, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.InkRaster.html">InkRaster</a></dt>
+    <dd><p>The raster. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The file is not a separated TIFF of a kind read here.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The file is damaged.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_InkRaster_MeasureCoverage_" data-uid="Egami.InkRaster.MeasureCoverage*"></a>
+
+  <h3 id="Egami_InkRaster_MeasureCoverage_System_Single_" data-uid="Egami.InkRaster.MeasureCoverage(System.Single)">
+  MeasureCoverage(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.Proof.cs/#L155"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Measures the ink: the largest total of the printing inks (process and spots; technical inks such as varnish are not
+counted) on one pixel, where it is, the share of pixels over <code class="paramref">limit</code>, and each plate's mean coverage.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public InkCoverage MeasureCoverage(float limit = 3)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>limit</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The total ink limit, as a fraction: 3.0 for 300%, FOGRA39's.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.InkCoverage.html">InkCoverage</a></dt>
+    <dd><p>The figures.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_InkRaster_MeasureCoverage_System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">// How the plates look on screen, and whether they print within the press's total ink limit.
+using Raster&lt;Rgba8&gt; proof = page.Proof&lt;Rgba8&gt;(new ProofOptions { SimulatePaper = true });
+InkCoverage coverage = page.MeasureCoverage(limit: 3.0f);
+bool tooMuchInk = coverage.MaxTotal &gt; coverage.Limit;      // where: coverage.MaxAt; how often: coverage.ShareOver</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">limit</code> is negative or not finite.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_InkRaster_Plate_" data-uid="Egami.InkRaster.Plate*"></a>
+
+  <h3 id="Egami_InkRaster_Plate_System_String_" data-uid="Egami.InkRaster.Plate(System.String)">
+  Plate(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L143"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the plate of the ink named <code class="paramref">name</code> (ordinal), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the raster has none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public InkPlate? Plate(string name)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The ink's name.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.InkPlate.html">InkPlate</a></dt>
+    <dd><p>The plate, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_InkRaster_Proof_" data-uid="Egami.InkRaster.Proof*"></a>
+
+  <h3 id="Egami_InkRaster_Proof__1_Egami_ProofOptions_" data-uid="Egami.InkRaster.Proof``1(Egami.ProofOptions)">
+  Proof&lt;TPixel&gt;(ProofOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.Proof.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns how the plates print, on screen: each spot's appearance at full tint, as process tints scaled by the spot's tint,
+adds to the process inks (capped at full ink, as Ghostscript's and MuPDF's overprint simulation do), and the result goes
+through the ink set's profile to <a class="xref" href="Egami.ProofOptions.html#Egami_ProofOptions_Target">Target</a>. Technical inks and spots without an appearance do not show; unprinted paper is paper.
+The plates hold ink as printed, so the proof is opaque.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;TPixel&gt; Proof&lt;TPixel&gt;(ProofOptions? options = null) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.ProofOptions.html">ProofOptions</a></dt>
+    <dd><p>The target encoding and paper, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.ProofOptions.html#Egami_ProofOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The proof. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The proof's pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_InkRaster_Proof__1_Egami_ProofOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// How the plates look on screen, and whether they print within the press's total ink limit.
+using Raster&lt;Rgba8&gt; proof = page.Proof&lt;Rgba8&gt;(new ProofOptions { SimulatePaper = true });
+InkCoverage coverage = page.MeasureCoverage(limit: 3.0f);
+bool tooMuchInk = coverage.MaxTotal &gt; coverage.Limit;      // where: coverage.MaxAt; how often: coverage.ShareOver</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_InkRaster_Save_" data-uid="Egami.InkRaster.Save*"></a>
+
+  <h3 id="Egami_InkRaster_Save_System_IO_Stream_Egami_InkTiffOptions_" data-uid="Egami.InkRaster.Save(System.IO.Stream,Egami.InkTiffOptions)">
+  Save(Stream, InkTiffOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L180"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Saves the raster as one separated TIFF: a sample per plate (InkSet 1 for plain CMYK, else 2 with the ink names), stored
+plane by plane, and the output profile embedded; the alpha plane too when <a class="xref" href="Egami.InkTiffOptions.html#Egami_InkTiffOptions_IncludeAlpha">IncludeAlpha</a> says
+so. libtiff and RIPs read it. Spot appearances and kinds are not kept: TIFF has no place for them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream stream, InkTiffOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream to write to, at its position.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.InkTiffOptions.html">InkTiffOptions</a></dt>
+    <dd><p>The compression and whether to keep alpha, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_InkRaster_Save_System_IO_Stream_Egami_InkTiffOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// One separated TIFF with every plate and the ink names, Deflate by default; it loads back plate for plate.
+page.Save(file, new InkTiffOptions { Compression = Egami.Formats.Tiff.TiffCompression.Lzw });
+file.Position = 0;
+using InkRaster loaded = InkRaster.Load(file);</code></pre>
+
+  <pre><code class="lang-csharp">// One separated TIFF with every plate and the ink names, Deflate by default; it loads back plate for plate.
+page.Save(file, new InkTiffOptions { Compression = Egami.Formats.Tiff.TiffCompression.Lzw });
+file.Position = 0;
+using InkRaster loaded = InkRaster.Load(file);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_InkRaster_Save_" data-uid="Egami.InkRaster.Save*"></a>
+
+  <h3 id="Egami_InkRaster_Save_System_String_Egami_InkTiffOptions_" data-uid="Egami.InkRaster.Save(System.String,Egami.InkTiffOptions)">
+  Save(string, InkTiffOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.cs/#L167"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Saves the raster as one separated TIFF: a sample per plate (InkSet 1 for plain CMYK, else 2 with the ink names), stored
+plane by plane, and the output profile embedded; the alpha plane too when <a class="xref" href="Egami.InkTiffOptions.html#Egami_InkTiffOptions_IncludeAlpha">IncludeAlpha</a> says
+so. libtiff and RIPs read it. Spot appearances and kinds are not kept: TIFF has no place for them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(string path, InkTiffOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file to write.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.InkTiffOptions.html">InkTiffOptions</a></dt>
+    <dd><p>The compression and whether to keep alpha, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_InkRaster_Save_System_String_Egami_InkTiffOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// One separated TIFF with every plate and the ink names, Deflate by default; it loads back plate for plate.
+page.Save(file, new InkTiffOptions { Compression = Egami.Formats.Tiff.TiffCompression.Lzw });
+file.Position = 0;
+using InkRaster loaded = InkRaster.Load(file);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The raster has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Raster/InkRaster.Proof.cs/#L46" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Compositor | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Compositor | Egami ">
+      
+      <meta name="description" content="Blends rows of pixels with a , for code that composites outside an operation chain: a custom , a rasterizer filling spans, a layer merge. It runs the kernels DrawImage runs, so  on a row gives the pixels DrawImage gives there. Every method works for every pixel type, allocates nothing once warm, and is safe to call from many threads at once.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Operations_Compositor.md&amp;value=---%0Auid%3A%20Egami.Operations.Compositor%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Operations.Compositor">
+
+
+
+  <h1 id="Egami_Operations_Compositor" data-uid="Egami.Operations.Compositor" class="text-break">
+Class Compositor  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Compositor.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Operations.html">Operations</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Blends rows of pixels with a <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a>, for code that composites outside an operation chain: a custom
+<a class="xref" href="Egami.Operations.IRasterOperation.html">IRasterOperation</a>, a rasterizer filling spans, a layer merge. It runs the kernels DrawImage runs, so
+<a class="xref" href="Egami.Operations.Compositor.html#Egami_Operations_Compositor_Blend__1_Egami_Operations_BlendMode_System_ReadOnlySpan___0__System_Span___0__System_Single_Egami_Operations_ColorSpace_">Blend&lt;TPixel&gt;(BlendMode, ReadOnlySpan&lt;TPixel&gt;, Span&lt;TPixel&gt;, float, ColorSpace)</a> on a row gives the pixels
+DrawImage gives there. Every method works for every pixel type, allocates nothing once warm, and is safe to call from many
+threads at once.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class Compositor</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Compositor</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Operations_Compositor_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Blend rows in your own code: a source row, a destination row, and coverage from an antialiased edge.
+Rgba8[] source = new Rgba8[256], destination = new Rgba8[256];
+byte[] coverage = new byte[256];
+for (int x = 0; x &lt; 256; x++)
+{
+    source[x] = new Rgba8((byte)x, 80, 200, 255);
+    destination[x] = new Rgba8(250, 250, 240, 255);
+    coverage[x] = (byte)Math.Clamp((x - 100) * 8, 0, 255);   // a soft edge from x = 100 to 132
+}
+
+Compositor.Blend&lt;Rgba8&gt;(BlendMode.Multiply, source, destination, coverage);
+
+// One color through coverage, the way a rasterizer fills a shape's spans.
+Compositor.Blend(BlendMode.SourceOver, new Rgba8(255, 0, 0, 128), destination.AsSpan(), coverage);</code></pre>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Operations_Compositor_Blend_" data-uid="Egami.Operations.Compositor.Blend*"></a>
+
+  <h3 id="Egami_Operations_Compositor_Blend_Egami_Operations_BlendMode_Egami_Pixels_Rgba8_Egami_Pixels_Rgba8_" data-uid="Egami.Operations.Compositor.Blend(Egami.Operations.BlendMode,Egami.Pixels.Rgba8,Egami.Pixels.Rgba8)">
+  Blend(BlendMode, Rgba8, Rgba8)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Compositor.cs/#L163"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Blends one pixel onto another and returns the result, as DrawImage would for that pair.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Rgba8 Blend(BlendMode mode, Rgba8 source, Rgba8 destination)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How the pixels combine.</p>
+</dd>
+    <dt><code>source</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The pixel on top.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The pixel under it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The blended pixel.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">mode</code> is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Compositor_Blend_" data-uid="Egami.Operations.Compositor.Blend*"></a>
+
+  <h3 id="Egami_Operations_Compositor_Blend_Egami_Operations_BlendMode_Egami_Pixels_RgbaF32_Egami_Pixels_RgbaF32_" data-uid="Egami.Operations.Compositor.Blend(Egami.Operations.BlendMode,Egami.Pixels.RgbaF32,Egami.Pixels.RgbaF32)">
+  Blend(BlendMode, RgbaF32, RgbaF32)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Compositor.cs/#L176"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Blends one float pixel onto another and returns the result, as DrawImage would for that pair.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RgbaF32 Blend(BlendMode mode, RgbaF32 source, RgbaF32 destination)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How the pixels combine.</p>
+</dd>
+    <dt><code>source</code> <a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a></dt>
+    <dd><p>The pixel on top.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a></dt>
+    <dd><p>The pixel under it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a></dt>
+    <dd><p>The blended pixel.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">mode</code> is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Compositor_Blend_" data-uid="Egami.Operations.Compositor.Blend*"></a>
+
+  <h3 id="Egami_Operations_Compositor_Blend__1_Egami_Operations_BlendMode_Egami_Pixels_Rgba8_System_Span___0__System_ReadOnlySpan_System_Byte__System_Single_Egami_Operations_ColorSpace_" data-uid="Egami.Operations.Compositor.Blend``1(Egami.Operations.BlendMode,Egami.Pixels.Rgba8,System.Span{``0},System.ReadOnlySpan{System.Byte},System.Single,Egami.Operations.ColorSpace)">
+  Blend&lt;TPixel&gt;(BlendMode, Rgba8, Span&lt;TPixel&gt;, ReadOnlySpan&lt;byte&gt;, float, ColorSpace)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Compositor.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Blends one color onto every pixel of <code class="paramref">destination</code> through per-pixel coverage: the span fill a rasterizer
+draws a shape with. Coverage 0 leaves a pixel as it was.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void Blend&lt;TPixel&gt;(BlendMode mode, Rgba8 color, Span&lt;TPixel&gt; destination, ReadOnlySpan&lt;byte&gt; coverage, float opacity = 1, ColorSpace colorSpace = ColorSpace.Encoded) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How the color combines with each pixel.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The color, with straight alpha.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;TPixel&gt;</dt>
+    <dd><p>The pixels to change.</p>
+</dd>
+    <dt><code>coverage</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>One coverage value per pixel, 0 to 255; the same length as <code class="paramref">destination</code>.</p>
+</dd>
+    <dt><code>opacity</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Multiplies the color's alpha before the mode: 1 uses it as it is.</p>
+</dd>
+    <dt><code>colorSpace</code> <a class="xref" href="Egami.Operations.ColorSpace.html">ColorSpace</a></dt>
+    <dd><p>Where pixels are blended. Defaults to <a class="xref" href="Egami.Operations.ColorSpace.html#Egami_Operations_ColorSpace_Encoded">Encoded</a>.</p>
+</dd>
+  </dl>
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type of the row.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_Operations_Compositor_Blend__1_Egami_Operations_BlendMode_Egami_Pixels_Rgba8_System_Span___0__System_ReadOnlySpan_System_Byte__System_Single_Egami_Operations_ColorSpace__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Blend rows in your own code: a source row, a destination row, and coverage from an antialiased edge.
+Rgba8[] source = new Rgba8[256], destination = new Rgba8[256];
+byte[] coverage = new byte[256];
+for (int x = 0; x &lt; 256; x++)
+{
+    source[x] = new Rgba8((byte)x, 80, 200, 255);
+    destination[x] = new Rgba8(250, 250, 240, 255);
+    coverage[x] = (byte)Math.Clamp((x - 100) * 8, 0, 255);   // a soft edge from x = 100 to 132
+}
+
+Compositor.Blend&lt;Rgba8&gt;(BlendMode.Multiply, source, destination, coverage);
+
+// One color through coverage, the way a rasterizer fills a shape's spans.
+Compositor.Blend(BlendMode.SourceOver, new Rgba8(255, 0, 0, 128), destination.AsSpan(), coverage);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The coverage differs in length from the row.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">opacity</code> is outside 0..1, or an enum value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Compositor_Blend_" data-uid="Egami.Operations.Compositor.Blend*"></a>
+
+  <h3 id="Egami_Operations_Compositor_Blend__1_Egami_Operations_BlendMode_Egami_Pixels_RgbaF32_System_Span___0__System_ReadOnlySpan_System_Byte__System_Single_Egami_Operations_ColorSpace_" data-uid="Egami.Operations.Compositor.Blend``1(Egami.Operations.BlendMode,Egami.Pixels.RgbaF32,System.Span{``0},System.ReadOnlySpan{System.Byte},System.Single,Egami.Operations.ColorSpace)">
+  Blend&lt;TPixel&gt;(BlendMode, RgbaF32, Span&lt;TPixel&gt;, ReadOnlySpan&lt;byte&gt;, float, ColorSpace)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Compositor.cs/#L131"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Blends one float color onto every pixel of <code class="paramref">destination</code> through per-pixel coverage. The color keeps its
+full precision: a float or 16-bit destination blends it as it is, values above 1 included, and an 8-bit destination
+blends it rounded to 8 bits, exactly as the <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a> overload does.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void Blend&lt;TPixel&gt;(BlendMode mode, RgbaF32 color, Span&lt;TPixel&gt; destination, ReadOnlySpan&lt;byte&gt; coverage, float opacity = 1, ColorSpace colorSpace = ColorSpace.Encoded) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How the color combines with each pixel.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.RgbaF32.html">RgbaF32</a></dt>
+    <dd><p>The color, with straight alpha.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;TPixel&gt;</dt>
+    <dd><p>The pixels to change.</p>
+</dd>
+    <dt><code>coverage</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>One coverage value per pixel, 0 to 255; the same length as <code class="paramref">destination</code>.</p>
+</dd>
+    <dt><code>opacity</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Multiplies the color's alpha before the mode: 1 uses it as it is.</p>
+</dd>
+    <dt><code>colorSpace</code> <a class="xref" href="Egami.Operations.ColorSpace.html">ColorSpace</a></dt>
+    <dd><p>Where pixels are blended. Defaults to <a class="xref" href="Egami.Operations.ColorSpace.html#Egami_Operations_ColorSpace_Encoded">Encoded</a>.</p>
+</dd>
+  </dl>
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type of the row.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_Operations_Compositor_Blend__1_Egami_Operations_BlendMode_Egami_Pixels_RgbaF32_System_Span___0__System_ReadOnlySpan_System_Byte__System_Single_Egami_Operations_ColorSpace__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Blend rows in your own code: a source row, a destination row, and coverage from an antialiased edge.
+Rgba8[] source = new Rgba8[256], destination = new Rgba8[256];
+byte[] coverage = new byte[256];
+for (int x = 0; x &lt; 256; x++)
+{
+    source[x] = new Rgba8((byte)x, 80, 200, 255);
+    destination[x] = new Rgba8(250, 250, 240, 255);
+    coverage[x] = (byte)Math.Clamp((x - 100) * 8, 0, 255);   // a soft edge from x = 100 to 132
+}
+
+Compositor.Blend&lt;Rgba8&gt;(BlendMode.Multiply, source, destination, coverage);
+
+// One color through coverage, the way a rasterizer fills a shape's spans.
+Compositor.Blend(BlendMode.SourceOver, new Rgba8(255, 0, 0, 128), destination.AsSpan(), coverage);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The coverage differs in length from the row, or the color is not finite.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">opacity</code> is outside 0..1, or an enum value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Compositor_Blend_" data-uid="Egami.Operations.Compositor.Blend*"></a>
+
+  <h3 id="Egami_Operations_Compositor_Blend__1_Egami_Operations_BlendMode_System_ReadOnlySpan___0__System_Span___0__System_ReadOnlySpan_System_Byte__System_Single_Egami_Operations_ColorSpace_" data-uid="Egami.Operations.Compositor.Blend``1(Egami.Operations.BlendMode,System.ReadOnlySpan{``0},System.Span{``0},System.ReadOnlySpan{System.Byte},System.Single,Egami.Operations.ColorSpace)">
+  Blend&lt;TPixel&gt;(BlendMode, ReadOnlySpan&lt;TPixel&gt;, Span&lt;TPixel&gt;, ReadOnlySpan&lt;byte&gt;, float, ColorSpace)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Compositor.cs/#L69"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Blends <code class="paramref">source</code> onto <code class="paramref">destination</code> through per-pixel coverage, as an antialiased edge
+needs: each result is mixed with the original destination pixel by its coverage, so 0 leaves the pixel as it was and 255
+gives the full blend.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void Blend&lt;TPixel&gt;(BlendMode mode, ReadOnlySpan&lt;TPixel&gt; source, Span&lt;TPixel&gt; destination, ReadOnlySpan&lt;byte&gt; coverage, float opacity = 1, ColorSpace colorSpace = ColorSpace.Encoded) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How each source pixel combines with the destination pixel under it.</p>
+</dd>
+    <dt><code>source</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;TPixel&gt;</dt>
+    <dd><p>The pixels to blend on top.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;TPixel&gt;</dt>
+    <dd><p>The pixels to change; the same length as <code class="paramref">source</code>.</p>
+</dd>
+    <dt><code>coverage</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>One coverage value per pixel, 0 to 255; the same length as <code class="paramref">destination</code>.</p>
+</dd>
+    <dt><code>opacity</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Multiplies the source's alpha before the mode: 1 uses it as it is.</p>
+</dd>
+    <dt><code>colorSpace</code> <a class="xref" href="Egami.Operations.ColorSpace.html">ColorSpace</a></dt>
+    <dd><p>Where pixels are blended. Defaults to <a class="xref" href="Egami.Operations.ColorSpace.html#Egami_Operations_ColorSpace_Encoded">Encoded</a>.</p>
+</dd>
+  </dl>
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type of both rows.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_Operations_Compositor_Blend__1_Egami_Operations_BlendMode_System_ReadOnlySpan___0__System_Span___0__System_ReadOnlySpan_System_Byte__System_Single_Egami_Operations_ColorSpace__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Blend rows in your own code: a source row, a destination row, and coverage from an antialiased edge.
+Rgba8[] source = new Rgba8[256], destination = new Rgba8[256];
+byte[] coverage = new byte[256];
+for (int x = 0; x &lt; 256; x++)
+{
+    source[x] = new Rgba8((byte)x, 80, 200, 255);
+    destination[x] = new Rgba8(250, 250, 240, 255);
+    coverage[x] = (byte)Math.Clamp((x - 100) * 8, 0, 255);   // a soft edge from x = 100 to 132
+}
+
+Compositor.Blend&lt;Rgba8&gt;(BlendMode.Multiply, source, destination, coverage);
+
+// One color through coverage, the way a rasterizer fills a shape's spans.
+Compositor.Blend(BlendMode.SourceOver, new Rgba8(255, 0, 0, 128), destination.AsSpan(), coverage);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The rows or the coverage differ in length.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">opacity</code> is outside 0..1, or an enum value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Operations_Compositor_Blend_" data-uid="Egami.Operations.Compositor.Blend*"></a>
+
+  <h3 id="Egami_Operations_Compositor_Blend__1_Egami_Operations_BlendMode_System_ReadOnlySpan___0__System_Span___0__System_Single_Egami_Operations_ColorSpace_" data-uid="Egami.Operations.Compositor.Blend``1(Egami.Operations.BlendMode,System.ReadOnlySpan{``0},System.Span{``0},System.Single,Egami.Operations.ColorSpace)">
+  Blend&lt;TPixel&gt;(BlendMode, ReadOnlySpan&lt;TPixel&gt;, Span&lt;TPixel&gt;, float, ColorSpace)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Compositor.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Blends <code class="paramref">source</code> onto <code class="paramref">destination</code>, pixel by pixel, in place.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void Blend&lt;TPixel&gt;(BlendMode mode, ReadOnlySpan&lt;TPixel&gt; source, Span&lt;TPixel&gt; destination, float opacity = 1, ColorSpace colorSpace = ColorSpace.Encoded) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mode</code> <a class="xref" href="Egami.Operations.BlendMode.html">BlendMode</a></dt>
+    <dd><p>How each source pixel combines with the destination pixel under it.</p>
+</dd>
+    <dt><code>source</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;TPixel&gt;</dt>
+    <dd><p>The pixels to blend on top.</p>
+</dd>
+    <dt><code>destination</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;TPixel&gt;</dt>
+    <dd><p>The pixels to change; the same length as <code class="paramref">source</code>.</p>
+</dd>
+    <dt><code>opacity</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>Multiplies the source's alpha before the mode: 1 uses it as it is.</p>
+</dd>
+    <dt><code>colorSpace</code> <a class="xref" href="Egami.Operations.ColorSpace.html">ColorSpace</a></dt>
+    <dd><p>Where pixels are blended. Defaults to <a class="xref" href="Egami.Operations.ColorSpace.html#Egami_Operations_ColorSpace_Encoded">Encoded</a>; <a class="xref" href="Egami.Operations.ColorSpace.html#Egami_Operations_ColorSpace_Linear">Linear</a> uses the sRGB curve.</p>
+</dd>
+  </dl>
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type of both rows.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_Operations_Compositor_Blend__1_Egami_Operations_BlendMode_System_ReadOnlySpan___0__System_Span___0__System_Single_Egami_Operations_ColorSpace__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Blend rows in your own code: a source row, a destination row, and coverage from an antialiased edge.
+Rgba8[] source = new Rgba8[256], destination = new Rgba8[256];
+byte[] coverage = new byte[256];
+for (int x = 0; x &lt; 256; x++)
+{
+    source[x] = new Rgba8((byte)x, 80, 200, 255);
+    destination[x] = new Rgba8(250, 250, 240, 255);
+    coverage[x] = (byte)Math.Clamp((x - 100) * 8, 0, 255);   // a soft edge from x = 100 to 132
+}
+
+Compositor.Blend&lt;Rgba8&gt;(BlendMode.Multiply, source, destination, coverage);
+
+// One color through coverage, the way a rasterizer fills a shape's spans.
+Compositor.Blend(BlendMode.SourceOver, new Rgba8(255, 0, 0, 128), destination.AsSpan(), coverage);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The rows differ in length.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">opacity</code> is outside 0..1, or an enum value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/Compositor.cs/#L19" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

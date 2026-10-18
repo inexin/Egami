@@ -1,0 +1,6037 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct Script | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct Script | Egami ">
+      
+      <meta name="description" content="A Unicode script, such as Latin, Arabic or Devanagari, with its ISO 15924 code and the OpenType script tags fonts use for it.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_Unicode_Script.md&amp;value=---%0Auid%3A%20Egami.Fonts.Unicode.Script%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.Unicode.Script">
+
+
+
+  <h1 id="Egami_Fonts_Unicode_Script" data-uid="Egami.Fonts.Unicode.Script" class="text-break">
+Struct Script  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L7"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a>.<a class="xref" href="Egami.Fonts.Unicode.html">Unicode</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A Unicode script, such as Latin, Arabic or Devanagari, with its ISO 15924 code and the OpenType script tags fonts use for it.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct Script : IEquatable&lt;Script&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Fonts_Unicode_Script_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Egami's own Unicode 17.0 tables: the same answer on every runtime and machine.
+Script script = UnicodeData.GetScript('\u0915');                          // Devanagari
+ReadOnlySpan&lt;FontTag&gt; tags = script.OpenTypeTags;                         // dev2, then deva
+BidiClass bidi = UnicodeData.GetBidiClass('\u0627');                      // ArabicLetter
+JoiningType joining = UnicodeData.GetJoiningType('\u0628');               // DualJoining
+JoiningGroup group = UnicodeData.GetJoiningGroup('\u0628');               // Beh
+VerticalOrientation upright = UnicodeData.GetVerticalOrientation('\u6F22');   // Upright
+EastAsianWidth width = UnicodeData.GetEastAsianWidth('\u6F22');               // Wide
+bool emoji = UnicodeData.IsEmojiPresentation(0x1F600);                    // true
+UnicodeData.TryGetBidiMirroringGlyph('(', out int mirror);                // ')'
+BidiPairedBracketType bracket = UnicodeData.GetBidiPairedBracketType('['); // Open</code></pre>
+
+
+  <h2 id="Egami_Fonts_Unicode_Script_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>The default value is <a class="xref" href="Egami.Fonts.Unicode.Script.html#Egami_Fonts_Unicode_Script_Unknown">Unknown</a>. There is one static member per script of the Unicode version Egami's
+tables follow (<a class="xref" href="Egami.Fonts.Unicode.UnicodeData.html#Egami_Fonts_Unicode_UnicodeData_UnicodeVersion">UnicodeVersion</a>).</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_Unicode_Script_Adlam_" data-uid="Egami.Fonts.Unicode.Script.Adlam*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Adlam" data-uid="Egami.Fonts.Unicode.Script.Adlam">
+  Adlam
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Adlam script (Adlm).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Adlam { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Ahom_" data-uid="Egami.Fonts.Unicode.Script.Ahom*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Ahom" data-uid="Egami.Fonts.Unicode.Script.Ahom">
+  Ahom
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Ahom script (Ahom).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Ahom { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_AnatolianHieroglyphs_" data-uid="Egami.Fonts.Unicode.Script.AnatolianHieroglyphs*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_AnatolianHieroglyphs" data-uid="Egami.Fonts.Unicode.Script.AnatolianHieroglyphs">
+  AnatolianHieroglyphs
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L187"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Anatolian Hieroglyphs script (Hluw).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script AnatolianHieroglyphs { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Arabic_" data-uid="Egami.Fonts.Unicode.Script.Arabic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Arabic" data-uid="Egami.Fonts.Unicode.Script.Arabic">
+  Arabic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Arabic script (Arab).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Arabic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Armenian_" data-uid="Egami.Fonts.Unicode.Script.Armenian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Armenian" data-uid="Egami.Fonts.Unicode.Script.Armenian">
+  Armenian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Armenian script (Armn).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Armenian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Avestan_" data-uid="Egami.Fonts.Unicode.Script.Avestan*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Avestan" data-uid="Egami.Fonts.Unicode.Script.Avestan">
+  Avestan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Avestan script (Avst).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Avestan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Balinese_" data-uid="Egami.Fonts.Unicode.Script.Balinese*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Balinese" data-uid="Egami.Fonts.Unicode.Script.Balinese">
+  Balinese
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Balinese script (Bali).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Balinese { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Bamum_" data-uid="Egami.Fonts.Unicode.Script.Bamum*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Bamum" data-uid="Egami.Fonts.Unicode.Script.Bamum">
+  Bamum
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Bamum script (Bamu).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Bamum { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_BassaVah_" data-uid="Egami.Fonts.Unicode.Script.BassaVah*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_BassaVah" data-uid="Egami.Fonts.Unicode.Script.BassaVah">
+  BassaVah
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Bassa Vah script (Bass).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script BassaVah { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Batak_" data-uid="Egami.Fonts.Unicode.Script.Batak*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Batak" data-uid="Egami.Fonts.Unicode.Script.Batak">
+  Batak
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Batak script (Batk).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Batak { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Bengali_" data-uid="Egami.Fonts.Unicode.Script.Bengali*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Bengali" data-uid="Egami.Fonts.Unicode.Script.Bengali">
+  Bengali
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Bengali script (Beng).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Bengali { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_BeriaErfe_" data-uid="Egami.Fonts.Unicode.Script.BeriaErfe*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_BeriaErfe" data-uid="Egami.Fonts.Unicode.Script.BeriaErfe">
+  BeriaErfe
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Beria Erfe script (Berf).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script BeriaErfe { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Bhaiksuki_" data-uid="Egami.Fonts.Unicode.Script.Bhaiksuki*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Bhaiksuki" data-uid="Egami.Fonts.Unicode.Script.Bhaiksuki">
+  Bhaiksuki
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Bhaiksuki script (Bhks).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Bhaiksuki { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Bopomofo_" data-uid="Egami.Fonts.Unicode.Script.Bopomofo*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Bopomofo" data-uid="Egami.Fonts.Unicode.Script.Bopomofo">
+  Bopomofo
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Bopomofo script (Bopo).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Bopomofo { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Brahmi_" data-uid="Egami.Fonts.Unicode.Script.Brahmi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Brahmi" data-uid="Egami.Fonts.Unicode.Script.Brahmi">
+  Brahmi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Brahmi script (Brah).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Brahmi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Braille_" data-uid="Egami.Fonts.Unicode.Script.Braille*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Braille" data-uid="Egami.Fonts.Unicode.Script.Braille">
+  Braille
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Braille script (Brai).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Braille { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Buginese_" data-uid="Egami.Fonts.Unicode.Script.Buginese*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Buginese" data-uid="Egami.Fonts.Unicode.Script.Buginese">
+  Buginese
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Buginese script (Bugi).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Buginese { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Buhid_" data-uid="Egami.Fonts.Unicode.Script.Buhid*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Buhid" data-uid="Egami.Fonts.Unicode.Script.Buhid">
+  Buhid
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Buhid script (Buhd).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Buhid { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_CanadianAboriginal_" data-uid="Egami.Fonts.Unicode.Script.CanadianAboriginal*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_CanadianAboriginal" data-uid="Egami.Fonts.Unicode.Script.CanadianAboriginal">
+  CanadianAboriginal
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Canadian Aboriginal script (Cans).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script CanadianAboriginal { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Carian_" data-uid="Egami.Fonts.Unicode.Script.Carian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Carian" data-uid="Egami.Fonts.Unicode.Script.Carian">
+  Carian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Carian script (Cari).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Carian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_CaucasianAlbanian_" data-uid="Egami.Fonts.Unicode.Script.CaucasianAlbanian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_CaucasianAlbanian" data-uid="Egami.Fonts.Unicode.Script.CaucasianAlbanian">
+  CaucasianAlbanian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Caucasian Albanian script (Aghb).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script CaucasianAlbanian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Chakma_" data-uid="Egami.Fonts.Unicode.Script.Chakma*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Chakma" data-uid="Egami.Fonts.Unicode.Script.Chakma">
+  Chakma
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Chakma script (Cakm).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Chakma { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Cham_" data-uid="Egami.Fonts.Unicode.Script.Cham*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Cham" data-uid="Egami.Fonts.Unicode.Script.Cham">
+  Cham
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Cham script (Cham).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Cham { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Cherokee_" data-uid="Egami.Fonts.Unicode.Script.Cherokee*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Cherokee" data-uid="Egami.Fonts.Unicode.Script.Cherokee">
+  Cherokee
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Cherokee script (Cher).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Cherokee { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Chorasmian_" data-uid="Egami.Fonts.Unicode.Script.Chorasmian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Chorasmian" data-uid="Egami.Fonts.Unicode.Script.Chorasmian">
+  Chorasmian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Chorasmian script (Chrs).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Chorasmian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Code_" data-uid="Egami.Fonts.Unicode.Script.Code*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Code" data-uid="Egami.Fonts.Unicode.Script.Code">
+  Code
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the four-letter ISO 15924 code, such as <code>&quot;Latn&quot;</code>, <code>&quot;Arab&quot;</code> or <code>&quot;Zyyy&quot;</code> for Common.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string Code { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Common_" data-uid="Egami.Fonts.Unicode.Script.Common*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Common" data-uid="Egami.Fonts.Unicode.Script.Common">
+  Common
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Common script (Zyyy).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Common { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Coptic_" data-uid="Egami.Fonts.Unicode.Script.Coptic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Coptic" data-uid="Egami.Fonts.Unicode.Script.Coptic">
+  Coptic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L97"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Coptic script (Copt).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Coptic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Cuneiform_" data-uid="Egami.Fonts.Unicode.Script.Cuneiform*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Cuneiform" data-uid="Egami.Fonts.Unicode.Script.Cuneiform">
+  Cuneiform
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L529"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Cuneiform script (Xsux).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Cuneiform { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Cypriot_" data-uid="Egami.Fonts.Unicode.Script.Cypriot*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Cypriot" data-uid="Egami.Fonts.Unicode.Script.Cypriot">
+  Cypriot
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Cypriot script (Cprt).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Cypriot { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_CyproMinoan_" data-uid="Egami.Fonts.Unicode.Script.CyproMinoan*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_CyproMinoan" data-uid="Egami.Fonts.Unicode.Script.CyproMinoan">
+  CyproMinoan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Cypro Minoan script (Cpmn).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script CyproMinoan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Cyrillic_" data-uid="Egami.Fonts.Unicode.Script.Cyrillic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Cyrillic" data-uid="Egami.Fonts.Unicode.Script.Cyrillic">
+  Cyrillic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Cyrillic script (Cyrl).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Cyrillic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Deseret_" data-uid="Egami.Fonts.Unicode.Script.Deseret*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Deseret" data-uid="Egami.Fonts.Unicode.Script.Deseret">
+  Deseret
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Deseret script (Dsrt).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Deseret { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Devanagari_" data-uid="Egami.Fonts.Unicode.Script.Devanagari*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Devanagari" data-uid="Egami.Fonts.Unicode.Script.Devanagari">
+  Devanagari
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Devanagari script (Deva).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Devanagari { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_DivesAkuru_" data-uid="Egami.Fonts.Unicode.Script.DivesAkuru*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_DivesAkuru" data-uid="Egami.Fonts.Unicode.Script.DivesAkuru">
+  DivesAkuru
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Dives Akuru script (Diak).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script DivesAkuru { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Dogra_" data-uid="Egami.Fonts.Unicode.Script.Dogra*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Dogra" data-uid="Egami.Fonts.Unicode.Script.Dogra">
+  Dogra
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L115"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Dogra script (Dogr).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Dogra { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Duployan_" data-uid="Egami.Fonts.Unicode.Script.Duployan*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Duployan" data-uid="Egami.Fonts.Unicode.Script.Duployan">
+  Duployan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Duployan script (Dupl).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Duployan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_EgyptianHieroglyphs_" data-uid="Egami.Fonts.Unicode.Script.EgyptianHieroglyphs*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_EgyptianHieroglyphs" data-uid="Egami.Fonts.Unicode.Script.EgyptianHieroglyphs">
+  EgyptianHieroglyphs
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L124"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Egyptian Hieroglyphs script (Egyp).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script EgyptianHieroglyphs { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Elbasan_" data-uid="Egami.Fonts.Unicode.Script.Elbasan*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Elbasan" data-uid="Egami.Fonts.Unicode.Script.Elbasan">
+  Elbasan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L127"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Elbasan script (Elba).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Elbasan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Elymaic_" data-uid="Egami.Fonts.Unicode.Script.Elymaic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Elymaic" data-uid="Egami.Fonts.Unicode.Script.Elymaic">
+  Elymaic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L130"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Elymaic script (Elym).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Elymaic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Ethiopic_" data-uid="Egami.Fonts.Unicode.Script.Ethiopic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Ethiopic" data-uid="Egami.Fonts.Unicode.Script.Ethiopic">
+  Ethiopic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Ethiopic script (Ethi).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Ethiopic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Garay_" data-uid="Egami.Fonts.Unicode.Script.Garay*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Garay" data-uid="Egami.Fonts.Unicode.Script.Garay">
+  Garay
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L136"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Garay script (Gara).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Garay { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Georgian_" data-uid="Egami.Fonts.Unicode.Script.Georgian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Georgian" data-uid="Egami.Fonts.Unicode.Script.Georgian">
+  Georgian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Georgian script (Geor).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Georgian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Glagolitic_" data-uid="Egami.Fonts.Unicode.Script.Glagolitic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Glagolitic" data-uid="Egami.Fonts.Unicode.Script.Glagolitic">
+  Glagolitic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Glagolitic script (Glag).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Glagolitic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Gothic_" data-uid="Egami.Fonts.Unicode.Script.Gothic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Gothic" data-uid="Egami.Fonts.Unicode.Script.Gothic">
+  Gothic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L151"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Gothic script (Goth).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Gothic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Grantha_" data-uid="Egami.Fonts.Unicode.Script.Grantha*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Grantha" data-uid="Egami.Fonts.Unicode.Script.Grantha">
+  Grantha
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L154"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Grantha script (Gran).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Grantha { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Greek_" data-uid="Egami.Fonts.Unicode.Script.Greek*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Greek" data-uid="Egami.Fonts.Unicode.Script.Greek">
+  Greek
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L157"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Greek script (Grek).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Greek { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Gujarati_" data-uid="Egami.Fonts.Unicode.Script.Gujarati*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Gujarati" data-uid="Egami.Fonts.Unicode.Script.Gujarati">
+  Gujarati
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Gujarati script (Gujr).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Gujarati { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_GunjalaGondi_" data-uid="Egami.Fonts.Unicode.Script.GunjalaGondi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_GunjalaGondi" data-uid="Egami.Fonts.Unicode.Script.GunjalaGondi">
+  GunjalaGondi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Gunjala Gondi script (Gong).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script GunjalaGondi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Gurmukhi_" data-uid="Egami.Fonts.Unicode.Script.Gurmukhi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Gurmukhi" data-uid="Egami.Fonts.Unicode.Script.Gurmukhi">
+  Gurmukhi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L166"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Gurmukhi script (Guru).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Gurmukhi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_GurungKhema_" data-uid="Egami.Fonts.Unicode.Script.GurungKhema*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_GurungKhema" data-uid="Egami.Fonts.Unicode.Script.GurungKhema">
+  GurungKhema
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L163"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Gurung Khema script (Gukh).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script GurungKhema { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Han_" data-uid="Egami.Fonts.Unicode.Script.Han*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Han" data-uid="Egami.Fonts.Unicode.Script.Han">
+  Han
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L172"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Han script (Hani).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Han { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Hangul_" data-uid="Egami.Fonts.Unicode.Script.Hangul*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Hangul" data-uid="Egami.Fonts.Unicode.Script.Hangul">
+  Hangul
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L169"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Hangul script (Hang).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Hangul { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_HanifiRohingya_" data-uid="Egami.Fonts.Unicode.Script.HanifiRohingya*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_HanifiRohingya" data-uid="Egami.Fonts.Unicode.Script.HanifiRohingya">
+  HanifiRohingya
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L391"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Hanifi Rohingya script (Rohg).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script HanifiRohingya { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Hanunoo_" data-uid="Egami.Fonts.Unicode.Script.Hanunoo*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Hanunoo" data-uid="Egami.Fonts.Unicode.Script.Hanunoo">
+  Hanunoo
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Hanunoo script (Hano).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Hanunoo { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Hatran_" data-uid="Egami.Fonts.Unicode.Script.Hatran*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Hatran" data-uid="Egami.Fonts.Unicode.Script.Hatran">
+  Hatran
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Hatran script (Hatr).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Hatran { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Hebrew_" data-uid="Egami.Fonts.Unicode.Script.Hebrew*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Hebrew" data-uid="Egami.Fonts.Unicode.Script.Hebrew">
+  Hebrew
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L181"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Hebrew script (Hebr).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Hebrew { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Hiragana_" data-uid="Egami.Fonts.Unicode.Script.Hiragana*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Hiragana" data-uid="Egami.Fonts.Unicode.Script.Hiragana">
+  Hiragana
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L184"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Hiragana script (Hira).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Hiragana { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_ImperialAramaic_" data-uid="Egami.Fonts.Unicode.Script.ImperialAramaic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_ImperialAramaic" data-uid="Egami.Fonts.Unicode.Script.ImperialAramaic">
+  ImperialAramaic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Imperial Aramaic script (Armi).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script ImperialAramaic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Inherited_" data-uid="Egami.Fonts.Unicode.Script.Inherited*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Inherited" data-uid="Egami.Fonts.Unicode.Script.Inherited">
+  Inherited
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Inherited script (Zinh).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Inherited { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_InscriptionalPahlavi_" data-uid="Egami.Fonts.Unicode.Script.InscriptionalPahlavi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_InscriptionalPahlavi" data-uid="Egami.Fonts.Unicode.Script.InscriptionalPahlavi">
+  InscriptionalPahlavi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L373"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Inscriptional Pahlavi script (Phli).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script InscriptionalPahlavi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_InscriptionalParthian_" data-uid="Egami.Fonts.Unicode.Script.InscriptionalParthian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_InscriptionalParthian" data-uid="Egami.Fonts.Unicode.Script.InscriptionalParthian">
+  InscriptionalParthian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L385"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Inscriptional Parthian script (Prti).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script InscriptionalParthian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_IsShared_" data-uid="Egami.Fonts.Unicode.Script.IsShared*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_IsShared" data-uid="Egami.Fonts.Unicode.Script.IsShared">
+  IsShared
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the script is Common, Inherited or Unknown: shared characters that take the script around them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsShared { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Javanese_" data-uid="Egami.Fonts.Unicode.Script.Javanese*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Javanese" data-uid="Egami.Fonts.Unicode.Script.Javanese">
+  Javanese
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L205"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Javanese script (Java).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Javanese { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Kaithi_" data-uid="Egami.Fonts.Unicode.Script.Kaithi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Kaithi" data-uid="Egami.Fonts.Unicode.Script.Kaithi">
+  Kaithi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L235"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Kaithi script (Kthi).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Kaithi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Kannada_" data-uid="Egami.Fonts.Unicode.Script.Kannada*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Kannada" data-uid="Egami.Fonts.Unicode.Script.Kannada">
+  Kannada
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L229"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Kannada script (Knda).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Kannada { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Katakana_" data-uid="Egami.Fonts.Unicode.Script.Katakana*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Katakana" data-uid="Egami.Fonts.Unicode.Script.Katakana">
+  Katakana
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L211"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Katakana script (Kana).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Katakana { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_KatakanaOrHiragana_" data-uid="Egami.Fonts.Unicode.Script.KatakanaOrHiragana*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_KatakanaOrHiragana" data-uid="Egami.Fonts.Unicode.Script.KatakanaOrHiragana">
+  KatakanaOrHiragana
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L196"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Katakana Or Hiragana script (Hrkt).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script KatakanaOrHiragana { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Kawi_" data-uid="Egami.Fonts.Unicode.Script.Kawi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Kawi" data-uid="Egami.Fonts.Unicode.Script.Kawi">
+  Kawi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L214"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Kawi script (Kawi).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Kawi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_KayahLi_" data-uid="Egami.Fonts.Unicode.Script.KayahLi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_KayahLi" data-uid="Egami.Fonts.Unicode.Script.KayahLi">
+  KayahLi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L208"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Kayah Li script (Kali).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script KayahLi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Kharoshthi_" data-uid="Egami.Fonts.Unicode.Script.Kharoshthi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Kharoshthi" data-uid="Egami.Fonts.Unicode.Script.Kharoshthi">
+  Kharoshthi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L217"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Kharoshthi script (Khar).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Kharoshthi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_KhitanSmallScript_" data-uid="Egami.Fonts.Unicode.Script.KhitanSmallScript*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_KhitanSmallScript" data-uid="Egami.Fonts.Unicode.Script.KhitanSmallScript">
+  KhitanSmallScript
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L226"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Khitan Small Script script (Kits).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script KhitanSmallScript { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Khmer_" data-uid="Egami.Fonts.Unicode.Script.Khmer*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Khmer" data-uid="Egami.Fonts.Unicode.Script.Khmer">
+  Khmer
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L220"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Khmer script (Khmr).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Khmer { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Khojki_" data-uid="Egami.Fonts.Unicode.Script.Khojki*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Khojki" data-uid="Egami.Fonts.Unicode.Script.Khojki">
+  Khojki
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L223"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Khojki script (Khoj).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Khojki { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Khudawadi_" data-uid="Egami.Fonts.Unicode.Script.Khudawadi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Khudawadi" data-uid="Egami.Fonts.Unicode.Script.Khudawadi">
+  Khudawadi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L421"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Khudawadi script (Sind).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Khudawadi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_KiratRai_" data-uid="Egami.Fonts.Unicode.Script.KiratRai*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_KiratRai" data-uid="Egami.Fonts.Unicode.Script.KiratRai">
+  KiratRai
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L232"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Kirat Rai script (Krai).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script KiratRai { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Lao_" data-uid="Egami.Fonts.Unicode.Script.Lao*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Lao" data-uid="Egami.Fonts.Unicode.Script.Lao">
+  Lao
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L241"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Lao script (Laoo).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Lao { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Latin_" data-uid="Egami.Fonts.Unicode.Script.Latin*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Latin" data-uid="Egami.Fonts.Unicode.Script.Latin">
+  Latin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L244"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Latin script (Latn).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Latin { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Lepcha_" data-uid="Egami.Fonts.Unicode.Script.Lepcha*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Lepcha" data-uid="Egami.Fonts.Unicode.Script.Lepcha">
+  Lepcha
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L247"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Lepcha script (Lepc).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Lepcha { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Limbu_" data-uid="Egami.Fonts.Unicode.Script.Limbu*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Limbu" data-uid="Egami.Fonts.Unicode.Script.Limbu">
+  Limbu
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L250"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Limbu script (Limb).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Limbu { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_LinearA_" data-uid="Egami.Fonts.Unicode.Script.LinearA*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_LinearA" data-uid="Egami.Fonts.Unicode.Script.LinearA">
+  LinearA
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L253"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Linear A script (Lina).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script LinearA { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_LinearB_" data-uid="Egami.Fonts.Unicode.Script.LinearB*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_LinearB" data-uid="Egami.Fonts.Unicode.Script.LinearB">
+  LinearB
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L256"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Linear B script (Linb).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script LinearB { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Lisu_" data-uid="Egami.Fonts.Unicode.Script.Lisu*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Lisu" data-uid="Egami.Fonts.Unicode.Script.Lisu">
+  Lisu
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L259"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Lisu script (Lisu).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Lisu { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Lycian_" data-uid="Egami.Fonts.Unicode.Script.Lycian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Lycian" data-uid="Egami.Fonts.Unicode.Script.Lycian">
+  Lycian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L262"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Lycian script (Lyci).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Lycian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Lydian_" data-uid="Egami.Fonts.Unicode.Script.Lydian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Lydian" data-uid="Egami.Fonts.Unicode.Script.Lydian">
+  Lydian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L265"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Lydian script (Lydi).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Lydian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Mahajani_" data-uid="Egami.Fonts.Unicode.Script.Mahajani*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Mahajani" data-uid="Egami.Fonts.Unicode.Script.Mahajani">
+  Mahajani
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L268"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Mahajani script (Mahj).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Mahajani { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Makasar_" data-uid="Egami.Fonts.Unicode.Script.Makasar*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Makasar" data-uid="Egami.Fonts.Unicode.Script.Makasar">
+  Makasar
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L271"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Makasar script (Maka).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Makasar { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Malayalam_" data-uid="Egami.Fonts.Unicode.Script.Malayalam*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Malayalam" data-uid="Egami.Fonts.Unicode.Script.Malayalam">
+  Malayalam
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L295"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Malayalam script (Mlym).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Malayalam { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Mandaic_" data-uid="Egami.Fonts.Unicode.Script.Mandaic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Mandaic" data-uid="Egami.Fonts.Unicode.Script.Mandaic">
+  Mandaic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L274"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Mandaic script (Mand).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Mandaic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Manichaean_" data-uid="Egami.Fonts.Unicode.Script.Manichaean*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Manichaean" data-uid="Egami.Fonts.Unicode.Script.Manichaean">
+  Manichaean
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L277"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Manichaean script (Mani).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Manichaean { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Marchen_" data-uid="Egami.Fonts.Unicode.Script.Marchen*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Marchen" data-uid="Egami.Fonts.Unicode.Script.Marchen">
+  Marchen
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L280"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Marchen script (Marc).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Marchen { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_MasaramGondi_" data-uid="Egami.Fonts.Unicode.Script.MasaramGondi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_MasaramGondi" data-uid="Egami.Fonts.Unicode.Script.MasaramGondi">
+  MasaramGondi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L148"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Masaram Gondi script (Gonm).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script MasaramGondi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Medefaidrin_" data-uid="Egami.Fonts.Unicode.Script.Medefaidrin*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Medefaidrin" data-uid="Egami.Fonts.Unicode.Script.Medefaidrin">
+  Medefaidrin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L283"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Medefaidrin script (Medf).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Medefaidrin { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_MeeteiMayek_" data-uid="Egami.Fonts.Unicode.Script.MeeteiMayek*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_MeeteiMayek" data-uid="Egami.Fonts.Unicode.Script.MeeteiMayek">
+  MeeteiMayek
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L307"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Meetei Mayek script (Mtei).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script MeeteiMayek { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_MendeKikakui_" data-uid="Egami.Fonts.Unicode.Script.MendeKikakui*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_MendeKikakui" data-uid="Egami.Fonts.Unicode.Script.MendeKikakui">
+  MendeKikakui
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L286"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Mende Kikakui script (Mend).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script MendeKikakui { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_MeroiticCursive_" data-uid="Egami.Fonts.Unicode.Script.MeroiticCursive*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_MeroiticCursive" data-uid="Egami.Fonts.Unicode.Script.MeroiticCursive">
+  MeroiticCursive
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L289"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Meroitic Cursive script (Merc).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script MeroiticCursive { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_MeroiticHieroglyphs_" data-uid="Egami.Fonts.Unicode.Script.MeroiticHieroglyphs*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_MeroiticHieroglyphs" data-uid="Egami.Fonts.Unicode.Script.MeroiticHieroglyphs">
+  MeroiticHieroglyphs
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L292"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Meroitic Hieroglyphs script (Mero).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script MeroiticHieroglyphs { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Miao_" data-uid="Egami.Fonts.Unicode.Script.Miao*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Miao" data-uid="Egami.Fonts.Unicode.Script.Miao">
+  Miao
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L382"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Miao script (Plrd).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Miao { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Modi_" data-uid="Egami.Fonts.Unicode.Script.Modi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Modi" data-uid="Egami.Fonts.Unicode.Script.Modi">
+  Modi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L298"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Modi script (Modi).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Modi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Mongolian_" data-uid="Egami.Fonts.Unicode.Script.Mongolian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Mongolian" data-uid="Egami.Fonts.Unicode.Script.Mongolian">
+  Mongolian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L301"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Mongolian script (Mong).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Mongolian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Mro_" data-uid="Egami.Fonts.Unicode.Script.Mro*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Mro" data-uid="Egami.Fonts.Unicode.Script.Mro">
+  Mro
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L304"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Mro script (Mroo).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Mro { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Multani_" data-uid="Egami.Fonts.Unicode.Script.Multani*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Multani" data-uid="Egami.Fonts.Unicode.Script.Multani">
+  Multani
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L310"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Multani script (Mult).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Multani { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Myanmar_" data-uid="Egami.Fonts.Unicode.Script.Myanmar*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Myanmar" data-uid="Egami.Fonts.Unicode.Script.Myanmar">
+  Myanmar
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L313"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Myanmar script (Mymr).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Myanmar { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Nabataean_" data-uid="Egami.Fonts.Unicode.Script.Nabataean*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Nabataean" data-uid="Egami.Fonts.Unicode.Script.Nabataean">
+  Nabataean
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L325"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Nabataean script (Nbat).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Nabataean { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_NagMundari_" data-uid="Egami.Fonts.Unicode.Script.NagMundari*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_NagMundari" data-uid="Egami.Fonts.Unicode.Script.NagMundari">
+  NagMundari
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L316"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Nag Mundari script (Nagm).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script NagMundari { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Name_" data-uid="Egami.Fonts.Unicode.Script.Name*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Name" data-uid="Egami.Fonts.Unicode.Script.Name">
+  Name
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Unicode name of the script, such as <code>&quot;Latin&quot;</code> or <code>&quot;Old_Italic&quot;</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string Name { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Nandinagari_" data-uid="Egami.Fonts.Unicode.Script.Nandinagari*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Nandinagari" data-uid="Egami.Fonts.Unicode.Script.Nandinagari">
+  Nandinagari
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L319"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Nandinagari script (Nand).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Nandinagari { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_NewTaiLue_" data-uid="Egami.Fonts.Unicode.Script.NewTaiLue*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_NewTaiLue" data-uid="Egami.Fonts.Unicode.Script.NewTaiLue">
+  NewTaiLue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L460"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the New Tai Lue script (Talu).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script NewTaiLue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Newa_" data-uid="Egami.Fonts.Unicode.Script.Newa*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Newa" data-uid="Egami.Fonts.Unicode.Script.Newa">
+  Newa
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L328"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Newa script (Newa).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Newa { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Nko_" data-uid="Egami.Fonts.Unicode.Script.Nko*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Nko" data-uid="Egami.Fonts.Unicode.Script.Nko">
+  Nko
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L331"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Nko script (Nkoo).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Nko { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Nushu_" data-uid="Egami.Fonts.Unicode.Script.Nushu*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Nushu" data-uid="Egami.Fonts.Unicode.Script.Nushu">
+  Nushu
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L334"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Nushu script (Nshu).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Nushu { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_NyiakengPuachueHmong_" data-uid="Egami.Fonts.Unicode.Script.NyiakengPuachueHmong*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_NyiakengPuachueHmong" data-uid="Egami.Fonts.Unicode.Script.NyiakengPuachueHmong">
+  NyiakengPuachueHmong
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L193"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Nyiakeng Puachue Hmong script (Hmnp).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script NyiakengPuachueHmong { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Ogham_" data-uid="Egami.Fonts.Unicode.Script.Ogham*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Ogham" data-uid="Egami.Fonts.Unicode.Script.Ogham">
+  Ogham
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L337"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Ogham script (Ogam).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Ogham { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OlChiki_" data-uid="Egami.Fonts.Unicode.Script.OlChiki*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OlChiki" data-uid="Egami.Fonts.Unicode.Script.OlChiki">
+  OlChiki
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L340"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Ol Chiki script (Olck).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script OlChiki { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OlOnal_" data-uid="Egami.Fonts.Unicode.Script.OlOnal*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OlOnal" data-uid="Egami.Fonts.Unicode.Script.OlOnal">
+  OlOnal
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L343"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Ol Onal script (Onao).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script OlOnal { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OldHungarian_" data-uid="Egami.Fonts.Unicode.Script.OldHungarian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OldHungarian" data-uid="Egami.Fonts.Unicode.Script.OldHungarian">
+  OldHungarian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L199"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Old Hungarian script (Hung).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script OldHungarian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OldItalic_" data-uid="Egami.Fonts.Unicode.Script.OldItalic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OldItalic" data-uid="Egami.Fonts.Unicode.Script.OldItalic">
+  OldItalic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L202"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Old Italic script (Ital).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script OldItalic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OldNorthArabian_" data-uid="Egami.Fonts.Unicode.Script.OldNorthArabian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OldNorthArabian" data-uid="Egami.Fonts.Unicode.Script.OldNorthArabian">
+  OldNorthArabian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L322"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Old North Arabian script (Narb).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script OldNorthArabian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OldPermic_" data-uid="Egami.Fonts.Unicode.Script.OldPermic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OldPermic" data-uid="Egami.Fonts.Unicode.Script.OldPermic">
+  OldPermic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L367"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Old Permic script (Perm).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script OldPermic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OldPersian_" data-uid="Egami.Fonts.Unicode.Script.OldPersian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OldPersian" data-uid="Egami.Fonts.Unicode.Script.OldPersian">
+  OldPersian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L526"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Old Persian script (Xpeo).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script OldPersian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OldSogdian_" data-uid="Egami.Fonts.Unicode.Script.OldSogdian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OldSogdian" data-uid="Egami.Fonts.Unicode.Script.OldSogdian">
+  OldSogdian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L430"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Old Sogdian script (Sogo).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script OldSogdian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OldSouthArabian_" data-uid="Egami.Fonts.Unicode.Script.OldSouthArabian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OldSouthArabian" data-uid="Egami.Fonts.Unicode.Script.OldSouthArabian">
+  OldSouthArabian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L400"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Old South Arabian script (Sarb).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script OldSouthArabian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OldTurkic_" data-uid="Egami.Fonts.Unicode.Script.OldTurkic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OldTurkic" data-uid="Egami.Fonts.Unicode.Script.OldTurkic">
+  OldTurkic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L346"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Old Turkic script (Orkh).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script OldTurkic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OldUyghur_" data-uid="Egami.Fonts.Unicode.Script.OldUyghur*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OldUyghur" data-uid="Egami.Fonts.Unicode.Script.OldUyghur">
+  OldUyghur
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L358"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Old Uyghur script (Ougr).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script OldUyghur { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_OpenTypeTags_" data-uid="Egami.Fonts.Unicode.Script.OpenTypeTags*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_OpenTypeTags" data-uid="Egami.Fonts.Unicode.Script.OpenTypeTags">
+  OpenTypeTags
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the OpenType script tags fonts use for the script, newest first: <code>dev2</code> then <code>deva</code> for Devanagari, <code>latn</code>
+for Latin, and <code>DFLT</code> for Common, Inherited and Unknown.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlySpan&lt;FontTag&gt; OpenTypeTags { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Oriya_" data-uid="Egami.Fonts.Unicode.Script.Oriya*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Oriya" data-uid="Egami.Fonts.Unicode.Script.Oriya">
+  Oriya
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L349"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Oriya script (Orya).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Oriya { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Osage_" data-uid="Egami.Fonts.Unicode.Script.Osage*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Osage" data-uid="Egami.Fonts.Unicode.Script.Osage">
+  Osage
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L352"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Osage script (Osge).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Osage { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Osmanya_" data-uid="Egami.Fonts.Unicode.Script.Osmanya*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Osmanya" data-uid="Egami.Fonts.Unicode.Script.Osmanya">
+  Osmanya
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L355"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Osmanya script (Osma).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Osmanya { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_PahawhHmong_" data-uid="Egami.Fonts.Unicode.Script.PahawhHmong*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_PahawhHmong" data-uid="Egami.Fonts.Unicode.Script.PahawhHmong">
+  PahawhHmong
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Pahawh Hmong script (Hmng).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script PahawhHmong { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Palmyrene_" data-uid="Egami.Fonts.Unicode.Script.Palmyrene*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Palmyrene" data-uid="Egami.Fonts.Unicode.Script.Palmyrene">
+  Palmyrene
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L361"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Palmyrene script (Palm).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Palmyrene { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_PauCinHau_" data-uid="Egami.Fonts.Unicode.Script.PauCinHau*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_PauCinHau" data-uid="Egami.Fonts.Unicode.Script.PauCinHau">
+  PauCinHau
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L364"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Pau Cin Hau script (Pauc).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script PauCinHau { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_PhagsPa_" data-uid="Egami.Fonts.Unicode.Script.PhagsPa*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_PhagsPa" data-uid="Egami.Fonts.Unicode.Script.PhagsPa">
+  PhagsPa
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L370"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Phags Pa script (Phag).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script PhagsPa { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Phoenician_" data-uid="Egami.Fonts.Unicode.Script.Phoenician*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Phoenician" data-uid="Egami.Fonts.Unicode.Script.Phoenician">
+  Phoenician
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L379"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Phoenician script (Phnx).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Phoenician { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_PsalterPahlavi_" data-uid="Egami.Fonts.Unicode.Script.PsalterPahlavi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_PsalterPahlavi" data-uid="Egami.Fonts.Unicode.Script.PsalterPahlavi">
+  PsalterPahlavi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L376"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Psalter Pahlavi script (Phlp).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script PsalterPahlavi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Rejang_" data-uid="Egami.Fonts.Unicode.Script.Rejang*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Rejang" data-uid="Egami.Fonts.Unicode.Script.Rejang">
+  Rejang
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L388"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Rejang script (Rjng).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Rejang { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Runic_" data-uid="Egami.Fonts.Unicode.Script.Runic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Runic" data-uid="Egami.Fonts.Unicode.Script.Runic">
+  Runic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L394"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Runic script (Runr).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Runic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Samaritan_" data-uid="Egami.Fonts.Unicode.Script.Samaritan*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Samaritan" data-uid="Egami.Fonts.Unicode.Script.Samaritan">
+  Samaritan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L397"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Samaritan script (Samr).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Samaritan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Saurashtra_" data-uid="Egami.Fonts.Unicode.Script.Saurashtra*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Saurashtra" data-uid="Egami.Fonts.Unicode.Script.Saurashtra">
+  Saurashtra
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L403"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Saurashtra script (Saur).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Saurashtra { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Sharada_" data-uid="Egami.Fonts.Unicode.Script.Sharada*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Sharada" data-uid="Egami.Fonts.Unicode.Script.Sharada">
+  Sharada
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L412"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Sharada script (Shrd).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Sharada { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Shavian_" data-uid="Egami.Fonts.Unicode.Script.Shavian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Shavian" data-uid="Egami.Fonts.Unicode.Script.Shavian">
+  Shavian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L409"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Shavian script (Shaw).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Shavian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Siddham_" data-uid="Egami.Fonts.Unicode.Script.Siddham*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Siddham" data-uid="Egami.Fonts.Unicode.Script.Siddham">
+  Siddham
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L415"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Siddham script (Sidd).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Siddham { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Sidetic_" data-uid="Egami.Fonts.Unicode.Script.Sidetic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Sidetic" data-uid="Egami.Fonts.Unicode.Script.Sidetic">
+  Sidetic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L418"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Sidetic script (Sidt).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Sidetic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_SignWriting_" data-uid="Egami.Fonts.Unicode.Script.SignWriting*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_SignWriting" data-uid="Egami.Fonts.Unicode.Script.SignWriting">
+  SignWriting
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L406"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the SignWriting script (Sgnw).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script SignWriting { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Sinhala_" data-uid="Egami.Fonts.Unicode.Script.Sinhala*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Sinhala" data-uid="Egami.Fonts.Unicode.Script.Sinhala">
+  Sinhala
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L424"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Sinhala script (Sinh).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Sinhala { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Sogdian_" data-uid="Egami.Fonts.Unicode.Script.Sogdian*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Sogdian" data-uid="Egami.Fonts.Unicode.Script.Sogdian">
+  Sogdian
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L427"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Sogdian script (Sogd).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Sogdian { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_SoraSompeng_" data-uid="Egami.Fonts.Unicode.Script.SoraSompeng*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_SoraSompeng" data-uid="Egami.Fonts.Unicode.Script.SoraSompeng">
+  SoraSompeng
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L433"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Sora Sompeng script (Sora).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script SoraSompeng { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Soyombo_" data-uid="Egami.Fonts.Unicode.Script.Soyombo*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Soyombo" data-uid="Egami.Fonts.Unicode.Script.Soyombo">
+  Soyombo
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L436"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Soyombo script (Soyo).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Soyombo { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Sundanese_" data-uid="Egami.Fonts.Unicode.Script.Sundanese*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Sundanese" data-uid="Egami.Fonts.Unicode.Script.Sundanese">
+  Sundanese
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L439"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Sundanese script (Sund).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Sundanese { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Sunuwar_" data-uid="Egami.Fonts.Unicode.Script.Sunuwar*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Sunuwar" data-uid="Egami.Fonts.Unicode.Script.Sunuwar">
+  Sunuwar
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L442"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Sunuwar script (Sunu).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Sunuwar { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_SylotiNagri_" data-uid="Egami.Fonts.Unicode.Script.SylotiNagri*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_SylotiNagri" data-uid="Egami.Fonts.Unicode.Script.SylotiNagri">
+  SylotiNagri
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L445"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Syloti Nagri script (Sylo).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script SylotiNagri { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Syriac_" data-uid="Egami.Fonts.Unicode.Script.Syriac*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Syriac" data-uid="Egami.Fonts.Unicode.Script.Syriac">
+  Syriac
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L448"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Syriac script (Syrc).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Syriac { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Tagalog_" data-uid="Egami.Fonts.Unicode.Script.Tagalog*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Tagalog" data-uid="Egami.Fonts.Unicode.Script.Tagalog">
+  Tagalog
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L481"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tagalog script (Tglg).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Tagalog { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Tagbanwa_" data-uid="Egami.Fonts.Unicode.Script.Tagbanwa*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Tagbanwa" data-uid="Egami.Fonts.Unicode.Script.Tagbanwa">
+  Tagbanwa
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L451"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tagbanwa script (Tagb).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Tagbanwa { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_TaiLe_" data-uid="Egami.Fonts.Unicode.Script.TaiLe*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_TaiLe" data-uid="Egami.Fonts.Unicode.Script.TaiLe">
+  TaiLe
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L457"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tai Le script (Tale).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script TaiLe { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_TaiTham_" data-uid="Egami.Fonts.Unicode.Script.TaiTham*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_TaiTham" data-uid="Egami.Fonts.Unicode.Script.TaiTham">
+  TaiTham
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L238"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tai Tham script (Lana).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script TaiTham { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_TaiViet_" data-uid="Egami.Fonts.Unicode.Script.TaiViet*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_TaiViet" data-uid="Egami.Fonts.Unicode.Script.TaiViet">
+  TaiViet
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L469"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tai Viet script (Tavt).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script TaiViet { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_TaiYo_" data-uid="Egami.Fonts.Unicode.Script.TaiYo*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_TaiYo" data-uid="Egami.Fonts.Unicode.Script.TaiYo">
+  TaiYo
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L472"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tai Yo script (Tayo).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script TaiYo { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Takri_" data-uid="Egami.Fonts.Unicode.Script.Takri*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Takri" data-uid="Egami.Fonts.Unicode.Script.Takri">
+  Takri
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L454"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Takri script (Takr).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Takri { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Tamil_" data-uid="Egami.Fonts.Unicode.Script.Tamil*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Tamil" data-uid="Egami.Fonts.Unicode.Script.Tamil">
+  Tamil
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L463"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tamil script (Taml).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Tamil { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Tangsa_" data-uid="Egami.Fonts.Unicode.Script.Tangsa*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Tangsa" data-uid="Egami.Fonts.Unicode.Script.Tangsa">
+  Tangsa
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L496"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tangsa script (Tnsa).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Tangsa { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Tangut_" data-uid="Egami.Fonts.Unicode.Script.Tangut*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Tangut" data-uid="Egami.Fonts.Unicode.Script.Tangut">
+  Tangut
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L466"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tangut script (Tang).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Tangut { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Telugu_" data-uid="Egami.Fonts.Unicode.Script.Telugu*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Telugu" data-uid="Egami.Fonts.Unicode.Script.Telugu">
+  Telugu
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L475"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Telugu script (Telu).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Telugu { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Thaana_" data-uid="Egami.Fonts.Unicode.Script.Thaana*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Thaana" data-uid="Egami.Fonts.Unicode.Script.Thaana">
+  Thaana
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L484"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Thaana script (Thaa).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Thaana { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Thai_" data-uid="Egami.Fonts.Unicode.Script.Thai*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Thai" data-uid="Egami.Fonts.Unicode.Script.Thai">
+  Thai
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L487"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Thai script (Thai).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Thai { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Tibetan_" data-uid="Egami.Fonts.Unicode.Script.Tibetan*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Tibetan" data-uid="Egami.Fonts.Unicode.Script.Tibetan">
+  Tibetan
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L490"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tibetan script (Tibt).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Tibetan { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Tifinagh_" data-uid="Egami.Fonts.Unicode.Script.Tifinagh*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Tifinagh" data-uid="Egami.Fonts.Unicode.Script.Tifinagh">
+  Tifinagh
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L478"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tifinagh script (Tfng).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Tifinagh { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Tirhuta_" data-uid="Egami.Fonts.Unicode.Script.Tirhuta*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Tirhuta" data-uid="Egami.Fonts.Unicode.Script.Tirhuta">
+  Tirhuta
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L493"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tirhuta script (Tirh).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Tirhuta { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Todhri_" data-uid="Egami.Fonts.Unicode.Script.Todhri*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Todhri" data-uid="Egami.Fonts.Unicode.Script.Todhri">
+  Todhri
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L499"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Todhri script (Todr).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Todhri { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_TolongSiki_" data-uid="Egami.Fonts.Unicode.Script.TolongSiki*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_TolongSiki" data-uid="Egami.Fonts.Unicode.Script.TolongSiki">
+  TolongSiki
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L502"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tolong Siki script (Tols).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script TolongSiki { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Toto_" data-uid="Egami.Fonts.Unicode.Script.Toto*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Toto" data-uid="Egami.Fonts.Unicode.Script.Toto">
+  Toto
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L505"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Toto script (Toto).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Toto { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_TuluTigalari_" data-uid="Egami.Fonts.Unicode.Script.TuluTigalari*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_TuluTigalari" data-uid="Egami.Fonts.Unicode.Script.TuluTigalari">
+  TuluTigalari
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L508"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Tulu Tigalari script (Tutg).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script TuluTigalari { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Ugaritic_" data-uid="Egami.Fonts.Unicode.Script.Ugaritic*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Ugaritic" data-uid="Egami.Fonts.Unicode.Script.Ugaritic">
+  Ugaritic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L511"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Ugaritic script (Ugar).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Ugaritic { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Unknown_" data-uid="Egami.Fonts.Unicode.Script.Unknown*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Unknown" data-uid="Egami.Fonts.Unicode.Script.Unknown">
+  Unknown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L13"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Unknown script (Zzzz).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Unknown { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Vai_" data-uid="Egami.Fonts.Unicode.Script.Vai*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Vai" data-uid="Egami.Fonts.Unicode.Script.Vai">
+  Vai
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L514"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Vai script (Vaii).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Vai { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Vithkuqi_" data-uid="Egami.Fonts.Unicode.Script.Vithkuqi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Vithkuqi" data-uid="Egami.Fonts.Unicode.Script.Vithkuqi">
+  Vithkuqi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L517"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Vithkuqi script (Vith).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Vithkuqi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Wancho_" data-uid="Egami.Fonts.Unicode.Script.Wancho*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Wancho" data-uid="Egami.Fonts.Unicode.Script.Wancho">
+  Wancho
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L523"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Wancho script (Wcho).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Wancho { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_WarangCiti_" data-uid="Egami.Fonts.Unicode.Script.WarangCiti*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_WarangCiti" data-uid="Egami.Fonts.Unicode.Script.WarangCiti">
+  WarangCiti
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L520"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Warang Citi script (Wara).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script WarangCiti { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Yezidi_" data-uid="Egami.Fonts.Unicode.Script.Yezidi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Yezidi" data-uid="Egami.Fonts.Unicode.Script.Yezidi">
+  Yezidi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L532"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Yezidi script (Yezi).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Yezidi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_Yi_" data-uid="Egami.Fonts.Unicode.Script.Yi*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_Yi" data-uid="Egami.Fonts.Unicode.Script.Yi">
+  Yi
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L535"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Yi script (Yiii).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script Yi { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_ZanabazarSquare_" data-uid="Egami.Fonts.Unicode.Script.ZanabazarSquare*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_ZanabazarSquare" data-uid="Egami.Fonts.Unicode.Script.ZanabazarSquare">
+  ZanabazarSquare
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L538"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Zanabazar Square script (Zanb).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Script ZanabazarSquare { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Fonts_Unicode_Script_ToString_" data-uid="Egami.Fonts.Unicode.Script.ToString*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_ToString" data-uid="Egami.Fonts.Unicode.Script.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the ISO 15924 code.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The code, such as <code>&quot;Latn&quot;</code>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Unicode_Script_TryFromCode_" data-uid="Egami.Fonts.Unicode.Script.TryFromCode*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_Script_TryFromCode_System_String_Egami_Fonts_Unicode_Script__" data-uid="Egami.Fonts.Unicode.Script.TryFromCode(System.String,Egami.Fonts.Unicode.Script@)">
+  TryFromCode(string, out Script)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds a script by its ISO 15924 code, such as <code>&quot;Arab&quot;</code>; case does not matter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool TryFromCode(string code, out Script script)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>code</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The four-letter code.</p>
+</dd>
+    <dt><code>script</code> <a class="xref" href="Egami.Fonts.Unicode.Script.html">Script</a></dt>
+    <dd><p>The script, or <a class="xref" href="Egami.Fonts.Unicode.Script.html#Egami_Fonts_Unicode_Script_Unknown">Unknown</a> when no script has the code.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when a script has the code.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">code</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/Script.g.cs/#L7" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

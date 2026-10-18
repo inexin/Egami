@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami">
+
+  <h1 id="Egami" data-uid="Egami" class="text-break">Namespace Egami</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+      <dd><p>Thrown when data matches a format but breaks its rules, such as a bad checksum, a truncated stream or an invalid table.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.DiagnosticReporter.html">DiagnosticReporter</a></dt>
+      <dd><p>One call's link to <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Diagnostics">Diagnostics</a>, with the same level filter and per-id cap Egami's own readers and
+writers use. Get one from <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_StartDiagnostics">StartDiagnostics()</a> at the start of a call (format plug-ins use
+<a class="xref" href="Egami.Formats.EgamiInput.html#Egami_Formats_EgamiInput_Diagnostics">Diagnostics</a>) and dispose it when the call ends. When the context has no handler it is a shared
+instance that does nothing, so reporting costs one check.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+      <dd><p>Every setting that is not specific to one call: where memory comes from, how many threads an operation may use, and the safety limits.
+Contexts are immutable and safe to share. Change one with a <code>with</code> expression.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.EgamiException.html">EgamiException</a></dt>
+      <dd><p>The base class of every exception Egami throws for problems with image data or limits.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.FrameList-1.html">FrameList&lt;TPixel&gt;</a></dt>
+      <dd><p>The frames of a raster, all the same size and pixel type. There is always at least one. Frames added from anywhere are copied,
+so a frame belongs to one raster only.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Frame-1.html">Frame&lt;TPixel&gt;</a></dt>
+      <dd><p>One frame of a raster: a pixel plane the size of the raster plus per-frame metadata.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.InkCoverage.html">InkCoverage</a></dt>
+      <dd><p>How much ink an <a class="xref" href="Egami.InkRaster.html">InkRaster</a> prints, from <a class="xref" href="Egami.InkRaster.html#Egami_InkRaster_MeasureCoverage_System_Single_">MeasureCoverage(float)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.InkPlate.html">InkPlate</a></dt>
+      <dd><p>One plane of an <a class="xref" href="Egami.InkRaster.html">InkRaster</a>: an ink's plate, or the alpha plane. Rows are read and written in place;
+<a class="xref" href="Egami.InkPlate.html#Egami_InkPlate_AsRaster__1">AsRaster&lt;TPixel&gt;()</a> shows the plane as a gray raster without copying.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.InkRaster.html">InkRaster</a></dt>
+      <dd><p>A printed page as plates: one plane per ink of an <a class="xref" href="Egami.Colors.InkSet.html">InkSet</a> (a disabled spot has none) plus one alpha plane, each
+8 or 16 bits. A plane holds the ink as it prints over paper, 0 for none to the depth's maximum for full ink: drawing
+translucently leaves less ink, so the planes are premultiplied by the alpha plane, and a plate is ready to print as it is.
+A new raster is blank: no ink, alpha 0.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.InkTiffOptions.html">InkTiffOptions</a></dt>
+      <dd><p>How an <a class="xref" href="Egami.InkRaster.html">InkRaster</a> is saved as a separated TIFF.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+      <dd><p>Thrown when a <a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a> limit is exceeded.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.MipChain.html">MipChain</a></dt>
+      <dd><p>A chain of ever-halved copies of an image, for making many smaller sizes fast: each resize starts from the smallest level that
+is still at least twice the target, so a gallery of thumbnail sizes reads each source pixel about once instead of once per size.
+Level 0 is the source itself; each next level halves the size, rounding up, by averaging 2 × 2 blocks of premultiplied pixels.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.PixelMemoryLeakEventArgs.html">PixelMemoryLeakEventArgs</a></dt>
+      <dd><p>Describes a pixel memory block that was collected without being disposed.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.PixelMemoryUsage.html">PixelMemoryUsage</a></dt>
+      <dd><p>What a <a class="xref" href="Egami.PooledPixelMemorySource.html">PooledPixelMemorySource</a> has handed out and not yet had back, and opt-in tracking of blocks that were never
+disposed. Get it from <a class="xref" href="Egami.PooledPixelMemorySource.html#Egami_PooledPixelMemorySource_Usage">Usage</a>; most callers want <code>PooledPixelMemorySource.Shared.Usage</code>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.PixelPlane-1.html">PixelPlane&lt;TPixel&gt;</a></dt>
+      <dd><p>A width × height grid of pixels, stored row by row. A row is always one contiguous span, but the plane as a whole
+may be split into several blocks of whole rows. Planes belong to the raster or operation that hands them out, which
+returns their memory; user code reads and writes them but never frees them.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.PooledPixelMemorySource.html">PooledPixelMemorySource</a></dt>
+      <dd><p>The default <a class="xref" href="Egami.IPixelMemorySource.html">IPixelMemorySource</a>. Small blocks are arrays rented from a shared pool; larger blocks are
+unmanaged memory aligned to 64 bytes, which stays off the large object heap and suits SIMD.
+Planes larger than <a class="xref" href="Egami.PooledPixelMemorySource.html#Egami_PooledPixelMemorySource_MaxBlockBytes">MaxBlockBytes</a> are split into several blocks of whole rows.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.ProofOptions.html">ProofOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.InkRaster.html#Egami_InkRaster_Proof__1_Egami_ProofOptions_">Proof&lt;TPixel&gt;(ProofOptions?)</a> shows the plates on screen.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Raster.html">Raster</a></dt>
+      <dd><p>Measuring images: comparison, statistics, histograms, colors and a pixel signature. Nothing here changes a raster.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a></dt>
+      <dd><p>One open image, decoded a band of rows or a frame at a time. Opening reads the header and the metadata that comes before the
+image data; <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_ReadRows__1_Egami_Raster___0__">ReadRows&lt;TPixel&gt;(Raster&lt;TPixel&gt;)</a> and <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_ReadFrame__1_Egami_Raster___0__">ReadFrame&lt;TPixel&gt;(Raster&lt;TPixel&gt;)</a> then hand out the image in any pixel
+type, with <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Region">Region</a> and <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_MinimumSize">MinimumSize</a> applied as in
+<a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.RasterEncoder.html">RasterEncoder</a></dt>
+      <dd><p>Creates a <a class="xref" href="Egami.RasterEncoder-1.html">RasterEncoder&lt;TPixel&gt;</a>, which writes an image a band of rows or a frame at a time.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.RasterEncoder-1.html">RasterEncoder&lt;TPixel&gt;</a></dt>
+      <dd><p>An image being written a band of rows or a frame at a time, so a huge image never has to exist whole. The bytes are the ones
+<a class="xref" href="Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">Save(Stream, FormatInfo, WriterOptions?)</a> writes for the same pixels and options, except where a format must
+write differently without seeking: top-down BMP and TGA rows, and run-length TGA, which is always top-down. Options that need
+every pixel before the first byte (automatic palettes, PNG's Reduce, automatic alpha) throw at Create instead of quietly
+writing something else.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.RasterList.html">RasterList</a></dt>
+      <dd><p>The images of a file that holds several, each its own raster with its own size, pixel type and metadata: a TIFF's pages, an
+icon's entries. The list owns them: disposing it disposes every raster.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Raster-1.html">Raster&lt;TPixel&gt;</a></dt>
+      <dd><p>An image whose pixels are of type <code class="typeparamref">TPixel</code>. Pixel access is by row span.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SafetyLimits.html">SafetyLimits</a></dt>
+      <dd><p>Limits that protect against hostile or broken files. Readers check sizes from the header before allocating any pixel memory.
+The defaults let normal photos and screenshots through. Change them with a <code>with</code> expression.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SpritePackOptions.html">SpritePackOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.SpriteSheet.html#Egami_SpriteSheet_Pack_System_Collections_Generic_IReadOnlyList_Egami_Raster__Egami_SpritePackOptions_">Pack(IReadOnlyList&lt;Raster&gt;, SpritePackOptions?)</a> lays sprites out.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.SpriteSheet.html">SpriteSheet</a></dt>
+      <dd><p>A sprite sheet: many images packed into one, with the rectangle of each. Packing uses the MaxRects algorithm with the best
+short side fit (Jylänki, &quot;A Thousand Ways to Pack the Bin&quot;, 2010), the images taken by height, tallest first, and then by
+input order, so the same inputs always give the same sheet. Sprites are never rotated.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+      <dd><p>Thrown when no registered format matches the data, or the matching format cannot read or write.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.YuvConvertOptions.html">YuvConvertOptions</a></dt>
+      <dd><p>The chroma filters for conversions between a <a class="xref" href="Egami.YuvRaster.html">YuvRaster</a> and a <a class="xref" href="Egami.Raster.html">Raster</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.YuvPlane-1.html">YuvPlane&lt;TSample&gt;</a></dt>
+      <dd><p>One plane of a <a class="xref" href="Egami.YuvRaster-1.html">YuvRaster&lt;TSample&gt;</a>: a width × height grid of raw samples, stored row by row. A row is always one
+contiguous span. Samples are stored low-bit aligned: a 10-bit sample is 0 to 1023 in a <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.YuvRaster.html">YuvRaster</a></dt>
+      <dd><p>A picture held as separate luma (Y) and chroma (U, V) planes, plus an optional alpha plane, the way video codecs, AVIF, lossy
+WebP and JPEG store it. This base class is used when the sample type is not known at compile time;
+<a class="xref" href="Egami.YuvRaster-1.html">YuvRaster&lt;TSample&gt;</a> gives the planes. Convert to and from a <a class="xref" href="Egami.Raster.html">Raster</a> with <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_ToRaster_Egami_YuvConvertOptions_">ToRaster(YuvConvertOptions?)</a>,
+<a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_CopyTo__1_Egami_Raster___0__Egami_YuvConvertOptions_System_Threading_CancellationToken_">CopyTo&lt;TPixel&gt;(Raster&lt;TPixel&gt;, YuvConvertOptions?, CancellationToken)</a> and <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_FromRaster_Egami_Raster_Egami_Pixels_ChromaFormat_Egami_Pixels_YuvColor_System_Boolean_Egami_YuvConvertOptions_">FromRaster(Raster, ChromaFormat, YuvColor, bool, YuvConvertOptions?)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.YuvRasterInfo.html">YuvRasterInfo</a></dt>
+      <dd><p>What <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Probe_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Probe(Stream, EgamiContext?, ReaderOptions?)</a> reads from a header: the image as
+<a class="xref" href="Egami.Raster.html#Egami_Raster_Probe_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Probe(Stream, EgamiContext?, ReaderOptions?)</a> describes it, and the planes
+<a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a> would give, if any.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.YuvRaster-1.html">YuvRaster&lt;TSample&gt;</a></dt>
+      <dd><p>A picture held as separate Y, U, V and optional alpha planes of <code class="typeparamref">TSample</code> samples. See
+<a class="xref" href="Egami.YuvRaster.html">YuvRaster</a>.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.EgamiDiagnostic.html">EgamiDiagnostic</a></dt>
+      <dd><p>One event reported to <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Diagnostics">Diagnostics</a>, and the type of each entry in
+<a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_Warnings">Warnings</a>. Ids are listed in the diagnostics article and never renamed or reused.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Point.html">Point</a></dt>
+      <dd><p>A position in pixels. X grows to the right and Y downward; the top-left pixel is (0, 0).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Rect.html">Rect</a></dt>
+      <dd><p>A rectangle of pixels: the top-left corner and a size.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Size.html">Size</a></dt>
+      <dd><p>A width and height in pixels.</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.IPixelMemorySource.html">IPixelMemorySource</a></dt>
+      <dd><p>Supplies the memory behind every <a class="xref" href="Egami.PixelPlane-1.html">PixelPlane&lt;TPixel&gt;</a>. Implement it to control where pixel memory comes from.
+Implementations must be thread-safe.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Alignment.html">Alignment</a></dt>
+      <dd><p>Where a smaller image sits across the layout's direction: at the start (left or top), the center or the end.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Axis.html">Axis</a></dt>
+      <dd><p>The direction images are laid out in by <a class="xref" href="Egami.Raster.html#Egami_Raster_Append_System_Collections_Generic_IReadOnlyList_Egami_Raster__Egami_Axis_System_Int32_Egami_Pixels_Rgba8_Egami_Alignment_">Append(IReadOnlyList&lt;Raster&gt;, Axis, int, Rgba8, Alignment)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.ChromaDownsampling.html">ChromaDownsampling</a></dt>
+      <dd><p>How chroma is reduced to the chroma resolution when a raster converts to a subsampled <a class="xref" href="Egami.YuvRaster.html">YuvRaster</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.ChromaUpsampling.html">ChromaUpsampling</a></dt>
+      <dd><p>How chroma is brought up to luma resolution when a <a class="xref" href="Egami.YuvRaster.html">YuvRaster</a> converts to RGB.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.ClearMode.html">ClearMode</a></dt>
+      <dd><p>Says whether new pixel memory is cleared.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.DecodeStatus.html">DecodeStatus</a></dt>
+      <dd><p>Where a <a class="xref" href="Egami.RasterDecoder.html">RasterDecoder</a> stands, as <a class="xref" href="Egami.RasterDecoder.html#Egami_RasterDecoder_Status">Status</a> reports it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.DiagnosticLevel.html">DiagnosticLevel</a></dt>
+      <dd><p>How much an <a class="xref" href="Egami.EgamiDiagnostic.html">EgamiDiagnostic</a> matters. Maps one to one onto the Debug, Information and Warning log levels.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.InkDepth.html">InkDepth</a></dt>
+      <dd><p>How many bits each plane of an <a class="xref" href="Egami.InkRaster.html">InkRaster</a> stores per pixel.</p>
+</dd>
+    </dl>
+    <h3 id="delegates">
+Delegates
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.RowAction-1.html">RowAction&lt;TPixel&gt;</a></dt>
+      <dd><p>Processes one row of pixels.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

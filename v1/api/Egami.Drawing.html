@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Drawing | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Drawing | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing">
+
+  <h1 id="Egami_Drawing" data-uid="Egami.Drawing" class="text-break">Namespace Egami.Drawing</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Annotation.html">Annotation</a></dt>
+      <dd><p>A link or a destination for <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawAnnotation_Egami_Drawing_RectF_Egami_Drawing_Annotation_">DrawAnnotation(RectF, Annotation)</a>: what a document backend writes, and pixels never show.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.BlendPaint.html">BlendPaint</a></dt>
+      <dd><p>Two paints combined pixel by pixel with a blend mode, as Skia's blend shader: <a class="xref" href="Egami.Drawing.BlendPaint.html#Egami_Drawing_BlendPaint_Source">Source</a> is blended onto
+<a class="xref" href="Egami.Drawing.BlendPaint.html#Egami_Drawing_BlendPaint_Destination">Destination</a>, and the result is what this paint draws. Each part keeps its own <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_LocalMatrix">LocalMatrix</a>
+and <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Opacity">Opacity</a> (its blend mode, blur and dithering are not used), inside this paint's own local matrix.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a></dt>
+      <dd><p>A surface to draw paths, shapes, strokes and images on, through a current transform and clip. The canvas itself is abstract:
+<a class="xref" href="Egami.Drawing.RasterCanvas-1.html">RasterCanvas&lt;TPixel&gt;</a> draws into pixels, and other backends (a PDF page, a recorder) keep the calls as vectors.
+Every public call is checked and tracked here (the transform, the clip bounds, the save stack) and then ends in exactly one
+protected <code>On</code> hook, which is all a backend overrides; hooks added in later versions get default bodies, so adding them
+never breaks a backend.</p>
+<p>
+Coordinates are float pixels, y down; the pixel at (0, 0) covers the square from 0 to 1. Calls draw when they are made. A canvas
+is for one thread at a time; one large call may still spread its rows over several cores.
+</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.CanvasOptions.html">CanvasOptions</a></dt>
+      <dd><p>Settings for a raster canvas.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.ColorMatrixPaint.html">ColorMatrixPaint</a></dt>
+      <dd><p>Another paint with a color matrix run on its colors, as Skia's color-filtered shader: each color, unpremultiplied, goes through
+the matrix, is clamped to 0 to 1 and is premultiplied again. <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_WithColorMatrix_Egami_Operations_ColorMatrix_">WithColorMatrix(ColorMatrix)</a> makes one.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.ConicalGradient.html">ConicalGradient</a></dt>
+      <dd><p>A gradient between two circles, as the HTML canvas's createRadialGradient, Skia's two-point conical gradient and a PDF type 3
+shading define it: for each t, the circle whose center and radius are t of the way from the start circle to the end one; a
+pixel takes the largest t whose circle passes through it with a radius of at least 0. It covers a focal point inside a circle
+(a start radius of 0), one circle inside the other, and cones drawn on one side only.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.ContourMeasure.html">ContourMeasure</a></dt>
+      <dd><p>One measured contour of a <a class="xref" href="Egami.Drawing.PathMeasure.html">PathMeasure</a>. Distances run from 0 at the contour's start to <a class="xref" href="Egami.Drawing.ContourMeasure.html#Egami_Drawing_ContourMeasure_Length">Length</a> at its
+end; distances outside are clamped to them, as in Skia.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.CustomPaint.html">CustomPaint</a></dt>
+      <dd><p>A paint whose colors come from C# code: override <a class="xref" href="Egami.Drawing.CustomPaint.html#Egami_Drawing_CustomPaint_Shade_System_Int32_System_Int32_System_Span_Egami_Pixels_PremulRgbaF32__System_Numerics_Matrix3x2__">Shade(int, int, Span&lt;PremulRgbaF32&gt;, in Matrix3x2)</a> to fill a row of premultiplied float colors. Rows are
+shaded in parallel bands, so <a class="xref" href="Egami.Drawing.CustomPaint.html#Egami_Drawing_CustomPaint_Shade_System_Int32_System_Int32_System_Span_Egami_Pixels_PremulRgbaF32__System_Numerics_Matrix3x2__">Shade(int, int, Span&lt;PremulRgbaF32&gt;, in Matrix3x2)</a> must be thread-safe and must give a pixel the same color whichever band or
+thread asks; then the result is the same at any core count. A backend that keeps vectors, such as a PDF page, cannot run C#
+and draws the call through its raster fallback instead. Derive a <code>record class</code> from it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.DashPattern.html">DashPattern</a></dt>
+      <dd><p>The dashes of a stroke: lengths of drawn and skipped stretches in turn, in path units, and where in the pattern each contour
+starts, as PDF's <code>d</code>, SVG's <code>stroke-dasharray</code> and <code>stroke-dashoffset</code>, and Skia's dash effect define them. An
+odd number of lengths repeats once to make an even one, as SVG says, and a pattern whose lengths add up to 0 draws a solid line.
+Each dash is an open piece of the path that follows its curves and gets the stroke's caps; the pattern starts afresh on each
+contour.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.DrawingExtensions.html">DrawingExtensions</a></dt>
+      <dd><p>Ways into a canvas from Egami's rasters and operation chains.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.EncodedImage.html">EncodedImage</a></dt>
+      <dd><p>An image kept as its file's bytes, such as a JPEG, for <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImage_Egami_Drawing_EncodedImage_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">DrawImage(EncodedImage, RectF, SamplingOptions?, Paint?)</a>:
+a backend that can store the bytes as they are, as a PDF page stores a JPEG as DCTDecode, gets them through
+<code>OnDrawEncodedImage</code> without decoding and encoding again; every other backend draws the decoded pixels. The bytes are
+probed when the image is made and decoded at most once, on first need. Immutable and thread-safe.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.FallbackImage.html">FallbackImage</a></dt>
+      <dd><p>A drawing call rendered into pixels by <code>Canvas.RasterizeFallback</code>, for a backend to place as an image.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.FontExtensions.html">FontExtensions</a></dt>
+      <dd><p>Glyphs and text as <a class="xref" href="Egami.Drawing.Path.html">Path</a>s in canvas units, y down, for clipping, stroking or measuring them as shapes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.GlyphCache.html">GlyphCache</a></dt>
+      <dd><p>The process-wide cache of glyph coverage masks the raster canvas draws small text from: one mask per typeface (each variation
+position its own), glyph, device em size, axis scales, subpixel phase, edging, hinting and synthesis, for glyphs up to 256
+device pixels per em under a scale-and-translate transform. Masks hold one byte per pixel, or three for LCD edging. Bigger,
+rotated or skewed glyphs fill as paths and are not cached. Masks are rendered by the same rasterizer as paths and drawn at the
+same rounded positions either way, so the cache changes speed, never pixels. Shared by every canvas on every thread; least recently used masks
+go first when the budget is spent.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Gradient.html">Gradient</a></dt>
+      <dd><p>A paint whose color changes along a line, around a center or between two circles by its stops. Each pixel center maps back
+through the canvas transform and <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_LocalMatrix">LocalMatrix</a> to a position t along the gradient, which <a class="xref" href="Egami.Drawing.Gradient.html#Egami_Drawing_Gradient_Tile">Tile</a>
+brings into 0 to 1 and the stops turn into a color. On 8-bit targets t picks one of 1024 colors made once per paint; float and
+16-bit targets mix the stops exactly.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.GradientInterpolation.html">GradientInterpolation</a></dt>
+      <dd><p>How a gradient mixes its stops: the color space, as CSS Color 4 defines them, and for <a class="xref" href="Egami.Drawing.InterpolationSpace.html#Egami_Drawing_InterpolationSpace_Oklch">Oklch</a> the
+way around the hue circle.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.ImagePaint.html">ImagePaint</a></dt>
+      <dd><p>An image as a paint: shapes are filled with the image's pixels, pixel (0, 0) covering the paint-space square from 0 to 1, under
+<a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_LocalMatrix">LocalMatrix</a> and the canvas transform. <a class="xref" href="Egami.Drawing.ImagePaint.html#Egami_Drawing_ImagePaint_TileX">TileX</a> and <a class="xref" href="Egami.Drawing.ImagePaint.html#Egami_Drawing_ImagePaint_TileY">TileY</a> say what lies past its
+edges, so it tiles as a pattern, and <a class="xref" href="Egami.Drawing.TileMode.html#Egami_Drawing_TileMode_Decal">Decal</a> leaves the outside transparent, as image masks and stencils
+need. When the paint shrinks the image, sampling reads the nearest smaller level of a <a class="xref" href="Egami.MipChain.html">MipChain</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.InkCanvas.html">InkCanvas</a></dt>
+      <dd><p>A canvas that draws into an <a class="xref" href="Egami.InkRaster.html">InkRaster</a>'s plates: printing inks instead of RGB. It shares
+<a class="xref" href="Egami.Drawing.RasterCanvas-1.html">RasterCanvas&lt;TPixel&gt;</a>'s rasterizer, clips and layers, so shapes, strokes and text cover exactly the same pixels;
+where the RGB canvas blends colours, this one sets each plate. A paint's <a class="xref" href="Egami.Drawing.SolidPaint.html#Egami_Drawing_SolidPaint_Ink">Ink</a> prints its inks by name
+(inks the raster lacks through their appearance into the process inks); RGB colours, gradients and images convert into the
+process inks through <a class="xref" href="Egami.Drawing.InkCanvasOptions.html#Egami_Drawing_InkCanvasOptions_RgbSource">RgbSource</a> and the ink set's profile.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.InkCanvasOptions.html">InkCanvasOptions</a></dt>
+      <dd><p>How an <a class="xref" href="Egami.Drawing.InkCanvas.html">InkCanvas</a> turns colours that are not inks into its process inks.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Lattice.html">Lattice</a></dt>
+      <dd><p>A grid over an image for <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawImageLattice_Egami_Raster_Egami_Drawing_Lattice_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">DrawImageLattice(Raster, Lattice, RectF, SamplingOptions?, Paint?)</a>, as Skia's lattice: the x and y divisions cut the image into
+columns and rows that alternate fixed and stretchable, starting with fixed, so a division at the image's left or top edge makes
+the first column or row stretchable. Fixed columns and rows keep their size when the destination is large enough and shrink in
+proportion when it is not; stretchable ones share what is left. A nine-patch is the lattice with two divisions each way.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.LayerOptions.html">LayerOptions</a></dt>
+      <dd><p>How a layer started by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_Egami_Drawing_LayerOptions_">SaveLayer(LayerOptions?)</a> is merged at the matching <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Restore()</a>:
+filtered, masked, faded by <a class="xref" href="Egami.Drawing.LayerOptions.html#Egami_Drawing_LayerOptions_Opacity">Opacity</a> and blended into what lies below with <a class="xref" href="Egami.Drawing.LayerOptions.html#Egami_Drawing_LayerOptions_BlendMode">BlendMode</a>, through the
+clip. A layer is what PDF calls a transparency group.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.LinearGradient.html">LinearGradient</a></dt>
+      <dd><p>A gradient along a line: t is 0 on the line through <a class="xref" href="Egami.Drawing.LinearGradient.html#Egami_Drawing_LinearGradient_Start">Start</a> square to it, and 1 through <a class="xref" href="Egami.Drawing.LinearGradient.html#Egami_Drawing_LinearGradient_End">End</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.MarkedContent.html">MarkedContent</a></dt>
+      <dd><p>A tag that brackets a run of drawing for a document backend, as PDF's marked content (BMC, BDC and EMC): a structure element of
+tagged PDF (a paragraph, a heading, a figure), an artifact such as a page number, or a span with replacement text.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Mesh.html">Mesh</a></dt>
+      <dd><p>Triangles with an optional color, texture coordinate or value at each vertex, for <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__">DrawMesh(Mesh, Paint?, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)</a>: Gouraud-shaded
+triangles, textured triangles (a paint mapped through the texture coordinates) and PDF's free-form and lattice-form shadings
+(one value per vertex, mapped through gradient stops). Immutable: the constructor copies what it is given.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.NinePatch.html">NinePatch</a></dt>
+      <dd><p>An image with its <a class="xref" href="Egami.Drawing.NinePatch.html#Egami_Drawing_NinePatch_Lattice">Lattice</a>, as Android's nine-patch (.9.png) files hold them.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.NoisePaint.html">NoisePaint</a></dt>
+      <dd><p>Procedural noise as a paint. <a class="xref" href="Egami.Drawing.NoisePaint.html#Egami_Drawing_NoisePaint_Fractal_System_Single_System_Single_System_Int32_System_Int32_System_Nullable_Egami_Size__">Fractal(float, float, int, int, Size?)</a> and <a class="xref" href="Egami.Drawing.NoisePaint.html#Egami_Drawing_NoisePaint_Turbulence_System_Single_System_Single_System_Int32_System_Int32_System_Nullable_Egami_Size__">Turbulence(float, float, int, int, Size?)</a> follow SVG 1.1's feTurbulence step by step
+(its random table, lattice and gradients), so the pixels match Skia's noise shaders and browsers within rounding;
+<a class="xref" href="Egami.Drawing.NoisePaint.html#Egami_Drawing_NoisePaint_Simplex_System_Single_System_Int32_System_Int32_System_Nullable_Egami_Size__">Simplex(float, int, int, Size?)</a> is smoother and can tile. Each of the four channels is its own noise, straight alpha included. The noise
+lives in paint coordinates: it scales and turns with the canvas transform and <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_LocalMatrix">LocalMatrix</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+      <dd><p>What a drawing call puts on the canvas, and how it combines with what is there: the colors (from the subclass), the
+<a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_BlendMode">BlendMode</a>, an <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Opacity">Opacity</a>, whether edges are antialiased, and for shapes an optional <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Blur">Blur</a>.
+The kinds are <a class="xref" href="Egami.Drawing.SolidPaint.html">SolidPaint</a>, the gradients (<a class="xref" href="Egami.Drawing.LinearGradient.html">LinearGradient</a>, <a class="xref" href="Egami.Drawing.RadialGradient.html">RadialGradient</a>,
+<a class="xref" href="Egami.Drawing.ConicalGradient.html">ConicalGradient</a>, <a class="xref" href="Egami.Drawing.SweepGradient.html">SweepGradient</a>), <a class="xref" href="Egami.Drawing.ImagePaint.html">ImagePaint</a>, <a class="xref" href="Egami.Drawing.NoisePaint.html">NoisePaint</a>,
+<a class="xref" href="Egami.Drawing.BlendPaint.html">BlendPaint</a>, <a class="xref" href="Egami.Drawing.ColorMatrixPaint.html">ColorMatrixPaint</a> and <a class="xref" href="Egami.Drawing.CustomPaint.html">CustomPaint</a>. A color converts to a solid paint where a
+paint is expected. A paint is an <a class="xref" href="Egami.Fonts.Layout.ITextPaint.html">ITextPaint</a>, so a paragraph's text style can carry it.</p>
+<p>
+A paint other than a solid one has its own coordinates: <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_LocalMatrix">LocalMatrix</a> maps them into the canvas's local
+coordinates, so a gradient or an image turns and scales with the canvas transform, and further with its own matrix.
+</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Patch.html">Patch</a></dt>
+      <dd><p>A curved four-sided surface with a color, value or texture coordinate at each corner, for <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPatch_Egami_Drawing_Patch_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__">DrawPatch(Patch, Paint?, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)</a>: PDF's
+Coons and tensor-product patch shadings (types 6 and 7) and Skia's drawPatch. The surface's parameters u (left to right) and v
+(top to bottom) run from 0 to 1; corner data is interpolated bilinearly in them. Immutable.</p>
+<p>
+Corners are in the order top-left (u 0, v 0), top-right, bottom-right, bottom-left. A Coons patch's 12 points go clockwise
+from the top-left corner, as Skia's: the top curve left to right (points 0 to 3), the right curve down (3 to 6), the bottom
+curve right to left (6 to 9) and the left curve up (9, 10, 11, 0). A tensor patch's 16 points are its net row by row, top row
+first, each row left to right.
+</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+      <dd><p>An outline of contours made of lines, quadratic and cubic Bézier curves, with the <a class="xref" href="Egami.Drawing.FillRule.html">FillRule</a> that says which
+points it covers when filled. A path never changes after it is built, so one path can be drawn from many threads and kept by any
+canvas backend. Coordinates are float pixels, y down. Build one with <a class="xref" href="Egami.Drawing.PathBuilder.html">PathBuilder</a> or a shape helper such as
+<a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Circle_System_Numerics_Vector2_System_Single_">Circle(Vector2, float)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PathBuilder.html">PathBuilder</a></dt>
+      <dd><p>Builds a <a class="xref" href="Egami.Drawing.Path.html">Path</a> one command at a time. Arcs, ovals and round corners become cubic curves as they are added, so a
+path holds only lines, quadratics and cubics. A line or curve with no contour open starts one at the last contour's start (or
+the origin), as SVG and Skia do. Building takes time in proportion to the points added; <a class="xref" href="Egami.Drawing.PathBuilder.html#Egami_Drawing_PathBuilder_ToPath_Egami_Drawing_FillRule_">ToPath(FillRule)</a> copies them, so the
+builder can go on or be reused.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PathEffect.html">PathEffect</a></dt>
+      <dd><p>Turns one path into another before it is filled or stroked: dashes, rounded corners, trimming, jitter, shapes stamped along the
+path, hatching. Effects are immutable, so one can be shared and reused; <a class="xref" href="Egami.Drawing.PathEffect.html#Egami_Drawing_PathEffect_Then_Egami_Drawing_PathEffect_">Then(PathEffect)</a> and <a class="xref" href="Egami.Drawing.PathEffect.html#Egami_Drawing_PathEffect_Plus_Egami_Drawing_PathEffect_">Plus(PathEffect)</a> combine them.
+Apply one with <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Apply_Egami_Drawing_PathEffect_">Apply(PathEffect)</a>, or set it on <a class="xref" href="Egami.Drawing.Stroke.html#Egami_Drawing_Stroke_Effect">Effect</a> to have the canvas apply it before stroking.
+The set is Skia's: dash, corner, trim, discrete, 1D path, 2D line and 2D path effects, composed and summed.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PathMeasure.html">PathMeasure</a></dt>
+      <dd><p>Measures a path: the length of each contour, and the point, direction and pieces at any distance along it. Lengths are exact to
+about 1e-4 units, curves included: each curve's length is integrated by adaptive Gauss–Legendre quadrature, and a distance is
+turned back into a point on the curve by Newton steps, so long curves do not gather the errors of a flattened outline.
+Contours of zero length are left out, as Skia's <code>SkContourMeasureIter</code> leaves them. Measuring is done once, here;
+the queries are cheap and safe from many threads.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Picture.html">Picture</a></dt>
+      <dd><p>Recorded canvas calls, from a <a class="xref" href="Egami.Drawing.PictureRecorder.html">PictureRecorder</a> or <a class="xref" href="Egami.Drawing.Picture.html#Egami_Drawing_Picture_Load_System_IO_Stream_Egami_EgamiContext_">Load(Stream, EgamiContext?)</a>: replay them on any canvas with
+<a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPicture_Egami_Drawing_Picture_System_Nullable_System_Numerics_Matrix3x2__Egami_Drawing_Paint_System_Boolean_">DrawPicture(Picture, Matrix3x2?, Paint?, bool)</a> or <a class="xref" href="Egami.Drawing.Picture.html#Egami_Drawing_Picture_Playback_Egami_Drawing_Canvas_">Playback(Canvas)</a>, fill shapes with them through a <a class="xref" href="Egami.Drawing.PicturePaint.html">PicturePaint</a>, render
+them with <a class="xref" href="Egami.Drawing.Picture.html#Egami_Drawing_Picture_ToRaster__1_System_Single_Egami_Drawing_CanvasOptions_Egami_EgamiContext_">ToRaster&lt;TPixel&gt;(float, CanvasOptions?, EgamiContext?)</a>, or keep them in an .egdr file with <a class="xref" href="Egami.Drawing.Picture.html#Egami_Drawing_Picture_Save_System_IO_Stream_">Save(Stream)</a>. Replay is always vector, so a
+picture stays sharp at any scale. Immutable, and safe to replay on several threads and canvases at once.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PicturePaint.html">PicturePaint</a></dt>
+      <dd><p>A <a class="xref" href="Egami.Drawing.PicturePaint.html#Egami_Drawing_PicturePaint_Picture">Picture</a> as a paint: a tiling pattern, the shape of PDF's and SVG's tiling patterns and Skia's picture shader.
+The <a class="xref" href="Egami.Drawing.PicturePaint.html#Egami_Drawing_PicturePaint_Tile">Tile</a> rectangle of the picture, in its own coordinates, is repeated by <a class="xref" href="Egami.Drawing.PicturePaint.html#Egami_Drawing_PicturePaint_TileX">TileX</a> and
+<a class="xref" href="Egami.Drawing.PicturePaint.html#Egami_Drawing_PicturePaint_TileY">TileY</a> under <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_LocalMatrix">LocalMatrix</a> and the canvas transform. The raster backend renders one tile at the
+device scale the paint is drawn at and keeps it with the picture, so a pattern stays sharp when zoomed and is rendered once
+for repeated fills at one scale. A tile is at most 4096 pixels a side.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PictureRecorder.html">PictureRecorder</a></dt>
+      <dd><p>A canvas that records instead of picture: every hook call is kept with its arguments, and <a class="xref" href="Egami.Drawing.PictureRecorder.html#Egami_Drawing_PictureRecorder_Finish">Finish()</a> returns them as
+an immutable <a class="xref" href="Egami.Drawing.Picture.html">Picture</a> to replay on any canvas, at any scale, as often as needed, as Skia's SkPictureRecorder.
+Any code that draws on a <a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a> can draw into it. Paths, paints, images and nested pictures are kept by
+reference: images must not change while the picture is in use.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.RadialGradient.html">RadialGradient</a></dt>
+      <dd><p>A gradient in circles around a center: t is the distance from <a class="xref" href="Egami.Drawing.RadialGradient.html#Egami_Drawing_RadialGradient_Center">Center</a> divided by <a class="xref" href="Egami.Drawing.RadialGradient.html#Egami_Drawing_RadialGradient_Radius">Radius</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.RasterCanvas-1.html">RasterCanvas&lt;TPixel&gt;</a></dt>
+      <dd><p>The raster backend: a canvas that draws into a raster's pixels, with exact-area antialiasing, blended through Egami's
+Compositor in the pixel type's own precision. A clip that is a pixel-aligned rectangle stays a rectangle; any other clip
+becomes a coverage mask over the clip's bounds. A call whose area exceeds 256 KiB of destination rows spreads its rows over
+up to <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_MaxParallelism">MaxParallelism</a> cores, with the same pixels at any core count.</p>
+<p>
+A layer from <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_Egami_Drawing_LayerOptions_">SaveLayer(LayerOptions?)</a> is premultiplied in the raster's class (PremulRgba8 for 8-bit
+rasters, PremulRgbaF32 for deeper ones) and covers only its bounds inside the clip, grown by its filter's reach; its memory
+comes from the raster's <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a> and is released at <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Restore()</a>.
+</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.ShadowOptions.html">ShadowOptions</a></dt>
+      <dd><p>The light and colors of <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawShadow_Egami_Drawing_Path_Egami_Drawing_ShadowOptions_">DrawShadow(Path, ShadowOptions?)</a>, after Skia's shadow model (the Material Design one): a shape lifted
+<a class="xref" href="Egami.Drawing.ShadowOptions.html#Egami_Drawing_ShadowOptions_Elevation">Elevation</a> above the canvas casts an ambient shadow, blurred by its height, and a spot shadow from a round light
+at <a class="xref" href="Egami.Drawing.ShadowOptions.html#Egami_Drawing_ShadowOptions_LightPosition">LightPosition</a>, moved away from the light and blurred by the light's size.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.SoftMask.html">SoftMask</a></dt>
+      <dd><p>A mask made by drawing, as a PDF soft mask: <a class="xref" href="Egami.Drawing.SoftMask.html#Egami_Drawing_SoftMask_Draw">Draw</a> runs on a canvas of its own with the layer's transform and
+clip, and its alpha, or its luminosity over <a class="xref" href="Egami.Drawing.SoftMask.html#Egami_Drawing_SoftMask_Backdrop">Backdrop</a>, through the optional <a class="xref" href="Egami.Drawing.SoftMask.html#Egami_Drawing_SoftMask_Transfer">Transfer</a> curve,
+multiplies the layer. A luminosity mask of a white shape on black shows the layer only inside the shape.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.SolidPaint.html">SolidPaint</a></dt>
+      <dd><p>One color everywhere, with straight alpha. The color keeps float precision, so float and 16-bit targets get it in full; values
+outside 0 to 1 are kept on the paint, and the blend clamps them as Egami's Compositor does.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a></dt>
+      <dd><p>How a path is outlined: the pen's width, caps, joins and miter limit. The settings travel with the drawing call as data, so a
+vector backend can write them as they are (PDF's <code>w</code>, <code>J</code>, <code>j</code> and <code>M</code>). The pen is applied in the canvas's
+local space and then transformed, so a non-uniform scale gives an elliptical pen, as in PDF, SVG and Skia.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.SvgPathException.html">SvgPathException</a></dt>
+      <dd><p>Thrown by <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_ParseSvg_System_ReadOnlySpan_System_Char__Egami_Drawing_FillRule_System_Boolean_">ParseSvg(ReadOnlySpan&lt;char&gt;, FillRule, bool)</a> when SVG path data breaks the grammar.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.SvgPathFormat.html">SvgPathFormat</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_ToSvg_Egami_Drawing_SvgPathFormat_">ToSvg(SvgPathFormat?)</a> writes SVG path data.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.SweepGradient.html">SweepGradient</a></dt>
+      <dd><p>A gradient around a center, as Skia's sweep gradient and CSS's conic-gradient: t goes from 0 at <a class="xref" href="Egami.Drawing.SweepGradient.html#Egami_Drawing_SweepGradient_StartAngle">StartAngle</a> to 1
+at <a class="xref" href="Egami.Drawing.SweepGradient.html#Egami_Drawing_SweepGradient_EndAngle">EndAngle</a>, in degrees clockwise (on a y-down screen) from the positive x axis.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.TextOnPathOptions.html">TextOnPathOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Drawing.FontExtensions.html#Egami_Drawing_FontExtensions_ShapeOnPath_Egami_Fonts_Font_System_String_Egami_Drawing_Path_Egami_Drawing_TextOnPathOptions_">ShapeOnPath(Font, string, Path, TextOnPathOptions?)</a> lays text along a path.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.CornerRadii.html">CornerRadii</a></dt>
+      <dd><p>The x and y radius of each corner of a <a class="xref" href="Egami.Drawing.RoundRect.html">RoundRect</a>, clockwise from the top-left. A radius below 0 counts as 0, and a
+corner with either radius 0 is square.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.GradientStop.html">GradientStop</a></dt>
+      <dd><p>One color of a gradient at a position along it, from 0 (the start) to 1 (the end). Two stops at the same offset make a hard
+edge: the later one applies from that offset on. A gradient whose first stop is after 0 or whose last is before 1 repeats the
+nearest stop's color to the end, as CSS does.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.MaskBlur.html">MaskBlur</a></dt>
+      <dd><p>A Gaussian blur of a shape's coverage before the paint is applied, as Skia's blur mask filter: <a class="xref" href="Egami.Drawing.MaskBlur.html#Egami_Drawing_MaskBlur_Sigma">Sigma</a> is in device
+pixels, so it does not scale with the canvas transform. Set it as <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Blur">Blur</a>. Egami blurs with its fast blur; an
+axis-aligned rectangle with <a class="xref" href="Egami.Drawing.BlurStyle.html#Egami_Drawing_BlurStyle_Normal">Normal</a> is computed exactly from the error function, which is faster still.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.RectF.html">RectF</a></dt>
+      <dd><p>A rectangle in float pixels, y down: the left edge at <a class="xref" href="Egami.Drawing.RectF.html#Egami_Drawing_RectF_X">X</a>, the top at <a class="xref" href="Egami.Drawing.RectF.html#Egami_Drawing_RectF_Y">Y</a>. A width or height of 0 or
+less makes it empty. Pixel (0, 0) covers the square from (0, 0) to (1, 1), so a rectangle with whole-number edges covers whole
+pixels.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.RoundRect.html">RoundRect</a></dt>
+      <dd><p>A rectangle with an x and y radius per corner. Radii that would overlap are scaled down together, as CSS and Skia do: every
+radius is multiplied by the smallest ratio of a side's length to the sum of the two radii along it, when that ratio is below 1.
+A radius below 0 counts as 0, and a corner with either radius 0 is square.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.SpriteTransform.html">SpriteTransform</a></dt>
+      <dd><p>A sprite's placement in <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawAtlas_Egami_Raster_System_ReadOnlySpan_Egami_Drawing_SpriteTransform__System_ReadOnlySpan_Egami_Drawing_RectF__System_ReadOnlySpan_Egami_Pixels_RgbaF32__Egami_Operations_BlendMode_Egami_Operations_SamplingOptions_System_Nullable_Egami_Drawing_RectF__Egami_Drawing_Paint_">DrawAtlas(Raster, ReadOnlySpan&lt;SpriteTransform&gt;, ReadOnlySpan&lt;RectF&gt;, ReadOnlySpan&lt;RgbaF32&gt;, BlendMode, SamplingOptions?, RectF?, Paint?)</a>, as Skia's RSXform: a rotation with a uniform scale, then a move. A
+point (x, y) of the sprite, measured from its source rectangle's top-left corner, goes to
+(ScaleCos·x − ScaleSin·y + Tx, ScaleSin·x + ScaleCos·y + Ty).</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.IColorGlyphRenderer.html">IColorGlyphRenderer</a></dt>
+      <dd><p>Draws color glyphs of a format Egami.Drawing does not draw itself, such as the SVG documents of an OpenType SVG table
+(Egami.Svg's <code>SvgGlyphRenderer</code>). Set on <a class="xref" href="Egami.Drawing.CanvasOptions.html#Egami_Drawing_CanvasOptions_ColorGlyphRenderer">ColorGlyphRenderer</a>, it is asked first for every glyph
+whose font has that format, except where the font has a COLR version 1 glyph, so the order is COLR v1, the renderer, COLR v0,
+sbix, CBDT, then the outline.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.AnnotationKind.html">AnnotationKind</a></dt>
+      <dd><p>What an <a class="xref" href="Egami.Drawing.Annotation.html">Annotation</a> marks, as Skia's annotations do.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.BlurStyle.html">BlurStyle</a></dt>
+      <dd><p>How a <a class="xref" href="Egami.Drawing.MaskBlur.html">MaskBlur</a> keeps or removes the blurred shape's inside and outside, as Skia's blur styles.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.ClipOp.html">ClipOp</a></dt>
+      <dd><p>Whether a clip keeps what is inside a shape or what is outside it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.FillRule.html">FillRule</a></dt>
+      <dd><p>Which points a filled path covers, from how often its outline winds around them.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.HueMethod.html">HueMethod</a></dt>
+      <dd><p>Which way around the hue circle an Oklch gradient goes between two stops, as CSS Color 4's hue interpolation methods.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.InterpolationSpace.html">InterpolationSpace</a></dt>
+      <dd><p>The color space a gradient's stops are mixed in.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.LatticeCellKind.html">LatticeCellKind</a></dt>
+      <dd><p>What a cell of a <a class="xref" href="Egami.Drawing.Lattice.html">Lattice</a> draws.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.LineCap.html">LineCap</a></dt>
+      <dd><p>How the ends of an open stroked contour look.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.LineJoin.html">LineJoin</a></dt>
+      <dd><p>How a stroke turns the corner where two segments meet.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.MeshMode.html">MeshMode</a></dt>
+      <dd><p>How a <a class="xref" href="Egami.Drawing.Mesh.html">Mesh</a> reads its vertices (or its indices, when it has them) as triangles.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.NoisePaintKind.html">NoisePaintKind</a></dt>
+      <dd><p>The kind of noise a <a class="xref" href="Egami.Drawing.NoisePaint.html">NoisePaint</a> makes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Overprint.html">Overprint</a></dt>
+      <dd><p>Which plates a paint prints on an ink canvas, as PDF's overprint; see <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_Overprint">Overprint</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PatchKind.html">PatchKind</a></dt>
+      <dd><p>Which surface a <a class="xref" href="Egami.Drawing.Patch.html">Patch</a> is: its boundary only, or a full tensor-product net.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PathDirection.html">PathDirection</a></dt>
+      <dd><p>The direction a shape's outline runs, on a y-down screen.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PathOp.html">PathOp</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Op_Egami_Drawing_Path_Egami_Drawing_PathOp_System_Single_">Op(Path, PathOp, float)</a> and <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Combine_System_Collections_Generic_IEnumerable_Egami_Drawing_Path__Egami_Drawing_PathOp_System_Single_">Combine(IEnumerable&lt;Path&gt;, PathOp, float)</a> combine the areas of two paths: Skia's five operations.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PathVerb.html">PathVerb</a></dt>
+      <dd><p>One drawing command of a <a class="xref" href="Egami.Drawing.Path.html">Path</a>; the comment on each says how many points it takes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PixelGeometry.html">PixelGeometry</a></dt>
+      <dd><p>The order of a display's color subpixels, which LCD text edging needs to know.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PointMode.html">PointMode</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawPoints_Egami_Drawing_PointMode_System_ReadOnlySpan_System_Numerics_Vector2__Egami_Drawing_Stroke_Egami_Drawing_Paint_">DrawPoints(PointMode, ReadOnlySpan&lt;Vector2&gt;, Stroke, Paint)</a> reads its points.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.RoundRectKind.html">RoundRectKind</a></dt>
+      <dd><p>What a <a class="xref" href="Egami.Drawing.RoundRect.html">RoundRect</a> reduces to, so backends and the rasterizer can take a shortcut.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.SoftMaskKind.html">SoftMaskKind</a></dt>
+      <dd><p>Which value of a soft mask's drawing becomes the mask, as PDF's soft mask subtypes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.StampStyle.html">StampStyle</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Drawing.PathEffect.html#Egami_Drawing_PathEffect_Stamp_Egami_Drawing_Path_System_Single_System_Single_Egami_Drawing_StampStyle_">Stamp(Path, float, float, StampStyle)</a> places its shape along a path.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.TextAnchor.html">TextAnchor</a></dt>
+      <dd><p>Where text on a path is anchored at its start point, as SVG's text-anchor.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.TextPathSide.html">TextPathSide</a></dt>
+      <dd><p>Which side of a path text stands on.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.TileMode.html">TileMode</a></dt>
+      <dd><p>What a gradient or an image paint does past its ends or edges, as Skia's tile modes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.VerticalAlign.html">VerticalAlign</a></dt>
+      <dd><p>Where <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawText_System_String_Egami_Drawing_RectF_Egami_Fonts_Layout_ParagraphStyle_Egami_Drawing_VerticalAlign_">DrawText(string, RectF, ParagraphStyle, VerticalAlign)</a> puts a paragraph across its lines, in a
+rectangle taller (or, for vertical lines, wider) than the lines.</p>
+</dd>
+    </dl>
+    <h3 id="delegates">
+Delegates
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.PlaceholderPainter.html">PlaceholderPainter</a></dt>
+      <dd><p>Draws a placeholder's content where <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawTextLayout_Egami_Fonts_Layout_TextLayout_System_Numerics_Vector2_System_Nullable_Egami_Drawing_RectF__Egami_Drawing_PlaceholderPainter_">DrawTextLayout(TextLayout, Vector2, RectF?, PlaceholderPainter?)</a> left room for it.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Stroke | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Stroke | Egami ">
+      
+      <meta name="description" content="How a path is outlined: the pen&#39;s width, caps, joins and miter limit. The settings travel with the drawing call as data, so a vector backend can write them as they are (PDF&#39;s w, J, j and M). The pen is applied in the canvas&#39;s local space and then transformed, so a non-uniform scale gives an elliptical pen, as in PDF, SVG and Skia.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_Stroke.md&amp;value=---%0Auid%3A%20Egami.Drawing.Stroke%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.Stroke">
+
+
+
+  <h1 id="Egami_Drawing_Stroke" data-uid="Egami.Drawing.Stroke" class="text-break">
+Class Stroke  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>How a path is outlined: the pen's width, caps, joins and miter limit. The settings travel with the drawing call as data, so a
+vector backend can write them as they are (PDF's <code>w</code>, <code>J</code>, <code>j</code> and <code>M</code>). The pen is applied in the canvas's
+local space and then transformed, so a non-uniform scale gives an elliptical pen, as in PDF, SVG and Skia.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record Stroke : IEquatable&lt;Stroke&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Stroke</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Drawing_Stroke_examples">Examples</h2>
+  <pre><code class="lang-csharp">// The pen is data: width, caps, joins and miter limit. Width 1, butt caps and miter joins by default.
+Stroke thick = new(12) { Cap = LineCap.Round, Join = LineJoin.Round };
+canvas.DrawLine(new Vector2(20, 20), new Vector2(280, 20), thick, new Rgba8(30, 90, 200, 255));
+
+Path zigzag = Path.Polygon([new(20, 120), new(80, 60), new(140, 120), new(200, 60), new(260, 120)], close: false);
+canvas.StrokePath(zigzag, new Stroke(8) { Join = LineJoin.Miter, MiterLimit = 4 }, Rgba8.Black);
+
+// A hairline is one device pixel wide whatever the transform.
+canvas.StrokeCircle(new Vector2(150, 160), 30, Stroke.Hairline, Rgba8.Red);</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Drawing_Stroke__ctor_" data-uid="Egami.Drawing.Stroke.#ctor*"></a>
+
+  <h3 id="Egami_Drawing_Stroke__ctor_System_Single_" data-uid="Egami.Drawing.Stroke.#ctor(System.Single)">
+  Stroke(float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Stroke(float width = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The pen's width in local units; 0 is a <a class="xref" href="Egami.Drawing.Stroke.html#Egami_Drawing_Stroke_Hairline">Hairline</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">width</code> is negative or not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Drawing_Stroke_Cap_" data-uid="Egami.Drawing.Stroke.Cap*"></a>
+
+  <h3 id="Egami_Drawing_Stroke_Cap" data-uid="Egami.Drawing.Stroke.Cap">
+  Cap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how open contours end. Defaults to <a class="xref" href="Egami.Drawing.LineCap.html#Egami_Drawing_LineCap_Butt">Butt</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public LineCap Cap { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.LineCap.html">LineCap</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Stroke_Dash_" data-uid="Egami.Drawing.Stroke.Dash*"></a>
+
+  <h3 id="Egami_Drawing_Stroke_Dash" data-uid="Egami.Drawing.Stroke.Dash">
+  Dash
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L101"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the dashes, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for a solid line. The pattern travels with the drawing call as data, so a vector
+backend writes it as it is (PDF's <code>d</code>, SVG's <code>stroke-dasharray</code>); the raster backend cuts the path into dashes
+before outlining it. Lengths are in local units, like the width. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DashPattern? Dash { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.DashPattern.html">DashPattern</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Stroke_Effect_" data-uid="Egami.Drawing.Stroke.Effect*"></a>
+
+  <h3 id="Egami_Drawing_Stroke_Effect" data-uid="Egami.Drawing.Stroke.Effect">
+  Effect
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L107"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets an effect the canvas applies to the path before it is dashed and stroked, as Skia orders them, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
+for none. Backends receive the effect's result as the path to stroke. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PathEffect? Effect { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.PathEffect.html">PathEffect</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Stroke_Hairline_" data-uid="Egami.Drawing.Stroke.Hairline*"></a>
+
+  <h3 id="Egami_Drawing_Stroke_Hairline" data-uid="Egami.Drawing.Stroke.Hairline">
+  Hairline
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a hairline: one device pixel wide whatever the transform, as PDF's thinnest line and Skia's width 0 are.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Stroke Hairline { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Stroke_IsHairline_" data-uid="Egami.Drawing.Stroke.IsHairline*"></a>
+
+  <h3 id="Egami_Drawing_Stroke_IsHairline" data-uid="Egami.Drawing.Stroke.IsHairline">
+  IsHairline
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L110"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether this is a hairline: width 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsHairline { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Stroke_Join_" data-uid="Egami.Drawing.Stroke.Join*"></a>
+
+  <h3 id="Egami_Drawing_Stroke_Join" data-uid="Egami.Drawing.Stroke.Join">
+  Join
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how corners are joined. Defaults to <a class="xref" href="Egami.Drawing.LineJoin.html#Egami_Drawing_LineJoin_Miter">Miter</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public LineJoin Join { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.LineJoin.html">LineJoin</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Stroke_MiterLimit_" data-uid="Egami.Drawing.Stroke.MiterLimit*"></a>
+
+  <h3 id="Egami_Drawing_Stroke_MiterLimit" data-uid="Egami.Drawing.Stroke.MiterLimit">
+  MiterLimit
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the longest miter allowed, as a multiple of the width: a miter join whose point lies further out than this is drawn as
+a bevel, as SVG, PDF and Skia define it. Defaults to 4, as in SVG and Skia (PDF's default is 10).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float MiterLimit { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is below 1 or not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Stroke_Width_" data-uid="Egami.Drawing.Stroke.Width*"></a>
+
+  <h3 id="Egami_Drawing_Stroke_Width" data-uid="Egami.Drawing.Stroke.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pen's width in local units. 0 draws a hairline. Defaults to 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Width { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is negative or not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Drawing_Stroke_ToPath_" data-uid="Egami.Drawing.Stroke.ToPath*"></a>
+
+  <h3 id="Egami_Drawing_Stroke_ToPath_Egami_Drawing_Path_System_Single_System_Boolean_" data-uid="Egami.Drawing.Stroke.ToPath(Egami.Drawing.Path,System.Single,System.Boolean)">
+  ToPath(Path, float, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the outline this pen draws around a path, as a path to fill with the nonzero rule: the effect and dashes applied,
+then each piece offset by half the width with the joins and caps, as the raster backend fills it. Curves become straight
+pieces within a tenth of a unit divided by <code class="paramref">scale</code>, so filling the outline at that scale gives exactly
+the pixels stroking does. The raw outline overlaps itself where the path turns sharply or crosses itself; with
+<code class="paramref">simplify</code> the overlaps are removed by <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Simplify_System_Single_">Simplify(float)</a>, for export or hit testing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path ToPath(Path path, float scale = 1, bool simplify = false)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path to outline.</p>
+</dd>
+    <dt><code>scale</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How much larger the outline will be drawn, which sets how finely curves are cut.</p>
+</dd>
+    <dt><code>simplify</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to remove overlaps.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The outline; empty for a hairline, which has no width in path units.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Stroke_ToPath_Egami_Drawing_Path_System_Single_System_Boolean__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A dashed route: the pattern travels with the stroke, so a PDF backend writes [8 4] 0 d instead of hundreds of pieces.
+Path route = new PathBuilder().MoveTo(10, 90).CubicTo(60, 0, 140, 160, 190, 60).ToPath();
+Stroke dashed = new(3) { Cap = LineCap.Round, Dash = new DashPattern([8, 4]) };
+using Raster&lt;Rgba8&gt; map = Raster.Create(200, 120, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = map.CreateCanvas())
+{
+    canvas.StrokePath(route, dashed, new Rgba8(200, 60, 30, 255));
+}
+
+// The outline the stroke fills, as a path: for hit testing, or to export without strokes.
+Path outline = dashed.ToPath(route, simplify: true);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">scale</code> is not positive and finite.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The outline does not fit in float coordinates.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Stroke.cs/#L43" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Palette | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Palette | Egami ">
+      
+      <meta name="description" content="An ordered list of up to 256 colors to map images onto: a brand palette, a display&#39;s inks, or one built from an image with Wu&#39;s quantizer. Use it as  for the GIF, PNG, BMP and TGA writers, with , or to find the nearest color yourself.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Quantization_Palette.md&amp;value=---%0Auid%3A%20Egami.Quantization.Palette%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Quantization.Palette">
+
+
+
+  <h1 id="Egami_Quantization_Palette" data-uid="Egami.Quantization.Palette" class="text-break">
+Class Palette  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PublicPalette.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Quantization.html">Quantization</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An ordered list of up to 256 colors to map images onto: a brand palette, a display's inks, or one built from an image with
+Wu's quantizer. Use it as <a class="xref" href="Egami.Quantization.PaletteOptions.html#Egami_Quantization_PaletteOptions_FixedPalette">FixedPalette</a> for the GIF, PNG, BMP and TGA writers, with
+<a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Remap_Egami_Quantization_Palette_Egami_Quantization_DitherMode_System_Single_">Remap(Palette, DitherMode, float)</a>, or to find the nearest color yourself.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Palette</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Palette</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Quantization_Palette_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Map onto a fixed palette: here an e-ink display's six inks.
+Palette inks = Palette.FromColors([Rgba8.Black, Rgba8.White, new(255, 0, 0, 255), new(255, 255, 0, 255), new(0, 0, 255, 255), new(0, 255, 0, 255)]);
+photo.Apply(ops =&gt; ops.Remap(inks, DitherMode.FloydSteinberg), Ct);</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Quantization_Palette_Colors_" data-uid="Egami.Quantization.Palette.Colors*"></a>
+
+  <h3 id="Egami_Quantization_Palette_Colors" data-uid="Egami.Quantization.Palette.Colors">
+  Colors
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PublicPalette.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the colors, in order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Rgba8&gt; Colors { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Quantization_Palette_Count_" data-uid="Egami.Quantization.Palette.Count*"></a>
+
+  <h3 id="Egami_Quantization_Palette_Count" data-uid="Egami.Quantization.Palette.Count">
+  Count
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PublicPalette.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of colors, 1 to 256.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Count { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Quantization_Palette_TransparentIndex_" data-uid="Egami.Quantization.Palette.TransparentIndex*"></a>
+
+  <h3 id="Egami_Quantization_Palette_TransparentIndex" data-uid="Egami.Quantization.Palette.TransparentIndex">
+  TransparentIndex
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PublicPalette.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the index of the entry fully transparent pixels take, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when there is none. That entry is
+never the nearest color of a visible pixel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? TransparentIndex { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Quantization_Palette_Build_" data-uid="Egami.Quantization.Palette.Build*"></a>
+
+  <h3 id="Egami_Quantization_Palette_Build_Egami_Raster_Egami_Quantization_PaletteOptions_" data-uid="Egami.Quantization.Palette.Build(Egami.Raster,Egami.Quantization.PaletteOptions)">
+  Build(Raster, PaletteOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PublicPalette.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Builds a palette for every frame of an image together: its own colors when they fit, Wu's quantizer otherwise, polished
+by <a class="xref" href="Egami.Quantization.PaletteOptions.html#Egami_Quantization_PaletteOptions_RefineIterations">RefineIterations</a>. Alpha is kept in the colors, as for a palette PNG.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Palette Build(Raster image, PaletteOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Quantization.PaletteOptions.html">PaletteOptions</a></dt>
+    <dd><p>The color limit and refinement, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Quantization.PaletteOptions.html#Egami_Quantization_PaletteOptions_Default">Default</a>; a fixed palette in them is returned as it is.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Quantization.Palette.html">Palette</a></dt>
+    <dd><p>The palette.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Quantization_Palette_Build_Egami_Raster_Egami_Quantization_PaletteOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Build one palette from an image, polished by k-means, and use it for other images and for every GIF frame.
+Palette shared = Palette.Build(first, new PaletteOptions { MaxColors = 64, RefineIterations = 6 });
+second.Apply(ops =&gt; ops.Remap(shared), Ct);
+second.Save("egret.gif", new GifWriterOptions { Palette = new PaletteOptions { FixedPalette = shared, Dither = DitherMode.Bayer4x4 } });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">image</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The image has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Quantization_Palette_FromColors_" data-uid="Egami.Quantization.Palette.FromColors*"></a>
+
+  <h3 id="Egami_Quantization_Palette_FromColors_System_ReadOnlySpan_Egami_Pixels_Rgba8__System_Nullable_System_Int32__" data-uid="Egami.Quantization.Palette.FromColors(System.ReadOnlySpan{Egami.Pixels.Rgba8},System.Nullable{System.Int32})">
+  FromColors(ReadOnlySpan&lt;Rgba8&gt;, int?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PublicPalette.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a palette of the given colors, in that order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Palette FromColors(ReadOnlySpan&lt;Rgba8&gt; colors, int? transparentIndex = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>colors</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a>&gt;</dt>
+    <dd><p>1 to 256 colors; they may repeat.</p>
+</dd>
+    <dt><code>transparentIndex</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd><p>The entry fully transparent pixels take, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for none.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Quantization.Palette.html">Palette</a></dt>
+    <dd><p>The palette.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Quantization_Palette_FromColors_System_ReadOnlySpan_Egami_Pixels_Rgba8__System_Nullable_System_Int32___examples">Examples</h4>
+  <pre><code class="lang-csharp">// Map onto a fixed palette: here an e-ink display's six inks.
+Palette inks = Palette.FromColors([Rgba8.Black, Rgba8.White, new(255, 0, 0, 255), new(255, 255, 0, 255), new(0, 0, 255, 255), new(0, 255, 0, 255)]);
+photo.Apply(ops =&gt; ops.Remap(inks, DitherMode.FloydSteinberg), Ct);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">colors</code> is empty or has more than 256 colors.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">transparentIndex</code> is not an index of <code class="paramref">colors</code>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Quantization_Palette_FromRaster_" data-uid="Egami.Quantization.Palette.FromRaster*"></a>
+
+  <h3 id="Egami_Quantization_Palette_FromRaster_Egami_Raster_System_Int32_" data-uid="Egami.Quantization.Palette.FromRaster(Egami.Raster,System.Int32)">
+  FromRaster(Raster, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PublicPalette.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Builds a palette of at most <code class="paramref">maxColors</code> colors for an image, as <a class="xref" href="Egami.Quantization.Palette.html#Egami_Quantization_Palette_Build_Egami_Raster_Egami_Quantization_PaletteOptions_">Build(Raster, PaletteOptions?)</a> with default options.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Palette FromRaster(Raster image, int maxColors = 256)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>image</code> <a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The image.</p>
+</dd>
+    <dt><code>maxColors</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The most colors, 2 to 256. Defaults to 256.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Quantization.Palette.html">Palette</a></dt>
+    <dd><p>The palette.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">image</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">maxColors</code> is outside 2 to 256.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>The image has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Quantization_Palette_Nearest_" data-uid="Egami.Quantization.Palette.Nearest*"></a>
+
+  <h3 id="Egami_Quantization_Palette_Nearest_Egami_Pixels_Rgba8_" data-uid="Egami.Quantization.Palette.Nearest(Egami.Pixels.Rgba8)">
+  Nearest(Rgba8)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PublicPalette.cs/#L161"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the palette color nearest to <code class="paramref">color</code>; see <a class="xref" href="Egami.Quantization.Palette.html#Egami_Quantization_Palette_NearestIndex_Egami_Pixels_Rgba8_">NearestIndex(Rgba8)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Rgba8 Nearest(Rgba8 color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The nearest color.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Quantization_Palette_NearestIndex_" data-uid="Egami.Quantization.Palette.NearestIndex*"></a>
+
+  <h3 id="Egami_Quantization_Palette_NearestIndex_Egami_Pixels_Rgba8_" data-uid="Egami.Quantization.Palette.NearestIndex(Egami.Pixels.Rgba8)">
+  NearestIndex(Rgba8)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PublicPalette.cs/#L123"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the index of the color nearest to <code class="paramref">color</code>, by squared distance in encoded RGB (plus alpha when
+the palette has translucent colors); a fully transparent color takes <a class="xref" href="Egami.Quantization.Palette.html#Egami_Quantization_Palette_TransparentIndex">TransparentIndex</a> when there is one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int NearestIndex(Rgba8 color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The index; the first one on a tie.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Quantization/PublicPalette.cs/#L15" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

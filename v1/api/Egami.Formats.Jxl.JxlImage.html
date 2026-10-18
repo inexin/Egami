@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class JxlImage | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class JxlImage | Egami ">
+      
+      <meta name="description" content="Reads what JPEG XL holds besides the image Load gives: the layers before blending, and the preview.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Jxl_JxlImage.md&amp;value=---%0Auid%3A%20Egami.Formats.Jxl.JxlImage%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Jxl.JxlImage">
+
+
+
+  <h1 id="Egami_Formats_Jxl_JxlImage" data-uid="Egami.Formats.Jxl.JxlImage" class="text-break">
+Class JxlImage  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L9"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Jxl.html">Jxl</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Reads what JPEG XL holds besides the image Load gives: the layers before blending, and the preview.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class JxlImage</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">JxlImage</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Jxl_JxlImage_examples">Examples</h2>
+  <pre><code class="lang-csharp">// An animation loads as its frames, blended onto the canvas, each with its delay.
+using Raster animation = Raster.Load("sprite.jxl");
+int frames = animation.FrameCount;
+
+// The layers before blending, for an editor: each at its own size and place.
+IReadOnlyList&lt;JxlLayer&gt; layers = JxlImage.ReadLayers("sprite.jxl");
+foreach (JxlLayer layer in layers)
+{
+    Console.WriteLine($"{layer.Raster.Width}x{layer.Raster.Height} at {layer.X},{layer.Y}: {layer.Blend}, {layer.Duration.TotalMilliseconds} ms");
+    layer.Dispose();
+}
+
+// The preview some files carry for quick display, or null.
+using Raster? preview = JxlImage.ReadPreview("duck.jxl");
+
+// A lossy still at an eighth of its size, from its LF image alone.
+using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions { MaxDownscale = 8 });</code></pre>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_ReadExtraChannel_" data-uid="Egami.Formats.Jxl.JxlImage.ReadExtraChannel*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_ReadExtraChannel_System_IO_Stream_System_Int32_Egami_Formats_ReaderOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.ReadExtraChannel(System.IO.Stream,System.Int32,Egami.Formats.ReaderOptions,Egami.EgamiContext)">
+  ReadExtraChannel(Stream, int, ReaderOptions?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L199"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads one extra channel from a stream; see <a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_ReadExtraChannel_System_String_System_Int32_Egami_Formats_ReaderOptions_Egami_EgamiContext_">ReadExtraChannel(string, int, ReaderOptions?, EgamiContext?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Raster&lt;GrayF32&gt; ReadExtraChannel(Stream stream, int index, ReaderOptions? options = null, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The file's data, from its start.</p>
+</dd>
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The channel's index in <a class="xref" href="Egami.Formats.Jxl.JxlDetails.html#Egami_Formats_Jxl_JxlDetails_ExtraChannels">ExtraChannels</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>The general options, with the frame range.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;<a class="xref" href="Egami.Pixels.GrayF32.html">GrayF32</a>&gt;</dt>
+    <dd><p>The channel's samples. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_ReadExtraChannel_System_IO_Stream_System_Int32_Egami_Formats_ReaderOptions_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Alpha joins the pixels (straight, even when the file premultiplies); other extra channels are listed in the details.
+using Raster image = Raster.Load("sprite.jxl");
+JxlDetails details = (JxlDetails)image.Metadata.FormatDetails!;
+foreach (JxlExtraChannel channel in details.ExtraChannels)
+{
+    Console.WriteLine($"{channel.Kind} '{channel.Name}', {channel.BitsPerSample} bits");
+}
+
+// Any one of them alone, such as depth or a selection mask, as gray floats.
+using Raster&lt;GrayF32&gt; alpha = JxlImage.ReadExtraChannel("sprite.jxl", 0);
+
+// Spot colors are mixed into the color as djxl does, unless turned off.
+using Raster plain = Raster.Load("sprite.jxl", options: new JxlReaderOptions { RenderSpotColors = false });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The image has no extra channel <code class="paramref">index</code>.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules, including data of another format.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_ReadExtraChannel_" data-uid="Egami.Formats.Jxl.JxlImage.ReadExtraChannel*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_ReadExtraChannel_System_String_System_Int32_Egami_Formats_ReaderOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.ReadExtraChannel(System.String,System.Int32,Egami.Formats.ReaderOptions,Egami.EgamiContext)">
+  ReadExtraChannel(string, int, ReaderOptions?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L181"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads one extra channel, such as depth, a selection mask, thermal data or a spot color, into a gray raster at the image
+size: as stored, scaled to 0 to 1 for integer samples, with a frame for each frame Load shows.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Raster&lt;GrayF32&gt; ReadExtraChannel(string path, int index, ReaderOptions? options = null, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The channel's index in <a class="xref" href="Egami.Formats.Jxl.JxlDetails.html#Egami_Formats_Jxl_JxlDetails_ExtraChannels">ExtraChannels</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>The general options, with the frame range.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;<a class="xref" href="Egami.Pixels.GrayF32.html">GrayF32</a>&gt;</dt>
+    <dd><p>The channel's samples. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_ReadExtraChannel_System_String_System_Int32_Egami_Formats_ReaderOptions_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Alpha joins the pixels (straight, even when the file premultiplies); other extra channels are listed in the details.
+using Raster image = Raster.Load("sprite.jxl");
+JxlDetails details = (JxlDetails)image.Metadata.FormatDetails!;
+foreach (JxlExtraChannel channel in details.ExtraChannels)
+{
+    Console.WriteLine($"{channel.Kind} '{channel.Name}', {channel.BitsPerSample} bits");
+}
+
+// Any one of them alone, such as depth or a selection mask, as gray floats.
+using Raster&lt;GrayF32&gt; alpha = JxlImage.ReadExtraChannel("sprite.jxl", 0);
+
+// Spot colors are mixed into the color as djxl does, unless turned off.
+using Raster plain = Raster.Load("sprite.jxl", options: new JxlReaderOptions { RenderSpotColors = false });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The image has no extra channel <code class="paramref">index</code>.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules, including data of another format.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_ReadLayers_" data-uid="Egami.Formats.Jxl.JxlImage.ReadLayers*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_ReadLayers_System_IO_Stream_Egami_Formats_ReaderOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.ReadLayers(System.IO.Stream,Egami.Formats.ReaderOptions,Egami.EgamiContext)">
+  ReadLayers(Stream, ReaderOptions?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads every regular frame before blending from a stream; see <a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_ReadLayers_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext_">ReadLayers(string, ReaderOptions?, EgamiContext?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IReadOnlyList&lt;JxlLayer&gt; ReadLayers(Stream stream, ReaderOptions? options = null, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The file's data, from its start.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>The general options; the frame range is ignored.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Formats.Jxl.JxlLayer.html">JxlLayer</a>&gt;</dt>
+    <dd><p>The layers, in the file's order. The caller must dispose each.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_ReadLayers_System_IO_Stream_Egami_Formats_ReaderOptions_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// An animation loads as its frames, blended onto the canvas, each with its delay.
+using Raster animation = Raster.Load("sprite.jxl");
+int frames = animation.FrameCount;
+
+// The layers before blending, for an editor: each at its own size and place.
+IReadOnlyList&lt;JxlLayer&gt; layers = JxlImage.ReadLayers("sprite.jxl");
+foreach (JxlLayer layer in layers)
+{
+    Console.WriteLine($"{layer.Raster.Width}x{layer.Raster.Height} at {layer.X},{layer.Y}: {layer.Blend}, {layer.Duration.TotalMilliseconds} ms");
+    layer.Dispose();
+}
+
+// The preview some files carry for quick display, or null.
+using Raster? preview = JxlImage.ReadPreview("duck.jxl");
+
+// A lossy still at an eighth of its size, from its LF image alone.
+using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions { MaxDownscale = 8 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules, including data of another format.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_ReadLayers_" data-uid="Egami.Formats.Jxl.JxlImage.ReadLayers*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_ReadLayers_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.ReadLayers(System.String,Egami.Formats.ReaderOptions,Egami.EgamiContext)">
+  ReadLayers(string, ReaderOptions?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L23"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads every regular frame as it is before blending, for editors: each in the file's color space and natural pixel type,
+at its own size, with where it goes on the canvas and how it blends. Load gives the frames already blended.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IReadOnlyList&lt;JxlLayer&gt; ReadLayers(string path, ReaderOptions? options = null, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>The general options; the frame range is ignored.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Formats.Jxl.JxlLayer.html">JxlLayer</a>&gt;</dt>
+    <dd><p>The layers, in the file's order. The caller must dispose each.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_ReadLayers_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// An animation loads as its frames, blended onto the canvas, each with its delay.
+using Raster animation = Raster.Load("sprite.jxl");
+int frames = animation.FrameCount;
+
+// The layers before blending, for an editor: each at its own size and place.
+IReadOnlyList&lt;JxlLayer&gt; layers = JxlImage.ReadLayers("sprite.jxl");
+foreach (JxlLayer layer in layers)
+{
+    Console.WriteLine($"{layer.Raster.Width}x{layer.Raster.Height} at {layer.X},{layer.Y}: {layer.Blend}, {layer.Duration.TotalMilliseconds} ms");
+    layer.Dispose();
+}
+
+// The preview some files carry for quick display, or null.
+using Raster? preview = JxlImage.ReadPreview("duck.jxl");
+
+// A lossy still at an eighth of its size, from its LF image alone.
+using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions { MaxDownscale = 8 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules, including data of another format.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_ReadPreview_" data-uid="Egami.Formats.Jxl.JxlImage.ReadPreview*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_ReadPreview_System_IO_Stream_Egami_Formats_ReaderOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.ReadPreview(System.IO.Stream,Egami.Formats.ReaderOptions,Egami.EgamiContext)">
+  ReadPreview(Stream, ReaderOptions?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads the preview from a stream; see <a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_ReadPreview_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext_">ReadPreview(string, ReaderOptions?, EgamiContext?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Raster? ReadPreview(Stream stream, ReaderOptions? options = null, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The file's data, from its start.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>The general options; the frame range is ignored.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The preview, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the file has none. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_ReadPreview_System_IO_Stream_Egami_Formats_ReaderOptions_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// An animation loads as its frames, blended onto the canvas, each with its delay.
+using Raster animation = Raster.Load("sprite.jxl");
+int frames = animation.FrameCount;
+
+// The layers before blending, for an editor: each at its own size and place.
+IReadOnlyList&lt;JxlLayer&gt; layers = JxlImage.ReadLayers("sprite.jxl");
+foreach (JxlLayer layer in layers)
+{
+    Console.WriteLine($"{layer.Raster.Width}x{layer.Raster.Height} at {layer.X},{layer.Y}: {layer.Blend}, {layer.Duration.TotalMilliseconds} ms");
+    layer.Dispose();
+}
+
+// The preview some files carry for quick display, or null.
+using Raster? preview = JxlImage.ReadPreview("duck.jxl");
+
+// A lossy still at an eighth of its size, from its LF image alone.
+using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions { MaxDownscale = 8 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules, including data of another format.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_ReadPreview_" data-uid="Egami.Formats.Jxl.JxlImage.ReadPreview*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_ReadPreview_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.ReadPreview(System.String,Egami.Formats.ReaderOptions,Egami.EgamiContext)">
+  ReadPreview(string, ReaderOptions?, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads the preview: a small image some files carry for quick display, in the natural pixel type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Raster? ReadPreview(string path, ReaderOptions? options = null, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>The general options; the frame range is ignored.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster.html">Raster</a></dt>
+    <dd><p>The preview, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the file has none. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_ReadPreview_System_String_Egami_Formats_ReaderOptions_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// An animation loads as its frames, blended onto the canvas, each with its delay.
+using Raster animation = Raster.Load("sprite.jxl");
+int frames = animation.FrameCount;
+
+// The layers before blending, for an editor: each at its own size and place.
+IReadOnlyList&lt;JxlLayer&gt; layers = JxlImage.ReadLayers("sprite.jxl");
+foreach (JxlLayer layer in layers)
+{
+    Console.WriteLine($"{layer.Raster.Width}x{layer.Raster.Height} at {layer.X},{layer.Y}: {layer.Blend}, {layer.Duration.TotalMilliseconds} ms");
+    layer.Dispose();
+}
+
+// The preview some files carry for quick display, or null.
+using Raster? preview = JxlImage.ReadPreview("duck.jxl");
+
+// A lossy still at an eighth of its size, from its LF image alone.
+using Raster thumbnail = Raster.Load("duck.jxl", options: new JxlReaderOptions { MaxDownscale = 8 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules, including data of another format.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_RecompressJpeg_" data-uid="Egami.Formats.Jxl.JxlImage.RecompressJpeg*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_RecompressJpeg_System_IO_Stream_System_IO_Stream_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.RecompressJpeg(System.IO.Stream,System.IO.Stream,Egami.EgamiContext)">
+  RecompressJpeg(Stream, Stream, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Recompresses a JPEG from a stream; see <a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_RecompressJpeg_System_String_System_String_Egami_EgamiContext_">RecompressJpeg(string, string, EgamiContext?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void RecompressJpeg(Stream stream, Stream output, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The JPEG's data, from its start.</p>
+</dd>
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write the JPEG XL file.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_RecompressJpeg_System_IO_Stream_System_IO_Stream_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG becomes a JPEG XL file about a fifth smaller with the same pixels, and comes back byte for byte.
+JxlImage.RecompressJpeg("duck.jpg", "duck.jxl");
+JxlImage.ReconstructJpeg("duck.jxl", "duck-again.jpg");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The JPEG uses something JPEG XL cannot keep.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The JPEG breaks the format's rules.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_RecompressJpeg_" data-uid="Egami.Formats.Jxl.JxlImage.RecompressJpeg*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_RecompressJpeg_System_String_System_String_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.RecompressJpeg(System.String,System.String,Egami.EgamiContext)">
+  RecompressJpeg(string, string, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Recompresses a JPEG into JPEG XL without loss, about a fifth smaller (design question 8): the JPEG's quantized
+coefficients become the JPEG XL image, so Load shows the same pixels a JPEG decoder would, and
+<a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_ReconstructJpeg_System_String_System_String_Egami_EgamiContext_">ReconstructJpeg(string, string, EgamiContext?)</a> gives the original file back byte for byte. The file
+is what cjxl makes at its default effort, with the ICC profile in the codestream and Exif and XMP in boxes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void RecompressJpeg(string path, string outputPath, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The JPEG file.</p>
+</dd>
+    <dt><code>outputPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The JPEG XL file to write.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_RecompressJpeg_System_String_System_String_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG becomes a JPEG XL file about a fifth smaller with the same pixels, and comes back byte for byte.
+JxlImage.RecompressJpeg("duck.jpg", "duck.jxl");
+JxlImage.ReconstructJpeg("duck.jxl", "duck-again.jpg");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The JPEG uses something JPEG XL cannot keep: arithmetic coding, 12-bit samples, CMYK or four components, or sampling
+other than 4:4:4, 4:2:0, 4:2:2 and 4:4:0.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The JPEG breaks the format's rules.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_ReconstructJpeg_" data-uid="Egami.Formats.Jxl.JxlImage.ReconstructJpeg*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_ReconstructJpeg_System_IO_Stream_System_IO_Stream_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.ReconstructJpeg(System.IO.Stream,System.IO.Stream,Egami.EgamiContext)">
+  ReconstructJpeg(Stream, Stream, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L107"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the original JPEG of a recompressed JPEG XL file to a stream; see <a class="xref" href="Egami.Formats.Jxl.JxlImage.html#Egami_Formats_Jxl_JxlImage_ReconstructJpeg_System_String_System_String_Egami_EgamiContext_">ReconstructJpeg(string, string, EgamiContext?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void ReconstructJpeg(Stream stream, Stream output, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The JPEG XL file's data, from its start.</p>
+</dd>
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write the JPEG.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_ReconstructJpeg_System_IO_Stream_System_IO_Stream_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG recompressed into JPEG XL loads as pixels like any other file, and gives its JPEG back byte for byte.
+using Raster image = Raster.Load("recompressed.jxl");
+if (((JxlDetails)image.Metadata.FormatDetails!).HasJpegReconstruction)
+{
+    JxlImage.ReconstructJpeg("recompressed.jxl", "original.jpg");
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The file has no JPEG reconstruction data, or its frame is not one Egami can rebuild a JPEG from.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules, including data of another format.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Jxl_JxlImage_ReconstructJpeg_" data-uid="Egami.Formats.Jxl.JxlImage.ReconstructJpeg*"></a>
+
+  <h3 id="Egami_Formats_Jxl_JxlImage_ReconstructJpeg_System_String_System_String_Egami_EgamiContext_" data-uid="Egami.Formats.Jxl.JxlImage.ReconstructJpeg(System.String,System.String,Egami.EgamiContext)">
+  ReconstructJpeg(string, string, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the JPEG a JPEG XL file was losslessly recompressed from, byte for byte (design question 8). Load decodes such a
+file to pixels like any other; this gives the original JPEG back instead, when <a class="xref" href="Egami.Formats.Jxl.JxlDetails.html#Egami_Formats_Jxl_JxlDetails_HasJpegReconstruction">HasJpegReconstruction</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void ReconstructJpeg(string path, string outputPath, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The JPEG XL file.</p>
+</dd>
+    <dt><code>outputPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The JPEG file to write.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Jxl_JxlImage_ReconstructJpeg_System_String_System_String_Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A JPEG recompressed into JPEG XL loads as pixels like any other file, and gives its JPEG back byte for byte.
+using Raster image = Raster.Load("recompressed.jxl");
+if (((JxlDetails)image.Metadata.FormatDetails!).HasJpegReconstruction)
+{
+    JxlImage.ReconstructJpeg("recompressed.jxl", "original.jpg");
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The file has no JPEG reconstruction data, or its frame is not one Egami can rebuild a JPEG from.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data breaks the format's rules, including data of another format.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jxl/JxlImage.cs/#L9" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
