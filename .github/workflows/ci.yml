@@ -1,9 +1,14 @@
 name: CI
 
+# Pull requests run the Linux x64 build and tests and the checks. Pushes to main, the nightly run and manual runs add the other
+# platforms, the tests with hardware intrinsics turned off, libpng and the Native AOT smoke app.
 on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -17,13 +22,24 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
+  build-test-linux:
+    name: Build and test (linux-x64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - run: dotnet build Egami.slnx -c Release
+      - run: dotnet test Egami.slnx -c Release --no-build
+
   build-test:
     name: Build and test (${{ matrix.name }})
+    if: github.event_name != 'pull_request'
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { name: linux-x64, os: ubuntu-latest }
           - { name: linux-arm64, os: ubuntu-24.04-arm }
           - { name: windows-x64, os: windows-latest }
           - { name: macos-arm64, os: macos-latest }
@@ -39,6 +55,7 @@ jobs:
   simd-fallbacks:
     # Runs the tests with each level of hardware intrinsics turned off, so every SIMD fallback path is covered.
     name: Tests without ${{ matrix.name }}
+    if: github.event_name != 'pull_request'
     strategy:
       fail-fast: false
       matrix:
@@ -92,6 +109,7 @@ jobs:
   libpng:
     # Checks Egami's PNG reader and writer against libpng, the reference PNG library. libpng is a CI test tool only.
     name: PNG against libpng
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -112,6 +130,7 @@ jobs:
 
   aot-smoke:
     name: Native AOT smoke app
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

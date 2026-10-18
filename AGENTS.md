@@ -12,7 +12,7 @@ Egami.Svg, Egami.Css and Egami.Metafiles (see [docs/articles/packages.md](docs/a
   closely from a listed library, add its notice to `THIRD-PARTY-NOTICES.md` in the same change.
 - **Managed .NET 10 only.** No P/Invoke, no native binaries, no wrappers around C or C++ libraries. .NET's own APIs (for example
   `ZLibStream`) are fine. No package references in `src/` other than the build-time `Microsoft.CodeAnalysis.PublicApiAnalyzers`.
-- **Never publish.** Don't push to NuGet, push tags, create releases or turn GitHub Actions on, unless the maintainer explicitly
+- **Never publish.** Don't push to NuGet, push tags, create releases or change GitHub Actions settings, unless the maintainer explicitly
   asks for that.
 - **Every change goes through a branch and a pull request.** Never commit to `main` or push to it, and never force-push it. The
   maintainer reviews and merges; don't merge your own pull request unless asked (see "Commits and pull requests" below).
@@ -70,8 +70,9 @@ formatting.
   (`git commit -s`; CONTRIBUTING.md explains the DCO). Stage explicit paths, never `git add -A`.
 - Before opening the pull request, rebase the branch onto `main` and run `dotnet format Egami.slnx --verify-no-changes`, the
   tests and `check-docs` for each package you touched. Then push the branch (`git push -u origin <branch>`) and open the pull
-  request with `gh pr create`, filling in `.github/PULL_REQUEST_TEMPLATE.md`, provenance section included. While GitHub
-  Actions are off, list the results of those checks (and the benchmark numbers for hot code) in the description.
+  request with `gh pr create`, filling in `.github/PULL_REQUEST_TEMPLATE.md`, provenance section included. CI on a pull
+  request only builds and tests on Linux x64; list your local results in the description (the benchmark numbers for hot code,
+  and the tests with `DOTNET_EnableHWIntrinsic=0` when you touch SIMD code).
 - If `main` moves on, rebase the branch onto it, run the tests again and push the branch with `--force-with-lease`. That is
   the only force-push allowed, and only on your own branch.
 - Breaking changes to the 1.0 API are still allowed while nothing is released, but say so in the commit and the changelog.
