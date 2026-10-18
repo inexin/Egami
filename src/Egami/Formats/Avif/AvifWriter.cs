@@ -165,7 +165,8 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
             ? DirectPlanes(rgba, chroma == ChromaFormat.Yuv400, bitDepth, primaries, transfer, matrix)
             : chroma == ChromaFormat.Yuv420 && bitDepth == 8 && options.Effort >= 5 ? SharpPlanes(raster, primaries, transfer, matrix)
             : ConvertedPlanes(raster, chroma, bitDepth, primaries, transfer, matrix);
-        Av1Encoder colorStream = Av1Encoder.Encode(color, new Av1EncoderSettings
+        (int cellWidth, int cellHeight) = GridCells(raster.Width, raster.Height, chroma, options.GridTileSize);
+        CodedImage colorStream = CodedImage.Encode(color, cellWidth, cellHeight, new Av1EncoderSettings
         {
             Lossless = lossless,
             QIndex = QIndexFor(options.Quality),
@@ -173,11 +174,11 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
             Parallelism = parallelism,
         });
 
-        Av1Encoder? alphaStream = null;
+        CodedImage? alphaStream = null;
         if (layout.HasAlpha && !Opaque(rgba))
         {
             Av1EncoderInput alpha = AlphaPlane(rgba, bitDepth);
-            alphaStream = Av1Encoder.Encode(alpha, new Av1EncoderSettings
+            alphaStream = CodedImage.Encode(alpha, cellWidth, cellHeight, new Av1EncoderSettings
             {
                 Lossless = options.AlphaQuality == 100,
                 QIndex = QIndexFor(options.AlphaQuality),
@@ -193,6 +194,94 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
         }
 
         WriteFile(output, raster.Width, raster.Height, colorStream, alphaStream, primaries, transfer, matrix, extras, gainMap);
+    }
+
+    /// <summary>
+    /// Gets the size of a grid's cells: <paramref name="chosen"/>, or for an image larger than one frame of 8192 x 4352 the
+    /// fewest equal cells that fit that, each side even so subsampled chroma divides it; the whole image when it fits one frame.
+    /// </summary>
+    internal static (int Width, int Height) GridCells(int width, int height, ChromaFormat chroma, Size? chosen)
+    {
+        int alignX = chroma is ChromaFormat.Yuv420 or ChromaFormat.Yuv422 ? 2 : 1, alignY = chroma == ChromaFormat.Yuv420 ? 2 : 1;
+        if (chosen is Size size)
+        {
+            return size.Width >= width && size.Height >= height ? (width, height) : (Align(size.Width, alignX), Align(size.Height, alignY));
+        }
+
+        if (width <= 8192 && height <= 4352)
+        {
+            return (width, height);
+        }
+
+        int columns = (width + 8191) / 8192, rows = (height + 4351) / 4352;
+        return (Align((width + columns - 1) / columns, alignX), Align((height + rows - 1) / rows, alignY));
+
+        static int Align(int value, int to) => (value + to - 1) / to * to;
+    }
+
+    /// <summary>
+    /// An image coded as one AV1 frame, or as a grid of equal frames (cells) in raster order, those past the right and bottom
+    /// edges padded by repeating the image's last column and row (the grid's output size crops them).
+    /// </summary>
+    internal sealed record CodedImage(Av1Encoder[] Cells, int Columns, int Rows, int CellWidth, int CellHeight)
+    {
+        internal Av1Encoder First => Cells[0];
+
+        internal bool IsGrid => Cells.Length > 1;
+
+        /// <summary>Codes the planes whole, or in cells of the size given when the image is larger, each cell on its own.</summary>
+        internal static CodedImage Encode(Av1EncoderInput input, int cellWidth, int cellHeight, Av1EncoderSettings settings)
+        {
+            if (cellWidth >= input.Width && cellHeight >= input.Height)
+            {
+                return new CodedImage([Av1Encoder.Encode(input, settings)], 1, 1, input.Width, input.Height);
+            }
+
+            int columns = (input.Width + cellWidth - 1) / cellWidth, rows = (input.Height + cellHeight - 1) / cellHeight;
+            Av1Encoder[] cells = new Av1Encoder[columns * rows];
+            ParallelOptions parallel = new() { MaxDegreeOfParallelism = Math.Max(1, settings.Parallelism), CancellationToken = settings.CancellationToken };
+            Parallel.For(0, cells.Length, parallel, i =>
+                cells[i] = Av1Encoder.Encode(Cell(input, (i % columns) * cellWidth, (i / columns) * cellHeight, cellWidth, cellHeight), settings));
+
+            return new CodedImage(cells, columns, rows, cellWidth, cellHeight);
+        }
+
+        private static Av1EncoderInput Cell(Av1EncoderInput input, int x0, int y0, int width, int height)
+        {
+            int ssx = input.Chroma is ChromaFormat.Yuv420 or ChromaFormat.Yuv422 ? 1 : 0, ssy = input.Chroma == ChromaFormat.Yuv420 ? 1 : 0;
+            ushort[][] planes = new ushort[input.Planes.Length][];
+            for (int plane = 0; plane < planes.Length; plane++)
+            {
+                int sx = plane > 0 ? ssx : 0, sy = plane > 0 ? ssy : 0;
+                int fullW = (input.Width + sx) >> sx, fullH = (input.Height + sy) >> sy;
+                int w = (width + sx) >> sx, h = (height + sy) >> sy, cx = x0 >> sx, cy = y0 >> sy;
+                ushort[] source = input.Planes[plane], cell = new ushort[w * h];
+                for (int y = 0; y < h; y++)
+                {
+                    int row = Math.Min(cy + y, fullH - 1) * fullW;
+                    for (int x = 0; x < w; x++)
+                    {
+                        cell[(y * w) + x] = source[row + Math.Min(cx + x, fullW - 1)];
+                    }
+                }
+
+                planes[plane] = cell;
+            }
+
+            return new Av1EncoderInput
+            {
+                Width = width,
+                Height = height,
+                BitDepth = input.BitDepth,
+                Chroma = input.Chroma,
+                Planes = planes,
+                ColorPrimaries = input.ColorPrimaries,
+                TransferCharacteristics = input.TransferCharacteristics,
+                MatrixCoefficients = input.MatrixCoefficients,
+                FullRange = input.FullRange,
+                ChromaSamplePosition = input.ChromaSamplePosition,
+            };
+        }
     }
 
     /// <summary>A gain map coded as an AV1 image, with its metadata and the alternate rendition's color.</summary>
@@ -269,10 +358,16 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
     /// libavif's order (ispe, pixi, av1C, then colr or auxC).
     /// </summary>
     internal static void WriteFile(Stream output, int width, int height, Av1Encoder color, Av1Encoder? alpha, int primaries, int transfer, int matrix,
+        FileMetadata? metadata = null, GainMapItem? gainMap = null) =>
+        WriteFile(output, width, height, new CodedImage([color], 1, 1, width, height), alpha is null ? null : new CodedImage([alpha], 1, 1, width, height),
+            primaries, transfer, matrix, metadata, gainMap);
+
+    /// <summary>Writes the HEIF file of an image coded whole or as a grid.</summary>
+    internal static void WriteFile(Stream output, int width, int height, CodedImage color, CodedImage? alpha, int primaries, int transfer, int matrix,
         FileMetadata? metadata = null, GainMapItem? gainMap = null)
     {
         metadata ??= FileMetadata.None;
-        Av1SequenceHeader sequence = color.Sequence;
+        Av1SequenceHeader sequence = color.First.Sequence;
         List<string> brands = ["avif", "mif1", "miaf"];
         if (sequence.BitDepth <= 10 && sequence.Chroma == ChromaFormat.Yuv420)
         {
@@ -289,27 +384,23 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
         }
 
         HeifWriter heif = new("avif", [.. brands]);
-        uint colorItem = heif.AddItem("av01", color.Stream, "Color");
-        heif.PrimaryItemId = colorItem;
         int ispe = heif.AddProperty(HeifWriter.SpatialExtents(width, height));
-        heif.Associate(colorItem, ispe);
-        heif.AddProperty(colorItem, HeifWriter.PixelInformation(sequence.BitDepth, sequence.Monochrome ? 1 : 3));
-        heif.AddProperty(colorItem, ConfigurationBox(color), essential: true);
+        byte[] nclx = HeifWriter.ColorNclx(primaries, transfer, matrix, sequence.FullRange);
+        uint colorItem = AddImage(heif, color, width, height, "Color", hidden: false, ispe, sequence.Monochrome ? 1 : 3, nclx);
+        heif.PrimaryItemId = colorItem;
         if (!metadata.Icc.IsEmpty)
         {
             heif.AddProperty(colorItem, HeifWriter.ColorIcc(metadata.Icc.Span));
         }
 
-        heif.AddProperty(colorItem, HeifWriter.ColorNclx(primaries, transfer, matrix, sequence.FullRange));
+        heif.AddProperty(colorItem, nclx);
         AddHdrProperties(heif, colorItem, metadata.Hdr);
         AddOrientation(heif, colorItem, metadata.Orientation);
         if (alpha is not null)
         {
-            uint alphaItem = heif.AddItem("av01", alpha.Stream, "Alpha", hidden: true);
-            heif.Associate(alphaItem, ispe);
-            heif.AddProperty(alphaItem, HeifWriter.PixelInformation(alpha.Sequence.BitDepth, 1));
-            heif.AddProperty(alphaItem, ConfigurationBox(alpha), essential: true);
-            heif.AddProperty(alphaItem, HeifWriter.AuxiliaryType(AvifProperties.AlphaUrn));
+            byte[] auxC = HeifWriter.AuxiliaryType(AvifProperties.AlphaUrn);
+            uint alphaItem = AddImage(heif, alpha, width, height, "Alpha", hidden: true, ispe, 1, auxC);
+            heif.AddProperty(alphaItem, auxC);
             heif.Reference("auxl", alphaItem, colorItem);
             AddOrientation(heif, alphaItem, metadata.Orientation);
         }
@@ -349,6 +440,46 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
         }
 
         heif.Write(output);
+    }
+
+    /// <summary>
+    /// Adds an image's items: one av01 item, or a grid item (its layout in the idat) over hidden av01 cells, which carry their own
+    /// size, pixel information, configuration and <paramref name="cellProperty"/>. Returns the image's item, which has its size
+    /// and pixel information; the caller adds the rest.
+    /// </summary>
+    private static uint AddImage(HeifWriter heif, CodedImage image, int width, int height, string name, bool hidden, int ispe, int channels, byte[] cellProperty)
+    {
+        int depth = image.First.Sequence.BitDepth;
+        if (!image.IsGrid)
+        {
+            uint item = heif.AddItem("av01", image.First.Stream, name, hidden);
+            heif.Associate(item, ispe);
+            heif.AddProperty(item, HeifWriter.PixelInformation(depth, channels));
+            heif.AddProperty(item, ConfigurationBox(image.First), essential: true);
+            return item;
+        }
+
+        // ImageGrid (HEIF 6.6.2.3): version, flags (32-bit sizes), rows and columns less one, the output size.
+        bool wide = width > ushort.MaxValue || height > ushort.MaxValue;
+        byte[] layout = wide
+            ? [0, 1, (byte)(image.Rows - 1), (byte)(image.Columns - 1), .. HeifWriter.U32((uint)width), .. HeifWriter.U32((uint)height)]
+            : [0, 0, (byte)(image.Rows - 1), (byte)(image.Columns - 1), (byte)(width >> 8), (byte)width, (byte)(height >> 8), (byte)height];
+        uint grid = heif.AddItem("grid", layout, name, hidden, inIdat: true);
+        uint[] cells = new uint[image.Cells.Length];
+        int cellIspe = heif.AddProperty(HeifWriter.SpatialExtents(image.CellWidth, image.CellHeight));
+        for (int i = 0; i < cells.Length; i++)
+        {
+            cells[i] = heif.AddItem("av01", image.Cells[i].Stream, name, hidden: true);
+            heif.Associate(cells[i], cellIspe);
+            heif.AddProperty(cells[i], HeifWriter.PixelInformation(depth, channels));
+            heif.AddProperty(cells[i], ConfigurationBox(image.Cells[i]), essential: true);
+            heif.AddProperty(cells[i], cellProperty);
+        }
+
+        heif.Reference("dimg", grid, cells);
+        heif.Associate(grid, ispe);
+        heif.AddProperty(grid, HeifWriter.PixelInformation(depth, channels));
+        return grid;
     }
 
     /// <summary>The clli and mdcv properties of the HDR luminances the metadata holds.</summary>

@@ -60,6 +60,10 @@ code points with the HDR luminances as clli and mdcv, and a gain map as a tmap i
 profile is written only when the colors have no code points and it is not plain sRGB, which the nclx box always says.
 `StripMetadata` leaves EXIF, XMP, the profile and the gain map out.
 
+An image up to 8192 x 4352 is one AV1 frame, split into tiles every 4096 samples across that are coded in parallel; a larger
+image is written as a grid of equal cells, or of the `GridTileSize` you choose, coded in parallel too. The file is the same
+whatever the number of threads.
+
 Every file Egami writes decodes in dav1d and libavif to the same pixels as in Egami; `tools/check-avif-interop.py` checks this.
 
 ## HDR

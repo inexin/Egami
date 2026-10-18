@@ -138,6 +138,31 @@ public class AvifWriterTests
         where T : unmanaged => plane switch { 0 => raster.Y, 1 => raster.U, 2 => raster.V, _ => raster.A };
 
     [Fact]
+    public void GridCellsLoadBackExactly()
+    {
+        using Raster<Rgba8> source = Pattern<Rgba8>(150, 100, (x, y) => new Rgba8((byte)(x * 3), (byte)(y * 5), (byte)(x ^ y), (byte)(200 + (x % 50))));
+        byte[] file = Save(source, new AvifWriterOptions { Lossless = true, GridTileSize = new Size(64, 64) });
+        using Raster<Rgba8> loaded = Raster.Load<Rgba8>(file);
+        AssertEqual(source, loaded);
+        HeifFile heif = HeifFile.Parse(file, "AVIF");
+        Assert.Equal(FourCC.Of("grid"), heif.PrimaryItem!.Type);
+        Assert.Equal(6, heif.PrimaryItem.ReferencesOf(FourCC.Of("dimg")).Length);
+    }
+
+    [Fact]
+    public void ImagesLargerThanOneFrameAreWrittenAsGrids()
+    {
+        Assert.Equal((4800, 40), AvifWriter.GridCells(9600, 40, ChromaFormat.Yuv420, null));
+        Assert.Equal((8192, 4352), AvifWriter.GridCells(8192, 4352, ChromaFormat.Yuv444, null));
+        Assert.Equal((6668, 3750), AvifWriter.GridCells(20000, 15000, ChromaFormat.Yuv420, null));
+        using Raster<Rgb8> wide = Pattern<Rgb8>(8250, 16, (x, y) => new Rgb8((byte)x, (byte)(x >> 8), (byte)y));
+        byte[] file = Save(wide, new AvifWriterOptions { Effort = 0 });
+        Assert.Equal(FourCC.Of("grid"), HeifFile.Parse(file, "AVIF").PrimaryItem!.Type);
+        using Raster loaded = Raster.Load(file);
+        Assert.Equal((8250, 16), (loaded.Width, loaded.Height));
+    }
+
+    [Fact]
     public void LosslessFilesSayLossless()
     {
         using Raster<Rgb8> source = Pattern<Rgb8>(20, 20, (x, y) => new Rgb8((byte)x, (byte)y, 9));

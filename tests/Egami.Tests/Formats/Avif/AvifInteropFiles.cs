@@ -30,7 +30,8 @@ public class AvifInteropFiles
                 string stem = Path.Combine(directory, name);
                 File.WriteAllBytes(stem + ".avif", file);
                 HeifFile heif = HeifFile.Parse(file, "AVIF");
-                byte[] stream = heif.ItemData(heif.PrimaryItem!).ToArray();
+                HeifItem first = heif.PrimaryItem!.Type == FourCC.Of("grid") ? heif.Item(heif.PrimaryItem.ReferencesOf(FourCC.Of("dimg"))[0])! : heif.PrimaryItem;
+                byte[] stream = heif.ItemData(first).ToArray();
                 File.WriteAllBytes(stem + ".obu", stream);
                 Av1Frame frame = Av1Decoder.DecodeFirstFrame(stream, "AVIF", cancellationToken: TestContext.Current.CancellationToken);
                 File.WriteAllBytes(stem + ".yuv", Planes(frame));
@@ -81,6 +82,7 @@ public class AvifInteropFiles
 
         string corpus = Path.Combine(AppContext.BaseDirectory, "images", "avif");
         yield return ("gainmap-sdr-q80", Raster.Load(Path.Combine(corpus, "gainmap-sdr-base.avif")), new AvifWriterOptions { Quality = 80 });
+        yield return ("grid-q60", Photo(200, 130, alpha: true), new AvifWriterOptions { GridTileSize = new Size(96, 64) });
         yield return ("gainmap-hdr-q80", Raster.Load(Path.Combine(corpus, "gainmap-hdr-base.avif")), new AvifWriterOptions { Quality = 80 });
     }
 

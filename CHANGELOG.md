@@ -19,6 +19,8 @@ changes that break code come only in a new major version.
 - `YuvRaster.Save` writes AVIF from the planes as they are, at 8, 10 or 12 bits, with their matrix, range and chroma siting.
 - AVIF files keep EXIF and XMP, the orientation (irot and imir), the ICC profile when the colors need one, HDR luminances
   (clli and mdcv) and gain maps (tmap), which libavif reads and applies.
+- Images larger than 8192 x 4352 are written as grids of equal cells (`AvifWriterOptions.GridTileSize` sets the cells); tiles
+  and cells are coded in parallel, with the same file at any thread count.
 
 ## Egami 1.0.0 (2026-10-18)
 
