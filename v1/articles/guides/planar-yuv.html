@@ -89,7 +89,7 @@
 
 <p>A <code>YuvRaster</code> holds a picture as separate luma (Y) and chroma (U, V) planes, plus an optional alpha plane: the way video codecs,
 AVIF, lossy WebP and JPEG store it. Use it to take frames from a decoder or a camera, to scale video before converting it, and to
-read and write JPEG without the RGB step. Everything else is done on a <code>Raster</code> after conversion.</p>
+read and write JPEG and AVIF without the RGB step. Everything else is done on a <code>Raster</code> after conversion.</p>
 <h2 id="creating-and-wrapping">Creating and wrapping</h2>
 <pre><code class="lang-csharp">// A 1080p frame as video stores it: full-size luma, chroma at half width and height, BT.709 at limited range.
 using YuvRaster&lt;byte&gt; frame = YuvRaster.Create(1920, 1080, ChromaFormat.Yuv420, YuvColor.Bt709Limited);
@@ -221,7 +221,8 @@ planes.Save(&quot;copy.jpg&quot;, new JpegWriterOptions { Quality = 90 });
 <p><code>YuvRaster.Load</code> gives a YCbCr JPEG's planes exactly as libjpeg-turbo's raw output does: 4:2:0, 4:2:2 or 4:4:4 at the file's own
 sampling (other samplings are replicated to 4:4:4), gray as 4:0:0, also at reduced scale. CMYK, YCCK and RGB JPEGs, and formats
 without planes, throw <code>NotSupportedException</code>: load those with <code>Raster.Load</code>. Saving 8-bit BT.601 full-range planes as JPEG
-encodes them straight, with the same bytes as libjpeg-turbo's encoder from planes.</p>
+encodes them straight, with the same bytes as libjpeg-turbo's encoder from planes. Saving planes as AVIF encodes them straight
+too, at 8, 10 or 12 bits with any matrix, range and siting (see the <a href="avif.html">AVIF guide</a>).</p>
 <p>Loading planes skips chroma upsampling and color conversion, so it is faster than <code>Raster.Load</code> on one thread. On several
 threads both are limited by the same Huffman decoding and take about the same time.</p>
 <p>Converting loaded planes with <code>ToRaster</code> may differ by one level, in a small share of pixels, from <code>Raster.Load</code>, which keeps the

@@ -142,6 +142,20 @@ copy).</p>
 using Raster&lt;Rgba8&gt; logo = Raster.Create&lt;Rgba8&gt;(64, 64);
 logo.Save(&quot;logo.avif&quot;, new AvifWriterOptions { Quality = 80, AlphaQuality = 100 });
 </code></pre>
+<p>From effort 5, 8-bit 4:2:0 images are converted with sharp RGB to YUV, as libavif does: luma and chroma are refined together so
+sharp colored edges keep their color. A <code>YuvRaster</code> is written as its planes are, at 8, 10 or 12 bits, with no conversion or
+chroma resampling; its matrix, range and chroma siting go into the file, and <code>Lossless</code> keeps every sample of the planes.</p>
+<pre><code class="lang-csharp">// YUV planes are written as they are: no conversion or resampling, their matrix, range and siting in the file.
+using YuvRaster planes = YuvRaster.Load(&quot;duck.avif&quot;);
+planes.Save(&quot;duck-planes.avif&quot;, new AvifWriterOptions { Lossless = true });
+</code></pre>
+<p>Metadata goes with the image: EXIF and XMP as items, the EXIF orientation as irot and imir (which readers apply), PQ and HLG
+code points with the HDR luminances as clli and mdcv, and a gain map as a tmap item that readers without gain maps skip. The ICC
+profile is written only when the colors have no code points and it is not plain sRGB, which the nclx box always says.
+<code>StripMetadata</code> leaves EXIF, XMP, the profile and the gain map out.</p>
+<p>An image up to 8192 x 4352 is one AV1 frame, split into tiles every 4096 samples across that are coded in parallel; a larger
+image is written as a grid of equal cells, or of the <code>GridTileSize</code> you choose, coded in parallel too. The file is the same
+whatever the number of threads.</p>
 <p>Every file Egami writes decodes in dav1d and libavif to the same pixels as in Egami; <code>tools/check-avif-interop.py</code> checks this.</p>
 <h2 id="hdr">HDR</h2>
 <p>PQ and HLG files keep their curve; converting to sRGB as they load tone maps them, the peak taken from the file's clli box:</p>
