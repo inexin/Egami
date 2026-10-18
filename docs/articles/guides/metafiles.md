@@ -5,7 +5,7 @@ EMF (Enhanced Metafile) and EMF+ (GDI+ records inside an EMF), and their gzip fo
 Egami.Drawing's canvas, so a chart pasted from Excel stays vector on a PDF page or in SVG output and rasterizes the same on
 any OS. It only reads and plays: it does not write metafiles. It is fully managed.
 
-Egami.Metafiles is at 0.1 (0.1.0) and its API may still change before 1.0.
+Egami.Metafiles is at 0.1 (0.1.1) and its API may still change before 1.0.
 
 ## Loading
 

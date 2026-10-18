@@ -1,8 +1,8 @@
 # Drawing
 
-Egami.Drawing is a separate package that draws antialiased paths, shapes, strokes, clips and images on a `Canvas`. It is a
-preview (1.0.0-preview.5): its API may still change before 1.0. Text is drawn with Egami.Fonts; see
-[Fonts and text](text.md).
+Egami.Drawing is a separate package that draws antialiased paths, shapes, strokes, clips and images on a `Canvas`. It is at
+1.0 (1.0.0) and its API is stable: 1.x versions add to it without breaking code that uses it. Text is drawn with
+Egami.Fonts; see [Fonts and text](text.md).
 
 ## A canvas
 
