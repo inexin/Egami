@@ -1,3 +1,4 @@
+using Egami.Formats.Av1;
 using Egami.Formats.Avif;
 using Egami.Formats.Heif;
 using Egami.Pixels;
@@ -112,6 +113,26 @@ public class AvifWriterTests
             previous = AvifWriter.QIndexFor(q);
         }
     }
+
+    [Fact]
+    public void ScreenContentUsesPalettesAndIntraBlockCopy()
+    {
+        using Raster<Rgba8> screen = Screen(300, 200);
+        byte[] file = Save(screen, new AvifWriterOptions());
+        HeifFile heif = HeifFile.Parse(file, "AVIF");
+        Av1Frame frame = Av1Decoder.DecodeFirstFrame(heif.ItemData(heif.PrimaryItem!).ToArray(), "AVIF", cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(frame.Header.AllowIntrabc);
+        Assert.Contains(frame.Grid, b => b is { PaletteSize: [> 0, _] });
+        Assert.Contains(frame.Grid, b => b is { UseIntrabc: true });
+    }
+
+    /// <summary>Text-like strokes in three colors, one 12x16 cell repeated at shifting offsets: palettes and intra block copy.</summary>
+    internal static Raster<Rgba8> Screen(int width, int height) => Pattern<Rgba8>(width, height, (x, y) =>
+    {
+        int cx = (x + ((y / 16) * 5)) % 12, cy = y % 16;
+        bool stroke = (cx is 2 or 3 && cy is > 2 and < 13) || (cy is 7 or 8 && cx is > 2 and < 9) || (cx == 8 && cy > 8 && cy < 13);
+        return stroke ? new Rgba8(20, 30, 40, 255) : cy == 15 ? new Rgba8(0, 120, 215, 255) : new Rgba8(245, 246, 248, 255);
+    });
 
     internal static byte[] Save(Raster raster, AvifWriterOptions options)
     {

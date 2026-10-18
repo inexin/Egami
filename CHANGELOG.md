@@ -11,6 +11,10 @@ changes that break code come only in a new major version.
   default 60), or lossless as 4:4:4 RGB with the identity matrix (`Lossless`); 8, 10 and 12 bits; 4:2:0, 4:2:2, 4:4:4 and 4:0:0;
   transparency as an alpha item (`AlphaQuality`). Files decode in dav1d and libavif to the same pixels as in Egami.
 - `AvifDetails.Lossless` says whether a file's image is coded losslessly, so saving it again writes lossless.
+- `AvifWriterOptions.Effort` (0 to 10, default 4) trades time for size, like avifenc's speed. The encoder searches partitions,
+  modes and transforms by rate and distortion, quantizes with a trellis, varies the quantizer by superblock as libaom's tune IQ
+  does, and picks the loop filters.
+- Screen content (text, user interfaces, graphics) is detected and coded with palettes and intra block copy.
 
 ## Egami 1.0.0 (2026-10-18)
 

@@ -36,8 +36,14 @@ internal sealed class Av1EncoderSettings
     /// <summary>Gets or sets base_q_idx, 0 to 255; 0 codes the frame losslessly in its own planes.</summary>
     internal int QIndex { get; init; } = 100;
 
-    /// <summary>Gets or sets the block size the fixed partition splits to (<see cref="Bs"/>).</summary>
-    internal int BlockSize { get; init; } = Bs.B16x16;
+    /// <summary>Gets or sets how hard the search works, 0 to 10 (<see cref="Av1SearchProfile"/>).</summary>
+    internal int Effort { get; init; } = 4;
+
+    /// <summary>Gets or sets whether screen content tools (palettes) are on; null detects screen content (<see cref="Av1ScreenContent"/>).</summary>
+    internal bool? ScreenContent { get; init; }
+
+    /// <summary>Gets or sets whether intra block copy is on, with screen content tools; null decides with <see cref="Av1ScreenContent"/>.</summary>
+    internal bool? IntraBlockCopy { get; init; }
 
     /// <summary>Gets or sets how many threads tiles may use.</summary>
     internal int Parallelism { get; init; } = 1;
@@ -79,6 +85,76 @@ internal sealed class Av1EncoderSource
     /// <summary>Gets each plane, at the frame's stride.</summary>
     internal ushort[][] Planes { get; }
 
+    /// <summary>Gets the columns of 16x16 luma cells in <see cref="RdScale"/>.</summary>
+    internal int RdScaleColumns { get; private set; }
+
+    /// <summary>
+    /// Gets each 16x16 luma cell's rate-distortion multiplier scale, after libaom's av1_set_mb_ssim_rdmult_scaling
+    /// (encoder_utils.c), which tune IQ uses: an exponential fit of the mean variance of its 8x8 blocks, divided by the frame's
+    /// geometric mean, so flat cells spend more bits for their quality and busy ones fewer.
+    /// </summary>
+    internal double[] RdScale { get; private set; } = [];
+
+    /// <summary>Computes <see cref="RdScale"/> from the luma plane.</summary>
+    internal void ComputeRdScale(int miRows, int miCols, int bitDepth)
+    {
+        int cols = (miCols + 3) / 4, rows = (miRows + 3) / 4;
+        double[] scale = new double[cols * rows];
+        ushort[] luma = Planes[0];
+        int stride = luma.Length / (((miRows * 4) + 63) & ~63);
+        double logSum = 0;
+        int shift = 2 * (bitDepth - 8);
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < cols; col++)
+            {
+                double variance = 0;
+                int count = 0;
+                for (int mr = row * 4; mr < miRows && mr < (row + 1) * 4; mr += 2)
+                {
+                    for (int mc = col * 4; mc < miCols && mc < (col + 1) * 4; mc += 2)
+                    {
+                        long sum = 0, squares = 0;
+                        for (int y = 0; y < 8; y++)
+                        {
+                            int at = (((mr * 4) + y) * stride) + (mc * 4);
+                            for (int x = 0; x < 8; x++)
+                            {
+                                int v = luma[at + x];
+                                sum += v;
+                                squares += v * v;
+                            }
+                        }
+
+                        variance += (double)((squares - ((sum * sum) >> 6)) >> shift) / 64;
+                        count++;
+                    }
+                }
+
+                double v8 = (67.035434 * (1 - Math.Exp(-0.0021489 * (variance / count)))) + 17.492222;
+                scale[(row * cols) + col] = v8;
+                logSum += Math.Log(v8);
+            }
+        }
+
+        double mean = Math.Exp(logSum / scale.Length);
+        for (int i = 0; i < scale.Length; i++)
+        {
+            scale[i] /= mean;
+        }
+
+        (RdScale, RdScaleColumns) = (scale, cols);
+    }
+
+    /// <summary>Gets each superblock's quantizer before its delta is rounded, in raster order, when the frame codes deltas.</summary>
+    internal int[]? SuperblockQIndices { get; set; }
+
+    /// <summary>Gets the superblock columns of <see cref="SuperblockQIndices"/>.</summary>
+    internal int SuperblockColumns { get; set; }
+
+    /// <summary>Gets the hashes of the luma blocks, when the frame allows intra block copy.</summary>
+    internal Av1BlockHash? Hash { get; set; }
+
     /// <summary>Gets each plane's width inside the image.</summary>
     internal int[] Widths { get; }
 
@@ -95,12 +171,20 @@ internal sealed class Av1EncoderSource
 /// </summary>
 internal sealed class Av1Encoder
 {
-    private Av1Encoder(byte[] stream, Av1SequenceHeader sequence, Av1Frame frame)
+    private Av1Encoder(byte[] stream, Av1SequenceHeader sequence, Av1Frame frame, double estimatedBits, double tileBits)
     {
         Stream = stream;
         Sequence = sequence;
         Reconstruction = frame;
+        EstimatedBits = estimatedBits;
+        TileBits = tileBits;
     }
+
+    /// <summary>Gets the bits the search estimated the tiles' symbols at, each superblock from the CDFs as it began.</summary>
+    internal double EstimatedBits { get; }
+
+    /// <summary>Gets the bits the tiles' data takes.</summary>
+    internal double TileBits { get; }
 
     /// <summary>Gets the stream: the sequence header OBU, then the frame OBU.</summary>
     internal byte[] Stream { get; }
@@ -134,11 +218,34 @@ internal sealed class Av1Encoder
         Av1FrameHeader header = Av1FrameHeader.Parse(bits.ToArray(), sequence, 0, 0, "AV1");
         Av1Frame frame = new(header, "AV1", reconstruct: true) { Parallelism = Math.Max(1, settings.Parallelism), CancellationToken = settings.CancellationToken };
         Av1EncoderSource source = new(input, frame);
+        if (header.DeltaQPresent)
+        {
+            int sbCols = (header.MiCols + 15) >> 4, sbRows = (header.MiRows + 15) >> 4;
+            source.SuperblockQIndices = Av1VarianceBoost.SuperblockQIndices(source.Planes[0], frame.Strides[0], sbCols, sbRows, header.BaseQIdx, sequence.BitDepth);
+            source.SuperblockColumns = sbCols;
+        }
+
+        if (header.AllowIntrabc)
+        {
+            source.Hash = new Av1BlockHash(source.Planes[0], frame.Strides[0], header.MiCols * 4, header.MiRows * 4);
+        }
+
+        if (!header.CodedLossless)
+        {
+            source.ComputeRdScale(header.MiRows, header.MiCols, sequence.BitDepth);
+        }
         Av1FrameDecisions decisions = new(frame);
         int tiles = header.TileCols * header.TileRows;
-        frame.For(tiles, tile => new Av1TileEncoder(frame, tile / header.TileCols, tile % header.TileCols, source, decisions, settings).Encode());
+        long[] estimates = new long[tiles];
+        frame.For(tiles, tile =>
+        {
+            Av1TileEncoder encoder = new(frame, tile / header.TileCols, tile % header.TileCols, source, decisions, settings);
+            encoder.Encode();
+            estimates[tile] = encoder.EstimatedRate;
+        });
         MarkCdef(frame);
-        frame.ApplyFilters();
+
+        Av1FilterSearch.Search(frame, source, sequence, parameters, settings.Effort, Av1Rate.RdMultiplier(Math.Max(parameters.BaseQIdx, 1), sequence.BitDepth));
 
         byte[][] tileData = new byte[tiles][];
         frame.For(tiles, tile => tileData[tile] = new Av1TileWriter(frame, tile / header.TileCols, tile % header.TileCols, decisions).Write());
@@ -146,7 +253,7 @@ internal sealed class Av1Encoder
         List<byte> stream = [];
         Av1ObuWriter.Obu(stream, Av1ObuType.SequenceHeader, Av1ObuWriter.SequenceHeader(sequence));
         Av1ObuWriter.Obu(stream, Av1ObuType.Frame, Av1ObuWriter.Frame(sequence, parameters, tileData));
-        return new Av1Encoder([.. stream], sequence, frame);
+        return new Av1Encoder([.. stream], sequence, frame, estimates.Sum() / (double)Av1CostSink.BitCost, tileData.Sum(t => t.Length) * 8.0);
     }
 
     /// <summary>
@@ -233,13 +340,52 @@ internal sealed class Av1Encoder
             TileRowsLog2 = Math.Max(minLog2Tiles - minLog2Cols, 0),
             BaseQIdx = settings.Lossless ? 0 : Math.Clamp(settings.QIndex, 0, 255),
             LoopFilterDeltaEnabled = false,
+            TxModeSelect = !settings.Lossless && settings.QIndex > 0,
         };
-        if (sequence.Monochrome)
+        (bool tools, bool intrabc) = Av1ScreenContent.Detect(input.Planes[0], input.Width, input.Height, input.BitDepth);
+        f.AllowScreenContentTools = settings.ScreenContent ?? tools;
+        f.AllowIntrabc = f.AllowScreenContentTools && (settings.IntraBlockCopy ?? (intrabc && settings.Effort >= 2));
+        if (f.BaseQIdx > 0)
         {
-            f.LrType[0] = Av1RestorationType.None;
+            Tune(f, sequence);
+
+            // Tune IQ's Variance Boost: a quantizer for each superblock.
+            f.DeltaQPresent = true;
+            f.DeltaQRes = Av1VarianceBoost.DeltaQResLog2(f.BaseQIdx);
         }
 
         return f;
+    }
+
+    /// <summary>
+    /// Sets the perceptual quantizer choices of libaom's tune IQ (av1_set_quantizer, av1_quantize.c; the QM formulas of
+    /// quant_common.h): chroma finer than luma in 4:2:0 and coarser in 4:4:4 and 4:2:2, and quantization matrices whose
+    /// steepness follows the quantizer.
+    /// </summary>
+    internal static void Tune(Av1FrameParameters f, Av1SequenceHeader sequence)
+    {
+        int q = f.BaseQIdx;
+        if (!sequence.Monochrome)
+        {
+            (int dc, int ac) = (sequence.SubsamplingX, sequence.SubsamplingY) switch
+            {
+                (1, 1) => (-Math.Clamp((q / 2) - 14, 0, 16), -Math.Clamp((q / 2) - 14, 0, 16)),
+                (1, 0) => (0, Math.Clamp(q / 2, 0, 6)),
+                _ => (0, Math.Clamp(q / 2, 0, 24)),
+            };
+            (f.DeltaQUDc, f.DeltaQUAc, f.DeltaQVDc, f.DeltaQVAc) = (dc, ac, dc, ac);
+        }
+
+        // Tune IQ's adaptive loop filter sharpness (picklpf.c).
+        f.LoopFilterSharpness = q <= 112 ? 7 : q <= 160 ? 1 : 0;
+        f.UsingQmatrix = true;
+        f.QmY = AllIntraQmLevel(q);
+        f.QmU = f.QmV = sequence.SubsamplingX == 0 && sequence.SubsamplingY == 0 ? Chroma444QmLevel(q + f.DeltaQUAc) : AllIntraQmLevel(q + f.DeltaQUAc);
+
+        static int AllIntraQmLevel(int qindex) => qindex <= 40 ? 10 : qindex <= 100 ? 9 : qindex <= 160 ? 8 : qindex <= 200 ? 7 : qindex <= 220 ? 6 : qindex <= 240 ? 5 : 4;
+
+        static int Chroma444QmLevel(int qindex) => qindex <= 12 ? 10 : qindex <= 24 ? 9 : qindex <= 32 ? 8 : qindex <= 36 ? 7 : qindex <= 44 ? 6
+            : qindex <= 48 ? 5 : qindex <= 56 ? 4 : qindex <= 88 ? 3 : 2;
     }
 
     /// <summary>Gives every 64x64 unit that holds a coded block CDEF strength 0, as the tile writer codes it.</summary>

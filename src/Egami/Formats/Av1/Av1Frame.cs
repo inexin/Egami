@@ -152,8 +152,8 @@ internal sealed class Av1Frame
         }
     }
 
-    /// <summary>Gets the frame header.</summary>
-    internal Av1FrameHeader Header { get; }
+    /// <summary>Gets or sets the frame header; the encoder swaps in headers that differ in their filter parameters only.</summary>
+    internal Av1FrameHeader Header { get; set; }
 
     /// <summary>Gets the sequence header.</summary>
     internal Av1SequenceHeader Sequence { get; }

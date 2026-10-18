@@ -58,6 +58,10 @@ public class AvifInteropFiles
         yield return ("rgb12-q40-444", Deep(70, 40), new AvifWriterOptions { Quality = 40, BitDepth = 12, Chroma = ChromaFormat.Yuv444 });
         yield return ("gray-lossless", Gray(64, 64), new AvifWriterOptions { Lossless = true });
         yield return ("gray-q60", Gray(64, 64), new AvifWriterOptions());
+        yield return ("screen-q60", AvifWriterTests.Screen(300, 200), new AvifWriterOptions());
+        yield return ("screen-lossless", AvifWriterTests.Screen(300, 200), new AvifWriterOptions { Lossless = true });
+        yield return ("screen-q40-444", AvifWriterTests.Screen(260, 140), new AvifWriterOptions { Quality = 40, Chroma = ChromaFormat.Yuv444 });
+        yield return ("screen10-q75", AvifWriterTests.Screen(200, 120), new AvifWriterOptions { Quality = 75, BitDepth = 10 });
     }
 
     private static Raster<Rgba8> Photo(int width, int height, bool alpha) => AvifWriterTests.Pattern<Rgba8>(width, height, (x, y) =>
