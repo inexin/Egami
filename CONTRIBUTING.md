@@ -29,6 +29,14 @@ The large third-party corpora (conformance suites and test vectors) are fetched 
 
 Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks`.
 
+## Documentation versions
+
+The docs site keeps one folder per major version (`v1/`, `v2/`, ...) with `versions.json` and an `index.html` that sends
+readers to the newest version. `docs/versions.json` lists the major versions, newest first; `docs/template/public/main.js`
+reads it to show a version picker on every page and a notice on pages of an older version. Minor versions share their
+major's folder, because 1.x stays compatible. When a new major version starts, keep the old one on a `release/<major>.x`
+branch, add the new version at the top of `docs/versions.json` and build each folder from its own branch.
+
 ## Pull requests
 
 - One topic per PR. Fill in the PR template, including the provenance section.
