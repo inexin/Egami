@@ -18,7 +18,7 @@ internal sealed partial class Av1Reconstructor
     private readonly ushort[] _aboveData = new ushort[(64 * 2) + 32 + EdgeBase];
     private readonly ushort[] _leftData = new ushort[(64 * 2) + 32 + EdgeBase];
 
-    private void PredictIntra(Av1TileParser tile, int plane, int colOff, int rowOff, int txSize, int mode, int angleDelta, bool palette,
+    private void PredictIntra(Av1TileState tile, int plane, int colOff, int rowOff, int txSize, int mode, int angleDelta, bool palette,
         int filterMode, ushort[] buf, int offset, int stride)
     {
         Av1BlockInfo b = tile.Block;

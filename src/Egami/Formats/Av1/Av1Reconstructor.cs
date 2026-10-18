@@ -27,7 +27,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
     }
 
     /// <inheritdoc/>
-    public void IntraBlock(Av1TileParser tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs)
+    public void IntraBlock(Av1TileState tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs)
     {
         Av1BlockInfo b = tile.Block;
         ushort[] dst = _frame.Planes![plane];
@@ -57,7 +57,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
     }
 
     /// <inheritdoc/>
-    public void InterPrediction(Av1TileParser tile)
+    public void InterPrediction(Av1TileState tile)
     {
         Av1BlockInfo b = tile.Block;
         for (int plane = 0; plane < _frame.Header.NumPlanes; plane++)
@@ -72,7 +72,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
     }
 
     /// <inheritdoc/>
-    public void InterDone(Av1TileParser tile)
+    public void InterDone(Av1TileState tile)
     {
         Av1BlockInfo b = tile.Block;
         if (StoreCflRequired(tile))
@@ -96,7 +96,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
     }
 
     /// <inheritdoc/>
-    public void InterResidual(Av1TileParser tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs)
+    public void InterResidual(Av1TileState tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs)
     {
         if (eob == 0)
         {
@@ -107,11 +107,11 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
         Av1InverseTransform.Add(coeffs, txSize, txType, _frame.Header.LosslessArray[tile.Block.SegmentId], eob, _frame.Planes![plane], (y * stride) + x, stride, _bitDepth);
     }
 
-    private bool StoreCflRequired(Av1TileParser tile) =>
+    private bool StoreCflRequired(Av1TileState tile) =>
         !_frame.Sequence.Monochrome && (!tile.IsChromaRef || (!tile.Block.IsInter && tile.Block.UvMode == Pred.UvCfl));
 
     /// <summary>cfl_store_tx: stores a luma transform block, subsampled, for chroma from luma.</summary>
-    private void StoreCfl(Av1TileParser tile, int row, int col, int txSize, ushort[] src, int offset, int stride)
+    private void StoreCfl(Av1TileState tile, int row, int col, int txSize, ushort[] src, int offset, int stride)
     {
         int bsize = tile.Block.Size;
         if (Av1Tables.BlockSizeHigh[bsize] == 4 || Av1Tables.BlockSizeWide[bsize] == 4)
@@ -230,7 +230,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
     /// Predicts an intra block copy block in a plane from the frame itself (build_inter_predictors_8x8_and_bigger with the
     /// identity scale and the 2-tap filter).
     /// </summary>
-    private void PredictIntrabc(Av1TileParser tile, Av1BlockInfo b, int plane)
+    private void PredictIntrabc(Av1TileState tile, Av1BlockInfo b, int plane)
     {
         int ssx = plane > 0 ? _ssx : 0, ssy = plane > 0 ? _ssy : 0;
         int bw = Math.Max((tile.BlockWidth4 * 4) >> ssx, 4), bh = Math.Max((tile.BlockHeight4 * 4) >> ssy, 4);

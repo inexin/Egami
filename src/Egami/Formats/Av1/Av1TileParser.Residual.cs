@@ -3,8 +3,6 @@ namespace Egami.Formats.Av1;
 /// <summary>The residual of a block: the transform block walk and the coefficient reading of libaom's decodetxb.c.</summary>
 internal sealed partial class Av1TileParser
 {
-    private static readonly byte[] NzMapCtxOffset1d = [26, 31, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36];
-
     private void DecodeResidual(int bsize)
     {
         Av1BlockInfo b = _b;
@@ -140,85 +138,10 @@ internal sealed partial class Av1TileParser
     private (int Eob, int TxType) ReadCoefficients(int plane, int blkRow, int blkCol, int txSize)
     {
         Av1BlockInfo b = _b;
-        int planeBsize = plane == 0 ? b.Size : Av1Tables.PlaneBlockSize(b.Size, _ssx, _ssy);
-        byte[] above = _aboveEntropy[plane], left = _leftEntropy[plane];
-        int aOff = _aboveOffset[plane] + blkCol, lOff = _leftOffset[plane] + blkRow;
         int txw = Av1Tables.TxSizeWideUnit[txSize], txh = Av1Tables.TxSizeHighUnit[txSize];
-
-        // get_txb_ctx
-        int dcSign = 0;
-        for (int k = 0; k < txw; k++)
-        {
-            int sign = above[aOff + k] >> 3;
-            dcSign += sign == 1 ? -1 : sign == 2 ? 1 : 0;
-        }
-
-        for (int k = 0; k < txh; k++)
-        {
-            int sign = left[lOff + k] >> 3;
-            dcSign += sign == 1 ? -1 : sign == 2 ? 1 : 0;
-        }
-
-        int dcSignCtx = dcSign < 0 ? 1 : dcSign > 0 ? 2 : 0;
-        int skipCtx;
-        if (plane == 0)
-        {
-            if (planeBsize == Av1Tables.TxSizeToBlockSize[txSize])
-            {
-                skipCtx = 0;
-            }
-            else
-            {
-                int top = 0, leftCtx = 0;
-                for (int k = 0; k < txw; k++)
-                {
-                    top |= above[aOff + k];
-                }
-
-                for (int k = 0; k < txh; k++)
-                {
-                    leftCtx |= left[lOff + k];
-                }
-
-                skipCtx = SkipContexts[Math.Min(top & 7, 4)][Math.Min(leftCtx & 7, 4)];
-            }
-        }
-        else
-        {
-            int aboveAny = 0, leftAny = 0;
-            for (int k = 0; k < txw; k++)
-            {
-                aboveAny |= above[aOff + k];
-            }
-
-            for (int k = 0; k < txh; k++)
-            {
-                leftAny |= left[lOff + k];
-            }
-
-            int ctxBase = (aboveAny != 0 ? 1 : 0) + (leftAny != 0 ? 1 : 0);
-            skipCtx = ctxBase + (Av1Tables.NumPelsLog2Lookup[planeBsize] > Av1Tables.NumPelsLog2Lookup[Av1Tables.TxSizeToBlockSize[txSize]] ? 10 : 7);
-        }
-
+        (int skipCtx, int dcSignCtx) = TxbContext(plane, blkRow, blkCol, txSize);
         (int eob, int txType, int culLevel) = ReadCoefficientsTxb(plane, blkRow, blkCol, txSize, skipCtx, dcSignCtx);
-
-        // av1_set_entropy_contexts
-        int aboveCount = txw;
-        if (culLevel != 0 && _toRightEdge < 0)
-        {
-            aboveCount = Math.Clamp(MaxBlockWide(planeBsize, plane) - blkCol, 0, txw);
-        }
-
-        above.AsSpan(aOff, aboveCount).Fill((byte)culLevel);
-        above.AsSpan(aOff + aboveCount, txw - aboveCount).Clear();
-        int leftCount = txh;
-        if (culLevel != 0 && _toBottomEdge < 0)
-        {
-            leftCount = Math.Clamp(MaxBlockHigh(planeBsize, plane) - blkRow, 0, txh);
-        }
-
-        left.AsSpan(lOff, leftCount).Fill((byte)culLevel);
-        left.AsSpan(lOff + leftCount, txh - leftCount).Clear();
+        SetEntropyContexts(plane, blkRow, blkCol, txSize, culLevel);
 
         if (b.IsInter && plane == 0 && (txw == 16 || txh == 16))
         {
@@ -460,22 +383,6 @@ internal sealed partial class Av1TileParser
         return total;
     }
 
-    private int SegmentQIndex(int segment, int baseQIndex) => SegFeatureActive(segment, 0)
-        ? Math.Clamp(baseQIndex + _header.FeatureData[segment, 0], 0, 255)
-        : baseQIndex;
-
-    private static int DcQ(int qindex, int bitDepth)
-    {
-        int q = Math.Clamp(qindex, 0, 255);
-        return bitDepth == 8 ? Av1Tables.DcQLookup8[q] : bitDepth == 10 ? Av1Tables.DcQLookup10[q] : Av1Tables.DcQLookup12[q];
-    }
-
-    private static int AcQ(int qindex, int bitDepth)
-    {
-        int q = Math.Clamp(qindex, 0, 255);
-        return bitDepth == 8 ? Av1Tables.AcQLookup8[q] : bitDepth == 10 ? Av1Tables.AcQLookup10[q] : Av1Tables.AcQLookup12[q];
-    }
-
     /// <summary>Reads a luma transform block's type into the frame's map (av1_read_tx_type).</summary>
     private void ReadTxType(int originIndex, int txSize)
     {
@@ -511,24 +418,4 @@ internal sealed partial class Av1TileParser
         _frame.TxTypeMap[originIndex] = Av1Tables.ExtTxInverse[(setType * 16) + symbol];
     }
 
-    /// <summary>Gets a transform block's type (av1_get_tx_type).</summary>
-    private int GetTxType(int planeType, int blkRow, int blkCol, int txSize)
-    {
-        Av1BlockInfo b = _b;
-        if (_header.LosslessArray[b.SegmentId] || Av1Tables.TxSizeSqrUpMap[txSize] > Tx.T32x32)
-        {
-            return TxType.DctDct;
-        }
-
-        if (planeType == 0)
-        {
-            return _frame.TxTypeMap[((_miRow + blkRow) * _miCols) + _miCol + blkCol];
-        }
-
-        int txType = b.IsInter
-            ? _frame.TxTypeMap[((_miRow + (blkRow << _ssy)) * _miCols) + _miCol + (blkCol << _ssx)]
-            : Av1Tables.IntraModeToTxType[b.UvModeAsY];
-        int setType = Av1Tables.ExtTxSetType(txSize, b.IsInter, _header.ReducedTxSet);
-        return ((Av1Tables.ExtTxUsedMask[setType] >> txType) & 1) != 0 ? txType : TxType.DctDct;
-    }
 }
