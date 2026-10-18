@@ -522,7 +522,8 @@ internal sealed class Av1FrameHeader
         }
     }
 
-    private static int TileLog2(int blockSize, int target)
+    /// <summary>Gets the smallest k for which blockSize shifted left by k reaches target (tile_log2).</summary>
+    internal static int TileLog2(int blockSize, int target)
     {
         int k = 0;
         while ((blockSize << k) < target)
