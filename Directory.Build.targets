@@ -1,0 +1,10 @@
+<Project>
+  <!-- Each package's NuGet icon is branding/nuget/<PackageId>.png. Projects without one (tests, samples) pack no icon. -->
+  <PropertyGroup Condition="Exists('$(MSBuildThisFileDirectory)branding/nuget/$(PackageId).png')">
+    <PackageIcon>$(PackageId).png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(PackageIcon)' != ''">
+    <None Include="$(MSBuildThisFileDirectory)branding/nuget/$(PackageIcon)" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+</Project>

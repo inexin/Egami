@@ -1,5 +1,10 @@
 # Egami
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="branding/lockups/Egami-on-dark.svg">
+  <img src="branding/lockups/Egami-on-light.svg" alt="Egami" height="64">
+</picture>
+
 Egami ("image" backwards) is an open source 2D imaging library for .NET 10 that loads, edits, draws and saves images.
 
 - **MIT-licensed**, with no strings for commercial use.

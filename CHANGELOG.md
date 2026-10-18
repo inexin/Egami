@@ -7,6 +7,11 @@ changes that break code come only in a new major version.
 
 Additive to the 1.0 API: nothing in it changes or goes away.
 
+### Package icons
+
+- Every package has its own icon on NuGet, and the docs site has the Egami logo and favicon. The icons, logos and favicons
+  are in `branding/`.
+
 ### CCITT fax encoding
 
 - `CcittFax.Encode` writes packed bi-level rows as Group 4 (ITU-T T.6) or one-dimensional Group 3 (T.4) with PDF's
