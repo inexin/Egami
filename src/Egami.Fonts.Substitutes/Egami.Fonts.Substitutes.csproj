@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.Fonts.Substitutes</RootNamespace>
+    <PackageId>Egami.Fonts.Substitutes</PackageId>
+    <Version>1.0.0</Version>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <Description>Open, metric-compatible substitutes for the fonts documents name most, for Egami.Fonts: Liberation Sans, Serif and Mono for Helvetica, Arial, Times, Times New Roman, Courier and Courier New, Carlito for Calibri and Caladea for Cambria (SIL OFL 1.1).</Description>
+    <PackageTags>$(EgamiPackageTags);fonts;liberation;carlito;caladea;metric-compatible</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Egami.Fonts ships no font files; this opt-in package holds the bundled ones. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
+  </ItemGroup>
+
+  <!-- The fonts and their licences, unchanged (SIL OFL 1.1; THIRD-PARTY-NOTICES.md). The licences ship with the fonts. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Fonts/*.ttf;Fonts/*-OFL.txt" LogicalName="Egami.Fonts.Substitutes.%(Filename)%(Extension)" />
+    <None Include="Fonts/*-OFL.txt" Pack="true" PackagePath="licenses/" />
+  </ItemGroup>
+
+</Project>

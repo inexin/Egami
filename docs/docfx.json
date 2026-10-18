@@ -16,6 +16,10 @@
           "files": [ "Egami.Fonts.csproj" ]
         },
         {
+          "src": "../src/Egami.Fonts.Substitutes",
+          "files": [ "Egami.Fonts.Substitutes.csproj" ]
+        },
+        {
           "src": "../src/Egami.Svg",
           "files": [ "Egami.Svg.csproj" ]
         },

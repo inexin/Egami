@@ -23,6 +23,7 @@
     <Project Path="src/Egami.Css/Egami.Css.csproj" />
     <Project Path="src/Egami.Drawing/Egami.Drawing.csproj" />
     <Project Path="src/Egami.Fonts/Egami.Fonts.csproj" />
+    <Project Path="src/Egami.Fonts.Substitutes/Egami.Fonts.Substitutes.csproj" />
     <Project Path="src/Egami.Metafiles/Egami.Metafiles.csproj" />
     <Project Path="src/Egami.Svg/Egami.Svg.csproj" />
   </Folder>

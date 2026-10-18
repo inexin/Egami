@@ -656,3 +656,17 @@ profile states "This profile is free of known copyright restrictions". The CTAN 
          software.
 
       3. This notice may not be removed or altered from any source distribution.
+
+## Liberation, Carlito and Caladea fonts
+
+`src/Egami.Fonts.Substitutes/Fonts/*.ttf`, embedded in Egami.Fonts.Substitutes.dll, are unchanged releases of open fonts
+metric-compatible with the fonts documents name most, used in place of fonts a machine does not have:
+
+| Fonts | Release | Licence file |
+| --- | --- | --- |
+| Liberation Sans, Serif and Mono (regular, bold, italic, bold italic) | liberation-fonts-ttf 2.1.5, [liberationfonts/liberation-fonts](https://github.com/liberationfonts/liberation-fonts) | `Liberation-OFL.txt` |
+| Carlito (four styles) | [google/fonts](https://github.com/google/fonts/tree/main/ofl/carlito) | `Carlito-OFL.txt` |
+| Caladea (four styles) | [google/fonts](https://github.com/google/fonts/tree/main/ofl/caladea) | `Caladea-OFL.txt` |
+
+All are licensed under the SIL Open Font License 1.1. The licence files, with each font's copyright and reserved font names,
+are in the same folder, embedded in Egami.Fonts.Substitutes.dll and packed with the package under `licenses/`.

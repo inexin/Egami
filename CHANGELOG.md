@@ -21,6 +21,17 @@ changes that break code come only in a new major version.
 - Every package's NuGet page now links to the documentation at [inexin.github.io/Egami](https://inexin.github.io/Egami/) as its
   project website, and its readme links to the guides there instead of the Markdown sources on GitHub.
 
+## Egami.Fonts.Substitutes 1.0.0 (unreleased, first release)
+
+A new opt-in package with open fonts that stand in for the fonts documents name most, so text keeps its line breaks on
+machines that lack them. It replaces Egap.Fonts 1.0.0, which held the same fonts in the Egap repository:
+`Egap.Fonts.StandardFonts` is now `Egami.Fonts.Substitutes.SubstituteFonts`, with the same members.
+
+- Liberation Sans, Serif and Mono for Helvetica, Arial, Times, Times New Roman, Courier and Courier New, Carlito for Calibri
+  and Caladea for Cambria, each in four styles, under the SIL Open Font License 1.1.
+- `SubstituteFonts.Find` finds a face by family name or common alias in the nearest style; `SubstituteFonts.Collection` holds
+  all twenty as a `FontCollection`, for text layout, Egami.Metafiles and Egami.Svg.
+
 ## Egami 1.0.0 (2026-10-18)
 
 The first public release.

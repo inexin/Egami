@@ -2,8 +2,8 @@
 
 Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2 and variable fonts in managed code: faces, glyph
 outlines, metrics, kerning, installed fonts and subsets. Egami.Drawing uses it to draw and measure a line of text on a canvas. Egami.Drawing and Egami.Fonts are at
-1.0 and their APIs are frozen. Egami ships no font: text needs a face from a file, a stream,
-memory or the installed fonts.
+1.0 and their APIs are frozen. Egami.Fonts ships no font: text needs a face from a file, a stream,
+memory or the installed fonts, or from the opt-in [substitute fonts](#substitute-fonts) package.
 
 ## Faces
 
@@ -180,6 +180,22 @@ are matched together. Families are found by typographic, legacy, full or PostScr
 records the `FontSynthesis` a lighter or upright face would need; `GenericFamily` names fixed per-platform lists.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#match)]
+
+## Substitute fonts
+
+Documents often name Arial, Helvetica, Times, Courier, Calibri or Cambria without carrying the font, and many machines (Linux
+servers and containers above all) have none of them. Egami.Fonts.Substitutes is a separate, opt-in package that bundles open
+fonts with the same glyph widths, so text set in a substitute keeps the original's line breaks: Liberation Sans for Helvetica
+and Arial, Liberation Serif for Times and Times New Roman, Liberation Mono for Courier and Courier New, Carlito for Calibri and
+Caladea for Cambria, each in four styles. It adds about 7 MB, which is why Egami.Fonts does not carry the fonts itself. The
+fonts are under the SIL Open Font License 1.1, and their licences ship in the package.
+
+`SubstituteFonts.Find` takes a family name or a common alias (`ArialMT`, `Times-Roman`, `Courier New`; spaces, hyphens and case
+are ignored) and returns the face in the nearest style, or null for any other name. `SubstituteFonts.Collection` holds all
+twenty faces as a `FontCollection`, to match by family name or to pass to anything that takes fonts, such as
+`MetafileRenderOptions.Fonts` or `SvgFontOptions.Collection`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#substitutes)]
 
 ## Subsets
 

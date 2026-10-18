@@ -34,12 +34,13 @@ image.Save("photo-small.png");
 | Egami | Rasters and pixel types; PNG, JPEG, GIF, WebP, TIFF, JPEG XL, AVIF and more; resizing, color management, filters, metadata |
 | Egami.Drawing | Antialiased paths, shapes, text, gradients, layers and recorded drawings on a canvas |
 | Egami.Fonts | TrueType and OpenType fonts, text shaping and paragraph layout |
+| Egami.Fonts.Substitutes | Open fonts that stand in for Arial, Helvetica, Times, Courier, Calibri and Cambria |
 | Egami.Svg | Reads, edits, saves and draws SVG |
 | Egami.Css | CSS parsing, selectors and the cascade |
 | Egami.Metafiles | Plays WMF, EMF and EMF+ pictures |
 
-Egami, Egami.Drawing, Egami.Fonts, Egami.Svg and Egami.Css 1.0.0 are on [NuGet](https://www.nuget.org/packages?q=Egami);
-Egami.Metafiles is not published yet.
+Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css and Egami.Metafiles 1.0.0 are on
+[NuGet](https://www.nuget.org/packages?q=Egami); Egami.Fonts.Substitutes is not published yet.
 
 ## Documentation
 

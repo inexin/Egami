@@ -39,7 +39,7 @@ Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks`.
 | Path | Contents |
 | --- | --- |
 | `src/Egami/` | The core library |
-| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/` | The other packages ([Packages](docs/articles/packages.md)) |
+| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Fonts.Substitutes/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/` | The other packages ([Packages](docs/articles/packages.md)) |
 | `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) |
 | `tests/Egami.Fuzz/` | Fuzzing harness (SharpFuzz and AFL++) |
 | `tests/Egami.AotSmoke/` | Console app published with Native AOT in CI |

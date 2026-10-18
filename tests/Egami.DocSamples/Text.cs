@@ -2,6 +2,7 @@ using System.Numerics;
 
 using Egami.Drawing;
 using Egami.Fonts;
+using Egami.Fonts.Substitutes;
 using Egami.Pixels;
 
 using Path = Egami.Drawing.Path;
@@ -414,6 +415,23 @@ public class Text
 
         Assert.Equal(FontSynthesis.Bold | FontSynthesis.Italic, font.Synthesis);
         _ = match;
+    }
+
+    [Fact]
+    public void Substitutes()
+    {
+        #region substitutes
+        // Bundled faces for the fonts documents name most, on any machine: Arial is Liberation Sans, Calibri is Carlito.
+        Typeface? arial = SubstituteFonts.Find("Arial", FontStyle.Bold);
+        Font body = new(SubstituteFonts.Find("Calibri", FontStyle.Normal)!, 11);
+
+        // All twenty faces as a collection, matched by family name and style.
+        FontMatch? mono = SubstituteFonts.Collection.Match("Liberation Mono", FontStyle.Italic);
+        #endregion
+
+        Assert.Equal("LiberationSans-Bold", arial!.PostScriptName);
+        Assert.Equal("Carlito-Regular", body.Typeface.PostScriptName);
+        Assert.Equal("LiberationMono-Italic", mono!.Value.Typeface.PostScriptName);
     }
 
     [Fact]
