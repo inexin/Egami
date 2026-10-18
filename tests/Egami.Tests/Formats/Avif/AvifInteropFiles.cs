@@ -1,6 +1,8 @@
+using Egami.Colors;
 using Egami.Formats.Av1;
 using Egami.Formats.Avif;
 using Egami.Formats.Heif;
+using Egami.Metadata;
 using Egami.Pixels;
 
 namespace Egami.Tests.Formats.Avif;
@@ -34,6 +36,9 @@ public class AvifInteropFiles
                 File.WriteAllBytes(stem + ".yuv", Planes(frame));
                 bool deep = frame.Sequence.BitDepth > 8;
                 using Raster<Rgba16> loaded = Raster.Load<Rgba16>(file);
+
+                // avifdec applies irot and imir; Egami turns the image when asked.
+                loaded.Apply(ops => ops.AutoOrient(), TestContext.Current.CancellationToken);
                 File.WriteAllBytes(stem + ".rgba", Rgba(loaded, deep));
                 File.WriteAllText(stem + ".txt", $"{loaded.Width} {loaded.Height} {(deep ? 16 : 8)} {(options.Lossless == true ? "lossless" : "lossy")}");
             }
@@ -62,6 +67,21 @@ public class AvifInteropFiles
         yield return ("screen-lossless", AvifWriterTests.Screen(300, 200), new AvifWriterOptions { Lossless = true });
         yield return ("screen-q40-444", AvifWriterTests.Screen(260, 140), new AvifWriterOptions { Quality = 40, Chroma = ChromaFormat.Yuv444 });
         yield return ("screen10-q75", AvifWriterTests.Screen(200, 120), new AvifWriterOptions { Quality = 75, BitDepth = 10 });
+
+        Raster<Rgba8> tagged = Photo(90, 60, alpha: true);
+        tagged.Metadata.Exif = new ExifData { Orientation = ImageOrientation.Rotate90 };
+        tagged.Metadata.Xmp = "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\"/>"u8.ToArray();
+        tagged.Metadata.IccProfile = ColorProfile.AdobeRgb.ToIcc();
+        yield return ("metadata-q60", tagged, new AvifWriterOptions());
+
+        Raster<Rgb16> pq = Deep(80, 48);
+        pq.Metadata.CodePoints = ColorCodePoints.Rec2100Pq;
+        pq.Metadata.Hdr = new HdrMetadata { MaxContentLightLevel = 1000, MaxFrameAverageLightLevel = 400, MasteringPrimaries = ColorPrimaries.Rec2020, MasteringMaxLuminance = 1000 };
+        yield return ("hdr-pq-q70", pq, new AvifWriterOptions { Quality = 70 });
+
+        string corpus = Path.Combine(AppContext.BaseDirectory, "images", "avif");
+        yield return ("gainmap-sdr-q80", Raster.Load(Path.Combine(corpus, "gainmap-sdr-base.avif")), new AvifWriterOptions { Quality = 80 });
+        yield return ("gainmap-hdr-q80", Raster.Load(Path.Combine(corpus, "gainmap-hdr-base.avif")), new AvifWriterOptions { Quality = 80 });
     }
 
     private static Raster<Rgba8> Photo(int width, int height, bool alpha) => AvifWriterTests.Pattern<Rgba8>(width, height, (x, y) =>
