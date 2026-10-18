@@ -55,6 +55,12 @@ scripts) is drawn only in the face it was made for, since another face would sho
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-fonts)]
 
+The open fonts are found only when they are installed, and many servers have none. The
+[Egami.Fonts.Substitutes](text.md#substitute-fonts) package bundles Liberation, Carlito and Caladea, so put its faces in the
+`Fonts` you pass:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-substitutes)]
+
 ## Raster.Load
 
 Registered with `EgamiContext.WithFormat`, `MetafileFormat` lets `Raster.Load` draw a metafile at its size at 96 DPI onto a

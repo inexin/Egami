@@ -22,7 +22,8 @@ SUMMARY = """# Egami
 > Egami is an MIT-licensed, fully managed 2D imaging library for .NET 10: it loads, edits, draws and saves images, with no
 > native code and no third-party dependencies. The packages are Egami (rasters, pixel types, formats, operations, color
 > management, metadata), Egami.Drawing (vector drawing on a canvas), Egami.Fonts (fonts, shaping and paragraph layout),
-> Egami.Svg (SVG), Egami.Css (CSS) and Egami.Metafiles (WMF, EMF and EMF+).
+> Egami.Fonts.Substitutes (bundled metric-compatible fonts), Egami.Svg (SVG), Egami.Css (CSS) and Egami.Metafiles (WMF, EMF
+> and EMF+).
 
 Egami's own names: `Raster<TPixel>` and `Raster` hold images, pixel types such as `Rgba8` and `RgbaF32` say how pixels are
 stored, `Raster.Load` and `Save` read and write files, `Raster.Probe` reads a file's size and format without decoding it,

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami.Fonts\Egami.Fonts.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Fonts.Substitutes\Egami.Fonts.Substitutes.csproj" />
   </ItemGroup>
 
   <ItemGroup>

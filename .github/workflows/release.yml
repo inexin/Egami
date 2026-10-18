@@ -3,7 +3,7 @@ name: Release
 # A tag v<version>, the version of src/Egami, publishes the 1.0 packages: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg and
 # Egami.Css, each at the version in its own project file. A tag <package>-v<version>, for example Egami.Metafiles-v0.1.1,
 # publishes that one package, which must be at that version; that is how a package releases on its own, such as the 0.x
-# Egami.Metafiles. The push uses nuget.org trusted
+# Egami.Metafiles, or Egami.Fonts.Substitutes-v1.0.0 for the substitute fonts. The push uses nuget.org trusted
 # publishing: NuGet/login trades the job's OIDC token for a short-lived API key, so the repository keeps no NuGet key. The
 # trusted publishing policy on nuget.org names this repository, this workflow file and the nuget environment, and the nuget
 # environment requires Lars's approval before the job starts. The secret NUGET_USER is the nuget.org account name.

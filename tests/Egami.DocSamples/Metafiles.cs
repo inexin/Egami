@@ -1,4 +1,6 @@
 using Egami.Drawing;
+using Egami.Fonts;
+using Egami.Fonts.Substitutes;
 using Egami.Formats;
 using Egami.Metafiles;
 using Egami.Pixels;
@@ -71,7 +73,7 @@ public class Metafiles
     }
 
     [Fact]
-    public void SubstituteFonts()
+    public void FontSubstitutes()
     {
         string path = Chart;
         #region metafile-fonts
@@ -82,6 +84,27 @@ public class Metafiles
             FontSubstitutions = new Dictionary<string, string> { ["Segoe UI"] = "Noto Sans" },
             Antialias = false, // GDI's own aliased look, for comparing with Windows
         });
+        #endregion
+        Assert.True(image.Width > 0);
+    }
+
+    [Fact]
+    public void BundledSubstitutes()
+    {
+        string path = Chart;
+        #region metafile-substitutes
+        // The same pictures on a machine without Arial or Calibri: the bundled substitutes first, then the installed fonts.
+        var fonts = new FontCollection();
+        foreach (FontFamily family in SubstituteFonts.Collection)
+        {
+            foreach (Typeface face in family.Faces)
+            {
+                fonts.Add(face);
+            }
+        }
+
+        fonts.AddSystemFonts();
+        using Raster<Rgba8> image = Metafile.Load(path).Rasterize<Rgba8>(new MetafileRenderOptions { Fonts = fonts });
         #endregion
         Assert.True(image.Width > 0);
     }
