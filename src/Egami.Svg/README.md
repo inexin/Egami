@@ -6,7 +6,8 @@ Egami.Svg reads, edits, saves and draws SVG.
 - Draws through Egami.Drawing's canvas onto rasters, PDF pages or SVG, with styles, text, filters and color fonts.
 - Lets `Raster.Load` read SVG files, safely: nothing outside the file is opened unless you allow it.
 
-See the [SVG guide](https://github.com/inexin/Egami/blob/main/docs/articles/guides/svg.md).
+See the [SVG guide](https://inexin.github.io/Egami/v1/articles/guides/svg.html).
 
 Egami is MIT-licensed, fully managed C# for .NET 10: no native binaries, no P/Invoke and no third-party dependencies, trimming
-and Native AOT clean. Source, documentation and changelog: [github.com/inexin/Egami](https://github.com/inexin/Egami).
+and Native AOT clean. Documentation: [inexin.github.io/Egami](https://inexin.github.io/Egami/). Source and changelog:
+[github.com/inexin/Egami](https://github.com/inexin/Egami).

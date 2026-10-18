@@ -6,7 +6,8 @@ Egami.Metafiles plays Windows metafiles.
   output and rasterize on any OS.
 - Draws them at a DPI or a size onto rasters, or stretched to a box on any canvas, as Word does.
 
-See the [Windows metafiles guide](https://github.com/inexin/Egami/blob/main/docs/articles/guides/metafiles.md).
+See the [Windows metafiles guide](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html).
 
 Egami is MIT-licensed, fully managed C# for .NET 10: no native binaries, no P/Invoke and no third-party dependencies, trimming
-and Native AOT clean. Source, documentation and changelog: [github.com/inexin/Egami](https://github.com/inexin/Egami).
+and Native AOT clean. Documentation: [inexin.github.io/Egami](https://inexin.github.io/Egami/). Source and changelog:
+[github.com/inexin/Egami](https://github.com/inexin/Egami).

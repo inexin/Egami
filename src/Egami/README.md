@@ -15,7 +15,8 @@ image.Apply(ops => ops.AutoOrient().Fit(800, 800));
 image.Save("photo-small.png");
 ```
 
-Start with [Getting started](https://github.com/inexin/Egami/blob/main/docs/articles/getting-started.md) and the [guides](https://github.com/inexin/Egami/blob/main/docs/articles/guides/formats.md).
+Start with [Getting started](https://inexin.github.io/Egami/v1/articles/getting-started.html) and the [guides](https://inexin.github.io/Egami/v1/articles/guides/formats.html).
 
 Egami is MIT-licensed, fully managed C# for .NET 10: no native binaries, no P/Invoke and no third-party dependencies, trimming
-and Native AOT clean. Source, documentation and changelog: [github.com/inexin/Egami](https://github.com/inexin/Egami).
+and Native AOT clean. Documentation: [inexin.github.io/Egami](https://inexin.github.io/Egami/). Source and changelog:
+[github.com/inexin/Egami](https://github.com/inexin/Egami).

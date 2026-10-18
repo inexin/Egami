@@ -43,9 +43,10 @@ Egami.Metafiles is not published yet.
 
 ## Documentation
 
-[Getting started](docs/articles/getting-started.md), the [guides](docs/articles/guides/formats.md), the
-[cookbook](docs/articles/cookbook/index.md) and the API reference are in [docs/](docs/index.md). What each version adds is in
-the [changelog](CHANGELOG.md).
+The documentation is at [inexin.github.io/Egami](https://inexin.github.io/Egami/): [Getting started](https://inexin.github.io/Egami/v1/articles/getting-started.html),
+the [guides](https://inexin.github.io/Egami/v1/articles/guides/formats.html), the
+[cookbook](https://inexin.github.io/Egami/v1/articles/cookbook/index.html) and the
+[API reference](https://inexin.github.io/Egami/v1/api/Egami.html). What each version adds is in the [changelog](CHANGELOG.md).
 
 ## Contributing
 

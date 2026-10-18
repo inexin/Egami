@@ -14,7 +14,7 @@
     <Authors>Lars Dytterud</Authors>
     <Copyright>Copyright (c) 2026 Lars Dytterud</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/inexin/Egami</PackageProjectUrl>
+    <PackageProjectUrl>https://inexin.github.io/Egami/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/inexin/Egami</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <!-- Tags every package shares; each package adds its own in its project file. -->

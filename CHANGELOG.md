@@ -16,6 +16,11 @@ changes that break code come only in a new major version.
   does, and picks the loop filters.
 - Screen content (text, user interfaces, graphics) is detected and coded with palettes and intra block copy.
 
+### Package links
+
+- Every package's NuGet page now links to the documentation at [inexin.github.io/Egami](https://inexin.github.io/Egami/) as its
+  project website, and its readme links to the guides there instead of the Markdown sources on GitHub.
+
 ## Egami 1.0.0 (2026-10-18)
 
 The first public release.
