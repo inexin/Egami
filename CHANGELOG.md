@@ -450,9 +450,9 @@ Settled in the 1.0 API review, changes from 0.2.0:
 - `FontCollection.Families` and `Count` keep the grouped families until the next `Add` or `Refresh`, instead of grouping every
   face on each call.
 
-### Egami.Drawing 1.1.1 and Egami.Metafiles 0.1.1
+### Egami.Metafiles 0.1.1
 
-- They depend on Egami.Fonts 1.0.0; nothing else changes.
+- It depends on Egami.Drawing 1.0.0 and Egami.Fonts 1.0.0; nothing else changes.
 
 ### Egami.Css 1.0.0
 
@@ -467,20 +467,6 @@ The API is stable now: 1.x versions add to it without breaking your code. Change
 
 The API is stable now: 1.x versions add to it without breaking your code. It runs on Egami.Css 1.0.0 and Egami.Fonts 1.0.0;
 nothing else changed from 0.1.0.
-
-### Egami.Drawing 1.1.0
-
-- `InkCanvas` draws on an `InkRaster` with every `Canvas` call (`InkCanvasOptions`: what RGB means, intent, black point
-  compensation): RGB colours, gradients and images convert into the process inks; ink colours print their plates.
-  `Clear(InkColor)` and `DrawImage(InkRaster)` are its own. Blend modes, groups (isolated, non-isolated, knockout) and soft
-  masks follow ISO 32000-2 plate by plate; every plate is within 2 levels of Ghostscript 10.05's tiffsep on the gate scenes.
-- Ink paints: `SolidPaint(InkColor)`, `GradientStop(offset, InkColor)`, `Mesh.WithInks` and `Patch.WithInks`. Every other
-  backend draws their appearance.
-- `Paint.Overprint` (`Off`, `On`, `NonZero`, PDF's overprint and overprint mode 1): plates a fill does not paint keep what is
-  under them. RGB canvases ignore it, as PDF viewers do by default.
-- `LayerOptions.ColorSpace`: a layer blends in an RGB or gray space and converts into the inks as it merges; spots stay plates.
-- Pictures keep ink paints, overprint and layer colour spaces; .egdr 1.1 holds them in an INKS chunk, which 1.0 readers skip
-  to draw the appearances.
 
 ### Egami.Css 0.2.0
 
@@ -592,11 +578,6 @@ Wrapped, aligned and interactive text in `Egami.Fonts.Layout`, in the same previ
   a 2,000-word page at three widths 7.8 ms; 10,000 hit tests 19 ms.
 - Fuzz target `paragraph`, and a robustness suite on the same harness.
 
-### Egami.Drawing 1.0.1
-
-- Fixed: a non-isolated layer merged with a blend mode other than source-over blended the backdrop it started from with itself;
-  the backdrop's part is now removed first, as PDF's non-isolated groups require (ISO 32000 11.4.8). Found by Egap's renderer.
-
 ### Egami.Drawing 1.0.0
 
 The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. Settled in the 1.0 API review, changes from 0.1.0:
@@ -612,6 +593,22 @@ The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. Se
   `tileSize` everywhere.
 - `TextAnchor.Middle` and `VerticalAlign.Middle` are `Center`.
 - New hook `OnClear`, so a document backend can write a clear; `GlyphCache.ByteLimit` is documented as process-wide.
+- Fixed: a non-isolated layer merged with a blend mode other than source-over blended the backdrop it started from with itself;
+  the backdrop's part is now removed first, as PDF's non-isolated groups require (ISO 32000 11.4.8). Found by Egap's renderer.
+
+Printing with inks:
+
+- `InkCanvas` draws on an `InkRaster` with every `Canvas` call (`InkCanvasOptions`: what RGB means, intent, black point
+  compensation): RGB colours, gradients and images convert into the process inks; ink colours print their plates.
+  `Clear(InkColor)` and `DrawImage(InkRaster)` are its own. Blend modes, groups (isolated, non-isolated, knockout) and soft
+  masks follow ISO 32000-2 plate by plate; every plate is within 2 levels of Ghostscript 10.05's tiffsep on the gate scenes.
+- Ink paints: `SolidPaint(InkColor)`, `GradientStop(offset, InkColor)`, `Mesh.WithInks` and `Patch.WithInks`. Every other
+  backend draws their appearance.
+- `Paint.Overprint` (`Off`, `On`, `NonZero`, PDF's overprint and overprint mode 1): plates a fill does not paint keep what is
+  under them. RGB canvases ignore it, as PDF viewers do by default.
+- `LayerOptions.ColorSpace`: a layer blends in an RGB or gray space and converts into the inks as it merges; spots stay plates.
+- Pictures keep ink paints, overprint and layer colour spaces; .egdr 1.1 holds them in an INKS chunk, which 1.0 readers skip
+  to draw the appearances.
 
 ### Egami.Drawing 0.1.0
 

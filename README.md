@@ -8,7 +8,7 @@ Egami ("image" backwards) is an open source 2D imaging library for .NET 10 that 
 - **Trimming and Native AOT clean**, on every OS and CPU .NET 10 supports.
 - **Formats**: PNG and APNG, JPEG, GIF, WebP, BMP, TGA, QOI, the Netpbm formats, TIFF, Radiance and OpenEXR, JPEG XL, ICO and
   CUR read and written; AVIF, JPEG 2000, JBIG2, CCITT fax and PSD read ([guide](docs/articles/guides/formats.md)).
-- **Drawing** (Egami.Drawing 1.1): antialiased paths, shapes, strokes, clips and images on a canvas; boolean operations,
+- **Drawing** (Egami.Drawing 1.0): antialiased paths, shapes, strokes, clips and images on a canvas; boolean operations,
   outlines, dashes, measuring, path effects and SVG path data on curves; gradients, image, noise and custom paints; layers with
   opacity, blend modes, filters and soft masks; blurred shapes and shadows; nine-patches, sprite atlases, Gouraud meshes and
   Coons and tensor patches; recorded drawings that replay at any scale, tile as patterns and save as .egdr files
