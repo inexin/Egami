@@ -25,6 +25,11 @@ dotnet test
 
 To test the SIMD fallback paths locally, run the tests with `DOTNET_EnableHWIntrinsic=0`.
 
+CI on a pull request builds and tests on Linux x64 and runs the format, public API, dependency, docs, provenance and sign-off
+checks. Pushes to `main`, a nightly run and manual runs add Linux arm64, Windows and macOS, the tests with AVX-512, AVX2 or all
+hardware intrinsics turned off, PNG against libpng and the Native AOT smoke app. If your change touches SIMD or
+platform-specific code, run the tests with the intrinsics turned off before you open the pull request.
+
 The large third-party corpora (conformance suites and test vectors) are fetched into `.cache` by the `tools/make-*-references.py` scripts and never committed. A normal run skips them; set `EGAMI_CORPUS` to the codecs you are working on (`avif`, `exr`, `jbig2`, `jpeg2000`, `jxl`, `tiff`, `vp8`, comma-separated, or `all`) to check them too, for example `EGAMI_CORPUS=jxl dotnet test --filter FullyQualifiedName~Jxl`. The same switch takes a folder of `tests/images` (`avif`, `jpeg`, `pngsuite` and so on): the streaming tests that run over every file skip in a normal run and stream the files of the folders it names.
 
 Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks`.
