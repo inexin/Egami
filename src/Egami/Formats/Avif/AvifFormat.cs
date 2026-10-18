@@ -13,7 +13,7 @@ namespace Egami.Formats.Avif;
 /// </example>
 public static class AvifFormat
 {
-    /// <summary>Gets the format's registration: name, MIME type, extension, signature and reader.</summary>
+    /// <summary>Gets the format's registration: name, MIME type, extension, signature, reader and writer.</summary>
     public static FormatInfo Info { get; } = new()
     {
         Name = "AVIF",
@@ -22,6 +22,7 @@ public static class AvifFormat
         SignatureLength = 64,
         Matches = Matches,
         Reader = AvifReader.Instance,
+        Writer = AvifWriter.Instance,
     };
 
     /// <summary>
@@ -93,6 +94,12 @@ public sealed class AvifDetails : FormatDetails
     /// <summary>Gets or sets whether the image has an alpha item.</summary>
     public bool HasAlpha { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether the primary image's AV1 frame is coded losslessly (every segment at quantizer 0), so saving it again
+    /// writes lossless unless <see cref="AvifWriterOptions.Lossless"/> says otherwise.
+    /// </summary>
+    public bool Lossless { get; set; }
+
     /// <summary>Gets or sets whether the color is premultiplied by the alpha (a prem item reference). Egami loads straight alpha.</summary>
     public bool AlphaPremultiplied { get; set; }
 
@@ -138,6 +145,7 @@ public sealed class AvifDetails : FormatDetails
             ChromaSiting = ChromaSiting,
             CodePoints = CodePoints,
             HasAlpha = HasAlpha,
+            Lossless = Lossless,
             AlphaPremultiplied = AlphaPremultiplied,
             GridRows = GridRows,
             GridColumns = GridColumns,
@@ -250,4 +258,98 @@ public sealed record AvifFilmGrain
 
     /// <summary>Gets whether the output is clipped to the video range.</summary>
     public bool ClipToRestrictedRange { get; init; }
+}
+
+/// <summary>
+/// Options for writing AVIF. Lossy images are coded on libavif's quality scale, so the same <see cref="Quality"/> gives about the
+/// same file as avifenc -q; lossless images keep every sample of 4:4:4 RGB.
+/// </summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Avif.cs" region="write"/>
+/// </example>
+public sealed class AvifWriterOptions : WriterOptions
+{
+    private readonly int _quality = 60;
+    private readonly int _effort = 4;
+    private readonly int _alphaQuality = 100;
+    private readonly int? _bitDepth;
+    private readonly Size? _gridTileSize;
+
+    /// <summary>Gets the default options.</summary>
+    public static new AvifWriterOptions Default { get; } = new();
+
+    /// <summary>
+    /// Gets the lossy quality, 0 (smallest) to 100 (best), on avifenc's -q scale. Defaults to 60. Ignored for lossless images.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 100.</exception>
+    public int Quality
+    {
+        get => _quality;
+        init => _quality = InRange(value, 0, 100);
+    }
+
+    /// <summary>
+    /// Gets how hard the encoder works, 0 (fastest) to 10 (smallest files): 10 minus avifenc's speed, so the default 4 matches
+    /// avifenc's default speed 6.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 10.</exception>
+    public int Effort
+    {
+        get => _effort;
+        init => _effort = InRange(value, 0, 10);
+    }
+
+    /// <summary>
+    /// Gets whether to write lossless (every sample of the RGB or gray image exact, 4:4:4 with the identity matrix) or lossy
+    /// data, or <see langword="null"/> (the default) to keep the kind of the AVIF file the raster was read from, and write lossy
+    /// otherwise.
+    /// </summary>
+    public bool? Lossless { get; init; }
+
+    /// <summary>
+    /// Gets the chroma format of lossy color, or <see langword="null"/> (the default) to choose: 4:0:0 for gray images, 4:4:4 from
+    /// Quality 90 up, else 4:2:0. Lossless images are always 4:4:4 (or 4:0:0 when gray).
+    /// </summary>
+    public ChromaFormat? Chroma { get; init; }
+
+    /// <summary>
+    /// Gets the bits a sample has, 8, 10 or 12, or <see langword="null"/> (the default) for 8 with 8-bit pixels and 10 with
+    /// deeper ones; a lossless file of deeper pixels takes the depth of the AVIF file they were read from, else 12.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not 8, 10 or 12.</exception>
+    public int? BitDepth
+    {
+        get => _bitDepth;
+        init => _bitDepth = value is null or 8 or 10 or 12 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The bit depth is 8, 10 or 12.");
+    }
+
+    /// <summary>
+    /// Gets the quality of the alpha plane, 0 to 100 on the same scale as <see cref="Quality"/>: 100 (the default) keeps alpha
+    /// exactly. Alpha is written straight, not premultiplied.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 100.</exception>
+    public int AlphaQuality
+    {
+        get => _alphaQuality;
+        init => _alphaQuality = InRange(value, 0, 100);
+    }
+
+    /// <summary>
+    /// Gets the size of the cells of a grid image, or <see langword="null"/> (the default) to write one frame up to 8192 x 4352
+    /// and a grid of equal cells only for larger images.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">A side is below 64 or above 8192.</exception>
+    public Size? GridTileSize
+    {
+        get => _gridTileSize;
+        init => _gridTileSize = value is not Size size || (size.Width is >= 64 and <= 8192 && size.Height is >= 64 and <= 8192)
+            ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "Grid cells are 64 to 8192 samples a side.");
+    }
+
+    private static int InRange(int value, int min, int max)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(value, min);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(value, max);
+        return value;
+    }
 }

@@ -827,6 +827,7 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
 
         AvifDetails details = AvifDetails.From(file);
         details.FilmGrain = codec.FilmGrain;
+        details.Lossless = codec.Lossless;
         metadata.FormatDetails = details;
         foreach (HeifProblem problem in file.Heif.Problems)
         {

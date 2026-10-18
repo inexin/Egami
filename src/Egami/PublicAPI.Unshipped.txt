@@ -602,6 +602,8 @@ Egami.Formats.Avif.AvifDetails.Items.get -> System.Collections.Generic.IReadOnly
 Egami.Formats.Avif.AvifDetails.Items.set -> void
 Egami.Formats.Avif.AvifDetails.Level.get -> int
 Egami.Formats.Avif.AvifDetails.Level.set -> void
+Egami.Formats.Avif.AvifDetails.Lossless.get -> bool
+Egami.Formats.Avif.AvifDetails.Lossless.set -> void
 Egami.Formats.Avif.AvifDetails.MajorBrand.get -> string!
 Egami.Formats.Avif.AvifDetails.MajorBrand.set -> void
 Egami.Formats.Avif.AvifDetails.Profile.get -> int
@@ -679,6 +681,22 @@ Egami.Formats.Avif.AvifReaderOptions.AvifReaderOptions() -> void
 Egami.Formats.Avif.AvifReaderOptions.Equals(Egami.Formats.Avif.AvifReaderOptions? other) -> bool
 Egami.Formats.Avif.AvifReaderOptions.FilmGrain.get -> bool
 Egami.Formats.Avif.AvifReaderOptions.FilmGrain.init -> void
+Egami.Formats.Avif.AvifWriterOptions
+Egami.Formats.Avif.AvifWriterOptions.AlphaQuality.get -> int
+Egami.Formats.Avif.AvifWriterOptions.AlphaQuality.init -> void
+Egami.Formats.Avif.AvifWriterOptions.AvifWriterOptions() -> void
+Egami.Formats.Avif.AvifWriterOptions.BitDepth.get -> int?
+Egami.Formats.Avif.AvifWriterOptions.BitDepth.init -> void
+Egami.Formats.Avif.AvifWriterOptions.Chroma.get -> Egami.Pixels.ChromaFormat?
+Egami.Formats.Avif.AvifWriterOptions.Chroma.init -> void
+Egami.Formats.Avif.AvifWriterOptions.Effort.get -> int
+Egami.Formats.Avif.AvifWriterOptions.Effort.init -> void
+Egami.Formats.Avif.AvifWriterOptions.GridTileSize.get -> Egami.Size?
+Egami.Formats.Avif.AvifWriterOptions.GridTileSize.init -> void
+Egami.Formats.Avif.AvifWriterOptions.Lossless.get -> bool?
+Egami.Formats.Avif.AvifWriterOptions.Lossless.init -> void
+Egami.Formats.Avif.AvifWriterOptions.Quality.get -> int
+Egami.Formats.Avif.AvifWriterOptions.Quality.init -> void
 Egami.Formats.Ccitt.CcittFax
 Egami.Formats.Ccitt.CcittFaxParameters
 Egami.Formats.Ccitt.CcittFaxParameters.<Clone>$() -> Egami.Formats.Ccitt.CcittFaxParameters!
@@ -1202,11 +1220,23 @@ Egami.Formats.Jxl.JxlReaderOptions.MaxDownscale.init -> void
 Egami.Formats.Jxl.JxlReaderOptions.RenderSpotColors.get -> bool
 Egami.Formats.Jxl.JxlReaderOptions.RenderSpotColors.init -> void
 Egami.Formats.Jxl.JxlWriterOptions
+Egami.Formats.Jxl.JxlWriterOptions.AlphaDistance.get -> float
+Egami.Formats.Jxl.JxlWriterOptions.AlphaDistance.init -> void
+Egami.Formats.Jxl.JxlWriterOptions.Distance.get -> float?
+Egami.Formats.Jxl.JxlWriterOptions.Distance.init -> void
 Egami.Formats.Jxl.JxlWriterOptions.Effort.get -> int
 Egami.Formats.Jxl.JxlWriterOptions.Effort.init -> void
 Egami.Formats.Jxl.JxlWriterOptions.JxlWriterOptions() -> void
+Egami.Formats.Jxl.JxlWriterOptions.KeepTransparentColors.get -> bool
+Egami.Formats.Jxl.JxlWriterOptions.KeepTransparentColors.init -> void
 Egami.Formats.Jxl.JxlWriterOptions.Lossless.get -> bool?
 Egami.Formats.Jxl.JxlWriterOptions.Lossless.init -> void
+Egami.Formats.Jxl.JxlWriterOptions.PhotonNoiseIso.get -> float?
+Egami.Formats.Jxl.JxlWriterOptions.PhotonNoiseIso.init -> void
+Egami.Formats.Jxl.JxlWriterOptions.Progressive.get -> bool
+Egami.Formats.Jxl.JxlWriterOptions.Progressive.init -> void
+Egami.Formats.Jxl.JxlWriterOptions.Quality.get -> int
+Egami.Formats.Jxl.JxlWriterOptions.Quality.init -> void
 Egami.Formats.Png.PngWriterOptions.FrameCount.get -> int?
 Egami.Formats.Png.PngWriterOptions.FrameCount.init -> void
 Egami.Formats.Png.PngWriterOptions.Interlace.get -> bool
@@ -2984,6 +3014,7 @@ static Egami.Formats.Avif.AvifItem.operator !=(Egami.Formats.Avif.AvifItem? left
 static Egami.Formats.Avif.AvifItem.operator ==(Egami.Formats.Avif.AvifItem? left, Egami.Formats.Avif.AvifItem? right) -> bool
 static Egami.Formats.Avif.AvifReaderOptions.operator !=(Egami.Formats.Avif.AvifReaderOptions? left, Egami.Formats.Avif.AvifReaderOptions? right) -> bool
 static Egami.Formats.Avif.AvifReaderOptions.operator ==(Egami.Formats.Avif.AvifReaderOptions? left, Egami.Formats.Avif.AvifReaderOptions? right) -> bool
+static Egami.Formats.Avif.AvifWriterOptions.Default.get -> Egami.Formats.Avif.AvifWriterOptions!
 static Egami.Formats.Ccitt.CcittFax.Decode(System.ReadOnlySpan<byte> data, Egami.Formats.Ccitt.CcittFaxParameters! parameters, out int rows, Egami.EgamiContext? context = null) -> byte[]!
 static Egami.Formats.Ccitt.CcittFax.Encode(System.ReadOnlySpan<byte> rows, Egami.Formats.Ccitt.CcittFaxParameters! parameters) -> byte[]!
 static Egami.Formats.Ccitt.CcittFaxParameters.operator !=(Egami.Formats.Ccitt.CcittFaxParameters? left, Egami.Formats.Ccitt.CcittFaxParameters? right) -> bool
@@ -3458,15 +3489,3 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Operations.OperationReach.ToString() -> string
 ~override Egami.Pixels.YuvColor.Equals(object obj) -> bool
 ~override Egami.Pixels.YuvColor.ToString() -> string
-Egami.Formats.Jxl.JxlWriterOptions.Distance.get -> float?
-Egami.Formats.Jxl.JxlWriterOptions.Distance.init -> void
-Egami.Formats.Jxl.JxlWriterOptions.Progressive.get -> bool
-Egami.Formats.Jxl.JxlWriterOptions.Progressive.init -> void
-Egami.Formats.Jxl.JxlWriterOptions.AlphaDistance.get -> float
-Egami.Formats.Jxl.JxlWriterOptions.AlphaDistance.init -> void
-Egami.Formats.Jxl.JxlWriterOptions.KeepTransparentColors.get -> bool
-Egami.Formats.Jxl.JxlWriterOptions.KeepTransparentColors.init -> void
-Egami.Formats.Jxl.JxlWriterOptions.PhotonNoiseIso.get -> float?
-Egami.Formats.Jxl.JxlWriterOptions.PhotonNoiseIso.init -> void
-Egami.Formats.Jxl.JxlWriterOptions.Quality.get -> int
-Egami.Formats.Jxl.JxlWriterOptions.Quality.init -> void

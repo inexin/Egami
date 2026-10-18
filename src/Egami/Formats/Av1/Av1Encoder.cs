@@ -33,7 +33,7 @@ internal sealed class Av1EncoderSettings
     /// <summary>Gets or sets whether every sample is kept exactly: quantizer 0 and the Walsh-Hadamard transform.</summary>
     internal bool Lossless { get; init; }
 
-    /// <summary>Gets or sets base_q_idx, 1 to 255, for lossy frames.</summary>
+    /// <summary>Gets or sets base_q_idx, 0 to 255; 0 codes the frame losslessly in its own planes.</summary>
     internal int QIndex { get; init; } = 100;
 
     /// <summary>Gets or sets the block size the fixed partition splits to (<see cref="Bs"/>).</summary>
@@ -231,7 +231,7 @@ internal sealed class Av1Encoder
             Height = input.Height,
             TileColsLog2 = minLog2Cols,
             TileRowsLog2 = Math.Max(minLog2Tiles - minLog2Cols, 0),
-            BaseQIdx = settings.Lossless ? 0 : Math.Clamp(settings.QIndex, 1, 255),
+            BaseQIdx = settings.Lossless ? 0 : Math.Clamp(settings.QIndex, 0, 255),
             LoopFilterDeltaEnabled = false,
         };
         if (sequence.Monochrome)
