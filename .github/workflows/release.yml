@@ -26,8 +26,8 @@ jobs:
       contents: read
       id-token: write # the OIDC token for trusted publishing
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - name: Check the tag against Egami's version
@@ -44,7 +44,7 @@ jobs:
           for package in Egami Egami.Drawing Egami.Fonts Egami.Svg Egami.Css; do
             dotnet pack "src/$package" -c Release --no-build -o artifacts/nuget
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: nuget
           path: artifacts/nuget
