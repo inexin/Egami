@@ -1,14 +1,16 @@
 name: Release
 
 # A tag v<version>, the version of src/Egami, publishes the 1.0 packages: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg and
-# Egami.Css, each at the version in its own project file. Egami.Metafiles is 0.x and stays out. The push uses nuget.org trusted
+# Egami.Css, each at the version in its own project file. A tag <package>-v<version>, for example Egami.Metafiles-v0.1.1,
+# publishes that one package, which must be at that version; that is how a package releases on its own, such as the 0.x
+# Egami.Metafiles. The push uses nuget.org trusted
 # publishing: NuGet/login trades the job's OIDC token for a short-lived API key, so the repository keeps no NuGet key. The
 # trusted publishing policy on nuget.org names this repository, this workflow file and the nuget environment, and the nuget
 # environment requires Lars's approval before the job starts. The secret NUGET_USER is the nuget.org account name.
 
 on:
   push:
-    tags: ['v*']
+    tags: ['v*', 'Egami.*-v*']
 
 permissions:
   contents: read
@@ -30,18 +32,27 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-      - name: Check the tag against Egami's version
+      - name: Pick the packages from the tag
         run: |
-          version=$(dotnet msbuild src/Egami/Egami.csproj -getProperty:Version)
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match Egami $version"
+          case "$GITHUB_REF_NAME" in
+            v*) project=Egami; packages="Egami Egami.Drawing Egami.Fonts Egami.Svg Egami.Css"; tag_version=${GITHUB_REF_NAME#v} ;;
+            *-v*) project=${GITHUB_REF_NAME%-v*}; packages=$project; tag_version=${GITHUB_REF_NAME##*-v} ;;
+          esac
+          if [ ! -f "src/$project/$project.csproj" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME names no package in src"
             exit 1
           fi
+          version=$(dotnet msbuild "src/$project/$project.csproj" -getProperty:Version)
+          if [ "$version" != "$tag_version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match $project $version"
+            exit 1
+          fi
+          echo "PACKAGES=$packages" >> "$GITHUB_ENV"
       - name: Build and test
         run: dotnet test Egami.slnx -c Release
       - name: Pack
         run: |
-          for package in Egami Egami.Drawing Egami.Fonts Egami.Svg Egami.Css; do
+          for package in $PACKAGES; do
             dotnet pack "src/$package" -c Release --no-build -o artifacts/nuget
           done
       - uses: actions/upload-artifact@v7

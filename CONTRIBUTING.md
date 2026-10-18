@@ -66,7 +66,8 @@ A tag `v<version>` (the version of `src/Egami`) runs `.github/workflows/release.
 Egami.Fonts, Egami.Svg and Egami.Css at the versions in their project files, and pushes them to nuget.org with trusted
 publishing, after a maintainer approves the `nuget` environment. The repository holds no NuGet API key: a trusted publishing
 policy on nuget.org names this repository, `release.yml` and the `nuget` environment, and the secret `NUGET_USER` holds the
-nuget.org account name. Only maintainers tag releases.
+nuget.org account name. A tag `<package>-v<version>`, for example `Egami.Metafiles-v0.1.1`, runs the same workflow for that one
+package at that version, so a package can release on its own. Only maintainers tag releases.
 
 ## Pull requests
 
