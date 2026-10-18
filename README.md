@@ -39,8 +39,8 @@ image.Save("photo-small.png");
 | Egami.Css | CSS parsing, selectors and the cascade |
 | Egami.Metafiles | Plays WMF, EMF and EMF+ pictures |
 
-Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css and Egami.Metafiles 1.0.0 are on
-[NuGet](https://www.nuget.org/packages?q=Egami); Egami.Fonts.Substitutes is not published yet.
+Egami, Egami.Drawing, Egami.Fonts, Egami.Fonts.Substitutes, Egami.Svg, Egami.Css and Egami.Metafiles 1.0.0 are on
+[NuGet](https://www.nuget.org/packages?q=Egami).
 
 ## Documentation
 

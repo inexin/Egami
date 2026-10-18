@@ -21,7 +21,7 @@ changes that break code come only in a new major version.
 - Every package's NuGet page now links to the documentation at [inexin.github.io/Egami](https://inexin.github.io/Egami/) as its
   project website, and its readme links to the guides there instead of the Markdown sources on GitHub.
 
-## Egami.Fonts.Substitutes 1.0.0 (unreleased, first release)
+## Egami.Fonts.Substitutes 1.0.0 (2026-10-18)
 
 A new opt-in package with open fonts that stand in for the fonts documents name most, so text keeps its line breaks on
 machines that lack them. It replaces Egap.Fonts 1.0.0, which held the same fonts in the Egap repository:
