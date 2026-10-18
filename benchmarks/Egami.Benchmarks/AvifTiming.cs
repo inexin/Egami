@@ -30,9 +30,13 @@ internal static class AvifTiming
             using Raster<Rgb8> whole = raster.As<Rgb8>();
             using Raster<Rgb8> source = Crop(whole, crop ?? new Size(whole.Width, whole.Height));
             byte[] data = Save(source, options);
+            long allocated = GC.GetTotalAllocatedBytes(true);
+            int collections = GC.CollectionCount(0);
             long start = Stopwatch.GetTimestamp();
             data = Save(source, options);
             double ms = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"allocated {(GC.GetTotalAllocatedBytes(true) - allocated) / 1e6:F0} MB, {GC.CollectionCount(0) - collections} gen-0 collections"));
             File.WriteAllBytes(pairs[i + 1], data);
             source.Save(pairs[i + 1] + ".png");
             using Raster<Rgb8> back = Raster.Load<Rgb8>(data);

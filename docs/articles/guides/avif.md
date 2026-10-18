@@ -41,6 +41,12 @@ Lossy color is 4:2:0 below Quality 90 and 4:4:4 from 90, or the `Chroma` you cho
 are written at 8 bits and deeper pixels at 10, or at the `BitDepth` you choose (8, 10 or 12). Transparency goes in an alpha item,
 a second AV1 image, kept exactly unless `AlphaQuality` is below 100.
 
+`Effort`, 0 to 10, trades encoding time for size: it is 10 minus avifenc's speed, and the default 4 works like avifenc's
+default speed 6. The encoder weighs partitions, prediction modes and transforms by the bits they cost and the error they leave,
+spends finer quantizer steps on flat areas, where banding shows, and picks the deblocking and CDEF filters. Screenshots, text and
+graphics are recognized: their few colors are coded as palettes, and repeated content as copies of what came before (intra block
+copy).
+
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-write)]
 
 Every file Egami writes decodes in dav1d and libavif to the same pixels as in Egami; `tools/check-avif-interop.py` checks this.

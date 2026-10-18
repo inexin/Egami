@@ -8,18 +8,31 @@ namespace Egami.Formats.Av1;
 /// with the decoder's own <see cref="Av1Reconstructor"/> as it is tried, so later blocks predict from exactly the samples a
 /// decoder will have. A chosen superblock's symbols then adapt the CDFs, as writing them will, so the rates of the next stay true.
 /// </summary>
-internal sealed class Av1TileEncoder : Av1TileCoder
+internal sealed partial class Av1TileEncoder : Av1TileCoder
 {
     private readonly Av1Reconstructor _reconstructor;
     private readonly Av1EncoderSource _source;
     private readonly Av1SearchProfile _profile;
-    private readonly long _rdmult;
+    private long _frameRdmult;
+    private int _sbQIndex;
+    private long _rdmult;
+
+    /// <summary>Whether the block's chosen modes are being coded for keeps, which is when the trellis runs below the efforts that search with it.</summary>
+    private bool _winner;
     private readonly int[] _residual = new int[64 * 64];
     private readonly int[] _transformed = new int[64 * 64];
     private readonly int[] _quantized = new int[32 * 32];
     private readonly int[] _coeffs = new int[32 * 32];
     private readonly ushort[] _predicted = new ushort[64 * 64];
+    private readonly long[] _planeDistortion = new long[3];
     private readonly Stack<Snapshot> _pool = new();
+    private readonly Dictionary<int, QuantTable> _tables = [];
+    private readonly Av1CoeffCosts _costs = new();
+    private QuantTable? _table;
+    private readonly TxPlace[][] _places = [new TxPlace[1024], new TxPlace[1024], new TxPlace[1024]];
+    private readonly List<LumaChoice> _lumaCandidates = [];
+    private readonly List<ChromaChoice> _chromaCandidates = [];
+    private readonly List<(long Cost, int Index)> _scores = [];
 
     /// <summary>Starts a tile.</summary>
     internal Av1TileEncoder(Av1Frame frame, int tileRow, int tileCol, Av1EncoderSource source, Av1FrameDecisions decisions, Av1EncoderSettings settings)
@@ -28,7 +41,7 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         _reconstructor = new Av1Reconstructor(frame);
         _source = source;
         _profile = Av1SearchProfile.For(settings.Effort, frame.Header.CodedLossless);
-        _rdmult = Av1Rate.RdMultiplier(Math.Max(frame.Header.BaseQIdx, 1), frame.Sequence.BitDepth);
+        _frameRdmult = _rdmult = Av1Rate.RdMultiplier(Math.Max(frame.Header.BaseQIdx, 1), frame.Sequence.BitDepth);
     }
 
     /// <summary>Gets the rate the chosen superblocks cost as their symbols adapted the CDFs, in 1/512 bits.</summary>
@@ -46,7 +59,14 @@ internal sealed class Av1TileEncoder : Av1TileCoder
             ResetLeftContext();
             for (int miCol = MiColStart; miCol < MiColEnd; miCol += _sbMi)
             {
+                // The superblock's quantizer (Variance Boost), coded as a delta from the one before.
+                int[]? sbQ = _source.SuperblockQIndices;
+                _sbQIndex = sbQ is null ? _header.BaseQIdx
+                    : Av1VarianceBoost.Adjust(_header.DeltaQRes, _currentQIndex, sbQ[((miRow / _sbMi) * _source.SuperblockColumns) + (miCol / _sbMi)]);
+                _frameRdmult = Av1Rate.RdMultiplier(Math.Max(_sbQIndex, 1), _sequence.BitDepth);
                 Snapshot start = Take(miRow, miCol, _frame.SbSize, pixels: false);
+                _costs.Fill(_cdf);
+
                 SearchPartition(miRow, miCol, _frame.SbSize, long.MaxValue);
 
                 // Code the chosen superblock from its starting contexts: first as the search saw it, then adapting the CDFs as
@@ -81,12 +101,20 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         bool hasCols = miCol + hbs < _miCols;
         Snapshot start = Take(miRow, miCol, bsize, pixels: true);
         Snapshot? best = null;
+        long nodeRdmult = BlockRdmult(miRow, miCol, bsize);
         long bestCost = long.MaxValue;
         bool first = true;
         bool lastIsBest = false;
         long noneCost = long.MaxValue, splitCost = long.MaxValue;
+        int noneMode = -1;
         foreach (int partition in Candidates(bsize, hasRows, hasCols))
         {
+            // A block coded whole along one direction is not cut across it (prune_rect_part_using_none_pred_mode).
+            if (_profile.PrunePartitions && (partition, noneMode) is (Partition.Horz, Pred.V) or (Partition.Vert, Pred.H))
+            {
+                continue;
+            }
+
             // At lower efforts: a block coded whole with no residual is not split, and rectangles are tried only where
             // splitting beat keeping the block whole.
             if (_profile.PrunePartitions && partition == Partition.Split && noneCost != long.MaxValue
@@ -114,11 +142,14 @@ internal sealed class Av1TileEncoder : Av1TileCoder
 
             first = false;
             long limit = Math.Min(budget, bestCost);
+            _rdmult = nodeRdmult;
             long cost = PartitionCost(miRow, miCol, bsize, hasRows, hasCols, partition);
             cost = cost >= limit ? long.MaxValue : Add(cost, EncodePartitionChoice(miRow, miCol, bsize, partition, hasRows, hasCols, limit - cost));
             if (partition == Partition.None)
             {
                 noneCost = cost;
+                noneMode = cost != long.MaxValue && _frame.Grid[(miRow * _miCols) + miCol] is { UseIntrabc: false, PaletteSize: [0, _] } noneBlock
+                    ? noneBlock.YMode : -1;
             }
             else if (partition == Partition.Split)
             {
@@ -257,6 +288,34 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         return cost;
     }
 
+    /// <summary>
+    /// Gets a block's rate-distortion multiplier: the frame's, scaled by the geometric mean of the 16x16 cells it covers
+    /// (av1_set_ssim_rdmult, encodeframe_utils.c).
+    /// </summary>
+    private long BlockRdmult(int miRow, int miCol, int bsize)
+    {
+        double[] scale = _source.RdScale;
+        if (scale.Length == 0)
+        {
+            return _frameRdmult;
+        }
+
+        int cols = _source.RdScaleColumns, rows = scale.Length / cols;
+        int bw = (Av1Tables.MiSizeWide[bsize] + 3) / 4, bh = (Av1Tables.MiSizeHigh[bsize] + 3) / 4;
+        double log = 0;
+        int count = 0;
+        for (int row = miRow / 4; row < rows && row < (miRow / 4) + bh; row++)
+        {
+            for (int col = miCol / 4; col < cols && col < (miCol / 4) + bw; col++)
+            {
+                log += Math.Log(scale[(row * cols) + col]);
+                count++;
+            }
+        }
+
+        return Math.Max(1, (long)((_frameRdmult * Math.Exp(log / count)) + 0.5));
+    }
+
     private static long Add(long a, long b) => a == long.MaxValue || b == long.MaxValue ? long.MaxValue : a + b;
 
     private static long Left(long budget, long spent) => spent == long.MaxValue ? 0 : budget == long.MaxValue ? long.MaxValue : Math.Max(0, budget - spent);
@@ -345,7 +404,9 @@ internal sealed class Av1TileEncoder : Av1TileCoder
     {
         int bw = Av1Tables.MiSizeWide[bsize], bh = Av1Tables.MiSizeHigh[bsize];
         int xMis = Math.Min(bw, _miCols - miCol), yMis = Math.Min(bh, _frame.MiRows - miRow);
-        Av1BlockInfo b = new() { Size = bsize, Partition = partition, MiRow = miRow, MiCol = miCol, QIndex = _currentQIndex };
+        // A superblock's first block codes its quantizer; the others keep it.
+        bool sbOrigin = ((miRow | miCol) & (_sbMi - 1)) == 0;
+        Av1BlockInfo b = new() { Size = bsize, Partition = partition, MiRow = miRow, MiCol = miCol, QIndex = sbOrigin ? _sbQIndex : _currentQIndex };
         for (int y = 0; y < yMis; y++)
         {
             _frame.Grid.AsSpan(((miRow + y) * _miCols) + miCol, xMis).Fill(b);
@@ -353,19 +414,40 @@ internal sealed class Av1TileEncoder : Av1TileCoder
 
         _b = b;
         SetBlockPosition(miRow, miCol, bw, bh);
+        _rdmult = BlockRdmult(miRow, miCol, bsize);
         bool lossless = _header.LosslessArray[b.SegmentId];
         Snapshot start = Take(miRow, miCol, bsize, pixels: true);
         bool chroma = _planes > 1 && _isChromaRef;
         bool cfl = chroma && CflAllowed();
+        (long Cost, int Row, int Col) intrabc = IntrabcAllowed(bsize) ? SearchIntrabc(bsize, start, budget, chroma) : (long.MaxValue, 0, 0);
+        budget = Math.Min(budget, intrabc.Cost);
 
         // Luma: the modes whose prediction alone costs least, coded in full at the largest transform; then the best of them at
         // each smaller transform depth. Chroma's own symbols count at DC.
         LumaChoice bestLuma = default;
         long bestLumaCost = long.MaxValue;
-        foreach (LumaChoice candidate in Shortlist(LumaCandidates(bsize, lossless), _profile.LumaShortlist, c => LumaPredictionCost(c, cfl, start)))
+        List<LumaChoice> lumaCandidates = LumaCandidates(bsize, lossless);
+        if (_profile.LumaShortlist > 0 && lumaCandidates.Count > _profile.LumaShortlist)
+        {
+            _scores.Clear();
+            for (int i = 0; i < lumaCandidates.Count; i++)
+            {
+                _scores.Add((LumaPredictionCost(lumaCandidates[i], start), i));
+            }
+
+            Keep(lumaCandidates, _profile.LumaShortlist);
+        }
+
+        FindLumaPalettes(bsize);
+        for (int i = 0; i < _lumaPaletteCount; i++)
+        {
+            lumaCandidates.Add(new LumaChoice(Pred.Dc, 0, -1, 0, i));
+        }
+
+        foreach (LumaChoice candidate in lumaCandidates)
         {
             start.Restore(this, lumaOnly: true);
-            long cost = Luma(candidate, cfl, Math.Min(budget, bestLumaCost));
+            long cost = Luma(candidate, cfl, Math.Min(budget, bestLumaCost), searchTypes: _profile.TypesInModeSearch);
             if (cost < bestLumaCost)
             {
                 (bestLumaCost, bestLuma) = (cost, candidate);
@@ -378,7 +460,7 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         {
             LumaChoice candidate = depthBase with { Depth = depth };
             start.Restore(this, lumaOnly: true);
-            long cost = Luma(candidate, cfl, Math.Min(budget, bestLumaCost));
+            long cost = Luma(candidate, cfl, Math.Min(budget, bestLumaCost), searchTypes: _profile.TypesInModeSearch);
             if (cost < bestLumaCost)
             {
                 (bestLumaCost, bestLuma) = (cost, candidate);
@@ -388,18 +470,47 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         if (bestLumaCost == long.MaxValue)
         {
             start.Restore(this);
+            long cost = long.MaxValue;
+            if (intrabc.Cost != long.MaxValue)
+            {
+                _winner = true;
+                Intrabc(intrabc.Row, intrabc.Col, bsize, long.MaxValue);
+                _winner = false;
+                cost = FinishBlock(start, bsize, chroma);
+            }
+
             Give(start);
-            return long.MaxValue;
+            return cost;
         }
 
         start.Restore(this, lumaOnly: true);
-        Luma(bestLuma, cfl, long.MaxValue);
+        _winner = true;
+        Luma(bestLuma, cfl, long.MaxValue, searchTypes: true);
+        _winner = false;
         if (chroma)
         {
             Snapshot afterLuma = Take(miRow, miCol, bsize, pixels: true);
             ChromaChoice bestChroma = new(Pred.Dc, 0, 0, 0);
             long bestChromaCost = long.MaxValue;
-            foreach (ChromaChoice candidate in Shortlist(ChromaCandidates(bsize, cfl), _profile.ChromaShortlist, c => ChromaPredictionCost(c, afterLuma)))
+            List<ChromaChoice> chromaCandidates = ChromaCandidates(bsize, cfl);
+            if (_profile.ChromaShortlist > 0 && chromaCandidates.Count > _profile.ChromaShortlist)
+            {
+                _scores.Clear();
+                for (int i = 0; i < chromaCandidates.Count; i++)
+                {
+                    _scores.Add((ChromaPredictionCost(chromaCandidates[i], afterLuma), i));
+                }
+
+                Keep(chromaCandidates, _profile.ChromaShortlist);
+            }
+
+            FindChromaPalettes(bsize);
+            for (int i = 0; i < _chromaPaletteCount; i++)
+            {
+                chromaCandidates.Add(new ChromaChoice(Pred.Dc, 0, 0, 0, i));
+            }
+
+            foreach (ChromaChoice candidate in chromaCandidates)
             {
                 afterLuma.Restore(this, chromaOnly: true);
                 long cost = Chroma(candidate);
@@ -410,46 +521,73 @@ internal sealed class Av1TileEncoder : Av1TileCoder
             }
 
             afterLuma.Restore(this, chromaOnly: true);
+            _winner = true;
             Chroma(bestChroma);
+            _winner = false;
             Give(afterLuma);
         }
 
-        // The block's exact rate: its symbols as the writer codes them, from its starting contexts.
-        b.Skip = !AnyCoefficient(bsize);
+        long best = FinishBlock(start, bsize, chroma);
+        if (intrabc.Cost < best)
+        {
+            start.Restore(this);
+            _winner = true;
+            Intrabc(intrabc.Row, intrabc.Col, bsize, long.MaxValue);
+            _winner = false;
+            best = FinishBlock(start, bsize, chroma);
+        }
+
+        Give(start);
+        return best;
+    }
+
+    /// <summary>
+    /// Settles the coded block: its skip flag and color maps, then its exact cost, its symbols as the writer codes them from
+    /// the contexts of <paramref name="start"/>, and its distortion.
+    /// </summary>
+    private long FinishBlock(Snapshot start, int bsize, bool chroma)
+    {
+        _b.Skip = !AnyCoefficient(bsize);
+        KeepColorMaps();
         start.RestoreContexts(this);
+
+        // A whole superblock without residual codes no quantizer delta, and keeps the one before.
+        if (_b.Skip && bsize == _frame.SbSize)
+        {
+            _b.QIndex = _currentQIndex;
+        }
+
         Span<bool> cdef = stackalloc bool[4];
         _cdefTransmitted.CopyTo(cdef);
         Av1CostSink rate = new(false);
-        CodeBlock(ref rate, miRow, miCol, bsize);
+        CodeBlock(ref rate, _miRow, _miCol, bsize);
         cdef.CopyTo(_cdefTransmitted);
-        Give(start);
-        long distortion = Distortion(0, bsize) + (chroma ? Distortion(1, bsize) + Distortion(2, bsize) : 0);
+        long distortion = _planeDistortion[0] + (chroma ? _planeDistortion[1] + _planeDistortion[2] : 0);
         return Av1Rate.RdCost(_rdmult, rate.Cost, distortion);
     }
 
-    /// <summary>Keeps the <paramref name="count"/> candidates of lowest estimated cost, in order; all of them when count is 0.</summary>
-    private static List<T> Shortlist<T>(List<T> candidates, int count, Func<T, long> estimate)
+    /// <summary>Keeps the <paramref name="count"/> candidates of lowest score in <see cref="_scores"/>, in order of score.</summary>
+    private void Keep<T>(List<T> candidates, int count)
     {
-        if (count == 0 || candidates.Count <= count)
+        _scores.Sort();
+        Span<T> kept = new T[count];
+        for (int i = 0; i < count; i++)
         {
-            return candidates;
+            kept[i] = candidates[_scores[i].Index];
         }
 
-        List<(long Cost, int Index)> scored = [];
-        for (int i = 0; i < candidates.Count; i++)
+        candidates.Clear();
+        foreach (T candidate in kept)
         {
-            scored.Add((estimate(candidates[i]), i));
+            candidates.Add(candidate);
         }
-
-        scored.Sort();
-        return [.. scored.Take(count).Select(s => candidates[s.Index])];
     }
 
     /// <summary>
     /// Estimates a luma choice from its prediction alone: the squared prediction error plus its mode symbols, each transform
     /// block predicted with the source standing in for the reconstruction before it.
     /// </summary>
-    private long LumaPredictionCost(LumaChoice choice, bool cfl, Snapshot start)
+    private long LumaPredictionCost(LumaChoice choice, Snapshot start)
     {
         Av1BlockInfo b = _b;
         b.YMode = choice.Mode;
@@ -457,8 +595,10 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         b.UseFilterIntra = choice.FilterMode >= 0;
         b.FilterIntraMode = Math.Max(choice.FilterMode, 0);
         b.UvMode = Pred.Dc;
+        SetLumaPalette(choice.Palette);
+        SetChromaPalette(-1);
         b.TxSize = _header.LosslessArray[b.SegmentId] ? Tx.T4x4 : Av1Tables.MaxTxSizeRectLookup[b.Size];
-        long rate = ModeRate();
+        long rate = ModeRate() + (choice.Palette >= 0 ? ColorMapRate(0) : 0);
         long error = PredictionErrorWithSource(0, b.Size);
         start.Restore(this, lumaOnly: true);
         return Av1Rate.RdCost(_rdmult, rate, error);
@@ -472,7 +612,8 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         b.AngleDeltaUv = choice.AngleDelta;
         b.CflAlphaSigns = choice.CflSigns;
         b.CflAlphaIdx = choice.CflIdx;
-        long rate = ModeRate();
+        SetChromaPalette(choice.Palette);
+        long rate = ModeRate() + (choice.Palette >= 0 ? ColorMapRate(1) : 0);
         long error = PredictionErrorWithSource(1, b.Size) + PredictionErrorWithSource(2, b.Size);
         afterLuma.Restore(this, chromaOnly: true);
         return Av1Rate.RdCost(_rdmult, rate, error);
@@ -485,29 +626,33 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         ushort[] frame = _frame.Planes![plane];
         ushort[] source = _source.Planes[plane];
         int stride = _frame.Strides[plane];
-        ForEachTransformBlock(plane, bsize, (_, _, txSize, x, y) =>
+        (int count, int txSize) = TransformBlocks(plane, bsize);
+        int w = Av1Tables.TxSizeWide[txSize], h = Av1Tables.TxSizeHigh[txSize];
+        for (int i = 0; i < count; i++)
         {
+            (_, _, int x, int y) = _places[plane][i];
             _reconstructor.PredictIntraBlock(this, plane, x, y, txSize);
             error += Error(plane, x, y, txSize);
-            int w = Av1Tables.TxSizeWide[txSize];
-            for (int r = 0; r < Av1Tables.TxSizeHigh[txSize]; r++)
+            for (int r = 0; r < h; r++)
             {
                 int at = ((y + r) * stride) + x;
                 source.AsSpan(at, w).CopyTo(frame.AsSpan(at));
             }
-        });
+        }
+
         return error;
     }
 
-    /// <summary>A luma choice: the mode, its angle delta, the filter intra mode (-1 for none) and the transform depth.</summary>
-    private readonly record struct LumaChoice(int Mode, int AngleDelta, int FilterMode, int Depth);
+    /// <summary>A luma choice: the mode, its angle delta, the filter intra mode (-1 for none), the transform depth and the candidate palette (-1 for none).</summary>
+    private readonly record struct LumaChoice(int Mode, int AngleDelta, int FilterMode, int Depth, int Palette = -1);
 
-    /// <summary>A chroma choice: the mode (<see cref="Pred.UvCfl"/> included), its angle delta and the chroma from luma alphas.</summary>
-    private readonly record struct ChromaChoice(int Mode, int AngleDelta, int CflSigns, int CflIdx);
+    /// <summary>A chroma choice: the mode (<see cref="Pred.UvCfl"/> included), its angle delta, the chroma from luma alphas and the candidate palette (-1 for none).</summary>
+    private readonly record struct ChromaChoice(int Mode, int AngleDelta, int CflSigns, int CflIdx, int Palette = -1);
 
     private List<LumaChoice> LumaCandidates(int bsize, bool lossless)
     {
-        List<LumaChoice> list = [];
+        List<LumaChoice> list = _lumaCandidates;
+        list.Clear();
         bool angles = bsize >= Bs.B8x8 && _profile.AngleDeltas;
         bool filter = !lossless && _profile.FilterIntra && _sequence.EnableFilterIntra
             && Av1Tables.BlockSizeWide[bsize] <= 32 && Av1Tables.BlockSizeHigh[bsize] <= 32;
@@ -533,7 +678,8 @@ internal sealed class Av1TileEncoder : Av1TileCoder
 
     private List<ChromaChoice> ChromaCandidates(int bsize, bool cfl)
     {
-        List<ChromaChoice> list = [];
+        List<ChromaChoice> list = _chromaCandidates;
+        list.Clear();
         bool angles = bsize >= Bs.B8x8 && _profile.AngleDeltas;
         foreach (int mode in _profile.ChromaModes)
         {
@@ -557,13 +703,15 @@ internal sealed class Av1TileEncoder : Av1TileCoder
     }
 
     /// <summary>Encodes the block's luma with a choice; returns luma's rate-distortion cost with the block's mode symbols.</summary>
-    private long Luma(LumaChoice choice, bool cfl, long budget)
+    private long Luma(LumaChoice choice, bool cfl, long budget, bool searchTypes)
     {
         Av1BlockInfo b = _b;
         b.YMode = choice.Mode;
         b.AngleDeltaY = choice.AngleDelta;
         b.UseFilterIntra = choice.FilterMode >= 0;
         b.FilterIntraMode = Math.Max(choice.FilterMode, 0);
+        SetLumaPalette(choice.Palette);
+        SetChromaPalette(-1);
 
         // Chroma from luma needs the luma stored as it is reconstructed; any other chroma mode ignores it.
         b.UvMode = cfl ? Pred.UvCfl : Pred.Dc;
@@ -586,9 +734,9 @@ internal sealed class Av1TileEncoder : Av1TileCoder
 
         int uv = b.UvMode;
         b.UvMode = Pred.Dc;
-        long cost = Av1Rate.RdCost(_rdmult, ModeRate(), 0);
+        long cost = Av1Rate.RdCost(_rdmult, ModeRate() + (choice.Palette >= 0 ? ColorMapRate(0) : 0), 0);
         b.UvMode = uv;
-        return cost >= budget ? long.MaxValue : Add(cost, EncodePlane(0, b.Size, Left(budget, cost)));
+        return cost >= budget ? long.MaxValue : Add(cost, EncodePlane(0, b.Size, Left(budget, cost), searchTypes));
     }
 
     /// <summary>Encodes the block's chroma with a choice; returns chroma's rate-distortion cost with the block's mode symbols.</summary>
@@ -599,14 +747,16 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         b.AngleDeltaUv = choice.AngleDelta;
         b.CflAlphaSigns = choice.CflSigns;
         b.CflAlphaIdx = choice.CflIdx;
-        long cost = Av1Rate.RdCost(_rdmult, ModeRate(), 0);
+        SetChromaPalette(choice.Palette);
+        long cost = Av1Rate.RdCost(_rdmult, ModeRate() + (choice.Palette >= 0 ? ColorMapRate(1) : 0), 0);
         cost = Add(cost, EncodePlane(1, b.Size, long.MaxValue));
         return Add(cost, EncodePlane(2, b.Size, long.MaxValue));
     }
 
     /// <summary>
     /// Gets the chroma from luma alphas whose prediction alone is closest to the source, each chroma plane searched over every
-    /// sign and magnitude; DC when neither plane wants one.
+    /// alpha, or around the minimum three of them place (<see cref="Av1SearchProfile.FullCflSearch"/>); DC when neither plane
+    /// wants one.
     /// </summary>
     private ChromaChoice CflAlphas(int bsize)
     {
@@ -614,24 +764,44 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         b.UvMode = Pred.UvCfl;
         Span<int> sign = stackalloc int[3];
         Span<int> magnitude = stackalloc int[3];
+        Span<long> errors = stackalloc long[33];
         for (int plane = 1; plane <= 2; plane++)
         {
-            long bestError = long.MaxValue;
-            for (int alpha = -16; alpha <= 16; alpha++)
+            errors.Fill(-1);
+            if (_profile.FullCflSearch)
             {
-                int s = alpha == 0 ? 0 : alpha < 0 ? 1 : 2;
-                int m = alpha == 0 ? 0 : Math.Abs(alpha) - 1;
-
-                // The other plane's sign is set nonzero, so the joint sign is valid whatever this plane's is.
-                int signU = plane == 1 ? s : 2, signV = plane == 2 ? s : 2;
-                b.CflAlphaSigns = (3 * signU) + signV - 1;
-                b.CflAlphaIdx = plane == 1 ? m << 4 : m;
-                long error = PredictionError(plane, bsize);
-                if (error < bestError)
+                for (int alpha = -16; alpha <= 16; alpha++)
                 {
-                    (bestError, sign[plane], magnitude[plane]) = (error, s, m);
+                    errors[alpha + 16] = CflError(plane, alpha, bsize);
                 }
             }
+            else
+            {
+                // The error is close to a parabola in alpha: three tries place its minimum, and its neighbours settle it.
+                long left = errors[8] = CflError(plane, -8, bsize), middle = errors[16] = CflError(plane, 0, bsize), right = errors[24] = CflError(plane, 8, bsize);
+                double curve = (left + right - (2.0 * middle)) / 128, slope = (right - left) / 16.0;
+                int guess = curve > 0 ? (int)Math.Clamp(Math.Round(-slope / (2 * curve)), -16, 16) : left < right ? -16 : 16;
+                for (int alpha = Math.Max(guess - 1, -16); alpha <= Math.Min(guess + 1, 16); alpha++)
+                {
+                    if (errors[alpha + 16] < 0)
+                    {
+                        errors[alpha + 16] = CflError(plane, alpha, bsize);
+                    }
+                }
+            }
+
+            int best = 16;
+            for (int i = 0; i < 33; i++)
+            {
+                if (errors[i] >= 0 && (errors[best] < 0 || errors[i] < errors[best]))
+                {
+                    best = i;
+                }
+            }
+
+            int bestAlpha = best - 16;
+            sign[plane] = bestAlpha == 0 ? 0 : bestAlpha < 0 ? 1 : 2;
+            magnitude[plane] = bestAlpha == 0 ? 0 : Math.Abs(bestAlpha) - 1;
         }
 
         b.UvMode = Pred.Dc;
@@ -640,15 +810,29 @@ internal sealed class Av1TileEncoder : Av1TileCoder
             : new ChromaChoice(Pred.UvCfl, 0, (3 * sign[1]) + sign[2] - 1, (magnitude[1] << 4) | magnitude[2]);
     }
 
+    /// <summary>Gets the error of a chroma plane's prediction from luma with one alpha, the other plane's sign held nonzero so the joint sign is valid.</summary>
+    private long CflError(int plane, int alpha, int bsize)
+    {
+        int sign = alpha == 0 ? 0 : alpha < 0 ? 1 : 2;
+        int magnitude = alpha == 0 ? 0 : Math.Abs(alpha) - 1;
+        int signU = plane == 1 ? sign : 2, signV = plane == 2 ? sign : 2;
+        _b.CflAlphaSigns = (3 * signU) + signV - 1;
+        _b.CflAlphaIdx = plane == 1 ? magnitude << 4 : magnitude;
+        return PredictionError(plane, bsize);
+    }
+
     /// <summary>Gets the squared error of the current block's prediction alone in a plane, each transform block predicted from the frame as it stands.</summary>
     private long PredictionError(int plane, int bsize)
     {
         long error = 0;
-        ForEachTransformBlock(plane, bsize, (blkRow, blkCol, txSize, x, y) =>
+        (int count, int txSize) = TransformBlocks(plane, bsize);
+        for (int i = 0; i < count; i++)
         {
+            (_, _, int x, int y) = _places[plane][i];
             _reconstructor.PredictIntraBlock(this, plane, x, y, txSize);
             error += Error(plane, x, y, txSize);
-        });
+        }
+
         return error;
     }
 
@@ -656,28 +840,35 @@ internal sealed class Av1TileEncoder : Av1TileCoder
     /// Encodes every transform block of the current block in one plane, in the decoder's order, each with the transform type of
     /// lowest cost; returns the plane's coefficient rate-distortion cost, or <see cref="long.MaxValue"/> past the budget.
     /// </summary>
-    private long EncodePlane(int plane, int bsize, long budget)
+    private long EncodePlane(int plane, int bsize, long budget, bool searchTypes = true)
     {
         long cost = 0;
-        ForEachTransformBlock(plane, bsize, (blkRow, blkCol, txSize, x, y) =>
+        _planeDistortion[plane] = 0;
+        (int count, int txSize) = TransformBlocks(plane, bsize);
+        for (int i = 0; i < count; i++)
         {
-            if (cost != long.MaxValue)
+            (int blkRow, int blkCol, int x, int y) = _places[plane][i];
+            cost = Add(cost, TransformBlock(plane, blkRow, blkCol, txSize, x, y, searchTypes));
+            if (cost > budget)
             {
-                cost = Add(cost, TransformBlock(plane, blkRow, blkCol, txSize, x, y));
-                if (cost > budget)
-                {
-                    cost = long.MaxValue;
-                }
+                return long.MaxValue;
             }
-        });
+        }
+
         return cost;
     }
 
-    private delegate void TransformBlockAction(int blkRow, int blkCol, int txSize, int x, int y);
+    /// <summary>A transform block's place: in 4x4 units from the block's plane origin, and in samples in the plane.</summary>
+    private readonly record struct TxPlace(int BlkRow, int BlkCol, int X, int Y);
 
-    /// <summary>Visits a plane's transform blocks of the current block in the decoder's order (in 64x64 units, then rows, then columns).</summary>
-    private void ForEachTransformBlock(int plane, int bsize, TransformBlockAction action)
+    /// <summary>
+    /// Lists a plane's transform blocks of the current block in the decoder's order (in 64x64 units, then rows, then columns)
+    /// into the plane's buffer; returns their count and size.
+    /// </summary>
+    private (int Count, int TxSize) TransformBlocks(int plane, int bsize)
     {
+        TxPlace[] places = _places[plane];
+        int count = 0;
         Av1BlockInfo b = _b;
         int maxW = MaxBlockWide(bsize, 0), maxH = MaxBlockHigh(bsize, 0);
         int muW = Math.Min(maxW, 16), muH = Math.Min(maxH, 16);
@@ -696,11 +887,13 @@ internal sealed class Av1TileEncoder : Av1TileCoder
                 {
                     for (int blkCol = col >> ssx; blkCol < unitW; blkCol += stepC)
                     {
-                        action(blkRow, blkCol, txSize, (col4 + blkCol) * 4, (row4 + blkRow) * 4);
+                        places[count++] = new TxPlace(blkRow, blkCol, (col4 + blkCol) * 4, (row4 + blkRow) * 4);
                     }
                 }
             }
         }
+
+        return (count, txSize);
     }
 
     /// <summary>
@@ -708,10 +901,14 @@ internal sealed class Av1TileEncoder : Av1TileCoder
     /// keeps the type of lowest cost: its levels in the decisions, its reconstruction in the frame, its contexts set. Returns its
     /// cost: the coefficient rate (all-zero flag, type, levels) and the distortion inside the frame.
     /// </summary>
-    private long TransformBlock(int plane, int blkRow, int blkCol, int txSize, int x, int y)
+    private long TransformBlock(int plane, int blkRow, int blkCol, int txSize, int x, int y, bool searchTypes)
     {
         Av1BlockInfo b = _b;
-        _reconstructor.PredictIntraBlock(this, plane, x, y, txSize);
+        if (!b.IsInter)
+        {
+            _reconstructor.PredictIntraBlock(this, plane, x, y, txSize);
+        }
+
         int w = Av1Tables.TxSizeWide[txSize], h = Av1Tables.TxSizeHigh[txSize];
         ushort[] frame = _frame.Planes![plane];
         int stride = _frame.Strides[plane];
@@ -728,7 +925,10 @@ internal sealed class Av1TileEncoder : Av1TileCoder
 
         bool lossless = _header.LosslessArray[b.SegmentId];
         int originIndex = ((_miRow + blkRow) * _miCols) + _miCol + blkCol;
-        ReadOnlySpan<int> types = plane == 0 && !lossless ? TxTypes(txSize) : [plane == 0 ? TxType.DctDct : GetTxType(1, blkRow, blkCol, txSize)];
+        ReadOnlySpan<int> types = plane > 0 ? [GetTxType(1, blkRow, blkCol, txSize)]
+            : lossless ? [TxType.DctDct]
+            : searchTypes ? TxTypes(txSize)
+            : [DefaultTxType(txSize)];
         if (types.Length == 1)
         {
             return TryType(plane, blkRow, blkCol, txSize, types[0], x, y, originIndex, lossless, keep: true);
@@ -767,6 +967,19 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         int codedW = Av1Tables.TxSizeWide[adjusted], codedH = Av1Tables.TxSizeHigh[adjusted];
         int area = codedW * codedH;
         int eob = Quantize(plane, txSize, txType, area, lossless);
+        long trellisRate = -1;
+        if (Trellis && !lossless && eob > 0)
+        {
+            (int skipCtx, int dcSignCtx) = TxbContext(plane, blkRow, blkCol, txSize);
+            eob = Av1Trellis.Optimize(_transformed, _quantized, _coeffs, eob, txSize, txType, plane, dcSignCtx, _table!.Steps,
+                _profile.QmDistortion ? _table.Weights : null, _costs, _rdmult, _sequence.BitDepth, out long levelsRate);
+
+            // The trellis's own rate, with the all-zero flag and the type, is the rate the syntax codes: each level's contexts
+            // come from the levels after it in scan order, which it has settled by then.
+            int txs = (Av1Tables.TxSizeSqrMap[txSize] + Av1Tables.TxSizeSqrUpMap[txSize] + 1) >> 1;
+            trellisRate = eob == 0 ? _costs.TxbSkipCost(txs, skipCtx, 1) : _costs.TxbSkipCost(txs, skipCtx, 0) + levelsRate + TxTypeRate(plane, txSize, txType);
+        }
+
         int[] levels = _decisions.Levels[plane];
         int levelStride = _decisions.Strides[plane];
         int bhl = Av1Tables.TxSizeHighLog2[adjusted];
@@ -784,10 +997,42 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         }
 
         Av1CostSink rate = new(false);
-        CodeCoefficients(ref rate, plane, blkRow, blkCol, txSize, x, y);
-        _reconstructor.FinishIntraBlock(this, plane, x, y, txSize, eob == 0 ? TxType.DctDct : txType, eob, _coeffs);
-        Array.Clear(_coeffs, 0, area);
-        long distortion = Error(plane, x, y, txSize);
+        if (trellisRate >= 0)
+        {
+            rate.Cost = trellisRate;
+            SetEntropyContexts(plane, blkRow, blkCol, txSize, CulLevel(txSize, txType, eob));
+        }
+        else
+        {
+            rate.Cost = CoefficientRate(plane, blkRow, blkCol, txSize, eob == 0 ? TxType.DctDct : txType, eob);
+        }
+
+        // Tune IQ's QM-PSNR: where a quantization matrix weighs the coefficients, so does the distortion, measured on them.
+        bool weighted = eob > 0 && _table!.Weights is not null && _profile.QmDistortion && Av1Tables.TxSizeSqrUpMap[txSize] != Tx.T64x64;
+        long distortion = weighted ? WeightedError(txSize, area) : 0;
+        if (_b.IsInter)
+        {
+            _reconstructor.InterResidual(this, plane, x, y, txSize, eob == 0 ? TxType.DctDct : txType, eob, _coeffs);
+        }
+        else
+        {
+            _reconstructor.FinishIntraBlock(this, plane, x, y, txSize, eob == 0 ? TxType.DctDct : txType, eob, _coeffs);
+        }
+        short[] scan = Av1Tables.ScanOrders[(txSize * 16) + txType];
+        for (int c = 0; c < eob; c++)
+        {
+            _coeffs[scan[c]] = 0;
+        }
+
+        if (!weighted)
+        {
+            distortion = Error(plane, x, y, txSize);
+        }
+
+        if (keep)
+        {
+            _planeDistortion[plane] += distortion;
+        }
         if (!keep)
         {
             ushort[] frame = _frame.Planes![plane];
@@ -801,10 +1046,54 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         return Av1Rate.RdCost(_rdmult, rate.Cost, distortion);
     }
 
+    /// <summary>Gets whether the transform blocks being tried are optimized by the trellis.</summary>
+    private bool Trellis => _profile.Trellis && (_winner || _profile.TrellisInSearch);
+
+    /// <summary>Gets the rate of a luma transform block's type.</summary>
+    private long TxTypeRate(int plane, int txSize, int txType)
+    {
+        if (plane > 0)
+        {
+            return 0;
+        }
+
+        Av1CostSink rate = new(false);
+        CodeTxType(ref rate, txSize, txType);
+        return rate.Cost;
+    }
+
+    /// <summary>Gets a transform block's entropy context from its levels: their sum up to 7, and the DC's sign (get_cul_level).</summary>
+    private int CulLevel(int txSize, int txType, int eob)
+    {
+        short[] scan = Av1Tables.ScanOrders[(txSize * 16) + txType];
+        int sum = 0;
+        for (int c = 0; c < eob && sum < 7; c++)
+        {
+            sum += Math.Abs(_quantized[scan[c]]);
+        }
+
+        int cul = Math.Min(7, sum);
+        int dc = _quantized[0];
+        return dc < 0 ? cul | 8 : dc > 0 ? cul + 16 : cul;
+    }
+
+    /// <summary>Gets the luma transform type the mode suggests, as chroma's follows its mode, when the size's set has it; else DCT_DCT.</summary>
+    private int DefaultTxType(int txSize)
+    {
+        if (_b.IsInter)
+        {
+            return TxType.DctDct;
+        }
+
+        int type = _b.UseFilterIntra ? Av1Tables.IntraModeToTxType[Av1Tables.FilterIntraToMode[_b.FilterIntraMode]] : Av1Tables.IntraModeToTxType[_b.YMode];
+        int setType = Av1Tables.ExtTxSetType(txSize, false, _header.ReducedTxSet);
+        return ((Av1Tables.ExtTxUsedMask[setType] >> type) & 1) != 0 ? type : TxType.DctDct;
+    }
+
     /// <summary>Gets the transform types to try for a luma transform size: those of its set the effort allows.</summary>
     private ReadOnlySpan<int> TxTypes(int txSize)
     {
-        int setType = Av1Tables.ExtTxSetType(txSize, false, _header.ReducedTxSet);
+        int setType = Av1Tables.ExtTxSetType(txSize, _b.IsInter, _header.ReducedTxSet);
         int n = Av1Tables.NumExtTxSet[setType];
         int[] types = _profile.TxTypeBuffer;
         int count = 0;
@@ -823,6 +1112,27 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         }
 
         return types.AsSpan(0, count);
+    }
+
+    /// <summary>
+    /// Gets a transform block's distortion from its coefficients, each error weighted by the quantization matrix, at the scale
+    /// of <see cref="Error"/> (libaom's av1_block_error_qm and dist_block_tx_domain, tx_search.c).
+    /// </summary>
+    private long WeightedError(int txSize, int area)
+    {
+        int[] weights = _table!.Weights!;
+        long error = 0;
+        for (int i = 0; i < area; i++)
+        {
+            long d = (long)(_transformed[i] - _coeffs[i]) * weights[i];
+            error += ((d * d) + 512) >> 10;
+        }
+
+        int depthShift = 2 * (_sequence.BitDepth - 8);
+        error = (error + ((1 << depthShift) >> 1)) >> depthShift;
+        int pels = Av1Tables.TxSizeWide[txSize] * Av1Tables.TxSizeHigh[txSize];
+        int scale = (pels > 256 ? 1 : 0) + (pels > 1024 ? 1 : 0);
+        return error >> ((1 - scale) * 2);
     }
 
     /// <summary>Gets the distortion of a transform block's part inside the image: 16 times its squared error, at 8-bit scale.</summary>
@@ -857,7 +1167,13 @@ internal sealed class Av1TileEncoder : Av1TileCoder
     private long Distortion(int plane, int bsize)
     {
         long error = 0;
-        ForEachTransformBlock(plane, bsize, (_, _, txSize, x, y) => error += Error(plane, x, y, txSize));
+        (int count, int txSize) = TransformBlocks(plane, bsize);
+        for (int i = 0; i < count; i++)
+        {
+            (_, _, int x, int y) = _places[plane][i];
+            error += Error(plane, x, y, txSize);
+        }
+
         return error;
     }
 
@@ -874,14 +1190,16 @@ internal sealed class Av1TileEncoder : Av1TileCoder
 
             int[] levels = _decisions.Levels[plane];
             int stride = _decisions.Strides[plane];
-            ForEachTransformBlock(plane, bsize, (_, _, txSize, x, y) =>
+            (int count, int txSize) = TransformBlocks(plane, bsize);
+            int adjusted = Av1Tables.AdjustedTxSize(txSize);
+            for (int i = 0; i < count && !any; i++)
             {
-                int adjusted = Av1Tables.AdjustedTxSize(txSize);
+                (_, _, int x, int y) = _places[plane][i];
                 for (int r = 0; r < Av1Tables.TxSizeHigh[adjusted] && !any; r++)
                 {
                     any = levels.AsSpan(((y + r) * stride) + x, Av1Tables.TxSizeWide[adjusted]).IndexOfAnyExcept(0) >= 0;
                 }
-            });
+            }
         }
 
         return any;
@@ -897,7 +1215,16 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         _cdefTransmitted.CopyTo(cdef);
         Av1CostSink rate = new(false);
         CodeIntraFrameModeInfo(ref rate);
-        CodeTxSize(ref rate, _b.Size, false, true, _header.LosslessArray[_b.SegmentId]);
+        bool lossless = _header.LosslessArray[_b.SegmentId];
+        if (_b.IsInter && _header.TxMode == Av1TxMode.Select && _b.Size > Bs.B4x4 && !lossless)
+        {
+            // An intra block copy block's unsplit transform tree, assuming it has a residual.
+            rate.Symbol(_cdf, Av1FrameContext.TxfmPartition[TxfmPartitionContext(0, 0, _b.Size, _b.TxSize)], 2, 0);
+        }
+        else
+        {
+            CodeTxSize(ref rate, _b.Size, false, true, lossless);
+        }
         _currentQIndex = savedQIndex;
         deltaLf.CopyTo(_deltaLf);
         cdef.CopyTo(_cdefTransmitted);
@@ -905,54 +1232,55 @@ internal sealed class Av1TileEncoder : Av1TileCoder
     }
 
     /// <summary>
-    /// Quantizes the transformed block into levels (a dead zone: a third of a step rounds up for AC, half a step for DC), and
-    /// writes their dequantized values, as the decoder makes them, into the coefficients; returns the end of block in scan order.
+    /// Quantizes the transformed block into levels (a dead zone: AC rounds up from 3/8 of a step before the trellis, a third
+    /// without it, DC from half a step), and writes their dequantized values, as the decoder makes them, into the coefficients;
+    /// returns the end of block in scan order.
     /// </summary>
     private int Quantize(int plane, int txSize, int txType, int area, bool lossless)
     {
         int bitDepth = _sequence.BitDepth;
-        int qindex = _header.SegQIdx[_b.SegmentId];
-        (int dcDelta, int acDelta) = plane switch
-        {
-            0 => (_header.DeltaQYDc, 0),
-            1 => (_header.DeltaQUDc, _header.DeltaQUAc),
-            _ => (_header.DeltaQVDc, _header.DeltaQVAc),
-        };
-        int dcQ = DcQ(qindex + dcDelta, bitDepth), acQ = AcQ(qindex + acDelta, bitDepth);
+        int qindex = _header.DeltaQPresent ? SegmentQIndex(_b.SegmentId, _b.QIndex) : _header.SegQIdx[_b.SegmentId];
         int pels = Av1Tables.TxSizeWide[txSize] * Av1Tables.TxSizeHigh[txSize];
         int shift = (pels > 256 ? 1 : 0) + (pels > 1024 ? 1 : 0);
         int maxValue = (1 << (7 + bitDepth)) - 1, minValue = -(1 << (7 + bitDepth));
         short[] scan = Av1Tables.ScanOrders[(txSize * 16) + txType];
-        int qmLevel = _header.UsingQmatrix && !lossless ? (plane == 0 ? _header.QmY : plane == 1 ? _header.QmU : _header.QmV) : 15;
-        int qmOffset = qmLevel < 15 && txType < TxType.Idtx
-            ? (((qmLevel * 2) + (plane > 0 ? 1 : 0)) * 3344) + Av1Tables.QmOffset(Av1Tables.AdjustedTxSize(txSize)) : -1;
-        byte[] matrices = Av1Tables.InverseQuantizerMatrices;
-        Array.Clear(_quantized, 0, area);
+        QuantTable table = _table = Table(plane, txSize, !lossless && txType < TxType.Idtx, qindex, area);
+        int[] steps = table.Steps;
+        uint[] inverses = table.Inverses;
         int eob = 0;
+        if (!lossless)
+        {
+            // In raster order, which is sequential in memory; most levels are 0, which a sample below its step minus its
+            // rounding gives without the division.
+            int[] rounding = Trellis ? table.TrellisRounding : table.Rounding;
+            short[] inverseScan = InverseScan(txSize, txType);
+            for (int pos = 0; pos < area; pos++)
+            {
+                int value = _transformed[pos];
+                long abs = (long)Math.Abs(value) << shift;
+                int dqv = steps[pos];
+                if (abs + rounding[pos] < dqv)
+                {
+                    _quantized[pos] = 0;
+                    continue;
+                }
+
+                int level = (int)Math.Min(((ulong)(abs + rounding[pos]) * inverses[pos]) >> 32, (1 << 20) - 1);
+                _quantized[pos] = value < 0 ? -level : level;
+                eob = Math.Max(eob, inverseScan[pos] + 1);
+                int dq = (int)(((long)level * dqv) & 0xffffff) >> shift;
+                _coeffs[pos] = Math.Clamp(value < 0 ? -dq : dq, minValue, maxValue);
+            }
+
+            return eob;
+        }
+
         for (int c = 0; c < area; c++)
         {
             int pos = scan[c];
             int value = _transformed[pos];
-            int dqv = pos == 0 ? dcQ : acQ;
-            if (qmOffset >= 0)
-            {
-                // The decoder's weighted step: quantizing by it keeps each frequency's error in its step.
-                dqv = ((matrices[qmOffset + pos] * dqv) + 16) >> 5;
-            }
-
-            int level;
-            if (lossless)
-            {
-                level = value / dqv;
-            }
-            else
-            {
-                long abs = (long)Math.Abs(value) << shift;
-                long rounding = pos == 0 ? dqv >> 1 : (dqv * 21) >> 6;
-                level = (int)Math.Min((abs + rounding) / dqv, (1 << 20) - 1);
-                level = value < 0 ? -level : level;
-            }
-
+            int dqv = steps[pos];
+            int level = value / dqv;
             _quantized[pos] = level;
             if (level != 0)
             {
@@ -963,6 +1291,74 @@ internal sealed class Av1TileEncoder : Av1TileCoder
         }
 
         return eob;
+    }
+
+    /// <summary>
+    /// Gets the quantizer step of each coefficient of a transform size in a plane, the quantization matrix applied when
+    /// <paramref name="matrix"/> is set and the frame uses one, with each step's reciprocal; cached by size, plane and qindex.
+    /// </summary>
+    private QuantTable Table(int plane, int txSize, bool matrix, int qindex, int area)
+    {
+        int key = (((((qindex * 3) + plane) * Tx.Count) + txSize) * 2) + (matrix ? 1 : 0);
+        if (_tables.TryGetValue(key, out QuantTable? cached))
+        {
+            return cached;
+        }
+
+        int bitDepth = _sequence.BitDepth;
+        (int dcDelta, int acDelta) = plane switch
+        {
+            0 => (_header.DeltaQYDc, 0),
+            1 => (_header.DeltaQUDc, _header.DeltaQUAc),
+            _ => (_header.DeltaQVDc, _header.DeltaQVAc),
+        };
+        int dcQ = DcQ(qindex + dcDelta, bitDepth), acQ = AcQ(qindex + acDelta, bitDepth);
+        int qmLevel = matrix && _header.UsingQmatrix ? (plane == 0 ? _header.QmY : plane == 1 ? _header.QmU : _header.QmV) : 15;
+        int qmOffset = qmLevel < 15 ? (((qmLevel * 2) + (plane > 0 ? 1 : 0)) * 3344) + Av1Tables.QmOffset(Av1Tables.AdjustedTxSize(txSize)) : -1;
+        byte[] matrices = Av1Tables.InverseQuantizerMatrices;
+        QuantTable table = new(new int[area], new uint[area], qmOffset >= 0 ? new int[area] : null, new int[area], new int[area]);
+        for (int pos = 0; pos < area; pos++)
+        {
+            int dqv = pos == 0 ? dcQ : acQ;
+            if (qmOffset >= 0)
+            {
+                // The decoder's weighted step: quantizing by it keeps each frequency's error in its step.
+                dqv = ((matrices[qmOffset + pos] * dqv) + 16) >> 5;
+                table.Weights![pos] = Av1Tables.QuantizerMatrices[qmOffset + pos];
+            }
+
+            table.Steps[pos] = dqv;
+            table.Rounding[pos] = pos == 0 ? dqv >> 1 : (dqv * 21) >> 6;
+            table.TrellisRounding[pos] = pos == 0 ? dqv >> 1 : (dqv * 24) >> 6;
+            table.Inverses[pos] = (uint)(((1UL << 32) + (ulong)dqv - 1) / (ulong)dqv);
+        }
+
+        _tables[key] = table;
+        return table;
+    }
+
+    /// <summary>The quantizer steps of a transform size, their reciprocals times 2^32, and the quantization matrix's weights when it has one.</summary>
+    private sealed record QuantTable(int[] Steps, uint[] Inverses, int[]? Weights, int[] Rounding, int[] TrellisRounding);
+
+    private static readonly short[]?[] InverseScans = new short[Tx.Count * 16][];
+
+    /// <summary>Gets each coefficient's index in the scan of a transform size and type.</summary>
+    private static short[] InverseScan(int txSize, int txType)
+    {
+        int key = (txSize * 16) + txType;
+        if (InverseScans[key] is short[] cached)
+        {
+            return cached;
+        }
+
+        short[] scan = Av1Tables.ScanOrders[key];
+        short[] inverse = new short[scan.Length];
+        for (int c = 0; c < scan.Length; c++)
+        {
+            inverse[scan[c]] = (short)c;
+        }
+
+        return InverseScans[key] = inverse;
     }
 
     private Snapshot Take(int miRow, int miCol, int bsize, bool pixels)
@@ -1183,6 +1579,30 @@ internal sealed class Av1SearchProfile
 
     internal int TxDepth { get; init; }
 
+    /// <summary>Gets whether quantization is rate-distortion optimized (<see cref="Av1Trellis"/>).</summary>
+    internal bool Trellis { get; init; }
+
+    /// <summary>Gets whether every candidate is optimized by the trellis; else only the chosen modes are, as libaom's winner mode processing does.</summary>
+    internal bool TrellisInSearch { get; init; }
+
+    /// <summary>Gets whether every luma mode tried also tries every transform type; else only the chosen mode does.</summary>
+    internal bool TypesInModeSearch { get; init; }
+
+    /// <summary>Gets whether chroma from luma tries every alpha; else three place the error's minimum and its neighbours settle it.</summary>
+    internal bool FullCflSearch { get; init; }
+
+    /// <summary>Gets how many intra block copy vectors, ranked by their prediction alone, are coded in full.</summary>
+    internal int IntrabcCandidates { get; init; } = 1;
+
+    /// <summary>
+    /// Gets whether distortion is weighted by the quantization matrices, as tune IQ's QM-PSNR weighs it. Off at every effort:
+    /// on the photo set it cost about 1% at equal SSIMULACRA2.
+    /// </summary>
+    internal bool QmDistortion { get; init; }
+
+    /// <summary>Gets which palette sizes are tried, from the largest down: 0 the largest alone, 1 every other, 2 all.</summary>
+    internal int PaletteSizes { get; init; }
+
     /// <summary>Gets how many luma modes, ranked by their prediction alone, are coded in full; 0 for all.</summary>
     internal int LumaShortlist { get; init; }
 
@@ -1204,20 +1624,28 @@ internal sealed class Av1SearchProfile
         int[] twoD = [TxType.DctDct, TxType.AdstDct, TxType.DctAdst, TxType.AdstAdst];
         return new Av1SearchProfile
         {
-            MaxBlock = 64,
+            // libaom's speed 6 keeps no block larger than 32x32 whole.
+            MaxBlock = effort <= 4 ? 32 : 64,
             MinBlock = effort <= 1 ? 8 : 4,
-            Rectangles = effort >= 3,
+            Rectangles = effort >= 5,
             ExtendedPartitions = effort >= 7,
             LumaModes = effort <= 2 ? fast : AllModes,
             ChromaModes = effort <= 2 ? [Pred.Dc, Pred.Paeth] : effort <= 5 ? fast : AllModes,
             AngleDeltas = effort >= 5 && !lossless,
             FilterIntra = effort >= 6,
             Cfl = effort >= 2,
-            TxDepth = effort <= 2 ? 0 : effort <= 5 ? 1 : 2,
+            TxDepth = effort <= 4 ? 0 : effort <= 5 ? 1 : 2,
             LumaShortlist = effort <= 2 ? 2 : effort <= 4 ? 3 : effort <= 6 ? 5 : effort <= 8 ? 8 : 0,
             ChromaShortlist = effort <= 4 ? 2 : effort <= 6 ? 3 : effort <= 8 ? 5 : 0,
             PrunePartitions = effort <= 6,
+            TypesInModeSearch = effort >= 8,
+            Trellis = effort >= 1,
+            FullCflSearch = effort >= 7,
+            TrellisInSearch = effort >= 7,
+            IntrabcCandidates = effort <= 3 ? 1 : effort <= 6 ? 2 : 4,
+            PaletteSizes = effort <= 1 ? 0 : effort <= 5 ? 1 : 2,
             TxTypes = effort <= 2 ? [TxType.DctDct] : effort <= 5 ? twoD : [.. Enumerable.Range(0, 16)],
         };
+
     }
 }

@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Av1;
 
 /// <summary>
@@ -5,6 +9,7 @@ namespace Egami.Formats.Av1;
 /// THIRD-PARTY-NOTICES): columns, then rows, with libaom's shifts and cosine precisions per size, so the coefficients are the
 /// ones libaom's encoder quantizes; the Walsh-Hadamard transform for lossless blocks. The output is column by column at the coded
 /// size, as <see cref="Av1InverseTransform.Add"/> takes it: a transform 64 samples on a side keeps its 32 lowest frequencies.
+/// Transforms 8 samples or more on each side run on eight columns, then eight rows, at once, with the same integer results.
 /// </summary>
 [System.Runtime.CompilerServices.SkipLocalsInit]
 internal static partial class Av1ForwardTransform
@@ -50,6 +55,12 @@ internal static partial class Av1ForwardTransform
         int shift0 = Shifts[txSize * 3], shift1 = Shifts[(txSize * 3) + 1], shift2 = Shifts[(txSize * 3) + 2];
         int cosBitCol = CosBitCol[(wIdx * 5) + hIdx], cosBitRow = CosBitRow[(wIdx * 5) + hIdx];
         bool rect2 = Math.Abs(wLog2 - hLog2) == 1;
+        if (Vector256.IsHardwareAccelerated && w >= 8 && h >= 8)
+        {
+            ForwardVector(residual, stride, output, w, h, wIdx, hIdx, colType, rowType, udFlip, lrFlip, (shift0, shift1, shift2),
+                (cosBitCol, cosBitRow), rect2);
+            return;
+        }
 
         Span<int> buffer = stackalloc int[64 * 64];
         Span<int> tempIn = stackalloc int[64];
@@ -89,6 +100,115 @@ internal static partial class Av1ForwardTransform
             }
         }
     }
+
+    /// <summary>
+    /// The transform of <see cref="Forward"/> on vectors: the columns eight at a time, a column in each lane, so a row of eight
+    /// residuals is one load; then the rows eight at a time, a row in each lane, so the coded output, column by column, takes
+    /// one store per frequency.
+    /// </summary>
+    private static void ForwardVector(ReadOnlySpan<int> residual, int stride, Span<int> output, int w, int h, int wIdx, int hIdx,
+        int colType, int rowType, bool udFlip, bool lrFlip, (int Before, int Columns, int Rows) shifts, (int Columns, int Rows) cosBits, bool rect2)
+    {
+        Span<int> buffer = stackalloc int[64 * 64];
+        Span<Vector256<int>> tempIn = stackalloc Vector256<int>[64];
+        Span<Vector256<int>> tempOut = stackalloc Vector256<int>[64];
+        ref int res = ref MemoryMarshal.GetReference(residual);
+        for (int c0 = 0; c0 < w; c0 += 8)
+        {
+            for (int r = 0; r < h; r++)
+            {
+                Vector256<int> v = Vector256.LoadUnsafe(ref res, (nuint)(((udFlip ? h - r - 1 : r) * stride) + c0));
+                tempIn[r] = Shift(v, -shifts.Before);
+            }
+
+            TransformVector(hIdx, colType, tempIn[..h], tempOut, cosBits.Columns);
+            int column = lrFlip ? w - c0 - 8 : c0;
+            for (int r = 0; r < h; r++)
+            {
+                Vector256<int> v = Shift(tempOut[r], -shifts.Columns);
+                if (lrFlip)
+                {
+                    v = Vector256.Shuffle(v, Vector256.Create(7, 6, 5, 4, 3, 2, 1, 0));
+                }
+
+                v.CopyTo(buffer.Slice((r * w) + column, 8));
+            }
+        }
+
+        // The rows, eight at a time; coefficients beyond the 32 lowest frequencies of a 64-point side are dropped.
+        int codedW = Math.Min(w, 32), codedH = Math.Min(h, 32);
+        Span<int> lanes = stackalloc int[8];
+        for (int r0 = 0; r0 < codedH; r0 += 8)
+        {
+            for (int c = 0; c < w; c++)
+            {
+                for (int k = 0; k < 8; k++)
+                {
+                    lanes[k] = buffer[((r0 + k) * w) + c];
+                }
+
+                tempIn[c] = Vector256.Create<int>(lanes);
+            }
+
+            TransformVector(wIdx, rowType, tempIn[..w], tempOut, cosBits.Rows);
+            for (int c = 0; c < codedW; c++)
+            {
+                Vector256<int> v = Shift(tempOut[c], -shifts.Rows);
+                if (rect2)
+                {
+                    v = Av1InverseTransform.Wide.Scale(v, NewSqrt2, NewSqrt2Bits);
+                }
+
+                v.CopyTo(output.Slice((c * codedH) + r0, 8));
+            }
+        }
+    }
+
+    /// <summary>Runs the one-dimensional transform of a size (1 for 8 points to 4 for 64) and type on each lane.</summary>
+    private static void TransformVector(int sizeIdx, int type, ReadOnlySpan<Vector256<int>> input, Span<Vector256<int>> output, int cosBit)
+    {
+        switch ((sizeIdx, type))
+        {
+            case (1, 0): Dct8(input, output, cosBit); break;
+            case (2, 0): Dct16(input, output, cosBit); break;
+            case (3, 0): Dct32(input, output, cosBit); break;
+            case (4, 0): Dct64(input, output, cosBit); break;
+            case (1, 1 or 2): Adst8(input, output, cosBit); break;
+            case (2, 1 or 2): Adst16(input, output, cosBit); break;
+            case (1, 3):
+                for (int i = 0; i < 8; i++)
+                {
+                    output[i] = input[i] * 2;
+                }
+
+                break;
+            case (2, 3):
+                for (int i = 0; i < 16; i++)
+                {
+                    output[i] = Av1InverseTransform.Wide.Scale(input[i], 2 * NewSqrt2, NewSqrt2Bits);
+                }
+
+                break;
+            case (3, 3):
+                for (int i = 0; i < 32; i++)
+                {
+                    output[i] = input[i] * 4;
+                }
+
+                break;
+            default: throw new ArgumentException($"No one-dimensional transform of type {type} has {4 << sizeIdx} points.");
+        }
+    }
+
+    /// <summary>av1_round_shift_array on each lane: right with rounding by <paramref name="bit"/>, or left by -<paramref name="bit"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<int> Shift(Vector256<int> v, int bit) =>
+        bit == 0 ? v : bit > 0 ? Vector256.ShiftRightArithmetic(v + Vector256.Create(1 << (bit - 1)), bit) : Vector256.ShiftLeft(v, -bit);
+
+    /// <summary>The butterfly on each lane, exactly as the scalar one rounds: the products in 32 bits, their sum without overflow.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<int> HalfBtf(int w0, Vector256<int> in0, int w1, Vector256<int> in1, int bit) =>
+        Av1InverseTransform.Wide.HalfBtf(w0, in0, w1, in1, bit);
 
     /// <summary>av1_fwht4x4: the lossless Walsh-Hadamard transform, its output scaled by 4 (UNIT_QUANT_FACTOR).</summary>
     private static void Wht4x4(ReadOnlySpan<int> input, int stride, Span<int> output)

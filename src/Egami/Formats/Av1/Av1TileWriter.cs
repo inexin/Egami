@@ -236,10 +236,13 @@ internal class Av1TileCoder : Av1TileState
         bool lossless = _header.LosslessArray[b.SegmentId];
         if (_header.TxMode == Av1TxMode.Select && bsize > Bs.B4x4 && !b.Skip && b.IsInter && !lossless)
         {
-            throw new NotSupportedException("The encoder does not code transform trees of intra block copy blocks yet.");
+            CodeUnsplitTransformTree(ref s, bsize);
+        }
+        else
+        {
+            CodeTxSize(ref s, bsize, b.IsInter, !b.Skip, lossless);
         }
 
-        CodeTxSize(ref s, bsize, b.IsInter, !b.Skip, lossless);
         int xMis = Math.Min(bw, _miCols - miCol), yMis = Math.Min(bh, _frame.MiRows - miRow);
         int txfmW = b.Skip && b.IsInter ? bw * 4 : Av1Tables.TxSizeWide[b.TxSize];
         int txfmH = b.Skip && b.IsInter ? bh * 4 : Av1Tables.TxSizeHigh[b.TxSize];
@@ -682,12 +685,15 @@ internal class Av1TileCoder : Av1TileState
         }
     }
 
+    /// <summary>Gets the current block's color index map in a plane (0 for luma, 1 for chroma).</summary>
+    private protected virtual byte[] ColorMap(int plane) => _decisions.ColorMaps[_b][plane];
+
     private protected void CodeColorMap<TSink>(ref TSink s, int plane)
         where TSink : struct, IAv1SymbolSink
     {
         int n = _b.PaletteSize[plane];
         (int width, _, int rows, int cols) = BlockDimensions(plane);
-        byte[] map = _decisions.ColorMaps[_b][plane];
+        byte[] map = ColorMap(plane);
         Av1FrameContext.Table table = plane == 0 ? Av1FrameContext.PaletteYColorIndex : Av1FrameContext.PaletteUvColorIndex;
         Span<byte> order = stackalloc byte[8];
         s.Uniform(n, map[0]);
@@ -698,6 +704,32 @@ internal class Av1TileCoder : Av1TileState
                 int ctx = ColorContext(map, width, i - j, j, n, order);
                 int color = map[((i - j) * width) + j];
                 s.Symbol(_cdf, table[((n - 2) * 5) + ctx], n, order[..n].IndexOf((byte)color));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes an intra block copy block's transform tree, which the encoder never splits: a 0 for each largest transform block
+    /// (read_var_tx_size), each setting the transform contexts as the decoder does.
+    /// </summary>
+    private protected void CodeUnsplitTransformTree<TSink>(ref TSink s, int bsize)
+        where TSink : struct, IAv1SymbolSink
+    {
+        int maxTx = Av1Tables.MaxTxSizeRectLookup[bsize];
+        if (_b.TxSize != maxTx)
+        {
+            throw new InvalidOperationException("The encoder codes intra block copy blocks with their largest transform only.");
+        }
+
+        int txh = Av1Tables.TxSizeHighUnit[maxTx], txw = Av1Tables.TxSizeWideUnit[maxTx];
+        for (int blkRow = 0; blkRow < _bh && blkRow < MaxBlockHigh(bsize, 0); blkRow += txh)
+        {
+            for (int blkCol = 0; blkCol < _bw && blkCol < MaxBlockWide(bsize, 0); blkCol += txw)
+            {
+                s.Symbol(_cdf, Av1FrameContext.TxfmPartition[TxfmPartitionContext(blkRow, blkCol, bsize, maxTx)], 2, 0);
+                int block = Av1Tables.TxSizeToBlockSize[maxTx];
+                _leftTxfm.AsSpan((_miRow & MaxMibMask) + blkRow, Av1Tables.MiSizeHigh[block]).Fill((byte)Av1Tables.TxSizeHigh[maxTx]);
+                _aboveTxfm.AsSpan(_miCol - MiColStart + blkCol, Av1Tables.MiSizeWide[block]).Fill((byte)Av1Tables.TxSizeWide[maxTx]);
             }
         }
     }
@@ -755,11 +787,8 @@ internal class Av1TileCoder : Av1TileState
         int maxW = MaxBlockWide(bsize, 0), maxH = MaxBlockHigh(bsize, 0);
         int muW = Math.Min(maxW, 16), muH = Math.Min(maxH, 16);
         bool lossless = _header.LosslessArray[b.SegmentId];
-        if (b.IsInter)
-        {
-            throw new NotSupportedException("The encoder does not code intra block copy residuals yet.");
-        }
-
+        // An intra block copy block's unsplit transform tree visits the same transform blocks, in the same order, as an intra
+        // block's transform size does.
         for (int y = 0; y < yMis; y++)
         {
             _frame.TxSizeMap.AsSpan(((_miRow + y) * _miCols) + _miCol, xMis).Fill((byte)b.TxSize);
@@ -803,9 +832,6 @@ internal class Av1TileCoder : Av1TileState
     private protected void CodeCoefficients<TSink>(ref TSink s, int plane, int blkRow, int blkCol, int txSize, int x, int y)
         where TSink : struct, IAv1SymbolSink
     {
-        Av1BlockInfo b = _b;
-        int planeType = plane > 0 ? 1 : 0;
-        int originIndex = ((_miRow + blkRow) * _miCols) + _miCol + blkCol;
         int adjusted = Av1Tables.AdjustedTxSize(txSize);
         int bhl = Av1Tables.TxSizeHighLog2[adjusted];
         int width = Av1Tables.TxSizeWide[adjusted], height = Av1Tables.TxSizeHigh[adjusted];
@@ -822,11 +848,10 @@ internal class Av1TileCoder : Av1TileState
             }
         }
 
-        int txType = GetTxType(planeType, blkRow, blkCol, txSize);
+        int txType = GetTxType(plane > 0 ? 1 : 0, blkRow, blkCol, txSize);
         short[] scan = Av1Tables.ScanOrders[(txSize * 16) + txType];
-        int area = width * height;
         int eob = 0;
-        for (int c = area - 1; c >= 0; c--)
+        for (int c = (width * height) - 1; c >= 0; c--)
         {
             if (coeffs[scan[c]] != 0)
             {
@@ -835,6 +860,21 @@ internal class Av1TileCoder : Av1TileState
             }
         }
 
+        CodeCoefficients(ref s, plane, blkRow, blkCol, txSize, txType, coeffs, eob);
+    }
+
+    /// <summary>Codes a transform block's levels, column by column at the coded size, with their end of block and type.</summary>
+    private protected void CodeCoefficients<TSink>(ref TSink s, int plane, int blkRow, int blkCol, int txSize, int txType, int[] coeffs, int eob)
+        where TSink : struct, IAv1SymbolSink
+    {
+        Av1BlockInfo b = _b;
+        int planeType = plane > 0 ? 1 : 0;
+        int originIndex = ((_miRow + blkRow) * _miCols) + _miCol + blkCol;
+        int adjusted = Av1Tables.AdjustedTxSize(txSize);
+        int bhl = Av1Tables.TxSizeHighLog2[adjusted];
+        int width = Av1Tables.TxSizeWide[adjusted], height = Av1Tables.TxSizeHigh[adjusted];
+        short[] scan = Av1Tables.ScanOrders[(txSize * 16) + txType];
+        int area = width * height;
         (int skipCtx, int dcSignCtx) = TxbContext(plane, blkRow, blkCol, txSize);
         int txsCtx = (Av1Tables.TxSizeSqrMap[txSize] + Av1Tables.TxSizeSqrUpMap[txSize] + 1) >> 1;
         s.Symbol(_cdf, Av1FrameContext.TxbSkip[(txsCtx * 13) + skipCtx], 2, eob == 0 ? 1 : 0);

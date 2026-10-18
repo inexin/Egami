@@ -416,9 +416,16 @@ normative filter (`Av1Superres.cs`), loop restoration from `restoration.c` and t
 (`Av1Restoration.cs`), and the Gaussian sequence of `av1/decoder/grain_synthesis.c` (`Av1FilmGrainSynthesis.cs`). Egami's AV1
 encoder takes from libaom 3.15.2 too: the arithmetic encoder of `aom_dsp/entenc.c` (`Av1SymbolEncoder.cs`), the forward transforms
 of `av1/encoder/av1_fwd_txfm2d.c` and the Walsh-Hadamard transform of `hybrid_fwd_txfm.c` (`Av1ForwardTransform.cs`), whose
-one-dimensional transforms `av1_fwd_txfm1d.c` `tools/make-av1-tables.py` translates into `Av1ForwardTransform.OneD.cs`, the tile
-syntax its `bitstream.c` and `encodetxb.c` write (`Av1TileWriter.cs`), and the quantizer to qindex table of
-`av1/encoder/av1_quantize.c` (`AvifWriter.cs`). libaom is distributed under the BSD 2-clause license:
+one-dimensional transforms `av1_fwd_txfm1d.c` `tools/make-av1-tables.py` translates into `Av1ForwardTransform.OneD.cs` and
+`Av1ForwardTransform.Vector.cs`, the tile syntax its `bitstream.c` and `encodetxb.c` write (`Av1TileWriter.cs`), the quantizer to
+qindex table of `av1/encoder/av1_quantize.c` (`AvifWriter.cs`), and the encoder's choices: the rate tables and rate-distortion
+cost of `rd.c` and `cost.c` (`Av1SymbolSink.cs`), the trellis quantization and coefficient rates of `txb_rdopt.c`
+(`Av1Trellis.cs`, `Av1TileEncoder.Rate.cs`), tune IQ's quantizer, quantization matrix, sharpness and SSIM rdmult choices of
+`av1_quantize.c`, `quant_common.h`, `picklpf.c` and `encoder_utils.c` (`Av1Encoder.cs`), Variance Boost from `allintra_vis.c`
+and `aq_variance.c` (`Av1VarianceBoost.cs`), the deblocking level guess of `picklpf.c` and the CDEF strength search of
+`pickcdef.c` (`Av1FilterSearch.cs`), the screen content detection of `encoder.c` (`Av1ScreenContent.cs`), the palette search of
+`palette.c` (`Av1TileEncoder.Palette.cs`), and the intra block copy search and vector checks of `rdopt.c` and `mvref_common.h`
+(`Av1TileEncoder.Intrabc.cs`). libaom is distributed under the BSD 2-clause license:
 
     Copyright (c) 2016, Alliance for Open Media. All rights reserved.
 
