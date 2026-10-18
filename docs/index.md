@@ -1,6 +1,6 @@
 # Egami
 
-Egami ("image" backwards) is an open source 2D imaging library for .NET 10 that loads, edits, draws and saves images.
+Egami is an open source 2D imaging library for .NET 10 that loads, edits, draws and saves images.
 
 - **MIT-licensed**, with no strings for commercial use.
 - **Fully managed C#**: no native binaries, no P/Invoke, and no third-party dependencies.

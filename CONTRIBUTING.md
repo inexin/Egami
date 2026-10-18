@@ -29,6 +29,24 @@ The large third-party corpora (conformance suites and test vectors) are fetched 
 
 Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks`.
 
+## Repository layout
+
+| Path | Contents |
+| --- | --- |
+| `src/Egami/` | The core library |
+| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/` | The other packages ([Packages](docs/articles/packages.md)) |
+| `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) |
+| `tests/Egami.Fuzz/` | Fuzzing harness (SharpFuzz and AFL++) |
+| `tests/Egami.AotSmoke/` | Console app published with Native AOT in CI |
+| `tests/Egami.DocSamples/` | The code the docs show, compiled and run with the tests |
+| `samples/` | One small console app per guide; `dotnet run --project samples/Formats` |
+| `tests/Egami.OutsideTests/` | Plugins written with only the public API: a pixel type, a memory source, operations, formats |
+| `tests/images/`, `tests/reference/` | Test images for every format and their reference decodes, with licenses; large corpora are fetched into `.cache` |
+| `docs/` | The documentation site (DocFX): guides, cookbook, API reference. Build it with `docfx docs/docfx.json` (output in `docs/_site`) |
+| `benchmarks/Egami.Benchmarks/` | BenchmarkDotNet benchmarks |
+| `branding/` | Package icons, logos and the favicon |
+| `tools/` | Scripts that regenerate references and the public API baseline, check the docs are complete, and the libpng checker used in CI |
+
 ## Documentation versions
 
 The docs site keeps one folder per major version (`v1/`, `v2/`, ...) with `versions.json` and an `index.html` that sends
