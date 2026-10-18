@@ -3,7 +3,7 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami 1.0.0 (unreleased)
+## Egami 1.0.0 (2026-10-18)
 
 The first public release.
 
@@ -659,7 +659,7 @@ equal to libwebp's.
   types no wider than 8 bits, and an unknown layout without alpha is written as RGB. Color operations never read premultiplied
   bytes as straight values.
 
-## Egami.Drawing 1.0.0 (unreleased)
+## Egami.Drawing 1.0.0 (2026-10-18)
 
 The first public release. The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it.
 
@@ -847,7 +847,7 @@ Renamed or changed in the 1.0 API review, for code written against the previews:
 - Fixed: a non-isolated layer merged with a blend mode other than source-over blended the backdrop it started from with itself;
   the backdrop's part is now removed first, as PDF's non-isolated groups require (ISO 32000 11.4.8). Found by Egap's renderer.
 
-## Egami.Fonts 1.0.0 (unreleased)
+## Egami.Fonts 1.0.0 (2026-10-18)
 
 The first public release. The API is frozen (PublicAPI.Shipped.txt): later 1.x versions only add to it. Glyph ids stay
 `ushort` for all of 1.x.
@@ -1006,7 +1006,7 @@ Renamed or changed in the 1.0 API review, for code written against the previews:
 - `FontCollection.Families` and `Count` keep the grouped families until the next `Add` or `Refresh`, instead of grouping every
   face on each call.
 
-## Egami.Svg 1.0.0 (unreleased)
+## Egami.Svg 1.0.0 (2026-10-18)
 
 The first public release. The API is frozen: 1.x versions add to it without breaking your code. See [SVG](docs/articles/guides/svg.md).
 
@@ -1052,7 +1052,7 @@ The first public release. The API is frozen: 1.x versions add to it without brea
 - A fuzz target for Load, Rasterize and Save (`svg` in tests/Egami.Fuzz); its first runs found image data that was damaged
   after its header made drawing throw, and images are now decoded when the document is read.
 
-## Egami.Css 1.0.0 (unreleased)
+## Egami.Css 1.0.0 (2026-10-18)
 
 The first public release. The API is frozen: 1.x versions add to it without breaking your code. See [CSS](docs/articles/guides/css.md).
 

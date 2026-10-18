@@ -7,4 +7,13 @@
   <ItemGroup Condition="'$(PackageIcon)' != ''">
     <None Include="$(MSBuildThisFileDirectory)branding/nuget/$(PackageIcon)" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
+
+  <!-- Each package's NuGet readme is the README.md in its project folder. -->
+  <PropertyGroup Condition="Exists('$(MSBuildProjectDirectory)/README.md')">
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(PackageReadmeFile)' != ''">
+    <None Include="$(MSBuildProjectDirectory)/README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
 </Project>

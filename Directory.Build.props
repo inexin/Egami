@@ -12,11 +12,13 @@
 
   <PropertyGroup>
     <Authors>Lars Dytterud</Authors>
-    <Copyright>Copyright (c) 2026 Lars</Copyright>
+    <Copyright>Copyright (c) 2026 Lars Dytterud</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/inexin/Egami</PackageProjectUrl>
     <RepositoryUrl>https://github.com/inexin/Egami</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
