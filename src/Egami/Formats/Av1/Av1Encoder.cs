@@ -36,8 +36,8 @@ internal sealed class Av1EncoderSettings
     /// <summary>Gets or sets base_q_idx, 0 to 255; 0 codes the frame losslessly in its own planes.</summary>
     internal int QIndex { get; init; } = 100;
 
-    /// <summary>Gets or sets the block size the fixed partition splits to (<see cref="Bs"/>).</summary>
-    internal int BlockSize { get; init; } = Bs.B16x16;
+    /// <summary>Gets or sets how hard the search works, 0 to 10 (<see cref="Av1SearchProfile"/>).</summary>
+    internal int Effort { get; init; } = 4;
 
     /// <summary>Gets or sets how many threads tiles may use.</summary>
     internal int Parallelism { get; init; } = 1;
@@ -95,12 +95,20 @@ internal sealed class Av1EncoderSource
 /// </summary>
 internal sealed class Av1Encoder
 {
-    private Av1Encoder(byte[] stream, Av1SequenceHeader sequence, Av1Frame frame)
+    private Av1Encoder(byte[] stream, Av1SequenceHeader sequence, Av1Frame frame, double estimatedBits, double tileBits)
     {
         Stream = stream;
         Sequence = sequence;
         Reconstruction = frame;
+        EstimatedBits = estimatedBits;
+        TileBits = tileBits;
     }
+
+    /// <summary>Gets the bits the search estimated the tiles' symbols at, each superblock from the CDFs as it began.</summary>
+    internal double EstimatedBits { get; }
+
+    /// <summary>Gets the bits the tiles' data takes.</summary>
+    internal double TileBits { get; }
 
     /// <summary>Gets the stream: the sequence header OBU, then the frame OBU.</summary>
     internal byte[] Stream { get; }
@@ -136,7 +144,13 @@ internal sealed class Av1Encoder
         Av1EncoderSource source = new(input, frame);
         Av1FrameDecisions decisions = new(frame);
         int tiles = header.TileCols * header.TileRows;
-        frame.For(tiles, tile => new Av1TileEncoder(frame, tile / header.TileCols, tile % header.TileCols, source, decisions, settings).Encode());
+        long[] estimates = new long[tiles];
+        frame.For(tiles, tile =>
+        {
+            Av1TileEncoder encoder = new(frame, tile / header.TileCols, tile % header.TileCols, source, decisions, settings);
+            encoder.Encode();
+            estimates[tile] = encoder.EstimatedRate;
+        });
         MarkCdef(frame);
         frame.ApplyFilters();
 
@@ -146,7 +160,7 @@ internal sealed class Av1Encoder
         List<byte> stream = [];
         Av1ObuWriter.Obu(stream, Av1ObuType.SequenceHeader, Av1ObuWriter.SequenceHeader(sequence));
         Av1ObuWriter.Obu(stream, Av1ObuType.Frame, Av1ObuWriter.Frame(sequence, parameters, tileData));
-        return new Av1Encoder([.. stream], sequence, frame);
+        return new Av1Encoder([.. stream], sequence, frame, estimates.Sum() / (double)Av1CostSink.BitCost, tileData.Sum(t => t.Length) * 8.0);
     }
 
     /// <summary>
@@ -233,13 +247,43 @@ internal sealed class Av1Encoder
             TileRowsLog2 = Math.Max(minLog2Tiles - minLog2Cols, 0),
             BaseQIdx = settings.Lossless ? 0 : Math.Clamp(settings.QIndex, 0, 255),
             LoopFilterDeltaEnabled = false,
+            TxModeSelect = !settings.Lossless && settings.QIndex > 0,
         };
-        if (sequence.Monochrome)
+        if (f.BaseQIdx > 0)
         {
-            f.LrType[0] = Av1RestorationType.None;
+            Tune(f, sequence);
         }
 
         return f;
+    }
+
+    /// <summary>
+    /// Sets the perceptual quantizer choices of libaom's tune IQ (av1_set_quantizer, av1_quantize.c; the QM formulas of
+    /// quant_common.h): chroma finer than luma in 4:2:0 and coarser in 4:4:4 and 4:2:2, and quantization matrices whose
+    /// steepness follows the quantizer.
+    /// </summary>
+    internal static void Tune(Av1FrameParameters f, Av1SequenceHeader sequence)
+    {
+        int q = f.BaseQIdx;
+        if (!sequence.Monochrome)
+        {
+            (int dc, int ac) = (sequence.SubsamplingX, sequence.SubsamplingY) switch
+            {
+                (1, 1) => (-Math.Clamp((q / 2) - 14, 0, 16), -Math.Clamp((q / 2) - 14, 0, 16)),
+                (1, 0) => (0, Math.Clamp(q / 2, 0, 6)),
+                _ => (0, Math.Clamp(q / 2, 0, 24)),
+            };
+            (f.DeltaQUDc, f.DeltaQUAc, f.DeltaQVDc, f.DeltaQVAc) = (dc, ac, dc, ac);
+        }
+
+        f.UsingQmatrix = true;
+        f.QmY = AllIntraQmLevel(q);
+        f.QmU = f.QmV = sequence.SubsamplingX == 0 && sequence.SubsamplingY == 0 ? Chroma444QmLevel(q + f.DeltaQUAc) : AllIntraQmLevel(q + f.DeltaQUAc);
+
+        static int AllIntraQmLevel(int qindex) => qindex <= 40 ? 10 : qindex <= 100 ? 9 : qindex <= 160 ? 8 : qindex <= 200 ? 7 : qindex <= 220 ? 6 : qindex <= 240 ? 5 : 4;
+
+        static int Chroma444QmLevel(int qindex) => qindex <= 12 ? 10 : qindex <= 24 ? 9 : qindex <= 32 ? 8 : qindex <= 36 ? 7 : qindex <= 44 ? 6
+            : qindex <= 48 ? 5 : qindex <= 56 ? 4 : qindex <= 88 ? 3 : 2;
     }
 
     /// <summary>Gives every 64x64 unit that holds a coded block CDEF strength 0, as the tile writer codes it.</summary>

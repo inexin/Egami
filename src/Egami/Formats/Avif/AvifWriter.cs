@@ -80,6 +80,7 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
         {
             Lossless = lossless,
             QIndex = QIndexFor(options.Quality),
+            Effort = options.Effort,
             Parallelism = parallelism,
         });
 
@@ -91,6 +92,7 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
             {
                 Lossless = options.AlphaQuality == 100,
                 QIndex = QIndexFor(options.AlphaQuality),
+                Effort = options.Effort,
                 Parallelism = parallelism,
             });
         }

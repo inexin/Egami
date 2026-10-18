@@ -47,6 +47,19 @@ public class Av1EncoderTests
         }
     }
 
+    [Theory]
+    [InlineData(40, 8, ChromaFormat.Yuv420)]
+    [InlineData(120, 8, ChromaFormat.Yuv420)]
+    [InlineData(200, 10, ChromaFormat.Yuv444)]
+    [InlineData(0, 8, ChromaFormat.Yuv444)]
+    public void EstimatedRatesMatchTheCodedBits(int q, int bitDepth, ChromaFormat chroma)
+    {
+        Av1EncoderInput input = Picture(320, 192, bitDepth, chroma, seed: q);
+        Av1Encoder encoded = Av1Encoder.Encode(input, new Av1EncoderSettings { QIndex = q, Lossless = q == 0 });
+        double error = Math.Abs(encoded.EstimatedBits - encoded.TileBits) / encoded.TileBits;
+        Assert.True(error < 0.03, $"Estimated {encoded.EstimatedBits:F0} bits, coded {encoded.TileBits:F0}.");
+    }
+
     [Fact]
     public void LossyFramesShrinkAsTheQuantizerGrows()
     {

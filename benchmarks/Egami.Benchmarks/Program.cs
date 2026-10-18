@@ -49,6 +49,20 @@ if (args is ["--time-avif", .. string[] avifs])
     return;
 }
 
+// Encode AVIF (Phase 2.9.6), timed, with size and PSNR: -- --encode-avif <quality, or 101 for lossless> <effort> <in> <out.avif>... [--one-thread]
+if (args is ["--encode-avif", string avifQuality, string avifEffort, .. string[] avifPairs])
+{
+    AvifTiming.Encode(int.Parse(avifQuality, System.Globalization.CultureInfo.InvariantCulture), int.Parse(avifEffort, System.Globalization.CultureInfo.InvariantCulture), avifPairs);
+    return;
+}
+
+// PSNR of images against the first: -- --psnr <reference> <image>...
+if (args is ["--psnr", .. string[] psnrFiles])
+{
+    AvifTiming.Psnr(psnrFiles);
+    return;
+}
+
 // Encode lossless JPEG XL (Phase 2.9.3 encoder gate), timed: -- --encode-jxl <effort> <in> <out.jxl> [<in> <out.jxl>]...
 if (args is ["--encode-jxl", string effort, .. string[] pairs])
 {
