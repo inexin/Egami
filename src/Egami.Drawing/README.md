@@ -7,7 +7,8 @@ Egami.Drawing draws on Egami rasters and other canvases.
 - Text through Egami.Fonts, nine-patches, meshes and patches, and recorded drawings saved as .egdr files.
 - Printing with inks: process and spot colors, overprint and separations.
 
-See the [Drawing guide](https://github.com/inexin/Egami/blob/main/docs/articles/guides/drawing.md).
+See the [Drawing guide](https://inexin.github.io/Egami/v1/articles/guides/drawing.html).
 
 Egami is MIT-licensed, fully managed C# for .NET 10: no native binaries, no P/Invoke and no third-party dependencies, trimming
-and Native AOT clean. Source, documentation and changelog: [github.com/inexin/Egami](https://github.com/inexin/Egami).
+and Native AOT clean. Documentation: [inexin.github.io/Egami](https://inexin.github.io/Egami/). Source and changelog:
+[github.com/inexin/Egami](https://github.com/inexin/Egami).
