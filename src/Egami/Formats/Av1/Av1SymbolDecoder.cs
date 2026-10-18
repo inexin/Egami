@@ -265,7 +265,7 @@ internal sealed class Av1SymbolDecoder
     /// Adapts a CDF towards the symbol just read (update_cdf), the counter being the entry after the last symbol: the entries
     /// before the symbol move towards 32768, the others towards 0.
     /// </summary>
-    private static void Adapt(ref ushort cdf, int symbol, int n)
+    internal static void Adapt(ref ushort cdf, int symbol, int n)
     {
         int count = Unsafe.Add(ref cdf, n);
         int rate = 3 + (count > 15 ? 1 : 0) + (count > 31 ? 1 : 0) + (n > 3 ? 2 : 1);

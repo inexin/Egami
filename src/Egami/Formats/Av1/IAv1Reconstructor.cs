@@ -9,7 +9,7 @@ internal interface IAv1Reconstructor
     /// <summary>
     /// Predicts and reconstructs one transform block of an intra block. Called for every transform block, skipped or not.
     /// </summary>
-    /// <param name="tile">The tile, whose <see cref="Av1TileParser.Block"/> is the block.</param>
+    /// <param name="tile">The tile, whose <see cref="Av1TileState.Block"/> is the block.</param>
     /// <param name="plane">The plane.</param>
     /// <param name="x">The transform block's left column in the plane, in samples.</param>
     /// <param name="y">The transform block's top row in the plane, in samples.</param>
@@ -17,14 +17,14 @@ internal interface IAv1Reconstructor
     /// <param name="txType">The transform type (<see cref="TxType"/>).</param>
     /// <param name="eob">The number of coefficients in scan order up to the last nonzero one; 0 for none.</param>
     /// <param name="coeffs">The dequantized coefficients, column by column as libaom holds them; the parser clears them after.</param>
-    void IntraBlock(Av1TileParser tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs);
+    void IntraBlock(Av1TileState tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs);
 
     /// <summary>Predicts a whole intra block copy block, before its residual.</summary>
-    void InterPrediction(Av1TileParser tile);
+    void InterPrediction(Av1TileState tile);
 
     /// <summary>Adds one transform block of residual to an intra block copy block.</summary>
-    void InterResidual(Av1TileParser tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs);
+    void InterResidual(Av1TileState tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs);
 
     /// <summary>Finishes an intra block copy block, after its residual.</summary>
-    void InterDone(Av1TileParser tile);
+    void InterDone(Av1TileState tile);
 }

@@ -10,8 +10,13 @@ namespace Egami.Formats.Avif;
 /// <param name="filmGrain">Whether grain is added (design question 6).</param>
 internal sealed class AvifCodec(bool filmGrain) : IHeifCodec
 {
+    private bool _decoded;
+
     /// <summary>Gets the film grain parameters of the first frame decoded that applies grain, or null.</summary>
     internal AvifFilmGrain? FilmGrain { get; private set; }
+
+    /// <summary>Gets whether the first frame decoded is coded lossless.</summary>
+    internal bool Lossless { get; private set; }
 
     /// <summary>Gets the color code points and range the last decoded frame's sequence header gives.</summary>
     internal Colors.ColorCodePoints CodePoints { get; private set; }
@@ -26,6 +31,12 @@ internal sealed class AvifCodec(bool filmGrain) : IHeifCodec
         }
 
         Av1SequenceHeader sequence = frame.Sequence;
+        if (!_decoded)
+        {
+            Lossless = frame.Header.CodedLossless;
+            _decoded = true;
+        }
+
         CodePoints = new Colors.ColorCodePoints((byte)sequence.ColorPrimaries, (byte)sequence.TransferCharacteristics, (byte)sequence.MatrixCoefficients, sequence.FullRange);
         Av1FilmGrain grain = frame.Header.FilmGrain;
         if (grain.ApplyGrain)

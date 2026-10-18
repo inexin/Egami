@@ -413,8 +413,12 @@ prediction of `reconinter.c` and `convolve.c` (`Av1Reconstructor*.cs`); and the 
 into `Av1InverseTransform.OneD.cs`; the deblocking filter of `av1_loopfilter.c` and `aom_dsp/loopfilter.c`
 (`Av1LoopFilter.cs`), CDEF from `cdef.c` and `cdef_block.c` (`Av1Cdef.cs`), superres upscaling from `resize.c` with its
 normative filter (`Av1Superres.cs`), loop restoration from `restoration.c` and the Wiener convolution of `convolve.c`
-(`Av1Restoration.cs`), and the Gaussian sequence of `av1/decoder/grain_synthesis.c` (`Av1FilmGrainSynthesis.cs`). libaom is
-distributed under the BSD 2-clause license:
+(`Av1Restoration.cs`), and the Gaussian sequence of `av1/decoder/grain_synthesis.c` (`Av1FilmGrainSynthesis.cs`). Egami's AV1
+encoder takes from libaom 3.15.2 too: the arithmetic encoder of `aom_dsp/entenc.c` (`Av1SymbolEncoder.cs`), the forward transforms
+of `av1/encoder/av1_fwd_txfm2d.c` and the Walsh-Hadamard transform of `hybrid_fwd_txfm.c` (`Av1ForwardTransform.cs`), whose
+one-dimensional transforms `av1_fwd_txfm1d.c` `tools/make-av1-tables.py` translates into `Av1ForwardTransform.OneD.cs`, the tile
+syntax its `bitstream.c` and `encodetxb.c` write (`Av1TileWriter.cs`), and the quantizer to qindex table of
+`av1/encoder/av1_quantize.c` (`AvifWriter.cs`). libaom is distributed under the BSD 2-clause license:
 
     Copyright (c) 2016, Alliance for Open Media. All rights reserved.
 
@@ -589,8 +593,9 @@ bits, and an intra block copy vector that reaches outside the decoded area is mo
 
 The HEIF image layer converts decoded planes to RGB as libavif 1.4.2 does without libyuv, so Load equals avifdec sample for
 sample: the lookup tables, Kr and Kb (derived from the primaries for matrix code 12), bilinear chroma upsampling and alpha
-unpremultiplication of its `src/reformat.c`, `src/alpha.c` and `src/colr.c` (`HeifRgbConverter.cs`). libavif is distributed
-under the BSD 2-clause license:
+unpremultiplication of its `src/reformat.c`, `src/alpha.c` and `src/colr.c` (`HeifRgbConverter.cs`). The AVIF writer lays out
+its files as libavif's `src/write.c` does and maps quality to libaom's quantizer with the tune IQ table of `src/codec_aom.c`
+(`AvifWriter.cs`). libavif is distributed under the BSD 2-clause license:
 
     Copyright 2019 Joe Drago. All rights reserved.
 
