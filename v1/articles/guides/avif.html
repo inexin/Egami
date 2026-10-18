@@ -87,9 +87,9 @@
         <article data-uid="">
 <h1 id="avif">AVIF</h1>
 
-<p>Egami reads AVIF still images, written from the AV1 and HEIF specifications with no native code: the HEIF container and a
-managed AV1 intra decoder. <code>AvifFormat.Info</code> is registered in <code>EgamiContext.Default</code>, so <code>Raster.Load</code> recognizes an ftyp box with
-the avif or avis brand. Egami does not write AVIF yet.</p>
+<p>Egami reads and writes AVIF still images, written from the AV1 and HEIF specifications with no native code: the HEIF container,
+a managed AV1 intra decoder and a managed AV1 intra encoder. <code>AvifFormat.Info</code> is registered in <code>EgamiContext.Default</code>, so
+<code>Raster.Load</code> recognizes an ftyp box with the avif or avis brand and <code>Save</code> writes a file whose name ends in .avif.</p>
 <p><code>Raster.Probe</code> reads the container alone: size, natural pixel type and orientation, without decoding any AV1.</p>
 <pre><code class="lang-csharp">// The container alone: size, natural pixel type and orientation, without decoding any AV1.
 RasterInfo info = Raster.Probe(&quot;duck.avif&quot;);
@@ -118,7 +118,27 @@ AvifFilmGrain? grain = ((AvifDetails)clean.Metadata.FormatDetails!).FilmGrain;  
 <pre><code class="lang-csharp">// The AV1 planes themselves, without the conversion to RGB: luma, then chroma at the file's subsampling.
 using YuvRaster planes = YuvRaster.Load(&quot;duck.avif&quot;);
 ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for most AVIF files
-</code></pre><h2 id="hdr">HDR</h2>
+</code></pre><h2 id="writing">Writing</h2>
+<p><code>Save</code> codes the image with Egami's own AV1 encoder. Lossy images use avifenc's quality scale, so <code>AvifWriterOptions.Quality</code>
+gives about the same file as <code>avifenc -q</code> with the same number; the default is 60. <code>Lossless</code> keeps every sample: the image is
+written as 4:4:4 RGB with the identity matrix, at its own bit depth. A file read from a lossless AVIF is written lossless again
+unless the options say otherwise (<code>AvifDetails.Lossless</code>).</p>
+<pre><code class="lang-csharp">// Save picks AVIF from the extension; the defaults are lossy at quality 60 on avifenc's scale, effort 4.
+duck.Save(&quot;duck-q60.avif&quot;);
+
+// Smaller and softer, or every sample exact (4:4:4 RGB with the identity matrix).
+duck.Save(&quot;duck-q35.avif&quot;, new AvifWriterOptions { Quality = 35 });
+duck.Save(&quot;duck-lossless.avif&quot;, new AvifWriterOptions { Lossless = true });
+</code></pre>
+<p>Lossy color is 4:2:0 below Quality 90 and 4:4:4 from 90, or the <code>Chroma</code> you choose; gray images are written 4:0:0. 8-bit pixels
+are written at 8 bits and deeper pixels at 10, or at the <code>BitDepth</code> you choose (8, 10 or 12). Transparency goes in an alpha item,
+a second AV1 image, kept exactly unless <code>AlphaQuality</code> is below 100.</p>
+<pre><code class="lang-csharp">// A transparent image keeps its alpha as a second AV1 image; AlphaQuality below 100 codes it lossy too.
+using Raster&lt;Rgba8&gt; logo = Raster.Create&lt;Rgba8&gt;(64, 64);
+logo.Save(&quot;logo.avif&quot;, new AvifWriterOptions { Quality = 80, AlphaQuality = 100 });
+</code></pre>
+<p>Every file Egami writes decodes in dav1d and libavif to the same pixels as in Egami; <code>tools/check-avif-interop.py</code> checks this.</p>
+<h2 id="hdr">HDR</h2>
 <p>PQ and HLG files keep their curve; converting to sRGB as they load tone maps them, the peak taken from the file's clli box:</p>
 <pre><code class="lang-csharp">// An HDR (PQ or HLG) AVIF, tone mapped into sRGB as it loads; the peak comes from the file's clli box when it has one.
 using Raster&lt;Rgb8&gt; sdr = Raster.Load&lt;Rgb8&gt;(&quot;hdr.avif&quot;, options: new ReaderOptions { ConvertColorTo = Egami.Colors.ColorProfile.Srgb });

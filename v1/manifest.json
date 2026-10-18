@@ -5123,6 +5123,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Avif.AvifWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Avif.AvifWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Avif.AvifWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Avif.AvifWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing AVIF. Lossy images are coded on libavif's quality scale, so the same <xref href=\"Egami.Formats.Avif.AvifWriterOptions.Quality\" data-throw-if-not-resolved=\"false\"></xref> gives about the\nsame file as avifenc -q; lossless images keep every sample of 4:4:4 RGB.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Avif.yml",
       "output": {
         ".html": {

@@ -55,7 +55,7 @@ settings, safety limits and registered formats a call uses.
 - [CCITT fax](https://inexin.github.io/Egami/v1/articles/guides/ccitt.html): Egami decodes raw CCITT fax data.
 - [JPEG 2000](https://inexin.github.io/Egami/v1/articles/guides/jpeg2000.html): Egami reads JPEG 2000 (ITU-T T.800 | ISO/IEC 15444-1, all of Part 1), written from the 2019 edition of T.800, T.801's JPX boxes and the PDF specification's JPXDecode filter.
 - [JPEG XL](https://inexin.github.io/Egami/v1/articles/guides/jxl.html): Egami reads and writes JPEG XL (ISO/IEC 18181), written from the specification with no native code.
-- [AVIF](https://inexin.github.io/Egami/v1/articles/guides/avif.html): Egami reads AVIF still images, written from the AV1 and HEIF specifications with no native code.
+- [AVIF](https://inexin.github.io/Egami/v1/articles/guides/avif.html): Egami reads and writes AVIF still images, written from the AV1 and HEIF specifications with no native code.
 - [ICO and CUR](https://inexin.github.io/Egami/v1/articles/guides/ico.html): Egami reads and writes Windows icons (.ico) and cursors (.cur), written from Microsoft's documentation of the icon directory.
 - [PSD and PSB](https://inexin.github.io/Egami/v1/articles/guides/psd.html): Egami reads Adobe Photoshop documents (.psd) and large documents (.psb), written from Adobe's Photoshop File Format Specification.
 - [Planar YUV](https://inexin.github.io/Egami/v1/articles/guides/planar-yuv.html): A `YuvRaster` holds a picture as separate luma (Y) and chroma (U, V) planes, plus an optional alpha plane.

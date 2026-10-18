@@ -87,7 +87,7 @@
         <article data-uid="">
 <h1 id="formats">Formats</h1>
 
-<p>Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, and Windows icons and cursors, and reads AVIF, JBIG2, raw CCITT fax data, JPEG 2000 and Photoshop's PSD and PSB. SVG and Windows metafiles (WMF, EMF) load through the separate Egami.Svg and Egami.Metafiles packages. Every reader checks sizes
+<p>Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, and Windows icons and cursors, AVIF, and reads JBIG2, raw CCITT fax data, JPEG 2000 and Photoshop's PSD and PSB. SVG and Windows metafiles (WMF, EMF) load through the separate Egami.Svg and Egami.Metafiles packages. Every reader checks sizes
 against the safety limits before it allocates, and every reader has been fuzzed.</p>
 <h2 id="at-a-glance">At a glance</h2>
 <table>
@@ -205,7 +205,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 <tr>
 <td>AVIF</td>
 <td>Still images: AV1 intra frames with every coding tool, equal to dav1d's decode and converted to RGB as libavif does; alpha, grids, overlays, clean aperture, orientation, ICC, CICP, HDR, gain maps, every item, and sequences of key frames; see the <a href="avif.html">AVIF guide</a></td>
-<td>No</td>
+<td>Yes: lossy and lossless still images with alpha, 8, 10 and 12 bits, 4:2:0, 4:2:2, 4:4:4 and 4:0:0</td>
 <td>By bit depth: <code>Rgb8</code> or <code>Rgba8</code> for 8-bit files, <code>Rgb16</code> or <code>Rgba16</code> for 10 and 12 bits, <code>Gray8</code> or <code>Gray16</code> (with alpha, <code>GrayAlpha8</code> or <code>GrayAlpha16</code>) for monochrome</td>
 </tr>
 <tr>

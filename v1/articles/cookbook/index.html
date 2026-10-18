@@ -1546,7 +1546,15 @@ duck.Save(&quot;duck.png&quot;);
 <p>Stills, grids and overlays load through <code>Raster.Load</code>, converted to RGB as libavif converts them, the clean aperture cropped
 and <code>irot</code> and <code>imir</code> kept as the orientation (<code>AutoOrient</code> applies it). Film grain is added unless
 <code>AvifReaderOptions.FilmGrain</code> is false. See the <a href="../guides/formats.html">formats guide</a>.</p>
-<h2 id="get-an-avif-files-yuv-planes">Get an AVIF file's YUV planes</h2>
+<h2 id="save-an-avif-file">Save an AVIF file</h2>
+<p>Lossy at a chosen quality on avifenc's scale, or lossless; transparency is kept as an alpha item.</p>
+<pre><code class="lang-csharp">// Save picks AVIF from the extension; the defaults are lossy at quality 60 on avifenc's scale, effort 4.
+duck.Save(&quot;duck-q60.avif&quot;);
+
+// Smaller and softer, or every sample exact (4:4:4 RGB with the identity matrix).
+duck.Save(&quot;duck-q35.avif&quot;, new AvifWriterOptions { Quality = 35 });
+duck.Save(&quot;duck-lossless.avif&quot;, new AvifWriterOptions { Lossless = true });
+</code></pre><h2 id="get-an-avif-files-yuv-planes">Get an AVIF file's YUV planes</h2>
 <pre><code class="lang-csharp">// The AV1 planes themselves, without the conversion to RGB: luma, then chroma at the file's subsampling.
 using YuvRaster planes = YuvRaster.Load(&quot;duck.avif&quot;);
 ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for most AVIF files
