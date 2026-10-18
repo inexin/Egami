@@ -1,8 +1,8 @@
 # AVIF
 
-Egami reads AVIF still images, written from the AV1 and HEIF specifications with no native code: the HEIF container and a
-managed AV1 intra decoder. `AvifFormat.Info` is registered in `EgamiContext.Default`, so `Raster.Load` recognizes an ftyp box with
-the avif or avis brand. Egami does not write AVIF yet.
+Egami reads and writes AVIF still images, written from the AV1 and HEIF specifications with no native code: the HEIF container,
+a managed AV1 intra decoder and a managed AV1 intra encoder. `AvifFormat.Info` is registered in `EgamiContext.Default`, so
+`Raster.Load` recognizes an ftyp box with the avif or avis brand and `Save` writes a file whose name ends in .avif.
 
 `Raster.Probe` reads the container alone: size, natural pixel type and orientation, without decoding any AV1.
 
@@ -27,6 +27,23 @@ coded; the grain's parameters are in `AvifDetails.FilmGrain` as an `AvifFilmGrai
 `YuvRaster.Load` gives the AV1 planes themselves, without the conversion to RGB (see [Planar YUV](planar-yuv.md)):
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-yuv)]
+
+## Writing
+
+`Save` codes the image with Egami's own AV1 encoder. Lossy images use avifenc's quality scale, so `AvifWriterOptions.Quality`
+gives about the same file as `avifenc -q` with the same number; the default is 60. `Lossless` keeps every sample: the image is
+written as 4:4:4 RGB with the identity matrix, at its own bit depth. A file read from a lossless AVIF is written lossless again
+unless the options say otherwise (`AvifDetails.Lossless`).
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#write)]
+
+Lossy color is 4:2:0 below Quality 90 and 4:4:4 from 90, or the `Chroma` you choose; gray images are written 4:0:0. 8-bit pixels
+are written at 8 bits and deeper pixels at 10, or at the `BitDepth` you choose (8, 10 or 12). Transparency goes in an alpha item,
+a second AV1 image, kept exactly unless `AlphaQuality` is below 100.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-write)]
+
+Every file Egami writes decodes in dav1d and libavif to the same pixels as in Egami; `tools/check-avif-interop.py` checks this.
 
 ## HDR
 

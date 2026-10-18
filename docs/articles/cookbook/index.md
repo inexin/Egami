@@ -729,6 +729,12 @@ Stills, grids and overlays load through `Raster.Load`, converted to RGB as libav
 and `irot` and `imir` kept as the orientation (`AutoOrient` applies it). Film grain is added unless
 `AvifReaderOptions.FilmGrain` is false. See the [formats guide](../guides/formats.md).
 
+## Save an AVIF file
+
+Lossy at a chosen quality on avifenc's scale, or lossless; transparency is kept as an alpha item.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#write)]
+
 ## Get an AVIF file's YUV planes
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-yuv)]

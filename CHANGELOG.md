@@ -3,6 +3,15 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami 1.1.0 (unreleased)
+
+### AVIF writing
+
+- `Save` writes AVIF, coded by Egami's own managed AV1 intra encoder: lossy on avifenc's quality scale (`AvifWriterOptions.Quality`,
+  default 60), or lossless as 4:4:4 RGB with the identity matrix (`Lossless`); 8, 10 and 12 bits; 4:2:0, 4:2:2, 4:4:4 and 4:0:0;
+  transparency as an alpha item (`AlphaQuality`). Files decode in dav1d and libavif to the same pixels as in Egami.
+- `AvifDetails.Lossless` says whether a file's image is coded losslessly, so saving it again writes lossless.
+
 ## Egami 1.0.0 (2026-10-18)
 
 The first public release.

@@ -43,6 +43,33 @@ public class Avif
     }
 
     [Fact]
+    public void Write()
+    {
+        using SampleFiles files = new();
+        using Raster duck = Raster.Load("duck.avif");
+
+        #region write
+        // Save picks AVIF from the extension; the defaults are lossy at quality 60 on avifenc's scale, effort 4.
+        duck.Save("duck-q60.avif");
+
+        // Smaller and softer, or every sample exact (4:4:4 RGB with the identity matrix).
+        duck.Save("duck-q35.avif", new AvifWriterOptions { Quality = 35 });
+        duck.Save("duck-lossless.avif", new AvifWriterOptions { Lossless = true });
+        #endregion
+
+        #region cookbook-write
+        // A transparent image keeps its alpha as a second AV1 image; AlphaQuality below 100 codes it lossy too.
+        using Raster<Rgba8> logo = Raster.Create<Rgba8>(64, 64);
+        logo.Save("logo.avif", new AvifWriterOptions { Quality = 80, AlphaQuality = 100 });
+        #endregion
+
+        Assert.True(new FileInfo("duck-q35.avif").Length < new FileInfo("duck-q60.avif").Length);
+        using Raster lossless = Raster.Load("duck-lossless.avif");
+        Assert.True(((AvifDetails)lossless.Metadata.FormatDetails!).Lossless);
+        Assert.True(File.Exists("logo.avif"));
+    }
+
+    [Fact]
     public void Cookbook()
     {
         using SampleFiles files = new();
