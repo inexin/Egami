@@ -17,6 +17,7 @@ internal sealed class HeifWriter
     private readonly List<Entry> _items = [];
     private readonly List<byte[]> _properties = [];
     private readonly List<(uint Type, uint From, uint[] To)> _references = [];
+    private readonly List<(uint Type, uint[] Entities)> _groups = [];
 
     /// <summary>Starts a file with the ftyp box's brands.</summary>
     /// <param name="majorBrand">The major brand, such as avif.</param>
@@ -78,6 +79,12 @@ internal sealed class HeifWriter
 
     /// <summary>Adds an item reference of a type (such as dimg, auxl, cdsc or prem) from one item to others, in order.</summary>
     internal void Reference(string type, uint from, params uint[] to) => _references.Add((FourCC.Of(type), from, to));
+
+    /// <summary>
+    /// Adds an entity group of a type (such as altr, alternatives in order of preference) to the grpl box, with an id numbered
+    /// after the items'.
+    /// </summary>
+    internal void Group(string type, params uint[] entities) => _groups.Add((FourCC.Of(type), entities));
 
     /// <summary>Writes the file.</summary>
     internal void Write(Stream output)
@@ -247,6 +254,19 @@ internal sealed class HeifWriter
         if (_properties.Count > 0)
         {
             children.Add(Box("iprp", Box("ipco", [.. _properties]), Associations(longIds)));
+        }
+
+        if (_groups.Count > 0)
+        {
+            // Group ids follow the item ids, as libavif numbers them, so no id names both.
+            List<byte[]> groups = [];
+            uint groupId = (uint)_items.Count;
+            foreach ((uint type, uint[] entities) in _groups)
+            {
+                groups.Add(FullBox(FourCC.ToString(type), 0, 0, [U32(++groupId), U32((uint)entities.Length), .. entities.Select(e => U32(e))]));
+            }
+
+            children.Add(Box("grpl", [.. groups]));
         }
 
         List<byte[]> idat = [.. _items.Where(i => i.InIdat).Select(i => i.Data.ToArray())];

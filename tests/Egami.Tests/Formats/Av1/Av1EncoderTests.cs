@@ -61,6 +61,17 @@ public class Av1EncoderTests
     }
 
     [Fact]
+    public void TilesGiveTheSameStreamAtAnyThreadCount()
+    {
+        // Wider than 4096 samples: two tile columns, each decided on its own thread when there are threads.
+        Av1EncoderInput input = Picture(4200, 40, 8, ChromaFormat.Yuv420, seed: 9);
+        byte[] one = Av1Encoder.Encode(input, new Av1EncoderSettings { QIndex = 100, Effort = 2, Parallelism = 1 }).Stream;
+        Av1Encoder many = Av1Encoder.Encode(input, new Av1EncoderSettings { QIndex = 100, Effort = 2, Parallelism = 16 });
+        Assert.Equal(2, many.Reconstruction.Header.TileCols);
+        Assert.Equal(one, many.Stream);
+    }
+
+    [Fact]
     public void LossyFramesShrinkAsTheQuantizerGrows()
     {
         Av1EncoderInput input = Picture(160, 120, 8, ChromaFormat.Yuv420, seed: 3);

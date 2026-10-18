@@ -15,6 +15,12 @@ changes that break code come only in a new major version.
   modes and transforms by rate and distortion, quantizes with a trellis, varies the quantizer by superblock as libaom's tune IQ
   does, and picks the loop filters.
 - Screen content (text, user interfaces, graphics) is detected and coded with palettes and intra block copy.
+- From effort 5, 8-bit 4:2:0 images are converted with sharp RGB to YUV.
+- `YuvRaster.Save` writes AVIF from the planes as they are, at 8, 10 or 12 bits, with their matrix, range and chroma siting.
+- AVIF files keep EXIF and XMP, the orientation (irot and imir), the ICC profile when the colors need one, HDR luminances
+  (clli and mdcv) and gain maps (tmap), which libavif reads and applies.
+- Images larger than 8192 x 4352 are written as grids of equal cells (`AvifWriterOptions.GridTileSize` sets the cells); tiles
+  and cells are coded in parallel, with the same file at any thread count.
 
 ### Package links
 

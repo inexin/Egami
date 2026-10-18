@@ -55,6 +55,8 @@ using DrawingPath = Egami.Drawing.Path;
 // and JPEG recompression, whose round trips must be exact; jxl-lossy (Phase 2.9.7) runs the lossy encoder on every option.
 // The avif, avifbox and av1 targets (Phase 2.9.2, AvifFuzzTarget.cs) load AVIF files every way (stills, grids, overlays, gain
 // maps, sequences, YUV planes, items), reach the HEIF box reader directly, and feed raw OBU streams to the AV1 decoder.
+// The avif-write target (Phase 2.9.6) runs the AV1 encoder on arbitrary planes and options, which must decode exactly to its
+// reconstruction (and its source when lossless), and the AVIF writer with alpha and grids, whose lossless files load back exactly.
 // The inktiff target (Phase 2.6.5) loads separated TIFFs as plates, which must save and load again to the same plates; the
 // icc target also builds the ink set of an n-colour profile and converts through it both ways.
 // The css target (Phase 2.10, CssFuzzTarget.cs) parses its bytes as a style sheet and a declaration list, matches, cascades and
@@ -180,6 +182,7 @@ static Action<Stream> Target(string name) => name switch
     "jxlbox" => stream => Egami.Fuzz.JxlFuzzTarget.LoadBoxes(ReadAll(stream), Context()),
     "jxlentropy" => stream => Egami.Fuzz.JxlFuzzTarget.DecodeEntropy(ReadAll(stream), Context()),
     "jxl-write" => stream => Egami.Fuzz.JxlFuzzTarget.Write(ReadAll(stream), Context()),
+    "avif-write" => stream => Egami.Fuzz.AvifFuzzTarget.Write(ReadAll(stream), Context()),
     "jxl-jpeg" => stream => Egami.Fuzz.JxlFuzzTarget.Recompress(ReadAll(stream), Context()),
     "jxl-lossy" => stream => Egami.Fuzz.JxlFuzzTarget.Lossy(ReadAll(stream), Context()),
     "avif" => stream => Egami.Fuzz.AvifFuzzTarget.Load(ReadAll(stream), Context()),
@@ -190,7 +193,7 @@ static Action<Stream> Target(string name) => name switch
     "wmf" or "emf" => stream => Egami.Fuzz.MetafileFuzzTarget.Run(ReadAll(stream)),
     "emfplus" => stream => Egami.Fuzz.MetafileFuzzTarget.RunPlus(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, avif, avifbox, av1, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, inktiff, shaping, bidi, css, paragraph, svg, wmf, emf, emfplus."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: radiance, exr, gainmap, avif, avifbox, av1, avif-write, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, egdr, inktiff, shaping, bidi, css, paragraph, svg, wmf, emf, emfplus."),
 };
 
 static EgamiContext Context()

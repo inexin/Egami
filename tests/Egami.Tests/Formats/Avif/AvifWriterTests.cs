@@ -22,6 +22,146 @@ public class AvifWriterTests
         Assert.Equal(ChromaFormat.Yuv444, Assert.IsType<AvifDetails>(raw.Metadata.FormatDetails).Chroma);
     }
 
+    [Theory]
+    [InlineData(ChromaFormat.Yuv420, 8, YuvMatrix.Bt709, YuvRange.Limited, ChromaSiting.TopLeft, false)]
+    [InlineData(ChromaFormat.Yuv422, 10, YuvMatrix.Bt2020Ncl, YuvRange.Full, ChromaSiting.Center, true)]
+    [InlineData(ChromaFormat.Yuv444, 12, YuvMatrix.Bt601, YuvRange.Full, ChromaSiting.Center, false)]
+    [InlineData(ChromaFormat.Yuv400, 8, YuvMatrix.Bt601, YuvRange.Full, ChromaSiting.Center, true)]
+    public void YuvPlanesSaveLosslessAndLoadBackExactly(ChromaFormat chroma, int bitDepth, YuvMatrix matrix, YuvRange range, ChromaSiting siting, bool alpha)
+    {
+        YuvColor color = new(matrix, range, siting);
+        using YuvRaster source = bitDepth == 8
+            ? YuvRaster.Create(53, 31, chroma, color, alpha)
+            : YuvRaster.Create(53, 31, chroma, bitDepth, color, alpha);
+        Random random = new(bitDepth);
+        int max = (1 << bitDepth) - 1;
+        Fill(source, (_, x, y) => Math.Clamp(((x * 9) + (y * 4)) % (max + 1) + random.Next(-3, 4), 0, max));
+        using MemoryStream stream = new();
+        source.Save(stream, "avif", new AvifWriterOptions { Lossless = true });
+        using YuvRaster loaded = YuvRaster.Load(stream.ToArray());
+        Assert.Equal((chroma, bitDepth, alpha), (loaded.ChromaFormat, loaded.BitDepth, loaded.HasAlpha));
+        if (chroma != ChromaFormat.Yuv400)
+        {
+            Assert.Equal(color with { Siting = chroma == ChromaFormat.Yuv420 ? siting : ChromaSiting.Center }, loaded.Color);
+        }
+
+        int[] planes = chroma == ChromaFormat.Yuv400 ? [0, 3] : [0, 1, 2, 3];
+        foreach (int plane in planes)
+        {
+            Assert.Equal(Samples(source, plane), Samples(loaded, plane));
+        }
+    }
+
+    [Fact]
+    public void SharpYuvKeepsColoredEdges()
+    {
+        // Red stripes on blue: averaging chroma across their edges bleeds color into the luma a decoder rebuilds.
+        using Raster<Rgb8> source = Pattern<Rgb8>(64, 64, (x, y) => (x / 3) % 2 == 0 ? new Rgb8(230, 20, 20) : new Rgb8(20, 20, 230));
+        using Raster<Rgb8> plain = Raster.Load<Rgb8>(Save(source, new AvifWriterOptions { Quality = 85, Effort = 4 }));
+        using Raster<Rgb8> sharp = Raster.Load<Rgb8>(Save(source, new AvifWriterOptions { Quality = 85, Effort = 5 }));
+        Assert.True(Error(source, sharp) < Error(source, plain), $"sharp {Error(source, sharp)}, plain {Error(source, plain)}");
+
+        static long Error(Raster<Rgb8> a, Raster<Rgb8> b)
+        {
+            long error = 0;
+            for (int y = 0; y < a.Height; y++)
+            {
+                for (int x = 0; x < a.Width; x++)
+                {
+                    Rgb8 p = a.Row(y)[x], q = b.Row(y)[x];
+                    error += ((p.R - q.R) * (p.R - q.R)) + ((p.G - q.G) * (p.G - q.G)) + ((p.B - q.B) * (p.B - q.B));
+                }
+            }
+
+            return error;
+        }
+    }
+
+    private static void Fill(YuvRaster raster, Func<int, int, int, int> sample)
+    {
+        for (int plane = 0; plane < 4; plane++)
+        {
+            switch (raster)
+            {
+                case YuvRaster<byte> b when Plane(b, plane) is YuvPlane<byte> p:
+                    for (int y = 0; y < p.Height; y++)
+                    {
+                        for (int x = 0; x < p.Width; x++)
+                        {
+                            p.Row(y)[x] = (byte)sample(plane, x, y);
+                        }
+                    }
+
+                    break;
+                case YuvRaster<ushort> w when Plane(w, plane) is YuvPlane<ushort> p:
+                    for (int y = 0; y < p.Height; y++)
+                    {
+                        for (int x = 0; x < p.Width; x++)
+                        {
+                            p.Row(y)[x] = (ushort)sample(plane, x, y);
+                        }
+                    }
+
+                    break;
+            }
+        }
+    }
+
+    private static int[] Samples(YuvRaster raster, int plane)
+    {
+        List<int> samples = [];
+        if (raster is YuvRaster<byte> b && Plane(b, plane) is YuvPlane<byte> p8)
+        {
+            for (int y = 0; y < p8.Height; y++)
+            {
+                foreach (byte v in p8.Row(y))
+                {
+                    samples.Add(v);
+                }
+            }
+        }
+        else if (raster is YuvRaster<ushort> w && Plane(w, plane) is YuvPlane<ushort> p16)
+        {
+            for (int y = 0; y < p16.Height; y++)
+            {
+                foreach (ushort v in p16.Row(y))
+                {
+                    samples.Add(v);
+                }
+            }
+        }
+
+        return [.. samples];
+    }
+
+    private static YuvPlane<T>? Plane<T>(YuvRaster<T> raster, int plane)
+        where T : unmanaged => plane switch { 0 => raster.Y, 1 => raster.U, 2 => raster.V, _ => raster.A };
+
+    [Fact]
+    public void GridCellsLoadBackExactly()
+    {
+        using Raster<Rgba8> source = Pattern<Rgba8>(150, 100, (x, y) => new Rgba8((byte)(x * 3), (byte)(y * 5), (byte)(x ^ y), (byte)(200 + (x % 50))));
+        byte[] file = Save(source, new AvifWriterOptions { Lossless = true, GridTileSize = new Size(64, 64) });
+        using Raster<Rgba8> loaded = Raster.Load<Rgba8>(file);
+        AssertEqual(source, loaded);
+        HeifFile heif = HeifFile.Parse(file, "AVIF");
+        Assert.Equal(FourCC.Of("grid"), heif.PrimaryItem!.Type);
+        Assert.Equal(6, heif.PrimaryItem.ReferencesOf(FourCC.Of("dimg")).Length);
+    }
+
+    [Fact]
+    public void ImagesLargerThanOneFrameAreWrittenAsGrids()
+    {
+        Assert.Equal((4800, 40), AvifWriter.GridCells(9600, 40, ChromaFormat.Yuv420, null));
+        Assert.Equal((8192, 4352), AvifWriter.GridCells(8192, 4352, ChromaFormat.Yuv444, null));
+        Assert.Equal((6668, 3750), AvifWriter.GridCells(20000, 15000, ChromaFormat.Yuv420, null));
+        using Raster<Rgb8> wide = Pattern<Rgb8>(8250, 16, (x, y) => new Rgb8((byte)x, (byte)(x >> 8), (byte)y));
+        byte[] file = Save(wide, new AvifWriterOptions { Effort = 0 });
+        Assert.Equal(FourCC.Of("grid"), HeifFile.Parse(file, "AVIF").PrimaryItem!.Type);
+        using Raster loaded = Raster.Load(file);
+        Assert.Equal((8250, 16), (loaded.Width, loaded.Height));
+    }
+
     [Fact]
     public void LosslessFilesSayLossless()
     {

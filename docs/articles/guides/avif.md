@@ -49,6 +49,21 @@ copy).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-write)]
 
+From effort 5, 8-bit 4:2:0 images are converted with sharp RGB to YUV, as libavif does: luma and chroma are refined together so
+sharp colored edges keep their color. A `YuvRaster` is written as its planes are, at 8, 10 or 12 bits, with no conversion or
+chroma resampling; its matrix, range and chroma siting go into the file, and `Lossless` keeps every sample of the planes.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#write-yuv)]
+
+Metadata goes with the image: EXIF and XMP as items, the EXIF orientation as irot and imir (which readers apply), PQ and HLG
+code points with the HDR luminances as clli and mdcv, and a gain map as a tmap item that readers without gain maps skip. The ICC
+profile is written only when the colors have no code points and it is not plain sRGB, which the nclx box always says.
+`StripMetadata` leaves EXIF, XMP, the profile and the gain map out.
+
+An image up to 8192 x 4352 is one AV1 frame, split into tiles every 4096 samples across that are coded in parallel; a larger
+image is written as a grid of equal cells, or of the `GridTileSize` you choose, coded in parallel too. The file is the same
+whatever the number of threads.
+
 Every file Egami writes decodes in dav1d and libavif to the same pixels as in Egami; `tools/check-avif-interop.py` checks this.
 
 ## HDR

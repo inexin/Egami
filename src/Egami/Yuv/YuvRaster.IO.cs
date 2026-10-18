@@ -140,7 +140,9 @@ public abstract partial class YuvRaster
     /// <summary>
     /// Encodes the picture in <paramref name="format"/>. JPEG encodes the planes straight, with no color conversion or chroma
     /// downsampling, when they are 8-bit BT.601 at full range (4:2:0, 4:2:2 and 4:4:4 keep their sampling, 4:0:0 is gray); other
-    /// planes are converted to that first. Other formats are saved from <see cref="ToRaster(YuvConvertOptions?)"/>.
+    /// planes are converted to that first. AVIF encodes any planes of 8, 10 or 12 bits straight, their matrix, range and chroma
+    /// siting written into the file, and alpha as an alpha item. Other formats are saved from
+    /// <see cref="ToRaster(YuvConvertOptions?)"/>.
     /// </summary>
     /// <param name="stream">Where to write, from its current position. It is left open.</param>
     /// <param name="format">The format.</param>
@@ -169,6 +171,22 @@ public abstract partial class YuvRaster
             using YuvRaster<byte> converted = FromRaster(rgb, ChromaFormat, YuvColor.Jpeg);
             Formats.Jpeg.JpegWriter.WritePlanes(converted, stream, jpeg);
             return;
+        }
+
+        if (format.Writer is Formats.Avif.AvifWriter && BitDepth is 8 or 10 or 12)
+        {
+            Formats.Avif.AvifWriterOptions avif = options as Formats.Avif.AvifWriterOptions ?? Formats.Avif.AvifWriterOptions.Default;
+            if (this is YuvRaster<byte> bytes)
+            {
+                Formats.Avif.AvifWriter.WritePlanes(bytes, stream, avif, Context);
+                return;
+            }
+
+            if (this is YuvRaster<ushort> words)
+            {
+                Formats.Avif.AvifWriter.WritePlanes(words, stream, avif, Context);
+                return;
+            }
         }
 
         using Raster raster = ToRaster();

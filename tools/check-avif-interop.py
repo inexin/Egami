@@ -5,7 +5,8 @@ Runs the AvifInteropFiles test with EGAMI_INTEROP_DIR=.cache/interop, which writ
 loads (<name>.rgba, size and depth in <name>.txt); then, in Docker (egami-avifref:2.9.2: dav1d 1.5.4, libavif 1.4.2), checks:
   - dav1d decodes each .obu to exactly Egami's planes (the AV1 encoder writes what dav1d reads);
   - avifdec decodes each .avif to exactly Egami's RGBA (the container is read alike, and Egami's AVIF reader converts as
-    libavif does), and avifitems lists its items without complaint.
+    libavif does), and avifitems lists its items without complaint;
+  - avifgainmaputil applies the gain map of each file named gainmap.
 
 Usage, from the repo root with Docker running:
   python tools/check-avif-interop.py
@@ -110,6 +111,12 @@ def inside():
         result = subprocess.run(["avifitems", base + ".avif"], capture_output=True, text=True)
         if result.returncode != 0:
             failures.append(f"{name}: avifitems fails: {result.stdout.strip()} {result.stderr.strip()}")
+        if "gainmap" in name:
+            # libavif finds the gain map, reads its metadata and applies it.
+            result = subprocess.run(["avifgainmaputil", "tonemap", "--headroom", "2", base + ".avif", "/tmp/tonemapped.png"],
+                                    capture_output=True, text=True)
+            if result.returncode != 0:
+                failures.append(f"{name}: avifgainmaputil cannot apply its gain map: {result.stdout.strip()} {result.stderr.strip()}")
         checked += 1
     for failure in failures:
         print("FAIL", failure)

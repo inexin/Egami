@@ -2,7 +2,7 @@
 
 A `YuvRaster` holds a picture as separate luma (Y) and chroma (U, V) planes, plus an optional alpha plane: the way video codecs,
 AVIF, lossy WebP and JPEG store it. Use it to take frames from a decoder or a camera, to scale video before converting it, and to
-read and write JPEG without the RGB step. Everything else is done on a `Raster` after conversion.
+read and write JPEG and AVIF without the RGB step. Everything else is done on a `Raster` after conversion.
 
 ## Creating and wrapping
 
@@ -66,7 +66,8 @@ to and from the planes:
 `YuvRaster.Load` gives a YCbCr JPEG's planes exactly as libjpeg-turbo's raw output does: 4:2:0, 4:2:2 or 4:4:4 at the file's own
 sampling (other samplings are replicated to 4:4:4), gray as 4:0:0, also at reduced scale. CMYK, YCCK and RGB JPEGs, and formats
 without planes, throw `NotSupportedException`: load those with `Raster.Load`. Saving 8-bit BT.601 full-range planes as JPEG
-encodes them straight, with the same bytes as libjpeg-turbo's encoder from planes.
+encodes them straight, with the same bytes as libjpeg-turbo's encoder from planes. Saving planes as AVIF encodes them straight
+too, at 8, 10 or 12 bits with any matrix, range and siting (see the [AVIF guide](avif.md)).
 
 Loading planes skips chroma upsampling and color conversion, so it is faster than `Raster.Load` on one thread. On several
 threads both are limited by the same Huffman decoding and take about the same time.
