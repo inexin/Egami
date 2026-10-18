@@ -14,8 +14,8 @@ Egami.Svg, Egami.Css and Egami.Metafiles (see [docs/articles/packages.md](docs/a
   `ZLibStream`) are fine. No package references in `src/` other than the build-time `Microsoft.CodeAnalysis.PublicApiAnalyzers`.
 - **Never publish.** Don't push to NuGet, push tags, create releases or turn GitHub Actions on, unless the maintainer explicitly
   asks for that.
-- **Don't push without being asked.** Commit locally; push only when the maintainer says so.
-- **No pull requests or feature branches on GitHub until the repository is public.** Work lands on `main` (see below).
+- **Every change goes through a branch and a pull request.** Never commit to `main` or push to it, and never force-push it. The
+  maintainer reviews and merges; don't merge your own pull request unless asked (see "Commits and pull requests" below).
 
 ## Build, test and check
 
@@ -62,10 +62,16 @@ Match the surrounding code: its naming, comment density and idioms. Egami uses i
 `Rgba8`, `EgamiContext`, `Raster.Probe`, `Apply` and `Derive`); keep to it. `.editorconfig` and `dotnet format` decide
 formatting.
 
-## Commits and landing
+## Commits and pull requests
 
-- Commit messages: `Area: what changed`, for example `JPEG XL lossy: faster block-size search`. Stage explicit paths, never
-  `git add -A`.
-- Several agents often work at once, each in its own worktree and branch. Land a branch by rebasing it onto `main` and
-  fast-forwarding (`git merge --ff-only`) in the main checkout, after `dotnet format --verify-no-changes` and the tests pass.
+- Start every change on a new branch from an up-to-date `main`. Several agents often work at once, each in its own worktree
+  and branch; leave other worktrees alone.
+- Commit messages: `Area: what changed`, for example `JPEG XL lossy: faster block-size search`. Sign off every commit
+  (`git commit -s`; CONTRIBUTING.md explains the DCO). Stage explicit paths, never `git add -A`.
+- Before opening the pull request, rebase the branch onto `main` and run `dotnet format Egami.slnx --verify-no-changes`, the
+  tests and `check-docs` for each package you touched. Then push the branch (`git push -u origin <branch>`) and open the pull
+  request with `gh pr create`, filling in `.github/PULL_REQUEST_TEMPLATE.md`, provenance section included. While GitHub
+  Actions are off, list the results of those checks (and the benchmark numbers for hot code) in the description.
+- If `main` moves on, rebase the branch onto it, run the tests again and push the branch with `--force-with-lease`. That is
+  the only force-push allowed, and only on your own branch.
 - Breaking changes to the 1.0 API are still allowed while nothing is released, but say so in the commit and the changelog.
