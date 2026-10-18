@@ -8003,7 +8003,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Metafiles.MetafileFormat",
-      "Summary": "<p sourcefile=\"api/Egami.Metafiles.MetafileFormat.yml\" sourcestartlinenumber=\"1\">WMF, EMF and EMF+ (and WMZ, EMZ) as an Egami format (design question 16): registered with\n<xref href=\"Egami.EgamiContext.WithFormat(Egami.Formats.FormatInfo)\" data-throw-if-not-resolved=\"false\"></xref>, <code>Raster.Load</code> draws a metafile at its own size at 96 DPI (or\n<xref href=\"Egami.Metafiles.MetafileDecodeOptions.Dpi\" data-throw-if-not-resolved=\"false\"></xref>) onto a transparent <xref href=\"Egami.Pixels.Rgba8\" data-throw-if-not-resolved=\"false\"></xref> raster, and <code>Raster.Probe</code> gives that\nsize from the header without drawing. Text uses the installed fonts. For your own fonts, a target size, a background or the\nGDI part of a dual file, load a <xref href=\"Egami.Metafiles.Metafile\" data-throw-if-not-resolved=\"false\"></xref> and call <xref href=\"Egami.Metafiles.Metafile.Rasterize%60%601(Egami.Metafiles.MetafileRenderOptions)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Metafiles.MetafileFormat.yml\" sourcestartlinenumber=\"1\">WMF, EMF and EMF+ (and WMZ, EMZ) as an Egami format: registered with\n<xref href=\"Egami.EgamiContext.WithFormat(Egami.Formats.FormatInfo)\" data-throw-if-not-resolved=\"false\"></xref>, <code>Raster.Load</code> draws a metafile at its own size at 96 DPI (or\n<xref href=\"Egami.Metafiles.MetafileDecodeOptions.Dpi\" data-throw-if-not-resolved=\"false\"></xref>) onto a transparent <xref href=\"Egami.Pixels.Rgba8\" data-throw-if-not-resolved=\"false\"></xref> raster, and <code>Raster.Probe</code> gives that\nsize from the header without drawing. Text uses the installed fonts. For your own fonts, a target size, a background or the\nGDI part of a dual file, load a <xref href=\"Egami.Metafiles.Metafile\" data-throw-if-not-resolved=\"false\"></xref> and call <xref href=\"Egami.Metafiles.Metafile.Rasterize%60%601(Egami.Metafiles.MetafileRenderOptions)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -8045,7 +8045,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Metafiles.MetafilePlayback",
-      "Summary": "<p sourcefile=\"api/Egami.Metafiles.MetafilePlayback.yml\" sourcestartlinenumber=\"1\">Which records of an EMF+ dual file play (design question 5).</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Metafiles.MetafilePlayback.yml\" sourcestartlinenumber=\"1\">Which records of an EMF+ dual file play.</p>\n"
     },
     {
       "type": "ManagedReference",

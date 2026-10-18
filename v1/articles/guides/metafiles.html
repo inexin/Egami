@@ -91,10 +91,9 @@
 EMF (Enhanced Metafile) and EMF+ (GDI+ records inside an EMF), and their gzip forms WMZ and EMZ. It draws them through
 Egami.Drawing's canvas, so a chart pasted from Excel stays vector on a PDF page or in SVG output and rasterizes the same on
 any OS. It only reads and plays: it does not write metafiles. It is fully managed.</p>
-<p>Egami.Metafiles is at 0.1 (0.1.1) and its API may still change before 1.0.</p>
 <h2 id="loading">Loading</h2>
-<p><code>Metafile.Load</code> reads a file or stream; gzip is detected by its first bytes. <code>Metafile.Kind</code> says what it holds (a
-<code>MetafileKind</code>: <code>Wmf</code>, <code>Emf</code>, <code>EmfPlusDual</code> or <code>EmfPlusOnly</code>), and the header gives the picture's size:</p>
+<p><code>Metafile.Load</code> reads a file, a stream or bytes in memory; gzip is detected by its first bytes. <code>Metafile.Kind</code> says what
+it holds (a <code>MetafileKind</code>: <code>Wmf</code>, <code>Emf</code>, <code>EmfPlusDual</code> or <code>EmfPlusOnly</code>), and the header gives the picture's size:</p>
 <ul>
 <li><code>Size</code> and <code>Frame</code> are in points: an EMF's frame rectangle (0.01 mm), a placeable WMF's box and units per inch, or, for a
 WMF without a placeable header, its window extent at 96 DPI (with a <code>Metafile.NoPlaceableHeader</code> warning).</li>
@@ -114,6 +113,13 @@ if (picture.Kind is MetafileKind.EmfPlusDual or MetafileKind.EmfPlusOnly)
 {
     Console.WriteLine(&quot;Drawn by its EMF+ records, as GDI+ draws it.&quot;);
 }
+</code></pre>
+<p>A picture taken out of a document is often already in memory; <code>Load</code> takes the bytes as they are.</p>
+<pre><code class="lang-csharp">// A picture taken out of a document, already in memory: no stream needed.
+Metafile picture = Metafile.Load(bytes);
+using Raster&lt;Rgba8&gt; page = Raster.Create&lt;Rgba8&gt;(200, 150);
+using RasterCanvas&lt;Rgba8&gt; canvas = page.CreateCanvas();
+picture.Draw(canvas, new RectF(0, 0, 200, 150));
 </code></pre><h2 id="drawing">Drawing</h2>
 <p><code>Metafile.Draw</code> plays the picture on any canvas: in points from the canvas's origin, or with its frame stretched to a box, as
 Word stretches a picture to its frame. <code>Metafile.Rasterize</code> draws into a new raster at a DPI (96 by default) or a width

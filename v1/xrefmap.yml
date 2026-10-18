@@ -49855,6 +49855,15 @@ references:
   fullName.vb: Egami.Metafiles.Metafile.Load(System.IO.Stream, Egami.Metafiles.MetafileLoadOptions)
   nameWithType: Metafile.Load(Stream, MetafileLoadOptions?)
   nameWithType.vb: Metafile.Load(Stream, MetafileLoadOptions)
+- uid: Egami.Metafiles.Metafile.Load(System.ReadOnlyMemory{System.Byte},Egami.Metafiles.MetafileLoadOptions)
+  name: Load(ReadOnlyMemory<byte>, MetafileLoadOptions?)
+  href: api/Egami.Metafiles.Metafile.html#Egami_Metafiles_Metafile_Load_System_ReadOnlyMemory_System_Byte__Egami_Metafiles_MetafileLoadOptions_
+  commentId: M:Egami.Metafiles.Metafile.Load(System.ReadOnlyMemory{System.Byte},Egami.Metafiles.MetafileLoadOptions)
+  name.vb: Load(ReadOnlyMemory(Of Byte), MetafileLoadOptions)
+  fullName: Egami.Metafiles.Metafile.Load(System.ReadOnlyMemory<byte>, Egami.Metafiles.MetafileLoadOptions?)
+  fullName.vb: Egami.Metafiles.Metafile.Load(System.ReadOnlyMemory(Of Byte), Egami.Metafiles.MetafileLoadOptions)
+  nameWithType: Metafile.Load(ReadOnlyMemory<byte>, MetafileLoadOptions?)
+  nameWithType.vb: Metafile.Load(ReadOnlyMemory(Of Byte), MetafileLoadOptions)
 - uid: Egami.Metafiles.Metafile.Load(System.String,Egami.Metafiles.MetafileLoadOptions)
   name: Load(string, MetafileLoadOptions?)
   href: api/Egami.Metafiles.Metafile.html#Egami_Metafiles_Metafile_Load_System_String_Egami_Metafiles_MetafileLoadOptions_

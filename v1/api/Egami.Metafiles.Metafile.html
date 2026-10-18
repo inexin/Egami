@@ -367,11 +367,11 @@ a plain WMF's window extent from zero.</p>
 
   <h3 id="Egami_Metafiles_Metafile_Draw_Egami_Drawing_Canvas_System_Nullable_Egami_Drawing_RectF__Egami_Metafiles_MetafileRenderOptions_" data-uid="Egami.Metafiles.Metafile.Draw(Egami.Drawing.Canvas,System.Nullable{Egami.Drawing.RectF},Egami.Metafiles.MetafileRenderOptions)">
   Draw(Canvas, RectF?, MetafileRenderOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/Metafile.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/Metafile.cs/#L134"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws the picture on a canvas: in points from the canvas's origin (the frame's corner there), or with its frame stretched
-to <code class="paramref">box</code> exactly, as Word stretches a picture to its frame (design question 10). Drawing calls only the
+to <code class="paramref">box</code> exactly, as Word stretches a picture to its frame. Drawing calls only the
 public canvas API, so a raster canvas, a PDF page, SvgCanvas or a PictureRecorder receive the same calls. It never throws
 on content: what it cannot draw is skipped and reported to the context's diagnostics.</p>
 </div>
@@ -480,6 +480,64 @@ if (picture.Kind is MetafileKind.EmfPlusDual or MetafileKind.EmfPlusOnly)
 
   <a id="Egami_Metafiles_Metafile_Load_" data-uid="Egami.Metafiles.Metafile.Load*"></a>
 
+  <h3 id="Egami_Metafiles_Metafile_Load_System_ReadOnlyMemory_System_Byte__Egami_Metafiles_MetafileLoadOptions_" data-uid="Egami.Metafiles.Metafile.Load(System.ReadOnlyMemory{System.Byte},Egami.Metafiles.MetafileLoadOptions)">
+  Load(ReadOnlyMemory&lt;byte&gt;, MetafileLoadOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/Metafile.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads WMF, EMF, WMZ or EMZ bytes, such as a picture taken out of a Word or PowerPoint file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Metafile Load(ReadOnlyMemory&lt;byte&gt; data, MetafileLoadOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The file's bytes; they are copied, so the memory can be reused once this returns.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Metafiles.MetafileLoadOptions.html">MetafileLoadOptions</a></dt>
+    <dd><p>How to read it, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metafiles.Metafile.html">Metafile</a></dt>
+    <dd><p>The metafile.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Metafiles_Metafile_Load_System_ReadOnlyMemory_System_Byte__Egami_Metafiles_MetafileLoadOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A picture taken out of a document, already in memory: no stream needed.
+Metafile picture = Metafile.Load(bytes);
+using Raster&lt;Rgba8&gt; page = Raster.Create&lt;Rgba8&gt;(200, 150);
+using RasterCanvas&lt;Rgba8&gt; canvas = page.CreateCanvas();
+picture.Draw(canvas, new RectF(0, 0, 200, 150));</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data is no WMF or EMF file, or its header is broken.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The data, or EMZ or WMZ data once inflated, is larger than the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Metafiles_Metafile_Load_" data-uid="Egami.Metafiles.Metafile.Load*"></a>
+
   <h3 id="Egami_Metafiles_Metafile_Load_System_String_Egami_Metafiles_MetafileLoadOptions_" data-uid="Egami.Metafiles.Metafile.Load(System.String,Egami.Metafiles.MetafileLoadOptions)">
   Load(string, MetafileLoadOptions?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/Metafile.cs/#L67"><i class="bi bi-code-slash"></i></a>
@@ -546,7 +604,7 @@ image.Save(output);</code></pre>
 
   <h3 id="Egami_Metafiles_Metafile_Rasterize__1_Egami_Metafiles_MetafileRenderOptions_" data-uid="Egami.Metafiles.Metafile.Rasterize``1(Egami.Metafiles.MetafileRenderOptions)">
   Rasterize&lt;TPixel&gt;(MetafileRenderOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/Metafile.cs/#L136"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/Metafile.cs/#L154"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws the picture into a new raster: at its size at <a class="xref" href="Egami.Metafiles.MetafileRenderOptions.html#Egami_Metafiles_MetafileRenderOptions_Dpi">Dpi</a> (96 by default), or at a
