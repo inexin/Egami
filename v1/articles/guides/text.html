@@ -89,8 +89,8 @@
 
 <p>Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2 and variable fonts in managed code: faces, glyph
 outlines, metrics, kerning, installed fonts and subsets. Egami.Drawing uses it to draw and measure a line of text on a canvas. Egami.Drawing and Egami.Fonts are at
-1.0 and their APIs are frozen. Egami ships no font: text needs a face from a file, a stream,
-memory or the installed fonts.</p>
+1.0 and their APIs are frozen. Egami.Fonts ships no font: text needs a face from a file, a stream,
+memory or the installed fonts, or from the opt-in <a href="#substitute-fonts">substitute fonts</a> package.</p>
 <h2 id="faces">Faces</h2>
 <p>A <code>Typeface</code> is one face, immutable and shared by every thread. <code>Typeface.FromFile</code>, <code>FromStream</code> and <code>FromMemory</code> read TrueType
 (.ttf), OpenType CFF and CFF2 (.otf), collections (.ttc, .otc, with a face index), WOFF and WOFF2 (.woff, .woff2, collections
@@ -379,6 +379,23 @@ fonts.AddFile(FontFile);
 fonts.AddSystemFonts();
 FontMatch noto = fonts.Match(&quot;Noto Sans&quot;, FontStyle.BoldItalic)!.Value;
 Font font = noto.ToFont(16);
+</code></pre><h2 id="substitute-fonts">Substitute fonts</h2>
+<p>Documents often name Arial, Helvetica, Times, Courier, Calibri or Cambria without carrying the font, and many machines (Linux
+servers and containers above all) have none of them. Egami.Fonts.Substitutes is a separate, opt-in package that bundles open
+fonts with the same glyph widths, so text set in a substitute keeps the original's line breaks: Liberation Sans for Helvetica
+and Arial, Liberation Serif for Times and Times New Roman, Liberation Mono for Courier and Courier New, Carlito for Calibri and
+Caladea for Cambria, each in four styles. It adds about 7 MB, which is why Egami.Fonts does not carry the fonts itself. The
+fonts are under the SIL Open Font License 1.1, and their licences ship in the package.</p>
+<p><code>SubstituteFonts.Find</code> takes a family name or a common alias (<code>ArialMT</code>, <code>Times-Roman</code>, <code>Courier New</code>; spaces, hyphens and case
+are ignored) and returns the face in the nearest style, or null for any other name. <code>SubstituteFonts.Collection</code> holds all
+twenty faces as a <code>FontCollection</code>, to match by family name or to pass to anything that takes fonts, such as
+<code>MetafileRenderOptions.Fonts</code> or <code>SvgFontOptions.Collection</code>.</p>
+<pre><code class="lang-csharp">// Bundled faces for the fonts documents name most, on any machine: Arial is Liberation Sans, Calibri is Carlito.
+Typeface? arial = SubstituteFonts.Find(&quot;Arial&quot;, FontStyle.Bold);
+Font body = new(SubstituteFonts.Find(&quot;Calibri&quot;, FontStyle.Normal)!, 11);
+
+// All twenty faces as a collection, matched by family name and style.
+FontMatch? mono = SubstituteFonts.Collection.Match(&quot;Liberation Mono&quot;, FontStyle.Italic);
 </code></pre><h2 id="subsets">Subsets</h2>
 <p><code>FontSubsetter.Subset</code> writes a font with only some glyphs, as PDF embedding and SVG export want: TrueType, OpenType CFF or a bare
 CID-keyed CFF stream (<code>SubsetFormat</code>), closed over composites and accents, with unused CFF subroutines dropped. <code>SubsetOptions</code>

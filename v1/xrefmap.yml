@@ -29970,6 +29970,47 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.SubsetOptions.Variations
   nameWithType: SubsetOptions.Variations
+- uid: Egami.Fonts.Substitutes
+  name: Egami.Fonts.Substitutes
+  href: api/Egami.Fonts.Substitutes.html
+  commentId: N:Egami.Fonts.Substitutes
+  fullName: Egami.Fonts.Substitutes
+  nameWithType: Egami.Fonts.Substitutes
+- uid: Egami.Fonts.Substitutes.SubstituteFonts
+  name: SubstituteFonts
+  href: api/Egami.Fonts.Substitutes.SubstituteFonts.html
+  commentId: T:Egami.Fonts.Substitutes.SubstituteFonts
+  fullName: Egami.Fonts.Substitutes.SubstituteFonts
+  nameWithType: SubstituteFonts
+- uid: Egami.Fonts.Substitutes.SubstituteFonts.Collection
+  name: Collection
+  href: api/Egami.Fonts.Substitutes.SubstituteFonts.html#Egami_Fonts_Substitutes_SubstituteFonts_Collection
+  commentId: P:Egami.Fonts.Substitutes.SubstituteFonts.Collection
+  fullName: Egami.Fonts.Substitutes.SubstituteFonts.Collection
+  nameWithType: SubstituteFonts.Collection
+- uid: Egami.Fonts.Substitutes.SubstituteFonts.Collection*
+  name: Collection
+  href: api/Egami.Fonts.Substitutes.SubstituteFonts.html#Egami_Fonts_Substitutes_SubstituteFonts_Collection_
+  commentId: Overload:Egami.Fonts.Substitutes.SubstituteFonts.Collection
+  isSpec: "True"
+  fullName: Egami.Fonts.Substitutes.SubstituteFonts.Collection
+  nameWithType: SubstituteFonts.Collection
+- uid: Egami.Fonts.Substitutes.SubstituteFonts.Find(System.String,Egami.Fonts.FontStyle)
+  name: Find(string, FontStyle)
+  href: api/Egami.Fonts.Substitutes.SubstituteFonts.html#Egami_Fonts_Substitutes_SubstituteFonts_Find_System_String_Egami_Fonts_FontStyle_
+  commentId: M:Egami.Fonts.Substitutes.SubstituteFonts.Find(System.String,Egami.Fonts.FontStyle)
+  name.vb: Find(String, FontStyle)
+  fullName: Egami.Fonts.Substitutes.SubstituteFonts.Find(string, Egami.Fonts.FontStyle)
+  fullName.vb: Egami.Fonts.Substitutes.SubstituteFonts.Find(String, Egami.Fonts.FontStyle)
+  nameWithType: SubstituteFonts.Find(string, FontStyle)
+  nameWithType.vb: SubstituteFonts.Find(String, FontStyle)
+- uid: Egami.Fonts.Substitutes.SubstituteFonts.Find*
+  name: Find
+  href: api/Egami.Fonts.Substitutes.SubstituteFonts.html#Egami_Fonts_Substitutes_SubstituteFonts_Find_
+  commentId: Overload:Egami.Fonts.Substitutes.SubstituteFonts.Find
+  isSpec: "True"
+  fullName: Egami.Fonts.Substitutes.SubstituteFonts.Find
+  nameWithType: SubstituteFonts.Find
 - uid: Egami.Fonts.TextBounds
   name: TextBounds
   href: api/Egami.Fonts.TextBounds.html

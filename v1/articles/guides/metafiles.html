@@ -169,6 +169,22 @@ using Raster&lt;Rgba8&gt; image = picture.Rasterize&lt;Rgba8&gt;(new MetafileRen
     FontSubstitutions = new Dictionary&lt;string, string&gt; { [&quot;Segoe UI&quot;] = &quot;Noto Sans&quot; },
     Antialias = false, // GDI's own aliased look, for comparing with Windows
 });
+</code></pre>
+<p>The open fonts are found only when they are installed, and many servers have none. The
+<a href="text.html#substitute-fonts">Egami.Fonts.Substitutes</a> package bundles Liberation, Carlito and Caladea, so put its faces in the
+<code>Fonts</code> you pass:</p>
+<pre><code class="lang-csharp">// The same pictures on a machine without Arial or Calibri: the bundled substitutes first, then the installed fonts.
+var fonts = new FontCollection();
+foreach (FontFamily family in SubstituteFonts.Collection)
+{
+    foreach (Typeface face in family.Faces)
+    {
+        fonts.Add(face);
+    }
+}
+
+fonts.AddSystemFonts();
+using Raster&lt;Rgba8&gt; image = Metafile.Load(path).Rasterize&lt;Rgba8&gt;(new MetafileRenderOptions { Fonts = fonts });
 </code></pre><h2 id="rasterload">Raster.Load</h2>
 <p>Registered with <code>EgamiContext.WithFormat</code>, <code>MetafileFormat</code> lets <code>Raster.Load</code> draw a metafile at its size at 96 DPI onto a
 transparent <code>Rgba8</code> raster, and <code>Raster.Probe</code> give that size from the header without drawing. <code>MetafileDecodeOptions.Dpi</code>
