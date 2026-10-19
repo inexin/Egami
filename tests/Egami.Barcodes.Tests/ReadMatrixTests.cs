@@ -137,4 +137,30 @@ public class ReadMatrixTests
         using Raster<Gray8> photo = Photos.Render(barcode, 640, 640, Photos.Quad(new Vector2(320, 320), width, height, degrees, tilt), seed: (int)degrees + 5);
         Assert.Contains(photo.ReadBarcodes(), r => r.Format == BarcodeFormat.Pdf417 && r.Text == text);
     }
+
+    public static TheoryData<string, float, float> AztecCases => new()
+    {
+        { "compact", 0, 0 },
+        { "compact", 33, 0.1f },
+        { "full", 0, 0 },
+        { "full", 160, 0.08f },
+        { "large", 280, 0.05f },
+        { "rune", 15, 0 },
+    };
+
+    [Theory]
+    [MemberData(nameof(AztecCases))]
+    public void ReadsAztecPhotos(string kind, float degrees, float tilt)
+    {
+        (Barcode barcode, string text) = kind switch
+        {
+            "compact" => (Barcode.Aztec("Aztec 2D", new AztecOptions { Compact = true }), "Aztec 2D"),
+            "full" => (Barcode.Aztec("Full-range Aztec Code", new AztecOptions { Compact = false }), "Full-range Aztec Code"),
+            "rune" => (Barcode.AztecRune(42), "42"),
+            _ => (Barcode.Aztec(string.Concat(Enumerable.Repeat("Aztec Code with many layers. ", 12))), string.Concat(Enumerable.Repeat("Aztec Code with many layers. ", 12))),
+        };
+        float side = kind == "rune" ? 200 : 380;
+        using Raster<Gray8> photo = Photos.Render(barcode, 640, 640, Photos.Quad(new Vector2(320, 320), side, side, degrees, tilt), seed: (int)degrees + 3);
+        Assert.Contains(photo.ReadBarcodes(), r => r.Format == BarcodeFormat.Aztec && r.Text == text);
+    }
 }

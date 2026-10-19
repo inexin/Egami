@@ -35,6 +35,31 @@ internal static class AztecDecoder
         return null;
     }
 
+    /// <summary>
+    /// The symbol size from the mode message on a sampled core (11 x 11 compact, 15 x 15 full-range) at any orientation, or
+    /// null when it does not correct; 11 for a rune.
+    /// </summary>
+    public static int? SymbolSize(BarcodeModules core, bool compact)
+    {
+        for (int orientation = 0; orientation < 8; orientation++)
+        {
+            BarcodeModules oriented = Orient(core, orientation);
+            if (ReadMode(oriented, core.Width, compact, rune: false) is int[] mode)
+            {
+                int layers = compact ? (((mode[0] << 4) | mode[1]) >> 6) + 1 : (((mode[0] << 12) | (mode[1] << 8) | (mode[2] << 4) | mode[3]) >> 11) + 1;
+                return AztecEncoder.Size(layers, compact);
+            }
+
+            // A rune has no data layers to confirm it, so its mode message must read without errors.
+            if (compact && ReadMode(oriented, core.Width, compact: true, rune: true, exact: true) is not null)
+            {
+                return 11;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>Rotates the grid by quarter turns (0 to 3), then mirrors it for 4 to 7.</summary>
     private static BarcodeModules Orient(BarcodeModules grid, int orientation)
     {
@@ -163,8 +188,8 @@ internal static class AztecDecoder
         return Parse(stream) is DecodedData parsed ? parsed with { ErrorsCorrected = corrected } : null;
     }
 
-    /// <summary>Reads and corrects the mode message; returns its data words, or null when it does not correct.</summary>
-    private static int[]? ReadMode(BarcodeModules grid, int size, bool compact, bool rune)
+    /// <summary>Reads and corrects the mode message; returns its data words, or null when it does not correct (or, when exact, needs correcting).</summary>
+    private static int[]? ReadMode(BarcodeModules grid, int size, bool compact, bool rune, bool exact = false)
     {
         (int X, int Y)[] positions = AztecEncoder.ModePositions(size, compact);
         int count = positions.Length / 4;
@@ -182,7 +207,8 @@ internal static class AztecDecoder
         }
 
         int data = compact ? 2 : 4;
-        return ReedSolomon.Decode(GaloisField.Aztec4, words, count - data) < 0 ? null : words[..data];
+        int corrected = ReedSolomon.Decode(GaloisField.Aztec4, words, count - data);
+        return corrected < 0 || (exact && corrected > 0) ? null : words[..data];
     }
 
     /// <summary>Decodes the mode stream: latches and shifts between Upper, Lower, Mixed, Punctuation and Digit, Binary Shift, FLG(n).</summary>

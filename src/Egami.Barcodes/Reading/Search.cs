@@ -58,6 +58,11 @@ internal static class Search
             results.AddRange(DataMatrixDetector.Detect(local, components, new Vector2(image.Left, image.Top)));
         }
 
+        if ((formats & BarcodeFormats.Aztec) != 0)
+        {
+            results.AddRange(AztecDetector.Detect(local, options.Effort, new Vector2(image.Left, image.Top)));
+        }
+
         if ((formats & BarcodeFormats.Pdf417) != 0)
         {
             results.AddRange(Pdf417Detector.Detect(local, options.Effort, new Vector2(image.Left, image.Top)));

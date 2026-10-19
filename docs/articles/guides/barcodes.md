@@ -142,6 +142,9 @@ perspective, on a label lighter than its background or not; the clock tracks cou
 PDF417 symbols are found by their start and stop patterns at any rotation and in perspective; a compact symbol, which has
 no stop pattern, is read from its start pattern on. Rows that cannot be read are filled in by error correction.
 
+Aztec Codes are found by their bullseye at any rotation and in perspective, compact, full-range and runes; on larger
+full-range symbols the reference grid places the modules out to the edge.
+
 ## Drawing on a canvas
 
 `DrawBarcode`, an extension method in `CanvasBarcodeExtensions`, draws on any canvas: a raster, a PDF or SVG page, a
