@@ -10,8 +10,12 @@ zintdump.c; zxing-cpp 3.1.1, Apache-2.0) is built if needed. Two steps, both by 
             Egami's grid, so the tests notice when a grid changes without a new read-back. Fails if any image does not read
             back as the case's text (or its 'read' text).
 
+  blackbox  fetches the ZXing blackbox test images (ZXing 3.5.4, Apache-2.0) into .cache/zxing-blackbox, never committed,
+            and counts per set how many zxing-cpp reads (.cache/zxing-cpp-blackbox.json), to compare with Egami's counts from
+            Egami.Barcodes.Tests' BlackboxTests (EGAMI_CORPUS=barcodes, .cache/egami-blackbox.json).
+
 Usage, from the repo root with Docker running:
-  python tools/make-barcode-references.py [grids|readback]
+  python tools/make-barcode-references.py [grids|readback|blackbox]
 """
 import hashlib
 import json
@@ -100,6 +104,25 @@ def readback(cases):
         sys.exit("\n".join(failures))
 
 
+BLACKBOX = ".cache/zxing-blackbox"
+BLACKBOX_IMAGES = BLACKBOX + "/core/src/test/resources/blackbox"
+
+
+def blackbox():
+    if not os.path.isdir(BLACKBOX_IMAGES):
+        subprocess.run(["git", "clone", "--depth", "1", "--filter=blob:none", "--no-checkout", "--branch", "zxing-3.5.4",
+                        "https://github.com/zxing/zxing.git", BLACKBOX], check=True)
+        subprocess.run(["git", "-C", BLACKBOX, "sparse-checkout", "init"], check=True)
+        subprocess.run(["git", "-C", BLACKBOX, "sparse-checkout", "set", "core/src/test/resources/blackbox"], check=True)
+        subprocess.run(["git", "-C", BLACKBOX, "checkout", "-q", "zxing-3.5.4"], check=True)
+    out = subprocess.run(["docker", "run", "--rm", "-v", f"{os.getcwd()}:/w", IMAGE, "python3", "-W", "ignore",
+                          "/w/tools/barcoderef/blackbox.py", f"/w/{BLACKBOX_IMAGES}"], capture_output=True, text=True, check=True,
+                         env=ENV).stdout
+    with open(".cache/zxing-cpp-blackbox.json", "w", encoding="utf-8", newline="\n") as f:
+        f.write(out)
+    print("zxing-cpp counts written to .cache/zxing-cpp-blackbox.json")
+
+
 def main():
     steps = sys.argv[1:] or ["grids", "readback"]
     subprocess.run(["docker", "build", "-q", "-t", IMAGE, "tools/barcoderef"], check=True, env=ENV)
@@ -108,6 +131,8 @@ def main():
         grids(cases)
     if "readback" in steps:
         readback(cases)
+    if "blackbox" in steps:
+        blackbox()
 
 
 if __name__ == "__main__":

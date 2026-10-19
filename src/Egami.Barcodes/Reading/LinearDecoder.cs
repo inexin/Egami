@@ -13,7 +13,7 @@ internal sealed record class LinearRead(DecodedData Data, float Start, float End
 internal static class LinearDecoder
 {
     /// <summary>Reads the first symbol of the allowed formats on the line, left to right.</summary>
-    public static LinearRead? Read(ReadOnlySpan<int> runs, ReadOnlySpan<int> offsets, BarcodeFormats formats)
+    public static LinearRead? Read(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, BarcodeFormats formats)
     {
         for (int i = 1; i < runs.Length; i += 2)
         {
@@ -51,9 +51,10 @@ internal static class LinearDecoder
     /// How far runs are from a pattern of module widths: the mean deviation per module, scaled to the runs' total; or
     /// <see cref="float.MaxValue"/> when one run is off by more than <paramref name="maximum"/> of a module.
     /// </summary>
-    private static float Variance(ReadOnlySpan<int> runs, ReadOnlySpan<int> pattern, float maximum = 0.7f)
+    private static float Variance(ReadOnlySpan<float> runs, ReadOnlySpan<int> pattern, float maximum = 0.7f)
     {
-        int total = 0, modules = 0;
+        float total = 0;
+        int modules = 0;
         for (int i = 0; i < pattern.Length; i++)
         {
             total += runs[i];
@@ -65,7 +66,7 @@ internal static class LinearDecoder
             return float.MaxValue;
         }
 
-        float unit = (float)total / modules, sum = 0;
+        float unit = total / modules, sum = 0;
         for (int i = 0; i < pattern.Length; i++)
         {
             float deviation = MathF.Abs(runs[i] - (pattern[i] * unit));
@@ -80,9 +81,9 @@ internal static class LinearDecoder
         return sum / total;
     }
 
-    private static int Sum(ReadOnlySpan<int> runs)
+    private static float Sum(ReadOnlySpan<float> runs)
     {
-        int total = 0;
+        float total = 0;
         foreach (int r in runs)
         {
             total += r;
@@ -92,11 +93,11 @@ internal static class LinearDecoder
     }
 
     /// <summary>Whether the light run before a pattern is at least the given width (the image edge counts as light).</summary>
-    private static bool QuietBefore(ReadOnlySpan<int> runs, int start, float width) => start == 1 && runs[0] == 0 ? false : runs[start - 1] >= width || start - 1 == 0;
+    private static bool QuietBefore(ReadOnlySpan<float> runs, int start, float width) => start == 1 && runs[0] == 0 ? false : runs[start - 1] >= width || start - 1 == 0;
 
-    private static bool QuietAfter(ReadOnlySpan<int> runs, int end, float width) => end >= runs.Length || runs[end] >= width || end == runs.Length - 1;
+    private static bool QuietAfter(ReadOnlySpan<float> runs, int end, float width) => end >= runs.Length || runs[end] >= width || end == runs.Length - 1;
 
-    private static LinearRead Result(DecodedData data, ReadOnlySpan<int> offsets, int start, int end) =>
+    private static LinearRead Result(DecodedData data, ReadOnlySpan<float> offsets, int start, int end) =>
         new(data, offsets[start], offsets[Math.Min(end, offsets.Length - 1)]);
 
     // ---- Code 128 ----
@@ -117,7 +118,7 @@ internal static class LinearDecoder
         return patterns;
     }
 
-    private static LinearRead? Code128(ReadOnlySpan<int> runs, ReadOnlySpan<int> offsets, int start)
+    private static LinearRead? Code128(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start)
     {
         if (start + 6 > runs.Length)
         {
@@ -261,7 +262,7 @@ internal static class LinearDecoder
     }
 
     /// <summary>The Code 128 value in a range whose pattern is nearest the runs, or -1.</summary>
-    private static int Best(ReadOnlySpan<int> runs, int from, int to, float limit)
+    private static int Best(ReadOnlySpan<float> runs, int from, int to, float limit)
     {
         int best = -1;
         float bestVariance = limit;
@@ -287,7 +288,7 @@ internal static class LinearDecoder
         0x1C0, 0x091, 0x190, 0x0D0, 0x085, 0x184, 0x0C4, 0x0A8, 0x0A2, 0x08A, 0x02A, 0x094,
     ];
 
-    private static LinearRead? Code39(ReadOnlySpan<int> runs, ReadOnlySpan<int> offsets, int start)
+    private static LinearRead? Code39(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start)
     {
         if (start + 9 > runs.Length || Code39Character(runs.Slice(start, 9)) != '*' || !QuietBefore(runs, start, Sum(runs.Slice(start, 9)) / 2f))
         {
@@ -329,12 +330,12 @@ internal static class LinearDecoder
     }
 
     /// <summary>The Code 39 character of 9 runs (the three widest are wide), or '\0'.</summary>
-    private static char Code39Character(ReadOnlySpan<int> runs)
+    private static char Code39Character(ReadOnlySpan<float> runs)
     {
-        Span<int> sorted = stackalloc int[9];
+        Span<float> sorted = stackalloc float[9];
         runs.CopyTo(sorted);
         sorted.Sort();
-        int narrowMax = sorted[5], wideMin = sorted[6];
+        float narrowMax = sorted[5], wideMin = sorted[6];
         if (wideMin < narrowMax * 1.5f || sorted[8] > sorted[0] * 5)
         {
             return '\0';
@@ -406,7 +407,7 @@ internal static class LinearDecoder
 
     private static readonly int[] s_itf = [0b00110, 0b10001, 0b01001, 0b11000, 0b00101, 0b10100, 0b01100, 0b00011, 0b10010, 0b01010];
 
-    private static LinearRead? Itf(ReadOnlySpan<int> runs, ReadOnlySpan<int> offsets, int start)
+    private static LinearRead? Itf(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start)
     {
         if (start + 4 > runs.Length || Variance(runs.Slice(start, 4), [1, 1, 1, 1], 0.5f) > 0.3f)
         {
@@ -421,7 +422,7 @@ internal static class LinearDecoder
 
         var digits = new StringBuilder();
         int at = start + 4;
-        Span<int> bars = stackalloc int[5], spaces = stackalloc int[5];
+        Span<float> bars = stackalloc float[5], spaces = stackalloc float[5];
         while (at + 10 <= runs.Length)
         {
             // The stop pattern: wide bar, narrow space, narrow bar, then the quiet zone.
@@ -457,9 +458,9 @@ internal static class LinearDecoder
     }
 
     /// <summary>The digit of five elements of which the two widest are wide, or -1.</summary>
-    private static int TwoOfFive(ReadOnlySpan<int> elements)
+    private static int TwoOfFive(ReadOnlySpan<float> elements)
     {
-        Span<int> sorted = stackalloc int[5];
+        Span<float> sorted = stackalloc float[5];
         elements.CopyTo(sorted);
         sorted.Sort();
         if (sorted[3] < sorted[2] * 1.5f)
@@ -484,7 +485,7 @@ internal static class LinearDecoder
     private static readonly string[] s_ean5Parity = ["BBAAA", "BABAA", "BAABA", "BAAAB", "ABBAA", "AABBA", "AAABB", "ABABA", "ABAAB", "AABAB"];
 
     /// <summary>A digit of 4 runs: its value and set (A, or B for the mirrored set A), or (-1, ' ').</summary>
-    private static (int Digit, char Set) EanDigit(ReadOnlySpan<int> runs, bool allowB)
+    private static (int Digit, char Set) EanDigit(ReadOnlySpan<float> runs, bool allowB)
     {
         int best = -1;
         char set = ' ';
@@ -516,15 +517,15 @@ internal static class LinearDecoder
         return (best, set);
     }
 
-    private static LinearRead? EanUpc(ReadOnlySpan<int> runs, ReadOnlySpan<int> offsets, int start, BarcodeFormats formats)
+    private static LinearRead? EanUpc(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, BarcodeFormats formats)
     {
-        if (start + 3 + 24 > runs.Length || Variance(runs.Slice(start, 3), [1, 1, 1], 0.6f) > 0.3f)
+        if (start + 3 + 24 > runs.Length || Variance(runs.Slice(start, 3), [1, 1, 1], 0.75f) > 0.48f)
         {
             return null;
         }
 
         float module = Sum(runs.Slice(start, 3)) / 3f;
-        if (!QuietBefore(runs, start, module * 5))
+        if (!QuietBefore(runs, start, module * 3))
         {
             return null;
         }
@@ -535,7 +536,7 @@ internal static class LinearDecoder
             ?? UpcE(runs, offsets, start, at, formats);
     }
 
-    private static LinearRead? EanUpc13or8(ReadOnlySpan<int> runs, ReadOnlySpan<int> offsets, int start, int at, int half, BarcodeFormats formats)
+    private static LinearRead? EanUpc13or8(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, int at, int half, BarcodeFormats formats)
     {
         bool ean13 = half == 6;
         if (ean13 && (formats & (BarcodeFormats.Ean13 | BarcodeFormats.UpcA)) == 0 || !ean13 && (formats & BarcodeFormats.Ean8) == 0)
@@ -563,7 +564,7 @@ internal static class LinearDecoder
             at += 4;
         }
 
-        if (Variance(runs.Slice(at, 5), [1, 1, 1, 1, 1], 0.6f) > 0.35f)
+        if (Variance(runs.Slice(at, 5), [1, 1, 1, 1, 1], 0.75f) > 0.48f)
         {
             return null;
         }
@@ -581,12 +582,19 @@ internal static class LinearDecoder
             at += 4;
         }
 
-        if (Variance(runs.Slice(at, 3), [1, 1, 1], 0.6f) > 0.35f)
+        if (Variance(runs.Slice(at, 3), [1, 1, 1], 0.75f) > 0.48f)
         {
             return null;
         }
 
         int end = at + 3;
+        // EAN-8 has a weaker check than EAN-13, so it needs its full quiet zones (7 modules; 5 accepted).
+        float module = (offsets[Math.Min(end, offsets.Length - 1)] - offsets[start]) / (ean13 ? 95f : 67f);
+        if (!QuietAfter(runs, end, module * (ean13 ? 3 : 5)) || (!ean13 && !QuietBefore(runs, start, module * 5)))
+        {
+            return null;
+        }
+
         string text = digits.ToString();
         BarcodeFormat format = BarcodeFormat.Ean8;
         if (ean13)
@@ -617,7 +625,7 @@ internal static class LinearDecoder
         return Finish(runs, offsets, start, end, text, format);
     }
 
-    private static LinearRead? UpcE(ReadOnlySpan<int> runs, ReadOnlySpan<int> offsets, int start, int at, BarcodeFormats formats)
+    private static LinearRead? UpcE(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, int at, BarcodeFormats formats)
     {
         if ((formats & BarcodeFormats.UpcE) == 0 || at + 24 + 6 > runs.Length)
         {
@@ -639,7 +647,10 @@ internal static class LinearDecoder
             at += 4;
         }
 
-        if (Variance(runs.Slice(at, 6), [1, 1, 1, 1, 1, 1], 0.6f) > 0.35f)
+        // UPC-E has the weakest check, so its guards and quiet zones are held to more.
+        float unit = (offsets[Math.Min(at + 6, offsets.Length - 1)] - offsets[start]) / 51f;
+        if (Variance(runs.Slice(at, 6), [1, 1, 1, 1, 1, 1], 0.6f) > 0.35f || Variance(runs.Slice(start, 3), [1, 1, 1], 0.6f) > 0.35f
+            || !QuietAfter(runs, at + 6, unit * 5) || !QuietBefore(runs, start, unit * 5))
         {
             return null;
         }
@@ -672,7 +683,7 @@ internal static class LinearDecoder
     private static bool CheckDigitValid(string digits) => Linear.EanUpcEncoder.CheckDigit(digits[..^1]) == digits[^1];
 
     /// <summary>Adds an EAN-2 or EAN-5 add-on found 5 to 15 modules after the symbol.</summary>
-    private static LinearRead Finish(ReadOnlySpan<int> runs, ReadOnlySpan<int> offsets, int start, int end, string text, BarcodeFormat format)
+    private static LinearRead Finish(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, int end, string text, BarcodeFormat format)
     {
         float module = (offsets[Math.Min(end, offsets.Length - 1)] - offsets[start]) / (format switch { BarcodeFormat.Ean8 => 67f, BarcodeFormat.UpcE => 51f, _ => 95f });
         if (end + 1 < runs.Length && runs[end] >= module * 4 && runs[end] <= module * 16 && AddOn(runs, end + 1) is (string addOn, int addOnEnd))
@@ -684,7 +695,7 @@ internal static class LinearDecoder
         return Result(new DecodedData(format, text, Encoding.ASCII.GetBytes(text)), offsets, start, end);
     }
 
-    private static (string, int)? AddOn(ReadOnlySpan<int> runs, int at)
+    private static (string, int)? AddOn(ReadOnlySpan<float> runs, int at)
     {
         if (at + 3 + 4 > runs.Length || Variance(runs.Slice(at, 3), [1, 1, 2], 0.6f) > 0.35f)
         {

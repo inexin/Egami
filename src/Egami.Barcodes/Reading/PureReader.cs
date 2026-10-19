@@ -210,9 +210,9 @@ internal static class PureReader
 
     private static LinearRead? Linear(BitImage bits, int y, BarcodeFormats formats)
     {
-        var runs = new List<int>();
-        var offsets = new List<int>();
-        Runs(bits.Row(y), runs, offsets);
+        var runs = new List<float>();
+        var offsets = new List<float>();
+        Binarizer.BitRuns(bits.Row(y), runs, offsets);
         return LinearDecoder.Read([.. runs], [.. offsets], formats & BarcodeFormats.Linear);
     }
 

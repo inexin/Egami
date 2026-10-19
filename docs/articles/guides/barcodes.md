@@ -129,6 +129,10 @@ searching.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read-options)]
 
+Linear barcodes are found along scan lines: rows, columns from effort 3 and diagonals from effort 7, each read in both
+directions with its edges placed between pixels, so low-resolution and blurred photos read. A linear barcode counts once two
+scan lines agree on it.
+
 ## Drawing on a canvas
 
 `DrawBarcode`, an extension method in `CanvasBarcodeExtensions`, draws on any canvas: a raster, a PDF or SVG page, a

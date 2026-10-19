@@ -19,6 +19,8 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - `ReadBarcodes` and `ReadBarcode` read barcodes from a raster of any pixel type, with `BarcodeReaderOptions` for formats,
   effort, inverted symbols, a region and rendered (pure) barcodes. Each `BarcodeResult` has the format, text, bytes,
   corners, ECI, GS1 element strings and the codewords error correction restored.
+- Linear barcodes are found in photos along rows, columns and (from effort 7) diagonals, read both ways with sub-pixel edges
+  and two thresholds per line; two lines must agree.
 - The decoders read every symbology the package writes: QR (mirrored too), Data Matrix (DMRE and 144 x 144 too), PDF417
   (compact too), Aztec (runes too), Code 128 and GS1-128, Code 39 (Full ASCII too), ITF, EAN, UPC and their add-ons.
 

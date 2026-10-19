@@ -212,6 +212,132 @@ internal static class Binarizer
         }
     }
 
+    /// <summary>
+    /// Cuts a row into runs, light first (possibly empty), with edges at sub-pixel positions: the row is sharpened with a
+    /// -1 2 -1 kernel as blurred scans need, thresholded at its histogram valley, and each edge placed where the sharpened
+    /// values cross the threshold. <paramref name="offsets"/> gets each run's start and, last, the row's end.
+    /// </summary>
+    public static void RowRuns(ReadOnlySpan<byte> row, List<float> runs, List<float> offsets)
+    {
+        runs.Clear();
+        offsets.Clear();
+        int n = row.Length;
+        Span<int> histogram = stackalloc int[32];
+        foreach (byte p in row)
+        {
+            histogram[p >> 3]++;
+        }
+
+        float threshold = Valley(histogram) << 3;
+        float[] sharp = new float[n];
+        for (int i = 0; i < n; i++)
+        {
+            int left = row[Math.Max(i - 1, 0)], right = row[Math.Min(i + 1, n - 1)];
+            sharp[i] = ((4 * row[i]) - left - right) / 2f;
+        }
+
+        bool dark = false;
+        float start = 0;
+        for (int i = 0; i < n; i++)
+        {
+            bool d = sharp[i] < threshold;
+            if (d == dark)
+            {
+                continue;
+            }
+
+            // The crossing between sample centers i - 0.5 and i + 0.5.
+            float a = i > 0 ? sharp[i - 1] : sharp[i], b = sharp[i];
+            float edge = a == b ? i : i - 0.5f + Math.Clamp((threshold - a) / (b - a), 0, 1);
+            runs.Add(Math.Max(edge - start, 0));
+            offsets.Add(start);
+            start = edge;
+            dark = d;
+        }
+
+        runs.Add(n - start);
+        offsets.Add(start);
+        offsets.Add(n);
+    }
+
+    /// <summary>
+    /// Cuts a row into runs against a threshold that follows the light: the mean over a window around each sample (an eighth of
+    /// the row, at least 15 samples), so a gradient across a label does not swallow its bars. Edges are at sub-pixel positions.
+    /// </summary>
+    public static void AdaptiveRowRuns(ReadOnlySpan<byte> row, List<float> runs, List<float> offsets)
+    {
+        runs.Clear();
+        offsets.Clear();
+        int n = row.Length, radius = Math.Max(7, n / 16);
+        int[] prefix = new int[n + 1];
+        for (int i = 0; i < n; i++)
+        {
+            prefix[i + 1] = prefix[i] + row[i];
+        }
+
+        float[] level = new float[n];
+        int min = 255, max = 0;
+        for (int i = 0; i < n; i++)
+        {
+            int a = Math.Max(0, i - radius), b = Math.Min(n, i + radius + 1);
+            level[i] = row[i] - ((prefix[b] - prefix[a]) / (float)(b - a));
+            min = Math.Min(min, row[i]);
+            max = Math.Max(max, row[i]);
+        }
+
+        if (max - min < MinimumDynamicRange)
+        {
+            runs.Add(n);
+            offsets.Add(0);
+            offsets.Add(n);
+            return;
+        }
+
+        bool dark = false;
+        float start = 0;
+        for (int i = 0; i < n; i++)
+        {
+            bool d = level[i] < 0;
+            if (d == dark)
+            {
+                continue;
+            }
+
+            float a = i > 0 ? level[i - 1] : level[i], b = level[i];
+            float edge = a == b ? i : i - 0.5f + Math.Clamp(-a / (b - a), 0, 1);
+            runs.Add(Math.Max(edge - start, 0));
+            offsets.Add(start);
+            start = edge;
+            dark = d;
+        }
+
+        runs.Add(n - start);
+        offsets.Add(start);
+        offsets.Add(n);
+    }
+
+    /// <summary>Cuts a row of dark and light bits into runs, light first, at whole-pixel edges.</summary>
+    public static void BitRuns(ReadOnlySpan<byte> dark, List<float> runs, List<float> offsets)
+    {
+        runs.Clear();
+        offsets.Clear();
+        int color = 0, start = 0;
+        for (int x = 0; x < dark.Length; x++)
+        {
+            if (dark[x] != color)
+            {
+                runs.Add(x - start);
+                offsets.Add(start);
+                start = x;
+                color ^= 1;
+            }
+        }
+
+        runs.Add(dark.Length - start);
+        offsets.Add(start);
+        offsets.Add(dark.Length);
+    }
+
     /// <summary>The bucket between the two main peaks with the deepest valley, weighted toward the far side of the brighter peak.</summary>
     private static int Valley(ReadOnlySpan<int> histogram)
     {
