@@ -5,8 +5,14 @@ changes that break code come only in a new major version.
 
 ## Egami.Barcodes 1.0.0 (unreleased)
 
-A new package that writes and reads barcodes, drawn through Egami.Drawing. This version adds the empty package; barcode
-symbologies follow.
+A new package that writes and reads barcodes, drawn through Egami.Drawing.
+
+### Modules and error correction
+
+- `BarcodeModules` holds a symbol's modules: a grid of dark and light modules for 2D codes, or bar and space widths for linear
+  codes. `BarcodeModules.Create` and `CreateLinear` make one from modules you already have.
+- Reed-Solomon error correction for every symbology the package will write and read: QR, Data Matrix, PDF417 and Aztec, with
+  errors and erasures corrected together.
 
 ## Egami 1.1.0 (unreleased)
 

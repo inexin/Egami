@@ -1,1 +1,9 @@
 #nullable enable
+Egami.Barcodes.BarcodeModules
+Egami.Barcodes.BarcodeModules.Height.get -> int
+Egami.Barcodes.BarcodeModules.IsLinear.get -> bool
+Egami.Barcodes.BarcodeModules.Runs.get -> System.ReadOnlySpan<int>
+Egami.Barcodes.BarcodeModules.this[int x, int y].get -> bool
+Egami.Barcodes.BarcodeModules.Width.get -> int
+static Egami.Barcodes.BarcodeModules.Create(int width, int height, System.ReadOnlySpan<bool> modules) -> Egami.Barcodes.BarcodeModules!
+static Egami.Barcodes.BarcodeModules.CreateLinear(System.ReadOnlySpan<int> runs, int height) -> Egami.Barcodes.BarcodeModules!
