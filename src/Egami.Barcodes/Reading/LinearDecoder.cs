@@ -92,8 +92,12 @@ internal static class LinearDecoder
         return total;
     }
 
-    /// <summary>Whether the light run before a pattern is at least the given width (the image edge counts as light).</summary>
-    private static bool QuietBefore(ReadOnlySpan<float> runs, int start, float width) => start == 1 && runs[0] == 0 ? false : runs[start - 1] >= width || start - 1 == 0;
+    /// <summary>
+    /// Whether the light run before a pattern is at least the given width. Light up to the image edge counts; a bar on the edge
+    /// itself only when <paramref name="edge"/> is set, for symbologies whose start and stop patterns make a cropped read safe.
+    /// </summary>
+    private static bool QuietBefore(ReadOnlySpan<float> runs, int start, float width, bool edge = false) =>
+        start == 1 && runs[0] == 0 ? edge : runs[start - 1] >= width || start - 1 == 0;
 
     private static bool QuietAfter(ReadOnlySpan<float> runs, int end, float width) => end >= runs.Length || runs[end] >= width || end == runs.Length - 1;
 
@@ -135,7 +139,8 @@ internal static class LinearDecoder
         int at = start + 6;
         while (true)
         {
-            if (at + 7 <= runs.Length && Variance(runs.Slice(at, 7), s_code128[106]) < 0.25f)
+            // The stop pattern counts only with the quiet zone after it: a character and the next bar can look like it.
+            if (at + 7 <= runs.Length && Variance(runs.Slice(at, 7), s_code128[106]) < 0.25f && QuietAfter(runs, at + 7, Sum(runs.Slice(at, 7)) / 2f))
             {
                 break;
             }
@@ -147,6 +152,16 @@ internal static class LinearDecoder
 
             int value = Best(runs.Slice(at, 6), 0, 106, 0.3f);
             if (value < 0)
+            {
+                // Bars printed wider or narrower than the spaces: edge-to-similar-edge distances do not change with that.
+                value = EdgeDecode(runs.Slice(at, 6));
+                if (value == 106 && at + 7 <= runs.Length && QuietAfter(runs, at + 7, Sum(runs.Slice(at, 7)) / 2f))
+                {
+                    break;
+                }
+            }
+
+            if (value is < 0 or 106)
             {
                 return null;
             }
@@ -262,6 +277,46 @@ internal static class LinearDecoder
     }
 
     /// <summary>The Code 128 value in a range whose pattern is nearest the runs, or -1.</summary>
+    /// <summary>
+    /// The reference decode of ISO/IEC 15417: the four distances from a bar's leading edge to the next bar's (and a space's to
+    /// the next space's), in elevenths of the character, name the character whatever the ink spread; the few characters that
+    /// share them are told apart by the total width of their bars. Returns -1 when none matches; 106 is the stop's start.
+    /// </summary>
+    private static int EdgeDecode(ReadOnlySpan<float> runs)
+    {
+        float total = Sum(runs);
+        if (total < 11)
+        {
+            return -1;
+        }
+
+        Span<int> e = stackalloc int[4];
+        for (int i = 0; i < 4; i++)
+        {
+            e[i] = (int)MathF.Round((runs[i] + runs[i + 1]) * 11 / total);
+        }
+
+        float bars = (runs[0] + runs[2] + runs[4]) * 11 / total;
+        int best = -1;
+        float bestError = float.MaxValue;
+        for (int v = 0; v < 107; v++)
+        {
+            int[] pattern = s_code128[v];
+            if (pattern[0] + pattern[1] != e[0] || pattern[1] + pattern[2] != e[1] || pattern[2] + pattern[3] != e[2] || pattern[3] + pattern[4] != e[3])
+            {
+                continue;
+            }
+
+            float error = MathF.Abs(bars - (pattern[0] + pattern[2] + pattern[4]));
+            if (error < bestError)
+            {
+                (best, bestError) = (v, error);
+            }
+        }
+
+        return bestError <= 1.5f ? best : -1;
+    }
+
     private static int Best(ReadOnlySpan<float> runs, int from, int to, float limit)
     {
         int best = -1;
@@ -290,7 +345,7 @@ internal static class LinearDecoder
 
     private static LinearRead? Code39(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start)
     {
-        if (start + 9 > runs.Length || Code39Character(runs.Slice(start, 9)) != '*' || !QuietBefore(runs, start, Sum(runs.Slice(start, 9)) / 2f))
+        if (start + 9 > runs.Length || Code39Character(runs.Slice(start, 9)) != '*' || !QuietBefore(runs, start, Sum(runs.Slice(start, 9)) / 2f, edge: true))
         {
             return null;
         }
@@ -329,26 +384,62 @@ internal static class LinearDecoder
         return Result(new DecodedData(BarcodeFormat.Code39, text, bytes), offsets, start, at + 9);
     }
 
-    /// <summary>The Code 39 character of 9 runs (the three widest are wide), or '\0'.</summary>
+    /// <summary>
+    /// The Code 39 character of 9 runs (the three widest are wide), or '\0'. When ink spread makes the bars much thinner or
+    /// thicker than the spaces, bars and spaces are told wide or narrow apart: a character has 0 or 2 wide bars and 3 or 1
+    /// wide spaces.
+    /// </summary>
     private static char Code39Character(ReadOnlySpan<float> runs)
     {
         Span<float> sorted = stackalloc float[9];
         runs.CopyTo(sorted);
         sorted.Sort();
         float narrowMax = sorted[5], wideMin = sorted[6];
-        if (wideMin < narrowMax * 1.5f || sorted[8] > sorted[0] * 5)
+        if (sorted[8] > sorted[0] * 5)
         {
             return '\0';
         }
 
-        int pattern = 0;
-        for (int i = 0; i < 9; i++)
+        if (wideMin >= narrowMax * 1.5f)
         {
-            pattern = (pattern << 1) | (runs[i] >= wideMin ? 1 : 0);
+            int pattern = 0;
+            for (int i = 0; i < 9; i++)
+            {
+                pattern = (pattern << 1) | (runs[i] >= wideMin ? 1 : 0);
+            }
+
+            int index = Array.IndexOf(s_code39, pattern);
+            return index < 0 ? '\0' : Code39Characters[index];
         }
 
-        int index = Array.IndexOf(s_code39, pattern);
-        return index < 0 ? '\0' : Code39Characters[index];
+        Span<float> bars = [runs[0], runs[2], runs[4], runs[6], runs[8]];
+        Span<float> spaces = [runs[1], runs[3], runs[5], runs[7]];
+        bars.Sort();
+        spaces.Sort();
+
+        // Two wide bars and one wide space, or no wide bar and three wide spaces; each split needs a clear gap.
+        float barsWide = bars[3] >= bars[2] * 1.5f ? bars[3] : float.MaxValue, spacesWide = float.MaxValue;
+        if (barsWide != float.MaxValue && spaces[3] >= spaces[2] * 1.5f)
+        {
+            spacesWide = spaces[3];
+        }
+        else if (bars[4] < bars[0] * 1.5f && spaces[1] >= spaces[0] * 1.5f)
+        {
+            (barsWide, spacesWide) = (float.MaxValue, spaces[1]);
+        }
+        else
+        {
+            return '\0';
+        }
+
+        int split = 0;
+        for (int i = 0; i < 9; i++)
+        {
+            split = (split << 1) | (runs[i] >= (i % 2 == 0 ? barsWide : spacesWide) ? 1 : 0);
+        }
+
+        int found = Array.IndexOf(s_code39, split);
+        return found < 0 ? '\0' : Code39Characters[found];
     }
 
     /// <summary>Decodes Full ASCII pairs ($, %, / and + followed by a letter), or returns null when a pair is not valid.</summary>
