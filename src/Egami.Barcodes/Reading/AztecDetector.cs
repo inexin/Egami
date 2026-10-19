@@ -3,8 +3,8 @@ using System.Numerics;
 namespace Egami.Barcodes.Reading;
 
 /// <summary>
-/// Finds Aztec Codes: rows with seven equal runs around a dark center are bullseye candidates, checked down the column; rays
-/// from the center find the inner edge of the dark ring 4 modules out (6 for full-range), whose four corners fix the
+/// Finds Aztec Codes: rows with seven equal runs around a dark center are bullseye candidates, checked down the column and a
+/// diagonal; rays from the center find the light ring 3 modules out (5 for full-range), whose four corners fix the
 /// perspective; the mode message in the core gives the symbol size, and the whole grid is sampled.
 /// </summary>
 internal static class AztecDetector
@@ -58,8 +58,16 @@ internal static class AztecDetector
                     continue;
                 }
 
+                // A diagonal too: off the center of a bullseye turned by 45 degrees, a row and a column cross the rings at even
+                // spacing, but both diagonals run along its sides.
                 var point = new Vector2(refinedX, refinedY);
-                if (!centers.Any(c => Vector2.Distance(c.Point, point) < c.Module * 2))
+                if (Across(bits, point, Vector2.Normalize(new Vector2(1, 1)), module) is null
+                    && Across(bits, point, Vector2.Normalize(new Vector2(1, -1)), module) is null)
+                {
+                    continue;
+                }
+
+                if (!centers.Any(c => Vector2.Distance(c.Point, point) < c.Module * 0.5f))
                 {
                     centers.Add(new Center(point, module));
                 }
@@ -106,7 +114,7 @@ internal static class AztecDetector
         }
 
         Span<float> edges = stackalloc float[8];
-        float limit = module * 6;
+        float limit = module * 9;
         for (int side = 0; side < 2; side++)
         {
             Vector2 d = side == 0 ? -direction : direction;
@@ -128,70 +136,78 @@ internal static class AztecDetector
             }
         }
 
-        // Runs: the center from both sides, then three each way.
-        float center = edges[0] + edges[4];
+        // Runs: the center from both sides, then three each way; all about their mean, which is about the module (a diagonal
+        // crosses the rings up to 1.41 times wider or narrower than a row does).
+        float center = edges[0] + edges[4], mean = (edges[3] + edges[7]) / 7;
+        if (mean < module * 0.6f || mean > module * 1.7f || center < mean * 0.5f || center > mean * 1.6f)
+        {
+            return null;
+        }
+
         for (int side = 0; side < 2; side++)
         {
             for (int k = 1; k < 4; k++)
             {
                 float run = edges[(side * 4) + k] - edges[(side * 4) + k - 1];
-                if (run < module * 0.5f || run > module * 1.6f)
+                if (run < mean * 0.5f || run > mean * 1.6f)
                 {
                     return null;
                 }
             }
         }
 
-        if (center < module * 0.5f || center > module * 1.6f)
-        {
-            return null;
-        }
-
         float along = Vector2.Dot(point, direction);
         return along + ((edges[4] - edges[0]) / 2);
     }
 
-    /// <summary>Reads the symbol around a bullseye center: compact first, then full-range.</summary>
+    /// <summary>
+    /// Reads the symbol around a bullseye center: compact first, then full-range; with the ring's corners from the middle of
+    /// a light ring, then from the inner edge of the dark ring after it (blur moves edges, but the middle can be off where a
+    /// ring is broken).
+    /// </summary>
     private static Found? Read(BitImage bits, Center center)
     {
-        if (Ring(bits, center, 2) is not Vector2[] inner)
+        foreach (bool middle in (ReadOnlySpan<bool>)[true, false])
         {
-            return null;
-        }
-
-        foreach (bool compact in (ReadOnlySpan<bool>)[true, false])
-        {
-            int coreSize = compact ? 11 : 15;
-            BarcodeModules core = Sample(bits, inner, 3.5f, coreSize);
-            if (!Bullseye(core, compact ? 4 : 6) || AztecDecoder.SymbolSize(core, compact) is not int size)
+            if (Ring(bits, center, 2, middle) is not Vector2[] inner)
             {
                 continue;
             }
 
-            // A full-range symbol's dark ring 6 modules out gives the corners further apart, and so more precisely.
-            Vector2[] corners = inner;
-            float half = 3.5f;
-            if (!compact && Ring(bits, center, 3) is Vector2[] outer)
+            float offset = middle ? 0 : 0.5f;
+            foreach (bool compact in (ReadOnlySpan<bool>)[true, false])
             {
-                (corners, half) = (outer, 5.5f);
-            }
-
-            float c = size / 2f;
-            var transform = Perspective.QuadToQuad(Square(half, c), corners);
-            for (int pass = 0; pass < 3; pass++)
-            {
-                if (transform.Sample(bits, size, size) is BarcodeModules grid && AztecDecoder.Decode(grid) is DecodedData data)
+                // A full-range symbol's ring 5 modules out gives the corners further apart, and so more precisely.
+                Vector2[] corners = inner;
+                float half = 3 + offset;
+                if (!compact && Ring(bits, center, 3, middle) is Vector2[] outer)
                 {
-                    return new Found(data, [transform.Map(0, 0), transform.Map(size, 0), transform.Map(size, size), transform.Map(0, size)]);
+                    (corners, half) = (outer, 5 + offset);
                 }
 
-                // Larger full-range symbols: the reference grid along the center row and column locates modules further out.
-                if (compact || Refine(bits, transform, size) is not Perspective refined)
+                BarcodeModules core = Sample(bits, corners, half, compact ? 11 : 15);
+                if (!Bullseye(core, compact ? 4 : 6) || AztecDecoder.SymbolSize(core, compact) is not int size)
                 {
-                    break;
+                    continue;
                 }
 
-                transform = refined;
+                float c = size / 2f;
+                var transform = Perspective.QuadToQuad(Square(half, c), corners);
+                for (int pass = 0; pass < 3; pass++)
+                {
+                    if (transform.Sample(bits, size, size) is BarcodeModules grid && AztecDecoder.Decode(grid) is DecodedData data)
+                    {
+                        return new Found(data, [transform.Map(0, 0), transform.Map(size, 0), transform.Map(size, size), transform.Map(0, size)]);
+                    }
+
+                    // Larger full-range symbols: the reference grid along the center row and column locates modules further out.
+                    if (compact || Refine(bits, transform, size) is not Perspective refined)
+                    {
+                        break;
+                    }
+
+                    transform = refined;
+                }
             }
         }
 
@@ -200,8 +216,7 @@ internal static class AztecDetector
 
     /// <summary>
     /// Follows the reference grid of a full-range symbol out along the center row and column, where modules alternate dark
-    /// and light from the center to the edge: each module edge is looked for where the last two predict it. The farthest
-    /// edge found on each of the four half-axes gives a new perspective.
+    /// and light from the center to the edge. The farthest edge found on each of the four half-axes gives a new perspective.
     /// </summary>
     private static Perspective? Refine(BitImage bits, Perspective transform, int size)
     {
@@ -213,45 +228,26 @@ internal static class AztecDetector
         for (int axis = 0; axis < 4; axis++)
         {
             var unit = axis switch { 0 => new Vector2(1, 0), 1 => new Vector2(0, 1), 2 => new Vector2(-1, 0), _ => new Vector2(0, -1) };
-            Vector2 direction = Vector2.Normalize(transform.Map(c + (unit.X * 6), c + (unit.Y * 6)) - center);
-
-            // Transitions along the ray, with the polarity they turn to.
+            Vector2 aim = Vector2.Normalize(transform.Map(c + (unit.X * 6), c + (unit.Y * 6)) - center);
             float limit = Vector2.Distance(center, transform.Map(c + (unit.X * (c + 2)), c + (unit.Y * (c + 2))));
-            var edges = new List<(float T, bool Dark)>();
-            bool dark = true;
-            for (float t = 0; t < limit; t += 0.25f)
-            {
-                Vector2 p = center + (direction * t);
-                if (bits.IsDark((int)p.X, (int)p.Y) != dark)
-                {
-                    dark = !dark;
-                    edges.Add((t, dark));
-                }
-            }
 
-            // Edge k (k = 1, 2, ...) lies k - 0.5 modules out and turns to dark when k is even.
-            float Predicted(int k) => Vector2.Dot(transform.Map(c + (unit.X * (k - 0.5f)), c + (unit.Y * (k - 0.5f))) - center, direction);
-            float previous = Predicted(5), last = Predicted(6);
+            // Edge k (k = 1, 2, ...) lies k - 0.5 modules out; edges 5 and 6 start the prediction.
+            float Predicted(int k) => Vector2.Dot(transform.Map(c + (unit.X * (k - 0.5f)), c + (unit.Y * (k - 0.5f))) - center, aim);
+
+            // The line is one module wide, so an aim a degree or two off leaves it after some modules: aims up to 4 degrees
+            // either side are followed, and the one that gets furthest wins.
             int reached = 0;
-            for (int k = 7; k <= (size / 2) + 1; k++)
+            float reachedAt = 0;
+            Vector2 direction = aim;
+            for (int step = 0; step <= 16; step++)
             {
-                float expected = last + (last - previous), tolerance = (last - previous) * 0.4f;
-                bool wantDark = k % 2 == 0;
-                (float T, bool Dark)? match = null;
-                foreach ((float t, bool d) in edges)
+                float degrees = (step % 2 == 0 ? 1 : -1) * ((step + 1) / 2) * 0.5f;
+                Vector2 turned = Vector2.Transform(aim, Matrix3x2.CreateRotation(degrees * MathF.PI / 180));
+                (int k, float at) = Follow(bits, center, turned, limit, Predicted(5), Predicted(6), size);
+                if (k > reached)
                 {
-                    if (d == wantDark && MathF.Abs(t - expected) <= tolerance && (match is null || MathF.Abs(t - expected) < MathF.Abs(match.Value.T - expected)))
-                    {
-                        match = (t, d);
-                    }
+                    (reached, reachedAt, direction) = (k, at, turned);
                 }
-
-                if (match is null)
-                {
-                    break;
-                }
-
-                (previous, last, reached) = (last, match.Value.T, k);
             }
 
             if (reached < 7)
@@ -260,11 +256,62 @@ internal static class AztecDetector
             }
 
             from[axis] = new Vector2(c + (unit.X * (reached - 0.5f)), c + (unit.Y * (reached - 0.5f)));
-            to[axis] = center + (direction * last);
+            to[axis] = center + (direction * reachedAt);
             improved++;
         }
 
         return improved == 4 ? Perspective.QuadToQuad(from, to) : null;
+    }
+
+    /// <summary>
+    /// Follows the alternating modules along a ray from the center: each edge is looked for where the last two predict it,
+    /// with the right polarity (edge k turns to dark when k is even); a missing edge (a spot of dirt, a blurred pair) is
+    /// bridged at its expected place, twice in a row at most. Returns the last edge found and where.
+    /// </summary>
+    private static (int Reached, float At) Follow(BitImage bits, Vector2 center, Vector2 direction, float limit, float previous, float last, int size)
+    {
+        var edges = new List<(float T, bool Dark)>();
+        bool dark = true;
+        for (float t = 0; t < limit; t += 0.25f)
+        {
+            Vector2 p = center + (direction * t);
+            if (bits.IsDark((int)p.X, (int)p.Y) != dark)
+            {
+                dark = !dark;
+                edges.Add((t, dark));
+            }
+        }
+
+        float reachedAt = 0;
+        int reached = 0, missed = 0;
+        for (int k = 7; k <= (size / 2) + 1; k++)
+        {
+            float expected = last + (last - previous), tolerance = (last - previous) * 0.4f;
+            bool wantDark = k % 2 == 0;
+            (float T, bool Dark)? match = null;
+            foreach ((float t, bool d) in edges)
+            {
+                if (d == wantDark && MathF.Abs(t - expected) <= tolerance && (match is null || MathF.Abs(t - expected) < MathF.Abs(match.Value.T - expected)))
+                {
+                    match = (t, d);
+                }
+            }
+
+            if (match is null)
+            {
+                if (++missed > 2)
+                {
+                    break;
+                }
+
+                (previous, last) = (last, expected);
+                continue;
+            }
+
+            (previous, last, reached, reachedAt, missed) = (last, match.Value.T, k, match.Value.T, 0);
+        }
+
+        return (reached, reachedAt);
     }
 
     /// <summary>Whether the sampled core shows the bullseye's rings out to a radius, dark at even distances, with at most two modules wrong.</summary>
@@ -296,23 +343,23 @@ internal static class AztecDetector
     }
 
     /// <summary>
-    /// The four corners of the inner edge of a dark ring (ring 2 is 4 modules out, ring 3 is 6): rays from the center find
-    /// where they cross into it; the points farthest out in four directions are the corners' neighbourhoods, and lines fitted
+    /// The four corners of the middle of a light ring (ring 2 is 3 modules out, ring 3 is 5), or of the inner edge of the dark
+    /// ring after it (3.5 and 5.5 modules out): rays from the center find its edges; the points farthest out in four directions are the corners' neighbourhoods, and lines fitted
     /// to each side's points meet at the corners. The corners go clockwise in the image.
     /// </summary>
-    private static Vector2[]? Ring(BitImage bits, Center center, int ring)
+    private static Vector2[]? Ring(BitImage bits, Center center, int ring, bool middle)
     {
         const int Rays = 64;
         var points = new Vector2?[Rays];
+        Span<float> edges = stackalloc float[2 * ring];
         float limit = center.Module * ((ring * 2) + 3) * 1.6f;
         for (int r = 0; r < Rays; r++)
         {
             float angle = r * 2 * MathF.PI / Rays;
             var d = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
             bool dark = true;
-            int crossings = 0;
-            float runStart = 0;
-            for (float t = 0; t < limit; t += 0.25f)
+            int found = 0;
+            for (float t = 0; t < limit && found < edges.Length; t += 0.25f)
             {
                 Vector2 p = center.Point + (d * t);
                 bool now = bits.IsDark((int)p.X, (int)p.Y);
@@ -322,18 +369,20 @@ internal static class AztecDetector
                 }
 
                 // A run shorter than a third of a module is noise.
-                if (t - runStart < center.Module * 0.3f && crossings > 0)
+                if (found > 0 && t - edges[found - 1] < center.Module * 0.3f)
                 {
                     continue;
                 }
 
                 dark = now;
-                runStart = t;
-                if (now && ++crossings == ring)
-                {
-                    points[r] = p;
-                    break;
-                }
+                edges[found++] = t;
+            }
+
+            // The middle of the light ring between the last two edges (blur that widens or narrows the dark rings moves both
+            // edges, not the middle), or the last edge.
+            if (found == edges.Length)
+            {
+                points[r] = center.Point + (d * (middle ? (edges[^2] + edges[^1]) / 2 : edges[^1]));
             }
         }
 

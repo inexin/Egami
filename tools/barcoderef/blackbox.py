@@ -55,6 +55,9 @@ def main():
             accepted = {expected, "0" + expected} | ({upce_to_gtin(expected)} if kind == "upce" and len(expected) == 8 else set())
             if any(r.text in accepted for r in results):
                 passed += 1
+            else:
+                # The misses go to stderr, one per line, for comparing with Egami's .cache/egami-blackbox-missed.txt.
+                print(f"{folder}/{file}", file=sys.stderr)
         summary[folder] = [passed, total]
     print(json.dumps(summary, indent=1, sort_keys=True))
 
