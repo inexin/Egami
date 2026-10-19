@@ -17,6 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="../fonts/NotoSans-Regular.ttf" Link="fonts/NotoSans-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Egami.Barcodes\Egami.Barcodes.csproj" />
   </ItemGroup>
 </Project>
