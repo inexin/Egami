@@ -1,5 +1,8 @@
 #nullable enable
 Egami.Heic.HeicContextExtensions
 Egami.Heic.HeicFormat
+Egami.Heic.HeicImage
 static Egami.Heic.HeicContextExtensions.WithHeic(this Egami.EgamiContext! context) -> Egami.EgamiContext!
 static Egami.Heic.HeicFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Heic.HeicImage.ReadItem(string! path, uint itemId, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster!
+static Egami.Heic.HeicImage.ReadItem(System.IO.Stream! stream, uint itemId, Egami.Formats.ReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster!

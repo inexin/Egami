@@ -865,6 +865,64 @@ Egami.Formats.HdrDecode.Equals(Egami.Formats.HdrDecode? other) -> bool
 Egami.Formats.HdrDecode.HdrDecode() -> void
 Egami.Formats.HdrDecode.Headroom.get -> double?
 Egami.Formats.HdrDecode.Headroom.init -> void
+Egami.Formats.Heic.HeicDetails
+Egami.Formats.Heic.HeicDetails.AlphaPremultiplied.get -> bool
+Egami.Formats.Heic.HeicDetails.AlphaPremultiplied.set -> void
+Egami.Formats.Heic.HeicDetails.BitDepth.get -> int
+Egami.Formats.Heic.HeicDetails.BitDepth.set -> void
+Egami.Formats.Heic.HeicDetails.Chroma.get -> Egami.Pixels.ChromaFormat
+Egami.Formats.Heic.HeicDetails.Chroma.set -> void
+Egami.Formats.Heic.HeicDetails.CodePoints.get -> Egami.Colors.ColorCodePoints
+Egami.Formats.Heic.HeicDetails.CodePoints.set -> void
+Egami.Formats.Heic.HeicDetails.CompatibleBrands.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Formats.Heic.HeicDetails.CompatibleBrands.set -> void
+Egami.Formats.Heic.HeicDetails.GridColumns.get -> int
+Egami.Formats.Heic.HeicDetails.GridColumns.set -> void
+Egami.Formats.Heic.HeicDetails.GridRows.get -> int
+Egami.Formats.Heic.HeicDetails.GridRows.set -> void
+Egami.Formats.Heic.HeicDetails.HasAlpha.get -> bool
+Egami.Formats.Heic.HeicDetails.HasAlpha.set -> void
+Egami.Formats.Heic.HeicDetails.HeicDetails() -> void
+Egami.Formats.Heic.HeicDetails.IsSequence.get -> bool
+Egami.Formats.Heic.HeicDetails.IsSequence.set -> void
+Egami.Formats.Heic.HeicDetails.Items.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Heic.HeicItem!>!
+Egami.Formats.Heic.HeicDetails.Items.set -> void
+Egami.Formats.Heic.HeicDetails.Level.get -> int
+Egami.Formats.Heic.HeicDetails.Level.set -> void
+Egami.Formats.Heic.HeicDetails.MajorBrand.get -> string!
+Egami.Formats.Heic.HeicDetails.MajorBrand.set -> void
+Egami.Formats.Heic.HeicDetails.Profile.get -> int
+Egami.Formats.Heic.HeicDetails.Profile.set -> void
+Egami.Formats.Heic.HeicDetails.Tier.get -> int
+Egami.Formats.Heic.HeicDetails.Tier.set -> void
+Egami.Formats.Heic.HeicItem
+Egami.Formats.Heic.HeicItem.<Clone>$() -> Egami.Formats.Heic.HeicItem!
+Egami.Formats.Heic.HeicItem.AuxiliaryType.get -> string?
+Egami.Formats.Heic.HeicItem.AuxiliaryType.init -> void
+Egami.Formats.Heic.HeicItem.Equals(Egami.Formats.Heic.HeicItem? other) -> bool
+Egami.Formats.Heic.HeicItem.HeicItem() -> void
+Egami.Formats.Heic.HeicItem.Hidden.get -> bool
+Egami.Formats.Heic.HeicItem.Hidden.init -> void
+Egami.Formats.Heic.HeicItem.Id.get -> uint
+Egami.Formats.Heic.HeicItem.Id.init -> void
+Egami.Formats.Heic.HeicItem.IsImage.get -> bool
+Egami.Formats.Heic.HeicItem.IsImage.init -> void
+Egami.Formats.Heic.HeicItem.Role.get -> Egami.Formats.Heic.HeicItemRole
+Egami.Formats.Heic.HeicItem.Role.init -> void
+Egami.Formats.Heic.HeicItem.Size.get -> Egami.Size
+Egami.Formats.Heic.HeicItem.Size.init -> void
+Egami.Formats.Heic.HeicItem.Type.get -> string!
+Egami.Formats.Heic.HeicItem.Type.init -> void
+Egami.Formats.Heic.HeicItemRole
+Egami.Formats.Heic.HeicItemRole.Alpha = 2 -> Egami.Formats.Heic.HeicItemRole
+Egami.Formats.Heic.HeicItemRole.Auxiliary = 4 -> Egami.Formats.Heic.HeicItemRole
+Egami.Formats.Heic.HeicItemRole.Depth = 3 -> Egami.Formats.Heic.HeicItemRole
+Egami.Formats.Heic.HeicItemRole.Derived = 6 -> Egami.Formats.Heic.HeicItemRole
+Egami.Formats.Heic.HeicItemRole.GainMap = 5 -> Egami.Formats.Heic.HeicItemRole
+Egami.Formats.Heic.HeicItemRole.Metadata = 7 -> Egami.Formats.Heic.HeicItemRole
+Egami.Formats.Heic.HeicItemRole.Other = 8 -> Egami.Formats.Heic.HeicItemRole
+Egami.Formats.Heic.HeicItemRole.Primary = 0 -> Egami.Formats.Heic.HeicItemRole
+Egami.Formats.Heic.HeicItemRole.Thumbnail = 1 -> Egami.Formats.Heic.HeicItemRole
 Egami.Formats.Ico.CurFormat
 Egami.Formats.Ico.IcoDetails
 Egami.Formats.Ico.IcoDetails.BitsPerPixel.get -> int
@@ -2671,6 +2729,10 @@ override Egami.Formats.Exr.ExrReaderOptions.ToString() -> string!
 override Egami.Formats.HdrDecode.Equals(object? obj) -> bool
 override Egami.Formats.HdrDecode.GetHashCode() -> int
 override Egami.Formats.HdrDecode.ToString() -> string!
+override Egami.Formats.Heic.HeicDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Heic.HeicItem.Equals(object? obj) -> bool
+override Egami.Formats.Heic.HeicItem.GetHashCode() -> int
+override Egami.Formats.Heic.HeicItem.ToString() -> string!
 override Egami.Formats.Ico.IcoDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Ico.IcoEntry.Equals(object? obj) -> bool
 override Egami.Formats.Ico.IcoEntry.GetHashCode() -> int
@@ -3037,6 +3099,8 @@ static Egami.Formats.Exr.ExrReaderOptions.operator ==(Egami.Formats.Exr.ExrReade
 static Egami.Formats.Exr.ExrWriterOptions.Default.get -> Egami.Formats.Exr.ExrWriterOptions!
 static Egami.Formats.HdrDecode.operator !=(Egami.Formats.HdrDecode? left, Egami.Formats.HdrDecode? right) -> bool
 static Egami.Formats.HdrDecode.operator ==(Egami.Formats.HdrDecode? left, Egami.Formats.HdrDecode? right) -> bool
+static Egami.Formats.Heic.HeicItem.operator !=(Egami.Formats.Heic.HeicItem? left, Egami.Formats.Heic.HeicItem? right) -> bool
+static Egami.Formats.Heic.HeicItem.operator ==(Egami.Formats.Heic.HeicItem? left, Egami.Formats.Heic.HeicItem? right) -> bool
 static Egami.Formats.Ico.CurFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Ico.IcoEntry.operator !=(Egami.Formats.Ico.IcoEntry? left, Egami.Formats.Ico.IcoEntry? right) -> bool
 static Egami.Formats.Ico.IcoEntry.operator ==(Egami.Formats.Ico.IcoEntry? left, Egami.Formats.Ico.IcoEntry? right) -> bool

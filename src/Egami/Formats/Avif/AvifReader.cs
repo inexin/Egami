@@ -20,7 +20,8 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
 {
     internal static readonly AvifReader Instance = new();
 
-    private static readonly HeifDiagnosticIds Ids = new("Avif.MatrixApproximated", "Avif.MatrixUnknown", "Avif.ExifDamaged", "Avif.GainMapDropped", "Avif.BaseLayerOnly");
+    private static readonly HeifDiagnosticIds Ids = new("Avif.MatrixApproximated", "Avif.MatrixUnknown", "Avif.ExifDamaged", "Avif.GainMapDropped",
+        "Avif.SequenceFirstFrame", "Avif.FramesDropped", "Egami decodes inter frames from 2.9.5", "Avif.BaseLayerOnly");
 
     /// <summary>The HEIF image layer with the AV1 codec, film grain as the options say, and AvifDetails.</summary>
     private static readonly HeifImageReader Still = new(() => AvifFormat.Info, Ids, Codec)
@@ -146,67 +147,8 @@ internal sealed partial class AvifReader : IFormatReader, IYuvFormatReader, IRow
     /// Reads image item <paramref name="itemId"/> for <see cref="AvifImage.ReadItem(Stream, uint, ReaderOptions?, EgamiContext?)"/>:
     /// an av01 item or a grid, with its own color and clean aperture, and no alpha.
     /// </summary>
-    internal static Raster ReadItem(EgamiInput input, ReaderOptions options, uint itemId)
-    {
-        AvifFile file = AvifFile.Read(input);
-        HeifFile heif = file.Heif;
-        HeifItem item = heif.Item(itemId) ?? throw new ArgumentException($"The AVIF file has no item {itemId}.", nameof(itemId));
-        if (item.Type != AvifFile.Av01 && item.Type != AvifFile.Grid)
-        {
-            throw new ArgumentException($"Item {itemId} is a \"{FourCC.ToString(item.Type)}\" item, not an image (av01 or grid).", nameof(itemId));
-        }
-
-        AvifCodec codec = Codec(options);
-        HeifItem first = item;
-        HeifPlanes planes;
-        if (item.Type == AvifFile.Grid)
-        {
-            (List<HeifItem> cells, int rows, int columns, int width, int height) = file.ReadGrid(item);
-            planes = HeifImageReader.Grid(file, codec, cells, (rows, columns, width, height), input, null, lumaOnly: false);
-            first = cells[0];
-        }
-        else
-        {
-            planes = HeifImageReader.Cell(file, codec, item, input);
-        }
-
-        NclxColor? nclx = null;
-        ReadOnlyMemory<byte> icc = default;
-        (int X, int Y, int Width, int Height)? crop = null;
-        foreach (HeifItem source in (HeifItem[])[item, first])
-        {
-            foreach ((HeifProperty property, _) in heif.PropertiesOf(source))
-            {
-                if (property.Type == AvifProperties.Colr)
-                {
-                    (NclxColor? n, ReadOnlyMemory<byte> profile) = AvifProperties.ReadColor(heif, property);
-                    nclx ??= n;
-                    icc = icc.IsEmpty ? profile : icc;
-                }
-                else if (property.Type == AvifProperties.Clap && source == item)
-                {
-                    crop = AvifProperties.ReadCleanAperture(heif, property).CropRectangle(planes.Width, planes.Height);
-                }
-            }
-        }
-
-        ColorCodePoints points = nclx is NclxColor c ? new ColorCodePoints((byte)c.Primaries, (byte)c.Transfer, (byte)c.Matrix, c.FullRange) : codec.CodePoints;
-        HeifRgbConverter converter = new(planes, null, false, points);
-        (int x, int y, int w, int h) = crop ?? (0, 0, planes.Width, planes.Height);
-        input.Limits.CheckFrameSize(w, h);
-        HeifImageReader.PixelRows rows2 = new(converter.Channels, converter.OutputDepth, (row, column, samples) => converter.Row(y + row, x + column, samples.Length / converter.Channels, samples))
-        {
-            Write = (row, column, width, target) => converter.Write(y + row, x + column, width, target),
-        };
-        RasterMetadata metadata = new() { FormatName = AvifFormat.Info.Name, IccProfile = icc, CodePoints = HeifImageReader.RasterCodePoints(points, icc) };
-        if (!converter.Supported)
-        {
-            metadata.WarningList.Add("Avif.MatrixApproximated", $"libavif does not convert matrix coefficients {points.MatrixCoefficients} with this range and chroma; the nearest matrix it has was used.");
-        }
-
-        PixelLayoutInfo natural = NaturalLayout(planes.BitDepth, planes.Monochrome, false);
-        return HeifImageReader.Natural(input, new HeifImageReader.Prepared(w, h, natural, rows2, metadata, 0));
-    }
+    internal static Raster ReadItem(EgamiInput input, ReaderOptions options, uint itemId) =>
+        Still.ReadItem(input, AvifFile.Read(input), itemId, options, AvifFile.Av01, "av01");
 
     /// <summary>Gets an AV1 sequence's planes encoding (design question 8), with the AV1 chroma sample position.</summary>
     private static YuvColor PlaneColor(ColorCodePoints points, Av1Config config, Av1.Av1SequenceHeader sequence, RasterMetadata? metadata) =>

@@ -13,6 +13,20 @@ namespace Egami.Formats.Heif;
 /// </summary>
 internal abstract class HeifImage
 {
+    /// <summary>What an item is to the primary image; the public AvifItemRole and HeicItemRole have the same members in this order.</summary>
+    internal enum HeifItemRole
+    {
+        Primary,
+        Thumbnail,
+        Alpha,
+        Depth,
+        Auxiliary,
+        GainMap,
+        Derived,
+        Metadata,
+        Other,
+    }
+
     internal static readonly uint Grid = FourCC.Of("grid");
     internal static readonly uint Iovl = FourCC.Of("iovl");
     internal static readonly uint Tmap = FourCC.Of("tmap");
@@ -71,6 +85,15 @@ internal abstract class HeifImage
     /// primary item and the gain map image. Otherwise <see langword="null"/>.
     /// </summary>
     internal HeifItem? ToneMap { get; private set; }
+
+    /// <summary>
+    /// Gets Apple's HDRGainMap auxiliary image of the primary item (auxC urn:com:apple:photo:2020:aux:hdrgainmap), used when there
+    /// is no tmap item; its cells are <see cref="GainMapCells"/>. Otherwise <see langword="null"/>.
+    /// </summary>
+    internal HeifItem? AppleGainMap { get; private set; }
+
+    /// <summary>Gets the XMP item that describes <see cref="AppleGainMap"/> (newer iPhones put its headroom there), or null.</summary>
+    internal HeifItem? AppleGainMapXmp { get; private set; }
 
     /// <summary>Gets the gain map image's coded items (a grid's cells, or the item alone).</summary>
     internal IReadOnlyList<HeifItem> GainMapCells { get; private set; } = [];
@@ -278,6 +301,11 @@ internal abstract class HeifImage
 
         FindAlpha();
         FindGainMap();
+        if (ToneMap is null)
+        {
+            FindAppleGainMap();
+        }
+
         foreach (HeifItem item in heif.Items)
         {
             if (Array.IndexOf(item.ReferencesOf(Cdsc), Primary.Id) < 0 || item.UnsupportedEssential != 0)
@@ -420,6 +448,132 @@ internal abstract class HeifImage
                 return;
             }
         }
+    }
+
+    /// <summary>Finds Apple's HDRGainMap auxiliary image of the primary item, and the XMP item that describes it.</summary>
+    private void FindAppleGainMap()
+    {
+        HeifFile heif = Heif;
+        foreach (HeifItem item in heif.Items)
+        {
+            if (item.UnsupportedEssential != 0 || (item.Type != CodedType && item.Type != Grid) || Array.IndexOf(item.ReferencesOf(Auxl), Primary.Id) < 0
+                || AuxiliaryType(item) != AppleGainMapUrn)
+            {
+                continue;
+            }
+
+            try
+            {
+                if (item.Type == Grid)
+                {
+                    (List<HeifItem> cells, int rows, int columns, int width, int height) = ReadGrid(item);
+                    (GainMapCells, GainMapLayout) = (cells, (rows, columns, width, height));
+                }
+                else
+                {
+                    (int width, int height) = Extents(item);
+                    (GainMapCells, GainMapLayout) = ([item], (1, 1, width, height));
+                }
+            }
+            catch (EgamiException e)
+            {
+                heif.Problems.Add(new HeifProblem($"{DiagnosticPrefix}.GainMapDropped", $"The gain map grid could not be read ({e.Message}); the image loads as SDR only.", -1));
+                return;
+            }
+
+            AppleGainMap = item;
+            AppleGainMapXmp = heif.Items.FirstOrDefault(x => x.Type == FourCC.Mime && x.ContentType == "application/rdf+xml"
+                && Array.IndexOf(x.ReferencesOf(Cdsc), item.Id) >= 0);
+            return;
+        }
+    }
+
+    /// <summary>
+    /// Lists every item with what it is to the primary image: alpha and gain map roles first, then thumbnails (thmb), depth and
+    /// other auxiliary images (auxl), the inputs of derived images (dimg) and tmap items, Exif and XMP, and the rest.
+    /// </summary>
+    internal List<(HeifItem Item, HeifItemRole Role, Size Size, string? AuxiliaryType)> ItemRoles()
+    {
+        HeifFile heif = Heif;
+        HashSet<uint> alpha = [.. AlphaCells.Select(i => i.Id)];
+        if (Alpha is HeifItem a)
+        {
+            alpha.Add(a.Id);
+        }
+
+        HashSet<uint> derived = [.. heif.Items.SelectMany(i => i.ReferencesOf(Dimg)), .. heif.Items.Where(i => i.Type == Tmap).Select(i => i.Id)];
+        derived.Remove(Primary.Id);
+        uint gainMap = ToneMap is HeifItem tmap ? tmap.ReferencesOf(Dimg)[1] : AppleGainMap?.Id ?? 0;
+        uint thmb = FourCC.Of("thmb");
+        List<(HeifItem, HeifItemRole, Size, string?)> roles = [];
+        foreach (HeifItem item in heif.Items)
+        {
+            string? auxType = null;
+            Size size = default;
+            foreach ((HeifProperty property, _) in heif.PropertiesOf(item))
+            {
+                if (property.Type == AvifProperties.AuxC)
+                {
+                    auxType = AvifProperties.ReadAuxiliaryType(heif, property);
+                }
+                else if (property.Type == AvifProperties.Ispe)
+                {
+                    (int w, int h) = AvifProperties.ReadSpatialExtents(heif, property);
+                    size = new Size(w, h);
+                }
+            }
+
+            uint[] auxl = item.ReferencesOf(Auxl);
+            HeifItemRole role = item.Id == Primary.Id ? HeifItemRole.Primary
+                : alpha.Contains(item.Id) ? HeifItemRole.Alpha
+                : item.Id == gainMap ? HeifItemRole.GainMap
+                : item.ReferencesOf(thmb).Length > 0 ? HeifItemRole.Thumbnail
+                : auxl.Length > 0 && auxType is "urn:mpeg:mpegB:cicp:systems:auxiliary:depth" or "urn:mpeg:hevc:2015:auxid:2" ? HeifItemRole.Depth
+                : auxl.Length > 0 ? HeifItemRole.Auxiliary
+                : derived.Contains(item.Id) ? HeifItemRole.Derived
+                : item.Type == Exif || item.Type == FourCC.Mime ? HeifItemRole.Metadata
+                : HeifItemRole.Other;
+            roles.Add((item, role, size, auxType));
+        }
+
+        return roles;
+    }
+
+    /// <summary>Gets the display orientation an item's own irot and imir give.</summary>
+    internal ImageOrientation OrientationOf(HeifItem item)
+    {
+        int rotation = 0;
+        int? mirror = null;
+        foreach ((HeifProperty property, _) in Heif.PropertiesOf(item))
+        {
+            if (property.Type == AvifProperties.Irot)
+            {
+                rotation = AvifProperties.ReadRotation(Heif, property);
+            }
+            else if (property.Type == AvifProperties.Imir)
+            {
+                mirror = AvifProperties.ReadMirror(Heif, property);
+            }
+        }
+
+        return Orient(rotation, mirror);
+    }
+
+    /// <summary>The auxiliary type of Apple's HDR gain map image.</summary>
+    internal const string AppleGainMapUrn = "urn:com:apple:photo:2020:aux:hdrgainmap";
+
+    /// <summary>Gets an item's auxiliary type (auxC), or null.</summary>
+    private string? AuxiliaryType(HeifItem item)
+    {
+        foreach ((HeifProperty property, _) in Heif.PropertiesOf(item))
+        {
+            if (property.Type == AvifProperties.AuxC)
+            {
+                return AvifProperties.ReadAuxiliaryType(Heif, property);
+            }
+        }
+
+        return null;
     }
 
     private bool IsAlpha(HeifItem item)

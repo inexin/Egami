@@ -70,11 +70,10 @@ public sealed record AvifItem
 /// </example>
 public static class AvifImage
 {
-    private static readonly uint Thmb = FourCC.Of("thmb");
-
     /// <summary>
     /// Reads image item <paramref name="itemId"/> (see <see cref="AvifDetails.Items"/>): an av01 item or a grid, converted with its
-    /// own color into its natural pixel type, as Load converts the primary image; its own clean aperture cropped.
+    /// own color into its natural pixel type, as Load converts the primary image; its own clean aperture cropped, and its own
+    /// rotation and mirroring (irot, imir) given as the orientation, which <c>AutoOrient</c> applies.
     /// </summary>
     /// <param name="path">The file.</param>
     /// <param name="itemId">The item's id.</param>
@@ -111,60 +110,14 @@ public static class AvifImage
     }
 
     /// <summary>Lists a file's items with their roles.</summary>
-    internal static List<AvifItem> Items(AvifFile file)
+    internal static List<AvifItem> Items(AvifFile file) => [.. file.ItemRoles().Select(r => new AvifItem
     {
-        HeifFile heif = file.Heif;
-        HashSet<uint> alpha = [.. file.AlphaCells.Select(i => i.Id)];
-        if (file.Alpha is HeifItem a)
-        {
-            alpha.Add(a.Id);
-        }
-
-        // Every input of a derived image (dimg), and every tmap item, is derived; alpha and gain map roles come first.
-        HashSet<uint> derived = [.. heif.Items.SelectMany(i => i.ReferencesOf(AvifFile.Dimg)), .. heif.Items.Where(i => i.Type == AvifFile.Tmap).Select(i => i.Id)];
-        derived.Remove(file.Primary.Id);
-        uint gainMap = file.ToneMap is HeifItem tmap ? tmap.ReferencesOf(AvifFile.Dimg)[1] : 0;
-
-        List<AvifItem> items = [];
-        foreach (HeifItem item in heif.Items)
-        {
-            string? auxType = null;
-            Size size = default;
-            foreach ((HeifProperty property, _) in heif.PropertiesOf(item))
-            {
-                if (property.Type == AvifProperties.AuxC)
-                {
-                    auxType = AvifProperties.ReadAuxiliaryType(heif, property);
-                }
-                else if (property.Type == AvifProperties.Ispe)
-                {
-                    (int w, int h) = AvifProperties.ReadSpatialExtents(heif, property);
-                    size = new Size(w, h);
-                }
-            }
-
-            uint[] auxl = item.ReferencesOf(AvifFile.Auxl);
-            AvifItemRole role = item.Id == file.Primary.Id ? AvifItemRole.Primary
-                : alpha.Contains(item.Id) ? AvifItemRole.Alpha
-                : item.Id == gainMap ? AvifItemRole.GainMap
-                : item.ReferencesOf(Thmb).Length > 0 ? AvifItemRole.Thumbnail
-                : auxl.Length > 0 && auxType is "urn:mpeg:mpegB:cicp:systems:auxiliary:depth" or "urn:mpeg:hevc:2015:auxid:2" ? AvifItemRole.Depth
-                : auxl.Length > 0 ? AvifItemRole.Auxiliary
-                : derived.Contains(item.Id) ? AvifItemRole.Derived
-                : item.Type == AvifFile.Exif || item.Type == FourCC.Mime ? AvifItemRole.Metadata
-                : AvifItemRole.Other;
-            items.Add(new AvifItem
-            {
-                Id = item.Id,
-                Type = FourCC.ToString(item.Type),
-                Role = role,
-                Size = size,
-                AuxiliaryType = auxType,
-                Hidden = item.Hidden,
-                IsImage = item.Type == AvifFile.Av01 || item.Type == AvifFile.Grid,
-            });
-        }
-
-        return items;
-    }
+        Id = r.Item.Id,
+        Type = FourCC.ToString(r.Item.Type),
+        Role = (AvifItemRole)r.Role,
+        Size = r.Size,
+        AuxiliaryType = r.AuxiliaryType,
+        Hidden = r.Item.Hidden,
+        IsImage = r.Item.Type == AvifFile.Av01 || r.Item.Type == AvifFile.Grid,
+    })];
 }

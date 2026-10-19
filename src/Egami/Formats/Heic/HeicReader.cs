@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 
 using Egami.Formats.Avif;
 using Egami.Formats.Heif;
+using Egami.Metadata;
 using Egami.Pixels;
 using Egami.Streaming;
 
@@ -92,13 +93,21 @@ internal sealed class HeicReader(Func<FormatInfo> format, string loadMessage, Fu
     : IFormatReader, IYuvFormatReader, IRowSourceReader
 {
     /// <summary>The image layer; without a codec, making one throws why the image cannot load, after the container was read.</summary>
-    private readonly HeifImageReader _layer = new(format, new HeifDiagnosticIds("Heic.MatrixApproximated", "Heic.MatrixUnknown", "Heic.ExifDamaged", "Heic.GainMapDropped"), codec ?? (_ => throw new UnsupportedFormatException(loadMessage)))
+    private readonly HeifImageReader _layer = new(format, new HeifDiagnosticIds("Heic.MatrixApproximated", "Heic.MatrixUnknown", "Heic.ExifDamaged", "Heic.GainMapDropped",
+        "Heic.SequenceFirstFrame", "Heic.FramesDropped", "Egami.Heic decodes intra pictures only"), codec ?? (_ => throw new UnsupportedFormatException(loadMessage)))
     {
         Converter = c => new HeicRgbConverter(c.Color, c.Alpha, c.CodePoints, c.Layer),
+        Describe = (file, _, metadata) => metadata.FormatDetails = HeicDetails.From((HeicFile)file, metadata.CodePoints ?? file.CodePoints),
         TruncateFill = true,
     };
 
-    public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options) => _layer.Info(HeicFile.Read(input), input, options);
+    public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+    {
+        HeifFile heif = HeifFile.Read(input);
+        return HeicSequence.Find(heif) is HeicSequence sequence
+            ? _layer.SequenceInfo(sequence, input)
+            : _layer.Info(HeicFile.Open(heif), input, options);
+    }
 
     public Raster Read(EgamiInput input, ReaderOptions options)
     {
@@ -107,8 +116,10 @@ internal sealed class HeicReader(Func<FormatInfo> format, string loadMessage, Fu
             return HeifImageReader.ReadHdr(hdr, () => Read(input, options with { Hdr = null, ReadMetadata = true }));
         }
 
-        HeicFile file = HeicFile.Read(input);
-        return _layer.Read(input, file, options);
+        HeifFile heif = HeifFile.Read(input);
+        return HeicSequence.Find(heif) is HeicSequence sequence
+            ? _layer.ReadSequence(input, sequence, options, _ => SequenceMetadata(sequence))
+            : _layer.Read(input, HeicFile.Open(heif), options);
     }
 
     public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
@@ -128,16 +139,24 @@ internal sealed class HeicReader(Func<FormatInfo> format, string loadMessage, Fu
             }
         }
 
-        HeicFile file = HeicFile.Read(input);
-        return _layer.Read<TPixel>(input, file, options);
+        HeifFile heif = HeifFile.Read(input);
+        return HeicSequence.Find(heif) is HeicSequence sequence
+            ? _layer.ReadSequence<TPixel>(input, sequence, options, _ => SequenceMetadata(sequence))
+            : _layer.Read<TPixel>(input, HeicFile.Open(heif), options);
     }
 
     public RowSource Open(EgamiInput input, ReaderOptions options)
     {
         try
         {
-            HeicFile file = HeicFile.Read(input);
-            return _layer.Open(input, file, options);
+            HeifFile heif = HeifFile.Read(input);
+            if (HeicSequence.Find(heif) is HeicSequence sequence)
+            {
+                // A sequence is read whole, its frames served from the raster.
+                return BufferedRowSource.From(_layer.ReadSequence(input, sequence, options, _ => SequenceMetadata(sequence)));
+            }
+
+            return _layer.Open(input, HeicFile.Open(heif), options);
         }
         catch
         {
@@ -148,12 +167,47 @@ internal sealed class HeicReader(Func<FormatInfo> format, string loadMessage, Fu
 
     public YuvRaster ReadYuv(EgamiInput input, ReaderOptions options)
     {
-        HeicFile file = HeicFile.Read(input);
-        return _layer.ReadYuv(input, file, options, "HEIC");
+        HeifFile heif = HeifFile.Read(input);
+        return HeicSequence.Find(heif) is HeicSequence sequence
+            ? _layer.SequenceYuv(input, sequence, options, _ => SequenceMetadata(sequence))
+            : _layer.ReadYuv(input, HeicFile.Open(heif), options, "HEIC");
     }
 
     public (RasterInfo Info, ChromaFormat? Format, int BitDepth, YuvColor Color) ProbeYuv(EgamiInput input, ReaderOptions options)
     {
-        return _layer.ProbeYuv(HeicFile.Read(input));
+        HeifFile heif = HeifFile.Read(input);
+        if (HeicSequence.Find(heif) is HeicSequence sequence)
+        {
+            RasterInfo first = _layer.SequenceInfo(sequence, input);
+            return (first, sequence.Config.Chroma, sequence.BitDepth, _layer.PlaneColor(sequence.CodePoints, sequence.ChromaSiting, null));
+        }
+
+        return _layer.ProbeYuv(HeicFile.Open(heif));
     }
+
+    /// <summary>Gathers a sequence's metadata: its ICC profile and color, the details, and the container's warnings.</summary>
+    private static RasterMetadata SequenceMetadata(HeicSequence sequence)
+    {
+        RasterMetadata metadata = new()
+        {
+            FormatName = "HEIC",
+            IccProfile = sequence.Icc,
+            CodePoints = sequence.CodePoints,
+            FormatDetails = sequence.Details(sequence.CodePoints),
+        };
+        foreach (HeifProblem problem in sequence.Problems)
+        {
+            metadata.WarningList.Add(problem.Id, problem.Message, problem.Offset);
+        }
+
+        return metadata;
+    }
+
+    /// <summary>
+    /// Reads image item <paramref name="itemId"/> (see <see cref="HeicDetails.Items"/>): an hvc1 item or a grid, converted with its
+    /// own color, its own clean aperture cropped, and its own rotation and mirroring as the orientation.
+    /// </summary>
+    internal Raster ReadItem(EgamiInput input, ReaderOptions options, uint itemId) =>
+        _layer.ReadItem(input, HeicFile.Read(input), itemId, options, HeicFile.Hvc1, "hvc1");
+
 }

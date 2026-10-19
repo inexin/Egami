@@ -39,6 +39,7 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "radiance": "tests/images/radiance/*.hdr", "exr": "tests/images/exr/*.exr",
          "gainmap": "tests/images/gainmap/*.jpg tests/images/mpf/stereo*.jpg tests/images/mpf/preview.jpg",
          "avif": "tests/images/fuzz/avif-seeds/*", "avifbox": "tests/images/fuzz/avifbox-seeds/*", "av1": "tests/images/fuzz/av1-seeds/*", "avif-write": "tests/images/fuzz/avif-write-seeds/*",
+         "heic": "tests/images/fuzz/heic-seeds/*", "heicbox": "tests/images/fuzz/heicbox-seeds/*", "hevc": "tests/images/fuzz/hevc-seeds/*",
          "jxl": "tests/images/fuzz/jxl-seeds/*", "jxlbox": "tests/images/fuzz/jxlbox-seeds/*", "jxlentropy": "tests/images/fuzz/jxlentropy-seeds/*",
          "jxl-write": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-lossy": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-jpeg": "tests/images/jpeg/duck-q50.jpg tests/images/jpeg/odd-*.jpg tests/images/jpeg/transform/t4*.jpg tests/images/jpeg/transform/tprog.jpg tests/images/jpeg/testorig.jpg",
          "css": "tests/images/fuzz/css-seeds/*", "paragraph": "tests/images/fuzz/paragraph-seeds/*",
@@ -58,6 +59,7 @@ find /build -type d \\( -name bin -o -name obj \\) -prune -exec rm -rf {{}} +
 dotnet publish /build/tests/Egami.Fuzz -c Release -o /out -p:TreatWarningsAsErrors=false > /tmp/publish.log
 sharpfuzz /out/Egami.dll
 [ -f /out/Egami.Fonts.dll ] && sharpfuzz /out/Egami.Fonts.dll
+[ -f /out/Egami.Heic.dll ] && sharpfuzz /out/Egami.Heic.dll
 if [ -f /out/Egami.Drawing.dll ]; then sharpfuzz /out/Egami.Drawing.dll; fi
 if [ -f /out/Egami.Css.dll ]; then sharpfuzz /out/Egami.Css.dll; fi
 if [ -f /out/Egami.Metafiles.dll ]; then sharpfuzz /out/Egami.Metafiles.dll; fi

@@ -140,26 +140,12 @@ internal static class JpegGainMap
 
         if (info is null && xmp is not null && xmp.GetText(new XmpName(AppleNamespace, "HDRGainMapVersion")) is not null)
         {
-            // The headroom is in stops: in the map's XMP in newer files, from the base image's maker note in older ones.
-            double? stops = Number(xmp.GetText(new XmpName(AppleNamespace, "HDRGainMapHeadroom"))) ?? AppleStops(primary.Metadata.Exif);
-
-            if (stops is null)
+            info = Apple(xmp, primary.Metadata.Exif);
+            if (info is null)
             {
                 metadata.WarningList.Add("Jpeg.GainMapDropped", "Apple's gain map has no headroom in its XMP or the maker note; the image loads as SDR only.");
                 return null;
             }
-
-            info = new GainMapInfo
-            {
-                GainMapMin = new(0),
-                GainMapMax = new(stops.Value),
-                Gamma = new(1),
-                OffsetSdr = new(0),
-                OffsetHdr = new(0),
-                HdrCapacityMin = 0,
-                HdrCapacityMax = stops.Value,
-                Format = GainMapFormat.Apple,
-            };
         }
 
         if (info is null)
@@ -198,6 +184,26 @@ internal static class JpegGainMap
         }
 
         return pixels;
+    }
+
+    /// <summary>
+    /// Gets the metadata of Apple's HDRGainMap auxiliary image: its headroom in stops comes from the map's own XMP in newer files and
+    /// from the base image's maker note in older ones (JPEG and HEIC alike). Null when neither gives it.
+    /// </summary>
+    internal static GainMapInfo? Apple(XmpData? mapXmp, ExifData? baseExif)
+    {
+        double? stops = Number(mapXmp?.GetText(new XmpName(AppleNamespace, "HDRGainMapHeadroom"))) ?? AppleStops(baseExif);
+        return stops is not double s ? null : new GainMapInfo
+        {
+            GainMapMin = new(0),
+            GainMapMax = new(s),
+            Gamma = new(1),
+            OffsetSdr = new(0),
+            OffsetHdr = new(0),
+            HdrCapacityMin = 0,
+            HdrCapacityMax = s,
+            Format = GainMapFormat.Apple,
+        };
     }
 
     /// <summary>Parses ISO 21496-1 metadata (the APP2 payload after the identifier): fractions, as one channel or three.</summary>

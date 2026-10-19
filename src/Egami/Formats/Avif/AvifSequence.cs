@@ -11,7 +11,7 @@ namespace Egami.Formats.Avif;
 /// configuration and colr. Until inter frames arrive (2.9.5, design question 4), every frame loads when every sample is a sync
 /// sample (a key frame), and otherwise the first frame alone.
 /// </summary>
-internal sealed class AvifSequence
+internal sealed class AvifSequence : IHeifSequence
 {
     private static readonly uint Vide = FourCC.Of("vide");
     private static readonly uint Pict = FourCC.Of("pict");
@@ -65,16 +65,34 @@ internal sealed class AvifSequence
     internal bool AlphaPremultiplied { get; }
 
     /// <summary>Gets the image size: the AV1 sequence's maximum frame size.</summary>
-    internal (int Width, int Height) Size => (Sequence.MaxFrameWidth, Sequence.MaxFrameHeight);
+    public (int Width, int Height) Size => (Sequence.MaxFrameWidth, Sequence.MaxFrameHeight);
 
     /// <summary>Gets whether every color sample is a sync sample, so every frame decodes without inter prediction.</summary>
-    internal bool AllKeyFrames => Color.Samples.TrueForAll(s => s.Sync) && (Alpha is null || Alpha.Samples.TrueForAll(s => s.Sync));
+    public bool AllKeyFrames => Color.Samples.TrueForAll(s => s.Sync) && (Alpha is null || Alpha.Samples.TrueForAll(s => s.Sync));
 
     /// <summary>Gets how many frames Load gives: all of them when every sample is a key frame, else the first.</summary>
-    internal int FrameCount => AllKeyFrames ? Color.Samples.Count : Math.Min(1, Color.Samples.Count);
+    internal int FrameCount => ((IHeifSequence)this).FrameCount;
+
+    public int BitDepth => Config.BitDepth;
+
+    public bool Monochrome => Config.Monochrome;
+
+    public bool HasAlpha => Alpha is not null;
+
+    public Pixels.ChromaSiting ChromaSiting => AvifFile.Siting(Config, Sequence);
+
+    public bool Repeats => Color.Repeats;
+
+    public int SampleCount => Color.Samples.Count;
+
+    public IEnumerable<HeifProblem> Problems => Heif.Problems;
+
+    ReadOnlyMemory<byte> IHeifSequence.Icc => Icc;
+
+    bool IHeifSequence.AlphaPremultiplied => AlphaPremultiplied;
 
     /// <summary>Gets the color code points: the nclx box's, else the sequence header's.</summary>
-    internal ColorCodePoints CodePoints => Nclx is NclxColor n
+    public ColorCodePoints CodePoints => Nclx is NclxColor n
         ? new ColorCodePoints((byte)n.Primaries, (byte)n.Transfer, (byte)n.Matrix, n.FullRange)
         : new ColorCodePoints((byte)Sequence.ColorPrimaries, (byte)Sequence.TransferCharacteristics, (byte)Sequence.MatrixCoefficients, Sequence.FullRange);
 
@@ -121,6 +139,9 @@ internal sealed class AvifSequence
     }
 
     /// <summary>Decodes frame <paramref name="index"/>'s color and alpha into planes.</summary>
+    public (HeifPlanes Color, HeifPlanes? Alpha) Decode(int index, IHeifCodec codec, EgamiInput input) => Decode(index, (AvifCodec)codec, input);
+
+    /// <inheritdoc cref="Decode(int, IHeifCodec, EgamiInput)"/>
     internal (HeifPlanes Color, HeifPlanes? Alpha) Decode(int index, AvifCodec codec, EgamiInput input)
     {
         HeifPlanes color = codec.Decode(Sample(Color, index, _colorPrefix), input);
@@ -146,7 +167,7 @@ internal sealed class AvifSequence
     }
 
     /// <summary>Gets how long frame <paramref name="index"/> shows.</summary>
-    internal TimeSpan Delay(int index) => Color.Timescale == 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(Color.Samples[index].Duration / (double)Color.Timescale);
+    public TimeSpan Delay(int index) => Color.Timescale == 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(Color.Samples[index].Duration / (double)Color.Timescale);
 
     private static HeifProperty? Property(HeifTrack track, uint type)
     {
