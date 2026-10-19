@@ -1,6 +1,7 @@
 using System.Text.Json;
 
 using Egami.Formats.Webp;
+using Egami.Tests.Memory;
 
 namespace Egami.Tests.Formats.Webp;
 
@@ -55,15 +56,14 @@ public class Vp8VideoDecodeTests(ITestOutputHelper output)
         {
             List<byte[]> packets = Vp8VideoCorpus.ReadIvf(file);
 
-            // A full collection trims the shared array pool, so frames decoded after one may rent fresh buffers; a clip that a
-            // full collection overlapped is decoded again (see AllocationMeter).
+            // Frames decoded after the shared array pool lost its buffers (other tests running alongside) rent fresh ones, so a
+            // clip during which a pool had to allocate is decoded again (see AllocationMeter).
             long bytes = 0;
             for (int attempt = 0; attempt < 5; attempt++)
             {
-                GC.WaitForPendingFinalizers();
-                int gen2 = GC.CollectionCount(2);
                 using Vp8VideoDecoder video = new(1);
                 video.Decode(packets[0], 0, packets[0].Length);
+                int misses = AllocationMeter.PoolMisses;
                 long before = GC.GetAllocatedBytesForCurrentThread();
                 for (int i = 1; i < packets.Count; i++)
                 {
@@ -71,7 +71,7 @@ public class Vp8VideoDecodeTests(ITestOutputHelper output)
                 }
 
                 bytes = GC.GetAllocatedBytesForCurrentThread() - before;
-                if (bytes == 0 || GC.CollectionCount(2) == gen2)
+                if (bytes == 0 || AllocationMeter.PoolMisses == misses)
                 {
                     break;
                 }
