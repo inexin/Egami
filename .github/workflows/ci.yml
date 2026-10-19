@@ -105,6 +105,10 @@ jobs:
             done
           done
           exit $status
+      # Egami.Barcodes is packed against the released Egami, Egami.Drawing and Egami.Fonts (UseReleasedDependencies); this
+      # fails when it starts to need something newer than those, before a release would ship a package that cannot load.
+      - name: Egami.Barcodes against the released packages
+        run: dotnet build src/Egami.Barcodes -c Release -p:UseReleasedDependencies=true
 
   libpng:
     # Checks Egami's PNG reader and writer against libpng, the reference PNG library. libpng is a CI test tool only.
