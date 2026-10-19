@@ -20,6 +20,7 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Egami/Egami.csproj" />
+    <Project Path="src/Egami.Barcodes/Egami.Barcodes.csproj" />
     <Project Path="src/Egami.Css/Egami.Css.csproj" />
     <Project Path="src/Egami.Drawing/Egami.Drawing.csproj" />
     <Project Path="src/Egami.Fonts/Egami.Fonts.csproj" />
@@ -29,6 +30,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Egami.AotSmoke/Egami.AotSmoke.csproj" />
+    <Project Path="tests/Egami.Barcodes.Tests/Egami.Barcodes.Tests.csproj" />
     <Project Path="tests/Egami.Css.Tests/Egami.Css.Tests.csproj" />
     <Project Path="tests/Egami.DocSamples/Egami.DocSamples.csproj" />
     <Project Path="tests/Egami.Drawing.Tests/Egami.Drawing.Tests.csproj" />

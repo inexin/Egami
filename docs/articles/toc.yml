@@ -44,6 +44,8 @@
       href: guides/css.md
     - name: Windows metafiles
       href: guides/metafiles.md
+    - name: Barcodes
+      href: guides/barcodes.md
     - name: Regions, masks and channels
       href: guides/regions-and-masks.md
     - name: Keying and arithmetic
