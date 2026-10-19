@@ -459,7 +459,7 @@ Barcode rune = Barcode.AztecRune(42);</code></pre>
 
   <h3 id="Egami_Barcodes_Barcode_Code128_System_String_Egami_Barcodes_Code128Options_" data-uid="Egami.Barcodes.Barcode.Code128(System.String,Egami.Barcodes.Code128Options)">
   Code128(string, Code128Options?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code128.cs/#L23"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code128.cs/#L22"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes a Code 128 barcode (ISO/IEC 15417). The code sets A, B and C, and the changes and shifts between them, are picked to
@@ -998,11 +998,11 @@ Barcode small = Barcode.UpcE("042100005264");</code></pre>
 
 
 
-  <a id="Egami_Barcodes_Barcode_Gs1_128_" data-uid="Egami.Barcodes.Barcode.Gs1_128*"></a>
+  <a id="Egami_Barcodes_Barcode_Gs1Code128_" data-uid="Egami.Barcodes.Barcode.Gs1Code128*"></a>
 
-  <h3 id="Egami_Barcodes_Barcode_Gs1_128_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_Code128Options_" data-uid="Egami.Barcodes.Barcode.Gs1_128(System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString},Egami.Barcodes.Code128Options)">
-  Gs1_128(IReadOnlyList&lt;Gs1ElementString&gt;, Code128Options?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code128.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Egami_Barcodes_Barcode_Gs1Code128_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_Code128Options_" data-uid="Egami.Barcodes.Barcode.Gs1Code128(System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString},Egami.Barcodes.Code128Options)">
+  Gs1Code128(IReadOnlyList&lt;Gs1ElementString&gt;, Code128Options?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code128.cs/#L46"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes a GS1-128 barcode: Code 128 with FNC1 first and the element strings after it, an FNC1 after each one whose AI has no
@@ -1011,8 +1011,7 @@ predefined length unless it is the last.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[SuppressMessage(&quot;Naming&quot;, &quot;CA1707:Identifiers should not contain underscores&quot;, Justification = &quot;GS1-128 is the symbology&#39;s name; Gs1128 would read as one number.&quot;)]
-public static Barcode Gs1_128(IReadOnlyList&lt;Gs1ElementString&gt; elements, Code128Options? options = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Barcode Gs1Code128(IReadOnlyList&lt;Gs1ElementString&gt; elements, Code128Options? options = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -1037,10 +1036,10 @@ public static Barcode Gs1_128(IReadOnlyList&lt;Gs1ElementString&gt; elements, Co
 
 
 
-  <h4 class="section" id="Egami_Barcodes_Barcode_Gs1_128_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_Code128Options__examples">Examples</h4>
+  <h4 class="section" id="Egami_Barcodes_Barcode_Gs1Code128_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_Code128Options__examples">Examples</h4>
   <pre><code class="lang-csharp">// Each element string is checked: the AI, the length, the GTIN's check digit, the date.
 IReadOnlyList&lt;Gs1ElementString&gt; elements = Gs1.Parse("(01)09501101530003(17)261231(10)AB12");
-Barcode label = Barcode.Gs1_128(elements);
+Barcode label = Barcode.Gs1Code128(elements);
 
 // Mistakes say what is wrong.
 if (!Gs1.TryParse("(01)09501101530004", out _))
@@ -1059,11 +1058,11 @@ if (!Gs1.TryParse("(01)09501101530004", out _))
 
 
 
-  <a id="Egami_Barcodes_Barcode_Gs1_128_" data-uid="Egami.Barcodes.Barcode.Gs1_128*"></a>
+  <a id="Egami_Barcodes_Barcode_Gs1Code128_" data-uid="Egami.Barcodes.Barcode.Gs1Code128*"></a>
 
-  <h3 id="Egami_Barcodes_Barcode_Gs1_128_System_String_Egami_Barcodes_Code128Options_" data-uid="Egami.Barcodes.Barcode.Gs1_128(System.String,Egami.Barcodes.Code128Options)">
-  Gs1_128(string, Code128Options?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code128.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Egami_Barcodes_Barcode_Gs1Code128_System_String_Egami_Barcodes_Code128Options_" data-uid="Egami.Barcodes.Barcode.Gs1Code128(System.String,Egami.Barcodes.Code128Options)">
+  Gs1Code128(string, Code128Options?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code128.cs/#L79"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes a GS1-128 barcode from element strings in their human-readable form, such as <code>(01)09501101530003(10)AB12</code>.</p>
@@ -1071,8 +1070,7 @@ if (!Gs1.TryParse("(01)09501101530004", out _))
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[SuppressMessage(&quot;Naming&quot;, &quot;CA1707:Identifiers should not contain underscores&quot;, Justification = &quot;GS1-128 is the symbology&#39;s name; Gs1128 would read as one number.&quot;)]
-public static Barcode Gs1_128(string elements, Code128Options? options = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Barcode Gs1Code128(string elements, Code128Options? options = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -1097,10 +1095,10 @@ public static Barcode Gs1_128(string elements, Code128Options? options = null)</
 
 
 
-  <h4 class="section" id="Egami_Barcodes_Barcode_Gs1_128_System_String_Egami_Barcodes_Code128Options__examples">Examples</h4>
+  <h4 class="section" id="Egami_Barcodes_Barcode_Gs1Code128_System_String_Egami_Barcodes_Code128Options__examples">Examples</h4>
   <pre><code class="lang-csharp">// Each element string is checked: the AI, the length, the GTIN's check digit, the date.
 IReadOnlyList&lt;Gs1ElementString&gt; elements = Gs1.Parse("(01)09501101530003(17)261231(10)AB12");
-Barcode label = Barcode.Gs1_128(elements);
+Barcode label = Barcode.Gs1Code128(elements);
 
 // Mistakes say what is wrong.
 if (!Gs1.TryParse("(01)09501101530004", out _))

@@ -145,7 +145,7 @@ Class Gs1ElementString  <a class="header-action link-secondary" title="View sour
   <h2 id="Egami_Barcodes_Gs1ElementString_examples">Examples</h2>
   <pre><code class="lang-csharp">// Each element string is checked: the AI, the length, the GTIN's check digit, the date.
 IReadOnlyList&lt;Gs1ElementString&gt; elements = Gs1.Parse("(01)09501101530003(17)261231(10)AB12");
-Barcode label = Barcode.Gs1_128(elements);
+Barcode label = Barcode.Gs1Code128(elements);
 
 // Mistakes say what is wrong.
 if (!Gs1.TryParse("(01)09501101530004", out _))

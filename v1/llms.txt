@@ -43,6 +43,7 @@ settings, safety limits and registered formats a call uses.
 - [CSS](https://inexin.github.io/Egami/v1/articles/guides/css.html): Egami.Css parses and applies CSS in managed code, with no dependencies.
 - [Windows metafiles](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html): Egami.Metafiles plays Windows metafiles, the vector pictures Office and Windows programs exchange.
 - [Barcodes](https://inexin.github.io/Egami/v1/articles/guides/barcodes.html): Egami.Barcodes writes and reads barcodes.
+- [Reading barcodes](https://inexin.github.io/Egami/v1/articles/guides/barcode-reading.html): Egami.Barcodes reads every symbology it writes.
 - [Regions, masks and channels](https://inexin.github.io/Egami/v1/articles/guides/regions-and-masks.html): Any chain that keeps the image's size can run on part of the image.
 - [Keying and arithmetic](https://inexin.github.io/Egami/v1/articles/guides/keying-and-arithmetic.html): Operations that ImageMagick users expect.
 - [Comparing and measuring](https://inexin.github.io/Egami/v1/articles/guides/analysis.html): Calls that look at images rather than change them.

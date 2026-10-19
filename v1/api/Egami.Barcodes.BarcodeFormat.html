@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Enum BarcodeFormat | Egami ">
       
-      <meta name="description" content="A barcode symbology.">
+      <meta name="description" content="A barcode symbology, or a set of them:  and  hold one, and  any combination.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -90,7 +90,7 @@
 
 
   <h1 id="Egami_Barcodes_BarcodeFormat" data-uid="Egami.Barcodes.BarcodeFormat" class="text-break">
-Enum BarcodeFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/BarcodeFormat.cs/#L7"><i class="bi bi-code-slash"></i></a>
+Enum BarcodeFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/BarcodeFormat.cs/#L10"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -98,12 +98,14 @@ Enum BarcodeFormat  <a class="header-action link-secondary" title="View source" 
   <dl><dt>Assembly</dt><dd>Egami.Barcodes.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>A barcode symbology.</p>
+  <div class="markdown summary"><p>A barcode symbology, or a set of them: <a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Format">Format</a> and <a class="xref" href="Egami.Barcodes.BarcodeResult.html#Egami_Barcodes_BarcodeResult_Format">Format</a> hold one, and
+<a class="xref" href="Egami.Barcodes.BarcodeReaderOptions.html#Egami_Barcodes_BarcodeReaderOptions_Formats">Formats</a> any combination.</p>
 </div>
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public enum BarcodeFormat</code></pre>
+    <pre><code class="lang-csharp hljs">[Flags]
+public enum BarcodeFormat</code></pre>
   </div>
 
 
@@ -117,47 +119,63 @@ Enum BarcodeFormat  <a class="header-action link-secondary" title="View source" 
   <h2 id="fields">Fields
 </h2>
   <dl class="parameters">
-    <dt id="Egami_Barcodes_BarcodeFormat_Aztec"><code>Aztec = 3</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_All"><code>All = Matrix | Linear</code></dt>
+  
+  <dd><p>Every symbology.</p>
+</dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_Aztec"><code>Aztec = 8</code></dt>
   
   <dd><p>Aztec Code (ISO/IEC 24778); no quiet zone, as its finder is in the middle.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_Code128"><code>Code128 = 4</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_Code128"><code>Code128 = 16</code></dt>
   
   <dd><p>Code 128 and GS1-128 (ISO/IEC 15417), linear; quiet zone 10 modules.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_Code39"><code>Code39 = 5</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_Code39"><code>Code39 = 32</code></dt>
   
   <dd><p>Code 39 (ISO/IEC 16388), linear; quiet zone 10 modules.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_DataMatrix"><code>DataMatrix = 1</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_DataMatrix"><code>DataMatrix = 2</code></dt>
   
   <dd><p>Data Matrix ECC 200 (ISO/IEC 16022); quiet zone 1 module.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_Ean13"><code>Ean13 = 7</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_Ean13"><code>Ean13 = 128</code></dt>
   
   <dd><p>EAN-13 (ISO/IEC 15420), linear; quiet zone 11 modules.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_Ean8"><code>Ean8 = 8</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_Ean8"><code>Ean8 = 256</code></dt>
   
   <dd><p>EAN-8 (ISO/IEC 15420), linear; quiet zone 7 modules.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_Itf"><code>Itf = 6</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_Itf"><code>Itf = 64</code></dt>
   
   <dd><p>Interleaved 2 of 5 and ITF-14 (ISO/IEC 16390), linear; quiet zone 10 modules.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_Pdf417"><code>Pdf417 = 2</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_Linear"><code>Linear = Code128 | Code39 | Itf | Ean13 | Ean8 | UpcA | UpcE</code></dt>
+  
+  <dd><p>The linear symbologies.</p>
+</dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_Matrix"><code>Matrix = Qr | DataMatrix | Pdf417 | Aztec</code></dt>
+  
+  <dd><p>The 2D symbologies.</p>
+</dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_None"><code>None = 0</code></dt>
+  
+  <dd><p>No symbology.</p>
+</dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_Pdf417"><code>Pdf417 = 4</code></dt>
   
   <dd><p>PDF417 (ISO/IEC 15438); quiet zone 2 modules.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_Qr"><code>Qr = 0</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_Qr"><code>Qr = 1</code></dt>
   
   <dd><p>QR Code (ISO/IEC 18004); quiet zone 4 modules.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_UpcA"><code>UpcA = 9</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_UpcA"><code>UpcA = 512</code></dt>
   
   <dd><p>UPC-A (ISO/IEC 15420), linear; quiet zone 9 modules.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_UpcE"><code>UpcE = 10</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_UpcE"><code>UpcE = 1024</code></dt>
   
   <dd><p>UPC-E (ISO/IEC 15420), linear; quiet zone 9 modules.</p>
 </dd>
@@ -173,7 +191,7 @@ Console.WriteLine($"{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/BarcodeFormat.cs/#L7" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/BarcodeFormat.cs/#L10" class="edit-link">Edit this page</a>
         </div>
 
 

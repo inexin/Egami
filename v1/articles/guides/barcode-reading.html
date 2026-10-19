@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Reading barcodes | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Reading barcodes | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/barcode-reading.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="reading-barcodes">Reading barcodes</h1>
+
+<p>Egami.Barcodes reads every symbology it writes: QR Code, Data Matrix (DMRE too), PDF417 (compact too), Aztec Code (runes too),
+Code 128 and GS1-128, Code 39, ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E with their add-ons. It reads rendered barcodes,
+scans and photos: turned, in perspective, blurred, noisy, light on dark or mirrored, several in one image.</p>
+<h2 id="reading-an-image">Reading an image</h2>
+<p><code>ReadBarcodes</code>, an extension method in <code>BarcodeReader</code>, finds every barcode in a raster of any pixel type and returns a
+<code>BarcodeResult</code> for each: its <code>Format</code>, its <code>Text</code>, the <code>Bytes</code> it holds, the <code>Corners</code> it was found at, its <code>Eci</code>, its GS1
+element strings in <code>Gs1</code>, and how many codewords error correction restored. <code>ReadBarcode</code> returns the first one, or <code>null</code>.</p>
+<pre><code class="lang-csharp">// Every barcode in the image, of any format.
+foreach (BarcodeResult result in scan.ReadBarcodes())
+{
+    Console.WriteLine($&quot;{result.Format}: {result.Text} at {result.Corners[0]}&quot;);
+}
+</code></pre>
+<p>Text is decoded with the symbol's ECI; without one, as ISO 8859-1, or as UTF-8 or Shift JIS when the bytes clearly are. GS1
+data comes back in its human-readable form, such as <code>(01)09501101530003(10)AB12</code>. For EAN and UPC, <code>Text</code> holds the main
+digits and <code>AddOn</code> the digits of an EAN-2 or EAN-5 add-on, or <code>null</code>.</p>
+<p><code>BarcodeReaderOptions</code> narrows or widens the search. <code>Formats</code> names the symbologies to look for, as <code>BarcodeFormat</code> flags
+(<code>BarcodeFormat.Qr | BarcodeFormat.DataMatrix</code>, or <code>Linear</code>, <code>Matrix</code> and <code>All</code>); fewer read faster.
+<code>Effort</code>, 0 to 10, decides how many binarizations, scan lines and rotations are tried, never what counts as a valid read;
+from effort 5 light symbols on a dark background are tried too (<code>TryInverted</code>). <code>Region</code> limits the search to part of the
+image. <code>PureBarcode</code> reads an image that holds one upright symbol and its quiet zone, such as a rendered barcode, without
+searching.</p>
+<pre><code class="lang-csharp">// Only the formats you expect, searched harder; a rendered barcode can skip the search.
+BarcodeResult? result = label.ReadBarcode(new BarcodeReaderOptions
+{
+    Formats = BarcodeFormat.DataMatrix | BarcodeFormat.Qr,
+    Effort = 7,
+});
+
+if (result?.Gs1 is { } elements)
+{
+    foreach (Gs1ElementString element in elements)
+    {
+        Console.WriteLine($&quot;{element.Title}: {element.Value}&quot;);
+    }
+}
+
+BarcodeResult? rendered = label.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true });
+</code></pre><h2 id="camera-frames">Camera frames</h2>
+<p>A camera frame's 8-bit luminance (the Y plane of a YUV frame) reads in place, without a copy: <code>BarcodeReader.ReadBarcodes</code>
+and <code>ReadBarcode</code> take the bytes with the width, height and stride. The buffer is only read, and only during the call.</p>
+<pre><code class="lang-csharp">// A camera frame's Y plane (8-bit luminance, rows padded to the stride), read in place.
+BarcodeResult? code = BarcodeReader.ReadBarcode(yPlane, width, height, stride);
+</code></pre><h2 id="how-each-symbology-is-found">How each symbology is found</h2>
+<p>Linear barcodes are found along scan lines: rows, columns from effort 3 and diagonals from effort 7, each read in both
+directions with its edges placed between pixels, so low-resolution and blurred photos read. A linear barcode counts once two
+scan lines agree on it. ITF, whose check is weakest, is read from 4 digits on.</p>
+<p>QR Codes are found by their three finder patterns, at any rotation and in perspective; from version 2 the alignment pattern
+corrects the perspective, and a mirrored symbol reads too.</p>
+<p>Data Matrix symbols are found by their L-shaped finder, square and rectangular (DMRE too), at any rotation and in
+perspective, on a label lighter than its background or not; the clock tracks count the modules.</p>
+<p>PDF417 symbols are found by their start and stop patterns at any rotation and in perspective; a compact symbol, which has
+no stop pattern, is read from its start pattern on. Rows that cannot be read are filled in by error correction.</p>
+<p>Aztec Codes are found by their bullseye at any rotation and in perspective, compact, full-range and runes; on larger
+full-range symbols the reference grid places the modules out to the edge.</p>
+<h2 id="many-symbols-inverted-and-mirrored">Many symbols, inverted and mirrored</h2>
+<p>Every symbol in the image comes back once, in reading order: top to bottom, then left to right. A linear read inside a 2D
+symbol is dropped as part of it. <code>Inverted</code> tells which symbols were light on dark, <code>Mirrored</code> which were read from behind
+or flipped. Large images are searched on several threads, up to the <code>MaxParallelism</code> of the options' <code>Context</code>; the
+results are the same at any thread count.</p>
+<pre><code class="lang-csharp">// All symbols on a page, top to bottom and left to right, each once; at most four threads.
+IReadOnlyList&lt;BarcodeResult&gt; parcels = page.ReadBarcodes(new BarcodeReaderOptions
+{
+    Context = EgamiContext.Default with { MaxParallelism = 4 },
+});
+foreach (BarcodeResult parcel in parcels)
+{
+    Console.WriteLine($&quot;{parcel.Text} (inverted: {parcel.Inverted}, mirrored: {parcel.Mirrored})&quot;);
+}
+</code></pre><h2 id="gs1-data-eci-and-add-ons">GS1 data, ECI and add-ons</h2>
+<p>GS1 symbols (GS1-128, GS1 QR Code, GS1 Data Matrix) come back with their element strings in <code>Gs1</code>, each with its AI, title and
+value, and <code>Text</code> in the human-readable form with the AIs in parentheses. A symbol that names an Extended Channel
+Interpretation has it in <code>Eci</code>, and its text is decoded with that character set. <code>Bytes</code> holds what the symbol carries before
+any character set is applied.</p>
+<pre><code class="lang-csharp">// A GS1-128 label: the element strings by AI, and the text with the AIs in parentheses.
+BarcodeResult? code = label.ReadBarcode(new BarcodeReaderOptions { Formats = BarcodeFormat.Code128 });
+string? expiry = code?.Gs1?.FirstOrDefault(e =&gt; e.Ai == &quot;17&quot;)?.Value;   // &quot;261231&quot;
+string? batch = code?.Gs1?.FirstOrDefault(e =&gt; e.Ai == &quot;10&quot;)?.Value;    // &quot;AB12&quot;
+</code></pre><h2 id="what-reads-well">What reads well</h2>
+<ul>
+<li>Two pixels or more per module. Linear barcodes read down to about one pixel per narrow bar, as their edges are placed between
+pixels.</li>
+<li>The quiet zone the symbology asks for, or most of it: 10 modules beside Code 128 and Code 39, 4 around a QR code.</li>
+<li>Contrast between bars and background; uneven light is fine, as each part of the image gets its own threshold.</li>
+<li>A sharp image. Blur that merges neighbouring modules cannot be undone, although error correction fills in damaged parts of
+2D symbols.</li>
+</ul>
+<h2 id="speed">Speed</h2>
+<p>The reader allocates per call only and can run on many threads at once. These settle how long a call takes:</p>
+<ul>
+<li><code>Formats</code>: only the symbologies you expect. Each detector skipped saves its time.</li>
+<li><code>Effort</code>: 5 is the default. Lower efforts try fewer scan lines and rotations and no inverted image; higher ones try more.</li>
+<li><code>Region</code>: only the part of the image where the symbol is.</li>
+<li><code>PureBarcode</code> for a rendered symbol with nothing else in the image: it reads without searching.</li>
+<li>Images of a quarter of a megapixel or more are searched on several threads, up to the <code>Context</code>'s <code>MaxParallelism</code>.</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/barcode-reading.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

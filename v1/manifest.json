@@ -275,21 +275,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Barcodes.BarcodeFormat",
-      "Summary": "<p sourcefile=\"api/Egami.Barcodes.BarcodeFormat.yml\" sourcestartlinenumber=\"1\">A barcode symbology.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "api/Egami.Barcodes.BarcodeFormats.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/Egami.Barcodes.BarcodeFormats.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "Egami.Barcodes.BarcodeFormats",
-      "Summary": "<p sourcefile=\"api/Egami.Barcodes.BarcodeFormats.yml\" sourcestartlinenumber=\"1\">A set of barcode symbologies, for <xref href=\"Egami.Barcodes.BarcodeReaderOptions.Formats\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.BarcodeFormat.yml\" sourcestartlinenumber=\"1\">A barcode symbology, or a set of them: <xref href=\"Egami.Barcodes.Barcode.Format\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Barcodes.BarcodeResult.Format\" data-throw-if-not-resolved=\"false\"></xref> hold one, and\n<xref href=\"Egami.Barcodes.BarcodeReaderOptions.Formats\" data-throw-if-not-resolved=\"false\"></xref> any combination.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -373,7 +359,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Barcodes.Code128Options",
-      "Summary": "<p sourcefile=\"api/Egami.Barcodes.Code128Options.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.Code128(System.String%2cEgami.Barcodes.Code128Options)\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Barcodes.Barcode.Gs1_128(System.String%2cEgami.Barcodes.Code128Options)\" data-throw-if-not-resolved=\"false\"></xref> make a symbol.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.Code128Options.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.Code128(System.String%2cEgami.Barcodes.Code128Options)\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Barcodes.Barcode.Gs1Code128(System.String%2cEgami.Barcodes.Code128Options)\" data-throw-if-not-resolved=\"false\"></xref> make a symbol.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -10846,6 +10832,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/avif.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/barcode-reading.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/barcode-reading.html"
         }
       },
       "version": ""

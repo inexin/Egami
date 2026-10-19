@@ -154,6 +154,38 @@ foreach (BarcodeResult result in scan.ReadBarcodes())
 </h2>
 
 
+  <a id="Egami_Barcodes_BarcodeResult_AddOn_" data-uid="Egami.Barcodes.BarcodeResult.AddOn*"></a>
+
+  <h3 id="Egami_Barcodes_BarcodeResult_AddOn" data-uid="Egami.Barcodes.BarcodeResult.AddOn">
+  AddOn
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/BarcodeResult.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the digits of an EAN-2 or EAN-5 add-on read after an EAN or UPC symbol, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when there is none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? AddOn { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Barcodes_BarcodeResult_Bytes_" data-uid="Egami.Barcodes.BarcodeResult.Bytes*"></a>
 
   <h3 id="Egami_Barcodes_BarcodeResult_Bytes" data-uid="Egami.Barcodes.BarcodeResult.Bytes">
@@ -419,8 +451,8 @@ linear symbol, the ends of the scan line(s) it was read on.</p>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the text: the data decoded with the symbol's ECI or, without one, as ISO 8859-1 (or UTF-8 or Shift JIS when the bytes
-are clearly that). GS1 data is in its human-readable form, such as <code>(01)09501101530003(10)AB12</code>; an EAN or UPC
-add-on follows the main digits after a space.</p>
+are clearly that). GS1 data is in its human-readable form, such as <code>(01)09501101530003(10)AB12</code>. For EAN and UPC,
+the main digits only; an add-on is in <a class="xref" href="Egami.Barcodes.BarcodeResult.html#Egami_Barcodes_BarcodeResult_AddOn">AddOn</a>.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -453,7 +485,7 @@ add-on follows the main digits after a space.</p>
 
   <h3 id="Egami_Barcodes_BarcodeResult_ToString" data-uid="Egami.Barcodes.BarcodeResult.ToString">
   ToString()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/BarcodeResult.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/BarcodeResult.cs/#L57"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a string that represents the current object.</p>
