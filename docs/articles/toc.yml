@@ -46,6 +46,8 @@
       href: guides/metafiles.md
     - name: Barcodes
       href: guides/barcodes.md
+    - name: Reading barcodes
+      href: guides/barcode-reading.md
     - name: Regions, masks and channels
       href: guides/regions-and-masks.md
     - name: Keying and arithmetic

@@ -433,4 +433,19 @@ public class Barcodes
         #endregion
         Assert.Equal("Y plane", code?.Text);
     }
+
+    [Fact]
+    public void ReadGs1()
+    {
+        using Raster<Gray8> label = Barcode.Gs1Code128("(01)09501101530003(17)261231(10)AB12").ToRaster(pixelsPerModule: 3);
+        #region barcode-read-gs1
+        // A GS1-128 label: the element strings by AI, and the text with the AIs in parentheses.
+        BarcodeResult? code = label.ReadBarcode(new BarcodeReaderOptions { Formats = BarcodeFormat.Code128 });
+        string? expiry = code?.Gs1?.FirstOrDefault(e => e.Ai == "17")?.Value;   // "261231"
+        string? batch = code?.Gs1?.FirstOrDefault(e => e.Ai == "10")?.Value;    // "AB12"
+        #endregion
+        Assert.Equal("261231", expiry);
+        Assert.Equal("AB12", batch);
+        Assert.Equal("(01)09501101530003(17)261231(10)AB12", code?.Text);
+    }
 }

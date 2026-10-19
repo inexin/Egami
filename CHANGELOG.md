@@ -7,6 +7,11 @@ changes that break code come only in a new major version.
 
 A new package that writes and reads barcodes, drawn through Egami.Drawing.
 
+### Documentation
+
+- A guide to reading barcodes (options, camera frames, GS1 data, what reads well, speed) and cookbook recipes for camera
+  frames, pages of barcodes, GS1 labels and SVG output.
+
 ### API review changes (breaking against the previews)
 
 - `BarcodeFormat` is a `[Flags]` enum (`Qr = 1` to `UpcE = 1024`, with `None`, `Linear`, `Matrix` and `All`), and
@@ -37,6 +42,8 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - PDF417 symbols are found by their start and stop patterns at any rotation and in perspective, compact ones too.
 - Aztec Codes are found by their bullseye at any rotation and in perspective: compact, full-range (with the reference grid)
   and runes.
+- Read rates on the ZXing blackbox photos at or above zxing-cpp's for most sets, with no false positives; ink spread,
+  glare and one-pixel bars handled (Code 128 and EAN edge distances, gray-level PDF417 rows, extra scan lines).
 - Many symbols per image, each once and in reading order; inverted and mirrored symbols; large images searched on
   several threads with the same results at any thread count.
 - The decoders read every symbology the package writes: QR (mirrored too), Data Matrix (DMRE and 144 x 144 too), PDF417
