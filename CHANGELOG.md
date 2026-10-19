@@ -25,6 +25,7 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
   per image.
 - Data Matrix symbols are found by their L finder and clock tracks, square and rectangular (DMRE too), at any rotation
   and in perspective, several per image.
+- PDF417 symbols are found by their start and stop patterns at any rotation and in perspective, compact ones too.
 - The decoders read every symbology the package writes: QR (mirrored too), Data Matrix (DMRE and 144 x 144 too), PDF417
   (compact too), Aztec (runes too), Code 128 and GS1-128, Code 39 (Full ASCII too), ITF, EAN, UPC and their add-ons.
 

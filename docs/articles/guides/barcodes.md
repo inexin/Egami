@@ -139,6 +139,9 @@ corrects the perspective, and a mirrored symbol reads too.
 Data Matrix symbols are found by their L-shaped finder, square and rectangular (DMRE too), at any rotation and in
 perspective, on a label lighter than its background or not; the clock tracks count the modules.
 
+PDF417 symbols are found by their start and stop patterns at any rotation and in perspective; a compact symbol, which has
+no stop pattern, is read from its start pattern on. Rows that cannot be read are filled in by error correction.
+
 ## Drawing on a canvas
 
 `DrawBarcode`, an extension method in `CanvasBarcodeExtensions`, draws on any canvas: a raster, a PDF or SVG page, a

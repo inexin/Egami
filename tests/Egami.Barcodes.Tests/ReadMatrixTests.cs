@@ -116,4 +116,25 @@ public class ReadMatrixTests
 
         Assert.Equal(["FIRST", "SECOND"], image.ReadBarcodes(new BarcodeReaderOptions { Formats = BarcodeFormats.DataMatrix }).Select(r => r.Text));
     }
+
+    public static TheoryData<string, float, float> Pdf417Cases => new()
+    {
+        { "short", 0, 0 },
+        { "short", 12, 0.05f },
+        { "short", 180, 0 },
+        { "long", 95, 0.1f },
+        { "long", 230, 0.05f },
+        { "compact", 30, 0 },
+    };
+
+    [Theory]
+    [MemberData(nameof(Pdf417Cases))]
+    public void ReadsPdf417Photos(string kind, float degrees, float tilt)
+    {
+        string text = kind == "long" ? string.Concat(Enumerable.Repeat("PDF417 stacked barcode 0123456789. ", 6)) : "PDF417 photo";
+        Barcode barcode = Barcode.Pdf417(text, new Pdf417Options { Compact = kind == "compact" });
+        float width = 420, height = width * (barcode.Modules.Height + (2 * barcode.QuietZone)) / (barcode.Modules.Width + (2 * barcode.QuietZone));
+        using Raster<Gray8> photo = Photos.Render(barcode, 640, 640, Photos.Quad(new Vector2(320, 320), width, height, degrees, tilt), seed: (int)degrees + 5);
+        Assert.Contains(photo.ReadBarcodes(), r => r.Format == BarcodeFormat.Pdf417 && r.Text == text);
+    }
 }

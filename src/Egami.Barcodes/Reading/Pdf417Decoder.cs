@@ -76,9 +76,9 @@ internal static class Pdf417Decoder
         return null;
     }
 
-    private static bool IsStart(ReadOnlySpan<int> runs) => Matches(runs, [8, 1, 1, 1, 1, 1, 1, 3]);
+    internal static bool IsStart(ReadOnlySpan<int> runs) => Matches(runs, [8, 1, 1, 1, 1, 1, 1, 3]);
 
-    private static bool IsStop(ReadOnlySpan<int> runs) => runs.Length >= 9 && Matches(runs[..9], [7, 1, 1, 3, 1, 1, 1, 2, 1]);
+    internal static bool IsStop(ReadOnlySpan<int> runs) => runs.Length >= 9 && Matches(runs[..9], [7, 1, 1, 3, 1, 1, 1, 2, 1]);
 
     /// <summary>Returns whether runs match a pattern of module widths within a third of a module each.</summary>
     private static bool Matches(ReadOnlySpan<int> runs, ReadOnlySpan<int> pattern)
