@@ -24,6 +24,11 @@
     <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
   </ItemGroup>
 
+  <!-- The GS1 Barcode Syntax Dictionary (Apache-2.0), as GS1 publishes it; see THIRD-PARTY-NOTICES.md. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Gs1Data\gs1-syntax-dictionary.txt" LogicalName="Egami.Barcodes.gs1-syntax-dictionary.txt" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Egami.Barcodes.Tests" />
     <InternalsVisibleTo Include="Egami.Fuzz" />

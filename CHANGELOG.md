@@ -14,6 +14,25 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - Reed-Solomon error correction for every symbology the package will write and read: QR, Data Matrix, PDF417 and Aztec, with
   errors and erasures corrected together.
 
+### Code 128 and GS1
+
+- `Barcode.Code128` writes Code 128 with the shortest mix of code sets A, B and C.
+- `Gs1.Parse` and `Gs1.TryParse` read GS1 element strings such as `(01)09501101530003(17)261231` and check each against the
+  GS1 General Specifications (AI, characters, lengths, check digits, dates and times), with messages that say what is wrong.
+- `Barcode.Gs1_128` writes GS1-128, with FNC1 separators only where the AIs need them.
+
+### Code 39 and ITF
+
+- `Barcode.Code39` writes Code 39, with Full ASCII when the text needs it and an optional mod 43 check character.
+- `Barcode.Itf` writes Interleaved 2 of 5, and `Barcode.Itf14` writes ITF-14 with its check digit added or checked and bearer
+  bars around it.
+
+### EAN and UPC
+
+- `Barcode.Ean13`, `Ean8`, `UpcA` and `UpcE` add the check digit when it is left out and check it when it is given.
+  `Barcode.UpcE` also compresses a UPC-A number. `EanUpcOptions.AddOn` adds an EAN-2 or EAN-5 add-on.
+- With a font, the digits go between the guard bars, which reach into the text line, and an add-on's digits above it.
+
 ### Drawing
 
 - `Barcode` is one symbol: format, modules, the quiet zone of its standard and its human-readable text.

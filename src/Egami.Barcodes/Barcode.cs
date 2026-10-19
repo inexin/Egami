@@ -2,7 +2,6 @@ using System.Numerics;
 
 using Egami.Barcodes.Rendering;
 using Egami.Drawing;
-using Egami.Fonts;
 using Egami.Pixels;
 
 namespace Egami.Barcodes;
@@ -15,14 +14,15 @@ namespace Egami.Barcodes;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Barcodes.cs" region="barcode-from-modules"/>
 /// </example>
-public sealed class Barcode
+public sealed partial class Barcode
 {
-    private Barcode(BarcodeFormat format, BarcodeModules modules, int quietZone, string? humanReadableText)
+    private Barcode(BarcodeFormat format, BarcodeModules modules, int quietZone, string? humanReadableText, LinearDecoration? decoration = null)
     {
         Format = format;
         Modules = modules;
         QuietZone = quietZone;
         HumanReadableText = humanReadableText;
+        Decoration = decoration;
     }
 
     /// <summary>Gets the symbology.</summary>
@@ -32,13 +32,17 @@ public sealed class Barcode
     public BarcodeModules Modules { get; }
 
     /// <summary>
-    /// Gets the width of the clear margin readers need around the symbol, in modules: 4 for QR, 1 for Data Matrix, 2 for PDF417,
-    /// 0 for Aztec and 10 at each end of a linear symbol.
+    /// Gets the width of the clear margin readers need around the symbol, in modules: 4 for QR, 1 for Data Matrix, 2 for PDF417
+    /// and 0 for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39 and ITF, 11 for EAN-13, 7 for EAN-8 and 9 for
+    /// UPC-A and UPC-E.
     /// </summary>
     public int QuietZone { get; }
 
     /// <summary>Gets the text printed under a linear symbol, or <see langword="null"/>; it is drawn when <see cref="BarcodeDrawOptions.Font"/> is set.</summary>
     public string? HumanReadableText { get; }
+
+    /// <summary>Gets a linear symbol's guard bars, add-on, bearers and text placement, or <see langword="null"/>.</summary>
+    internal LinearDecoration? Decoration { get; }
 
     /// <summary>Makes a barcode from modules you already have, with the quiet zone of its format's standard.</summary>
     /// <param name="format">The symbology the modules are.</param>
@@ -56,11 +60,13 @@ public sealed class Barcode
             BarcodeFormat.DataMatrix => 1,
             BarcodeFormat.Pdf417 => 2,
             BarcodeFormat.Aztec => 0,
-            BarcodeFormat.Code128 or BarcodeFormat.Code39 or BarcodeFormat.Itf or BarcodeFormat.Ean13 or BarcodeFormat.Ean8
-                or BarcodeFormat.UpcA or BarcodeFormat.UpcE => 10,
+            BarcodeFormat.Code128 or BarcodeFormat.Code39 or BarcodeFormat.Itf => 10,
+            BarcodeFormat.Ean13 => 11,
+            BarcodeFormat.Ean8 => 7,
+            BarcodeFormat.UpcA or BarcodeFormat.UpcE => 9,
             _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
         };
-        if (modules.IsLinear != (quietZone == 10))
+        if (modules.IsLinear != format is not (BarcodeFormat.Qr or BarcodeFormat.DataMatrix or BarcodeFormat.Pdf417 or BarcodeFormat.Aztec))
         {
             throw new ArgumentException(modules.IsLinear ? $"{format} is a 2D format; the modules are linear." : $"{format} is a linear format; the modules are a 2D grid.", nameof(modules));
         }
@@ -87,18 +93,8 @@ public sealed class Barcode
             throw new ArgumentOutOfRangeException(nameof(moduleSize), moduleSize, "The module size must be positive and finite.");
         }
 
-        options ??= BarcodeDrawOptions.Default;
-        float quiet = options.QuietZone ? QuietZone * moduleSize : 0, shrink = options.BarWidthReduction / 2;
-        return new BarcodeGeometry(
-            quiet,
-            Modules.IsLinear ? 0 : quiet,
-            moduleSize,
-            moduleSize,
-            Modules.Height * moduleSize,
-            shrink,
-            shrink,
-            Modules.IsLinear ? 0 : shrink,
-            Modules.IsLinear ? 0 : shrink).ToPath(Modules);
+        var layout = BarcodeLayout.Create(this, (options ?? BarcodeDrawOptions.Default) with { Font = null });
+        return new BarcodeGeometry(Vector2.Zero, moduleSize, moduleSize, Modules.Height * moduleSize).ToPath(layout);
     }
 
     /// <summary>
@@ -116,15 +112,10 @@ public sealed class Barcode
     public Raster<Gray8> ToRaster(int pixelsPerModule = 1, BarcodeDrawOptions? options = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelsPerModule);
-        options ??= BarcodeDrawOptions.Default;
-        int quiet = options.QuietZone ? QuietZone : 0;
-        string? text = TextToDraw(options, out Font font);
-        TextMeasure measure = text is null ? default : font.MeasureText(text);
-        long textHeight = text is null ? 0 : pixelsPerModule + (long)MathF.Ceiling(measure.Ascent - measure.Descent);
-        long width = (long)(Modules.Width + (2 * quiet)) * pixelsPerModule;
-        long symbolHeight = (long)Modules.Height * pixelsPerModule;
-        long top = Modules.IsLinear ? 0 : (long)quiet * pixelsPerModule;
-        long height = symbolHeight + (2 * top) + textHeight;
+        var layout = BarcodeLayout.Create(this, options ?? BarcodeDrawOptions.Default);
+        var geometry = new BarcodeGeometry(Vector2.Zero, pixelsPerModule, pixelsPerModule, (float)Modules.Height * pixelsPerModule, 1, 1);
+        double width = (double)layout.Columns * pixelsPerModule;
+        double height = Math.Ceiling(layout.Height(pixelsPerModule, pixelsPerModule, geometry.BarHeight) - 1e-3);
         if (width > 1 << 20 || height > 1 << 20)
         {
             throw new ArgumentOutOfRangeException(nameof(pixelsPerModule), pixelsPerModule, $"A {width} by {height} raster is too large.");
@@ -133,41 +124,25 @@ public sealed class Barcode
         Raster<Gray8> raster = Raster.Create((int)width, (int)height, new Gray8(255));
         try
         {
-            int reduction = (int)MathF.Round(options.BarWidthReduction);
-            int left = reduction / 2, right = reduction - left;
-            int vertical = Modules.IsLinear ? 0 : left, verticalEnd = Modules.IsLinear ? 0 : right;
-            int x0 = quiet * pixelsPerModule, y0 = (int)top;
-            for (int y = 0; y < Modules.Height; y++)
+            // Every edge is a whole pixel: module sizes are whole, and the geometry rounds the rest.
+            foreach (RectF rect in geometry.Rectangles(layout))
             {
-                ReadOnlySpan<bool> row = Modules.Row(y);
-                for (int x = 0; x < row.Length;)
+                int left = Math.Max(0, (int)MathF.Round(rect.X)), right = Math.Min(raster.Width, (int)MathF.Round(rect.X + rect.Width));
+                int top = Math.Max(0, (int)MathF.Round(rect.Y)), bottom = Math.Min(raster.Height, (int)MathF.Round(rect.Y + rect.Height));
+                for (int y = top; y < bottom && left < right; y++)
                 {
-                    if (!row[x])
-                    {
-                        x++;
-                        continue;
-                    }
-
-                    int start = x;
-                    while (x < row.Length && row[x])
-                    {
-                        x++;
-                    }
-
-                    int from = x0 + (start * pixelsPerModule) + left, to = x0 + (x * pixelsPerModule) - right;
-                    int rowTop = y0 + (y * pixelsPerModule) + vertical, rowBottom = y0 + ((y + 1) * pixelsPerModule) - verticalEnd;
-                    for (int py = rowTop; py < rowBottom && from < to; py++)
-                    {
-                        raster.Row(py)[from..to].Clear();
-                    }
+                    raster.Row(y)[left..right].Clear();
                 }
             }
 
-            if (text is not null)
+            List<(string Text, Vector2 Origin)> texts = geometry.Texts(layout);
+            if (texts.Count > 0)
             {
                 using RasterCanvas<Gray8> canvas = raster.CreateCanvas();
-                float baseline = y0 + symbolHeight + top + pixelsPerModule + measure.Ascent;
-                canvas.DrawText(text, new Vector2((width - measure.Advance) / 2, baseline), font, Rgba8.Black);
+                foreach ((string text, Vector2 at) in texts)
+                {
+                    canvas.DrawText(text, at, layout.Font, Rgba8.Black);
+                }
             }
 
             return raster;
@@ -177,12 +152,5 @@ public sealed class Barcode
             raster.Dispose();
             throw;
         }
-    }
-
-    /// <summary>Returns the text to draw, or <see langword="null"/> when there is no text or no font.</summary>
-    internal string? TextToDraw(BarcodeDrawOptions options, out Font font)
-    {
-        font = options.Font.GetValueOrDefault();
-        return options.Font is not null && !string.IsNullOrEmpty(HumanReadableText) ? HumanReadableText : null;
     }
 }

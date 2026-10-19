@@ -1,0 +1,207 @@
+{
+ "code128-control": {
+  "format": "Code128",
+  "grid": "c641b6ae73bd0da3",
+  "text": "\u0001AB"
+ },
+ "code128-control-run": {
+  "format": "Code128",
+  "grid": "6cfd5cb175e74e85",
+  "text": "ab\u0001\u0002\u0003"
+ },
+ "code128-digits-even": {
+  "format": "Code128",
+  "grid": "0f936d457635d704",
+  "text": "123456"
+ },
+ "code128-digits-in-middle": {
+  "format": "Code128",
+  "grid": "054af3c6d0dc257f",
+  "text": "X12345Y"
+ },
+ "code128-digits-long": {
+  "format": "Code128",
+  "grid": "b71a4a5e72c5e8da",
+  "text": "00123456789012345678"
+ },
+ "code128-digits-odd": {
+  "format": "Code128",
+  "grid": "b204d9d6291eeaa0",
+  "text": "1234567"
+ },
+ "code128-latin1": {
+  "format": "Code128",
+  "grid": "4f51d93c1f93a739",
+  "text": "\u00c41"
+ },
+ "code128-letters-digits": {
+  "format": "Code128",
+  "grid": "fc8cb3f535cb8c64",
+  "text": "ABC123456def"
+ },
+ "code128-mixed": {
+  "format": "Code128",
+  "grid": "d91d0a37b719bbd7",
+  "text": "Hello123456"
+ },
+ "code128-punctuation": {
+  "format": "Code128",
+  "grid": "ce6de15c3bd8e167",
+  "text": "Code 128!"
+ },
+ "code128-shift": {
+  "format": "Code128",
+  "grid": "32982131e8c504a2",
+  "text": "AB\u0001cd"
+ },
+ "code39-check": {
+  "format": "Code39",
+  "grid": "e32aa8db30676e70",
+  "text": "AB1M"
+ },
+ "code39-full-ascii": {
+  "format": "Code39Ext",
+  "grid": "65bbfbcb2f9a53e6",
+  "text": "ab"
+ },
+ "code39-full-ascii-mixed": {
+  "format": "Code39Ext",
+  "grid": "f6c606a873192f5e",
+  "text": "Code39!"
+ },
+ "code39-short": {
+  "format": "Code39",
+  "grid": "600df8517b53c56a",
+  "text": "AB1"
+ },
+ "code39-symbols": {
+  "format": "Code39",
+  "grid": "12b707e56c50164a",
+  "text": "HELLO WORLD-1.$/+%"
+ },
+ "ean13-add-check": {
+  "format": "EAN13",
+  "grid": "7aea709139d47680",
+  "text": "5901234123457"
+ },
+ "ean13-addon2": {
+  "format": "EAN13",
+  "grid": "f1b1e7b1fbf277f0",
+  "text": "5901234123457 12"
+ },
+ "ean13-addon5": {
+  "format": "EAN13",
+  "grid": "dc1094b6d5974f05",
+  "text": "9780201379624 52495"
+ },
+ "ean13-with-check": {
+  "format": "EAN13",
+  "grid": "60217a3099aa9a49",
+  "text": "4006381333931"
+ },
+ "ean8-add-check": {
+  "format": "EAN8",
+  "grid": "96930944d32a894f",
+  "text": "96385074"
+ },
+ "ean8-with-check": {
+  "format": "EAN8",
+  "grid": "4fe29d7c97c70e1b",
+  "text": "40170725"
+ },
+ "gs1-128-batch-serial": {
+  "format": "Code128",
+  "grid": "a79b650a5f9d6646",
+  "text": "(10)ABC123(21)XYZ"
+ },
+ "gs1-128-gtin-expiry-batch": {
+  "format": "Code128",
+  "grid": "d83bf5e3eb26c144",
+  "text": "(01)09501101530003(17)261231(10)AB12"
+ },
+ "gs1-128-sscc": {
+  "format": "Code128",
+  "grid": "2f1afcb47966916d",
+  "text": "(00)106141411234567897"
+ },
+ "gs1-128-weight": {
+  "format": "Code128",
+  "grid": "95f1a543eaeb228c",
+  "text": "(01)09501101530003(3103)000123"
+ },
+ "itf-even": {
+  "format": "ITF",
+  "grid": "0d13fd1738d3bf3e",
+  "text": "1234"
+ },
+ "itf-long": {
+  "format": "ITF",
+  "grid": "de9aad70e203aa6c",
+  "text": "0123456789"
+ },
+ "itf-odd": {
+  "format": "ITF",
+  "grid": "83a704a8c8bb6bf7",
+  "text": "012345"
+ },
+ "itf14-add-check": {
+  "format": "ITF",
+  "grid": "0effea33d79401c1",
+  "text": "12345678901231"
+ },
+ "itf14-with-check": {
+  "format": "ITF",
+  "grid": "b60c137c0c7b0212",
+  "text": "15400141288763"
+ },
+ "upca-add-check": {
+  "format": "EAN13",
+  "grid": "c58a0089c8c7b6d1",
+  "text": "0036000291452"
+ },
+ "upca-addon5": {
+  "format": "EAN13",
+  "grid": "a488d4248d4b8021",
+  "text": "0036000291452 12345"
+ },
+ "upca-with-check": {
+  "format": "EAN13",
+  "grid": "8e91d6f23b02537f",
+  "text": "0042100005264"
+ },
+ "upce-from-upca-0": {
+  "format": "UPCE",
+  "grid": "40dbda9ed202ecdc",
+  "text": "0042100005264"
+ },
+ "upce-from-upca-3": {
+  "format": "UPCE",
+  "grid": "d44b36682d48454a",
+  "text": "0012300000451"
+ },
+ "upce-from-upca-4": {
+  "format": "UPCE",
+  "grid": "c17b601fac4d6ab9",
+  "text": "0012340000053"
+ },
+ "upce-from-upca-9": {
+  "format": "UPCE",
+  "grid": "6effb03dfb744026",
+  "text": "0012345000096"
+ },
+ "upce-six": {
+  "format": "UPCE",
+  "grid": "83cd04a50647728e",
+  "text": "0012345000065"
+ },
+ "upce-system-1": {
+  "format": "UPCE",
+  "grid": "41119ebad00f7d7f",
+  "text": "0123456000070"
+ },
+ "upce-with-check": {
+  "format": "UPCE",
+  "grid": "83cd04a50647728e",
+  "text": "0012345000065"
+ }
+}

@@ -31,10 +31,15 @@ public class OutputTests
         Assert.Equal(1, Barcode.FromModules(BarcodeFormat.DataMatrix, s_grid).QuietZone);
         Assert.Equal(2, Barcode.FromModules(BarcodeFormat.Pdf417, s_grid).QuietZone);
         Assert.Equal(0, Barcode.FromModules(BarcodeFormat.Aztec, s_grid).QuietZone);
-        foreach (BarcodeFormat format in new[] { BarcodeFormat.Code128, BarcodeFormat.Code39, BarcodeFormat.Itf, BarcodeFormat.Ean13, BarcodeFormat.Ean8, BarcodeFormat.UpcA, BarcodeFormat.UpcE })
+        foreach (BarcodeFormat format in new[] { BarcodeFormat.Code128, BarcodeFormat.Code39, BarcodeFormat.Itf })
         {
             Assert.Equal(10, Barcode.FromModules(format, linear).QuietZone);
         }
+
+        Assert.Equal(11, Barcode.FromModules(BarcodeFormat.Ean13, linear).QuietZone);
+        Assert.Equal(7, Barcode.FromModules(BarcodeFormat.Ean8, linear).QuietZone);
+        Assert.Equal(9, Barcode.FromModules(BarcodeFormat.UpcA, linear).QuietZone);
+        Assert.Equal(9, Barcode.FromModules(BarcodeFormat.UpcE, linear).QuietZone);
 
         Assert.Throws<ArgumentException>(() => Barcode.FromModules(BarcodeFormat.Qr, linear));
         Assert.Throws<ArgumentException>(() => Barcode.FromModules(BarcodeFormat.Ean13, s_grid));

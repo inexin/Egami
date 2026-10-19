@@ -27,15 +27,15 @@ public enum BarcodeFormat
     /// <summary>Interleaved 2 of 5 and ITF-14 (ISO/IEC 16390), linear; quiet zone 10 modules.</summary>
     Itf,
 
-    /// <summary>EAN-13 (ISO/IEC 15420), linear; quiet zone 10 modules.</summary>
+    /// <summary>EAN-13 (ISO/IEC 15420), linear; quiet zone 11 modules.</summary>
     Ean13,
 
-    /// <summary>EAN-8 (ISO/IEC 15420), linear; quiet zone 10 modules.</summary>
+    /// <summary>EAN-8 (ISO/IEC 15420), linear; quiet zone 7 modules.</summary>
     Ean8,
 
-    /// <summary>UPC-A (ISO/IEC 15420), linear; quiet zone 10 modules.</summary>
+    /// <summary>UPC-A (ISO/IEC 15420), linear; quiet zone 9 modules.</summary>
     UpcA,
 
-    /// <summary>UPC-E (ISO/IEC 15420), linear; quiet zone 10 modules.</summary>
+    /// <summary>UPC-E (ISO/IEC 15420), linear; quiet zone 9 modules.</summary>
     UpcE,
 }
