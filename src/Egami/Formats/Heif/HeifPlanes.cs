@@ -106,6 +106,15 @@ internal sealed record HeifOverlay(ushort[] Fill, int Width, int Height, (int X,
 /// <summary>The codec seam of the HEIF image layer: decodes one coded image item (AV1 for AVIF, HEVC for HEIC) into planes.</summary>
 internal interface IHeifCodec
 {
-    /// <summary>Decodes an item's data into planes, with film grain or any other output process the codec defines applied.</summary>
-    HeifPlanes Decode(byte[] data, EgamiInput input);
+    /// <summary>Gets the color the stream of the last item decoded gives, for an item with no nclx property.</summary>
+    Colors.ColorCodePoints CodePoints { get; }
+
+    /// <summary>Gets whether several items may decode at once on this instance, as a grid's cells do.</summary>
+    bool Concurrent { get; }
+
+    /// <summary>
+    /// Decodes a coded item of <paramref name="file"/> into planes, with film grain or any other output process the codec defines
+    /// applied, on up to <paramref name="parallelism"/> threads.
+    /// </summary>
+    HeifPlanes Decode(HeifImage file, HeifItem item, EgamiInput input, int parallelism);
 }

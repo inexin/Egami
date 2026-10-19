@@ -72,8 +72,13 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 
 - New opt-in package for HEIC, the HEVC-coded HEIF files phones save photos in. `WithHeic()` registers it in a context; nothing
   registers it on its own, because HEVC is covered by patents (the package's readme and XML docs carry the notice).
-- This version reads HEIC containers: `Raster.Probe` gives the size, pixel type and orientation. `Raster.Load` does not decode
-  the images yet.
+- `Raster.Load` and `YuvRaster.Load` read still HEIC images: grids (their tiles decoded in parallel), overlays, alpha, the clean
+  aperture, `irot` and `imir` as the orientation, ICC profiles, Exif and XMP, `ReaderOptions.Region` (only the tiles it touches
+  are decoded) and streaming rows, under the rules AVIF follows.
+- RGB is converted as libheif's heif-dec converts it. Every phone photo and HEVC-coded file of the test corpus equals heif-dec's
+  output sample for sample, except a clean aperture at half-sample offsets and one file where heif-dec's HEVC decoder departs
+  from HM, the reference.
+- An iPhone photo loads in about the time heif-dec takes on one thread, and well under half of it on all threads.
 
 ### HEVC decoder
 

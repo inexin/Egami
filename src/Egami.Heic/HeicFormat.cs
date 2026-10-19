@@ -1,5 +1,6 @@
 using Egami.Formats;
 using Egami.Formats.Heic;
+using Egami.Heic.Hevc;
 
 namespace Egami.Heic;
 
@@ -18,9 +19,6 @@ namespace Egami.Heic;
 /// </example>
 public static class HeicFormat
 {
-    /// <summary>What Load throws until Egami.Heic's HEVC decoder is finished (Phase 2.9.4, stage C).</summary>
-    private const string DecoderNotReady = "Egami.Heic reads HEIC containers (Probe gives the size, depth and orientation); its HEVC decoder is not finished yet, so it cannot load the image.";
-
     /// <summary>Gets the format's registration: name, MIME types, extensions, signature and reader.</summary>
-    public static FormatInfo Info { get; } = HeicSupport.Create(() => Info!, DecoderNotReady);
+    public static FormatInfo Info { get; } = HeicSupport.Create(() => Info!, HeicSupport.PackageNeeded, _ => new HevcCodec());
 }

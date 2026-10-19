@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using Egami.Formats.Avif;
 using Egami.Formats.Heif;
 using Egami.Pixels;
+using Egami.Streaming;
 
 namespace Egami.Formats.Heic;
 
@@ -22,19 +23,23 @@ internal static class HeicSupport
         + "add the Egami.Heic package and register it with WithHeic(), for example EgamiContext.SetDefault(new EgamiContext().WithHeic()) at startup.";
 
     /// <summary>Gets core Egami's HEIC registration: detection and Probe, with Load naming the package it needs.</summary>
-    internal static FormatInfo Info { get; } = Create(() => Info!, PackageNeeded);
+    internal static FormatInfo Info { get; } = Create(() => Info!, PackageNeeded, null);
 
-    /// <summary>Makes a HEIC registration whose reader probes and, for now, refuses to load with <paramref name="loadMessage"/>.</summary>
+    /// <summary>
+    /// Makes a HEIC registration. With <paramref name="codec"/> (Egami.Heic's HEVC decoder) it loads through the HEIF image layer;
+    /// without, it probes and Load throws <paramref name="loadMessage"/>.
+    /// </summary>
     /// <param name="self">Gets the registration, which Probe reports as the format.</param>
-    /// <param name="loadMessage">What Load throws.</param>
-    internal static FormatInfo Create(Func<FormatInfo> self, string loadMessage) => new()
+    /// <param name="loadMessage">What Load throws without a codec.</param>
+    /// <param name="codec">Makes the HEVC codec for one read, or null.</param>
+    internal static FormatInfo Create(Func<FormatInfo> self, string loadMessage, Func<ReaderOptions, IHeifCodec>? codec) => new()
     {
         Name = "HEIC",
         MimeTypes = ["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"],
         Extensions = ["heic", "heif", "hif", "heics", "heifs"],
         SignatureLength = 64,
         Matches = Matches,
-        Reader = new HeicReader(self, loadMessage),
+        Reader = new HeicReader(self, loadMessage, codec),
     };
 
     /// <summary>
@@ -75,63 +80,80 @@ internal static class HeicSupport
     }
 }
 
-/// <summary>Reads a HEIC file's container for Probe; loading throws until a HEVC codec is plugged in.</summary>
+/// <summary>
+/// Reads HEIC through the HEIF image layer (<see cref="HeifImageReader"/>) with the HEVC codec Egami.Heic plugs in: grids (their
+/// cells decoded in parallel), alpha, clap, irot and imir, Exif and XMP, Region and streaming rows, under AVIF's rules (2.9.4
+/// design, question 12). Without a codec it reads the container for Probe and Load throws.
+/// </summary>
 /// <param name="format">Gets the registration Probe reports.</param>
-/// <param name="loadMessage">What Load throws.</param>
-internal sealed class HeicReader(Func<FormatInfo> format, string loadMessage) : IFormatReader
+/// <param name="loadMessage">What Load throws without a codec.</param>
+/// <param name="codec">Makes the HEVC codec for one read, or null.</param>
+internal sealed class HeicReader(Func<FormatInfo> format, string loadMessage, Func<ReaderOptions, IHeifCodec>? codec)
+    : IFormatReader, IYuvFormatReader, IRowSourceReader
 {
-    public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options)
+    /// <summary>The image layer; without a codec, making one throws why the image cannot load, after the container was read.</summary>
+    private readonly HeifImageReader _layer = new(format, new HeifDiagnosticIds("Heic.MatrixApproximated", "Heic.MatrixUnknown", "Heic.ExifDamaged", "Heic.GainMapDropped"), codec ?? (_ => throw new UnsupportedFormatException(loadMessage)))
     {
-        HeicFile file = HeicFile.Read(input);
-        if (input.Reports(DiagnosticLevel.Warning))
+        Converter = c => new HeicRgbConverter(c.Color, c.Alpha, c.CodePoints, c.Layer),
+        TruncateFill = true,
+    };
+
+    public RasterInfo ReadInfo(EgamiInput input, ReaderOptions options) => _layer.Info(HeicFile.Read(input), input, options);
+
+    public Raster Read(EgamiInput input, ReaderOptions options)
+    {
+        if (options.Hdr is HdrDecode hdr)
         {
-            // A probe has no raster to list warnings on, so skipped entries go to the handler directly.
-            foreach (HeifProblem problem in file.Heif.Problems)
+            return HeifImageReader.ReadHdr(hdr, () => Read(input, options with { Hdr = null, ReadMetadata = true }));
+        }
+
+        HeicFile file = HeicFile.Read(input);
+        return _layer.Read(input, file, options);
+    }
+
+    public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        if (options.Hdr is not null)
+        {
+            Raster hdr = Read(input, options);
+            if (hdr is Raster<TPixel> typed)
             {
-                input.Diagnostics.Report(DiagnosticLevel.Warning, problem.Id, problem.Message, problem.Offset);
+                return typed;
+            }
+
+            using (hdr)
+            {
+                return hdr.As<TPixel>();
             }
         }
 
-        (int width, int height) = file.Crop is (_, _, int w, int h) ? (w, h) : (file.Width, file.Height);
-        input.Limits.CheckFrameSize(width, height);
-        HevcConfig config = file.Config;
-        PixelLayoutInfo layout = AvifReader.NaturalLayout(Math.Max(config.LumaBitDepth, config.ChromaBitDepth), config.ChromaFormatIdc == 0, file.HasAlpha);
-        return new RasterInfo
+        HeicFile file = HeicFile.Read(input);
+        return _layer.Read<TPixel>(input, file, options);
+    }
+
+    public RowSource Open(EgamiInput input, ReaderOptions options)
+    {
+        try
         {
-            Format = format(),
-            Width = width,
-            Height = height,
-            Layout = layout,
-            FrameCount = 1,
-            ImageCount = 1,
-            HasMetadata = !file.Icc.IsEmpty || file.ExifItems.Count > 0 || file.XmpItems.Count > 0 || file.ContentLightLevel is not null
-                || file.MasteringDisplay is not null,
-            EstimatedBytes = (long)width * height * layout.BytesPerPixel,
-            Orientation = file.Orientation,
-            Access = RasterAccess.Streamed,
-            WorkingBytes = WorkingBytes(file),
-        };
+            HeicFile file = HeicFile.Read(input);
+            return _layer.Open(input, file, options);
+        }
+        catch
+        {
+            input.Dispose();
+            throw;
+        }
     }
 
-    public Raster Read(EgamiInput input, ReaderOptions options) => throw Unloadable(input);
-
-    public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
-        where TPixel : unmanaged, IPixelType<TPixel> => throw Unloadable(input);
-
-    /// <summary>Reads the container, so damaged data is reported as such, then says why the image cannot load.</summary>
-    private UnsupportedFormatException Unloadable(EgamiInput input)
+    public YuvRaster ReadYuv(EgamiInput input, ReaderOptions options)
     {
-        HeicFile.Read(input);
-        return new UnsupportedFormatException(loadMessage);
+        HeicFile file = HeicFile.Read(input);
+        return _layer.ReadYuv(input, file, options, "HEIC");
     }
 
-    /// <summary>Gets the bytes a decode holds besides the raster: the planes of the image and of its alpha, at two bytes a sample.</summary>
-    private static long WorkingBytes(HeicFile file)
+    public (RasterInfo Info, ChromaFormat? Format, int BitDepth, YuvColor Color) ProbeYuv(EgamiInput input, ReaderOptions options)
     {
-        HevcConfig config = file.Config;
-        (int sx, int sy) = config.ChromaFormatIdc switch { 1 => (1, 1), 2 => (1, 0), _ => (0, 0) };
-        long luma = (long)file.Width * file.Height;
-        long chroma = config.ChromaFormatIdc == 0 ? 0 : 2L * ((file.Width + sx) >> sx) * ((file.Height + sy) >> sy);
-        return 2 * (luma + chroma + (file.Alpha is null ? 0 : luma));
+        return _layer.ProbeYuv(HeicFile.Read(input));
     }
 }

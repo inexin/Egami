@@ -758,6 +758,19 @@ Lossy at a chosen quality on avifenc's scale, or lossless; transparency is kept 
 `YuvRaster.Load` gives the decoded AV1 planes at 8, 10 or 12 bits, with the alpha image as a fourth plane, as dav1d decodes
 them; see [Planar YUV](../guides/planar-yuv.md).
 
+## Load an iPhone photo (HEIC)
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#load)]
+
+HEIC needs the Egami.Heic package, registered with `WithHeic()`, because HEVC is covered by patents. The photo's tiles decode
+in parallel, and the pixels equal libheif's heif-dec output. See the [HEIC guide](../guides/heic.md).
+
+## Get a HEIC photo's YUV planes
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#yuv)]
+
+`YuvRaster.Load` gives the decoded HEVC planes, as HM, the reference decoder, decodes them.
+
 ## Read an HDR AVIF file as SDR
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-sdr)]

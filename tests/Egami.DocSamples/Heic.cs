@@ -1,5 +1,6 @@
 using Egami.Formats;
 using Egami.Heic;
+using Egami.Pixels;
 
 namespace Egami.DocSamples;
 
@@ -46,5 +47,30 @@ public class Heic
 
         Assert.True(fromPackage);
         Assert.Equal((1024, 768), (info.Width, info.Height));
+    }
+
+    [Fact]
+    public void LoadAPhonePhoto()
+    {
+        using SampleFiles files = new();
+        EgamiContext heic = new EgamiContext().WithHeic();
+
+        #region load
+        // An iPhone photo: a grid of HEVC tiles, decoded in parallel and converted to RGB as heif-dec converts them.
+        using Raster photo = Raster.Load("photo.heic", heic);
+        photo.Apply(ops => ops.AutoOrient());           // irot and imir come as the orientation
+        photo.Save("photo.jpg");
+        #endregion
+
+        #region yuv
+        // The HEVC planes themselves, without the conversion to RGB: luma, then chroma at the file's subsampling.
+        using YuvRaster planes = YuvRaster.Load("photo.heic", heic);
+        ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for phone photos
+        int depth = planes.BitDepth;                        // 8, or 10 for HDR photos
+        #endregion
+
+        Assert.True(File.Exists("photo.jpg"));
+        Assert.Equal(ChromaFormat.Yuv420, chroma);
+        Assert.Equal(8, depth);
     }
 }

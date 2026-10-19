@@ -52,10 +52,14 @@ public partial class HeicFormatTests
     }
 
     [Fact]
-    public void LoadSaysTheDecoderIsNotFinished()
+    public void LoadNeedsThePackage()
     {
-        UnsupportedFormatException e = Assert.Throws<UnsupportedFormatException>(() => Raster.Load(Path.Combine(Corpus, "hm-main.heic"), Context));
-        Assert.Contains("HEVC decoder is not finished", e.Message, StringComparison.Ordinal);
+        string path = Path.Combine(Corpus, "hm-main.heic");
+        UnsupportedFormatException e = Assert.Throws<UnsupportedFormatException>(() => Raster.Load(path, new EgamiContext()));
+        Assert.Contains("Egami.Heic", e.Message, StringComparison.Ordinal);
+        using Raster raster = Raster.Load(path, Context);
+        Assert.Equal((320, 240), (raster.Width, raster.Height));
+        Assert.Equal("HEIC", raster.Metadata.FormatName);
     }
 
     [GeneratedRegex(@"image: (\d+)x(\d+) \(id=\d+\), primary")]

@@ -27,12 +27,28 @@ internal sealed class AvifFile : HeifImage
     /// <summary>Gets whether the image has progressive layers (a1lx on the av01 item and no lsel picking one).</summary>
     internal bool Progressive { get; private set; }
 
+    internal override int BitDepth => Config.BitDepth;
+
+    internal override bool Monochrome => Config.Monochrome;
+
+    internal override int SubsamplingX => Config.SubsamplingX;
+
+    internal override int SubsamplingY => Config.SubsamplingY;
+
+    /// <summary>Gets the siting: centered unless 4:2:0, where the sequence header's chroma_sample_position 2 is top-left and others left.</summary>
+    internal override Pixels.ChromaSiting ChromaSiting => Siting(Config, Sequence);
+
     private protected override uint CodedType => Av01;
 
     private protected override string DiagnosticPrefix => "Avif";
 
     private protected override Colors.ColorCodePoints StreamCodePoints =>
         new((byte)Sequence.ColorPrimaries, (byte)Sequence.TransferCharacteristics, (byte)Sequence.MatrixCoefficients, Sequence.FullRange);
+
+    /// <summary>Gets the chroma siting an AV1 configuration and sequence header give.</summary>
+    internal static Pixels.ChromaSiting Siting(Av1Config config, Av1SequenceHeader sequence) =>
+        config.Chroma != Pixels.ChromaFormat.Yuv420 ? Pixels.ChromaSiting.Center
+            : sequence.ChromaSamplePosition == 2 ? Pixels.ChromaSiting.TopLeft : Pixels.ChromaSiting.Left;
 
     /// <summary>Reads the input into memory and finds the still image.</summary>
     internal static AvifFile Read(EgamiInput input) => Open(HeifFile.Read(input));

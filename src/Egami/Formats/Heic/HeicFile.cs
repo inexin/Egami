@@ -25,6 +25,18 @@ internal sealed class HeicFile : HeifImage
     /// <summary>Gets the hvcC record of the (first cell of the) primary image.</summary>
     internal HevcConfig Config { get; private set; } = null!;
 
+    /// <summary>Gets the larger of hvcC's luma and chroma bit depths.</summary>
+    internal override int BitDepth => Math.Max(Config.LumaBitDepth, Config.ChromaBitDepth);
+
+    internal override bool Monochrome => Config.ChromaFormatIdc == 0;
+
+    internal override int SubsamplingX => Config.ChromaFormatIdc is 1 or 2 ? 1 : 0;
+
+    internal override int SubsamplingY => Config.ChromaFormatIdc == 1 ? 1 : 0;
+
+    /// <summary>Gets the siting: left for 4:2:0, HEVC's default chroma sample location (type 0), and centered otherwise.</summary>
+    internal override Pixels.ChromaSiting ChromaSiting => Config.ChromaFormatIdc == 1 ? Pixels.ChromaSiting.Left : Pixels.ChromaSiting.Center;
+
     private protected override uint CodedType => Hvc1;
 
     private protected override string DiagnosticPrefix => "Heic";

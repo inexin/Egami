@@ -6,7 +6,10 @@ Egami.Heic reads HEIC, the HEIF files with HEVC-coded images that iPhones and mo
   `Raster.Probe` gives their size, depth and orientation, and `Raster.Load` says that this package is needed.
 - Grids, alpha, color profiles, orientation, Exif and XMP come from core Egami's HEIF reader, shared with AVIF.
 
-Work in progress: this version reads HEIC containers; its managed HEVC decoder is not finished yet.
+- A managed HEVC decoder for still images: the Main, Main 10, Main Still Picture and format range extensions profiles, up to 12
+  bits. Grid tiles decode in parallel, and the pixels equal libheif's heif-dec output.
+
+Image sequences, gain maps and auxiliary items such as depth maps come in a later version.
 
 ## Patents
 
