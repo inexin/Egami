@@ -144,9 +144,11 @@ public class CompositorTests
         Assert.Equal(d, Compositor.Blend(BlendMode.Destination, s, d));
     }
 
+    [Trait("Category", AllocationMeter.Category)]
     [Fact]
     public void BlendingAllocatesNothingOnceWarm()
     {
+        AllocationMeter.SkipUnlessOnDemand();
         Rgba8[] s = new Rgba8[1920], d = new Rgba8[1920];
         PremulRgba8[] ps = new PremulRgba8[1920], pd = new PremulRgba8[1920];
         RgbaF32[] fs = new RgbaF32[1920], fd = new RgbaF32[1920];

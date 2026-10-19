@@ -43,10 +43,12 @@ public abstract class EveryPixelTypeTests<TPart> : IDisposable
         Invoke(nameof(Compare), type, operation);
     }
 
+    [Trait("Category", AllocationMeter.Category)]
     [Theory]
     [MemberData(nameof(BudgetCases))]
     public void StaysInTheAllocationBudget(string operation, string type)
     {
+        AllocationMeter.SkipUnlessOnDemand();
         Invoke(nameof(Budget), type, operation);
     }
 
