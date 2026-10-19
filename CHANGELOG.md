@@ -58,7 +58,8 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 ### Drawing
 
 - `Barcode` is one symbol: format, modules, the quiet zone of its standard and its human-readable text.
-  `Barcode.FromModules` makes one from modules you already have.
+  `Barcode.FromModules` makes one from modules you already have, and `Barcode.Create` makes one of a format chosen at run
+  time.
 - `DrawBarcode` draws a barcode on any canvas as one path, fitted into a rectangle or at a module size. On raster canvases with
   no rotation or skew, modules snap to whole pixels.
 - `ToPath` returns the symbol as one path, and `ToRaster` renders it to a `Raster<Gray8>` with whole-pixel modules.

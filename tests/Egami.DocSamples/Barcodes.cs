@@ -270,4 +270,84 @@ public class Barcodes
         Assert.Equal(11, rune.Modules.Width);
         Assert.True(robust.Modules.Width >= 15);
     }
+
+    [Fact]
+    public void CreateFromData()
+    {
+        #region barcode-create
+        // Labels from a table that stores each barcode's format with its data.
+        (BarcodeFormat Format, string Data)[] rows =
+        [
+            (BarcodeFormat.Ean13, "590123412345"),
+            (BarcodeFormat.Code128, "SHIP-0042"),
+            (BarcodeFormat.Qr, "https://inexin.github.io/Egami/"),
+        ];
+
+        foreach ((BarcodeFormat format, string data) in rows)
+        {
+            Barcode barcode = Barcode.Create(format, data);
+            using Raster<Gray8> image = barcode.ToRaster(pixelsPerModule: 3);
+        }
+        #endregion
+        Assert.Equal(BarcodeFormat.Qr, Barcode.Create(BarcodeFormat.Qr, "x").Format);
+    }
+
+    [Fact]
+    public void LabelWithQrAndText()
+    {
+        Font font = new(Typeface.FromFile(FontFile), 18);
+        #region barcode-label
+        // A 600 x 300 label: a QR code on the left, the address beside it.
+        using Raster<Rgba8> label = Raster.Create(600, 300, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = label.CreateCanvas())
+        {
+            canvas.DrawBarcode(Barcode.Qr("https://example.com/track/4711"), new RectF(20, 20, 260, 260), Rgba8.Black);
+            canvas.DrawText("Parcel 4711", new Vector2(300, 80), font, Rgba8.Black);
+            canvas.DrawText("Track at example.com", new Vector2(300, 120), font, Rgba8.Black);
+        }
+        #endregion
+        Assert.Equal(Rgba8.White, label.GetPixel(10, 10));
+    }
+
+    [Fact]
+    public void SaveAsSvg()
+    {
+        string file = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"egami-doc-{Guid.NewGuid():N}.svg");
+        try
+        {
+            #region barcode-svg
+            // One path, 1 unit a module, the quiet zone as the view box.
+            Barcode barcode = Barcode.DataMatrix("PN 4711-0815");
+            Path path = barcode.ToPath(moduleSize: 1);
+            int width = barcode.Modules.Width + (2 * barcode.QuietZone), height = barcode.Modules.Height + (2 * barcode.QuietZone);
+            File.WriteAllText(file, $"""
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" shape-rendering="crispEdges">
+                  <rect width="{width}" height="{height}" fill="#fff"/>
+                  <path d="{path.ToSvg()}"/>
+                </svg>
+                """);
+            #endregion
+            Assert.Contains("<path d=\"M", File.ReadAllText(file), StringComparison.Ordinal);
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
+    [Fact]
+    public void ShippingLabel()
+    {
+        Font font = new(Typeface.FromFile(FontFile), 8);
+        var recorder = new PictureRecorder(new RectF(0, 0, 288, 432));
+        Canvas page = recorder;
+        #region barcode-shipping
+        // A 4 x 6 inch label in points: an SSCC as GS1-128 at 0.5 mm a module with its text, and a GS1 Data Matrix.
+        float module = 0.5f / 25.4f * 72;
+        Barcode sscc = Barcode.Gs1_128("(00)106141411234567897");
+        page.DrawBarcode(sscc, new Vector2(18, 300), module, Rgba8.Black, new BarcodeDrawOptions { Font = font });
+        page.DrawBarcode(Barcode.DataMatrix(Gs1.Parse("(01)09501101530003(10)AB12")), new RectF(18, 18, 100, 100), Rgba8.Black);
+        #endregion
+        Assert.True(recorder.Finish().CallCount >= 3);
+    }
 }

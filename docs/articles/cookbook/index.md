@@ -230,6 +230,22 @@ Egami.Metafiles plays the records as Windows does (GDI for WMF and EMF, GDI+ for
 
 Each glyph still goes where the file put it, so lines keep their length in a substitute face.
 
+## Put a QR code on a label
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-label)]
+
+On a raster, the QR code's modules snap to whole pixels, so its edges stay sharp at any size.
+
+## Save a barcode as SVG
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-svg)]
+
+## Print a GS1 shipping label
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-shipping)]
+
+At a module size in points, the barcode has the X dimension a scanner expects, on a PDF page or any other canvas.
+
 ## Paint a dusk sky
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#sky-gradient)]

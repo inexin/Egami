@@ -162,6 +162,7 @@ static Egami.Barcodes.Barcode.Aztec(System.ReadOnlySpan<byte> data, Egami.Barcod
 static Egami.Barcodes.Barcode.AztecRune(int value) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Code128(string! text, Egami.Barcodes.Code128Options? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Code39(string! text, Egami.Barcodes.Code39Options? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.Create(Egami.Barcodes.BarcodeFormat format, string! text) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.DataMatrix(string! text, Egami.Barcodes.DataMatrixOptions? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.DataMatrix(System.Collections.Generic.IReadOnlyList<Egami.Barcodes.Gs1ElementString!>! elements, Egami.Barcodes.DataMatrixOptions? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.DataMatrix(System.ReadOnlySpan<byte> data, Egami.Barcodes.DataMatrixOptions? options = null) -> Egami.Barcodes.Barcode!
