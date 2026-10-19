@@ -3,7 +3,7 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami.Barcodes 1.0.0 (unreleased)
+## Egami.Barcodes 1.0.0 (2026-10-19)
 
 A new package that writes and reads barcodes, drawn through Egami.Drawing.
 
