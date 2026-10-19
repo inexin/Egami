@@ -10,6 +10,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
+    <!-- A caller's luminance buffer is pinned and read in place (BarcodeReader). -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!-- Build-time analyzer only; ships nothing. -->

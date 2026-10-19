@@ -13,27 +13,27 @@ internal sealed record class LinearRead(DecodedData Data, float Start, float End
 internal static class LinearDecoder
 {
     /// <summary>Reads the first symbol of the allowed formats on the line, left to right.</summary>
-    public static LinearRead? Read(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, BarcodeFormats formats)
+    public static LinearRead? Read(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, BarcodeFormat formats)
     {
         for (int i = 1; i < runs.Length; i += 2)
         {
             LinearRead? read = null;
-            if ((formats & (BarcodeFormats.Ean13 | BarcodeFormats.Ean8 | BarcodeFormats.UpcA | BarcodeFormats.UpcE)) != 0)
+            if ((formats & (BarcodeFormat.Ean13 | BarcodeFormat.Ean8 | BarcodeFormat.UpcA | BarcodeFormat.UpcE)) != 0)
             {
                 read = EanUpc(runs, offsets, i, formats);
             }
 
-            if (read is null && (formats & BarcodeFormats.Code128) != 0)
+            if (read is null && (formats & BarcodeFormat.Code128) != 0)
             {
                 read = Code128(runs, offsets, i);
             }
 
-            if (read is null && (formats & BarcodeFormats.Code39) != 0)
+            if (read is null && (formats & BarcodeFormat.Code39) != 0)
             {
                 read = Code39(runs, offsets, i);
             }
 
-            if (read is null && (formats & BarcodeFormats.Itf) != 0)
+            if (read is null && (formats & BarcodeFormat.Itf) != 0)
             {
                 read = Itf(runs, offsets, i);
             }
@@ -608,7 +608,7 @@ internal static class LinearDecoder
         return (best, set);
     }
 
-    private static LinearRead? EanUpc(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, BarcodeFormats formats)
+    private static LinearRead? EanUpc(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, BarcodeFormat formats)
     {
         if (start + 3 + 24 > runs.Length || Variance(runs.Slice(start, 3), [1, 1, 1], 0.75f) > 0.48f)
         {
@@ -627,10 +627,10 @@ internal static class LinearDecoder
             ?? UpcE(runs, offsets, start, at, formats);
     }
 
-    private static LinearRead? EanUpc13or8(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, int at, int half, BarcodeFormats formats)
+    private static LinearRead? EanUpc13or8(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, int at, int half, BarcodeFormat formats)
     {
         bool ean13 = half == 6;
-        if (ean13 && (formats & (BarcodeFormats.Ean13 | BarcodeFormats.UpcA)) == 0 || !ean13 && (formats & BarcodeFormats.Ean8) == 0)
+        if (ean13 && (formats & (BarcodeFormat.Ean13 | BarcodeFormat.UpcA)) == 0 || !ean13 && (formats & BarcodeFormat.Ean8) == 0)
         {
             return null;
         }
@@ -698,11 +698,11 @@ internal static class LinearDecoder
 
             text = (char)('0' + first) + text;
             format = BarcodeFormat.Ean13;
-            if (first == 0 && (formats & BarcodeFormats.UpcA) != 0)
+            if (first == 0 && (formats & BarcodeFormat.UpcA) != 0)
             {
                 (text, format) = (text[1..], BarcodeFormat.UpcA);
             }
-            else if ((formats & BarcodeFormats.Ean13) == 0)
+            else if ((formats & BarcodeFormat.Ean13) == 0)
             {
                 return null;
             }
@@ -716,9 +716,9 @@ internal static class LinearDecoder
         return Finish(runs, offsets, start, end, text, format);
     }
 
-    private static LinearRead? UpcE(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, int at, BarcodeFormats formats)
+    private static LinearRead? UpcE(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, int at, BarcodeFormat formats)
     {
-        if ((formats & BarcodeFormats.UpcE) == 0 || at + 24 + 6 > runs.Length)
+        if ((formats & BarcodeFormat.UpcE) == 0 || at + 24 + 6 > runs.Length)
         {
             return null;
         }
@@ -777,13 +777,13 @@ internal static class LinearDecoder
     private static LinearRead Finish(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, int end, string text, BarcodeFormat format)
     {
         float module = (offsets[Math.Min(end, offsets.Length - 1)] - offsets[start]) / (format switch { BarcodeFormat.Ean8 => 67f, BarcodeFormat.UpcE => 51f, _ => 95f });
-        if (end + 1 < runs.Length && runs[end] >= module * 4 && runs[end] <= module * 16 && AddOn(runs, end + 1) is (string addOn, int addOnEnd))
+        string? addOn = null;
+        if (end + 1 < runs.Length && runs[end] >= module * 4 && runs[end] <= module * 16 && AddOn(runs, end + 1) is (string found, int addOnEnd))
         {
-            text += " " + addOn;
-            end = addOnEnd;
+            (addOn, end) = (found, addOnEnd);
         }
 
-        return Result(new DecodedData(format, text, Encoding.ASCII.GetBytes(text)), offsets, start, end);
+        return Result(new DecodedData(format, text, Encoding.ASCII.GetBytes(text)) { AddOn = addOn }, offsets, start, end);
     }
 
     private static (string, int)? AddOn(ReadOnlySpan<float> runs, int at)

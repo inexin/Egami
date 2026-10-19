@@ -240,6 +240,9 @@ On a raster, the QR code's modules snap to whole pixels, so its edges stay sharp
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-svg)]
 
+`Barcode.ToPath` gives the whole symbol as one path, so any canvas can take it; Egami.Svg's `SvgCanvas` writes it as one SVG
+`<path>`. Egami.Barcodes itself does not depend on Egami.Svg.
+
 ## Print a GS1 shipping label
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-shipping)]

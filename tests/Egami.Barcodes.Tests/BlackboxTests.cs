@@ -13,20 +13,20 @@ public class BlackboxTests
 {
     private static string Root => System.IO.Path.Combine(TestFiles.Root, ".cache", "zxing-blackbox", "core", "src", "test", "resources", "blackbox");
 
-    private static readonly Dictionary<string, BarcodeFormats> s_sets = new()
+    private static readonly Dictionary<string, BarcodeFormat> s_sets = new()
     {
-        ["aztec"] = BarcodeFormats.Aztec,
-        ["code128"] = BarcodeFormats.Code128,
-        ["code39"] = BarcodeFormats.Code39,
-        ["datamatrix"] = BarcodeFormats.DataMatrix,
-        ["ean13"] = BarcodeFormats.Ean13 | BarcodeFormats.UpcA,
-        ["ean8"] = BarcodeFormats.Ean8,
-        ["itf"] = BarcodeFormats.Itf,
-        ["pdf417"] = BarcodeFormats.Pdf417,
-        ["qrcode"] = BarcodeFormats.Qr,
-        ["upca"] = BarcodeFormats.UpcA,
-        ["upce"] = BarcodeFormats.UpcE,
-        ["upcean"] = BarcodeFormats.Ean13 | BarcodeFormats.UpcA,
+        ["aztec"] = BarcodeFormat.Aztec,
+        ["code128"] = BarcodeFormat.Code128,
+        ["code39"] = BarcodeFormat.Code39,
+        ["datamatrix"] = BarcodeFormat.DataMatrix,
+        ["ean13"] = BarcodeFormat.Ean13 | BarcodeFormat.UpcA,
+        ["ean8"] = BarcodeFormat.Ean8,
+        ["itf"] = BarcodeFormat.Itf,
+        ["pdf417"] = BarcodeFormat.Pdf417,
+        ["qrcode"] = BarcodeFormat.Qr,
+        ["upca"] = BarcodeFormat.UpcA,
+        ["upce"] = BarcodeFormat.UpcE,
+        ["upcean"] = BarcodeFormat.Ean13 | BarcodeFormat.UpcA,
     };
 
     [Fact]
@@ -48,7 +48,7 @@ public class BlackboxTests
         foreach (string folder in Directory.EnumerateDirectories(Root).Order(StringComparer.Ordinal))
         {
             string name = System.IO.Path.GetFileName(folder);
-            if (!s_sets.TryGetValue(name.Split('-')[0], out BarcodeFormats formats))
+            if (!s_sets.TryGetValue(name.Split('-')[0], out BarcodeFormat formats))
             {
                 continue;
             }

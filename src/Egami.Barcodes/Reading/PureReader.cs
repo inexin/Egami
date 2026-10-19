@@ -11,7 +11,7 @@ internal sealed record class Found(DecodedData Data, Vector2[] Corners);
 /// </summary>
 internal static class PureReader
 {
-    public static Found? Read(LuminanceImage image, BarcodeFormats formats)
+    public static Found? Read(LuminanceImage image, BarcodeFormat formats)
     {
         BitImage bits = Binarizer.Global(image);
         if (Bounds(bits) is not (int left, int top, int right, int bottom))
@@ -22,27 +22,27 @@ internal static class PureReader
         int width = right - left + 1, height = bottom - top + 1;
         Vector2[] corners = [new(left + image.Left, top + image.Top), new(right + 1 + image.Left, top + image.Top), new(right + 1 + image.Left, bottom + 1 + image.Top), new(left + image.Left, bottom + 1 + image.Top)];
 
-        if ((formats & BarcodeFormats.Qr) != 0 && Qr(bits, left, top, width, height) is DecodedData qr)
+        if ((formats & BarcodeFormat.Qr) != 0 && Qr(bits, left, top, width, height) is DecodedData qr)
         {
             return new Found(qr, corners);
         }
 
-        if ((formats & BarcodeFormats.DataMatrix) != 0 && DataMatrix(bits, left, top, width, height) is DecodedData dm)
+        if ((formats & BarcodeFormat.DataMatrix) != 0 && DataMatrix(bits, left, top, width, height) is DecodedData dm)
         {
             return new Found(dm, corners);
         }
 
-        if ((formats & BarcodeFormats.Aztec) != 0 && Aztec(bits, left, top, width, height) is DecodedData aztec)
+        if ((formats & BarcodeFormat.Aztec) != 0 && Aztec(bits, left, top, width, height) is DecodedData aztec)
         {
             return new Found(aztec, corners);
         }
 
-        if ((formats & BarcodeFormats.Pdf417) != 0 && Pdf417(bits, image, left, top, width, height) is Found pdf)
+        if ((formats & BarcodeFormat.Pdf417) != 0 && Pdf417(bits, image, left, top, width, height) is Found pdf)
         {
             return pdf;
         }
 
-        if ((formats & BarcodeFormats.Linear) != 0)
+        if ((formats & BarcodeFormat.Linear) != 0)
         {
             for (int k = 1; k <= 3; k++)
             {
@@ -208,12 +208,12 @@ internal static class PureReader
         return new Found(data, corners);
     }
 
-    private static LinearRead? Linear(BitImage bits, int y, BarcodeFormats formats)
+    private static LinearRead? Linear(BitImage bits, int y, BarcodeFormat formats)
     {
         var runs = new List<float>();
         var offsets = new List<float>();
         Binarizer.BitRuns(bits.Row(y), runs, offsets);
-        return LinearDecoder.Read([.. runs], [.. offsets], formats & BarcodeFormats.Linear);
+        return LinearDecoder.Read([.. runs], [.. offsets], formats & BarcodeFormat.Linear);
     }
 
     /// <summary>Splits a row into runs starting with light (possibly empty) and their starting offsets.</summary>

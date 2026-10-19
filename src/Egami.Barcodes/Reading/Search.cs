@@ -43,7 +43,7 @@ internal static class Search
     /// </summary>
     private static List<Found> Scan(LuminanceImage image, BarcodeReaderOptions options)
     {
-        BarcodeFormats formats = options.Formats;
+        BarcodeFormat formats = options.Formats;
         int effort = options.Effort;
         var offset = new Vector2(image.Left, image.Top);
         int threads = (long)image.Width * image.Height < 256 * 1024 ? 1 : Math.Max(1, (options.Context ?? EgamiContext.Default).MaxParallelism);
@@ -52,27 +52,27 @@ internal static class Search
         {
             () => PureReader.Read(image, formats) is Found pure ? [pure] : [],
         };
-        if ((formats & BarcodeFormats.Qr) != 0)
+        if ((formats & BarcodeFormat.Qr) != 0)
         {
             jobs.Add(() => QrDetector.Detect(local, effort, offset));
         }
 
-        if ((formats & BarcodeFormats.DataMatrix) != 0)
+        if ((formats & BarcodeFormat.DataMatrix) != 0)
         {
             jobs.Add(() => DataMatrixDetector.Detect(local, Shapes.Components(local, 10), offset));
         }
 
-        if ((formats & BarcodeFormats.Aztec) != 0)
+        if ((formats & BarcodeFormat.Aztec) != 0)
         {
             jobs.Add(() => AztecDetector.Detect(local, effort, offset));
         }
 
-        if ((formats & BarcodeFormats.Pdf417) != 0)
+        if ((formats & BarcodeFormat.Pdf417) != 0)
         {
             jobs.Add(() => Pdf417Detector.Detect(local, image, effort, offset));
         }
 
-        if ((formats & BarcodeFormats.Linear) != 0)
+        if ((formats & BarcodeFormat.Linear) != 0)
         {
             jobs.Add(() => LinearScanner.Scan(image, effort >= 6 ? local : null, formats, effort));
         }
@@ -154,6 +154,7 @@ internal static class Search
             ErrorsCorrected = data.ErrorsCorrected,
             Inverted = inverted,
             Mirrored = data.Mirrored,
+            AddOn = data.AddOn,
         };
     }
 

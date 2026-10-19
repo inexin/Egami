@@ -1,6 +1,6 @@
 namespace Egami.Barcodes;
 
-/// <summary>How <see cref="Barcode.Code128(string, Code128Options?)"/> and <see cref="Barcode.Gs1_128(string, Code128Options?)"/> make a symbol.</summary>
+/// <summary>How <see cref="Barcode.Code128(string, Code128Options?)"/> and <see cref="Barcode.Gs1Code128(string, Code128Options?)"/> make a symbol.</summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Barcodes.cs" region="barcode-code128"/>
 /// </example>

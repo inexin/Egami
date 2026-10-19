@@ -30,7 +30,7 @@ public class Code128Tests
     public void Gs1PutsFnc1FirstAndAfterVariableLengthFields()
     {
         // (10) has no predefined length, so an FNC1 (102) ends it; (01) and (17) do not need one.
-        Barcode barcode = Barcode.Gs1_128("(01)09501101530003(10)AB(17)261231");
+        Barcode barcode = Barcode.Gs1Code128("(01)09501101530003(10)AB(17)261231");
         Assert.Equal("(01)09501101530003(10)AB(17)261231", barcode.HumanReadableText);
         int[] input = [Code128Encoder.Fnc1, .. "0109501101530003".Select(c => (int)c), .. "10AB".Select(c => (int)c), Code128Encoder.Fnc1, .. "17261231".Select(c => (int)c)];
         Assert.Equal(Code128Encoder.Runs(Code128Encoder.Encode(input)), barcode.Modules.Runs.ToArray());
@@ -62,7 +62,7 @@ public class Code128Tests
         Assert.Throws<ArgumentException>(() => Barcode.Code128("€"));
         Assert.Throws<ArgumentException>(() => Barcode.Code128(new string('A', 1001)));
         Assert.Throws<ArgumentOutOfRangeException>(() => new Code128Options { Height = 0 });
-        Assert.Throws<ArgumentException>(() => Barcode.Gs1_128(Array.Empty<Gs1ElementString>()));
-        Assert.Throws<FormatException>(() => Barcode.Gs1_128("(01)09501101530004"));
+        Assert.Throws<ArgumentException>(() => Barcode.Gs1Code128(Array.Empty<Gs1ElementString>()));
+        Assert.Throws<FormatException>(() => Barcode.Gs1Code128("(01)09501101530004"));
     }
 }

@@ -95,7 +95,7 @@ public class ReferenceTests
         return test.GetProperty("call").GetString() switch
         {
             "Code128" => Barcode.Code128(data),
-            "Gs1_128" => Barcode.Gs1_128(data),
+            "Gs1_128" => Barcode.Gs1Code128(data),
             "Code39" => Barcode.Code39(data, new Code39Options { CheckDigit = Flag(options, "checkDigit") }),
             "Itf" => Barcode.Itf(data),
             "Itf14" => Barcode.Itf14(data),

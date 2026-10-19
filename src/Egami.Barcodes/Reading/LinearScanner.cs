@@ -8,9 +8,9 @@ namespace Egami.Barcodes.Reading;
 /// </summary>
 internal static class LinearScanner
 {
-    public static List<Found> Scan(LuminanceImage image, BitImage? local, BarcodeFormats formats, int effort)
+    public static List<Found> Scan(LuminanceImage image, BitImage? local, BarcodeFormat formats, int effort)
     {
-        formats &= BarcodeFormats.Linear;
+        formats &= BarcodeFormat.Linear;
         var results = new List<Found>();
         if (formats == 0)
         {
@@ -145,7 +145,7 @@ internal static class LinearScanner
         return samples;
     }
 
-    private static void ReadLine(byte[] samples, Vector2 start, Vector2 step, BarcodeFormats formats, Dictionary<(BarcodeFormat, string), Candidate> votes, List<Found> results)
+    private static void ReadLine(byte[] samples, Vector2 start, Vector2 step, BarcodeFormat formats, Dictionary<(BarcodeFormat, string), Candidate> votes, List<Found> results)
     {
         var runs = new List<float>();
         var offsets = new List<float>();
@@ -155,7 +155,7 @@ internal static class LinearScanner
         ReadRuns(runs, offsets, samples.Length, start, step, formats, votes, results);
     }
 
-    private static void ReadDark(byte[] dark, Vector2 start, Vector2 step, BarcodeFormats formats, Dictionary<(BarcodeFormat, string), Candidate> votes, List<Found> results)
+    private static void ReadDark(byte[] dark, Vector2 start, Vector2 step, BarcodeFormat formats, Dictionary<(BarcodeFormat, string), Candidate> votes, List<Found> results)
     {
         var runs = new List<float>();
         var offsets = new List<float>();
@@ -164,7 +164,7 @@ internal static class LinearScanner
     }
 
     /// <summary>Reads the runs left to right, then right to left (the symbol upside down).</summary>
-    private static void ReadRuns(List<float> runs, List<float> offsets, int length, Vector2 start, Vector2 step, BarcodeFormats formats, Dictionary<(BarcodeFormat, string), Candidate> votes, List<Found> results)
+    private static void ReadRuns(List<float> runs, List<float> offsets, int length, Vector2 start, Vector2 step, BarcodeFormat formats, Dictionary<(BarcodeFormat, string), Candidate> votes, List<Found> results)
     {
         float[] forward = [.. runs], positions = [.. offsets];
         if (LinearDecoder.Read(forward, positions, formats) is LinearRead read)
@@ -206,6 +206,12 @@ internal static class LinearScanner
         {
             votes[key] = new Candidate { Count = 1, Data = read.Data, FirstStart = from, FirstEnd = to, LastStart = from, LastEnd = to, LineStart = line.Start, LineStep = line.Step, LineLength = line.Length };
             return;
+        }
+
+        // A line that also read the add-on wins over one that did not.
+        if (candidate.Data.AddOn is null && read.Data.AddOn is not null)
+        {
+            candidate.Data = read.Data;
         }
 
         candidate.Count++;

@@ -71,7 +71,7 @@ characters and lengths fit it, and check digits, dates and times are right. A ba
 which AI is wrong and how; `Gs1.TryParse` returns `false` instead. Each `Gs1ElementString` has its `Ai`, `Value` and GS1's
 `Title` for the AI. A parenthesis inside a value is written `\(`.
 
-`Barcode.Gs1_128` encodes element strings as Code 128 with FNC1 first, and an FNC1 after each field whose AI has no
+`Barcode.Gs1Code128` encodes element strings as Code 128 with FNC1 first, and an FNC1 after each field whose AI has no
 predefined length, unless it is the last.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-gs1)]
@@ -118,16 +118,22 @@ element strings in `Gs1`, and how many codewords error correction restored. `Rea
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read)]
 
 Text is decoded with the symbol's ECI; without one, as ISO 8859-1, or as UTF-8 or Shift JIS when the bytes clearly are. GS1
-data comes back in its human-readable form, such as `(01)09501101530003(10)AB12`, and an EAN or UPC add-on after the main
-digits and a space.
+data comes back in its human-readable form, such as `(01)09501101530003(10)AB12`. For EAN and UPC, `Text` holds the main
+digits and `AddOn` the digits of an EAN-2 or EAN-5 add-on, or `null`.
 
-`BarcodeReaderOptions` narrows or widens the search. `Formats` names the symbologies to look for; fewer read faster.
+`BarcodeReaderOptions` narrows or widens the search. `Formats` names the symbologies to look for, as `BarcodeFormat` flags
+(`BarcodeFormat.Qr | BarcodeFormat.DataMatrix`, or `Linear`, `Matrix` and `All`); fewer read faster.
 `Effort`, 0 to 10, decides how many binarizations, scan lines and rotations are tried, never what counts as a valid read;
 from effort 5 light symbols on a dark background are tried too (`TryInverted`). `Region` limits the search to part of the
 image. `PureBarcode` reads an image that holds one upright symbol and its quiet zone, such as a rendered barcode, without
 searching.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read-options)]
+
+A camera frame's 8-bit luminance (the Y plane of a YUV frame) reads in place, without a copy: `BarcodeReader.ReadBarcodes`
+and `ReadBarcode` take the bytes with the width, height and stride.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read-luminance)]
 
 Linear barcodes are found along scan lines: rows, columns from effort 3 and diagonals from effort 7, each read in both
 directions with its edges placed between pixels, so low-resolution and blurred photos read. A linear barcode counts once two

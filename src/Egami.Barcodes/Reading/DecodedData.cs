@@ -14,6 +14,8 @@ internal sealed record class DecodedData(BarcodeFormat Format, string Text, byte
     public int ErrorsCorrected { get; init; }
 
     public bool Mirrored { get; init; }
+
+    public string? AddOn { get; init; }
 }
 
 /// <summary>Collects decoded bytes in segments with their character sets and turns them into text.</summary>
