@@ -88,7 +88,12 @@ internal static class BarcodeFuzzTarget
             return;
         }
 
-        // The symbol reads back as what went in.
+        // The symbol reads back as what went in; the reader takes ITF of 4 digits or more only, as shorter ones are too weak.
+        if (barcode.Format == BarcodeFormat.Itf && barcode.HumanReadableText?.Length < 4)
+        {
+            return;
+        }
+
         using Raster<Gray8> raster = barcode.ToRaster(pixelsPerModule: 2);
         BarcodeResult? read = raster.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true, Formats = barcode.Format });
         if (read is null)
@@ -96,7 +101,8 @@ internal static class BarcodeFuzzTarget
             throw new InvalidOperationException($"{barcode.Format} symbol did not read back.");
         }
 
-        if (expected is not null && read.Text != expected)
+        // The bytes, not the text: without an ECI the reader takes bytes that happen to be valid UTF-8 as UTF-8, as documented.
+        if (expected is not null && !read.Bytes.Span.SequenceEqual(Encoding.Latin1.GetBytes(expected)) && read.Text != expected)
         {
             throw new InvalidOperationException($"{barcode.Format} symbol read back as '{read.Text}' instead of '{expected}'.");
         }

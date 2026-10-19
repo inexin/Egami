@@ -36,7 +36,7 @@ and `ReadBarcode` take the bytes with the width, height and stride. The buffer i
 
 Linear barcodes are found along scan lines: rows, columns from effort 3 and diagonals from effort 7, each read in both
 directions with its edges placed between pixels, so low-resolution and blurred photos read. A linear barcode counts once two
-scan lines agree on it.
+scan lines agree on it. ITF, whose check is weakest, is read from 4 digits on.
 
 QR Codes are found by their three finder patterns, at any rotation and in perspective; from version 2 the alignment pattern
 corrects the perspective, and a mirrored symbol reads too.

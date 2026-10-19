@@ -32,9 +32,24 @@ internal static class PureReader
             return new Found(dm, corners);
         }
 
-        if ((formats & BarcodeFormat.Aztec) != 0 && Aztec(bits, left, top, width, height) is DecodedData aztec)
+        if ((formats & BarcodeFormat.Aztec) != 0)
         {
-            return new Found(aztec, corners);
+            if (Aztec(bits, left, top, width, height) is DecodedData aztec)
+            {
+                return new Found(aztec, corners);
+            }
+
+            // Aztec has no quiet zone, so light modules on its edge can make the dark pixels' box smaller than the symbol: a
+            // render without a margin is the whole image, and otherwise the bullseye finds it.
+            if (Aztec(bits, 0, 0, bits.Width, bits.Height) is DecodedData whole)
+            {
+                return new Found(whole, [new(image.Left, image.Top), new(image.Left + bits.Width, image.Top), new(image.Left + bits.Width, image.Top + bits.Height), new(image.Left, image.Top + bits.Height)]);
+            }
+
+            if (AztecDetector.Detect(bits, 5, new Vector2(image.Left, image.Top)) is [Found found, ..])
+            {
+                return found;
+            }
         }
 
         if ((formats & BarcodeFormat.Pdf417) != 0 && Pdf417(bits, image, left, top, width, height) is Found pdf)

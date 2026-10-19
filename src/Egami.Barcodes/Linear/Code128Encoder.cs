@@ -95,8 +95,14 @@ internal static class Code128Encoder
                     i += 2;
                     break;
                 case Shift:
+                    // FNC4 goes before the shift, in the current set: the shift changes the set of the one character after it.
+                    if (input[i] >= 128)
+                    {
+                        values.Add(current == SetA ? 101 : 100);
+                    }
+
                     values.Add(ShiftValue);
-                    AddCharacter(values, input[i], current == SetA ? SetB : SetA);
+                    AddCharacter(values, input[i] & 0x7F, current == SetA ? SetB : SetA);
                     i++;
                     break;
                 default:

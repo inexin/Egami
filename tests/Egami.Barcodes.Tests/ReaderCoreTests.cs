@@ -183,6 +183,27 @@ public class ReaderCoreTests
         Assert.Null(Barcode.Ean13("978044101498").ToRaster(pixelsPerModule: 3).ReadBarcode()?.AddOn);
     }
 
+    [Theory]
+    [InlineData("ße oaus OslG")]
+    [InlineData("ab")]
+    public void Code128ExtendedCharactersAfterAShiftReadBack(string text)
+    {
+        // FNC4 before the shift: a character above 127 reached through Shift keeps its code set.
+        using Raster<Gray8> image = Barcode.Code128(text).ToRaster(pixelsPerModule: 2);
+        Assert.Equal(text, image.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true })?.Text);
+    }
+
+    [Theory]
+    [InlineData("h    ;")]
+    [InlineData("ht s:")]
+    public void AztecRenderedWithoutAMarginReads(string text)
+    {
+        // Light modules on the edge of an Aztec Code (which has no quiet zone) must not hide the symbol's size.
+        using Raster<Gray8> image = Barcode.Aztec(text, new AztecOptions { Compact = true, ErrorCorrectionPercent = 5 }).ToRaster(pixelsPerModule: 2);
+        Assert.Equal(System.Text.Encoding.Latin1.GetBytes(text), image.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true })?.Bytes.ToArray());
+        Assert.NotNull(image.ReadBarcode());
+    }
+
     [Fact]
     public void OptionsAreChecked()
     {
