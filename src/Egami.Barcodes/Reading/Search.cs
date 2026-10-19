@@ -69,7 +69,7 @@ internal static class Search
 
         if ((formats & BarcodeFormats.Pdf417) != 0)
         {
-            jobs.Add(() => Pdf417Detector.Detect(local, effort, offset));
+            jobs.Add(() => Pdf417Detector.Detect(local, image, effort, offset));
         }
 
         if ((formats & BarcodeFormats.Linear) != 0)
