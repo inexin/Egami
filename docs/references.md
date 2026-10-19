@@ -2,7 +2,7 @@
 
 These permissively licensed projects may be studied for ideas. Study the idea, then write your own C#. If code is ever translated closely, its license notice goes into [THIRD-PARTY-NOTICES.md](../THIRD-PARTY-NOTICES.md) in the same pull request.
 
-Licenses were checked on 2026-10-07 (the barcode libraries on 2026-10-19) against each project's own license file or package manifest.
+Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barcode libraries on 2026-10-19) against each project's own license file or package manifest.
 
 | Library | Language | License | What to learn from it | Egami step |
 |---|---|---|---|---|
@@ -31,8 +31,15 @@ Licenses were checked on 2026-10-07 (the barcode libraries on 2026-10-19) agains
 | [libdmtx](https://github.com/dmtx/libdmtx) | C | BSD-2 | Data Matrix encoding and decoding | 2.11 |
 | [quirc](https://github.com/dlbeer/quirc) | C | ISC | Compact QR code recognition | 2.11 |
 | [zint](https://github.com/zint/zint) (backend library only) | C | BSD-3 | Barcode encoding for many symbologies | 2.11 |
+| [HM](https://vcgit.hhi.fraunhofer.de/jvet/HM), the HEVC reference software | C++ | BSD-3 (grants no patent rights) | Where H.265 is unclear; HM's decoder is the bit-exact reference | 2.9.4 |
+| [libhevc](https://android.googlesource.com/platform/external/libhevc) | C | Apache 2.0 | Fast SIMD structure of an HEVC decoder | 2.9.4 |
+| [CrabbyAvif](https://github.com/webmproject/CrabbyAvif) | Rust | Apache 2.0 | HEIF item handling, including HEIC | 2.9.4 |
 
 Specifications, textbooks and papers are always fine. Code under GPL, LGPL or AGPL, and code with no license, is never used.
 
 For barcodes, ZBar (LGPL) is never used, and of zint only the backend library (BSD-3) may be studied: its frontends and GUI are
 under the GPL and are never used.
+
+For HEIC, libheif and libde265 (LGPL-3), FFmpeg's HEVC decoder and openHEVC (LGPL-2.1) and x265 (GPL-2) are never read; they
+only run as black-box tools in Docker to make test files and references. Nokia's HEIF code (non-commercial licence) is never
+read.
