@@ -223,6 +223,90 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.Barcode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.Barcode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.Barcode",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.Barcode.yml\" sourcestartlinenumber=\"1\">A barcode symbol: its format, its modules, the quiet zone its standard asks for and the human-readable text that goes with\nit. It draws on any canvas as vector paths (<xref href=\"Egami.Barcodes.CanvasBarcodeExtensions\" data-throw-if-not-resolved=\"false\"></xref>), becomes one <xref href=\"Egami.Drawing.Path\" data-throw-if-not-resolved=\"false\"></xref>, or\nrenders to a raster with whole-pixel modules. A barcode is immutable and safe to use from many threads.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.BarcodeDrawOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.BarcodeDrawOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.BarcodeDrawOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.BarcodeDrawOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(Egami.Drawing.Canvas%2cEgami.Barcodes.Barcode%2cEgami.Drawing.RectF%2cEgami.Drawing.Paint%2cEgami.Barcodes.BarcodeDrawOptions)\" data-throw-if-not-resolved=\"false\"></xref>,\n<xref href=\"Egami.Barcodes.Barcode.ToPath(System.Single%2cEgami.Barcodes.BarcodeDrawOptions)\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Barcodes.Barcode.ToRaster(System.Int32%2cEgami.Barcodes.BarcodeDrawOptions)\" data-throw-if-not-resolved=\"false\"></xref> draw a\nbarcode.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.BarcodeFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.BarcodeFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.BarcodeFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.BarcodeFormat.yml\" sourcestartlinenumber=\"1\">A barcode symbology.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.BarcodeModules.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.BarcodeModules.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.BarcodeModules",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.BarcodeModules.yml\" sourcestartlinenumber=\"1\">The modules of a barcode symbol: a grid of dark and light squares for a 2D symbol, or a row of bars and spaces for a linear\none. Every encoder ends in one, and drawing, rasterizing and path building work from it. It holds the symbol only, without\nits quiet zone. A grid is immutable and safe to read from many threads.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.CanvasBarcodeExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.CanvasBarcodeExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.CanvasBarcodeExtensions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.CanvasBarcodeExtensions.yml\" sourcestartlinenumber=\"1\">Draws barcodes on any <xref href=\"Egami.Drawing.Canvas\" data-throw-if-not-resolved=\"false\"></xref>: rasters, PDF and SVG pages, recordings.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.ChromaDownsampling.yml",
       "output": {
         ".html": {
@@ -10426,6 +10510,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/avif.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/barcodes.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/barcodes.html"
         }
       },
       "version": ""

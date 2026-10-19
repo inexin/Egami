@@ -917,6 +917,388 @@ references:
   commentId: F:Egami.Axis.Vertical
   fullName: Egami.Axis.Vertical
   nameWithType: Axis.Vertical
+- uid: Egami.Barcodes
+  name: Egami.Barcodes
+  href: api/Egami.Barcodes.html
+  commentId: N:Egami.Barcodes
+  fullName: Egami.Barcodes
+  nameWithType: Egami.Barcodes
+- uid: Egami.Barcodes.Barcode
+  name: Barcode
+  href: api/Egami.Barcodes.Barcode.html
+  commentId: T:Egami.Barcodes.Barcode
+  fullName: Egami.Barcodes.Barcode
+  nameWithType: Barcode
+- uid: Egami.Barcodes.Barcode.Format
+  name: Format
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Format
+  commentId: P:Egami.Barcodes.Barcode.Format
+  fullName: Egami.Barcodes.Barcode.Format
+  nameWithType: Barcode.Format
+- uid: Egami.Barcodes.Barcode.Format*
+  name: Format
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Format_
+  commentId: Overload:Egami.Barcodes.Barcode.Format
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.Format
+  nameWithType: Barcode.Format
+- uid: Egami.Barcodes.Barcode.FromModules(Egami.Barcodes.BarcodeFormat,Egami.Barcodes.BarcodeModules,System.String)
+  name: FromModules(BarcodeFormat, BarcodeModules, string?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_FromModules_Egami_Barcodes_BarcodeFormat_Egami_Barcodes_BarcodeModules_System_String_
+  commentId: M:Egami.Barcodes.Barcode.FromModules(Egami.Barcodes.BarcodeFormat,Egami.Barcodes.BarcodeModules,System.String)
+  name.vb: FromModules(BarcodeFormat, BarcodeModules, String)
+  fullName: Egami.Barcodes.Barcode.FromModules(Egami.Barcodes.BarcodeFormat, Egami.Barcodes.BarcodeModules, string?)
+  fullName.vb: Egami.Barcodes.Barcode.FromModules(Egami.Barcodes.BarcodeFormat, Egami.Barcodes.BarcodeModules, String)
+  nameWithType: Barcode.FromModules(BarcodeFormat, BarcodeModules, string?)
+  nameWithType.vb: Barcode.FromModules(BarcodeFormat, BarcodeModules, String)
+- uid: Egami.Barcodes.Barcode.FromModules*
+  name: FromModules
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_FromModules_
+  commentId: Overload:Egami.Barcodes.Barcode.FromModules
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.FromModules
+  nameWithType: Barcode.FromModules
+- uid: Egami.Barcodes.Barcode.HumanReadableText
+  name: HumanReadableText
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_HumanReadableText
+  commentId: P:Egami.Barcodes.Barcode.HumanReadableText
+  fullName: Egami.Barcodes.Barcode.HumanReadableText
+  nameWithType: Barcode.HumanReadableText
+- uid: Egami.Barcodes.Barcode.HumanReadableText*
+  name: HumanReadableText
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_HumanReadableText_
+  commentId: Overload:Egami.Barcodes.Barcode.HumanReadableText
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.HumanReadableText
+  nameWithType: Barcode.HumanReadableText
+- uid: Egami.Barcodes.Barcode.Modules
+  name: Modules
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Modules
+  commentId: P:Egami.Barcodes.Barcode.Modules
+  fullName: Egami.Barcodes.Barcode.Modules
+  nameWithType: Barcode.Modules
+- uid: Egami.Barcodes.Barcode.Modules*
+  name: Modules
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Modules_
+  commentId: Overload:Egami.Barcodes.Barcode.Modules
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.Modules
+  nameWithType: Barcode.Modules
+- uid: Egami.Barcodes.Barcode.QuietZone
+  name: QuietZone
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_QuietZone
+  commentId: P:Egami.Barcodes.Barcode.QuietZone
+  fullName: Egami.Barcodes.Barcode.QuietZone
+  nameWithType: Barcode.QuietZone
+- uid: Egami.Barcodes.Barcode.QuietZone*
+  name: QuietZone
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_QuietZone_
+  commentId: Overload:Egami.Barcodes.Barcode.QuietZone
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.QuietZone
+  nameWithType: Barcode.QuietZone
+- uid: Egami.Barcodes.Barcode.ToPath(System.Single,Egami.Barcodes.BarcodeDrawOptions)
+  name: ToPath(float, BarcodeDrawOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_ToPath_System_Single_Egami_Barcodes_BarcodeDrawOptions_
+  commentId: M:Egami.Barcodes.Barcode.ToPath(System.Single,Egami.Barcodes.BarcodeDrawOptions)
+  name.vb: ToPath(Single, BarcodeDrawOptions)
+  fullName: Egami.Barcodes.Barcode.ToPath(float, Egami.Barcodes.BarcodeDrawOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.ToPath(Single, Egami.Barcodes.BarcodeDrawOptions)
+  nameWithType: Barcode.ToPath(float, BarcodeDrawOptions?)
+  nameWithType.vb: Barcode.ToPath(Single, BarcodeDrawOptions)
+- uid: Egami.Barcodes.Barcode.ToPath*
+  name: ToPath
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_ToPath_
+  commentId: Overload:Egami.Barcodes.Barcode.ToPath
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.ToPath
+  nameWithType: Barcode.ToPath
+- uid: Egami.Barcodes.Barcode.ToRaster(System.Int32,Egami.Barcodes.BarcodeDrawOptions)
+  name: ToRaster(int, BarcodeDrawOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_ToRaster_System_Int32_Egami_Barcodes_BarcodeDrawOptions_
+  commentId: M:Egami.Barcodes.Barcode.ToRaster(System.Int32,Egami.Barcodes.BarcodeDrawOptions)
+  name.vb: ToRaster(Integer, BarcodeDrawOptions)
+  fullName: Egami.Barcodes.Barcode.ToRaster(int, Egami.Barcodes.BarcodeDrawOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.ToRaster(Integer, Egami.Barcodes.BarcodeDrawOptions)
+  nameWithType: Barcode.ToRaster(int, BarcodeDrawOptions?)
+  nameWithType.vb: Barcode.ToRaster(Integer, BarcodeDrawOptions)
+- uid: Egami.Barcodes.Barcode.ToRaster*
+  name: ToRaster
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_ToRaster_
+  commentId: Overload:Egami.Barcodes.Barcode.ToRaster
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.ToRaster
+  nameWithType: Barcode.ToRaster
+- uid: Egami.Barcodes.BarcodeDrawOptions
+  name: BarcodeDrawOptions
+  href: api/Egami.Barcodes.BarcodeDrawOptions.html
+  commentId: T:Egami.Barcodes.BarcodeDrawOptions
+  fullName: Egami.Barcodes.BarcodeDrawOptions
+  nameWithType: BarcodeDrawOptions
+- uid: Egami.Barcodes.BarcodeDrawOptions.BarWidthReduction
+  name: BarWidthReduction
+  href: api/Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_BarWidthReduction
+  commentId: P:Egami.Barcodes.BarcodeDrawOptions.BarWidthReduction
+  fullName: Egami.Barcodes.BarcodeDrawOptions.BarWidthReduction
+  nameWithType: BarcodeDrawOptions.BarWidthReduction
+- uid: Egami.Barcodes.BarcodeDrawOptions.BarWidthReduction*
+  name: BarWidthReduction
+  href: api/Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_BarWidthReduction_
+  commentId: Overload:Egami.Barcodes.BarcodeDrawOptions.BarWidthReduction
+  isSpec: "True"
+  fullName: Egami.Barcodes.BarcodeDrawOptions.BarWidthReduction
+  nameWithType: BarcodeDrawOptions.BarWidthReduction
+- uid: Egami.Barcodes.BarcodeDrawOptions.Default
+  name: Default
+  href: api/Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_Default
+  commentId: P:Egami.Barcodes.BarcodeDrawOptions.Default
+  fullName: Egami.Barcodes.BarcodeDrawOptions.Default
+  nameWithType: BarcodeDrawOptions.Default
+- uid: Egami.Barcodes.BarcodeDrawOptions.Default*
+  name: Default
+  href: api/Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_Default_
+  commentId: Overload:Egami.Barcodes.BarcodeDrawOptions.Default
+  isSpec: "True"
+  fullName: Egami.Barcodes.BarcodeDrawOptions.Default
+  nameWithType: BarcodeDrawOptions.Default
+- uid: Egami.Barcodes.BarcodeDrawOptions.Font
+  name: Font
+  href: api/Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_Font
+  commentId: P:Egami.Barcodes.BarcodeDrawOptions.Font
+  fullName: Egami.Barcodes.BarcodeDrawOptions.Font
+  nameWithType: BarcodeDrawOptions.Font
+- uid: Egami.Barcodes.BarcodeDrawOptions.Font*
+  name: Font
+  href: api/Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_Font_
+  commentId: Overload:Egami.Barcodes.BarcodeDrawOptions.Font
+  isSpec: "True"
+  fullName: Egami.Barcodes.BarcodeDrawOptions.Font
+  nameWithType: BarcodeDrawOptions.Font
+- uid: Egami.Barcodes.BarcodeDrawOptions.QuietZone
+  name: QuietZone
+  href: api/Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_QuietZone
+  commentId: P:Egami.Barcodes.BarcodeDrawOptions.QuietZone
+  fullName: Egami.Barcodes.BarcodeDrawOptions.QuietZone
+  nameWithType: BarcodeDrawOptions.QuietZone
+- uid: Egami.Barcodes.BarcodeDrawOptions.QuietZone*
+  name: QuietZone
+  href: api/Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_QuietZone_
+  commentId: Overload:Egami.Barcodes.BarcodeDrawOptions.QuietZone
+  isSpec: "True"
+  fullName: Egami.Barcodes.BarcodeDrawOptions.QuietZone
+  nameWithType: BarcodeDrawOptions.QuietZone
+- uid: Egami.Barcodes.BarcodeFormat
+  name: BarcodeFormat
+  href: api/Egami.Barcodes.BarcodeFormat.html
+  commentId: T:Egami.Barcodes.BarcodeFormat
+  fullName: Egami.Barcodes.BarcodeFormat
+  nameWithType: BarcodeFormat
+- uid: Egami.Barcodes.BarcodeFormat.Aztec
+  name: Aztec
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Aztec
+  commentId: F:Egami.Barcodes.BarcodeFormat.Aztec
+  fullName: Egami.Barcodes.BarcodeFormat.Aztec
+  nameWithType: BarcodeFormat.Aztec
+- uid: Egami.Barcodes.BarcodeFormat.Code128
+  name: Code128
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Code128
+  commentId: F:Egami.Barcodes.BarcodeFormat.Code128
+  fullName: Egami.Barcodes.BarcodeFormat.Code128
+  nameWithType: BarcodeFormat.Code128
+- uid: Egami.Barcodes.BarcodeFormat.Code39
+  name: Code39
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Code39
+  commentId: F:Egami.Barcodes.BarcodeFormat.Code39
+  fullName: Egami.Barcodes.BarcodeFormat.Code39
+  nameWithType: BarcodeFormat.Code39
+- uid: Egami.Barcodes.BarcodeFormat.DataMatrix
+  name: DataMatrix
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_DataMatrix
+  commentId: F:Egami.Barcodes.BarcodeFormat.DataMatrix
+  fullName: Egami.Barcodes.BarcodeFormat.DataMatrix
+  nameWithType: BarcodeFormat.DataMatrix
+- uid: Egami.Barcodes.BarcodeFormat.Ean13
+  name: Ean13
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Ean13
+  commentId: F:Egami.Barcodes.BarcodeFormat.Ean13
+  fullName: Egami.Barcodes.BarcodeFormat.Ean13
+  nameWithType: BarcodeFormat.Ean13
+- uid: Egami.Barcodes.BarcodeFormat.Ean8
+  name: Ean8
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Ean8
+  commentId: F:Egami.Barcodes.BarcodeFormat.Ean8
+  fullName: Egami.Barcodes.BarcodeFormat.Ean8
+  nameWithType: BarcodeFormat.Ean8
+- uid: Egami.Barcodes.BarcodeFormat.Itf
+  name: Itf
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Itf
+  commentId: F:Egami.Barcodes.BarcodeFormat.Itf
+  fullName: Egami.Barcodes.BarcodeFormat.Itf
+  nameWithType: BarcodeFormat.Itf
+- uid: Egami.Barcodes.BarcodeFormat.Pdf417
+  name: Pdf417
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Pdf417
+  commentId: F:Egami.Barcodes.BarcodeFormat.Pdf417
+  fullName: Egami.Barcodes.BarcodeFormat.Pdf417
+  nameWithType: BarcodeFormat.Pdf417
+- uid: Egami.Barcodes.BarcodeFormat.Qr
+  name: Qr
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Qr
+  commentId: F:Egami.Barcodes.BarcodeFormat.Qr
+  fullName: Egami.Barcodes.BarcodeFormat.Qr
+  nameWithType: BarcodeFormat.Qr
+- uid: Egami.Barcodes.BarcodeFormat.UpcA
+  name: UpcA
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_UpcA
+  commentId: F:Egami.Barcodes.BarcodeFormat.UpcA
+  fullName: Egami.Barcodes.BarcodeFormat.UpcA
+  nameWithType: BarcodeFormat.UpcA
+- uid: Egami.Barcodes.BarcodeFormat.UpcE
+  name: UpcE
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_UpcE
+  commentId: F:Egami.Barcodes.BarcodeFormat.UpcE
+  fullName: Egami.Barcodes.BarcodeFormat.UpcE
+  nameWithType: BarcodeFormat.UpcE
+- uid: Egami.Barcodes.BarcodeModules
+  name: BarcodeModules
+  href: api/Egami.Barcodes.BarcodeModules.html
+  commentId: T:Egami.Barcodes.BarcodeModules
+  fullName: Egami.Barcodes.BarcodeModules
+  nameWithType: BarcodeModules
+- uid: Egami.Barcodes.BarcodeModules.Create(System.Int32,System.Int32,System.ReadOnlySpan{System.Boolean})
+  name: Create(int, int, ReadOnlySpan<bool>)
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_Create_System_Int32_System_Int32_System_ReadOnlySpan_System_Boolean__
+  commentId: M:Egami.Barcodes.BarcodeModules.Create(System.Int32,System.Int32,System.ReadOnlySpan{System.Boolean})
+  name.vb: Create(Integer, Integer, ReadOnlySpan(Of Boolean))
+  fullName: Egami.Barcodes.BarcodeModules.Create(int, int, System.ReadOnlySpan<bool>)
+  fullName.vb: Egami.Barcodes.BarcodeModules.Create(Integer, Integer, System.ReadOnlySpan(Of Boolean))
+  nameWithType: BarcodeModules.Create(int, int, ReadOnlySpan<bool>)
+  nameWithType.vb: BarcodeModules.Create(Integer, Integer, ReadOnlySpan(Of Boolean))
+- uid: Egami.Barcodes.BarcodeModules.Create*
+  name: Create
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_Create_
+  commentId: Overload:Egami.Barcodes.BarcodeModules.Create
+  isSpec: "True"
+  fullName: Egami.Barcodes.BarcodeModules.Create
+  nameWithType: BarcodeModules.Create
+- uid: Egami.Barcodes.BarcodeModules.CreateLinear(System.ReadOnlySpan{System.Int32},System.Int32)
+  name: CreateLinear(ReadOnlySpan<int>, int)
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_CreateLinear_System_ReadOnlySpan_System_Int32__System_Int32_
+  commentId: M:Egami.Barcodes.BarcodeModules.CreateLinear(System.ReadOnlySpan{System.Int32},System.Int32)
+  name.vb: CreateLinear(ReadOnlySpan(Of Integer), Integer)
+  fullName: Egami.Barcodes.BarcodeModules.CreateLinear(System.ReadOnlySpan<int>, int)
+  fullName.vb: Egami.Barcodes.BarcodeModules.CreateLinear(System.ReadOnlySpan(Of Integer), Integer)
+  nameWithType: BarcodeModules.CreateLinear(ReadOnlySpan<int>, int)
+  nameWithType.vb: BarcodeModules.CreateLinear(ReadOnlySpan(Of Integer), Integer)
+- uid: Egami.Barcodes.BarcodeModules.CreateLinear*
+  name: CreateLinear
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_CreateLinear_
+  commentId: Overload:Egami.Barcodes.BarcodeModules.CreateLinear
+  isSpec: "True"
+  fullName: Egami.Barcodes.BarcodeModules.CreateLinear
+  nameWithType: BarcodeModules.CreateLinear
+- uid: Egami.Barcodes.BarcodeModules.Height
+  name: Height
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_Height
+  commentId: P:Egami.Barcodes.BarcodeModules.Height
+  fullName: Egami.Barcodes.BarcodeModules.Height
+  nameWithType: BarcodeModules.Height
+- uid: Egami.Barcodes.BarcodeModules.Height*
+  name: Height
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_Height_
+  commentId: Overload:Egami.Barcodes.BarcodeModules.Height
+  isSpec: "True"
+  fullName: Egami.Barcodes.BarcodeModules.Height
+  nameWithType: BarcodeModules.Height
+- uid: Egami.Barcodes.BarcodeModules.IsLinear
+  name: IsLinear
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_IsLinear
+  commentId: P:Egami.Barcodes.BarcodeModules.IsLinear
+  fullName: Egami.Barcodes.BarcodeModules.IsLinear
+  nameWithType: BarcodeModules.IsLinear
+- uid: Egami.Barcodes.BarcodeModules.IsLinear*
+  name: IsLinear
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_IsLinear_
+  commentId: Overload:Egami.Barcodes.BarcodeModules.IsLinear
+  isSpec: "True"
+  fullName: Egami.Barcodes.BarcodeModules.IsLinear
+  nameWithType: BarcodeModules.IsLinear
+- uid: Egami.Barcodes.BarcodeModules.Item(System.Int32,System.Int32)
+  name: this[int, int]
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_Item_System_Int32_System_Int32_
+  commentId: P:Egami.Barcodes.BarcodeModules.Item(System.Int32,System.Int32)
+  name.vb: this[](Integer, Integer)
+  fullName: Egami.Barcodes.BarcodeModules.this[int, int]
+  fullName.vb: Egami.Barcodes.BarcodeModules.this[](Integer, Integer)
+  nameWithType: BarcodeModules.this[int, int]
+  nameWithType.vb: BarcodeModules.this[](Integer, Integer)
+- uid: Egami.Barcodes.BarcodeModules.Item*
+  name: this
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_Item_
+  commentId: Overload:Egami.Barcodes.BarcodeModules.Item
+  isSpec: "True"
+  name.vb: this[]
+  fullName: Egami.Barcodes.BarcodeModules.this
+  fullName.vb: Egami.Barcodes.BarcodeModules.this[]
+  nameWithType: BarcodeModules.this
+  nameWithType.vb: BarcodeModules.this[]
+- uid: Egami.Barcodes.BarcodeModules.Runs
+  name: Runs
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_Runs
+  commentId: P:Egami.Barcodes.BarcodeModules.Runs
+  fullName: Egami.Barcodes.BarcodeModules.Runs
+  nameWithType: BarcodeModules.Runs
+- uid: Egami.Barcodes.BarcodeModules.Runs*
+  name: Runs
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_Runs_
+  commentId: Overload:Egami.Barcodes.BarcodeModules.Runs
+  isSpec: "True"
+  fullName: Egami.Barcodes.BarcodeModules.Runs
+  nameWithType: BarcodeModules.Runs
+- uid: Egami.Barcodes.BarcodeModules.Width
+  name: Width
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_Width
+  commentId: P:Egami.Barcodes.BarcodeModules.Width
+  fullName: Egami.Barcodes.BarcodeModules.Width
+  nameWithType: BarcodeModules.Width
+- uid: Egami.Barcodes.BarcodeModules.Width*
+  name: Width
+  href: api/Egami.Barcodes.BarcodeModules.html#Egami_Barcodes_BarcodeModules_Width_
+  commentId: Overload:Egami.Barcodes.BarcodeModules.Width
+  isSpec: "True"
+  fullName: Egami.Barcodes.BarcodeModules.Width
+  nameWithType: BarcodeModules.Width
+- uid: Egami.Barcodes.CanvasBarcodeExtensions
+  name: CanvasBarcodeExtensions
+  href: api/Egami.Barcodes.CanvasBarcodeExtensions.html
+  commentId: T:Egami.Barcodes.CanvasBarcodeExtensions
+  fullName: Egami.Barcodes.CanvasBarcodeExtensions
+  nameWithType: CanvasBarcodeExtensions
+- uid: Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(Egami.Drawing.Canvas,Egami.Barcodes.Barcode,Egami.Drawing.RectF,Egami.Drawing.Paint,Egami.Barcodes.BarcodeDrawOptions)
+  name: DrawBarcode(Canvas, Barcode, RectF, Paint, BarcodeDrawOptions?)
+  href: api/Egami.Barcodes.CanvasBarcodeExtensions.html#Egami_Barcodes_CanvasBarcodeExtensions_DrawBarcode_Egami_Drawing_Canvas_Egami_Barcodes_Barcode_Egami_Drawing_RectF_Egami_Drawing_Paint_Egami_Barcodes_BarcodeDrawOptions_
+  commentId: M:Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(Egami.Drawing.Canvas,Egami.Barcodes.Barcode,Egami.Drawing.RectF,Egami.Drawing.Paint,Egami.Barcodes.BarcodeDrawOptions)
+  name.vb: DrawBarcode(Canvas, Barcode, RectF, Paint, BarcodeDrawOptions)
+  fullName: Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(Egami.Drawing.Canvas, Egami.Barcodes.Barcode, Egami.Drawing.RectF, Egami.Drawing.Paint, Egami.Barcodes.BarcodeDrawOptions?)
+  fullName.vb: Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(Egami.Drawing.Canvas, Egami.Barcodes.Barcode, Egami.Drawing.RectF, Egami.Drawing.Paint, Egami.Barcodes.BarcodeDrawOptions)
+  nameWithType: CanvasBarcodeExtensions.DrawBarcode(Canvas, Barcode, RectF, Paint, BarcodeDrawOptions?)
+  nameWithType.vb: CanvasBarcodeExtensions.DrawBarcode(Canvas, Barcode, RectF, Paint, BarcodeDrawOptions)
+- uid: Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(Egami.Drawing.Canvas,Egami.Barcodes.Barcode,System.Numerics.Vector2,System.Single,Egami.Drawing.Paint,Egami.Barcodes.BarcodeDrawOptions)
+  name: DrawBarcode(Canvas, Barcode, Vector2, float, Paint, BarcodeDrawOptions?)
+  href: api/Egami.Barcodes.CanvasBarcodeExtensions.html#Egami_Barcodes_CanvasBarcodeExtensions_DrawBarcode_Egami_Drawing_Canvas_Egami_Barcodes_Barcode_System_Numerics_Vector2_System_Single_Egami_Drawing_Paint_Egami_Barcodes_BarcodeDrawOptions_
+  commentId: M:Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(Egami.Drawing.Canvas,Egami.Barcodes.Barcode,System.Numerics.Vector2,System.Single,Egami.Drawing.Paint,Egami.Barcodes.BarcodeDrawOptions)
+  name.vb: DrawBarcode(Canvas, Barcode, Vector2, Single, Paint, BarcodeDrawOptions)
+  fullName: Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(Egami.Drawing.Canvas, Egami.Barcodes.Barcode, System.Numerics.Vector2, float, Egami.Drawing.Paint, Egami.Barcodes.BarcodeDrawOptions?)
+  fullName.vb: Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(Egami.Drawing.Canvas, Egami.Barcodes.Barcode, System.Numerics.Vector2, Single, Egami.Drawing.Paint, Egami.Barcodes.BarcodeDrawOptions)
+  nameWithType: CanvasBarcodeExtensions.DrawBarcode(Canvas, Barcode, Vector2, float, Paint, BarcodeDrawOptions?)
+  nameWithType.vb: CanvasBarcodeExtensions.DrawBarcode(Canvas, Barcode, Vector2, Single, Paint, BarcodeDrawOptions)
+- uid: Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode*
+  name: DrawBarcode
+  href: api/Egami.Barcodes.CanvasBarcodeExtensions.html#Egami_Barcodes_CanvasBarcodeExtensions_DrawBarcode_
+  commentId: Overload:Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode
+  isSpec: "True"
+  fullName: Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode
+  nameWithType: CanvasBarcodeExtensions.DrawBarcode
 - uid: Egami.ChromaDownsampling
   name: ChromaDownsampling
   href: api/Egami.ChromaDownsampling.html
