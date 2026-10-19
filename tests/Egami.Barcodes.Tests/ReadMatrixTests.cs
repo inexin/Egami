@@ -75,4 +75,45 @@ public class ReadMatrixTests
         Assert.InRange(result.Corners[0].X, quad[0].X + inset - 4, quad[0].X + inset + 4);
         Assert.InRange(result.Corners[2].Y, quad[2].Y - inset - 4, quad[2].Y - inset + 4);
     }
+
+    public static TheoryData<string, float, float> DataMatrixCases => new()
+    {
+        { "square", 0, 0 },
+        { "square", 20, 0.1f },
+        { "square", 200, 0.15f },
+        { "rectangle", 90, 0.05f },
+        { "large", 7, 0.05f },
+        { "dmre", 0, 0 },
+        { "dmre", 175, 0 },
+        { "dmre", 175, 0.08f },
+    };
+
+    [Theory]
+    [MemberData(nameof(DataMatrixCases))]
+    public void ReadsDataMatrixPhotos(string kind, float degrees, float tilt)
+    {
+        (Barcode barcode, string text) = kind switch
+        {
+            "square" => (Barcode.DataMatrix("Data Matrix 4711"), "Data Matrix 4711"),
+            "rectangle" => (Barcode.DataMatrix("RECT-12", new DataMatrixOptions { Shape = DataMatrixShape.Rectangle }), "RECT-12"),
+            "dmre" => (Barcode.DataMatrix("DMRE 0123456789 ABCDEFGHIJ", new DataMatrixOptions { Shape = DataMatrixShape.Rectangle, AllowDmre = true }), "DMRE 0123456789 ABCDEFGHIJ"),
+            _ => (Barcode.DataMatrix(new string('A', 300)), new string('A', 300)),
+        };
+        float width = 360, height = width * (barcode.Modules.Height + 2) / (barcode.Modules.Width + 2);
+        using Raster<Gray8> photo = Photos.Render(barcode, 640, 640, Photos.Quad(new Vector2(320, 320), width, height, degrees, tilt), seed: (int)degrees + 11);
+        Assert.Contains(photo.ReadBarcodes(), r => r.Format == BarcodeFormat.DataMatrix && r.Text == text);
+    }
+
+    [Fact]
+    public void SeveralDataMatrixSymbolsAreAllFound()
+    {
+        using Raster<Gray8> image = Raster.Create(800, 300, new Gray8(255));
+        using (RasterCanvas<Gray8> canvas = image.CreateCanvas())
+        {
+            canvas.DrawBarcode(Barcode.DataMatrix("FIRST"), new RectF(40, 40, 200, 200), Rgba8.Black);
+            canvas.DrawBarcode(Barcode.DataMatrix("SECOND"), new RectF(500, 60, 180, 180), Rgba8.Black);
+        }
+
+        Assert.Equal(["FIRST", "SECOND"], image.ReadBarcodes(new BarcodeReaderOptions { Formats = BarcodeFormats.DataMatrix }).Select(r => r.Text));
+    }
 }

@@ -136,6 +136,9 @@ scan lines agree on it.
 QR Codes are found by their three finder patterns, at any rotation and in perspective; from version 2 the alignment pattern
 corrects the perspective, and a mirrored symbol reads too.
 
+Data Matrix symbols are found by their L-shaped finder, square and rectangular (DMRE too), at any rotation and in
+perspective, on a label lighter than its background or not; the clock tracks count the modules.
+
 ## Drawing on a canvas
 
 `DrawBarcode`, an extension method in `CanvasBarcodeExtensions`, draws on any canvas: a raster, a PDF or SVG page, a

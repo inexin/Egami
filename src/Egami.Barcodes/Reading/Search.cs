@@ -52,6 +52,12 @@ internal static class Search
             results.AddRange(QrDetector.Detect(local, options.Effort, new Vector2(image.Left, image.Top)));
         }
 
+        if ((formats & BarcodeFormats.DataMatrix) != 0)
+        {
+            List<Component> components = Shapes.Components(local, 10);
+            results.AddRange(DataMatrixDetector.Detect(local, components, new Vector2(image.Left, image.Top)));
+        }
+
         results.AddRange(LinearScanner.Scan(image, options.Effort >= 6 ? local : null, formats, options.Effort));
         return Merge(results);
     }
