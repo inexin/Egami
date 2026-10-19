@@ -4,7 +4,8 @@ HEIC is the format iPhones and most Android phones save photos in: HEIF files wh
 covered by patents, so Egami reads HEIC through a separate package, Egami.Heic, that an app opts in to. The core Egami package
 contains no HEVC code and never depends on Egami.Heic.
 
-Egami.Heic is a work in progress: this version reads HEIC containers, and its managed HEVC decoder is not finished yet.
+Egami.Heic is a work in progress: this version reads HEIC containers and holds the managed HEVC decoder, which `Raster.Load`
+does not use yet.
 
 ## Without Egami.Heic
 

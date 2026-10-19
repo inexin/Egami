@@ -23,5 +23,6 @@
   <ItemGroup>
     <None Include="../images/heic/**/*" LinkBase="images/heic" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../reference/heic/manifest.json" Link="reference/heic/manifest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../reference/heic/hm-headers.json.gz" Link="reference/heic/hm-headers.json.gz" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

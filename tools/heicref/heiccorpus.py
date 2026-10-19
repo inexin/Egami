@@ -20,6 +20,10 @@
   extra        .cache/heic/reference/extra: the corpus treatment for the HEIF files that stay in .cache: the phone photos whole,
                the ones whose licence or provenance keeps them out of the repo, MPEG's File Format conformance files and Nokia's
                HEIF conformance files.
+  traces       HM's syntax trace (TAppDecoderTrace) of every HEVC item of the corpus and of the first picture of every
+               conformance stream: the header elements (NAL unit headers, VPS, SPS, PPS, slice segment headers, SEI) as
+               tests/reference/heic/hm-headers.json.gz and .cache/heic/reference/<set>/hm-headers.json.gz, and the whole traces,
+               block syntax included, in .cache/heic/reference/traces.
 """
 import glob
 import hashlib
@@ -925,6 +929,75 @@ def extra():
     write_manifest(f"{folder}/manifest.json", manifest)
 
 
+HEADER_LINE = re.compile(r"^\s*\d+\s+(\S+)\s+(?:u\(\d+\)|ue\(v\)|se\(v\)|f\(\d+\))\s*:\s*(-?\d+)\s*$")
+
+
+def hm_trace(stream, keep=None):
+    """HM's syntax trace of an Annex B stream: the header elements of each NAL unit as [nal type, [[name, value], ...]], and,
+    when keep names a file, the whole trace gzipped there."""
+    import gzip
+    folder = f"{TMP}/trace"
+    shutil.rmtree(folder, ignore_errors=True)
+    os.makedirs(folder)
+    with open(f"{folder}/in.265", "wb") as f:
+        f.write(stream)
+    subprocess.run(["TAppDecoderTrace", "-b", "in.265", "-o", "/dev/null"], cwd=folder, capture_output=True, timeout=3600)
+    path = f"{folder}/TraceDec.txt"
+    if not os.path.isfile(path):
+        return None
+    nals = []
+    with open(path, encoding="latin-1") as f:
+        for line in f:
+            if line.startswith("*********** NAL UNIT"):
+                nals.append([line.split("(", 1)[1].split(")", 1)[0], []])
+                continue
+            m = HEADER_LINE.match(line)
+            if m and nals:
+                nals[-1][1].append([m.group(1), int(m.group(2))])
+    if keep:
+        os.makedirs(os.path.dirname(keep), exist_ok=True)
+        with open(path, "rb") as src, gzip.open(keep, "wb", compresslevel=6) as dst:
+            shutil.copyfileobj(src, dst)
+    return nals
+
+
+def traces():
+    import gzip
+    os.makedirs(TMP, exist_ok=True)
+    manifest = json.load(open(f"{REF}/manifest.json"))["files"]
+    headers = {}
+    for file, entry in sorted(manifest.items()):
+        try:
+            f = heif.read(open(f"{OUT}/{file}", "rb").read())
+        except Exception:
+            continue
+        for item in f.items:
+            if item.type != "hvc1" or not item.prop("hvcC") or not item.data or file.startswith("broken-"):
+                continue
+            key = f"{file}#{item.id}"
+            print(key, flush=True)
+            nals = hm_trace(heif.item_annexb(item), f"{CACHE}/reference/traces/corpus/{file[:-5]}.{item.id}.trace.gz")
+            if nals is not None:
+                headers[key] = nals
+    with gzip.open(f"{REF}/hm-headers.json.gz", "wt", encoding="utf-8", compresslevel=9) as out:
+        json.dump({"tools": tools(), "items": headers}, out, separators=(",", ":"), sort_keys=True)
+    for set_name in ("HEVC_v1", "RExt"):
+        path = f"{CACHE}/reference/{set_name}/summary.json"
+        if not os.path.isfile(path):
+            continue
+        headers = {}
+        for name, entry in sorted(json.load(open(path))["streams"].items()):
+            if "hm_md5" not in entry or not entry.get("slices") or not entry["slices"][0].endswith(" I"):
+                continue
+            print(set_name, name, flush=True)
+            unit = heif.first_access_unit(open(f"{CACHE}/{entry['path']}", "rb").read())
+            nals = hm_trace(unit, f"{CACHE}/reference/traces/{set_name}/{name}.trace.gz")
+            if nals is not None:
+                headers[name] = nals
+        with gzip.open(f"{CACHE}/reference/{set_name}/hm-headers.json.gz", "wt", encoding="utf-8", compresslevel=9) as out:
+            json.dump({"tools": tools(), "streams": headers}, out, separators=(",", ":"), sort_keys=True)
+
+
 if __name__ == "__main__":
     for step in sys.argv[1:]:
-        {"corpus": corpus, "conformance": conformance, "extra": extra, "suite": suite}[step]()
+        {"corpus": corpus, "conformance": conformance, "extra": extra, "suite": suite, "traces": traces}[step]()

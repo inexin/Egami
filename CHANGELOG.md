@@ -49,8 +49,16 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 
 - New opt-in package for HEIC, the HEVC-coded HEIF files phones save photos in. `WithHeic()` registers it in a context; nothing
   registers it on its own, because HEVC is covered by patents (the package's readme and XML docs carry the notice).
-- This version reads HEIC containers: `Raster.Probe` gives the size, pixel type and orientation. The managed HEVC decoder that
-  loads the images is not finished yet.
+- This version reads HEIC containers: `Raster.Probe` gives the size, pixel type and orientation. `Raster.Load` does not decode
+  the images yet.
+
+### HEVC decoder
+
+- A managed HEVC decoder for intra pictures: Main, Main 10, Main Still Picture and the 4:0:0 to 4:4:4 range extensions up to 12
+  bits, with tiles, wavefronts, dependent slices, PCM, lossless coding and scaling lists. The intra pictures of the HEVC
+  conformance streams in those profiles, and every HEIC test image, decode bit-exact to HM 18.0, the reference decoder.
+- Single-threaded it decodes an iPhone photo in about 1.3 times the time of libde265. Tiles, wavefront rows and the loop
+  filters run on several threads, with the same output at any thread count.
 - Ships at Egami's version and depends on exactly that version of Egami.
 
 ## Egami 1.1.0 (unreleased)
