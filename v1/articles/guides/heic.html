@@ -90,9 +90,9 @@
 <p>HEIC is the format iPhones and most Android phones save photos in: HEIF files whose images are coded with HEVC (H.265). HEVC is
 covered by patents, so Egami reads HEIC through a separate package, Egami.Heic, that an app opts in to. The core Egami package
 contains no HEVC code and never depends on Egami.Heic.</p>
-<p>Egami.Heic decodes still HEIC images with a managed HEVC decoder: the intra pictures of the Main, Main 10, Main Still Picture
-and format range extensions profiles, up to 12 bits and from 4:0:0 to 4:4:4. Image sequences, gain maps and auxiliary items
-such as depth maps come in a later version.</p>
+<p>Egami.Heic decodes HEIC images with a managed HEVC decoder: the intra pictures of the Main, Main 10, Main Still Picture and
+format range extensions profiles, up to 12 bits and from 4:0:0 to 4:4:4. Gain maps, the photo's other images (thumbnails,
+depth maps, mattes) and image sequences whose frames are all intra are read too.</p>
 <h2 id="without-egamiheic">Without Egami.Heic</h2>
 <p>Core Egami recognizes HEIC by its brands (heic, heix, hevc and the other HEVC brands) and reads the container, so
 <code>Raster.Probe</code> gives the size, the natural pixel type and the orientation. <code>Raster.Load</code> throws an <code>UnsupportedFormatException</code>
@@ -152,6 +152,33 @@ ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for phone photos
 int depth = planes.BitDepth;                        // 8, or 10 for HDR photos
 </code></pre>
 <p>Every intra picture of the HEVC conformance streams in these profiles decodes bit-exact to HM, the reference decoder.</p>
+<h2 id="hdr-photos">HDR photos</h2>
+<p>iPhones store an HDR photo as an SDR image with a gain map: Apple's HDRGainMap auxiliary image (its headroom in the maker note
+or the map's XMP), and on newer iPhones an ISO 21496-1 tone-map item as well, which is preferred. Load gives the SDR image with
+the map in <code>RasterMetadata.GainMap</code>; <code>ReaderOptions.Hdr</code> gives the HDR rendition for a display's headroom, as for
+<a href="hdr.html">Ultra HDR JPEGs</a>.</p>
+<pre><code class="lang-csharp">// An iPhone photo's gain map (Apple's HDRGainMap, or ISO 21496-1 on newer iPhones) comes with the SDR image; ask for the HDR
+// rendition for a display with 2 stops of headroom.
+using Raster sdr = Raster.Load(&quot;portrait.heic&quot;, heic);
+bool hasGainMap = sdr.Metadata.GainMap is not null;
+using Raster hdr = Raster.Load(&quot;portrait.heic&quot;, heic, new ReaderOptions { Hdr = new HdrDecode { Headroom = 2 } });
+</code></pre>
+<p>A gain map that cannot be read (Apple's without a headroom, a damaged tone-map item) never fails the load: the image loads as
+SDR with a <code>Heic.GainMapDropped</code> warning.</p>
+<h2 id="thumbnails-depth-maps-and-mattes">Thumbnails, depth maps and mattes</h2>
+<p><code>HeicDetails.Items</code> lists every item of the file with its <code>HeicItemRole</code>, what it is to the photo: the primary image, thumbnails, the gain map,
+depth maps and other auxiliary images (an iPhone's portrait, skin and sky mattes), Exif and XMP. <code>HeicImage.ReadItem</code> reads an
+image item on its own, with its own color and crop, and its own rotation as the orientation.</p>
+<pre><code class="lang-csharp">// The other images a photo holds: thumbnails, gain maps, depth maps and mattes (portrait, skin, sky).
+HeicDetails details = (HeicDetails)sdr.Metadata.FormatDetails!;
+HeicItem sky = details.Items.First(i =&gt; i.AuxiliaryType == &quot;urn:com:apple:photo:2020:aux:semanticskymatte&quot;);
+using Raster matte = HeicImage.ReadItem(&quot;portrait.heic&quot;, sky.Id, context: heic);
+matte.Apply(ops =&gt; ops.AutoOrient());
+matte.Save(&quot;sky-matte.png&quot;);
+</code></pre><h2 id="image-sequences">Image sequences</h2>
+<p>A HEIC image sequence (the hevc and hevx brands) whose frames are all intra loads every frame, as an animation; Egami.Heic does
+not decode inter frames. A sequence with inter frames gives its still image when the file has one, and otherwise its first frame
+with a <code>Heic.SequenceFirstFrame</code> warning.</p>
 <h2 id="patents">Patents</h2>
 <p>Egami.Heic decodes HEVC (H.265), a format covered by patents. Egami's authors grant no patent rights and are not lawyers.
 Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products

@@ -1606,6 +1606,24 @@ ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for phone photos
 int depth = planes.BitDepth;                        // 8, or 10 for HDR photos
 </code></pre>
 <p><code>YuvRaster.Load</code> gives the decoded HEVC planes, as HM, the reference decoder, decodes them.</p>
+<h2 id="show-an-iphone-hdr-photo-as-hdr">Show an iPhone HDR photo as HDR</h2>
+<pre><code class="lang-csharp">// An iPhone photo's gain map (Apple's HDRGainMap, or ISO 21496-1 on newer iPhones) comes with the SDR image; ask for the HDR
+// rendition for a display with 2 stops of headroom.
+using Raster sdr = Raster.Load(&quot;portrait.heic&quot;, heic);
+bool hasGainMap = sdr.Metadata.GainMap is not null;
+using Raster hdr = Raster.Load(&quot;portrait.heic&quot;, heic, new ReaderOptions { Hdr = new HdrDecode { Headroom = 2 } });
+</code></pre>
+<p>The gain map, Apple's or ISO 21496-1, loads with the SDR image; <code>ReaderOptions.Hdr</code> renders the HDR rendition for a display's
+headroom. See the <a href="../guides/heic.html#hdr-photos">HEIC guide</a>.</p>
+<h2 id="read-an-iphone-photos-mattes-and-depth-map">Read an iPhone photo's mattes and depth map</h2>
+<pre><code class="lang-csharp">// The other images a photo holds: thumbnails, gain maps, depth maps and mattes (portrait, skin, sky).
+HeicDetails details = (HeicDetails)sdr.Metadata.FormatDetails!;
+HeicItem sky = details.Items.First(i =&gt; i.AuxiliaryType == &quot;urn:com:apple:photo:2020:aux:semanticskymatte&quot;);
+using Raster matte = HeicImage.ReadItem(&quot;portrait.heic&quot;, sky.Id, context: heic);
+matte.Apply(ops =&gt; ops.AutoOrient());
+matte.Save(&quot;sky-matte.png&quot;);
+</code></pre>
+<p><code>HeicDetails.Items</code> lists the thumbnails, gain map, depth maps and mattes; <code>HeicImage.ReadItem</code> reads one.</p>
 <h2 id="read-an-hdr-avif-file-as-sdr">Read an HDR AVIF file as SDR</h2>
 <pre><code class="lang-csharp">// An HDR (PQ or HLG) AVIF, tone mapped into sRGB as it loads; the peak comes from the file's clli box when it has one.
 using Raster&lt;Rgb8&gt; sdr = Raster.Load&lt;Rgb8&gt;(&quot;hdr.avif&quot;, options: new ReaderOptions { ConvertColorTo = Egami.Colors.ColorProfile.Srgb });

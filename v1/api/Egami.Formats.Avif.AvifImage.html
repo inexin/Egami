@@ -166,7 +166,7 @@ using Raster item = AvifImage.ReadItem("duck.avif", primary.Id);</code></pre>
 
   <h3 id="Egami_Formats_Avif_AvifImage_ReadItem_System_IO_Stream_System_UInt32_Egami_Formats_ReaderOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Avif.AvifImage.ReadItem(System.IO.Stream,System.UInt32,Egami.Formats.ReaderOptions,Egami.EgamiContext)">
   ReadItem(Stream, uint, ReaderOptions?, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifImage.cs/#L107"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifImage.cs/#L106"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads image item <code class="paramref">itemId</code> from a stream; see <a class="xref" href="Egami.Formats.Avif.AvifImage.html#Egami_Formats_Avif_AvifImage_ReadItem_System_String_System_UInt32_Egami_Formats_ReaderOptions_Egami_EgamiContext_">ReadItem(string, uint, ReaderOptions?, EgamiContext?)</a>.</p>
@@ -232,11 +232,12 @@ using Raster item = AvifImage.ReadItem("duck.avif", primary.Id);</code></pre>
 
   <h3 id="Egami_Formats_Avif_AvifImage_ReadItem_System_String_System_UInt32_Egami_Formats_ReaderOptions_Egami_EgamiContext_" data-uid="Egami.Formats.Avif.AvifImage.ReadItem(System.String,System.UInt32,Egami.Formats.ReaderOptions,Egami.EgamiContext)">
   ReadItem(string, uint, ReaderOptions?, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifImage.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Avif/AvifImage.cs/#L88"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads image item <code class="paramref">itemId</code> (see <a class="xref" href="Egami.Formats.Avif.AvifDetails.html#Egami_Formats_Avif_AvifDetails_Items">Items</a>): an av01 item or a grid, converted with its
-own color into its natural pixel type, as Load converts the primary image; its own clean aperture cropped.</p>
+own color into its natural pixel type, as Load converts the primary image; its own clean aperture cropped, and its own
+rotation and mirroring (irot, imir) given as the orientation, which <code>AutoOrient</code> applies.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 

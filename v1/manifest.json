@@ -5991,6 +5991,62 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Heic.HeicDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Heic.HeicDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Heic.HeicDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Heic.HeicDetails.yml\" sourcestartlinenumber=\"1\">What a HEIC file holds besides its pixels: brands, HEVC profile, color, grid and items.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Heic.HeicItem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Heic.HeicItem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Heic.HeicItem",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Heic.HeicItem.yml\" sourcestartlinenumber=\"1\">An item of a HEIC file, as <xref href=\"Egami.Formats.Heic.HeicDetails.Items\" data-throw-if-not-resolved=\"false\"></xref> lists them.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Heic.HeicItemRole.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Heic.HeicItemRole.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Heic.HeicItemRole",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Heic.HeicItemRole.yml\" sourcestartlinenumber=\"1\">What an item of a HEIC file is to the image Load gives.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Heic.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Heic.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Heic",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.IFormatReader.yml",
       "output": {
         ".html": {
@@ -7864,6 +7920,20 @@
       "IsMRef": true,
       "Title": "Egami.Heic.HeicFormat",
       "Summary": "<p sourcefile=\"api/Egami.Heic.HeicFormat.yml\" sourcestartlinenumber=\"1\">The HEIC format (HEIF with HEVC-coded images, as iPhones and most Android phones save photos), registered with\n<xref href=\"Egami.Heic.HeicContextExtensions.WithHeic(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>. It replaces core Egami's own HEIC entry, which detects and probes HEIC files but\ndoes not load them.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Heic.HeicImage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Heic.HeicImage.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Heic.HeicImage",
+      "Summary": "<p sourcefile=\"api/Egami.Heic.HeicImage.yml\" sourcestartlinenumber=\"1\">Reads the images a HEIC file holds besides the one Load gives: thumbnails, depth maps, gain maps and other auxiliary images,\nsuch as an iPhone's portrait and sky mattes. <xref href=\"Egami.Formats.Heic.HeicDetails.Items\" data-throw-if-not-resolved=\"false\"></xref> lists them.</p>\n"
     },
     {
       "type": "ManagedReference",
