@@ -19,11 +19,21 @@
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- Public API of the packages below only (2.11 design, question 2). -->
-  <ItemGroup>
+  <!--
+    Public API of the packages below only (2.11 design, question 2). The package is built against their released versions
+    (UseReleasedDependencies=true, which release.yml packs with and ci.yml checks), so it installs with what is on nuget.org
+    even while main's versions are not published yet; day to day it builds against the projects.
+  -->
+  <ItemGroup Condition="'$(UseReleasedDependencies)' != 'true'">
     <ProjectReference Include="..\Egami\Egami.csproj" />
     <ProjectReference Include="..\Egami.Drawing\Egami.Drawing.csproj" />
     <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseReleasedDependencies)' == 'true'">
+    <PackageReference Include="Egami" VersionOverride="1.0.0" />
+    <PackageReference Include="Egami.Drawing" VersionOverride="1.0.0" />
+    <PackageReference Include="Egami.Fonts" VersionOverride="1.0.0" />
   </ItemGroup>
 
   <!-- The GS1 Barcode Syntax Dictionary (Apache-2.0), as GS1 publishes it; see THIRD-PARTY-NOTICES.md. -->

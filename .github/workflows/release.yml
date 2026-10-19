@@ -50,10 +50,12 @@ jobs:
           echo "PACKAGES=$packages" >> "$GITHUB_ENV"
       - name: Build and test
         run: dotnet test Egami.slnx -c Release
+      # UseReleasedDependencies builds a package that opts in (Egami.Barcodes) against the released versions of the packages
+      # it needs, so it installs with what is on nuget.org; the others ignore it.
       - name: Pack
         run: |
           for package in $PACKAGES; do
-            dotnet pack "src/$package" -c Release --no-build -o artifacts/nuget
+            dotnet pack "src/$package" -c Release -o artifacts/nuget -p:UseReleasedDependencies=true
           done
       - uses: actions/upload-artifact@v7
         with:
