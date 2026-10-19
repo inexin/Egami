@@ -35,6 +35,7 @@
     <InternalsVisibleTo Include="Egami.Fuzz" />
     <!-- Egami.Heic plugs its HEVC decoder into the HEIF reader, at exactly this version (2.9.4 design, question 8). -->
     <InternalsVisibleTo Include="Egami.Heic" />
+    <InternalsVisibleTo Include="Egami.Heic.Tests" />
   </ItemGroup>
 
 </Project>

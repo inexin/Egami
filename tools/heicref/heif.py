@@ -472,3 +472,18 @@ def wrap_stream(stream, width=None, height=None, extra_props=()):
     item.props += [(p, e) for p, e in extra_props]
     heif.primary = item.id
     return heif
+
+
+def first_access_unit(stream):
+    """An Annex B stream's NAL units up to the end of its first picture (its parameter sets, slices and suffix SEI), as Annex B."""
+    nals = split_annexb(stream)
+    out, seen_vcl = [], False
+    for n in nals:
+        t = nal_type(n)
+        if t < 32 and seen_vcl and rbsp(n)[2] >> 7:
+            break  # first_slice_segment_in_pic_flag of the next picture
+        if seen_vcl and t in (32, 33, 34, 35, 39) or (seen_vcl and 41 <= t <= 44):
+            break  # parameter sets, an access unit delimiter or a prefix SEI start the next access unit
+        seen_vcl |= t < 32
+        out.append(n)
+    return b"".join(b"\0\0\0\1" + n for n in out)

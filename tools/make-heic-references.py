@@ -23,6 +23,7 @@ Usage, from the repo root with Docker running:
   python tools/make-heic-references.py conformance  .cache/heic/reference/{HEVC_v1,RExt,nokia} (HM's decode of every stream)
   python tools/make-heic-references.py extra        .cache/heic/reference/extra (the HEIF files that stay in .cache)
   python tools/make-heic-references.py suite        the conformance summaries' suite MD5s again, without decoding
+  python tools/make-heic-references.py traces       HM's syntax traces: tests/reference/heic/hm-headers.json.gz and .cache
 """
 import hashlib
 import json
@@ -122,9 +123,9 @@ def run(*args):
 
 
 if __name__ == "__main__":
-    steps = sys.argv[1:] or ["fetch", "corpus", "conformance", "extra"]
+    steps = sys.argv[1:] or ["fetch", "corpus", "conformance", "extra", "traces"]
     if "fetch" in steps:
         fetch()
-    for step in ("corpus", "conformance", "extra", "suite"):
+    for step in ("corpus", "conformance", "extra", "suite", "traces"):
         if step in steps:
             run(step)
