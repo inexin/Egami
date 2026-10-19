@@ -54,15 +54,30 @@ public class Vp8VideoDecodeTests(ITestOutputHelper output)
         foreach (string file in Directory.GetFiles(Vp8VideoCorpus.Clips, "*.ivf").Order(StringComparer.Ordinal))
         {
             List<byte[]> packets = Vp8VideoCorpus.ReadIvf(file);
-            using Vp8VideoDecoder video = new(1);
-            video.Decode(packets[0], 0, packets[0].Length);
-            long before = GC.GetAllocatedBytesForCurrentThread();
-            for (int i = 1; i < packets.Count; i++)
+
+            // A full collection trims the shared array pool, so frames decoded after one may rent fresh buffers; a clip that a
+            // full collection overlapped is decoded again (see AllocationMeter).
+            long bytes = 0;
+            for (int attempt = 0; attempt < 5; attempt++)
             {
-                video.Decode(packets[i], 0, packets[i].Length);
+                GC.WaitForPendingFinalizers();
+                int gen2 = GC.CollectionCount(2);
+                using Vp8VideoDecoder video = new(1);
+                video.Decode(packets[0], 0, packets[0].Length);
+                long before = GC.GetAllocatedBytesForCurrentThread();
+                for (int i = 1; i < packets.Count; i++)
+                {
+                    video.Decode(packets[i], 0, packets[i].Length);
+                }
+
+                bytes = GC.GetAllocatedBytesForCurrentThread() - before;
+                if (bytes == 0 || GC.CollectionCount(2) == gen2)
+                {
+                    break;
+                }
             }
 
-            Assert.True(GC.GetAllocatedBytesForCurrentThread() == before, $"{Path.GetFileName(file)}: {GC.GetAllocatedBytesForCurrentThread() - before} bytes allocated after the first frame");
+            Assert.True(bytes == 0, $"{Path.GetFileName(file)}: {bytes} bytes allocated after the first frame");
         }
     }
 

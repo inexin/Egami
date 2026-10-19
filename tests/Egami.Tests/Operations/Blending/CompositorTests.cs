@@ -1,5 +1,6 @@
 using Egami.Operations;
 using Egami.Pixels;
+using Egami.Tests.Memory;
 
 namespace Egami.Tests.Operations.Blending;
 
@@ -160,24 +161,10 @@ public class CompositorTests
             () => Compositor.Blend(BlendMode.Color, Rgba8.Red, fd.AsSpan(), coverage),
         ];
 
-        // Warm enough that the JIT has finished tiering, which allocates on the calling thread. Other tests run in parallel and the
-        // runtime trims the shared array pool under memory pressure, so each call's fewest bytes over many tries is what it allocates.
+        // Warm enough that the JIT has finished tiering, which allocates on the calling thread.
         foreach (Action call in calls)
         {
-            for (int i = 0; i < 300; i++)
-            {
-                call();
-            }
-
-            long fewest = long.MaxValue;
-            for (int i = 0; i < 30 && fewest > 0; i++)
-            {
-                long before = GC.GetAllocatedBytesForCurrentThread();
-                call();
-                fewest = Math.Min(fewest, GC.GetAllocatedBytesForCurrentThread() - before);
-            }
-
-            Assert.Equal(0, fewest);
+            Assert.Equal(0, AllocationMeter.Fewest(call, warmUps: 300, tries: 30));
         }
     }
 

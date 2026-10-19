@@ -1,5 +1,6 @@
 using Egami.Formats.Png;
 using Egami.Pixels;
+using Egami.Tests.Memory;
 
 namespace Egami.Tests;
 
@@ -31,27 +32,8 @@ public class AllocationTests
         Assert.True(loadLarge - loadSmall < 1024, $"Loading 3,000 rows allocated {loadLarge:N0} bytes against {loadSmall:N0} for 10 rows.");
     }
 
-    /// <summary>
-    /// Returns the fewest bytes one call allocated over several tries. Other tests run in parallel and can empty the shared array
-    /// pool, so an occasional call allocates a fresh buffer; the minimum shows what the code itself allocates.
-    /// </summary>
-    private static long Allocated(Action action)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            action();
-        }
-
-        long fewest = long.MaxValue;
-        for (int i = 0; i < 10; i++)
-        {
-            long before = GC.GetAllocatedBytesForCurrentThread();
-            action();
-            fewest = Math.Min(fewest, GC.GetAllocatedBytesForCurrentThread() - before);
-        }
-
-        return fewest;
-    }
+    /// <summary>The fewest bytes one call allocated over several tries; see <see cref="AllocationMeter"/>.</summary>
+    private static long Allocated(Action action) => AllocationMeter.Fewest(action, warmUps: 3, tries: 10);
 
     private static byte[] Save(Raster raster, PngWriterOptions options, Stream? output = null)
     {

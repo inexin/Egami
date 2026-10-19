@@ -2,6 +2,7 @@ using System.Buffers;
 
 using Egami.Operations;
 using Egami.Pixels;
+using Egami.Tests.Memory;
 
 using static Egami.Tests.Operations.OperationCoverageTests;
 
@@ -98,24 +99,9 @@ public abstract class OperationCoverageTests<TPart> : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>The fewest bytes one Derive allocated over several tries; see AllocationTests for why the minimum.</summary>
-    private static long Allocated(Raster<Rgba8> raster, Action<RasterOps> chain)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            raster.Derive(chain, Ct).Dispose();
-        }
-
-        long fewest = long.MaxValue;
-        for (int i = 0; i < 6; i++)
-        {
-            long before = GC.GetAllocatedBytesForCurrentThread();
-            raster.Derive(chain, Ct).Dispose();
-            fewest = Math.Min(fewest, GC.GetAllocatedBytesForCurrentThread() - before);
-        }
-
-        return fewest;
-    }
+    /// <summary>The fewest bytes one Derive allocated over several tries; see <see cref="AllocationMeter"/>.</summary>
+    private static long Allocated(Raster<Rgba8> raster, Action<RasterOps> chain) =>
+        AllocationMeter.Fewest(() => raster.Derive(chain, Ct).Dispose(), warmUps: 3, tries: 6);
 
     private static void AssertSame(Raster<Rgba8> expected, Raster<Rgba8> actual, string label)
     {
