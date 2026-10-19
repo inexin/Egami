@@ -1,0 +1,5 @@
+#nullable enable
+Egami.Heic.HeicContextExtensions
+Egami.Heic.HeicFormat
+static Egami.Heic.HeicContextExtensions.WithHeic(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Heic.HeicFormat.Info.get -> Egami.Formats.FormatInfo!

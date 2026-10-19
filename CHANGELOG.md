@@ -24,7 +24,23 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - `BarcodeDrawOptions` turns the quiet zone off, sets a bar width reduction for ink spread, and gives the font for the
   human-readable text, which is drawn only when a font is given.
 
+## Egami.Heic 1.1.0 (unreleased)
+
+### HEIC package
+
+- New opt-in package for HEIC, the HEVC-coded HEIF files phones save photos in. `WithHeic()` registers it in a context; nothing
+  registers it on its own, because HEVC is covered by patents (the package's readme and XML docs carry the notice).
+- This version reads HEIC containers: `Raster.Probe` gives the size, pixel type and orientation. The managed HEVC decoder that
+  loads the images is not finished yet.
+- Ships at Egami's version and depends on exactly that version of Egami.
+
 ## Egami 1.1.0 (unreleased)
+
+### HEIC detection
+
+- HEIC files (HEIF with HEVC-coded images, as iPhones and most Android phones save photos) are recognized by their brands.
+  `Raster.Probe` reads their container (size after the clean aperture, pixel type by bit depth, alpha, orientation), and
+  `Raster.Load` throws an `UnsupportedFormatException` that names the Egami.Heic package. Core Egami holds no HEVC code.
 
 ### AVIF writing
 
