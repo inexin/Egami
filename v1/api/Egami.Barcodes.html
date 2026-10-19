@@ -120,6 +120,41 @@ its quiet zone. A grid is immutable and safe to read from many threads.</p>
       <dd><p>Draws barcodes on any <a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a>: rasters, PDF and SVG pages, recordings.</p>
 </dd>
     </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Barcodes.Code128Options.html">Code128Options</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Code128_System_String_Egami_Barcodes_Code128Options_">Code128(string, Code128Options?)</a> and <a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Gs1_128_System_String_Egami_Barcodes_Code128Options_">Gs1_128(string, Code128Options?)</a> make a symbol.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Barcodes.Code39Options.html">Code39Options</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Code39_System_String_Egami_Barcodes_Code39Options_">Code39(string, Code39Options?)</a> makes a symbol.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Barcodes.EanUpcOptions.html">EanUpcOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Ean13_System_String_Egami_Barcodes_EanUpcOptions_">Ean13(string, EanUpcOptions?)</a>, <a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Ean8_System_String_Egami_Barcodes_EanUpcOptions_">Ean8(string, EanUpcOptions?)</a>,
+<a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_UpcA_System_String_Egami_Barcodes_EanUpcOptions_">UpcA(string, EanUpcOptions?)</a> and <a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_UpcE_System_String_Egami_Barcodes_EanUpcOptions_">UpcE(string, EanUpcOptions?)</a> make a symbol.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Barcodes.Gs1.html">Gs1</a></dt>
+      <dd><p>Reads GS1 element strings from their human-readable form, such as <code>(01)09501101530003(17)261231(10)AB12</code>, and checks each
+against the GS1 General Specifications: the AI is defined, the characters and lengths fit it, and check digits, dates and times
+are right. GS1-128, GS1 Data Matrix and GS1 QR encode the result.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Barcodes.Gs1ElementString.html">Gs1ElementString</a></dt>
+      <dd><p>One GS1 element string: an Application Identifier and its data field, checked against the GS1 General Specifications
+(characters, lengths, check digits, dates and times). <a class="xref" href="Egami.Barcodes.Gs1.html#Egami_Barcodes_Gs1_Parse_System_String_">Parse(string)</a> makes a list of them from text such as
+<code>(01)09501101530003(17)261231</code>, and the GS1 symbols encode that list.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Barcodes.ItfOptions.html">ItfOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Itf_System_String_Egami_Barcodes_ItfOptions_">Itf(string, ItfOptions?)</a> and <a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Itf14_System_String_Egami_Barcodes_ItfOptions_">Itf14(string, ItfOptions?)</a> make a symbol.</p>
+</dd>
+    </dl>
     <h3 id="enums">
 Enums
 </h3>

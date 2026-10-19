@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Barcodes_Barcode" data-uid="Egami.Barcodes.Barcode" class="text-break">
-Class Barcode  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L18"><i class="bi bi-code-slash"></i></a>
+Class Barcode  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.EanUpc.cs/#L5"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -193,7 +193,7 @@ Console.WriteLine($"{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} 
 
   <h3 id="Egami_Barcodes_Barcode_HumanReadableText" data-uid="Egami.Barcodes.Barcode.HumanReadableText">
   HumanReadableText
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L42"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the text printed under a linear symbol, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>; it is drawn when <a class="xref" href="Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_Font">Font</a> is set.</p>
@@ -257,11 +257,12 @@ Console.WriteLine($"{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} 
 
   <h3 id="Egami_Barcodes_Barcode_QuietZone" data-uid="Egami.Barcodes.Barcode.QuietZone">
   QuietZone
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L39"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the width of the clear margin readers need around the symbol, in modules: 4 for QR, 1 for Data Matrix, 2 for PDF417,
-0 for Aztec and 10 at each end of a linear symbol.</p>
+  <div class="markdown level1 summary"><p>Gets the width of the clear margin readers need around the symbol, in modules: 4 for QR, 1 for Data Matrix, 2 for PDF417
+and 0 for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39 and ITF, 11 for EAN-13, 7 for EAN-8 and 9 for
+UPC-A and UPC-E.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -290,11 +291,245 @@ Console.WriteLine($"{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} 
 </h2>
 
 
+  <a id="Egami_Barcodes_Barcode_Code128_" data-uid="Egami.Barcodes.Barcode.Code128*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Code128_System_String_Egami_Barcodes_Code128Options_" data-uid="Egami.Barcodes.Barcode.Code128(System.String,Egami.Barcodes.Code128Options)">
+  Code128(string, Code128Options?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code128.cs/#L23"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a Code 128 barcode (ISO/IEC 15417). The code sets A, B and C, and the changes and shifts between them, are picked to
+give the shortest symbol; runs of digits go in pairs in code set C. Characters 128 to 255 (ISO 8859-1) take an FNC4 each.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Code128(string text, Code128Options? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text, of characters 0 to 255.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.Code128Options.html">Code128Options</a></dt>
+    <dd><p>The bar height, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.Code128Options.html#Egami_Barcodes_Code128Options_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the text as its human-readable text (control characters shown as spaces).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Code128_System_String_Egami_Barcodes_Code128Options__examples">Examples</h4>
+  <pre><code class="lang-csharp">// The shortest mix of code sets A, B and C; the digits go in pairs.
+Barcode code = Barcode.Code128("ORDER-1180042", new Code128Options { Height = 40 });
+using Raster&lt;Gray8&gt; image = code.ToRaster(pixelsPerModule: 2);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is empty, longer than 1000 characters, or has a character above 255.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Code39_" data-uid="Egami.Barcodes.Barcode.Code39*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Code39_System_String_Egami_Barcodes_Code39Options_" data-uid="Egami.Barcodes.Barcode.Code39(System.String,Egami.Barcodes.Code39Options)">
+  Code39(string, Code39Options?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code39.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a Code 39 barcode (ISO/IEC 16388): digits, capital letters, space and <code>- . $ / + %</code>. Other ASCII characters are
+written as Full ASCII pairs when <a class="xref" href="Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_FullAscii">FullAscii</a> allows it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Code39(string text, Code39Options? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.Code39Options.html">Code39Options</a></dt>
+    <dd><p>The check character, Full ASCII, wide ratio and height, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the text (and a check character, when there is one and the text is not Full ASCII) as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Code39_System_String_Egami_Barcodes_Code39Options__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Capitals, digits and a few symbols; lowercase switches to Full ASCII on its own.
+Barcode part = Barcode.Code39("PART-0042", new Code39Options { CheckDigit = true });
+Console.WriteLine(part.HumanReadableText); // PART-0042 and its mod 43 check character</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is empty, longer than 1000 characters, or has a character Code 39 cannot hold.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Ean13_" data-uid="Egami.Barcodes.Barcode.Ean13*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Ean13_System_String_Egami_Barcodes_EanUpcOptions_" data-uid="Egami.Barcodes.Barcode.Ean13(System.String,Egami.Barcodes.EanUpcOptions)">
+  Ean13(string, EanUpcOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.EanUpc.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes an EAN-13 barcode (ISO/IEC 15420), such as a GTIN-13 or an ISBN. Twelve digits get their check digit added; thirteen
+are checked. With a <a class="xref" href="Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_Font">Font</a>, the first digit is drawn left of the symbol and the others
+between the guard bars, which reach down into the text line.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Ean13(string digits, EanUpcOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>digits</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>12 or 13 digits.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.EanUpcOptions.html">EanUpcOptions</a></dt>
+    <dd><p>The add-on and height, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.EanUpcOptions.html#Egami_Barcodes_EanUpcOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the 13 digits (and the add-on after a space) as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Ean13_System_String_Egami_Barcodes_EanUpcOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A book: the ISBN as EAN-13, its check digit added, and the price as an EAN-5 add-on.
+Barcode book = Barcode.Ean13("978020137962", new EanUpcOptions { AddOn = "52495" });
+
+// Fitted into a rectangle, with the digits between the guard bars.
+using Raster&lt;Rgba8&gt; label = Raster.Create(400, 200, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
+{
+    canvas.DrawBarcode(book, new RectF(10, 10, 380, 180), Rgba8.Black, new BarcodeDrawOptions { Font = font });
+}
+
+// A UPC-A number written in its short UPC-E form.
+Barcode small = Barcode.UpcE("042100005264");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is not 12 or 13 digits, or the check digit is wrong.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Ean8_" data-uid="Egami.Barcodes.Barcode.Ean8*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Ean8_System_String_Egami_Barcodes_EanUpcOptions_" data-uid="Egami.Barcodes.Barcode.Ean8(System.String,Egami.Barcodes.EanUpcOptions)">
+  Ean8(string, EanUpcOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.EanUpc.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes an EAN-8 barcode (ISO/IEC 15420) for small packages. Seven digits get their check digit added; eight are checked.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Ean8(string digits, EanUpcOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>digits</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>7 or 8 digits.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.EanUpcOptions.html">EanUpcOptions</a></dt>
+    <dd><p>The add-on and height, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.EanUpcOptions.html#Egami_Barcodes_EanUpcOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the 8 digits (and the add-on after a space) as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Ean8_System_String_Egami_Barcodes_EanUpcOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A book: the ISBN as EAN-13, its check digit added, and the price as an EAN-5 add-on.
+Barcode book = Barcode.Ean13("978020137962", new EanUpcOptions { AddOn = "52495" });
+
+// Fitted into a rectangle, with the digits between the guard bars.
+using Raster&lt;Rgba8&gt; label = Raster.Create(400, 200, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
+{
+    canvas.DrawBarcode(book, new RectF(10, 10, 380, 180), Rgba8.Black, new BarcodeDrawOptions { Font = font });
+}
+
+// A UPC-A number written in its short UPC-E form.
+Barcode small = Barcode.UpcE("042100005264");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is not 7 or 8 digits, or the check digit is wrong.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Barcodes_Barcode_FromModules_" data-uid="Egami.Barcodes.Barcode.FromModules*"></a>
 
   <h3 id="Egami_Barcodes_Barcode_FromModules_Egami_Barcodes_BarcodeFormat_Egami_Barcodes_BarcodeModules_System_String_" data-uid="Egami.Barcodes.Barcode.FromModules(Egami.Barcodes.BarcodeFormat,Egami.Barcodes.BarcodeModules,System.String)">
   FromModules(BarcodeFormat, BarcodeModules, string?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L54"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes a barcode from modules you already have, with the quiet zone of its format's standard.</p>
@@ -344,11 +579,249 @@ Console.WriteLine($"{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} 
 
 
 
+  <a id="Egami_Barcodes_Barcode_Gs1_128_" data-uid="Egami.Barcodes.Barcode.Gs1_128*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Gs1_128_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_Code128Options_" data-uid="Egami.Barcodes.Barcode.Gs1_128(System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString},Egami.Barcodes.Code128Options)">
+  Gs1_128(IReadOnlyList&lt;Gs1ElementString&gt;, Code128Options?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code128.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a GS1-128 barcode: Code 128 with FNC1 first and the element strings after it, an FNC1 after each one whose AI has no
+predefined length unless it is the last.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[SuppressMessage(&quot;Naming&quot;, &quot;CA1707:Identifiers should not contain underscores&quot;, Justification = &quot;GS1-128 is the symbology&#39;s name; Gs1128 would read as one number.&quot;)]
+public static Barcode Gs1_128(IReadOnlyList&lt;Gs1ElementString&gt; elements, Code128Options? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>elements</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Barcodes.Gs1ElementString.html">Gs1ElementString</a>&gt;</dt>
+    <dd><p>The element strings, from <a class="xref" href="Egami.Barcodes.Gs1.html#Egami_Barcodes_Gs1_Parse_System_String_">Parse(string)</a> or <a class="xref" href="Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Create_System_String_System_String_">Create(string, string)</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.Code128Options.html">Code128Options</a></dt>
+    <dd><p>The bar height, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.Code128Options.html#Egami_Barcodes_Code128Options_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the element strings in their human-readable form as its text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Gs1_128_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_Code128Options__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Each element string is checked: the AI, the length, the GTIN's check digit, the date.
+IReadOnlyList&lt;Gs1ElementString&gt; elements = Gs1.Parse("(01)09501101530003(17)261231(10)AB12");
+Barcode label = Barcode.Gs1_128(elements);
+
+// Mistakes say what is wrong.
+if (!Gs1.TryParse("(01)09501101530004", out _))
+{
+    Console.WriteLine("(01) has a wrong check digit");
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are no element strings, or more than 1000 characters.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Gs1_128_" data-uid="Egami.Barcodes.Barcode.Gs1_128*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Gs1_128_System_String_Egami_Barcodes_Code128Options_" data-uid="Egami.Barcodes.Barcode.Gs1_128(System.String,Egami.Barcodes.Code128Options)">
+  Gs1_128(string, Code128Options?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code128.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a GS1-128 barcode from element strings in their human-readable form, such as <code>(01)09501101530003(10)AB12</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[SuppressMessage(&quot;Naming&quot;, &quot;CA1707:Identifiers should not contain underscores&quot;, Justification = &quot;GS1-128 is the symbology&#39;s name; Gs1128 would read as one number.&quot;)]
+public static Barcode Gs1_128(string elements, Code128Options? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>elements</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The element strings, each AI in parentheses; see <a class="xref" href="Egami.Barcodes.Gs1.html#Egami_Barcodes_Gs1_Parse_System_String_">Parse(string)</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.Code128Options.html">Code128Options</a></dt>
+    <dd><p>The bar height, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.Code128Options.html#Egami_Barcodes_Code128Options_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Gs1_128_System_String_Egami_Barcodes_Code128Options__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Each element string is checked: the AI, the length, the GTIN's check digit, the date.
+IReadOnlyList&lt;Gs1ElementString&gt; elements = Gs1.Parse("(01)09501101530003(17)261231(10)AB12");
+Barcode label = Barcode.Gs1_128(elements);
+
+// Mistakes say what is wrong.
+if (!Gs1.TryParse("(01)09501101530004", out _))
+{
+    Console.WriteLine("(01) has a wrong check digit");
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.formatexception">FormatException</a></dt>
+    <dd><p>The text is not valid element strings; the message says which and how.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are more than 1000 characters.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Itf_" data-uid="Egami.Barcodes.Barcode.Itf*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Itf_System_String_Egami_Barcodes_ItfOptions_" data-uid="Egami.Barcodes.Barcode.Itf(System.String,Egami.Barcodes.ItfOptions)">
+  Itf(string, ItfOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code39.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes an Interleaved 2 of 5 barcode (ISO/IEC 16390) from digits; an odd number of digits gets a leading zero, as the
+symbology holds pairs.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Itf(string digits, ItfOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>digits</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The digits.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.ItfOptions.html">ItfOptions</a></dt>
+    <dd><p>The wide ratio, bearer bars and height, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.ItfOptions.html#Egami_Barcodes_ItfOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the digits it holds as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Itf_System_String_Egami_Barcodes_ItfOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A GTIN-14 on a carton: the check digit is added, and bearer bars frame the symbol.
+Barcode carton = Barcode.Itf14("1540014128876");
+using Raster&lt;Gray8&gt; image = carton.ToRaster(pixelsPerModule: 3);
+
+// Plain Interleaved 2 of 5 with a 2:1 wide ratio and no bearers.
+Barcode itf = Barcode.Itf("0123456789", new ItfOptions { WideRatio = 2 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is empty, longer than 1000 characters, or has a character that is not a digit.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Itf14_" data-uid="Egami.Barcodes.Barcode.Itf14*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Itf14_System_String_Egami_Barcodes_ItfOptions_" data-uid="Egami.Barcodes.Barcode.Itf14(System.String,Egami.Barcodes.ItfOptions)">
+  Itf14(string, ItfOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Code39.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes an ITF-14 barcode (GS1): a GTIN-14 as Interleaved 2 of 5, framed by bearer bars. Thirteen digits get their check digit
+added; fourteen are checked.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Itf14(string digits, ItfOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>digits</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>13 or 14 digits.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.ItfOptions.html">ItfOptions</a></dt>
+    <dd><p>The wide ratio, bearer bars and height, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.ItfOptions.html#Egami_Barcodes_ItfOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the 14 digits as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Itf14_System_String_Egami_Barcodes_ItfOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A GTIN-14 on a carton: the check digit is added, and bearer bars frame the symbol.
+Barcode carton = Barcode.Itf14("1540014128876");
+using Raster&lt;Gray8&gt; image = carton.ToRaster(pixelsPerModule: 3);
+
+// Plain Interleaved 2 of 5 with a 2:1 wide ratio and no bearers.
+Barcode itf = Barcode.Itf("0123456789", new ItfOptions { WideRatio = 2 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is not 13 or 14 digits, or the check digit is wrong.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Barcodes_Barcode_ToPath_" data-uid="Egami.Barcodes.Barcode.ToPath*"></a>
 
   <h3 id="Egami_Barcodes_Barcode_ToPath_System_Single_Egami_Barcodes_BarcodeDrawOptions_" data-uid="Egami.Barcodes.Barcode.ToPath(System.Single,Egami.Barcodes.BarcodeDrawOptions)">
   ToPath(float, BarcodeDrawOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L89"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the symbol as one path: a rectangle per run of dark modules in a row, all filled with the nonzero rule. The quiet
@@ -403,7 +876,7 @@ string svg = path.ToSvg();</code></pre>
 
   <h3 id="Egami_Barcodes_Barcode_ToRaster_System_Int32_Egami_Barcodes_BarcodeDrawOptions_" data-uid="Egami.Barcodes.Barcode.ToRaster(System.Int32,Egami.Barcodes.BarcodeDrawOptions)">
   ToRaster(int, BarcodeDrawOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L112"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Renders the symbol black on white, each module a square of whole pixels, with the quiet zone around it and, when
@@ -453,11 +926,140 @@ using Raster&lt;Gray8&gt; image = qr.ToRaster(pixelsPerModule: 4);</code></pre>
 
 
 
+  <a id="Egami_Barcodes_Barcode_UpcA_" data-uid="Egami.Barcodes.Barcode.UpcA*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_UpcA_System_String_Egami_Barcodes_EanUpcOptions_" data-uid="Egami.Barcodes.Barcode.UpcA(System.String,Egami.Barcodes.EanUpcOptions)">
+  UpcA(string, EanUpcOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.EanUpc.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a UPC-A barcode (ISO/IEC 15420). Eleven digits get their check digit added; twelve are checked. With a
+<a class="xref" href="Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_Font">Font</a>, the first and last digits are drawn outside the symbol, and their bars reach down
+with the guard bars.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode UpcA(string digits, EanUpcOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>digits</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>11 or 12 digits.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.EanUpcOptions.html">EanUpcOptions</a></dt>
+    <dd><p>The add-on and height, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.EanUpcOptions.html#Egami_Barcodes_EanUpcOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the 12 digits (and the add-on after a space) as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_UpcA_System_String_Egami_Barcodes_EanUpcOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A book: the ISBN as EAN-13, its check digit added, and the price as an EAN-5 add-on.
+Barcode book = Barcode.Ean13("978020137962", new EanUpcOptions { AddOn = "52495" });
+
+// Fitted into a rectangle, with the digits between the guard bars.
+using Raster&lt;Rgba8&gt; label = Raster.Create(400, 200, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
+{
+    canvas.DrawBarcode(book, new RectF(10, 10, 380, 180), Rgba8.Black, new BarcodeDrawOptions { Font = font });
+}
+
+// A UPC-A number written in its short UPC-E form.
+Barcode small = Barcode.UpcE("042100005264");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is not 11 or 12 digits, or the check digit is wrong.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_UpcE_" data-uid="Egami.Barcodes.Barcode.UpcE*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_UpcE_System_String_Egami_Barcodes_EanUpcOptions_" data-uid="Egami.Barcodes.Barcode.UpcE(System.String,Egami.Barcodes.EanUpcOptions)">
+  UpcE(string, EanUpcOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.EanUpc.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a UPC-E barcode (ISO/IEC 15420), the zero-suppressed form of UPC-A. It takes the six UPC-E digits (number system 0),
+the number system (0 or 1) and the six digits, those and the check digit, or a UPC-A number of 11 or 12 digits, which is
+compressed to UPC-E.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode UpcE(string digits, EanUpcOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>digits</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>6, 7 or 8 UPC-E digits, or 11 or 12 UPC-A digits.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.EanUpcOptions.html">EanUpcOptions</a></dt>
+    <dd><p>The add-on and height, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.EanUpcOptions.html#Egami_Barcodes_EanUpcOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the number system, six digits and check digit (and the add-on after a space) as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_UpcE_System_String_Egami_Barcodes_EanUpcOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A book: the ISBN as EAN-13, its check digit added, and the price as an EAN-5 add-on.
+Barcode book = Barcode.Ean13("978020137962", new EanUpcOptions { AddOn = "52495" });
+
+// Fitted into a rectangle, with the digits between the guard bars.
+using Raster&lt;Rgba8&gt; label = Raster.Create(400, 200, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
+{
+    canvas.DrawBarcode(book, new RectF(10, 10, 380, 180), Rgba8.Black, new BarcodeDrawOptions { Font = font });
+}
+
+// A UPC-A number written in its short UPC-E form.
+Barcode small = Barcode.UpcE("042100005264");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is not 6, 7, 8, 11 or 12 digits, the number system is not 0 or 1, the check digit is wrong, or a UPC-A number
+has too few zeros to compress.</p>
+</dd>
+  </dl>
+
+
+
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L18" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.EanUpc.cs/#L5" class="edit-link">Edit this page</a>
         </div>
 
 

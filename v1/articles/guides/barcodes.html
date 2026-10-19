@@ -118,10 +118,76 @@ for (int y = 0; y &lt; grid.Height; y++)
 }
 
 Console.WriteLine($&quot;{bars.Width} modules wide, bars {string.Join(' ', bars.Runs.ToArray())}&quot;);
+</code></pre><h2 id="linear-barcodes">Linear barcodes</h2>
+<h3 id="code-128">Code 128</h3>
+<p><code>Barcode.Code128</code> writes any text of characters 0 to 255. It picks the code sets A, B and C, and the changes and shifts
+between them, that give the shortest symbol, so runs of digits go in pairs. <code>Code128Options.Height</code> sets the bar height in
+modules when the barcode is drawn at a module size; drawn into a rectangle, the bars fill it.</p>
+<pre><code class="lang-csharp">// The shortest mix of code sets A, B and C; the digits go in pairs.
+Barcode code = Barcode.Code128(&quot;ORDER-1180042&quot;, new Code128Options { Height = 40 });
+using Raster&lt;Gray8&gt; image = code.ToRaster(pixelsPerModule: 2);
+</code></pre><h3 id="gs1-128-and-gs1-element-strings">GS1-128 and GS1 element strings</h3>
+<p><code>Gs1.Parse</code> reads GS1 element strings written with each Application Identifier in parentheses, such as
+<code>(01)09501101530003(17)261231</code>, and checks each one against the GS1 General Specifications: the AI is defined, the
+characters and lengths fit it, and check digits, dates and times are right. A bad field throws a <code>FormatException</code> that says
+which AI is wrong and how; <code>Gs1.TryParse</code> returns <code>false</code> instead. Each <code>Gs1ElementString</code> has its <code>Ai</code>, <code>Value</code> and GS1's
+<code>Title</code> for the AI. A parenthesis inside a value is written <code>\(</code>.</p>
+<p><code>Barcode.Gs1_128</code> encodes element strings as Code 128 with FNC1 first, and an FNC1 after each field whose AI has no
+predefined length, unless it is the last.</p>
+<pre><code class="lang-csharp">// Each element string is checked: the AI, the length, the GTIN's check digit, the date.
+IReadOnlyList&lt;Gs1ElementString&gt; elements = Gs1.Parse(&quot;(01)09501101530003(17)261231(10)AB12&quot;);
+Barcode label = Barcode.Gs1_128(elements);
+
+// Mistakes say what is wrong.
+if (!Gs1.TryParse(&quot;(01)09501101530004&quot;, out _))
+{
+    Console.WriteLine(&quot;(01) has a wrong check digit&quot;);
+}
+</code></pre>
+<p>The checks come from the GS1 Barcode Syntax Dictionary. Checks that need outside lists (country and currency codes, company
+prefixes) and the rules about which AIs go together are not applied.</p>
+<h3 id="code-39">Code 39</h3>
+<p><code>Barcode.Code39</code> writes digits, capital letters, space and <code>- . $ / + %</code>. Text with other ASCII characters, such as
+lowercase letters, is written as Full ASCII, which spells them as pairs; <code>Code39Options.FullAscii</code> forces it on or off. A
+reader has to be set to Full ASCII to read such text back. <code>Code39Options.CheckDigit</code> adds the mod 43 check character, and
+<code>WideRatio</code> makes wide elements 2 (the default) or 3 times as wide as narrow ones.</p>
+<pre><code class="lang-csharp">// Capitals, digits and a few symbols; lowercase switches to Full ASCII on its own.
+Barcode part = Barcode.Code39(&quot;PART-0042&quot;, new Code39Options { CheckDigit = true });
+Console.WriteLine(part.HumanReadableText); // PART-0042 and its mod 43 check character
+</code></pre><h3 id="itf-and-itf-14">ITF and ITF-14</h3>
+<p><code>Barcode.Itf</code> writes Interleaved 2 of 5 from digits; an odd number of digits gets a leading zero. <code>Barcode.Itf14</code> writes a
+GTIN-14 for cartons: 13 digits get their check digit added, 14 are checked, and bearer bars 5 modules thick frame the symbol
+and its quiet zone. <code>ItfOptions</code> sets the wide ratio (3 by default), the bearer bars and the height.</p>
+<pre><code class="lang-csharp">// A GTIN-14 on a carton: the check digit is added, and bearer bars frame the symbol.
+Barcode carton = Barcode.Itf14(&quot;1540014128876&quot;);
+using Raster&lt;Gray8&gt; image = carton.ToRaster(pixelsPerModule: 3);
+
+// Plain Interleaved 2 of 5 with a 2:1 wide ratio and no bearers.
+Barcode itf = Barcode.Itf(&quot;0123456789&quot;, new ItfOptions { WideRatio = 2 });
+</code></pre><h3 id="ean-and-upc">EAN and UPC</h3>
+<p><code>Barcode.Ean13</code>, <code>Barcode.Ean8</code>, <code>Barcode.UpcA</code> and <code>Barcode.UpcE</code> write retail barcodes. The check digit is added when it is
+left out and checked when it is given; a wrong one throws. <code>Barcode.UpcE</code> also takes a UPC-A number and writes its
+zero-suppressed form, or throws when the number has too few zeros. <code>EanUpcOptions.AddOn</code> adds a 2-digit or 5-digit add-on to
+the right, such as a magazine's issue or a book's price.</p>
+<p>With a font, the digits are drawn as on a product: EAN-13's first digit left of the symbol and the others between the guard
+bars, which reach down into the text line, and an add-on's digits above its bars. Bar heights default to the standards'
+nominal heights.</p>
+<pre><code class="lang-csharp">// A book: the ISBN as EAN-13, its check digit added, and the price as an EAN-5 add-on.
+Barcode book = Barcode.Ean13(&quot;978020137962&quot;, new EanUpcOptions { AddOn = &quot;52495&quot; });
+
+// Fitted into a rectangle, with the digits between the guard bars.
+using Raster&lt;Rgba8&gt; label = Raster.Create(400, 200, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
+{
+    canvas.DrawBarcode(book, new RectF(10, 10, 380, 180), Rgba8.Black, new BarcodeDrawOptions { Font = font });
+}
+
+// A UPC-A number written in its short UPC-E form.
+Barcode small = Barcode.UpcE(&quot;042100005264&quot;);
 </code></pre><h2 id="barcodes-1">Barcodes</h2>
 <p>A <code>Barcode</code> is one symbol: its <code>BarcodeFormat</code>, its <code>Modules</code>, the <code>QuietZone</code> its standard asks for in modules (4 for QR, 1 for
-Data Matrix, 2 for PDF417, none for Aztec and 10 at each end of a linear symbol) and the <code>HumanReadableText</code> printed under a
-linear symbol. <code>Barcode.FromModules</code> makes one from modules you already have.</p>
+Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39 and ITF, 11 for EAN-13, 7
+for EAN-8 and 9 for UPC) and the <code>HumanReadableText</code> printed under a linear symbol. <code>Barcode.FromModules</code> makes one from modules you already have.</p>
 <pre><code class="lang-csharp">// Modules from another encoder become a barcode with the quiet zone of their standard: 4 modules for QR.
 Barcode qr = Barcode.FromModules(BarcodeFormat.Qr, modules);
 Console.WriteLine($&quot;{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} on each side&quot;);

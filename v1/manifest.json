@@ -293,6 +293,90 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.Code128Options.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.Code128Options.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.Code128Options",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.Code128Options.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.Code128(System.String%2cEgami.Barcodes.Code128Options)\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Barcodes.Barcode.Gs1_128(System.String%2cEgami.Barcodes.Code128Options)\" data-throw-if-not-resolved=\"false\"></xref> make a symbol.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.Code39Options.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.Code39Options.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.Code39Options",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.Code39Options.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.Code39(System.String%2cEgami.Barcodes.Code39Options)\" data-throw-if-not-resolved=\"false\"></xref> makes a symbol.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.EanUpcOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.EanUpcOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.EanUpcOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.EanUpcOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.Ean13(System.String%2cEgami.Barcodes.EanUpcOptions)\" data-throw-if-not-resolved=\"false\"></xref>, <xref href=\"Egami.Barcodes.Barcode.Ean8(System.String%2cEgami.Barcodes.EanUpcOptions)\" data-throw-if-not-resolved=\"false\"></xref>,\n<xref href=\"Egami.Barcodes.Barcode.UpcA(System.String%2cEgami.Barcodes.EanUpcOptions)\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Barcodes.Barcode.UpcE(System.String%2cEgami.Barcodes.EanUpcOptions)\" data-throw-if-not-resolved=\"false\"></xref> make a symbol.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.Gs1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.Gs1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.Gs1",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.Gs1.yml\" sourcestartlinenumber=\"1\">Reads GS1 element strings from their human-readable form, such as <code>(01)09501101530003(17)261231(10)AB12</code>, and checks each\nagainst the GS1 General Specifications: the AI is defined, the characters and lengths fit it, and check digits, dates and times\nare right. GS1-128, GS1 Data Matrix and GS1 QR encode the result.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.Gs1ElementString.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.Gs1ElementString.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.Gs1ElementString",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.Gs1ElementString.yml\" sourcestartlinenumber=\"1\">One GS1 element string: an Application Identifier and its data field, checked against the GS1 General Specifications\n(characters, lengths, check digits, dates and times). <xref href=\"Egami.Barcodes.Gs1.Parse(System.String)\" data-throw-if-not-resolved=\"false\"></xref> makes a list of them from text such as\n<code>(01)09501101530003(17)261231</code>, and the GS1 symbols encode that list.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.ItfOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.ItfOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.ItfOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.ItfOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.Itf(System.String%2cEgami.Barcodes.ItfOptions)\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Barcodes.Barcode.Itf14(System.String%2cEgami.Barcodes.ItfOptions)\" data-throw-if-not-resolved=\"false\"></xref> make a symbol.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Barcodes.yml",
       "output": {
         ".html": {

@@ -929,6 +929,70 @@ references:
   commentId: T:Egami.Barcodes.Barcode
   fullName: Egami.Barcodes.Barcode
   nameWithType: Barcode
+- uid: Egami.Barcodes.Barcode.Code128(System.String,Egami.Barcodes.Code128Options)
+  name: Code128(string, Code128Options?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Code128_System_String_Egami_Barcodes_Code128Options_
+  commentId: M:Egami.Barcodes.Barcode.Code128(System.String,Egami.Barcodes.Code128Options)
+  name.vb: Code128(String, Code128Options)
+  fullName: Egami.Barcodes.Barcode.Code128(string, Egami.Barcodes.Code128Options?)
+  fullName.vb: Egami.Barcodes.Barcode.Code128(String, Egami.Barcodes.Code128Options)
+  nameWithType: Barcode.Code128(string, Code128Options?)
+  nameWithType.vb: Barcode.Code128(String, Code128Options)
+- uid: Egami.Barcodes.Barcode.Code128*
+  name: Code128
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Code128_
+  commentId: Overload:Egami.Barcodes.Barcode.Code128
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.Code128
+  nameWithType: Barcode.Code128
+- uid: Egami.Barcodes.Barcode.Code39(System.String,Egami.Barcodes.Code39Options)
+  name: Code39(string, Code39Options?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Code39_System_String_Egami_Barcodes_Code39Options_
+  commentId: M:Egami.Barcodes.Barcode.Code39(System.String,Egami.Barcodes.Code39Options)
+  name.vb: Code39(String, Code39Options)
+  fullName: Egami.Barcodes.Barcode.Code39(string, Egami.Barcodes.Code39Options?)
+  fullName.vb: Egami.Barcodes.Barcode.Code39(String, Egami.Barcodes.Code39Options)
+  nameWithType: Barcode.Code39(string, Code39Options?)
+  nameWithType.vb: Barcode.Code39(String, Code39Options)
+- uid: Egami.Barcodes.Barcode.Code39*
+  name: Code39
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Code39_
+  commentId: Overload:Egami.Barcodes.Barcode.Code39
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.Code39
+  nameWithType: Barcode.Code39
+- uid: Egami.Barcodes.Barcode.Ean13(System.String,Egami.Barcodes.EanUpcOptions)
+  name: Ean13(string, EanUpcOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Ean13_System_String_Egami_Barcodes_EanUpcOptions_
+  commentId: M:Egami.Barcodes.Barcode.Ean13(System.String,Egami.Barcodes.EanUpcOptions)
+  name.vb: Ean13(String, EanUpcOptions)
+  fullName: Egami.Barcodes.Barcode.Ean13(string, Egami.Barcodes.EanUpcOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.Ean13(String, Egami.Barcodes.EanUpcOptions)
+  nameWithType: Barcode.Ean13(string, EanUpcOptions?)
+  nameWithType.vb: Barcode.Ean13(String, EanUpcOptions)
+- uid: Egami.Barcodes.Barcode.Ean13*
+  name: Ean13
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Ean13_
+  commentId: Overload:Egami.Barcodes.Barcode.Ean13
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.Ean13
+  nameWithType: Barcode.Ean13
+- uid: Egami.Barcodes.Barcode.Ean8(System.String,Egami.Barcodes.EanUpcOptions)
+  name: Ean8(string, EanUpcOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Ean8_System_String_Egami_Barcodes_EanUpcOptions_
+  commentId: M:Egami.Barcodes.Barcode.Ean8(System.String,Egami.Barcodes.EanUpcOptions)
+  name.vb: Ean8(String, EanUpcOptions)
+  fullName: Egami.Barcodes.Barcode.Ean8(string, Egami.Barcodes.EanUpcOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.Ean8(String, Egami.Barcodes.EanUpcOptions)
+  nameWithType: Barcode.Ean8(string, EanUpcOptions?)
+  nameWithType.vb: Barcode.Ean8(String, EanUpcOptions)
+- uid: Egami.Barcodes.Barcode.Ean8*
+  name: Ean8
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Ean8_
+  commentId: Overload:Egami.Barcodes.Barcode.Ean8
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.Ean8
+  nameWithType: Barcode.Ean8
 - uid: Egami.Barcodes.Barcode.Format
   name: Format
   href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Format
@@ -958,6 +1022,31 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.Barcode.FromModules
   nameWithType: Barcode.FromModules
+- uid: Egami.Barcodes.Barcode.Gs1_128(System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString},Egami.Barcodes.Code128Options)
+  name: Gs1_128(IReadOnlyList<Gs1ElementString>, Code128Options?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Gs1_128_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_Code128Options_
+  commentId: M:Egami.Barcodes.Barcode.Gs1_128(System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString},Egami.Barcodes.Code128Options)
+  name.vb: Gs1_128(IReadOnlyList(Of Gs1ElementString), Code128Options)
+  fullName: Egami.Barcodes.Barcode.Gs1_128(System.Collections.Generic.IReadOnlyList<Egami.Barcodes.Gs1ElementString>, Egami.Barcodes.Code128Options?)
+  fullName.vb: Egami.Barcodes.Barcode.Gs1_128(System.Collections.Generic.IReadOnlyList(Of Egami.Barcodes.Gs1ElementString), Egami.Barcodes.Code128Options)
+  nameWithType: Barcode.Gs1_128(IReadOnlyList<Gs1ElementString>, Code128Options?)
+  nameWithType.vb: Barcode.Gs1_128(IReadOnlyList(Of Gs1ElementString), Code128Options)
+- uid: Egami.Barcodes.Barcode.Gs1_128(System.String,Egami.Barcodes.Code128Options)
+  name: Gs1_128(string, Code128Options?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Gs1_128_System_String_Egami_Barcodes_Code128Options_
+  commentId: M:Egami.Barcodes.Barcode.Gs1_128(System.String,Egami.Barcodes.Code128Options)
+  name.vb: Gs1_128(String, Code128Options)
+  fullName: Egami.Barcodes.Barcode.Gs1_128(string, Egami.Barcodes.Code128Options?)
+  fullName.vb: Egami.Barcodes.Barcode.Gs1_128(String, Egami.Barcodes.Code128Options)
+  nameWithType: Barcode.Gs1_128(string, Code128Options?)
+  nameWithType.vb: Barcode.Gs1_128(String, Code128Options)
+- uid: Egami.Barcodes.Barcode.Gs1_128*
+  name: Gs1_128
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Gs1_128_
+  commentId: Overload:Egami.Barcodes.Barcode.Gs1_128
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.Gs1_128
+  nameWithType: Barcode.Gs1_128
 - uid: Egami.Barcodes.Barcode.HumanReadableText
   name: HumanReadableText
   href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_HumanReadableText
@@ -971,6 +1060,38 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.Barcode.HumanReadableText
   nameWithType: Barcode.HumanReadableText
+- uid: Egami.Barcodes.Barcode.Itf(System.String,Egami.Barcodes.ItfOptions)
+  name: Itf(string, ItfOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Itf_System_String_Egami_Barcodes_ItfOptions_
+  commentId: M:Egami.Barcodes.Barcode.Itf(System.String,Egami.Barcodes.ItfOptions)
+  name.vb: Itf(String, ItfOptions)
+  fullName: Egami.Barcodes.Barcode.Itf(string, Egami.Barcodes.ItfOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.Itf(String, Egami.Barcodes.ItfOptions)
+  nameWithType: Barcode.Itf(string, ItfOptions?)
+  nameWithType.vb: Barcode.Itf(String, ItfOptions)
+- uid: Egami.Barcodes.Barcode.Itf*
+  name: Itf
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Itf_
+  commentId: Overload:Egami.Barcodes.Barcode.Itf
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.Itf
+  nameWithType: Barcode.Itf
+- uid: Egami.Barcodes.Barcode.Itf14(System.String,Egami.Barcodes.ItfOptions)
+  name: Itf14(string, ItfOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Itf14_System_String_Egami_Barcodes_ItfOptions_
+  commentId: M:Egami.Barcodes.Barcode.Itf14(System.String,Egami.Barcodes.ItfOptions)
+  name.vb: Itf14(String, ItfOptions)
+  fullName: Egami.Barcodes.Barcode.Itf14(string, Egami.Barcodes.ItfOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.Itf14(String, Egami.Barcodes.ItfOptions)
+  nameWithType: Barcode.Itf14(string, ItfOptions?)
+  nameWithType.vb: Barcode.Itf14(String, ItfOptions)
+- uid: Egami.Barcodes.Barcode.Itf14*
+  name: Itf14
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Itf14_
+  commentId: Overload:Egami.Barcodes.Barcode.Itf14
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.Itf14
+  nameWithType: Barcode.Itf14
 - uid: Egami.Barcodes.Barcode.Modules
   name: Modules
   href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Modules
@@ -1029,6 +1150,38 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.Barcode.ToRaster
   nameWithType: Barcode.ToRaster
+- uid: Egami.Barcodes.Barcode.UpcA(System.String,Egami.Barcodes.EanUpcOptions)
+  name: UpcA(string, EanUpcOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_UpcA_System_String_Egami_Barcodes_EanUpcOptions_
+  commentId: M:Egami.Barcodes.Barcode.UpcA(System.String,Egami.Barcodes.EanUpcOptions)
+  name.vb: UpcA(String, EanUpcOptions)
+  fullName: Egami.Barcodes.Barcode.UpcA(string, Egami.Barcodes.EanUpcOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.UpcA(String, Egami.Barcodes.EanUpcOptions)
+  nameWithType: Barcode.UpcA(string, EanUpcOptions?)
+  nameWithType.vb: Barcode.UpcA(String, EanUpcOptions)
+- uid: Egami.Barcodes.Barcode.UpcA*
+  name: UpcA
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_UpcA_
+  commentId: Overload:Egami.Barcodes.Barcode.UpcA
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.UpcA
+  nameWithType: Barcode.UpcA
+- uid: Egami.Barcodes.Barcode.UpcE(System.String,Egami.Barcodes.EanUpcOptions)
+  name: UpcE(string, EanUpcOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_UpcE_System_String_Egami_Barcodes_EanUpcOptions_
+  commentId: M:Egami.Barcodes.Barcode.UpcE(System.String,Egami.Barcodes.EanUpcOptions)
+  name.vb: UpcE(String, EanUpcOptions)
+  fullName: Egami.Barcodes.Barcode.UpcE(string, Egami.Barcodes.EanUpcOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.UpcE(String, Egami.Barcodes.EanUpcOptions)
+  nameWithType: Barcode.UpcE(string, EanUpcOptions?)
+  nameWithType.vb: Barcode.UpcE(String, EanUpcOptions)
+- uid: Egami.Barcodes.Barcode.UpcE*
+  name: UpcE
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_UpcE_
+  commentId: Overload:Egami.Barcodes.Barcode.UpcE
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.UpcE
+  nameWithType: Barcode.UpcE
 - uid: Egami.Barcodes.BarcodeDrawOptions
   name: BarcodeDrawOptions
   href: api/Egami.Barcodes.BarcodeDrawOptions.html
@@ -1299,6 +1452,362 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode
   nameWithType: CanvasBarcodeExtensions.DrawBarcode
+- uid: Egami.Barcodes.Code128Options
+  name: Code128Options
+  href: api/Egami.Barcodes.Code128Options.html
+  commentId: T:Egami.Barcodes.Code128Options
+  fullName: Egami.Barcodes.Code128Options
+  nameWithType: Code128Options
+- uid: Egami.Barcodes.Code128Options.Default
+  name: Default
+  href: api/Egami.Barcodes.Code128Options.html#Egami_Barcodes_Code128Options_Default
+  commentId: P:Egami.Barcodes.Code128Options.Default
+  fullName: Egami.Barcodes.Code128Options.Default
+  nameWithType: Code128Options.Default
+- uid: Egami.Barcodes.Code128Options.Default*
+  name: Default
+  href: api/Egami.Barcodes.Code128Options.html#Egami_Barcodes_Code128Options_Default_
+  commentId: Overload:Egami.Barcodes.Code128Options.Default
+  isSpec: "True"
+  fullName: Egami.Barcodes.Code128Options.Default
+  nameWithType: Code128Options.Default
+- uid: Egami.Barcodes.Code128Options.Height
+  name: Height
+  href: api/Egami.Barcodes.Code128Options.html#Egami_Barcodes_Code128Options_Height
+  commentId: P:Egami.Barcodes.Code128Options.Height
+  fullName: Egami.Barcodes.Code128Options.Height
+  nameWithType: Code128Options.Height
+- uid: Egami.Barcodes.Code128Options.Height*
+  name: Height
+  href: api/Egami.Barcodes.Code128Options.html#Egami_Barcodes_Code128Options_Height_
+  commentId: Overload:Egami.Barcodes.Code128Options.Height
+  isSpec: "True"
+  fullName: Egami.Barcodes.Code128Options.Height
+  nameWithType: Code128Options.Height
+- uid: Egami.Barcodes.Code39Options
+  name: Code39Options
+  href: api/Egami.Barcodes.Code39Options.html
+  commentId: T:Egami.Barcodes.Code39Options
+  fullName: Egami.Barcodes.Code39Options
+  nameWithType: Code39Options
+- uid: Egami.Barcodes.Code39Options.CheckDigit
+  name: CheckDigit
+  href: api/Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_CheckDigit
+  commentId: P:Egami.Barcodes.Code39Options.CheckDigit
+  fullName: Egami.Barcodes.Code39Options.CheckDigit
+  nameWithType: Code39Options.CheckDigit
+- uid: Egami.Barcodes.Code39Options.CheckDigit*
+  name: CheckDigit
+  href: api/Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_CheckDigit_
+  commentId: Overload:Egami.Barcodes.Code39Options.CheckDigit
+  isSpec: "True"
+  fullName: Egami.Barcodes.Code39Options.CheckDigit
+  nameWithType: Code39Options.CheckDigit
+- uid: Egami.Barcodes.Code39Options.Default
+  name: Default
+  href: api/Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_Default
+  commentId: P:Egami.Barcodes.Code39Options.Default
+  fullName: Egami.Barcodes.Code39Options.Default
+  nameWithType: Code39Options.Default
+- uid: Egami.Barcodes.Code39Options.Default*
+  name: Default
+  href: api/Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_Default_
+  commentId: Overload:Egami.Barcodes.Code39Options.Default
+  isSpec: "True"
+  fullName: Egami.Barcodes.Code39Options.Default
+  nameWithType: Code39Options.Default
+- uid: Egami.Barcodes.Code39Options.FullAscii
+  name: FullAscii
+  href: api/Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_FullAscii
+  commentId: P:Egami.Barcodes.Code39Options.FullAscii
+  fullName: Egami.Barcodes.Code39Options.FullAscii
+  nameWithType: Code39Options.FullAscii
+- uid: Egami.Barcodes.Code39Options.FullAscii*
+  name: FullAscii
+  href: api/Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_FullAscii_
+  commentId: Overload:Egami.Barcodes.Code39Options.FullAscii
+  isSpec: "True"
+  fullName: Egami.Barcodes.Code39Options.FullAscii
+  nameWithType: Code39Options.FullAscii
+- uid: Egami.Barcodes.Code39Options.Height
+  name: Height
+  href: api/Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_Height
+  commentId: P:Egami.Barcodes.Code39Options.Height
+  fullName: Egami.Barcodes.Code39Options.Height
+  nameWithType: Code39Options.Height
+- uid: Egami.Barcodes.Code39Options.Height*
+  name: Height
+  href: api/Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_Height_
+  commentId: Overload:Egami.Barcodes.Code39Options.Height
+  isSpec: "True"
+  fullName: Egami.Barcodes.Code39Options.Height
+  nameWithType: Code39Options.Height
+- uid: Egami.Barcodes.Code39Options.WideRatio
+  name: WideRatio
+  href: api/Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_WideRatio
+  commentId: P:Egami.Barcodes.Code39Options.WideRatio
+  fullName: Egami.Barcodes.Code39Options.WideRatio
+  nameWithType: Code39Options.WideRatio
+- uid: Egami.Barcodes.Code39Options.WideRatio*
+  name: WideRatio
+  href: api/Egami.Barcodes.Code39Options.html#Egami_Barcodes_Code39Options_WideRatio_
+  commentId: Overload:Egami.Barcodes.Code39Options.WideRatio
+  isSpec: "True"
+  fullName: Egami.Barcodes.Code39Options.WideRatio
+  nameWithType: Code39Options.WideRatio
+- uid: Egami.Barcodes.EanUpcOptions
+  name: EanUpcOptions
+  href: api/Egami.Barcodes.EanUpcOptions.html
+  commentId: T:Egami.Barcodes.EanUpcOptions
+  fullName: Egami.Barcodes.EanUpcOptions
+  nameWithType: EanUpcOptions
+- uid: Egami.Barcodes.EanUpcOptions.AddOn
+  name: AddOn
+  href: api/Egami.Barcodes.EanUpcOptions.html#Egami_Barcodes_EanUpcOptions_AddOn
+  commentId: P:Egami.Barcodes.EanUpcOptions.AddOn
+  fullName: Egami.Barcodes.EanUpcOptions.AddOn
+  nameWithType: EanUpcOptions.AddOn
+- uid: Egami.Barcodes.EanUpcOptions.AddOn*
+  name: AddOn
+  href: api/Egami.Barcodes.EanUpcOptions.html#Egami_Barcodes_EanUpcOptions_AddOn_
+  commentId: Overload:Egami.Barcodes.EanUpcOptions.AddOn
+  isSpec: "True"
+  fullName: Egami.Barcodes.EanUpcOptions.AddOn
+  nameWithType: EanUpcOptions.AddOn
+- uid: Egami.Barcodes.EanUpcOptions.Default
+  name: Default
+  href: api/Egami.Barcodes.EanUpcOptions.html#Egami_Barcodes_EanUpcOptions_Default
+  commentId: P:Egami.Barcodes.EanUpcOptions.Default
+  fullName: Egami.Barcodes.EanUpcOptions.Default
+  nameWithType: EanUpcOptions.Default
+- uid: Egami.Barcodes.EanUpcOptions.Default*
+  name: Default
+  href: api/Egami.Barcodes.EanUpcOptions.html#Egami_Barcodes_EanUpcOptions_Default_
+  commentId: Overload:Egami.Barcodes.EanUpcOptions.Default
+  isSpec: "True"
+  fullName: Egami.Barcodes.EanUpcOptions.Default
+  nameWithType: EanUpcOptions.Default
+- uid: Egami.Barcodes.EanUpcOptions.Height
+  name: Height
+  href: api/Egami.Barcodes.EanUpcOptions.html#Egami_Barcodes_EanUpcOptions_Height
+  commentId: P:Egami.Barcodes.EanUpcOptions.Height
+  fullName: Egami.Barcodes.EanUpcOptions.Height
+  nameWithType: EanUpcOptions.Height
+- uid: Egami.Barcodes.EanUpcOptions.Height*
+  name: Height
+  href: api/Egami.Barcodes.EanUpcOptions.html#Egami_Barcodes_EanUpcOptions_Height_
+  commentId: Overload:Egami.Barcodes.EanUpcOptions.Height
+  isSpec: "True"
+  fullName: Egami.Barcodes.EanUpcOptions.Height
+  nameWithType: EanUpcOptions.Height
+- uid: Egami.Barcodes.Gs1
+  name: Gs1
+  href: api/Egami.Barcodes.Gs1.html
+  commentId: T:Egami.Barcodes.Gs1
+  fullName: Egami.Barcodes.Gs1
+  nameWithType: Gs1
+- uid: Egami.Barcodes.Gs1.Parse(System.String)
+  name: Parse(string)
+  href: api/Egami.Barcodes.Gs1.html#Egami_Barcodes_Gs1_Parse_System_String_
+  commentId: M:Egami.Barcodes.Gs1.Parse(System.String)
+  name.vb: Parse(String)
+  fullName: Egami.Barcodes.Gs1.Parse(string)
+  fullName.vb: Egami.Barcodes.Gs1.Parse(String)
+  nameWithType: Gs1.Parse(string)
+  nameWithType.vb: Gs1.Parse(String)
+- uid: Egami.Barcodes.Gs1.Parse*
+  name: Parse
+  href: api/Egami.Barcodes.Gs1.html#Egami_Barcodes_Gs1_Parse_
+  commentId: Overload:Egami.Barcodes.Gs1.Parse
+  isSpec: "True"
+  fullName: Egami.Barcodes.Gs1.Parse
+  nameWithType: Gs1.Parse
+- uid: Egami.Barcodes.Gs1.TryParse(System.String,System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString}@)
+  name: TryParse(string?, out IReadOnlyList<Gs1ElementString>?)
+  href: api/Egami.Barcodes.Gs1.html#Egami_Barcodes_Gs1_TryParse_System_String_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString___
+  commentId: M:Egami.Barcodes.Gs1.TryParse(System.String,System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString}@)
+  name.vb: TryParse(String, IReadOnlyList(Of Gs1ElementString))
+  fullName: Egami.Barcodes.Gs1.TryParse(string?, out System.Collections.Generic.IReadOnlyList<Egami.Barcodes.Gs1ElementString>?)
+  fullName.vb: Egami.Barcodes.Gs1.TryParse(String, System.Collections.Generic.IReadOnlyList(Of Egami.Barcodes.Gs1ElementString))
+  nameWithType: Gs1.TryParse(string?, out IReadOnlyList<Gs1ElementString>?)
+  nameWithType.vb: Gs1.TryParse(String, IReadOnlyList(Of Gs1ElementString))
+- uid: Egami.Barcodes.Gs1.TryParse*
+  name: TryParse
+  href: api/Egami.Barcodes.Gs1.html#Egami_Barcodes_Gs1_TryParse_
+  commentId: Overload:Egami.Barcodes.Gs1.TryParse
+  isSpec: "True"
+  fullName: Egami.Barcodes.Gs1.TryParse
+  nameWithType: Gs1.TryParse
+- uid: Egami.Barcodes.Gs1ElementString
+  name: Gs1ElementString
+  href: api/Egami.Barcodes.Gs1ElementString.html
+  commentId: T:Egami.Barcodes.Gs1ElementString
+  fullName: Egami.Barcodes.Gs1ElementString
+  nameWithType: Gs1ElementString
+- uid: Egami.Barcodes.Gs1ElementString.Ai
+  name: Ai
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Ai
+  commentId: P:Egami.Barcodes.Gs1ElementString.Ai
+  fullName: Egami.Barcodes.Gs1ElementString.Ai
+  nameWithType: Gs1ElementString.Ai
+- uid: Egami.Barcodes.Gs1ElementString.Ai*
+  name: Ai
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Ai_
+  commentId: Overload:Egami.Barcodes.Gs1ElementString.Ai
+  isSpec: "True"
+  fullName: Egami.Barcodes.Gs1ElementString.Ai
+  nameWithType: Gs1ElementString.Ai
+- uid: Egami.Barcodes.Gs1ElementString.Create(System.String,System.String)
+  name: Create(string, string)
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Create_System_String_System_String_
+  commentId: M:Egami.Barcodes.Gs1ElementString.Create(System.String,System.String)
+  name.vb: Create(String, String)
+  fullName: Egami.Barcodes.Gs1ElementString.Create(string, string)
+  fullName.vb: Egami.Barcodes.Gs1ElementString.Create(String, String)
+  nameWithType: Gs1ElementString.Create(string, string)
+  nameWithType.vb: Gs1ElementString.Create(String, String)
+- uid: Egami.Barcodes.Gs1ElementString.Create*
+  name: Create
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Create_
+  commentId: Overload:Egami.Barcodes.Gs1ElementString.Create
+  isSpec: "True"
+  fullName: Egami.Barcodes.Gs1ElementString.Create
+  nameWithType: Gs1ElementString.Create
+- uid: Egami.Barcodes.Gs1ElementString.Equals(Egami.Barcodes.Gs1ElementString)
+  name: Equals(Gs1ElementString?)
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Equals_Egami_Barcodes_Gs1ElementString_
+  commentId: M:Egami.Barcodes.Gs1ElementString.Equals(Egami.Barcodes.Gs1ElementString)
+  name.vb: Equals(Gs1ElementString)
+  fullName: Egami.Barcodes.Gs1ElementString.Equals(Egami.Barcodes.Gs1ElementString?)
+  fullName.vb: Egami.Barcodes.Gs1ElementString.Equals(Egami.Barcodes.Gs1ElementString)
+  nameWithType: Gs1ElementString.Equals(Gs1ElementString?)
+  nameWithType.vb: Gs1ElementString.Equals(Gs1ElementString)
+- uid: Egami.Barcodes.Gs1ElementString.Equals(System.Object)
+  name: Equals(object?)
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Equals_System_Object_
+  commentId: M:Egami.Barcodes.Gs1ElementString.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: Egami.Barcodes.Gs1ElementString.Equals(object?)
+  fullName.vb: Egami.Barcodes.Gs1ElementString.Equals(Object)
+  nameWithType: Gs1ElementString.Equals(object?)
+  nameWithType.vb: Gs1ElementString.Equals(Object)
+- uid: Egami.Barcodes.Gs1ElementString.Equals*
+  name: Equals
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Equals_
+  commentId: Overload:Egami.Barcodes.Gs1ElementString.Equals
+  isSpec: "True"
+  fullName: Egami.Barcodes.Gs1ElementString.Equals
+  nameWithType: Gs1ElementString.Equals
+- uid: Egami.Barcodes.Gs1ElementString.GetHashCode
+  name: GetHashCode()
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_GetHashCode
+  commentId: M:Egami.Barcodes.Gs1ElementString.GetHashCode
+  fullName: Egami.Barcodes.Gs1ElementString.GetHashCode()
+  nameWithType: Gs1ElementString.GetHashCode()
+- uid: Egami.Barcodes.Gs1ElementString.GetHashCode*
+  name: GetHashCode
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_GetHashCode_
+  commentId: Overload:Egami.Barcodes.Gs1ElementString.GetHashCode
+  isSpec: "True"
+  fullName: Egami.Barcodes.Gs1ElementString.GetHashCode
+  nameWithType: Gs1ElementString.GetHashCode
+- uid: Egami.Barcodes.Gs1ElementString.Title
+  name: Title
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Title
+  commentId: P:Egami.Barcodes.Gs1ElementString.Title
+  fullName: Egami.Barcodes.Gs1ElementString.Title
+  nameWithType: Gs1ElementString.Title
+- uid: Egami.Barcodes.Gs1ElementString.Title*
+  name: Title
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Title_
+  commentId: Overload:Egami.Barcodes.Gs1ElementString.Title
+  isSpec: "True"
+  fullName: Egami.Barcodes.Gs1ElementString.Title
+  nameWithType: Gs1ElementString.Title
+- uid: Egami.Barcodes.Gs1ElementString.ToString
+  name: ToString()
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_ToString
+  commentId: M:Egami.Barcodes.Gs1ElementString.ToString
+  fullName: Egami.Barcodes.Gs1ElementString.ToString()
+  nameWithType: Gs1ElementString.ToString()
+- uid: Egami.Barcodes.Gs1ElementString.ToString*
+  name: ToString
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_ToString_
+  commentId: Overload:Egami.Barcodes.Gs1ElementString.ToString
+  isSpec: "True"
+  fullName: Egami.Barcodes.Gs1ElementString.ToString
+  nameWithType: Gs1ElementString.ToString
+- uid: Egami.Barcodes.Gs1ElementString.Value
+  name: Value
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Value
+  commentId: P:Egami.Barcodes.Gs1ElementString.Value
+  fullName: Egami.Barcodes.Gs1ElementString.Value
+  nameWithType: Gs1ElementString.Value
+- uid: Egami.Barcodes.Gs1ElementString.Value*
+  name: Value
+  href: api/Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Value_
+  commentId: Overload:Egami.Barcodes.Gs1ElementString.Value
+  isSpec: "True"
+  fullName: Egami.Barcodes.Gs1ElementString.Value
+  nameWithType: Gs1ElementString.Value
+- uid: Egami.Barcodes.ItfOptions
+  name: ItfOptions
+  href: api/Egami.Barcodes.ItfOptions.html
+  commentId: T:Egami.Barcodes.ItfOptions
+  fullName: Egami.Barcodes.ItfOptions
+  nameWithType: ItfOptions
+- uid: Egami.Barcodes.ItfOptions.BearerBars
+  name: BearerBars
+  href: api/Egami.Barcodes.ItfOptions.html#Egami_Barcodes_ItfOptions_BearerBars
+  commentId: P:Egami.Barcodes.ItfOptions.BearerBars
+  fullName: Egami.Barcodes.ItfOptions.BearerBars
+  nameWithType: ItfOptions.BearerBars
+- uid: Egami.Barcodes.ItfOptions.BearerBars*
+  name: BearerBars
+  href: api/Egami.Barcodes.ItfOptions.html#Egami_Barcodes_ItfOptions_BearerBars_
+  commentId: Overload:Egami.Barcodes.ItfOptions.BearerBars
+  isSpec: "True"
+  fullName: Egami.Barcodes.ItfOptions.BearerBars
+  nameWithType: ItfOptions.BearerBars
+- uid: Egami.Barcodes.ItfOptions.Default
+  name: Default
+  href: api/Egami.Barcodes.ItfOptions.html#Egami_Barcodes_ItfOptions_Default
+  commentId: P:Egami.Barcodes.ItfOptions.Default
+  fullName: Egami.Barcodes.ItfOptions.Default
+  nameWithType: ItfOptions.Default
+- uid: Egami.Barcodes.ItfOptions.Default*
+  name: Default
+  href: api/Egami.Barcodes.ItfOptions.html#Egami_Barcodes_ItfOptions_Default_
+  commentId: Overload:Egami.Barcodes.ItfOptions.Default
+  isSpec: "True"
+  fullName: Egami.Barcodes.ItfOptions.Default
+  nameWithType: ItfOptions.Default
+- uid: Egami.Barcodes.ItfOptions.Height
+  name: Height
+  href: api/Egami.Barcodes.ItfOptions.html#Egami_Barcodes_ItfOptions_Height
+  commentId: P:Egami.Barcodes.ItfOptions.Height
+  fullName: Egami.Barcodes.ItfOptions.Height
+  nameWithType: ItfOptions.Height
+- uid: Egami.Barcodes.ItfOptions.Height*
+  name: Height
+  href: api/Egami.Barcodes.ItfOptions.html#Egami_Barcodes_ItfOptions_Height_
+  commentId: Overload:Egami.Barcodes.ItfOptions.Height
+  isSpec: "True"
+  fullName: Egami.Barcodes.ItfOptions.Height
+  nameWithType: ItfOptions.Height
+- uid: Egami.Barcodes.ItfOptions.WideRatio
+  name: WideRatio
+  href: api/Egami.Barcodes.ItfOptions.html#Egami_Barcodes_ItfOptions_WideRatio
+  commentId: P:Egami.Barcodes.ItfOptions.WideRatio
+  fullName: Egami.Barcodes.ItfOptions.WideRatio
+  nameWithType: ItfOptions.WideRatio
+- uid: Egami.Barcodes.ItfOptions.WideRatio*
+  name: WideRatio
+  href: api/Egami.Barcodes.ItfOptions.html#Egami_Barcodes_ItfOptions_WideRatio_
+  commentId: Overload:Egami.Barcodes.ItfOptions.WideRatio
+  isSpec: "True"
+  fullName: Egami.Barcodes.ItfOptions.WideRatio
+  nameWithType: ItfOptions.WideRatio
 - uid: Egami.ChromaDownsampling
   name: ChromaDownsampling
   href: api/Egami.ChromaDownsampling.html
