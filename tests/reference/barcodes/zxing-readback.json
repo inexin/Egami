@@ -154,6 +154,96 @@
   "grid": "b60c137c0c7b0212",
   "text": "15400141288763"
  },
+ "qr-alphanumeric": {
+  "format": "QRCode",
+  "grid": "6530a3ae2fa5f14b",
+  "text": "HELLO WORLD"
+ },
+ "qr-byte": {
+  "format": "QRCode",
+  "grid": "d9379490ebb98196",
+  "text": "Hello, world!"
+ },
+ "qr-digits-large": {
+  "format": "QRCode",
+  "grid": "d5413dfc1afaa69e",
+  "text": "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+ },
+ "qr-gs1": {
+  "format": "QRCode",
+  "grid": "e7f7a89a342a7045",
+  "text": "(01)09501101530003(17)261231(10)AB12"
+ },
+ "qr-gs1-percent": {
+  "format": "QRCode",
+  "grid": "5b8cb8affc980f18",
+  "text": "(10)A%B(21)XYZ"
+ },
+ "qr-kanji": {
+  "format": "QRCode",
+  "grid": "7de53255d69f7a2b",
+  "text": "\u65e5\u672c\u8a9e\u306e\u30c6\u30ad\u30b9\u30c8"
+ },
+ "qr-kanji-mixed": {
+  "format": "QRCode",
+  "grid": "c07a27cefbe79c3f",
+  "text": "\u30c6\u30b9\u30c8123ABC"
+ },
+ "qr-large": {
+  "format": "QRCode",
+  "grid": "ea9c5defd59289b5",
+  "text": "Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. "
+ },
+ "qr-latin1": {
+  "format": "QRCode",
+  "grid": "9486bcba0a35d594",
+  "text": "\u00c6r\u00f8sk\u00f8bing caf\u00e9"
+ },
+ "qr-level-h": {
+  "format": "QRCode",
+  "grid": "758fda2f3c03ac36",
+  "text": "Hello, world!"
+ },
+ "qr-level-l": {
+  "format": "QRCode",
+  "grid": "8b050eb8485151b3",
+  "text": "Hello, world!"
+ },
+ "qr-level-q": {
+  "format": "QRCode",
+  "grid": "584ab4dad5a9d4bc",
+  "text": "Hello, world!"
+ },
+ "qr-medium": {
+  "format": "QRCode",
+  "grid": "7713bb0968b030c3",
+  "text": "Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D im"
+ },
+ "qr-mixed-segments": {
+  "format": "QRCode",
+  "grid": "f5be1e9e7bb69844",
+  "text": "ABC1234567890123456def"
+ },
+ "qr-numeric": {
+  "format": "QRCode",
+  "grid": "03f7e52b6349e854",
+  "text": "01234567890123456789"
+ },
+ "qr-url": {
+  "format": "QRCode",
+  "grid": "0cc8b480126e9829",
+  "text": "https://inexin.github.io/Egami/v1/articles/guides/barcodes.html"
+ },
+ "qr-utf8-emoji": {
+  "format": "QRCode",
+  "grid": "b01554a2aa361556",
+  "text": "Smile \ud83d\ude00 please"
+ },
+ "qr-utf8-greek": {
+  "format": "QRCode",
+  "grid": "90b37268e396e511",
+  "text": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac"
+ },
  "upca-add-check": {
   "format": "EAN13",
   "grid": "c58a0089c8c7b6d1",

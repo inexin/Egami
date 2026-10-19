@@ -16,6 +16,18 @@ encoder.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-modules)]
 
+## QR Code
+
+`Barcode.Qr` writes a QR Code from text, bytes or GS1 element strings. Text is split into numeric, alphanumeric, byte and
+Kanji segments that give the fewest bits. Text in ISO 8859-1 is written as it is, text that Shift JIS holds is written in
+Shift JIS (its kanji in Kanji mode), and anything else as UTF-8 with an ECI that tells readers so.
+
+By default the symbol is the smallest that holds the data at level M, and the level is then raised to Q or H while the
+symbol stays the same size, so spare room goes to error correction. `QrOptions` fixes the level, the version (1 to 40) or the
+mask instead.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-qr)]
+
 ## Linear barcodes
 
 ### Code 128

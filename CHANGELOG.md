@@ -14,6 +14,12 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - Reed-Solomon error correction for every symbology the package will write and read: QR, Data Matrix, PDF417 and Aztec, with
   errors and erasures corrected together.
 
+### QR Code
+
+- `Barcode.Qr` writes QR Codes from text, bytes or GS1 element strings, versions 1 to 40, with the fewest bits over numeric,
+  alphanumeric, byte and Kanji segments, and ECI 26 (UTF-8) for text outside ISO 8859-1 and Shift JIS.
+- Level M by default, raised to Q or H while the symbol keeps its size; `QrOptions` fixes the level, version or mask.
+
 ### Code 128 and GS1
 
 - `Barcode.Code128` writes Code 128 with the shortest mix of code sets A, B and C.

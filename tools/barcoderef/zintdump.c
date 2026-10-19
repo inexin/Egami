@@ -1,6 +1,7 @@
 /* Prints the module grids zint makes, one JSON object per line, for tools/make-barcode-references.py.
  *
- * Input, one case per line on stdin, tab-separated: name, symbology, option_1, option_2, option_3, input_mode, data as hex.
+ * Input, one case per line on stdin, tab-separated: name, symbology, option_1, option_2, option_3, input_mode, eci, data as
+ * hex.
  * Output: {"name": ..., "error": code, "message": ..., "width": w, "rows": r, "text": hrt, "modules": ["0101...", ...]}.
  * Uses only zint's public API (zint.h); a module is dark when bit (x & 7) of encoded_data[y][x >> 3] is set. */
 #include <stdio.h>
@@ -28,21 +29,21 @@ int main(void)
 {
     static char line[65536];
     while (fgets(line, sizeof line, stdin)) {
-        char *fields[7];
+        char *fields[8];
         int count = 0;
         char *p = strtok(line, "\t\r\n");
-        while (p && count < 7) {
+        while (p && count < 8) {
             fields[count++] = p;
             p = strtok(NULL, "\t\r\n");
         }
-        if (count < 6) {
+        if (count < 7) {
             continue;
         }
 
         static unsigned char data[32768];
         int length = 0;
-        if (count == 7) {
-            for (const char *h = fields[6]; h[0] && h[1]; h += 2) {
+        if (count == 8) {
+            for (const char *h = fields[7]; h[0] && h[1]; h += 2) {
                 unsigned int byte;
                 sscanf(h, "%2x", &byte);
                 data[length++] = (unsigned char)byte;
@@ -55,6 +56,7 @@ int main(void)
         symbol->option_2 = atoi(fields[3]);
         symbol->option_3 = atoi(fields[4]);
         symbol->input_mode = atoi(fields[5]);
+        symbol->eci = atoi(fields[6]);
         int error = ZBarcode_Encode(symbol, data, length);
 
         printf("{\"name\": ");

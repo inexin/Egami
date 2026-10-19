@@ -216,6 +216,150 @@
   "text": "15400141288763",
   "width": 135
  },
+ "qr-alphanumeric": {
+  "versions": {
+   "H": 2,
+   "L": 1,
+   "M": 1,
+   "Q": 1
+  }
+ },
+ "qr-byte": {
+  "versions": {
+   "H": 2,
+   "L": 1,
+   "M": 1,
+   "Q": 2
+  }
+ },
+ "qr-digits-large": {
+  "versions": {
+   "H": 27,
+   "L": 17,
+   "M": 19,
+   "Q": 24
+  }
+ },
+ "qr-gs1": {
+  "versions": {
+   "H": 3,
+   "L": 1,
+   "M": 2,
+   "Q": 2
+  }
+ },
+ "qr-gs1-percent": {
+  "versions": {
+   "H": 2,
+   "L": 1,
+   "M": 1,
+   "Q": 1
+  }
+ },
+ "qr-kanji": {
+  "versions": {
+   "H": 2,
+   "L": 1,
+   "M": 1,
+   "Q": 2
+  }
+ },
+ "qr-kanji-mixed": {
+  "versions": {
+   "H": 2,
+   "L": 1,
+   "M": 1,
+   "Q": 1
+  }
+ },
+ "qr-large": {
+  "versions": {
+   "H": 37,
+   "L": 23,
+   "M": 27,
+   "Q": 32
+  }
+ },
+ "qr-latin1": {
+  "versions": {
+   "H": 3,
+   "L": 1,
+   "M": 2,
+   "Q": 2
+  }
+ },
+ "qr-level-h": {
+  "versions": {
+   "H": 2,
+   "L": 1,
+   "M": 1,
+   "Q": 2
+  }
+ },
+ "qr-level-l": {
+  "versions": {
+   "H": 2,
+   "L": 1,
+   "M": 1,
+   "Q": 2
+  }
+ },
+ "qr-level-q": {
+  "versions": {
+   "H": 2,
+   "L": 1,
+   "M": 1,
+   "Q": 2
+  }
+ },
+ "qr-medium": {
+  "versions": {
+   "H": 18,
+   "L": 11,
+   "M": 13,
+   "Q": 16
+  }
+ },
+ "qr-mixed-segments": {
+  "versions": {
+   "H": 3,
+   "L": 1,
+   "M": 2,
+   "Q": 2
+  }
+ },
+ "qr-numeric": {
+  "versions": {
+   "H": 2,
+   "L": 1,
+   "M": 1,
+   "Q": 1
+  }
+ },
+ "qr-url": {
+  "versions": {
+   "H": 7,
+   "L": 4,
+   "M": 5,
+   "Q": 6
+  }
+ },
+ "qr-utf8-emoji": {
+  "versions": {
+   "H": 3,
+   "L": 2,
+   "M": 2,
+   "Q": 2
+  }
+ },
+ "qr-utf8-greek": {
+  "versions": {
+   "H": 3,
+   "L": 1,
+   "M": 2,
+   "Q": 2
+  }
+ },
  "upca-add-check": {
   "modules": [
    "10100011010111101010111100011010001101000110101010110110011101001100110101110010011101101100101"

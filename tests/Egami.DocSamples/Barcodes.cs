@@ -192,4 +192,25 @@ public class Barcodes
         Assert.Equal("9780201379624 52495", book.HumanReadableText);
         Assert.Equal("04252614", small.HumanReadableText);
     }
+
+    [Fact]
+    public void MakeQr()
+    {
+        #region barcode-qr
+        // Level M, raised to Q or H when that fits in the same size; segments chosen for the fewest bits.
+        Barcode link = Barcode.Qr("https://inexin.github.io/Egami/");
+
+        // A fixed size and level, for a layout that must not change.
+        Barcode fixedSize = Barcode.Qr("ORDER-1180042", new QrOptions { Version = 3, ErrorCorrection = QrErrorCorrection.H });
+
+        // Bytes as they are, and GS1 element strings with FNC1.
+        Barcode bytes = Barcode.Qr([0x45, 0x67, 0x61, 0x6D, 0x69]);
+        Barcode gs1 = Barcode.Qr(Gs1.Parse("(01)09501101530003(10)AB12"));
+
+        using Raster<Gray8> image = link.ToRaster(pixelsPerModule: 4);
+        #endregion
+        Assert.Equal(29, fixedSize.Modules.Width);
+        Assert.Equal("(01)09501101530003(10)AB12", gs1.HumanReadableText);
+        Assert.Equal(BarcodeFormat.Qr, bytes.Format);
+    }
 }

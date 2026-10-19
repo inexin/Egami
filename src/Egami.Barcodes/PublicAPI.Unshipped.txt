@@ -77,6 +77,21 @@ Egami.Barcodes.ItfOptions.Height.init -> void
 Egami.Barcodes.ItfOptions.ItfOptions() -> void
 Egami.Barcodes.ItfOptions.WideRatio.get -> int?
 Egami.Barcodes.ItfOptions.WideRatio.init -> void
+Egami.Barcodes.QrErrorCorrection
+Egami.Barcodes.QrErrorCorrection.H = 3 -> Egami.Barcodes.QrErrorCorrection
+Egami.Barcodes.QrErrorCorrection.L = 0 -> Egami.Barcodes.QrErrorCorrection
+Egami.Barcodes.QrErrorCorrection.M = 1 -> Egami.Barcodes.QrErrorCorrection
+Egami.Barcodes.QrErrorCorrection.Q = 2 -> Egami.Barcodes.QrErrorCorrection
+Egami.Barcodes.QrOptions
+Egami.Barcodes.QrOptions.<Clone>$() -> Egami.Barcodes.QrOptions!
+Egami.Barcodes.QrOptions.Equals(Egami.Barcodes.QrOptions? other) -> bool
+Egami.Barcodes.QrOptions.ErrorCorrection.get -> Egami.Barcodes.QrErrorCorrection?
+Egami.Barcodes.QrOptions.ErrorCorrection.init -> void
+Egami.Barcodes.QrOptions.Mask.get -> int?
+Egami.Barcodes.QrOptions.Mask.init -> void
+Egami.Barcodes.QrOptions.QrOptions() -> void
+Egami.Barcodes.QrOptions.Version.get -> int?
+Egami.Barcodes.QrOptions.Version.init -> void
 override Egami.Barcodes.BarcodeDrawOptions.Equals(object? obj) -> bool
 override Egami.Barcodes.BarcodeDrawOptions.GetHashCode() -> int
 override Egami.Barcodes.BarcodeDrawOptions.ToString() -> string!
@@ -95,6 +110,9 @@ override Egami.Barcodes.Gs1ElementString.ToString() -> string!
 override Egami.Barcodes.ItfOptions.Equals(object? obj) -> bool
 override Egami.Barcodes.ItfOptions.GetHashCode() -> int
 override Egami.Barcodes.ItfOptions.ToString() -> string!
+override Egami.Barcodes.QrOptions.Equals(object? obj) -> bool
+override Egami.Barcodes.QrOptions.GetHashCode() -> int
+override Egami.Barcodes.QrOptions.ToString() -> string!
 static Egami.Barcodes.Barcode.Code128(string! text, Egami.Barcodes.Code128Options? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Code39(string! text, Egami.Barcodes.Code39Options? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Ean13(string! digits, Egami.Barcodes.EanUpcOptions? options = null) -> Egami.Barcodes.Barcode!
@@ -104,6 +122,9 @@ static Egami.Barcodes.Barcode.Gs1_128(string! elements, Egami.Barcodes.Code128Op
 static Egami.Barcodes.Barcode.Gs1_128(System.Collections.Generic.IReadOnlyList<Egami.Barcodes.Gs1ElementString!>! elements, Egami.Barcodes.Code128Options? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Itf(string! digits, Egami.Barcodes.ItfOptions? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Itf14(string! digits, Egami.Barcodes.ItfOptions? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.Qr(string! text, Egami.Barcodes.QrOptions? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.Qr(System.Collections.Generic.IReadOnlyList<Egami.Barcodes.Gs1ElementString!>! elements, Egami.Barcodes.QrOptions? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.Qr(System.ReadOnlySpan<byte> data, Egami.Barcodes.QrOptions? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.UpcA(string! digits, Egami.Barcodes.EanUpcOptions? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.UpcE(string! digits, Egami.Barcodes.EanUpcOptions? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.BarcodeDrawOptions.Default.get -> Egami.Barcodes.BarcodeDrawOptions!
@@ -128,3 +149,6 @@ static Egami.Barcodes.Gs1ElementString.Create(string! ai, string! value) -> Egam
 static Egami.Barcodes.ItfOptions.Default.get -> Egami.Barcodes.ItfOptions!
 static Egami.Barcodes.ItfOptions.operator !=(Egami.Barcodes.ItfOptions? left, Egami.Barcodes.ItfOptions? right) -> bool
 static Egami.Barcodes.ItfOptions.operator ==(Egami.Barcodes.ItfOptions? left, Egami.Barcodes.ItfOptions? right) -> bool
+static Egami.Barcodes.QrOptions.Default.get -> Egami.Barcodes.QrOptions!
+static Egami.Barcodes.QrOptions.operator !=(Egami.Barcodes.QrOptions? left, Egami.Barcodes.QrOptions? right) -> bool
+static Egami.Barcodes.QrOptions.operator ==(Egami.Barcodes.QrOptions? left, Egami.Barcodes.QrOptions? right) -> bool

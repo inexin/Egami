@@ -18,17 +18,19 @@ def main():
             continue
         image = Image.open(os.path.join(folder, file)).convert("L")
         results = zxingcpp.read_barcodes(image, ean_add_on_symbol=zxingcpp.EanAddOnSymbol.Read, try_rotate=False)
-        entry = {"name": file[:-4], "format": None, "text": None}
+        entry = {"name": file[:-4], "format": None, "text": None, "bytes": None}
         if results:
             result = results[0]
-            # GS1 data in its human-readable form with AIs in parentheses; anything else as the bytes it holds (ISO 8859-1).
-            text = result.text if result.content_type == zxingcpp.ContentType.GS1 else bytes(result.bytes).decode("latin-1")
+            # GS1 data in its human-readable form with AIs in parentheses; also the bytes it holds as ISO 8859-1, for text that
+            # zxing-cpp shows with escapes (control characters).
+            raw = bytes(result.bytes).decode("latin-1")
+            text = result.text if result.content_type == zxingcpp.ContentType.GS1 or "<" not in result.text else raw
             # zxing-cpp returns UPC-A as a GTIN-13 and UPC-E expanded to one, with any add-on's digits after the main ones.
             main = 8 if result.format == zxingcpp.BarcodeFormat.EAN8 else 13
             if result.format in (zxingcpp.BarcodeFormat.EAN13, zxingcpp.BarcodeFormat.EAN8, zxingcpp.BarcodeFormat.UPCA,
                                  zxingcpp.BarcodeFormat.UPCE) and len(text) > main:
                 text = text[:main] + " " + text[main:]
-            entry = {"name": file[:-4], "format": result.format.name, "text": text}
+            entry = {"name": file[:-4], "format": result.format.name, "text": text, "bytes": raw}
         print(json.dumps(entry))
 
 
