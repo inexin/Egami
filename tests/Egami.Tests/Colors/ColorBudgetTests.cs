@@ -2,6 +2,7 @@ using Egami.Colors;
 using Egami.Metadata;
 using Egami.Operations;
 using Egami.Pixels;
+using Egami.Tests.Memory;
 using Egami.Tests.Operations;
 
 namespace Egami.Tests.Colors;
@@ -92,21 +93,6 @@ public class ColorBudgetTests
     };
 
     private static long Allocated<T>(Raster<T> raster, Action<RasterOps> chain)
-        where T : unmanaged, IPixelType<T>
-    {
-        for (int i = 0; i < 2; i++)
-        {
-            raster.Derive(chain, Ct).Dispose();
-        }
-
-        long fewest = long.MaxValue;
-        for (int i = 0; i < 4; i++)
-        {
-            long before = GC.GetAllocatedBytesForCurrentThread();
-            raster.Derive(chain, Ct).Dispose();
-            fewest = Math.Min(fewest, GC.GetAllocatedBytesForCurrentThread() - before);
-        }
-
-        return fewest;
-    }
+        where T : unmanaged, IPixelType<T> =>
+        AllocationMeter.Fewest(() => raster.Derive(chain, Ct).Dispose(), warmUps: 2, tries: 4);
 }

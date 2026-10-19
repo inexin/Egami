@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 
 using Egami.Pixels;
+using Egami.Tests.Memory;
 
 namespace Egami.Tests.Yuv;
 
@@ -128,21 +129,5 @@ public class YuvThreadingTests
     }
 
     /// <summary>The fewest bytes one call allocated on this thread over several tries (other tests can empty the shared pools).</summary>
-    private static long Allocated(Action action)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            action();
-        }
-
-        long fewest = long.MaxValue;
-        for (int i = 0; i < 10; i++)
-        {
-            long before = GC.GetAllocatedBytesForCurrentThread();
-            action();
-            fewest = Math.Min(fewest, GC.GetAllocatedBytesForCurrentThread() - before);
-        }
-
-        return fewest;
-    }
+    private static long Allocated(Action action) => AllocationMeter.Fewest(action, warmUps: 3, tries: 10);
 }
