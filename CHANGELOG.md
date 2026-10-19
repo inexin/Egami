@@ -3,6 +3,27 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Barcodes 1.0.0 (unreleased)
+
+A new package that writes and reads barcodes, drawn through Egami.Drawing.
+
+### Modules and error correction
+
+- `BarcodeModules` holds a symbol's modules: a grid of dark and light modules for 2D codes, or bar and space widths for linear
+  codes. `BarcodeModules.Create` and `CreateLinear` make one from modules you already have.
+- Reed-Solomon error correction for every symbology the package will write and read: QR, Data Matrix, PDF417 and Aztec, with
+  errors and erasures corrected together.
+
+### Drawing
+
+- `Barcode` is one symbol: format, modules, the quiet zone of its standard and its human-readable text.
+  `Barcode.FromModules` makes one from modules you already have.
+- `DrawBarcode` draws a barcode on any canvas as one path, fitted into a rectangle or at a module size. On raster canvases with
+  no rotation or skew, modules snap to whole pixels.
+- `ToPath` returns the symbol as one path, and `ToRaster` renders it to a `Raster<Gray8>` with whole-pixel modules.
+- `BarcodeDrawOptions` turns the quiet zone off, sets a bar width reduction for ink spread, and gives the font for the
+  human-readable text, which is drawn only when a font is given.
+
 ## Egami 1.1.0 (unreleased)
 
 ### AVIF writing

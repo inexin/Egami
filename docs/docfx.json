@@ -30,6 +30,10 @@
         {
           "src": "../src/Egami.Metafiles",
           "files": [ "Egami.Metafiles.csproj" ]
+        },
+        {
+          "src": "../src/Egami.Barcodes",
+          "files": [ "Egami.Barcodes.csproj" ]
         }
       ],
       "dest": "api",

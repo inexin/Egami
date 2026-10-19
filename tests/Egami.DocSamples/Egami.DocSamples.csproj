@@ -67,6 +67,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Barcodes\Egami.Barcodes.csproj" />
     <ProjectReference Include="..\..\src\Egami.Css\Egami.Css.csproj" />
     <ProjectReference Include="..\..\src\Egami.Drawing\Egami.Drawing.csproj" />
     <ProjectReference Include="..\..\src\Egami.Fonts\Egami.Fonts.csproj" />

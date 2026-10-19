@@ -2,7 +2,7 @@
 
 These permissively licensed projects may be studied for ideas. Study the idea, then write your own C#. If code is ever translated closely, its license notice goes into [THIRD-PARTY-NOTICES.md](../THIRD-PARTY-NOTICES.md) in the same pull request.
 
-Licenses were checked on 2026-10-07 against each project's own license file or package manifest.
+Licenses were checked on 2026-10-07 (the barcode libraries on 2026-10-19) against each project's own license file or package manifest.
 
 | Library | Language | License | What to learn from it | Egami step |
 |---|---|---|---|---|
@@ -21,5 +21,18 @@ Licenses were checked on 2026-10-07 against each project's own license file or p
 | [Pfim](https://github.com/nickbabcock/Pfim) | C# | MIT | Managed TGA and DDS readers | 1.5 |
 | [Go image packages](https://github.com/golang/go/tree/master/src/image) | Go | BSD-3 | Readable PNG, JPEG and GIF codecs | 1.1, 1.3, 1.4 |
 | [Pillow](https://github.com/python-pillow/Pillow) | C and Python | HPND | Resampling and color operations | 1.2 |
+| [ZXing](https://github.com/zxing/zxing) | Java | Apache 2.0 | Barcode reading and writing across 1D and 2D symbologies | 2.11 |
+| [ZXing.Net](https://github.com/micjahn/ZXing.Net) | C# | Apache 2.0 | A managed port of ZXing | 2.11 |
+| [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) | C++ | Apache 2.0 | Fast, robust barcode detection and decoding | 2.11 |
+| [BoofCV](https://github.com/lessthanoptimal/BoofCV) | Java | Apache 2.0 | QR code and fiducial detection in hard images | 2.11 |
+| [QRCoder](https://github.com/codebude/QRCoder) | C# | MIT | Managed QR code generation | 2.11 |
+| [Nayuki QR Code generator](https://github.com/nayuki/QR-Code-generator) | Several | MIT | Small, readable QR code encoder with optimal segment modes | 2.11 |
+| [bwip-js](https://github.com/metafloor/bwip-js) | JavaScript | MIT | Barcode writing for many symbologies | 2.11 |
+| [libdmtx](https://github.com/dmtx/libdmtx) | C | BSD-2 | Data Matrix encoding and decoding | 2.11 |
+| [quirc](https://github.com/dlbeer/quirc) | C | ISC | Compact QR code recognition | 2.11 |
+| [zint](https://github.com/zint/zint) (backend library only) | C | BSD-3 | Barcode encoding for many symbologies | 2.11 |
 
 Specifications, textbooks and papers are always fine. Code under GPL, LGPL or AGPL, and code with no license, is never used.
+
+For barcodes, ZBar (LGPL) is never used, and of zint only the backend library (BSD-3) may be studied: its frontends and GUI are
+under the GPL and are never used.
