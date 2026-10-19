@@ -89,9 +89,9 @@
 
 <p>Egami.Barcodes writes and reads barcodes. It draws them through Egami.Drawing's canvas, so a barcode stays vector on a PDF page
 or in SVG output, and reads them from rasters. It is fully managed.</p>
-<p>It writes QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, ITF and ITF-14,
-EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a format
-chosen at run time with the default options.</p>
+<p>It writes and reads QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, ITF and
+ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a
+format chosen at run time with the default options.</p>
 <pre><code class="lang-csharp">// Labels from a table that stores each barcode's format with its data.
 (BarcodeFormat Format, string Data)[] rows =
 [
@@ -106,7 +106,7 @@ foreach ((BarcodeFormat format, string data) in rows)
     using Raster&lt;Gray8&gt; image = barcode.ToRaster(pixelsPerModule: 3);
 }
 </code></pre>
-<p>The package is in development and not yet released; reading barcodes comes next.</p>
+<p>The package is in development and not yet released.</p>
 <h2 id="qr-code">QR Code</h2>
 <p><code>Barcode.Qr</code> writes a QR Code from text, bytes or GS1 element strings. Text is split into numeric, alphanumeric, byte and
 Kanji segments that give the fewest bits. Text in ISO 8859-1 is written as it is, text that Shift JIS holds is written in
@@ -235,6 +235,65 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
 
 // A UPC-A number written in its short UPC-E form.
 Barcode small = Barcode.UpcE(&quot;042100005264&quot;);
+</code></pre><h2 id="reading-barcodes">Reading barcodes</h2>
+<p><code>ReadBarcodes</code>, an extension method in <code>BarcodeReader</code>, finds every barcode in a raster of any pixel type and returns a
+<code>BarcodeResult</code> for each: its <code>Format</code>, its <code>Text</code>, the <code>Bytes</code> it holds, the <code>Corners</code> it was found at, its <code>Eci</code>, its GS1
+element strings in <code>Gs1</code>, and how many codewords error correction restored. <code>ReadBarcode</code> returns the first one, or <code>null</code>.</p>
+<pre><code class="lang-csharp">// Every barcode in the image, of any format.
+foreach (BarcodeResult result in scan.ReadBarcodes())
+{
+    Console.WriteLine($&quot;{result.Format}: {result.Text} at {result.Corners[0]}&quot;);
+}
+</code></pre>
+<p>Text is decoded with the symbol's ECI; without one, as ISO 8859-1, or as UTF-8 or Shift JIS when the bytes clearly are. GS1
+data comes back in its human-readable form, such as <code>(01)09501101530003(10)AB12</code>, and an EAN or UPC add-on after the main
+digits and a space.</p>
+<p><code>BarcodeReaderOptions</code> narrows or widens the search. <code>Formats</code> names the symbologies to look for; fewer read faster.
+<code>Effort</code>, 0 to 10, decides how many binarizations, scan lines and rotations are tried, never what counts as a valid read;
+from effort 5 light symbols on a dark background are tried too (<code>TryInverted</code>). <code>Region</code> limits the search to part of the
+image. <code>PureBarcode</code> reads an image that holds one upright symbol and its quiet zone, such as a rendered barcode, without
+searching.</p>
+<pre><code class="lang-csharp">// Only the formats you expect, searched harder; a rendered barcode can skip the search.
+BarcodeResult? result = label.ReadBarcode(new BarcodeReaderOptions
+{
+    Formats = BarcodeFormats.DataMatrix | BarcodeFormats.Qr,
+    Effort = 7,
+});
+
+if (result?.Gs1 is { } elements)
+{
+    foreach (Gs1ElementString element in elements)
+    {
+        Console.WriteLine($&quot;{element.Title}: {element.Value}&quot;);
+    }
+}
+
+BarcodeResult? rendered = label.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true });
+</code></pre>
+<p>Linear barcodes are found along scan lines: rows, columns from effort 3 and diagonals from effort 7, each read in both
+directions with its edges placed between pixels, so low-resolution and blurred photos read. A linear barcode counts once two
+scan lines agree on it.</p>
+<p>QR Codes are found by their three finder patterns, at any rotation and in perspective; from version 2 the alignment pattern
+corrects the perspective, and a mirrored symbol reads too.</p>
+<p>Data Matrix symbols are found by their L-shaped finder, square and rectangular (DMRE too), at any rotation and in
+perspective, on a label lighter than its background or not; the clock tracks count the modules.</p>
+<p>PDF417 symbols are found by their start and stop patterns at any rotation and in perspective; a compact symbol, which has
+no stop pattern, is read from its start pattern on. Rows that cannot be read are filled in by error correction.</p>
+<p>Aztec Codes are found by their bullseye at any rotation and in perspective, compact, full-range and runes; on larger
+full-range symbols the reference grid places the modules out to the edge.</p>
+<p>Every symbol in the image comes back once, in reading order: top to bottom, then left to right. A linear read inside a 2D
+symbol is dropped as part of it. <code>Inverted</code> tells which symbols were light on dark, <code>Mirrored</code> which were read from behind
+or flipped. Large images are searched on several threads, up to the <code>MaxParallelism</code> of the options' <code>Context</code>; the
+results are the same at any thread count.</p>
+<pre><code class="lang-csharp">// All symbols on a page, top to bottom and left to right, each once; at most four threads.
+IReadOnlyList&lt;BarcodeResult&gt; parcels = page.ReadBarcodes(new BarcodeReaderOptions
+{
+    Context = EgamiContext.Default with { MaxParallelism = 4 },
+});
+foreach (BarcodeResult parcel in parcels)
+{
+    Console.WriteLine($&quot;{parcel.Text} (inverted: {parcel.Inverted}, mirrored: {parcel.Mirrored})&quot;);
+}
 </code></pre><h2 id="drawing-on-a-canvas">Drawing on a canvas</h2>
 <p><code>DrawBarcode</code>, an extension method in <code>CanvasBarcodeExtensions</code>, draws on any canvas: a raster, a PDF or SVG page, a
 recording. The whole symbol is one filled path, a rectangle for each run of dark modules in a row, so a QR code is a few

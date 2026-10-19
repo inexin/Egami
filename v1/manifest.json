@@ -279,6 +279,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.BarcodeFormats.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.BarcodeFormats.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.BarcodeFormats",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.BarcodeFormats.yml\" sourcestartlinenumber=\"1\">A set of barcode symbologies, for <xref href=\"Egami.Barcodes.BarcodeReaderOptions.Formats\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Barcodes.BarcodeModules.yml",
       "output": {
         ".html": {
@@ -290,6 +304,48 @@
       "IsMRef": true,
       "Title": "Egami.Barcodes.BarcodeModules",
       "Summary": "<p sourcefile=\"api/Egami.Barcodes.BarcodeModules.yml\" sourcestartlinenumber=\"1\">The modules of a barcode symbol: a grid of dark and light squares for a 2D symbol, or a row of bars and spaces for a linear\none. Every encoder ends in one, and drawing, rasterizing and path building work from it. It holds the symbol only, without\nits quiet zone. A grid is immutable and safe to read from many threads.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.BarcodeReader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.BarcodeReader.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.BarcodeReader",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.BarcodeReader.yml\" sourcestartlinenumber=\"1\">Reads barcodes from images: <code>raster.ReadBarcodes()</code> finds every symbol, <code>raster.ReadBarcode()</code> the first. The\nreader is thread-safe and allocates per call only.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.BarcodeReaderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.BarcodeReaderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.BarcodeReaderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.BarcodeReaderOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.BarcodeReader.ReadBarcodes%60%601(Egami.Raster%7b%60%600%7d%2cEgami.Barcodes.BarcodeReaderOptions)\" data-throw-if-not-resolved=\"false\"></xref> searches an image.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.BarcodeResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.BarcodeResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.BarcodeResult",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.BarcodeResult.yml\" sourcestartlinenumber=\"1\">A barcode found in an image: what it is, what it holds and where it is.</p>\n"
     },
     {
       "type": "ManagedReference",

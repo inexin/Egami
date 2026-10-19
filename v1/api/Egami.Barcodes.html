@@ -121,6 +121,22 @@ its quiet zone. A grid is immutable and safe to read from many threads.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Barcodes.BarcodeReader.html">BarcodeReader</a></dt>
+      <dd><p>Reads barcodes from images: <code>raster.ReadBarcodes()</code> finds every symbol, <code>raster.ReadBarcode()</code> the first. The
+reader is thread-safe and allocates per call only.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Barcodes.BarcodeReaderOptions.html">BarcodeReaderOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Barcodes.BarcodeReader.html#Egami_Barcodes_BarcodeReader_ReadBarcodes__1_Egami_Raster___0__Egami_Barcodes_BarcodeReaderOptions_">ReadBarcodes&lt;TPixel&gt;(Raster&lt;TPixel&gt;, BarcodeReaderOptions?)</a> searches an image.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Barcodes.BarcodeResult.html">BarcodeResult</a></dt>
+      <dd><p>A barcode found in an image: what it is, what it holds and where it is.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Barcodes.CanvasBarcodeExtensions.html">CanvasBarcodeExtensions</a></dt>
       <dd><p>Draws barcodes on any <a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a>: rasters, PDF and SVG pages, recordings.</p>
 </dd>
@@ -181,6 +197,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Barcodes.BarcodeFormat.html">BarcodeFormat</a></dt>
       <dd><p>A barcode symbology.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Barcodes.BarcodeFormats.html">BarcodeFormats</a></dt>
+      <dd><p>A set of barcode symbologies, for <a class="xref" href="Egami.Barcodes.BarcodeReaderOptions.html#Egami_Barcodes_BarcodeReaderOptions_Formats">Formats</a>.</p>
 </dd>
     </dl>
     <dl class="jumplist">
