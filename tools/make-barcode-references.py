@@ -11,7 +11,7 @@ zintdump.c; zxing-cpp 3.1.1, Apache-2.0) is built if needed. Two steps, both by 
             back as the case's text (or its 'read' text).
 
   blackbox  fetches the ZXing blackbox test images (ZXing 3.5.4, Apache-2.0) into .cache/zxing-blackbox, never committed,
-            and counts per set how many zxing-cpp reads (.cache/zxing-cpp-blackbox.json), to compare with Egami's counts from
+            and counts per set how many zxing-cpp reads (.cache/zxing-cpp-blackbox.json, misses in -missed.txt), to compare with Egami's counts from
             Egami.Barcodes.Tests' BlackboxTests (EGAMI_CORPUS=barcodes, .cache/egami-blackbox.json).
 
 Usage, from the repo root with Docker running:
@@ -115,12 +115,14 @@ def blackbox():
         subprocess.run(["git", "-C", BLACKBOX, "sparse-checkout", "init"], check=True)
         subprocess.run(["git", "-C", BLACKBOX, "sparse-checkout", "set", "core/src/test/resources/blackbox"], check=True)
         subprocess.run(["git", "-C", BLACKBOX, "checkout", "-q", "zxing-3.5.4"], check=True)
-    out = subprocess.run(["docker", "run", "--rm", "-v", f"{os.getcwd()}:/w", IMAGE, "python3", "-W", "ignore",
+    run = subprocess.run(["docker", "run", "--rm", "-v", f"{os.getcwd()}:/w", IMAGE, "python3", "-W", "ignore",
                           "/w/tools/barcoderef/blackbox.py", f"/w/{BLACKBOX_IMAGES}"], capture_output=True, text=True, check=True,
-                         env=ENV).stdout
+                         env=ENV)
     with open(".cache/zxing-cpp-blackbox.json", "w", encoding="utf-8", newline="\n") as f:
-        f.write(out)
-    print("zxing-cpp counts written to .cache/zxing-cpp-blackbox.json")
+        f.write(run.stdout)
+    with open(".cache/zxing-cpp-blackbox-missed.txt", "w", encoding="utf-8", newline="\n") as f:
+        f.write(run.stderr)
+    print("zxing-cpp counts written to .cache/zxing-cpp-blackbox.json, its misses to .cache/zxing-cpp-blackbox-missed.txt")
 
 
 def main():

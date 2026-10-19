@@ -102,7 +102,7 @@ public class ReadSearchTests
         using Raster<Gray8> slanted = Photos.Render(barcode, 480, 480, Photos.Quad(new Vector2(240, 240), width, height, 45));
         Assert.Null(upright.ReadBarcode(new BarcodeReaderOptions { Effort = 0 }));
         Assert.Equal("EFFORT", upright.ReadBarcode(new BarcodeReaderOptions { Effort = 3 })?.Text);
-        Assert.Null(slanted.ReadBarcode(new BarcodeReaderOptions { Effort = 5, Formats = BarcodeFormats.Linear }));
+        Assert.Null(slanted.ReadBarcode(new BarcodeReaderOptions { Effort = 5, Formats = BarcodeFormat.Linear }));
         Assert.Equal("EFFORT", slanted.ReadBarcode(new BarcodeReaderOptions { Effort = 7 })?.Text);
     }
 
@@ -118,6 +118,6 @@ public class ReadSearchTests
             }
         }
 
-        Assert.Equal(Enumerable.Range(0, 12).Select(i => $"Label {i:00}"), image.ReadBarcodes(new BarcodeReaderOptions { Formats = BarcodeFormats.Qr }).Select(r => r.Text));
+        Assert.Equal(Enumerable.Range(0, 12).Select(i => $"Label {i:00}"), image.ReadBarcodes(new BarcodeReaderOptions { Formats = BarcodeFormat.Qr }).Select(r => r.Text));
     }
 }

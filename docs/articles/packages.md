@@ -12,7 +12,7 @@ use. Packages at 1.0 or above keep their public API compatible within the major 
 | Egami.Svg | 1.0 | Reads SVG 1.1 and SVG 2 into an editable element tree, saves it back, and draws it onto any canvas | Egami, Egami.Drawing, Egami.Fonts, Egami.Css | [SVG](guides/svg.md) |
 | Egami.Css | 1.0 | CSS syntax, selectors, the cascade, media queries and value parsers | Nothing | [CSS](guides/css.md) |
 | Egami.Metafiles | 1.0 | Plays WMF, EMF and EMF+ pictures onto a canvas | Egami, Egami.Drawing, Egami.Fonts | [Windows metafiles](guides/metafiles.md) |
-| Egami.Barcodes | In development | Writes and reads 1D and 2D barcodes | Egami, Egami.Drawing, Egami.Fonts | [Barcodes](guides/barcodes.md) |
+| Egami.Barcodes | 1.0 (unreleased) | Writes and reads 1D and 2D barcodes | Egami, Egami.Drawing, Egami.Fonts | [Barcodes](guides/barcodes.md), [Reading barcodes](guides/barcode-reading.md) |
 | Egami.Heic | 1.1 (in progress) | Reads HEIC phone photos (HEVC-coded HEIF), opt-in because HEVC is covered by patents | Egami, the same version | [HEIC](guides/heic.md) |
 
 The [changelog](https://github.com/inexin/Egami/blob/main/CHANGELOG.md) lists what each version adds.

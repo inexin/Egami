@@ -41,7 +41,7 @@ public class ReadMatrixTests
         Vector2[] quad = Photos.Quad(new Vector2(320, 240), 300, 300, 12);
         (quad[0], quad[1], quad[2], quad[3]) = (quad[1], quad[0], quad[3], quad[2]);
         using Raster<Gray8> photo = Photos.Render(qr, 640, 480, quad);
-        BarcodeResult? result = photo.ReadBarcode(new BarcodeReaderOptions { Formats = BarcodeFormats.Qr });
+        BarcodeResult? result = photo.ReadBarcode(new BarcodeReaderOptions { Formats = BarcodeFormat.Qr });
         Assert.Equal("Mirrored", result?.Text);
         Assert.True(result?.Mirrored);
     }
@@ -58,7 +58,7 @@ public class ReadMatrixTests
             }
         }
 
-        Assert.Equal(["Code 0", "Code 1", "Code 2"], image.ReadBarcodes(new BarcodeReaderOptions { Formats = BarcodeFormats.Qr }).Select(r => r.Text));
+        Assert.Equal(["Code 0", "Code 1", "Code 2"], image.ReadBarcodes(new BarcodeReaderOptions { Formats = BarcodeFormat.Qr }).Select(r => r.Text));
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class ReadMatrixTests
         Barcode qr = Barcode.Qr("Corners", new QrOptions { Version = 3 });
         Vector2[] quad = Photos.Quad(new Vector2(320, 240), 290, 290, 0);
         using Raster<Gray8> photo = Photos.Render(qr, 640, 480, quad, blur: 0, noise: 0);
-        BarcodeResult? result = photo.ReadBarcode(new BarcodeReaderOptions { Formats = BarcodeFormats.Qr });
+        BarcodeResult? result = photo.ReadBarcode(new BarcodeReaderOptions { Formats = BarcodeFormat.Qr });
         Assert.NotNull(result);
 
         // The quiet zone is 4 of the 37 modules across the quad on each side.
@@ -114,7 +114,7 @@ public class ReadMatrixTests
             canvas.DrawBarcode(Barcode.DataMatrix("SECOND"), new RectF(500, 60, 180, 180), Rgba8.Black);
         }
 
-        Assert.Equal(["FIRST", "SECOND"], image.ReadBarcodes(new BarcodeReaderOptions { Formats = BarcodeFormats.DataMatrix }).Select(r => r.Text));
+        Assert.Equal(["FIRST", "SECOND"], image.ReadBarcodes(new BarcodeReaderOptions { Formats = BarcodeFormat.DataMatrix }).Select(r => r.Text));
     }
 
     public static TheoryData<string, float, float> Pdf417Cases => new()

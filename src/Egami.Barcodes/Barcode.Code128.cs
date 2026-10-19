@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 
 using Egami.Barcodes.Linear;
 
@@ -44,8 +43,7 @@ public sealed partial class Barcode
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Barcodes.cs" region="barcode-gs1"/>
     /// </example>
-    [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "GS1-128 is the symbology's name; Gs1128 would read as one number.")]
-    public static Barcode Gs1_128(IReadOnlyList<Gs1ElementString> elements, Code128Options? options = null)
+    public static Barcode Gs1Code128(IReadOnlyList<Gs1ElementString> elements, Code128Options? options = null)
     {
         ArgumentNullException.ThrowIfNull(elements);
         if (elements.Count == 0)
@@ -78,8 +76,7 @@ public sealed partial class Barcode
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Barcodes.cs" region="barcode-gs1"/>
     /// </example>
-    [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "GS1-128 is the symbology's name; Gs1128 would read as one number.")]
-    public static Barcode Gs1_128(string elements, Code128Options? options = null) => Gs1_128(Gs1.Parse(elements), options);
+    public static Barcode Gs1Code128(string elements, Code128Options? options = null) => Gs1Code128(Gs1.Parse(elements), options);
 
     private static Barcode FromCode128(int[] input, string readable, Code128Options? options)
     {

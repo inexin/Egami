@@ -21,10 +21,13 @@ public class ReadPureTests
         BarcodeResult? pure = image.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true });
         Assert.NotNull(pure);
         Assert.Equal(barcode.Format, pure.Format);
-        Assert.Equal(expected, pure.Text);
+        // The references join an add-on to the main digits with a space.
+        Assert.Equal(expected, Joined(pure));
 
         BarcodeResult? searched = image.ReadBarcode();
         Assert.NotNull(searched);
-        Assert.Equal(expected, searched.Text);
+        Assert.Equal(expected, Joined(searched));
     }
+
+    private static string Joined(BarcodeResult result) => result.AddOn is null ? result.Text : $"{result.Text} {result.AddOn}";
 }

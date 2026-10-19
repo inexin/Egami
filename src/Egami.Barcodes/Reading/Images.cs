@@ -2,14 +2,19 @@ using Egami.Pixels;
 
 namespace Egami.Barcodes.Reading;
 
-/// <summary>An 8-bit luminance plane, row by row, and where it sits in the source image.</summary>
-internal sealed class LuminanceImage(byte[] pixels, int width, int height, int left = 0, int top = 0)
+/// <summary>
+/// An 8-bit luminance plane, row by row with a stride, and where it sits in the source image. It may view a caller's buffer,
+/// which then must outlive the search.
+/// </summary>
+internal sealed class LuminanceImage(ReadOnlyMemory<byte> pixels, int width, int height, int stride, int left = 0, int top = 0)
 {
-    public byte[] Pixels { get; } = pixels;
+    private readonly ReadOnlyMemory<byte> _pixels = pixels;
 
     public int Width { get; } = width;
 
     public int Height { get; } = height;
+
+    public int Stride { get; } = stride;
 
     /// <summary>Gets the left edge in the source image.</summary>
     public int Left { get; } = left;
@@ -17,9 +22,9 @@ internal sealed class LuminanceImage(byte[] pixels, int width, int height, int l
     /// <summary>Gets the top edge in the source image.</summary>
     public int Top { get; } = top;
 
-    public byte this[int x, int y] => Pixels[(y * Width) + x];
+    public byte this[int x, int y] => _pixels.Span[(y * Stride) + x];
 
-    public ReadOnlySpan<byte> Row(int y) => Pixels.AsSpan(y * Width, Width);
+    public ReadOnlySpan<byte> Row(int y) => _pixels.Span.Slice(y * Stride, Width);
 
     /// <summary>Converts a raster's region to luminance through Egami's pixel conversion.</summary>
     public static LuminanceImage From<TPixel>(Raster<TPixel> raster, Rect? region)
@@ -33,19 +38,36 @@ internal sealed class LuminanceImage(byte[] pixels, int width, int height, int l
             PixelConvert.Convert<TPixel, Gray8>(raster.Row(area.Y + y).Slice(area.X, area.Width), gray.Slice(y * area.Width, area.Width));
         }
 
-        return new LuminanceImage(pixels, area.Width, area.Height, area.X, area.Y);
+        return new LuminanceImage(pixels, area.Width, area.Height, area.Width, area.X, area.Y);
+    }
+
+    /// <summary>Views a region of a luminance buffer without copying it.</summary>
+    public static LuminanceImage View(ReadOnlyMemory<byte> luminance, int width, int height, int stride, Rect? region)
+    {
+        Rect area = region is Rect r ? r.Intersect(new Rect(0, 0, width, height)) : new Rect(0, 0, width, height);
+        if (area.Width <= 0 || area.Height <= 0)
+        {
+            return new LuminanceImage(Array.Empty<byte>(), 0, 0, 0, area.X, area.Y);
+        }
+
+        int start = (area.Y * stride) + area.X;
+        return new LuminanceImage(luminance[start..(start + ((area.Height - 1) * stride) + area.Width)], area.Width, area.Height, stride, area.X, area.Y);
     }
 
     /// <summary>Returns the image with light and dark swapped.</summary>
     public LuminanceImage Inverted()
     {
-        byte[] pixels = new byte[Pixels.Length];
-        for (int i = 0; i < pixels.Length; i++)
+        byte[] pixels = new byte[Width * Height];
+        for (int y = 0; y < Height; y++)
         {
-            pixels[i] = (byte)(255 - Pixels[i]);
+            ReadOnlySpan<byte> row = Row(y);
+            for (int x = 0; x < Width; x++)
+            {
+                pixels[(y * Width) + x] = (byte)(255 - row[x]);
+            }
         }
 
-        return new LuminanceImage(pixels, Width, Height, Left, Top);
+        return new LuminanceImage(pixels, Width, Height, Width, Left, Top);
     }
 }
 
@@ -93,16 +115,23 @@ internal static class Binarizer
     public static BitImage Global(LuminanceImage image)
     {
         Span<int> histogram = stackalloc int[32];
-        foreach (byte p in image.Pixels)
+        for (int y = 0; y < image.Height; y++)
         {
-            histogram[p >> 3]++;
+            foreach (byte p in image.Row(y))
+            {
+                histogram[p >> 3]++;
+            }
         }
 
         int threshold = Valley(histogram) << 3;
-        byte[] bits = new byte[image.Pixels.Length];
-        for (int i = 0; i < bits.Length; i++)
+        byte[] bits = new byte[image.Width * image.Height];
+        for (int y = 0; y < image.Height; y++)
         {
-            bits[i] = image.Pixels[i] < threshold ? (byte)1 : (byte)0;
+            ReadOnlySpan<byte> row = image.Row(y);
+            for (int x = 0; x < row.Length; x++)
+            {
+                bits[(y * image.Width) + x] = row[x] < threshold ? (byte)1 : (byte)0;
+            }
         }
 
         return new BitImage(bits, image.Width, image.Height);
@@ -131,7 +160,7 @@ internal static class Binarizer
                 int sum = 0, min = 255, max = 0;
                 for (int y = 0; y < BlockSize; y++)
                 {
-                    ReadOnlySpan<byte> row = image.Pixels.AsSpan(((y0 + y) * width) + x0, BlockSize);
+                    ReadOnlySpan<byte> row = image.Row(y0 + y).Slice(x0, BlockSize);
                     foreach (byte p in row)
                     {
                         sum += p;
@@ -194,9 +223,10 @@ internal static class Binarizer
             for (int y = 0; y < BlockSize; y++)
             {
                 int offset = ((y0 + y) * width) + x0;
+                ReadOnlySpan<byte> row = image.Row(y0 + y).Slice(x0, BlockSize);
                 for (int x = 0; x < BlockSize; x++)
                 {
-                    bits[offset + x] = image.Pixels[offset + x] <= threshold ? (byte)1 : (byte)0;
+                    bits[offset + x] = row[x] <= threshold ? (byte)1 : (byte)0;
                 }
             }
         }

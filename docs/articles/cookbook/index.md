@@ -240,6 +240,24 @@ On a raster, the QR code's modules snap to whole pixels, so its edges stay sharp
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-svg)]
 
+`Barcode.ToPath` gives the whole symbol as one path, so any canvas can take it; Egami.Svg's `SvgCanvas` writes it as one SVG
+`<path>`. Egami.Barcodes itself does not depend on Egami.Svg.
+
+## Scan a camera frame for barcodes
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read-luminance)]
+
+The Y plane is read where it is, so a frame from a camera API needs no conversion or copy. See
+[Reading barcodes](../guides/barcode-reading.md#camera-frames).
+
+## Read every barcode on a page
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read-many)]
+
+## Read the GS1 data on a label
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read-gs1)]
+
 ## Print a GS1 shipping label
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-shipping)]

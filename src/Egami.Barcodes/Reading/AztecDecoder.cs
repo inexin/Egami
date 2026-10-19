@@ -271,6 +271,11 @@ internal static class AztecDecoder
                         {
                             return null;
                         }
+                        else
+                        {
+                            // After the bytes, the mode B/S was given in, even when that was a shift (U/S, B/S from Digit).
+                            latch = mode;
+                        }
                     }
                     else
                     {
@@ -301,6 +306,8 @@ internal static class AztecDecoder
                         {
                             return null;
                         }
+
+                        latch = Mixed;
                     }
                     else
                     {

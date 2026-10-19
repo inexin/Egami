@@ -11,7 +11,7 @@ internal static class Pdf417Detector
 {
     private readonly record struct Hit(int Line, Vector2 Point, float Unit);
 
-    public static List<Found> Detect(BitImage bits, int effort, Vector2 offset)
+    public static List<Found> Detect(BitImage bits, LuminanceImage image, int effort, Vector2 offset)
     {
         var results = new List<Found>();
         int spacing = effort >= 7 ? 1 : effort >= 3 ? 2 : 3;
@@ -32,7 +32,7 @@ internal static class Pdf417Detector
             var u = new Vector2(MathF.Cos(radians), MathF.Sin(radians));
             foreach (Vector2 direction in (ReadOnlySpan<Vector2>)[u, -u])
             {
-                foreach (Found found in DetectAlong(bits, direction, spacing))
+                foreach (Found found in DetectAlong(bits, image, direction, spacing))
                 {
                     Vector2 center = (found.Corners[0] + found.Corners[2]) / 2;
                     if (!results.Any(r => Search.Inside(r.Corners, center + offset)))
@@ -47,7 +47,7 @@ internal static class Pdf417Detector
     }
 
     /// <summary>Scans lines read in one direction for start and stop patterns and reads the symbols they bound.</summary>
-    private static List<Found> DetectAlong(BitImage bits, Vector2 u, int spacing)
+    private static List<Found> DetectAlong(BitImage bits, LuminanceImage image, Vector2 u, int spacing)
     {
         var starts = new List<Hit>();
         var stops = new List<Hit>();
@@ -151,7 +151,7 @@ internal static class Pdf417Detector
                 stop = (top + (forward * reach), bottom + (forward * reach));
             }
 
-            if (Read(bits, top, bottom, stop.Value.Top, stop.Value.Bottom, unit) is Found found)
+            if (Read(bits, image, top, bottom, stop.Value.Top, stop.Value.Bottom, unit) is Found found)
             {
                 results.Add(found);
             }
@@ -247,7 +247,7 @@ internal static class Pdf417Detector
     /// Reads rows sampled through the perspective between the start and stop edges, every half pixel across and every pixel
     /// down.
     /// </summary>
-    private static Found? Read(BitImage bits, Vector2 startTop, Vector2 startBottom, Vector2 stopTop, Vector2 stopBottom, float unit)
+    private static Found? Read(BitImage bits, LuminanceImage image, Vector2 startTop, Vector2 startBottom, Vector2 stopTop, Vector2 stopBottom, float unit)
     {
         Vector2[] quad = [startTop, stopTop, stopBottom, startBottom];
         var square = Perspective.SquareToQuad(quad);
@@ -264,6 +264,9 @@ internal static class Pdf417Detector
         var lines = new List<Pdf417Decoder.Line>();
         var runs = new List<int>();
         var positions = new List<int>();
+        byte[] gray = new byte[across];
+        var fineRuns = new List<float>();
+        var fineOffsets = new List<float>();
         for (int row = 0; row < down; row++)
         {
             float v = (row + 0.5f) / down;
@@ -292,6 +295,29 @@ internal static class Pdf417Detector
             {
                 lines.Add(line);
             }
+
+            // The same row from the gray levels, with edges between samples: bars of a pixel or less, which the
+            // binarization blurs together, still read. Both readings vote.
+            for (int i = 0; i < across; i++)
+            {
+                Vector2 p = square.Map(-margin + ((1 + (2 * margin)) * i / across), v);
+                gray[i] = Bilinear(image, p.X, p.Y);
+            }
+
+            Binarizer.RowRuns(gray, fineRuns, fineOffsets);
+            runs.Clear();
+            positions.Clear();
+            for (int i = 0; i < fineRuns.Count; i++)
+            {
+                // In eighths of a sample: the codeword reader needs whole numbers but only their proportions.
+                runs.Add((int)MathF.Round(fineRuns[i] * 8));
+                positions.Add((int)fineOffsets[i]);
+            }
+
+            if (Pdf417Decoder.ReadLine([.. runs], 1, row, [.. positions]) is Pdf417Decoder.Line fine)
+            {
+                lines.Add(fine);
+            }
         }
 
         if (Pdf417Decoder.Decode(lines, out Vector2[] found) is not DecodedData data)
@@ -302,6 +328,19 @@ internal static class Pdf417Detector
         // The decoder's corners are in samples across and rows down; map them back into the image.
         Vector2 Back(Vector2 p) => square.Map(-margin + ((1 + (2 * margin)) * p.X / across), (p.Y + 0.5f) / down);
         return new Found(data, [Back(found[0]), Back(found[1]), Back(found[2]), Back(found[3])]);
+    }
+
+    /// <summary>The gray level at a point between pixel centers, interpolated from the four around it.</summary>
+    private static byte Bilinear(LuminanceImage image, float x, float y)
+    {
+        x -= 0.5f;
+        y -= 0.5f;
+        int x0 = Math.Clamp((int)MathF.Floor(x), 0, image.Width - 1), y0 = Math.Clamp((int)MathF.Floor(y), 0, image.Height - 1);
+        int x1 = Math.Min(x0 + 1, image.Width - 1), y1 = Math.Min(y0 + 1, image.Height - 1);
+        float fx = Math.Clamp(x - x0, 0, 1), fy = Math.Clamp(y - y0, 0, 1);
+        float top = image[x0, y0] + ((image[x1, y0] - image[x0, y0]) * fx);
+        float bottom = image[x0, y1] + ((image[x1, y1] - image[x0, y1]) * fx);
+        return (byte)(top + ((bottom - top) * fy) + 0.5f);
     }
 
     /// <summary>

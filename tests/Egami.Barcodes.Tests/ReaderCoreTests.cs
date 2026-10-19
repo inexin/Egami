@@ -52,7 +52,7 @@ public class ReaderCoreTests
         Assert.NotNull(result);
         Assert.Equal("Right half", result.Text);
         Assert.True(result.Corners[0].X >= 250);
-        Assert.Null(image.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true, Formats = BarcodeFormats.Qr }));
+        Assert.Null(image.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true, Formats = BarcodeFormat.Qr }));
     }
 
     [Fact]
@@ -131,6 +131,77 @@ public class ReaderCoreTests
         }
 
         Assert.Empty(failures);
+    }
+
+    [Fact]
+    public void LuminanceBuffersReadLikeRasters()
+    {
+        using Raster<Gray8> image = Raster.Create(400, 300, new Gray8(255));
+        using (RasterCanvas<Gray8> canvas = image.CreateCanvas())
+        {
+            canvas.DrawBarcode(Barcode.Qr("Camera frame"), new RectF(30, 40, 200, 200), Rgba8.Black);
+            canvas.DrawBarcode(Barcode.Code128("Y-PLANE"), new RectF(250, 60, 140, 80), Rgba8.Black);
+        }
+
+        // A camera-style Y plane: rows padded to 448 bytes, the padding mid-gray.
+        const int Stride = 448;
+        byte[] plane = new byte[(Stride * image.Height) - (Stride - image.Width)];
+        Array.Fill(plane, (byte)128);
+        for (int y = 0; y < image.Height; y++)
+        {
+            System.Runtime.InteropServices.MemoryMarshal.AsBytes(image.Row(y)).CopyTo(plane.AsSpan(y * Stride));
+        }
+
+        static string Describe(IReadOnlyList<BarcodeResult> results) => string.Join("; ", results.Select(r => $"{r.Format} {r.Text} {string.Join(" ", r.Corners)}"));
+        Assert.Equal(Describe(image.ReadBarcodes()), Describe(BarcodeReader.ReadBarcodes(plane, image.Width, image.Height, Stride)));
+        Assert.Equal(2, BarcodeReader.ReadBarcodes(plane, image.Width, image.Height, Stride).Count);
+
+        var region = new BarcodeReaderOptions { Region = new Rect(20, 30, 220, 220) };
+        Assert.Equal(Describe(image.ReadBarcodes(region)), Describe(BarcodeReader.ReadBarcodes(plane, image.Width, image.Height, Stride, region)));
+        Assert.Equal("Camera frame", BarcodeReader.ReadBarcode(plane, image.Width, image.Height, Stride, region)?.Text);
+    }
+
+    [Fact]
+    public void LuminanceBuffersAreChecked()
+    {
+        byte[] plane = new byte[100];
+        Assert.Throws<ArgumentOutOfRangeException>(() => BarcodeReader.ReadBarcodes(plane, 0, 10, 10));
+        Assert.Throws<ArgumentOutOfRangeException>(() => BarcodeReader.ReadBarcodes(plane, 10, 0, 10));
+        Assert.Throws<ArgumentOutOfRangeException>(() => BarcodeReader.ReadBarcodes(plane, 10, 10, 9));
+        Assert.Throws<ArgumentException>(() => BarcodeReader.ReadBarcodes(plane, 10, 10, 11));
+        Assert.Empty(BarcodeReader.ReadBarcodes(plane, 10, 10, 10));
+    }
+
+    [Fact]
+    public void AddOnsComeApart()
+    {
+        Barcode book = Barcode.Ean13("978044101498", new EanUpcOptions { AddOn = "51299" });
+        using Raster<Gray8> image = book.ToRaster(pixelsPerModule: 3);
+        BarcodeResult? result = image.ReadBarcode();
+        Assert.Equal("9780441014989", result?.Text);
+        Assert.Equal("51299", result?.AddOn);
+        Assert.Null(Barcode.Ean13("978044101498").ToRaster(pixelsPerModule: 3).ReadBarcode()?.AddOn);
+    }
+
+    [Theory]
+    [InlineData("ße oaus OslG")]
+    [InlineData("ab")]
+    public void Code128ExtendedCharactersAfterAShiftReadBack(string text)
+    {
+        // FNC4 before the shift: a character above 127 reached through Shift keeps its code set.
+        using Raster<Gray8> image = Barcode.Code128(text).ToRaster(pixelsPerModule: 2);
+        Assert.Equal(text, image.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true })?.Text);
+    }
+
+    [Theory]
+    [InlineData("h    ;")]
+    [InlineData("ht s:")]
+    public void AztecRenderedWithoutAMarginReads(string text)
+    {
+        // Light modules on the edge of an Aztec Code (which has no quiet zone) must not hide the symbol's size.
+        using Raster<Gray8> image = Barcode.Aztec(text, new AztecOptions { Compact = true, ErrorCorrectionPercent = 5 }).ToRaster(pixelsPerModule: 2);
+        Assert.Equal(System.Text.Encoding.Latin1.GetBytes(text), image.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true })?.Bytes.ToArray());
+        Assert.NotNull(image.ReadBarcode());
     }
 
     [Fact]

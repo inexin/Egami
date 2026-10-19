@@ -21,8 +21,8 @@ public sealed class BarcodeResult
 
     /// <summary>
     /// Gets the text: the data decoded with the symbol's ECI or, without one, as ISO 8859-1 (or UTF-8 or Shift JIS when the bytes
-    /// are clearly that). GS1 data is in its human-readable form, such as <c>(01)09501101530003(10)AB12</c>; an EAN or UPC
-    /// add-on follows the main digits after a space.
+    /// are clearly that). GS1 data is in its human-readable form, such as <c>(01)09501101530003(10)AB12</c>. For EAN and UPC,
+    /// the main digits only; an add-on is in <see cref="AddOn"/>.
     /// </summary>
     public string Text { get; }
 
@@ -49,6 +49,9 @@ public sealed class BarcodeResult
 
     /// <summary>Gets a value indicating whether the symbol was mirrored.</summary>
     public bool Mirrored { get; init; }
+
+    /// <summary>Gets the digits of an EAN-2 or EAN-5 add-on read after an EAN or UPC symbol, or <see langword="null"/> when there is none.</summary>
+    public string? AddOn { get; init; }
 
     /// <inheritdoc/>
     public override string ToString() => $"{Format}: {Text}";

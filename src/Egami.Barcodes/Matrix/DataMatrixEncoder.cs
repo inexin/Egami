@@ -80,15 +80,16 @@ internal static class DataMatrixEncoder
     {
         int bytes = size.Data, blocks = (bytes + 2) / size.DataPerBlock, checks = size.CheckPerBlock * blocks;
         int[] check = new int[size.CheckPerBlock];
+        Span<int> block = stackalloc int[(bytes / blocks) + 1];
         for (int b = 0; b < blocks; b++)
         {
-            var block = new List<int>();
+            int count = 0;
             for (int n = b; n < bytes; n += blocks)
             {
-                block.Add(data[n]);
+                block[count++] = data[n];
             }
 
-            ReedSolomon.Encode(GaloisField.DataMatrix, [.. block], check);
+            ReedSolomon.Encode(GaloisField.DataMatrix, block[..count], check);
             for (int n = b, p = 0; n < checks; n += blocks, p++)
             {
                 data[bytes + (skew ? (b < 8 ? n + 2 : n - 8) : n)] = (byte)check[p];
@@ -101,8 +102,7 @@ internal static class DataMatrixEncoder
     {
         int h = size.Rows, w = size.Columns, fh = size.RegionRows, fw = size.RegionColumns;
         int nc = w - (2 * (w / fw)), nr = h - (2 * (h / fh));
-        int[] places = new int[nc * nr];
-        Placement(places, nr, nc);
+        int[] places = Places(nr, nc);
         bool[] dark = new bool[h * w];
         void Set(int row, int column) => dark[(row * w) + column] = true;
 
@@ -146,6 +146,16 @@ internal static class DataMatrixEncoder
 
         return BarcodeModules.Wrap(w, h, dark);
     }
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<(int, int), int[]> s_places = new();
+
+    /// <summary>The placement of a mapping matrix size, computed once per size; callers only read it.</summary>
+    internal static int[] Places(int nr, int nc) => s_places.GetOrAdd((nr, nc), static key =>
+    {
+        int[] places = new int[key.Item1 * key.Item2];
+        Placement(places, key.Item1, key.Item2);
+        return places;
+    });
 
     // Annex F: which codeword and bit goes in each module of the mapping matrix, as (codeword << 3) + bit.
     internal static void Placement(int[] array, int nr, int nc)

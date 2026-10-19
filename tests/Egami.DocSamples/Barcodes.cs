@@ -134,7 +134,7 @@ public class Barcodes
         #region barcode-gs1
         // Each element string is checked: the AI, the length, the GTIN's check digit, the date.
         IReadOnlyList<Gs1ElementString> elements = Gs1.Parse("(01)09501101530003(17)261231(10)AB12");
-        Barcode label = Barcode.Gs1_128(elements);
+        Barcode label = Barcode.Gs1Code128(elements);
 
         // Mistakes say what is wrong.
         if (!Gs1.TryParse("(01)09501101530004", out _))
@@ -316,18 +316,18 @@ public class Barcodes
         try
         {
             #region barcode-svg
-            // One path, 1 unit a module, the quiet zone as the view box.
+            // The symbol as one path, 4 units a module, drawn on Egami.Svg's canvas over a white quiet zone.
             Barcode barcode = Barcode.DataMatrix("PN 4711-0815");
-            Path path = barcode.ToPath(moduleSize: 1);
-            int width = barcode.Modules.Width + (2 * barcode.QuietZone), height = barcode.Modules.Height + (2 * barcode.QuietZone);
-            File.WriteAllText(file, $"""
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" shape-rendering="crispEdges">
-                  <rect width="{width}" height="{height}" fill="#fff"/>
-                  <path d="{path.ToSvg()}"/>
-                </svg>
-                """);
+            Path path = barcode.ToPath(moduleSize: 4);
+            float width = (barcode.Modules.Width + (2 * barcode.QuietZone)) * 4, height = (barcode.Modules.Height + (2 * barcode.QuietZone)) * 4;
+            using (FileStream stream = File.Create(file))
+            using (var canvas = new Egami.Svg.SvgCanvas(stream, width, height))
+            {
+                canvas.FillRect(new RectF(0, 0, width, height), Rgba8.White);
+                canvas.FillPath(path, Rgba8.Black);
+            }
             #endregion
-            Assert.Contains("<path d=\"M", File.ReadAllText(file), StringComparison.Ordinal);
+            Assert.Contains("<path", File.ReadAllText(file), StringComparison.Ordinal);
         }
         finally
         {
@@ -344,7 +344,7 @@ public class Barcodes
         #region barcode-shipping
         // A 4 x 6 inch label in points: an SSCC as GS1-128 at 0.5 mm a module with its text, and a GS1 Data Matrix.
         float module = 0.5f / 25.4f * 72;
-        Barcode sscc = Barcode.Gs1_128("(00)106141411234567897");
+        Barcode sscc = Barcode.Gs1Code128("(00)106141411234567897");
         page.DrawBarcode(sscc, new Vector2(18, 300), module, Rgba8.Black, new BarcodeDrawOptions { Font = font });
         page.DrawBarcode(Barcode.DataMatrix(Gs1.Parse("(01)09501101530003(10)AB12")), new RectF(18, 18, 100, 100), Rgba8.Black);
         #endregion
@@ -373,7 +373,7 @@ public class Barcodes
         // Only the formats you expect, searched harder; a rendered barcode can skip the search.
         BarcodeResult? result = label.ReadBarcode(new BarcodeReaderOptions
         {
-            Formats = BarcodeFormats.DataMatrix | BarcodeFormats.Qr,
+            Formats = BarcodeFormat.DataMatrix | BarcodeFormat.Qr,
             Effort = 7,
         });
 
@@ -414,5 +414,38 @@ public class Barcodes
         }
         #endregion
         Assert.Equal(["Parcel 1", "Parcel 2", "Parcel 3"], parcels.Select(p => p.Text));
+    }
+
+    [Fact]
+    public void ReadLuminance()
+    {
+        using Raster<Gray8> frame = Barcode.Qr("Y plane").ToRaster(pixelsPerModule: 4);
+        int width = frame.Width, height = frame.Height, stride = width + 32;
+        byte[] yPlane = new byte[stride * height];
+        for (int y = 0; y < height; y++)
+        {
+            System.Runtime.InteropServices.MemoryMarshal.AsBytes(frame.Row(y)).CopyTo(yPlane.AsSpan(y * stride));
+        }
+
+        #region barcode-read-luminance
+        // A camera frame's Y plane (8-bit luminance, rows padded to the stride), read in place.
+        BarcodeResult? code = BarcodeReader.ReadBarcode(yPlane, width, height, stride);
+        #endregion
+        Assert.Equal("Y plane", code?.Text);
+    }
+
+    [Fact]
+    public void ReadGs1()
+    {
+        using Raster<Gray8> label = Barcode.Gs1Code128("(01)09501101530003(17)261231(10)AB12").ToRaster(pixelsPerModule: 3);
+        #region barcode-read-gs1
+        // A GS1-128 label: the element strings by AI, and the text with the AIs in parentheses.
+        BarcodeResult? code = label.ReadBarcode(new BarcodeReaderOptions { Formats = BarcodeFormat.Code128 });
+        string? expiry = code?.Gs1?.FirstOrDefault(e => e.Ai == "17")?.Value;   // "261231"
+        string? batch = code?.Gs1?.FirstOrDefault(e => e.Ai == "10")?.Value;    // "AB12"
+        #endregion
+        Assert.Equal("261231", expiry);
+        Assert.Equal("AB12", batch);
+        Assert.Equal("(01)09501101530003(17)261231(10)AB12", code?.Text);
     }
 }

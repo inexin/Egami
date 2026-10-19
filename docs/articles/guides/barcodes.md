@@ -9,7 +9,6 @@ format chosen at run time with the default options.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-create)]
 
-The package is in development and not yet released.
 
 ## QR Code
 
@@ -71,7 +70,7 @@ characters and lengths fit it, and check digits, dates and times are right. A ba
 which AI is wrong and how; `Gs1.TryParse` returns `false` instead. Each `Gs1ElementString` has its `Ai`, `Value` and GS1's
 `Title` for the AI. A parenthesis inside a value is written `\(`.
 
-`Barcode.Gs1_128` encodes element strings as Code 128 with FNC1 first, and an FNC1 after each field whose AI has no
+`Barcode.Gs1Code128` encodes element strings as Code 128 with FNC1 first, and an FNC1 after each field whose AI has no
 predefined length, unless it is the last.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-gs1)]
@@ -111,46 +110,10 @@ nominal heights.
 
 ## Reading barcodes
 
-`ReadBarcodes`, an extension method in `BarcodeReader`, finds every barcode in a raster of any pixel type and returns a
-`BarcodeResult` for each: its `Format`, its `Text`, the `Bytes` it holds, the `Corners` it was found at, its `Eci`, its GS1
-element strings in `Gs1`, and how many codewords error correction restored. `ReadBarcode` returns the first one, or `null`.
+`raster.ReadBarcodes()` finds every barcode in an image and `raster.ReadBarcode()` the first. [Reading barcodes](barcode-reading.md)
+covers the options, photos, camera frames, GS1 data and speed.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read)]
-
-Text is decoded with the symbol's ECI; without one, as ISO 8859-1, or as UTF-8 or Shift JIS when the bytes clearly are. GS1
-data comes back in its human-readable form, such as `(01)09501101530003(10)AB12`, and an EAN or UPC add-on after the main
-digits and a space.
-
-`BarcodeReaderOptions` narrows or widens the search. `Formats` names the symbologies to look for; fewer read faster.
-`Effort`, 0 to 10, decides how many binarizations, scan lines and rotations are tried, never what counts as a valid read;
-from effort 5 light symbols on a dark background are tried too (`TryInverted`). `Region` limits the search to part of the
-image. `PureBarcode` reads an image that holds one upright symbol and its quiet zone, such as a rendered barcode, without
-searching.
-
-[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read-options)]
-
-Linear barcodes are found along scan lines: rows, columns from effort 3 and diagonals from effort 7, each read in both
-directions with its edges placed between pixels, so low-resolution and blurred photos read. A linear barcode counts once two
-scan lines agree on it.
-
-QR Codes are found by their three finder patterns, at any rotation and in perspective; from version 2 the alignment pattern
-corrects the perspective, and a mirrored symbol reads too.
-
-Data Matrix symbols are found by their L-shaped finder, square and rectangular (DMRE too), at any rotation and in
-perspective, on a label lighter than its background or not; the clock tracks count the modules.
-
-PDF417 symbols are found by their start and stop patterns at any rotation and in perspective; a compact symbol, which has
-no stop pattern, is read from its start pattern on. Rows that cannot be read are filled in by error correction.
-
-Aztec Codes are found by their bullseye at any rotation and in perspective, compact, full-range and runes; on larger
-full-range symbols the reference grid places the modules out to the edge.
-
-Every symbol in the image comes back once, in reading order: top to bottom, then left to right. A linear read inside a 2D
-symbol is dropped as part of it. `Inverted` tells which symbols were light on dark, `Mirrored` which were read from behind
-or flipped. Large images are searched on several threads, up to the `MaxParallelism` of the options' `Context`; the
-results are the same at any thread count.
-
-[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read-many)]
 
 ## Drawing on a canvas
 
