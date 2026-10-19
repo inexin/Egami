@@ -1,4 +1,74 @@
 {
+ "aztec-binary": {
+  "format": "Aztec",
+  "grid": "2c7d9d590982bc54",
+  "text": "\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd"
+ },
+ "aztec-digits": {
+  "format": "Aztec",
+  "grid": "63461cf0862658cf",
+  "text": "1234567890123456789012345"
+ },
+ "aztec-ecc50": {
+  "format": "Aztec",
+  "grid": "a423c7d3ddcfcdfa",
+  "text": "Half error correction"
+ },
+ "aztec-full-forced": {
+  "format": "Aztec",
+  "grid": "48f250e53ee1510a",
+  "text": "Full range"
+ },
+ "aztec-latin1": {
+  "format": "Aztec",
+  "grid": "f968eed089236ce0",
+  "text": "\u00c4\u00d6\u00dc\u00e4\u00f6\u00fc\u00df \u00e9\u00e8 Stra\u00dfe"
+ },
+ "aztec-layers": {
+  "format": "Aztec",
+  "grid": "22d9867c1c800baf",
+  "text": "Four layers"
+ },
+ "aztec-long": {
+  "format": "Aztec",
+  "grid": "2b712048757d90ca",
+  "text": "Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. "
+ },
+ "aztec-mixed": {
+  "format": "Aztec",
+  "grid": "21c33668a91d4e49",
+  "text": "Ticket #4711: BER-MUC, seat 12A. Gate b17!"
+ },
+ "aztec-punctuation": {
+  "format": "Aztec",
+  "grid": "c4a49c06c5fd1937",
+  "text": "a.b, c: d\r\ne; [f] {g} @h \\i ^j"
+ },
+ "aztec-rune-0": {
+  "format": "Aztec",
+  "grid": "c90d52bca11bbde6",
+  "text": "000"
+ },
+ "aztec-rune-25": {
+  "format": "Aztec",
+  "grid": "c24d654a54139a37",
+  "text": "025"
+ },
+ "aztec-rune-255": {
+  "format": "Aztec",
+  "grid": "fa09083e0d61e638",
+  "text": "255"
+ },
+ "aztec-text": {
+  "format": "Aztec",
+  "grid": "960a10e541c8d4ae",
+  "text": "Hello World"
+ },
+ "aztec-utf8": {
+  "format": "Aztec",
+  "grid": "3b2a7db66ea08f10",
+  "text": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac \u2192 OK"
+ },
  "code128-control": {
   "format": "Code128",
   "grid": "c641b6ae73bd0da3",

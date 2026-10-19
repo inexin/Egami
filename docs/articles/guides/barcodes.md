@@ -48,6 +48,16 @@ compact PDF417, which leaves out the right row indicators for a narrower symbol.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-pdf417)]
 
+## Aztec Code
+
+`Barcode.Aztec` writes Aztec Code from text or bytes, as on rail and airline tickets. The text is written in the Upper,
+Lower, Mixed, Punctuation and Digit modes and Binary Shift, switched for the fewest bits. The symbol is the smallest compact
+(up to 4 layers) or full-range (up to 32 layers) one that leaves at least 23 % of its codewords, plus 3, for error correction;
+`AztecOptions` raises that share or fixes the form and layers. Aztec Code finds itself by its bullseye, so it needs no quiet
+zone. `Barcode.AztecRune` makes an Aztec Rune, an 11 x 11 core that holds one value from 0 to 255.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-aztec)]
+
 ## Linear barcodes
 
 ### Code 128

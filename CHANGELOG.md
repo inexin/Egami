@@ -31,6 +31,11 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - `Barcode.Pdf417` writes PDF417 and compact PDF417 from text or bytes, with text, numeric and byte compaction, the error
   level from the standard's table and columns for about 3:1; `Pdf417Options` sets columns, level and the compact form.
 
+### Aztec Code
+
+- `Barcode.Aztec` writes compact and full-range Aztec Code from text or bytes, with the fewest bits over its modes and Binary
+  Shift and at least 23 % error correction by default (`AztecOptions`); `Barcode.AztecRune` writes Aztec Runes.
+
 ### Code 128 and GS1
 
 - `Barcode.Code128` writes Code 128 with the shortest mix of code sets A, B and C.

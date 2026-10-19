@@ -288,6 +288,21 @@ under the Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2
     on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
     specific language governing permissions and limitations under the License.
 
+## ZXing
+
+Egami's Aztec Code encoder (`src/Egami.Barcodes/Matrix/AztecEncoder.cs`) is written from ISO/IEC 24778. Its layout of the
+data layers, the mapping that skips the reference grid of full-range symbols, the placement of the mode message and the
+bit stuffing follow the structure of ZXing's Aztec encoder (`com.google.zxing.aztec.encoder.Encoder`), and its search over mode
+states for the fewest bits takes the approach of ZXing's `HighLevelEncoder`. ZXing is distributed under the Apache License,
+Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0):
+
+    Copyright 2013 ZXing authors
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+    License. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+    on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations under the License.
+
 ## zint
 
 Egami.Barcodes' encoders are written from the ISO/IEC barcode standards. These tables, which the standards print, were

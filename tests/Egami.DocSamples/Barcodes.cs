@@ -250,4 +250,24 @@ public class Barcodes
         Assert.True(ticket.Modules.Width > ticket.Modules.Height);
         Assert.True(compact.Modules.Width < wide.Modules.Width);
     }
+
+    [Fact]
+    public void MakeAztec()
+    {
+        #region barcode-aztec
+        // The smallest compact or full-range symbol with at least 23 % error correction; no quiet zone needed.
+        Barcode ticket = Barcode.Aztec("EG1234 BER-MUC 2026-10-19 SEAT 12A DOE/JANE");
+
+        // More error correction for a ticket that gets folded, or a fixed compact size.
+        Barcode robust = Barcode.Aztec("EG1234 BER-MUC", new AztecOptions { ErrorCorrectionPercent = 50 });
+        Barcode compact = Barcode.Aztec("EG1234", new AztecOptions { Compact = true, Layers = 2 });
+
+        // A rune: one value from 0 to 255 in an 11 x 11 core.
+        Barcode rune = Barcode.AztecRune(42);
+        #endregion
+        Assert.Equal(0, ticket.QuietZone);
+        Assert.Equal(19, compact.Modules.Width);
+        Assert.Equal(11, rune.Modules.Width);
+        Assert.True(robust.Modules.Width >= 15);
+    }
 }

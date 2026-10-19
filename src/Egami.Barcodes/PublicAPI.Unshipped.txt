@@ -1,4 +1,14 @@
 #nullable enable
+Egami.Barcodes.AztecOptions
+Egami.Barcodes.AztecOptions.<Clone>$() -> Egami.Barcodes.AztecOptions!
+Egami.Barcodes.AztecOptions.AztecOptions() -> void
+Egami.Barcodes.AztecOptions.Compact.get -> bool?
+Egami.Barcodes.AztecOptions.Compact.init -> void
+Egami.Barcodes.AztecOptions.Equals(Egami.Barcodes.AztecOptions? other) -> bool
+Egami.Barcodes.AztecOptions.ErrorCorrectionPercent.get -> int?
+Egami.Barcodes.AztecOptions.ErrorCorrectionPercent.init -> void
+Egami.Barcodes.AztecOptions.Layers.get -> int?
+Egami.Barcodes.AztecOptions.Layers.init -> void
 Egami.Barcodes.Barcode
 Egami.Barcodes.Barcode.Format.get -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.Barcode.HumanReadableText.get -> string?
@@ -114,6 +124,9 @@ Egami.Barcodes.QrOptions.Mask.init -> void
 Egami.Barcodes.QrOptions.QrOptions() -> void
 Egami.Barcodes.QrOptions.Version.get -> int?
 Egami.Barcodes.QrOptions.Version.init -> void
+override Egami.Barcodes.AztecOptions.Equals(object? obj) -> bool
+override Egami.Barcodes.AztecOptions.GetHashCode() -> int
+override Egami.Barcodes.AztecOptions.ToString() -> string!
 override Egami.Barcodes.BarcodeDrawOptions.Equals(object? obj) -> bool
 override Egami.Barcodes.BarcodeDrawOptions.GetHashCode() -> int
 override Egami.Barcodes.BarcodeDrawOptions.ToString() -> string!
@@ -141,6 +154,12 @@ override Egami.Barcodes.Pdf417Options.ToString() -> string!
 override Egami.Barcodes.QrOptions.Equals(object? obj) -> bool
 override Egami.Barcodes.QrOptions.GetHashCode() -> int
 override Egami.Barcodes.QrOptions.ToString() -> string!
+static Egami.Barcodes.AztecOptions.Default.get -> Egami.Barcodes.AztecOptions!
+static Egami.Barcodes.AztecOptions.operator !=(Egami.Barcodes.AztecOptions? left, Egami.Barcodes.AztecOptions? right) -> bool
+static Egami.Barcodes.AztecOptions.operator ==(Egami.Barcodes.AztecOptions? left, Egami.Barcodes.AztecOptions? right) -> bool
+static Egami.Barcodes.Barcode.Aztec(string! text, Egami.Barcodes.AztecOptions? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.Aztec(System.ReadOnlySpan<byte> data, Egami.Barcodes.AztecOptions? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.AztecRune(int value) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Code128(string! text, Egami.Barcodes.Code128Options? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Code39(string! text, Egami.Barcodes.Code39Options? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.DataMatrix(string! text, Egami.Barcodes.DataMatrixOptions? options = null) -> Egami.Barcodes.Barcode!
