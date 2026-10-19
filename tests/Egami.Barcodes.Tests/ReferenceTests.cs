@@ -16,15 +16,19 @@ public class ReferenceTests
         [.. Load("cases.json").GetProperty("cases").EnumerateArray()]);
 
     /// <summary>The factories the cases may name; cases for others are not run yet.</summary>
-    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "DataMatrix", "DataMatrixGs1"];
+    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "DataMatrix", "DataMatrixGs1", "Pdf417"];
 
     public static TheoryData<string> Cases =>
         [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!)).Select(c => c.GetProperty("name").GetString()!)];
 
+    /// <summary>The cases zint encodes too; for the others only the read-back is checked.</summary>
+    public static TheoryData<string> ZintCases =>
+        [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!) && c.TryGetProperty("zint", out _)).Select(c => c.GetProperty("name").GetString()!)];
+
     private static string Folder => System.IO.Path.Combine(TestFiles.Root, "tests", "reference", "barcodes");
 
     [Theory]
-    [MemberData(nameof(Cases))]
+    [MemberData(nameof(ZintCases))]
     public void ModulesEqualZints(string name)
     {
         JsonElement test = Case(name);
@@ -108,6 +112,12 @@ public class ReferenceTests
                 _ => null,
             }),
             "DataMatrixGs1" => Barcode.DataMatrix(Gs1.Parse(data)),
+            "Pdf417" => Barcode.Pdf417(data, new Pdf417Options
+            {
+                Compact = Flag(options, "compact"),
+                Columns = Number(options, "columns"),
+                ErrorLevel = Number(options, "level"),
+            }),
             string call => throw new NotSupportedException(call),
             _ => throw new NotSupportedException(),
         };
@@ -156,6 +166,9 @@ public class ReferenceTests
 
     private static string? Text(JsonElement options, string name) =>
         options.ValueKind == JsonValueKind.Object && options.TryGetProperty(name, out JsonElement value) ? value.GetString() : null;
+
+    private static int? Number(JsonElement options, string name) =>
+        options.ValueKind == JsonValueKind.Object && options.TryGetProperty(name, out JsonElement value) ? value.GetInt32() : null;
 
     private static bool Flag(JsonElement options, string name) =>
         options.ValueKind == JsonValueKind.Object && options.TryGetProperty(name, out JsonElement value) && value.GetBoolean();

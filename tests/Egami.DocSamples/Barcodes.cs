@@ -235,4 +235,19 @@ public class Barcodes
         Assert.True(narrow.Modules.Width > narrow.Modules.Height);
         Assert.Equal(BarcodeFormat.DataMatrix, pack.Format);
     }
+
+    [Fact]
+    public void MakePdf417()
+    {
+        #region barcode-pdf417
+        // About three times as wide as tall, error level from the standard's table for the amount of data.
+        Barcode ticket = Barcode.Pdf417("PASSENGER DOE/JANE  FLIGHT EG1234  SEAT 12A  GATE B17");
+
+        // Six data columns and error level 5, or the compact form for a narrow space.
+        Barcode wide = Barcode.Pdf417("PASSENGER DOE/JANE", new Pdf417Options { Columns = 6, ErrorLevel = 5 });
+        Barcode compact = Barcode.Pdf417("PASSENGER DOE/JANE", new Pdf417Options { Compact = true });
+        #endregion
+        Assert.True(ticket.Modules.Width > ticket.Modules.Height);
+        Assert.True(compact.Modules.Width < wide.Modules.Width);
+    }
 }

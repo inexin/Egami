@@ -26,6 +26,11 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
   encodation modes for the fewest codewords. Square by default; rectangular and DMRE sizes on request
   (`DataMatrixOptions`).
 
+### PDF417
+
+- `Barcode.Pdf417` writes PDF417 and compact PDF417 from text or bytes, with text, numeric and byte compaction, the error
+  level from the standard's table and columns for about 3:1; `Pdf417Options` sets columns, level and the compact form.
+
 ### Code 128 and GS1
 
 - `Barcode.Code128` writes Code 128 with the shortest mix of code sets A, B and C.

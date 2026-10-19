@@ -259,6 +259,61 @@
   "grid": "b60c137c0c7b0212",
   "text": "15400141288763"
  },
+ "pdf417-byte-shift": {
+  "format": "PDF417",
+  "grid": "e81ec85bc380c1ca",
+  "text": "Caf\u00e9 au lait"
+ },
+ "pdf417-bytes": {
+  "format": "PDF417",
+  "grid": "255030e9debd05d3",
+  "text": "\u00c4\u00d6\u00dc\u00e4\u00f6\u00fc\u00df\u00e9\u00e8\u00ea\u00e5\u00f8"
+ },
+ "pdf417-columns": {
+  "format": "PDF417",
+  "grid": "e238db7f832ab0dc",
+  "text": "Five data columns, fixed"
+ },
+ "pdf417-compact": {
+  "format": "PDF417",
+  "grid": "a83a32788f0507b5",
+  "text": "Compact PDF417 symbol"
+ },
+ "pdf417-level6": {
+  "format": "PDF417",
+  "grid": "79eeb8b8f2c84be7",
+  "text": "Error level 6"
+ },
+ "pdf417-long": {
+  "format": "PDF417",
+  "grid": "3d4082a15e23a86e",
+  "text": "PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. "
+ },
+ "pdf417-mixed": {
+  "format": "PDF417",
+  "grid": "20514782883167aa",
+  "text": "Order 4711: 12 x part A-17/B; total $93.50 (incl. 19% VAT)"
+ },
+ "pdf417-numeric": {
+  "format": "PDF417",
+  "grid": "d6dfed7e3cbc2ccf",
+  "text": "012345678901234567890123456789"
+ },
+ "pdf417-punctuation": {
+  "format": "PDF417",
+  "grid": "543604d15764fbd6",
+  "text": "a@b.c; x<y>z! [q] {r} ~s~ \"t\""
+ },
+ "pdf417-text": {
+  "format": "PDF417",
+  "grid": "9ea68f29230a11f3",
+  "text": "Hello World"
+ },
+ "pdf417-utf8": {
+  "format": "PDF417",
+  "grid": "8f31c51605da9dfc",
+  "text": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac"
+ },
  "qr-alphanumeric": {
   "format": "QRCode",
   "grid": "6530a3ae2fa5f14b",

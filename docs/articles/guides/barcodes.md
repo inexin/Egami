@@ -39,6 +39,15 @@ Symbols are square by default. `DataMatrixOptions.Shape` allows rectangular symb
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-datamatrix)]
 
+## PDF417
+
+`Barcode.Pdf417` writes PDF417 from text or bytes, as on boarding passes and driving licences. Text, numeric and byte
+compaction are chosen run by run. The error correction level follows the standard's recommended minimum for the amount of
+data, and the columns are picked so the symbol is about three times as wide as tall; `Pdf417Options` sets either, or asks for
+compact PDF417, which leaves out the right row indicators for a narrower symbol. Rows are 3 modules tall.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-pdf417)]
+
 ## Linear barcodes
 
 ### Code 128

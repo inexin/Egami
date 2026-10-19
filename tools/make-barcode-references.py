@@ -48,7 +48,9 @@ def grids(cases):
     # QR runs at each level (option_1 1 to 4 for L, M, Q, H), since only the version each level gives is compared.
     lines = []
     for case in cases:
-        z = case["zint"]
+        z = case.get("zint")
+        if z is None:
+            continue
         if z["symbology"] == 58:
             lines += [zint_line(f"{case['name']}@{level}", z, i + 1) for i, level in enumerate("LMQH")]
         else:

@@ -297,6 +297,8 @@ transcribed through zint's backend library (zint 2.16.0, BSD-3), whose frontends
   (ISO/IEC 18004 Tables 1, 7 and 9; zint `backend/qr.h`), in `src/Egami.Barcodes/Matrix/QrTables.cs`.
 - Data Matrix symbol sizes and C40 and Text character tables (ISO/IEC 16022 Table 7 and Annex C, ISO/IEC 21471; zint
   `backend/dmatrix.h`), in `src/Egami.Barcodes/Matrix/DataMatrixTables.cs`.
+- PDF417 symbol character patterns for clusters 0, 3 and 6 (ISO/IEC 15438 Annex A; zint `backend/pdf417_tabs.h`), in
+  `src/Egami.Barcodes/Matrix/Pdf417Tables.cs`.
 
 Egami's Data Matrix encodation (`src/Egami.Barcodes/Matrix/DataMatrixEncoder.cs`) is translated from zint's minimal
 encodation in `backend/dmatrix.c` (itself based on Alex Geller's algorithm), with its end-of-data rules, padding, block
