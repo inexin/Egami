@@ -21,8 +21,7 @@ internal static class DataMatrixDecoder
         DataMatrixTables.Size size = DataMatrixTables.Sizes[index];
         int h = size.Rows, w = size.Columns, fh = size.RegionRows, fw = size.RegionColumns;
         int nc = w - (2 * (w / fw)), nr = h - (2 * (h / fh));
-        int[] places = new int[nc * nr];
-        DataMatrixEncoder.Placement(places, nr, nc);
+        int[] places = DataMatrixEncoder.Places(nr, nc);
         int blocks = (size.Data + 2) / size.DataPerBlock;
         byte[] codewords = new byte[size.Data + (blocks * size.CheckPerBlock)];
         for (int my = 0; my < nr; my++)

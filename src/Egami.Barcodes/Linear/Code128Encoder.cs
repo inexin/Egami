@@ -33,9 +33,11 @@ internal static class Code128Encoder
     {
         int n = input.Length;
 
-        // cost[i, s]: fewest characters for input[i..] when the symbol is in set s at i, set changes included.
-        int[,] cost = new int[n + 1, 3];
-        int[,] step = new int[n + 1, 3];
+        // cost[(i * 3) + s]: fewest characters for input[i..] when the symbol is in set s at i, set changes included.
+        int cells = (n + 1) * 3;
+        Span<int> cost = cells <= 1024 ? stackalloc int[cells] : new int[cells];
+        Span<int> step = cells <= 1024 ? stackalloc int[cells] : new int[cells];
+        cost[(n * 3)..].Clear();
         Span<int> direct = stackalloc int[3];
         Span<int> directStep = stackalloc int[3];
         for (int i = n - 1; i >= 0; i--)
@@ -58,8 +60,8 @@ internal static class Code128Encoder
                     }
                 }
 
-                cost[i, set] = best;
-                step[i, set] = how;
+                cost[(i * 3) + set] = best;
+                step[(i * 3) + set] = how;
             }
         }
 
@@ -67,7 +69,7 @@ internal static class Code128Encoder
         int start = SetC;
         foreach (int set in (ReadOnlySpan<int>)[SetB, SetA])
         {
-            if (cost[0, set] < cost[0, start])
+            if (cost[set] < cost[start])
             {
                 start = set;
             }
@@ -77,13 +79,13 @@ internal static class Code128Encoder
         int current = start;
         for (int i = 0; i < n;)
         {
-            int how = step[i, current];
+            int how = step[(i * 3) + current];
             if (how >= Latch)
             {
                 int target = how - Latch;
                 values.Add(target switch { SetA => CodeA, SetB => CodeB, _ => CodeC });
                 current = target;
-                how = step[i, current] < Latch ? step[i, current] : Direct(input, i, current, cost).Step;
+                how = step[(i * 3) + current] < Latch ? step[(i * 3) + current] : Direct(input, i, current, cost).Step;
             }
 
             switch (how)
@@ -117,27 +119,24 @@ internal static class Code128Encoder
     /// <summary>Returns the bar and space widths of symbol characters followed by the stop character.</summary>
     public static int[] Runs(List<int> values)
     {
-        var runs = new List<int>((values.Count * 6) + 7);
+        int[] runs = new int[(values.Count * 6) + 7];
+        int at = 0;
         foreach (int value in values)
         {
-            foreach (char c in s_patterns[value])
-            {
-                runs.Add(c - '0');
-            }
+            s_widths[value].CopyTo(runs.AsSpan(at));
+            at += 6;
         }
 
-        foreach (char c in s_patterns[Stop])
-        {
-            runs.Add(c - '0');
-        }
-
-        return [.. runs];
+        s_widths[Stop].CopyTo(runs.AsSpan(at));
+        return runs;
     }
+
+    private static readonly int[][] s_widths = [.. s_patterns.Select(p => p.Select(c => c - '0').ToArray())];
 
     private const int Single = 0, Pair = 1, Shift = 2, Latch = 10;
 
     /// <summary>The cheapest way to encode from position i staying in the set (no change of set first), and its cost.</summary>
-    private static (int Cost, int Step) Direct(ReadOnlySpan<int> input, int i, int set, int[,] cost)
+    private static (int Cost, int Step) Direct(ReadOnlySpan<int> input, int i, int set, ReadOnlySpan<int> cost)
     {
         int c = input[i];
         int best = int.MaxValue, how = Single;
@@ -145,11 +144,11 @@ internal static class Code128Encoder
         {
             if (c == Fnc1)
             {
-                best = 1 + cost[i + 1, SetC];
+                best = 1 + cost[((i + 1) * 3) + SetC];
             }
             else if (i + 1 < input.Length && char.IsAsciiDigit((char)c) && input[i + 1] is >= '0' and <= '9')
             {
-                best = 1 + cost[i + 2, SetC];
+                best = 1 + cost[((i + 2) * 3) + SetC];
                 how = Pair;
             }
 
@@ -160,11 +159,11 @@ internal static class Code128Encoder
         int extra = c >= 128 ? 1 : 0;
         if (c == Fnc1 || InSet(c & 0x7F, set))
         {
-            best = 1 + (c == Fnc1 ? 0 : extra) + cost[i + 1, set];
+            best = 1 + (c == Fnc1 ? 0 : extra) + cost[((i + 1) * 3) + set];
         }
         else if (InSet(c & 0x7F, other))
         {
-            best = 2 + extra + cost[i + 1, set];
+            best = 2 + extra + cost[((i + 1) * 3) + set];
             how = Shift;
         }
 

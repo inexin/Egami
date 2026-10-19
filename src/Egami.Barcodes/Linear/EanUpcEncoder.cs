@@ -133,9 +133,10 @@ internal static class EanUpcEncoder
     /// <summary>Builds the runs, bar first, and which bars are guards.</summary>
     private sealed class Runs
     {
-        public List<int> Widths { get; } = [];
+        // Room for EAN-13 with an EAN-5 add-on (59 + 1 + 47 runs), so the lists never grow.
+        public List<int> Widths { get; } = new(112);
 
-        public List<bool> Tall { get; } = [];
+        public List<bool> Tall { get; } = new(112);
 
         public int Width { get; private set; }
 
