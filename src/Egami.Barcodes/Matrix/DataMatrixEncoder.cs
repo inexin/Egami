@@ -148,7 +148,7 @@ internal static class DataMatrixEncoder
     }
 
     // Annex F: which codeword and bit goes in each module of the mapping matrix, as (codeword << 3) + bit.
-    private static void Placement(int[] array, int nr, int nc)
+    internal static void Placement(int[] array, int nr, int nc)
     {
         void Bit(int r, int c, int p, int b)
         {

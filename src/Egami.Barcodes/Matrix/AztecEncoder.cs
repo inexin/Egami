@@ -73,11 +73,11 @@ internal static class AztecEncoder
         return BarcodeModules.Wrap(11, 11, dark);
     }
 
-    private static int WordSize(int layers, bool compact) => layers <= 2 ? 6 : layers <= 8 || compact ? 8 : layers <= 22 ? 10 : 12;
+    internal static int WordSize(int layers, bool compact) => layers <= 2 ? 6 : layers <= 8 || compact ? 8 : layers <= 22 ? 10 : 12;
 
-    private static int TotalBits(int layers, bool compact) => ((compact ? 88 : 112) + (16 * layers)) * layers;
+    internal static int TotalBits(int layers, bool compact) => ((compact ? 88 : 112) + (16 * layers)) * layers;
 
-    private static GaloisField Field(int wordSize) => wordSize switch
+    internal static GaloisField Field(int wordSize) => wordSize switch
     {
         6 => GaloisField.Aztec6,
         8 => GaloisField.Aztec8,
@@ -137,64 +137,16 @@ internal static class AztecEncoder
             message.Append(word, wordSize);
         }
 
-        // Without the reference grid, then with it: every 16th row and column from the center in full-range symbols.
-        int baseSize = (compact ? 11 : 14) + (layers * 4);
-        int[] map = new int[baseSize];
-        int size;
-        if (compact)
-        {
-            size = baseSize;
-            for (int i = 0; i < baseSize; i++)
-            {
-                map[i] = i;
-            }
-        }
-        else
-        {
-            size = baseSize + 1 + (2 * (((baseSize / 2) - 1) / 15));
-            int originalCenter = baseSize / 2, newCenter = size / 2;
-            for (int i = 0; i < originalCenter; i++)
-            {
-                int offset = i + (i / 15);
-                map[originalCenter - i - 1] = newCenter - offset - 1;
-                map[originalCenter + i] = newCenter + offset + 1;
-            }
-        }
-
+        int size = Size(layers, compact), baseSize = (compact ? 11 : 14) + (layers * 4);
         bool[] dark = new bool[size * size];
         void Set(int x, int y) => dark[(y * size) + x] = true;
-
-        for (int i = 0, rowOffset = 0; i < layers; i++)
+        (int X, int Y)[] positions = DataPositions(layers, compact);
+        for (int p = 0; p < positions.Length; p++)
         {
-            int rowSize = ((layers - i) * 4) + (compact ? 9 : 12);
-            for (int j = 0; j < rowSize; j++)
+            if (message[p])
             {
-                int columnOffset = j * 2;
-                for (int k = 0; k < 2; k++)
-                {
-                    if (message[rowOffset + columnOffset + k])
-                    {
-                        Set(map[(i * 2) + k], map[(i * 2) + j]);
-                    }
-
-                    if (message[rowOffset + (rowSize * 2) + columnOffset + k])
-                    {
-                        Set(map[(i * 2) + j], map[baseSize - 1 - (i * 2) - k]);
-                    }
-
-                    if (message[rowOffset + (rowSize * 4) + columnOffset + k])
-                    {
-                        Set(map[baseSize - 1 - (i * 2) - k], map[baseSize - 1 - (i * 2) - j]);
-                    }
-
-                    if (message[rowOffset + (rowSize * 6) + columnOffset + k])
-                    {
-                        Set(map[baseSize - 1 - (i * 2) - j], map[(i * 2) + k]);
-                    }
-                }
+                Set(positions[p].X, positions[p].Y);
             }
-
-            rowOffset += rowSize * 8;
         }
 
         int center = size / 2;
@@ -214,6 +166,92 @@ internal static class AztecEncoder
 
         DrawCore(dark, size, center, compact, ModeMessage(compact, layers, data.Length));
         return BarcodeModules.Wrap(size, size, dark);
+    }
+
+    /// <summary>Returns the symbol's width in modules.</summary>
+    internal static int Size(int layers, bool compact)
+    {
+        int baseSize = (compact ? 11 : 14) + (layers * 4);
+        return compact ? baseSize : baseSize + 1 + (2 * (((baseSize / 2) - 1) / 15));
+    }
+
+    /// <summary>
+    /// Returns where each bit of the data layers goes, in order: from the outermost layer inwards, each layer's four sides in
+    /// two-module columns, skipping the reference grid of full-range symbols (every 16th row and column from the center).
+    /// </summary>
+    internal static (int X, int Y)[] DataPositions(int layers, bool compact)
+    {
+        int baseSize = (compact ? 11 : 14) + (layers * 4), size = Size(layers, compact);
+        int[] map = new int[baseSize];
+        if (compact)
+        {
+            for (int i = 0; i < baseSize; i++)
+            {
+                map[i] = i;
+            }
+        }
+        else
+        {
+            int originalCenter = baseSize / 2, newCenter = size / 2;
+            for (int i = 0; i < originalCenter; i++)
+            {
+                int offset = i + (i / 15);
+                map[originalCenter - i - 1] = newCenter - offset - 1;
+                map[originalCenter + i] = newCenter + offset + 1;
+            }
+        }
+
+        var positions = new (int, int)[TotalBits(layers, compact)];
+        for (int i = 0, rowOffset = 0; i < layers; i++)
+        {
+            int rowSize = ((layers - i) * 4) + (compact ? 9 : 12);
+            for (int j = 0; j < rowSize; j++)
+            {
+                int columnOffset = j * 2;
+                for (int k = 0; k < 2; k++)
+                {
+                    positions[rowOffset + columnOffset + k] = (map[(i * 2) + k], map[(i * 2) + j]);
+                    positions[rowOffset + (rowSize * 2) + columnOffset + k] = (map[(i * 2) + j], map[baseSize - 1 - (i * 2) - k]);
+                    positions[rowOffset + (rowSize * 4) + columnOffset + k] = (map[baseSize - 1 - (i * 2) - k], map[baseSize - 1 - (i * 2) - j]);
+                    positions[rowOffset + (rowSize * 6) + columnOffset + k] = (map[baseSize - 1 - (i * 2) - j], map[(i * 2) + k]);
+                }
+            }
+
+            rowOffset += rowSize * 8;
+        }
+
+        return positions;
+    }
+
+    /// <summary>Returns where each bit of the mode message goes around the bullseye: 28 bits compact, 40 full-range.</summary>
+    internal static (int X, int Y)[] ModePositions(int size, bool compact)
+    {
+        int center = size / 2;
+        var positions = new (int, int)[compact ? 28 : 40];
+        if (compact)
+        {
+            for (int i = 0; i < 7; i++)
+            {
+                int offset = center - 3 + i;
+                positions[i] = (offset, center - 5);
+                positions[i + 7] = (center + 5, offset);
+                positions[20 - i] = (offset, center + 5);
+                positions[27 - i] = (center - 5, offset);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                int offset = center - 5 + i + (i / 5);
+                positions[i] = (offset, center - 7);
+                positions[i + 10] = (center + 7, offset);
+                positions[29 - i] = (offset, center + 7);
+                positions[39 - i] = (center - 7, offset);
+            }
+        }
+
+        return positions;
     }
 
     /// <summary>The mode message: layers and data words, with Reed-Solomon over GF(16): 7 words compact, 10 full-range.</summary>
@@ -279,56 +317,12 @@ internal static class AztecEncoder
         Set(center + radius, center - radius + 1);
         Set(center + radius, center + radius - 1);
 
-        if (compact)
+        (int X, int Y)[] positions = ModePositions(size, compact);
+        for (int i = 0; i < positions.Length; i++)
         {
-            for (int i = 0; i < 7; i++)
+            if (mode[i])
             {
-                int offset = center - 3 + i;
-                if (mode[i])
-                {
-                    Set(offset, center - 5);
-                }
-
-                if (mode[i + 7])
-                {
-                    Set(center + 5, offset);
-                }
-
-                if (mode[20 - i])
-                {
-                    Set(offset, center + 5);
-                }
-
-                if (mode[27 - i])
-                {
-                    Set(center - 5, offset);
-                }
-            }
-        }
-        else
-        {
-            for (int i = 0; i < 10; i++)
-            {
-                int offset = center - 5 + i + (i / 5);
-                if (mode[i])
-                {
-                    Set(offset, center - 7);
-                }
-
-                if (mode[i + 10])
-                {
-                    Set(center + 7, offset);
-                }
-
-                if (mode[29 - i])
-                {
-                    Set(offset, center + 7);
-                }
-
-                if (mode[39 - i])
-                {
-                    Set(center - 7, offset);
-                }
+                Set(positions[i].X, positions[i].Y);
             }
         }
     }

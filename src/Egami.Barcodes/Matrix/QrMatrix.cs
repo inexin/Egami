@@ -38,6 +38,53 @@ internal static class QrMatrix
         return (dark, mask);
     }
 
+    /// <summary>Returns which modules of a version are function patterns or format and version areas, not data.</summary>
+    internal static bool[] FunctionMask(int version)
+    {
+        int size = 17 + (4 * version);
+        bool[] function = new bool[size * size];
+        DrawFunctionPatterns(new bool[size * size], function, size, version);
+        return function;
+    }
+
+    /// <summary>Returns the 15-bit format word (masked with 0x5412) for a level (0 L to 3 H) and mask.</summary>
+    internal static int FormatBits(int level, int mask)
+    {
+        int data = (level switch { 0 => 1, 1 => 0, 2 => 3, _ => 2 } << 3) | mask;
+        int remainder = data;
+        for (int i = 0; i < 10; i++)
+        {
+            remainder = (remainder << 1) ^ ((remainder >> 9) * 0x537);
+        }
+
+        return ((data << 10) | remainder) ^ 0x5412;
+    }
+
+    /// <summary>Returns the 18-bit version word for versions 7 to 40.</summary>
+    internal static int VersionBits(int version)
+    {
+        int remainder = version;
+        for (int i = 0; i < 12; i++)
+        {
+            remainder = (remainder << 1) ^ ((remainder >> 11) * 0x1F25);
+        }
+
+        return (version << 12) | remainder;
+    }
+
+    /// <summary>Returns whether a data module is inverted by a mask.</summary>
+    internal static bool Masked(int mask, int x, int y) => mask switch
+    {
+        0 => (x + y) % 2 == 0,
+        1 => y % 2 == 0,
+        2 => x % 3 == 0,
+        3 => (x + y) % 3 == 0,
+        4 => ((y / 2) + (x / 3)) % 2 == 0,
+        5 => ((x * y) % 2) + ((x * y) % 3) == 0,
+        6 => (((x * y) % 2) + ((x * y) % 3)) % 2 == 0,
+        _ => (((x + y) % 2) + ((x * y) % 3)) % 2 == 0,
+    };
+
     private static void DrawFunctionPatterns(bool[] dark, bool[] function, int size, int version)
     {
         void Set(int x, int y, bool value)

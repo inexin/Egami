@@ -274,3 +274,9 @@ heic/, ../reference/heic/
   The phone photos whole, the CC BY-SA and Public Domain Mark ones (tools/heicref/phones.py lists them), MPEG's File Format
   conformance files and Nokia's HEIF conformance files (no licence of their own), and the ITU-T H.265.1 conformance streams
   (redistribution terms not confirmed) stay in .cache/heic and are never committed.
+
+../reference/barcodes/
+  Barcode reference cases and results, made by tools/make-barcode-references.py: module grids from zint 2.16.0's backend library
+  (BSD-3) and read-backs of Egami's own renderings by zxing-cpp 3.1.1 (Apache-2.0). Egami's renderings are public domain.
+  The ZXing blackbox test images (core/src/test/resources/blackbox of ZXing 3.5.4, Apache License 2.0, with contributed images
+  credited in its README) are fetched into .cache/zxing-blackbox by the script's blackbox step and are never committed.

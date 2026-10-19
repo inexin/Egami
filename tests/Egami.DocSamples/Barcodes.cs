@@ -350,4 +350,69 @@ public class Barcodes
         #endregion
         Assert.True(recorder.Finish().CallCount >= 3);
     }
+
+    [Fact]
+    public void ReadBarcodes()
+    {
+        using Raster<Gray8> scan = Barcode.Qr("https://inexin.github.io/Egami/").ToRaster(pixelsPerModule: 4);
+        #region barcode-read
+        // Every barcode in the image, of any format.
+        foreach (BarcodeResult result in scan.ReadBarcodes())
+        {
+            Console.WriteLine($"{result.Format}: {result.Text} at {result.Corners[0]}");
+        }
+        #endregion
+        Assert.Single(scan.ReadBarcodes());
+    }
+
+    [Fact]
+    public void ReadWithOptions()
+    {
+        using Raster<Gray8> label = Barcode.DataMatrix(Gs1.Parse("(01)09501101530003(10)AB12")).ToRaster(pixelsPerModule: 4);
+        #region barcode-read-options
+        // Only the formats you expect, searched harder; a rendered barcode can skip the search.
+        BarcodeResult? result = label.ReadBarcode(new BarcodeReaderOptions
+        {
+            Formats = BarcodeFormats.DataMatrix | BarcodeFormats.Qr,
+            Effort = 7,
+        });
+
+        if (result?.Gs1 is { } elements)
+        {
+            foreach (Gs1ElementString element in elements)
+            {
+                Console.WriteLine($"{element.Title}: {element.Value}");
+            }
+        }
+
+        BarcodeResult? rendered = label.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true });
+        #endregion
+        Assert.Equal("(01)09501101530003(10)AB12", result?.Text);
+        Assert.NotNull(rendered);
+    }
+
+    [Fact]
+    public void ReadMany()
+    {
+        using Raster<Gray8> page = Raster.Create(900, 400, new Gray8(255));
+        using (RasterCanvas<Gray8> canvas = page.CreateCanvas())
+        {
+            canvas.DrawBarcode(Barcode.Qr("Parcel 1"), new RectF(30, 60, 260, 260), Rgba8.Black);
+            canvas.DrawBarcode(Barcode.DataMatrix("Parcel 2"), new RectF(330, 70, 240, 240), Rgba8.Black);
+            canvas.DrawBarcode(Barcode.Aztec("Parcel 3"), new RectF(610, 60, 260, 260), Rgba8.Black);
+        }
+
+        #region barcode-read-many
+        // All symbols on a page, top to bottom and left to right, each once; at most four threads.
+        IReadOnlyList<BarcodeResult> parcels = page.ReadBarcodes(new BarcodeReaderOptions
+        {
+            Context = EgamiContext.Default with { MaxParallelism = 4 },
+        });
+        foreach (BarcodeResult parcel in parcels)
+        {
+            Console.WriteLine($"{parcel.Text} (inverted: {parcel.Inverted}, mirrored: {parcel.Mirrored})");
+        }
+        #endregion
+        Assert.Equal(["Parcel 1", "Parcel 2", "Parcel 3"], parcels.Select(p => p.Text));
+    }
 }
