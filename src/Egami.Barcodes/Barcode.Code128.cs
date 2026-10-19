@@ -30,14 +30,7 @@ public sealed partial class Barcode
             input[i] = text[i] <= 255 ? text[i] : throw new ArgumentException($"Code 128 holds characters 0 to 255; '{text[i]}' at {i} is not one.", nameof(text));
         }
 
-        string readable = string.Create(text.Length, text, static (span, text) =>
-        {
-            for (int i = 0; i < span.Length; i++)
-            {
-                span[i] = char.IsControl(text[i]) ? ' ' : text[i];
-            }
-        });
-        return FromCode128(input, readable, options);
+        return FromCode128(input, ControlsAsSpaces(text), options);
     }
 
     /// <summary>

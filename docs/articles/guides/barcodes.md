@@ -42,6 +42,23 @@ predefined length, unless it is the last.
 The checks come from the GS1 Barcode Syntax Dictionary. Checks that need outside lists (country and currency codes, company
 prefixes) and the rules about which AIs go together are not applied.
 
+### Code 39
+
+`Barcode.Code39` writes digits, capital letters, space and `- . $ / + %`. Text with other ASCII characters, such as
+lowercase letters, is written as Full ASCII, which spells them as pairs; `Code39Options.FullAscii` forces it on or off. A
+reader has to be set to Full ASCII to read such text back. `Code39Options.CheckDigit` adds the mod 43 check character, and
+`WideRatio` makes wide elements 2 (the default) or 3 times as wide as narrow ones.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-code39)]
+
+### ITF and ITF-14
+
+`Barcode.Itf` writes Interleaved 2 of 5 from digits; an odd number of digits gets a leading zero. `Barcode.Itf14` writes a
+GTIN-14 for cartons: 13 digits get their check digit added, 14 are checked, and bearer bars 5 modules thick frame the symbol
+and its quiet zone. `ItfOptions` sets the wide ratio (3 by default), the bearer bars and the height.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-itf)]
+
 ## Barcodes
 
 A `Barcode` is one symbol: its `BarcodeFormat`, its `Modules`, the `QuietZone` its standard asks for in modules (4 for QR, 1 for

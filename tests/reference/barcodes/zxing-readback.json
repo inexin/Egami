@@ -54,6 +54,31 @@
   "grid": "32982131e8c504a2",
   "text": "AB\u0001cd"
  },
+ "code39-check": {
+  "format": "Code39",
+  "grid": "e32aa8db30676e70",
+  "text": "AB1M"
+ },
+ "code39-full-ascii": {
+  "format": "Code39Ext",
+  "grid": "65bbfbcb2f9a53e6",
+  "text": "ab"
+ },
+ "code39-full-ascii-mixed": {
+  "format": "Code39Ext",
+  "grid": "f6c606a873192f5e",
+  "text": "Code39!"
+ },
+ "code39-short": {
+  "format": "Code39",
+  "grid": "600df8517b53c56a",
+  "text": "AB1"
+ },
+ "code39-symbols": {
+  "format": "Code39",
+  "grid": "12b707e56c50164a",
+  "text": "HELLO WORLD-1.$/+%"
+ },
  "gs1-128-batch-serial": {
   "format": "Code128",
   "grid": "a79b650a5f9d6646",
@@ -73,5 +98,30 @@
   "format": "Code128",
   "grid": "95f1a543eaeb228c",
   "text": "(01)09501101530003(3103)000123"
+ },
+ "itf-even": {
+  "format": "ITF",
+  "grid": "0d13fd1738d3bf3e",
+  "text": "1234"
+ },
+ "itf-long": {
+  "format": "ITF",
+  "grid": "de9aad70e203aa6c",
+  "text": "0123456789"
+ },
+ "itf-odd": {
+  "format": "ITF",
+  "grid": "83a704a8c8bb6bf7",
+  "text": "012345"
+ },
+ "itf14-add-check": {
+  "format": "ITF",
+  "grid": "0effea33d79401c1",
+  "text": "12345678901231"
+ },
+ "itf14-with-check": {
+  "format": "ITF",
+  "grid": "b60c137c0c7b0212",
+  "text": "15400141288763"
  }
 }

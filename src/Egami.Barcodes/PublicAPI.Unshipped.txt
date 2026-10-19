@@ -41,25 +41,56 @@ Egami.Barcodes.Code128Options.Code128Options() -> void
 Egami.Barcodes.Code128Options.Equals(Egami.Barcodes.Code128Options? other) -> bool
 Egami.Barcodes.Code128Options.Height.get -> int?
 Egami.Barcodes.Code128Options.Height.init -> void
+Egami.Barcodes.Code39Options
+Egami.Barcodes.Code39Options.<Clone>$() -> Egami.Barcodes.Code39Options!
+Egami.Barcodes.Code39Options.CheckDigit.get -> bool
+Egami.Barcodes.Code39Options.CheckDigit.init -> void
+Egami.Barcodes.Code39Options.Code39Options() -> void
+Egami.Barcodes.Code39Options.Equals(Egami.Barcodes.Code39Options? other) -> bool
+Egami.Barcodes.Code39Options.FullAscii.get -> bool?
+Egami.Barcodes.Code39Options.FullAscii.init -> void
+Egami.Barcodes.Code39Options.Height.get -> int?
+Egami.Barcodes.Code39Options.Height.init -> void
+Egami.Barcodes.Code39Options.WideRatio.get -> int?
+Egami.Barcodes.Code39Options.WideRatio.init -> void
 Egami.Barcodes.Gs1
 Egami.Barcodes.Gs1ElementString
 Egami.Barcodes.Gs1ElementString.Ai.get -> string!
 Egami.Barcodes.Gs1ElementString.Equals(Egami.Barcodes.Gs1ElementString? other) -> bool
 Egami.Barcodes.Gs1ElementString.Title.get -> string!
 Egami.Barcodes.Gs1ElementString.Value.get -> string!
+Egami.Barcodes.ItfOptions
+Egami.Barcodes.ItfOptions.<Clone>$() -> Egami.Barcodes.ItfOptions!
+Egami.Barcodes.ItfOptions.BearerBars.get -> bool?
+Egami.Barcodes.ItfOptions.BearerBars.init -> void
+Egami.Barcodes.ItfOptions.Equals(Egami.Barcodes.ItfOptions? other) -> bool
+Egami.Barcodes.ItfOptions.Height.get -> int?
+Egami.Barcodes.ItfOptions.Height.init -> void
+Egami.Barcodes.ItfOptions.ItfOptions() -> void
+Egami.Barcodes.ItfOptions.WideRatio.get -> int?
+Egami.Barcodes.ItfOptions.WideRatio.init -> void
 override Egami.Barcodes.BarcodeDrawOptions.Equals(object? obj) -> bool
 override Egami.Barcodes.BarcodeDrawOptions.GetHashCode() -> int
 override Egami.Barcodes.BarcodeDrawOptions.ToString() -> string!
 override Egami.Barcodes.Code128Options.Equals(object? obj) -> bool
 override Egami.Barcodes.Code128Options.GetHashCode() -> int
 override Egami.Barcodes.Code128Options.ToString() -> string!
+override Egami.Barcodes.Code39Options.Equals(object? obj) -> bool
+override Egami.Barcodes.Code39Options.GetHashCode() -> int
+override Egami.Barcodes.Code39Options.ToString() -> string!
 override Egami.Barcodes.Gs1ElementString.Equals(object? obj) -> bool
 override Egami.Barcodes.Gs1ElementString.GetHashCode() -> int
 override Egami.Barcodes.Gs1ElementString.ToString() -> string!
+override Egami.Barcodes.ItfOptions.Equals(object? obj) -> bool
+override Egami.Barcodes.ItfOptions.GetHashCode() -> int
+override Egami.Barcodes.ItfOptions.ToString() -> string!
 static Egami.Barcodes.Barcode.Code128(string! text, Egami.Barcodes.Code128Options? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.Code39(string! text, Egami.Barcodes.Code39Options? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.FromModules(Egami.Barcodes.BarcodeFormat format, Egami.Barcodes.BarcodeModules! modules, string? humanReadableText = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Gs1_128(string! elements, Egami.Barcodes.Code128Options? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Gs1_128(System.Collections.Generic.IReadOnlyList<Egami.Barcodes.Gs1ElementString!>! elements, Egami.Barcodes.Code128Options? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.Itf(string! digits, Egami.Barcodes.ItfOptions? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.Itf14(string! digits, Egami.Barcodes.ItfOptions? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.BarcodeDrawOptions.Default.get -> Egami.Barcodes.BarcodeDrawOptions!
 static Egami.Barcodes.BarcodeDrawOptions.operator !=(Egami.Barcodes.BarcodeDrawOptions? left, Egami.Barcodes.BarcodeDrawOptions? right) -> bool
 static Egami.Barcodes.BarcodeDrawOptions.operator ==(Egami.Barcodes.BarcodeDrawOptions? left, Egami.Barcodes.BarcodeDrawOptions? right) -> bool
@@ -70,6 +101,12 @@ static Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(this Egami.Drawing.Can
 static Egami.Barcodes.Code128Options.Default.get -> Egami.Barcodes.Code128Options!
 static Egami.Barcodes.Code128Options.operator !=(Egami.Barcodes.Code128Options? left, Egami.Barcodes.Code128Options? right) -> bool
 static Egami.Barcodes.Code128Options.operator ==(Egami.Barcodes.Code128Options? left, Egami.Barcodes.Code128Options? right) -> bool
+static Egami.Barcodes.Code39Options.Default.get -> Egami.Barcodes.Code39Options!
+static Egami.Barcodes.Code39Options.operator !=(Egami.Barcodes.Code39Options? left, Egami.Barcodes.Code39Options? right) -> bool
+static Egami.Barcodes.Code39Options.operator ==(Egami.Barcodes.Code39Options? left, Egami.Barcodes.Code39Options? right) -> bool
 static Egami.Barcodes.Gs1.Parse(string! text) -> System.Collections.Generic.IReadOnlyList<Egami.Barcodes.Gs1ElementString!>!
 static Egami.Barcodes.Gs1.TryParse(string? text, out System.Collections.Generic.IReadOnlyList<Egami.Barcodes.Gs1ElementString!>? elements) -> bool
 static Egami.Barcodes.Gs1ElementString.Create(string! ai, string! value) -> Egami.Barcodes.Gs1ElementString!
+static Egami.Barcodes.ItfOptions.Default.get -> Egami.Barcodes.ItfOptions!
+static Egami.Barcodes.ItfOptions.operator !=(Egami.Barcodes.ItfOptions? left, Egami.Barcodes.ItfOptions? right) -> bool
+static Egami.Barcodes.ItfOptions.operator ==(Egami.Barcodes.ItfOptions? left, Egami.Barcodes.ItfOptions? right) -> bool

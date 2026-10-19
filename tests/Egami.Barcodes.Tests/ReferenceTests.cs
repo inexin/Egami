@@ -16,7 +16,7 @@ public class ReferenceTests
         [.. Load("cases.json").GetProperty("cases").EnumerateArray()]);
 
     /// <summary>The factories the cases may name; cases for others are not run yet.</summary>
-    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128"];
+    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Itf", "Itf14"];
 
     public static TheoryData<string> Cases =>
         [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!)).Select(c => c.GetProperty("name").GetString()!)];
@@ -67,10 +67,14 @@ public class ReferenceTests
     internal static Barcode Make(JsonElement test)
     {
         string data = test.GetProperty("data").GetString()!;
+        JsonElement options = test.TryGetProperty("options", out JsonElement o) ? o : default;
         return test.GetProperty("call").GetString() switch
         {
             "Code128" => Barcode.Code128(data),
             "Gs1_128" => Barcode.Gs1_128(data),
+            "Code39" => Barcode.Code39(data, new Code39Options { CheckDigit = Flag(options, "checkDigit") }),
+            "Itf" => Barcode.Itf(data),
+            "Itf14" => Barcode.Itf14(data),
             string call => throw new NotSupportedException(call),
             _ => throw new NotSupportedException(),
         };
@@ -104,4 +108,7 @@ public class ReferenceTests
         using var stream = File.OpenRead(System.IO.Path.Combine(Folder, file));
         return JsonDocument.Parse(stream).RootElement.Clone();
     }
+
+    private static bool Flag(JsonElement options, string name) =>
+        options.ValueKind == JsonValueKind.Object && options.TryGetProperty(name, out JsonElement value) && value.GetBoolean();
 }

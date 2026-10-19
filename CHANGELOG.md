@@ -21,6 +21,12 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
   GS1 General Specifications (AI, characters, lengths, check digits, dates and times), with messages that say what is wrong.
 - `Barcode.Gs1_128` writes GS1-128, with FNC1 separators only where the AIs need them.
 
+### Code 39 and ITF
+
+- `Barcode.Code39` writes Code 39, with Full ASCII when the text needs it and an optional mod 43 check character.
+- `Barcode.Itf` writes Interleaved 2 of 5, and `Barcode.Itf14` writes ITF-14 with its check digit added or checked and bearer
+  bars around it.
+
 ### Drawing
 
 - `Barcode` is one symbol: format, modules, the quiet zone of its standard and its human-readable text.

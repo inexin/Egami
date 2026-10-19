@@ -144,4 +144,30 @@ public class Barcodes
         #endregion
         Assert.Equal("(01)09501101530003(17)261231(10)AB12", label.HumanReadableText);
     }
+
+    [Fact]
+    public void MakeCode39()
+    {
+        #region barcode-code39
+        // Capitals, digits and a few symbols; lowercase switches to Full ASCII on its own.
+        Barcode part = Barcode.Code39("PART-0042", new Code39Options { CheckDigit = true });
+        Console.WriteLine(part.HumanReadableText); // PART-0042 and its mod 43 check character
+        #endregion
+        Assert.StartsWith("PART-0042", part.HumanReadableText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MakeItf14()
+    {
+        #region barcode-itf
+        // A GTIN-14 on a carton: the check digit is added, and bearer bars frame the symbol.
+        Barcode carton = Barcode.Itf14("1540014128876");
+        using Raster<Gray8> image = carton.ToRaster(pixelsPerModule: 3);
+
+        // Plain Interleaved 2 of 5 with a 2:1 wide ratio and no bearers.
+        Barcode itf = Barcode.Itf("0123456789", new ItfOptions { WideRatio = 2 });
+        #endregion
+        Assert.Equal("15400141288763", carton.HumanReadableText);
+        Assert.Equal(BarcodeFormat.Itf, itf.Format);
+    }
 }
