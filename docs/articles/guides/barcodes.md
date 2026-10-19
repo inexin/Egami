@@ -28,6 +28,17 @@ mask instead.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-qr)]
 
+## Data Matrix
+
+`Barcode.DataMatrix` writes Data Matrix ECC 200 from text, bytes or GS1 element strings. The six encodation modes (ASCII,
+C40, Text, X12, EDIFACT and Base 256) are switched for the fewest codewords, and the symbol is the smallest that holds them.
+Text in ISO 8859-1 is written as it is, anything else as UTF-8 with an ECI.
+
+Symbols are square by default. `DataMatrixOptions.Shape` allows rectangular symbols, or the smallest of either, and
+`AllowDmre` adds the rectangular sizes of ISO/IEC 21471 (DMRE), which older readers may not read.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-datamatrix)]
+
 ## Linear barcodes
 
 ### Code 128

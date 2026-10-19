@@ -20,6 +20,12 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
   alphanumeric, byte and Kanji segments, and ECI 26 (UTF-8) for text outside ISO 8859-1 and Shift JIS.
 - Level M by default, raised to Q or H while the symbol keeps its size; `QrOptions` fixes the level, version or mask.
 
+### Data Matrix
+
+- `Barcode.DataMatrix` writes Data Matrix ECC 200 from text, bytes or GS1 element strings, switching between its six
+  encodation modes for the fewest codewords. Square by default; rectangular and DMRE sizes on request
+  (`DataMatrixOptions`).
+
 ### Code 128 and GS1
 
 - `Barcode.Code128` writes Code 128 with the shortest mix of code sets A, B and C.

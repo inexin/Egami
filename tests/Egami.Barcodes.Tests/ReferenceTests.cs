@@ -16,7 +16,7 @@ public class ReferenceTests
         [.. Load("cases.json").GetProperty("cases").EnumerateArray()]);
 
     /// <summary>The factories the cases may name; cases for others are not run yet.</summary>
-    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1"];
+    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "DataMatrix", "DataMatrixGs1"];
 
     public static TheoryData<string> Cases =>
         [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!)).Select(c => c.GetProperty("name").GetString()!)];
@@ -43,6 +43,12 @@ public class ReferenceTests
         }
 
         Assert.Equal(zint.GetProperty("width").GetInt32(), barcode.Modules.Width);
+        if (!barcode.Modules.IsLinear)
+        {
+            Assert.Equal(string.Join('\n', zint.GetProperty("modules").EnumerateArray().Select(r => r.GetString())), Grid(barcode.Modules).TrimEnd('\n'));
+            return;
+        }
+
         Assert.Equal(zint.GetProperty("modules")[0].GetString(), Row(barcode.Modules));
     }
 
@@ -95,6 +101,13 @@ public class ReferenceTests
             "UpcE" => Barcode.UpcE(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
             "Qr" => Barcode.Qr(data, new QrOptions { ErrorCorrection = Text(options, "level") is string level ? Enum.Parse<QrErrorCorrection>(level) : null }),
             "QrGs1" => Barcode.Qr(Gs1.Parse(data)),
+            "DataMatrix" => Barcode.DataMatrix(data, Text(options, "shape") switch
+            {
+                "Any" => new DataMatrixOptions { Shape = DataMatrixShape.Any },
+                "AnyWithDmre" => new DataMatrixOptions { Shape = DataMatrixShape.Any, AllowDmre = true },
+                _ => null,
+            }),
+            "DataMatrixGs1" => Barcode.DataMatrix(Gs1.Parse(data)),
             string call => throw new NotSupportedException(call),
             _ => throw new NotSupportedException(),
         };

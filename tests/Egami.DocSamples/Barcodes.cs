@@ -213,4 +213,26 @@ public class Barcodes
         Assert.Equal("(01)09501101530003(10)AB12", gs1.HumanReadableText);
         Assert.Equal(BarcodeFormat.Qr, bytes.Format);
     }
+
+    [Fact]
+    public void MakeDataMatrix()
+    {
+        #region barcode-datamatrix
+        // Square by default; the encodation modes are switched for the fewest codewords.
+        Barcode part = Barcode.DataMatrix("PN 4711-0815 / LOT 2026-10");
+
+        // A narrow label: rectangular sizes, the DMRE ones too.
+        Barcode narrow = Barcode.DataMatrix("PN 4711-0815 / LOT 2026-10", new DataMatrixOptions
+        {
+            Shape = DataMatrixShape.Rectangle,
+            AllowDmre = true,
+        });
+
+        // GS1 Data Matrix, as on medicine packs.
+        Barcode pack = Barcode.DataMatrix(Gs1.Parse("(01)09501101530003(17)261231(10)AB12(21)XYZ"));
+        #endregion
+        Assert.Equal(part.Modules.Width, part.Modules.Height);
+        Assert.True(narrow.Modules.Width > narrow.Modules.Height);
+        Assert.Equal(BarcodeFormat.DataMatrix, pack.Format);
+    }
 }

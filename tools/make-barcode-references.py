@@ -40,7 +40,7 @@ def write_json(path, data):
 def zint_line(name, z, option1=None):
     data = z["input"].encode("utf-8" if z.get("mode", 0) in (1, 2) else "latin-1").hex()
     option1 = z.get("option1", 0) if option1 is None else option1
-    fields = [name, z["symbology"], option1, z.get("option2", 0), 0, z.get("mode", 0), z.get("eci", 0), data]
+    fields = [name, z["symbology"], option1, z.get("option2", 0), z.get("option3", 0), z.get("mode", 0), z.get("eci", 0), data]
     return "\t".join(map(str, fields)) + "\n"
 
 

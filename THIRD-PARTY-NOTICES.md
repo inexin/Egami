@@ -295,6 +295,12 @@ transcribed through zint's backend library (zint 2.16.0, BSD-3), whose frontends
 
 - QR Code capacities: codewords per version, data codewords and error correction blocks per version and level
   (ISO/IEC 18004 Tables 1, 7 and 9; zint `backend/qr.h`), in `src/Egami.Barcodes/Matrix/QrTables.cs`.
+- Data Matrix symbol sizes and C40 and Text character tables (ISO/IEC 16022 Table 7 and Annex C, ISO/IEC 21471; zint
+  `backend/dmatrix.h`), in `src/Egami.Barcodes/Matrix/DataMatrixTables.cs`.
+
+Egami's Data Matrix encodation (`src/Egami.Barcodes/Matrix/DataMatrixEncoder.cs`) is translated from zint's minimal
+encodation in `backend/dmatrix.c` (itself based on Alex Geller's algorithm), with its end-of-data rules, padding, block
+interleaving and 144 x 144 placement, so that Egami's symbols equal zint's.
 
 zint's backend is distributed under the BSD 3-clause license:
 
