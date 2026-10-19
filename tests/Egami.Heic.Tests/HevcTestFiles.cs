@@ -14,6 +14,10 @@ internal static class HevcTestFiles
     internal static readonly string Corpus = Path.Combine(AppContext.BaseDirectory, "images", "heic");
     internal static readonly string References = Path.Combine(AppContext.BaseDirectory, "reference", "heic");
 
+    /// <summary>Gets the corpus manifest's files.</summary>
+    internal static readonly Lazy<JsonElement> Manifest = new(() =>
+        JsonDocument.Parse(File.ReadAllBytes(Path.Combine(References, "manifest.json"))).RootElement.GetProperty("files").Clone());
+
     /// <summary>Gets HM's header traces of every corpus HEVC item, keyed "file#item".</summary>
     internal static readonly Lazy<JsonElement> HmHeaders = new(() => ReadGzipJson(Path.Combine(References, "hm-headers.json.gz")).GetProperty("items"));
 

@@ -124,6 +124,10 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Gif.TrailerMissing` | Warning | The file ends without a trailer |
 | `Gif.UnknownBlock` | Warning | An unknown block where a block introducer was expected |
 | `Gif.XmpTrailerMissing` | Warning | The XMP application extension lacks its magic trailer |
+| `Heic.ExifDamaged` | Warning | A HEIC Exif item's TIFF header offset points past its end; the item was skipped |
+| `Heic.GainMapDropped` | Warning | A HEIC gain map (tmap item) has metadata or an image that cannot be read, or a version Egami does not know; the image loads as SDR only |
+| `Heic.MatrixApproximated` | Warning | A HEIC image's matrix coefficients are reserved or constant luminance, which heif-dec does not convert; BT.601's were used |
+| `Heic.MatrixUnknown` | Warning | A HEIC image's matrix coefficients have no YuvMatrix; YuvRaster.Load marks the planes BT.601 |
 | `Heif.ItemCount` | Warning | A HEIF (AVIF) iinf box's entry count differs from the infe boxes it holds; the boxes found are read |
 | `Heif.ItemEntryVersion` | Warning | A HEIF (AVIF) infe box has an unknown version; the item was skipped |
 | `Heif.OldItemEntry` | Warning | A HEIF (AVIF) infe box of version 0 or 1 has no item type; the item was skipped |

@@ -98,26 +98,26 @@ internal sealed partial class AvifReader
                     frame = input.AddFrame(raster);
                 }
 
-                PixelRows rows = new(converter.Channels, converter.OutputDepth, (row, column, samples) => converter.Row(row, column, samples.Length / converter.Channels, samples))
+                HeifImageReader.PixelRows rows = new(converter.Channels, converter.OutputDepth, (row, column, samples) => converter.Row(row, column, samples.Length / converter.Channels, samples))
                 {
                     Write = (row, column, width, target) => converter.Write(row, column, width, target),
                 };
                 Raster<TPixel> target = raster;
                 if (frame is null)
                 {
-                    Fill(raster.Width, raster.Height, y => target.Row(y), rows, natural, input);
+                    HeifImageReader.Fill(raster.Width, raster.Height, y => target.Row(y), rows, natural, input);
                     raster.Frames[0].Metadata.Delay = sequence.Delay(index);
                 }
                 else
                 {
                     Frame<TPixel> current = frame;
-                    Fill(raster.Width, raster.Height, y => current.Row(y), rows, natural, input);
+                    HeifImageReader.Fill(raster.Width, raster.Height, y => current.Row(y), rows, natural, input);
                     current.Metadata.Delay = sequence.Delay(index);
                 }
             }
 
             RasterMetadata metadata = SequenceMetadata(sequence, codec);
-            metadata.CodePoints = RasterCodePoints(metadata.CodePoints, metadata.IccProfile);
+            metadata.CodePoints = HeifImageReader.RasterCodePoints(metadata.CodePoints, metadata.IccProfile);
             if (!sequence.AllKeyFrames && sequence.Color.Samples.Count > 1)
             {
                 metadata.WarningList.Add("Avif.SequenceFirstFrame", $"The AVIF sequence's {sequence.Color.Samples.Count} frames are not all key frames, and Egami decodes inter frames from 2.9.5; only the first frame was loaded.");
@@ -133,7 +133,7 @@ internal sealed partial class AvifReader
                 metadata.WarningList.Add("Avif.MatrixApproximated", $"libavif does not convert matrix coefficients {sequence.CodePoints.MatrixCoefficients} with this range and chroma; the nearest matrix it has was used.");
             }
 
-            Adopt(raster!.Metadata, metadata);
+            HeifImageReader.Adopt(raster!.Metadata, metadata);
             raster.Metadata.LoopCount = sequence.Color.Repeats ? 0 : 1;
             return raster;
         }
@@ -153,8 +153,8 @@ internal sealed partial class AvifReader
         metadata.CodePoints = sequence.CodePoints;
         YuvColor yuvColor = PlaneColor(sequence.CodePoints, sequence.Config, sequence.Sequence, metadata);
         return color.BitDepth == 8
-            ? Planes<byte>(color, alpha, yuvColor, metadata, input.Context)
-            : Planes<ushort>(color, alpha, yuvColor, metadata, input.Context);
+            ? HeifImageReader.Planes<byte>(color, alpha, yuvColor, metadata, input.Context)
+            : HeifImageReader.Planes<ushort>(color, alpha, yuvColor, metadata, input.Context);
     }
 
     private static RasterMetadata SequenceMetadata(AvifSequence sequence, AvifCodec codec)

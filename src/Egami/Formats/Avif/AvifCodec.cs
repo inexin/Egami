@@ -19,11 +19,20 @@ internal sealed class AvifCodec(bool filmGrain) : IHeifCodec
     internal bool Lossless { get; private set; }
 
     /// <summary>Gets the color code points and range the last decoded frame's sequence header gives.</summary>
-    internal Colors.ColorCodePoints CodePoints { get; private set; }
+    public Colors.ColorCodePoints CodePoints { get; private set; }
 
-    public HeifPlanes Decode(byte[] data, EgamiInput input)
+    /// <summary>Gets false: the codec keeps the first frame's grain parameters, so items decode one after another.</summary>
+    public bool Concurrent => false;
+
+    public HeifPlanes Decode(HeifImage file, HeifItem item, EgamiInput input, int parallelism) =>
+        Decode(file.Heif.ItemData(item, input.Limits).ToArray(), input, parallelism);
+
+    /// <summary>Decodes an AV1 item's or sample's data.</summary>
+    internal HeifPlanes Decode(byte[] data, EgamiInput input) => Decode(data, input, input.Context.MaxParallelism);
+
+    private HeifPlanes Decode(byte[] data, EgamiInput input, int parallelism)
     {
-        Av1Frame frame = Av1Decoder.DecodeFirstFrame(data, input.FormatName, parallelism: input.Context.MaxParallelism,
+        Av1Frame frame = Av1Decoder.DecodeFirstFrame(data, input.FormatName, parallelism: parallelism,
             cancellationToken: input.CancellationToken, limits: input.Limits);
         if (!frame.Header.ShowFrame && !frame.Header.ShowableFrame)
         {

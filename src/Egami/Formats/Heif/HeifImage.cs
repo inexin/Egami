@@ -116,6 +116,27 @@ internal abstract class HeifImage
     /// <summary>Gets the display orientation irot and imir give, applied after clap.</summary>
     internal ImageOrientation Orientation => Orient(Rotation, Mirror);
 
+    /// <summary>Gets the bits a sample has, from the coding configuration of the (first cell of the) primary image.</summary>
+    internal abstract int BitDepth { get; }
+
+    /// <summary>Gets whether the image is coded as luma only.</summary>
+    internal abstract bool Monochrome { get; }
+
+    /// <summary>Gets 1 when chroma has half the luma columns.</summary>
+    internal abstract int SubsamplingX { get; }
+
+    /// <summary>Gets 1 when chroma has half the luma rows.</summary>
+    internal abstract int SubsamplingY { get; }
+
+    /// <summary>Gets the chroma format.</summary>
+    internal Pixels.ChromaFormat Chroma => Monochrome ? Pixels.ChromaFormat.Yuv400
+        : SubsamplingX == 0 ? Pixels.ChromaFormat.Yuv444
+        : SubsamplingY == 0 ? Pixels.ChromaFormat.Yuv422
+        : Pixels.ChromaFormat.Yuv420;
+
+    /// <summary>Gets where chroma samples sit relative to luma, as the coding configuration gives it.</summary>
+    internal abstract Pixels.ChromaSiting ChromaSiting { get; }
+
     /// <summary>Gets the type of the items the codec reads, such as av01 or hvc1.</summary>
     private protected abstract uint CodedType { get; }
 

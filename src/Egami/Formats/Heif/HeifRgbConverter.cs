@@ -10,7 +10,7 @@ namespace Egami.Formats.Heif;
 /// 9/16, 3/16, 3/16 and 1/16 weights, and alpha premultiplication undone in floating point, or on the stored values for 4:4:4.
 /// Samples come out at 8 bits for 8-bit planes and at 16 bits otherwise.
 /// </summary>
-internal sealed class HeifRgbConverter
+internal sealed class HeifRgbConverter : IHeifRgbConverter
 {
     private readonly HeifPlanes _color;
     private readonly HeifPlanes? _alpha;
@@ -99,22 +99,22 @@ internal sealed class HeifRgbConverter
     }
 
     /// <summary>Gets the bits of an output sample: 8 or 16.</summary>
-    internal int OutputDepth { get; }
+    public int OutputDepth { get; }
 
     /// <summary>Gets the samples a pixel has: gray or RGB, then alpha if any.</summary>
-    internal int Channels { get; }
+    public int Channels { get; }
 
     /// <summary>
     /// Gets whether libavif converts this matrix; it refuses the reserved and constant-luminance codes (and YCgCo at limited range),
     /// which are converted here with the nearest matrix it has.
     /// </summary>
-    internal bool Supported { get; }
+    public bool Supported { get; }
 
     /// <summary>
     /// Converts <paramref name="width"/> pixels of row <paramref name="y"/> from column <paramref name="x"/> into
     /// <paramref name="target"/>, as interleaved samples of <see cref="OutputDepth"/> bits (bytes, or native-endian 16-bit words).
     /// </summary>
-    internal void Write(int y, int x, int width, Span<byte> target)
+    public void Write(int y, int x, int width, Span<byte> target)
     {
         if (_mode == Mode.Coefficients && !_color.Monochrome && !_floatUnmultiply)
         {
@@ -372,7 +372,7 @@ internal sealed class HeifRgbConverter
     }
 
     /// <summary>Converts <paramref name="width"/> pixels of row <paramref name="y"/> from column <paramref name="x"/> into <paramref name="row"/> (<see cref="Channels"/> samples each).</summary>
-    internal void Row(int y, int x, int width, Span<int> row)
+    public void Row(int y, int x, int width, Span<int> row)
     {
         HeifPlanes c = _color;
         bool mono = c.Monochrome;
@@ -587,3 +587,33 @@ internal sealed class HeifRgbConverter
         return (int)Math.Min(MathF.Floor((sample * maxF / alpha) + 0.5f), maxF);
     }
 }
+
+/// <summary>Converts decoded HEIF planes to rows of RGB (or gray) samples with alpha, as one reference decoder does.</summary>
+internal interface IHeifRgbConverter
+{
+    /// <summary>Gets the bits of an output sample: 8 or 16.</summary>
+    int OutputDepth { get; }
+
+    /// <summary>Gets the samples a pixel has: gray or RGB, then alpha if any.</summary>
+    int Channels { get; }
+
+    /// <summary>Gets whether the reference decoder converts this matrix; others are converted with the nearest one it has.</summary>
+    bool Supported { get; }
+
+    /// <summary>
+    /// Converts <paramref name="width"/> pixels of row <paramref name="y"/> from column <paramref name="x"/> into
+    /// <paramref name="target"/>, as interleaved samples of <see cref="OutputDepth"/> bits (bytes, or native-endian 16-bit words).
+    /// </summary>
+    void Write(int y, int x, int width, Span<byte> target);
+
+    /// <summary>Converts <paramref name="width"/> pixels of row <paramref name="y"/> from column <paramref name="x"/> into <paramref name="row"/> (<see cref="Channels"/> samples each).</summary>
+    void Row(int y, int x, int width, Span<int> row);
+}
+
+/// <summary>What a conversion to RGB works on.</summary>
+/// <param name="Color">The color planes.</param>
+/// <param name="Alpha">The alpha planes, the same size, or null.</param>
+/// <param name="Premultiplied">Whether the color is premultiplied by the alpha.</param>
+/// <param name="CodePoints">The color's H.273 code points and range.</param>
+/// <param name="Layer">Whether the planes are a layer of an overlay.</param>
+internal readonly record struct HeifConversion(HeifPlanes Color, HeifPlanes? Alpha, bool Premultiplied, Colors.ColorCodePoints CodePoints, bool Layer);
