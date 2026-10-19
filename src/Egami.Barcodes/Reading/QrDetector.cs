@@ -29,11 +29,17 @@ internal static class QrDetector
 
         // Triples, best first: like module sizes, a right angle at the corner, legs of like length.
         var triples = new List<(Finder A, Finder B, Finder C, float Score)>();
-        int n = Math.Min(finders.Count, 16);
+        // Up to 20 symbols' worth of finders; pairs too far apart for one symbol are skipped early.
+        int n = Math.Min(finders.Count, 60);
         for (int i = 0; i < n; i++)
         {
             for (int j = i + 1; j < n; j++)
             {
+                if (Vector2.Distance(finders[i].Center, finders[j].Center) > MathF.Max(finders[i].Module, finders[j].Module) * 300)
+                {
+                    continue;
+                }
+
                 for (int k = j + 1; k < n; k++)
                 {
                     if (Score(finders[i], finders[j], finders[k]) is float score)

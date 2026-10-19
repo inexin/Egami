@@ -36,40 +36,50 @@ internal static class Search
         return [.. found.Select(f => ToResult(f.Found, f.Inverted))];
     }
 
-    /// <summary>The full search: every detector over the image, then duplicates merged.</summary>
+    /// <summary>
+    /// The full search: every detector over the image, then duplicates merged. On large images the binarization runs in
+    /// stripes and the detectors side by side, up to the context's parallelism; each detector's results are kept in a fixed
+    /// order, so the results do not depend on the number of threads.
+    /// </summary>
     private static List<Found> Scan(LuminanceImage image, BarcodeReaderOptions options)
     {
-        var results = new List<Found>();
         BarcodeFormats formats = options.Formats;
-        if (PureReader.Read(image, formats) is Found pure)
+        int effort = options.Effort;
+        var offset = new Vector2(image.Left, image.Top);
+        int threads = (long)image.Width * image.Height < 256 * 1024 ? 1 : Math.Max(1, (options.Context ?? EgamiContext.Default).MaxParallelism);
+        BitImage local = Binarizer.Local(image, threads);
+        var jobs = new List<Func<List<Found>>>
         {
-            results.Add(pure);
-        }
-
-        BitImage local = Binarizer.Local(image);
+            () => PureReader.Read(image, formats) is Found pure ? [pure] : [],
+        };
         if ((formats & BarcodeFormats.Qr) != 0)
         {
-            results.AddRange(QrDetector.Detect(local, options.Effort, new Vector2(image.Left, image.Top)));
+            jobs.Add(() => QrDetector.Detect(local, effort, offset));
         }
 
         if ((formats & BarcodeFormats.DataMatrix) != 0)
         {
-            List<Component> components = Shapes.Components(local, 10);
-            results.AddRange(DataMatrixDetector.Detect(local, components, new Vector2(image.Left, image.Top)));
+            jobs.Add(() => DataMatrixDetector.Detect(local, Shapes.Components(local, 10), offset));
         }
 
         if ((formats & BarcodeFormats.Aztec) != 0)
         {
-            results.AddRange(AztecDetector.Detect(local, options.Effort, new Vector2(image.Left, image.Top)));
+            jobs.Add(() => AztecDetector.Detect(local, effort, offset));
         }
 
         if ((formats & BarcodeFormats.Pdf417) != 0)
         {
-            results.AddRange(Pdf417Detector.Detect(local, options.Effort, new Vector2(image.Left, image.Top)));
+            jobs.Add(() => Pdf417Detector.Detect(local, effort, offset));
         }
 
-        results.AddRange(LinearScanner.Scan(image, options.Effort >= 6 ? local : null, formats, options.Effort));
-        return Merge(results);
+        if ((formats & BarcodeFormats.Linear) != 0)
+        {
+            jobs.Add(() => LinearScanner.Scan(image, effort >= 6 ? local : null, formats, effort));
+        }
+
+        var found = new List<Found>[jobs.Count];
+        Parallel.For(0, jobs.Count, new ParallelOptions { MaxDegreeOfParallelism = Math.Min(threads, jobs.Count) }, i => found[i] = jobs[i]());
+        return Merge([.. found.SelectMany(f => f)]);
     }
 
     /// <summary>Keeps one result per symbol: the same format and text found again near the same place is a duplicate.</summary>

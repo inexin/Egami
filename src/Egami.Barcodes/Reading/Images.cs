@@ -112,7 +112,7 @@ internal static class Binarizer
     /// A threshold per 8 x 8 block from the mean of the 5 x 5 blocks around it (the hybrid approach), so uneven light in photos
     /// does not swallow parts of a symbol. Blocks with little contrast take their neighbours' level.
     /// </summary>
-    public static BitImage Local(LuminanceImage image)
+    public static BitImage Local(LuminanceImage image, int threads = 1)
     {
         int width = image.Width, height = image.Height;
         if (width < BlockSize * 5 || height < BlockSize * 5)
@@ -163,37 +163,43 @@ internal static class Binarizer
             }
         }
 
+        // Thresholding in parallel stripes of block rows: each writes only its own pixels, except the last, which may overlap
+        // the one before it and so runs after the others.
         byte[] bits = new byte[width * height];
-        for (int by = 0; by < blocksY; by++)
-        {
-            int y0 = Math.Min(by * BlockSize, height - BlockSize);
-            int cy = Math.Clamp(by, 2, blocksY - 3);
-            for (int bx = 0; bx < blocksX; bx++)
-            {
-                int x0 = Math.Min(bx * BlockSize, width - BlockSize);
-                int cx = Math.Clamp(bx, 2, blocksX - 3);
-                int sum = 0;
-                for (int dy = -2; dy <= 2; dy++)
-                {
-                    for (int dx = -2; dx <= 2; dx++)
-                    {
-                        sum += levels[((cy + dy) * blocksX) + cx + dx];
-                    }
-                }
+        Parallel.For(0, blocksY - 1, new ParallelOptions { MaxDegreeOfParallelism = threads }, by => Threshold(image, levels, bits, blocksX, blocksY, by));
+        Threshold(image, levels, bits, blocksX, blocksY, blocksY - 1);
+        return new BitImage(bits, width, height);
+    }
 
-                int threshold = sum / 25;
-                for (int y = 0; y < BlockSize; y++)
+    /// <summary>Thresholds one row of blocks by the mean level of the 5 x 5 blocks around each.</summary>
+    private static void Threshold(LuminanceImage image, int[] levels, byte[] bits, int blocksX, int blocksY, int by)
+    {
+        int width = image.Width, height = image.Height;
+        int y0 = Math.Min(by * BlockSize, height - BlockSize);
+        int cy = Math.Clamp(by, 2, blocksY - 3);
+        for (int bx = 0; bx < blocksX; bx++)
+        {
+            int x0 = Math.Min(bx * BlockSize, width - BlockSize);
+            int cx = Math.Clamp(bx, 2, blocksX - 3);
+            int sum = 0;
+            for (int dy = -2; dy <= 2; dy++)
+            {
+                for (int dx = -2; dx <= 2; dx++)
                 {
-                    int offset = ((y0 + y) * width) + x0;
-                    for (int x = 0; x < BlockSize; x++)
-                    {
-                        bits[offset + x] = image.Pixels[offset + x] <= threshold ? (byte)1 : (byte)0;
-                    }
+                    sum += levels[((cy + dy) * blocksX) + cx + dx];
+                }
+            }
+
+            int threshold = sum / 25;
+            for (int y = 0; y < BlockSize; y++)
+            {
+                int offset = ((y0 + y) * width) + x0;
+                for (int x = 0; x < BlockSize; x++)
+                {
+                    bits[offset + x] = image.Pixels[offset + x] <= threshold ? (byte)1 : (byte)0;
                 }
             }
         }
-
-        return new BitImage(bits, width, height);
     }
 
     /// <summary>Thresholds one row by its own histogram valley, for scanning linear symbols.</summary>

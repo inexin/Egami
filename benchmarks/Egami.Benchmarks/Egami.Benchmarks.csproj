@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Barcodes\Egami.Barcodes.csproj" />
     <!-- Builds interlaced PNGs independently of Egami's writer, which writes only non-interlaced files. -->
     <Compile Include="..\..\tests\Egami.Tests\Formats\Png\PngBuilder.cs" Link="PngBuilder.cs" />
     <!-- The Phase 2.2 peak-memory harness, shared with the tests. -->

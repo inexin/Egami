@@ -92,8 +92,8 @@ public sealed record class BarcodeReaderOptions
     public Rect? Region { get; init; }
 
     /// <summary>
-    /// Gets the context whose parallelism large images are searched with in stripes, or <see langword="null"/> for
-    /// <see cref="EgamiContext.Default"/>. Results never depend on the number of threads.
+    /// Gets the context whose parallelism large images are searched with (binarized in stripes, the detectors side by side),
+    /// or <see langword="null"/> for <see cref="EgamiContext.Default"/>. Results never depend on the number of threads.
     /// </summary>
     public EgamiContext? Context { get; init; }
 }

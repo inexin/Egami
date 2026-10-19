@@ -14,9 +14,10 @@ internal static class DataMatrixDetector
     {
         var results = new List<Found>();
         var claimed = new List<Vector2[]>();
-        foreach (Component component in components.Take(40))
+        foreach (Component component in components.Take(200))
         {
-            if (component.Count < 40 || component.Boundary.Count < 16)
+            // Bars of linear and stacked symbols are far thinner than any Data Matrix shape (DMRE is 1 : 6 at most).
+            if (component.Count < 40 || component.Boundary.Count < 16 || Math.Min(component.Width, component.Height) < Math.Max(component.Width, component.Height) * 0.12f)
             {
                 continue;
             }

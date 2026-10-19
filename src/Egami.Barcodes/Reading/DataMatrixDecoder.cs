@@ -172,16 +172,10 @@ internal static class DataMatrixDecoder
 
                     break;
                 case Mode.C40 or Mode.Text or Mode.X12:
-                    if (codewords.Length - i < 2)
+                    // The unlatch may be the last codeword; a single codeword left without it is ASCII.
+                    if (codewords[i] == 254 || codewords.Length - i < 2)
                     {
-                        mode = Mode.Ascii;
-                        shift = 0;
-                        break;
-                    }
-
-                    if (codewords[i] == 254)
-                    {
-                        i++;
+                        i += codewords[i] == 254 ? 1 : 0;
                         mode = Mode.Ascii;
                         shift = 0;
                         break;

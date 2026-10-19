@@ -145,6 +145,13 @@ no stop pattern, is read from its start pattern on. Rows that cannot be read are
 Aztec Codes are found by their bullseye at any rotation and in perspective, compact, full-range and runes; on larger
 full-range symbols the reference grid places the modules out to the edge.
 
+Every symbol in the image comes back once, in reading order: top to bottom, then left to right. A linear read inside a 2D
+symbol is dropped as part of it. `Inverted` tells which symbols were light on dark, `Mirrored` which were read from behind
+or flipped. Large images are searched on several threads, up to the `MaxParallelism` of the options' `Context`; the
+results are the same at any thread count.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read-many)]
+
 ## Drawing on a canvas
 
 `DrawBarcode`, an extension method in `CanvasBarcodeExtensions`, draws on any canvas: a raster, a PDF or SVG page, a

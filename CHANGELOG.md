@@ -28,6 +28,8 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - PDF417 symbols are found by their start and stop patterns at any rotation and in perspective, compact ones too.
 - Aztec Codes are found by their bullseye at any rotation and in perspective: compact, full-range (with the reference grid)
   and runes.
+- Many symbols per image, each once and in reading order; inverted and mirrored symbols; large images searched on
+  several threads with the same results at any thread count.
 - The decoders read every symbology the package writes: QR (mirrored too), Data Matrix (DMRE and 144 x 144 too), PDF417
   (compact too), Aztec (runes too), Code 128 and GS1-128, Code 39 (Full ASCII too), ITF, EAN, UPC and their add-ons.
 

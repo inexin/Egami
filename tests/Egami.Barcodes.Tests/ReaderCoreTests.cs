@@ -101,6 +101,38 @@ public class ReaderCoreTests
         Assert.Equal("Ελληνικά", result?.Text);
     }
 
+    [Theory]
+    [InlineData(BarcodeFormat.Qr)]
+    [InlineData(BarcodeFormat.DataMatrix)]
+    [InlineData(BarcodeFormat.Aztec)]
+    [InlineData(BarcodeFormat.Pdf417)]
+    public void RandomTextRoundTrips(BarcodeFormat format)
+    {
+        // Mixed case, digits and punctuation in every length up to 40 move the encoders through all their modes and ends.
+        const string Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789      .,-:/!?*+";
+        var random = new Random(7);
+        var failures = new List<string>();
+        for (int n = 0; n < 160; n++)
+        {
+            string text = new([.. Enumerable.Range(0, 1 + (n % 40)).Select(_ => Alphabet[random.Next(Alphabet.Length)])]);
+            Barcode barcode = Barcode.Create(format, text);
+            int scale = 3, quiet = 4;
+            using Raster<Gray8> image = Raster.Create((barcode.Modules.Width + (2 * quiet)) * scale, (barcode.Modules.Height + (2 * quiet)) * scale, new Gray8(255));
+            using (RasterCanvas<Gray8> canvas = image.CreateCanvas())
+            {
+                float at = (quiet - barcode.QuietZone) * scale;
+                canvas.DrawBarcode(barcode, new System.Numerics.Vector2(at, at), scale, Rgba8.Black);
+            }
+
+            if (image.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true })?.Text != text)
+            {
+                failures.Add(text);
+            }
+        }
+
+        Assert.Empty(failures);
+    }
+
     [Fact]
     public void OptionsAreChecked()
     {

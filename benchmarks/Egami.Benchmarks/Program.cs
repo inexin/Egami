@@ -35,6 +35,13 @@ if (args is ["--time-vp8", .. string[] ivfs])
     return;
 }
 
+// Time the barcode reader on folders of images at one thread and all cores: -- --time-barcodes <folder>...
+if (args is ["--time-barcodes", .. string[] barcodeFolders])
+{
+    BarcodeTiming.Run(barcodeFolders);
+    return;
+}
+
 // Time JPEG XL decoding (Phase 2.9.3 speed gate) at one thread and all cores: -- --time-jxl <file.jxl>...
 if (args is ["--time-jxl", .. string[] jxls])
 {
