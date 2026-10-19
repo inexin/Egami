@@ -45,7 +45,10 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "css": "tests/images/fuzz/css-seeds/*", "paragraph": "tests/images/fuzz/paragraph-seeds/*",
          "svg": "tests/images/fuzz/svg-seeds/*",
          "wmf": "tests/images/metafiles/synthetic/*.wmf", "emf": "tests/images/metafiles/synthetic/gdi-*.emf",
-         "emfplus": "tests/images/fuzz/emfplus-seeds/*"}
+         "emfplus": "tests/images/fuzz/emfplus-seeds/*",
+         **{f"barcode-{kind}": "tests/images/fuzz/barcode-text-seeds/*" for kind in ("qr", "datamatrix", "pdf417", "aztec", "code128", "code39")},
+         "barcode-itf": "tests/images/fuzz/barcode-digit-seeds/*", "barcode-eanupc": "tests/images/fuzz/barcode-digit-seeds/*",
+         "barcode-read": "tests/images/fuzz/barcode-read-seeds/*"}
 
 SCRIPT = """
 set -e
@@ -63,6 +66,7 @@ sharpfuzz /out/Egami.dll
 if [ -f /out/Egami.Drawing.dll ]; then sharpfuzz /out/Egami.Drawing.dll; fi
 if [ -f /out/Egami.Css.dll ]; then sharpfuzz /out/Egami.Css.dll; fi
 if [ -f /out/Egami.Metafiles.dll ]; then sharpfuzz /out/Egami.Metafiles.dll; fi
+if [ -f /out/Egami.Barcodes.dll ]; then sharpfuzz /out/Egami.Barcodes.dll; fi
 mkdir -p /seeds && cp {seeds} /seeds/
 afl-fuzz -V {seconds} -i /seeds -o /findings/{target} {role} -t 5000 -m none -- /out/Egami.Fuzz {target}
 """
