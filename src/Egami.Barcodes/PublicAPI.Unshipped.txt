@@ -38,12 +38,60 @@ Egami.Barcodes.BarcodeFormat.Pdf417 = 2 -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.BarcodeFormat.Qr = 0 -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.BarcodeFormat.UpcA = 9 -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.BarcodeFormat.UpcE = 10 -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.All = Egami.Barcodes.BarcodeFormats.Matrix | Egami.Barcodes.BarcodeFormats.Linear -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.Aztec = 8 -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.Code128 = 16 -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.Code39 = 32 -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.DataMatrix = 2 -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.Ean13 = 128 -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.Ean8 = 256 -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.Itf = 64 -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.Linear = Egami.Barcodes.BarcodeFormats.Code128 | Egami.Barcodes.BarcodeFormats.Code39 | Egami.Barcodes.BarcodeFormats.Itf | Egami.Barcodes.BarcodeFormats.Ean13 | Egami.Barcodes.BarcodeFormats.Ean8 | Egami.Barcodes.BarcodeFormats.UpcA | Egami.Barcodes.BarcodeFormats.UpcE -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.Matrix = Egami.Barcodes.BarcodeFormats.Qr | Egami.Barcodes.BarcodeFormats.DataMatrix | Egami.Barcodes.BarcodeFormats.Pdf417 | Egami.Barcodes.BarcodeFormats.Aztec -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.None = 0 -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.Pdf417 = 4 -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.Qr = 1 -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.UpcA = 512 -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeFormats.UpcE = 1024 -> Egami.Barcodes.BarcodeFormats
 Egami.Barcodes.BarcodeModules
 Egami.Barcodes.BarcodeModules.Height.get -> int
 Egami.Barcodes.BarcodeModules.IsLinear.get -> bool
 Egami.Barcodes.BarcodeModules.Runs.get -> System.ReadOnlySpan<int>
 Egami.Barcodes.BarcodeModules.this[int x, int y].get -> bool
 Egami.Barcodes.BarcodeModules.Width.get -> int
+Egami.Barcodes.BarcodeReader
+Egami.Barcodes.BarcodeReaderOptions
+Egami.Barcodes.BarcodeReaderOptions.<Clone>$() -> Egami.Barcodes.BarcodeReaderOptions!
+Egami.Barcodes.BarcodeReaderOptions.BarcodeReaderOptions() -> void
+Egami.Barcodes.BarcodeReaderOptions.Context.get -> Egami.EgamiContext?
+Egami.Barcodes.BarcodeReaderOptions.Context.init -> void
+Egami.Barcodes.BarcodeReaderOptions.Effort.get -> int
+Egami.Barcodes.BarcodeReaderOptions.Effort.init -> void
+Egami.Barcodes.BarcodeReaderOptions.Equals(Egami.Barcodes.BarcodeReaderOptions? other) -> bool
+Egami.Barcodes.BarcodeReaderOptions.Formats.get -> Egami.Barcodes.BarcodeFormats
+Egami.Barcodes.BarcodeReaderOptions.Formats.init -> void
+Egami.Barcodes.BarcodeReaderOptions.PureBarcode.get -> bool
+Egami.Barcodes.BarcodeReaderOptions.PureBarcode.init -> void
+Egami.Barcodes.BarcodeReaderOptions.Region.get -> Egami.Rect?
+Egami.Barcodes.BarcodeReaderOptions.Region.init -> void
+Egami.Barcodes.BarcodeReaderOptions.TryInverted.get -> bool?
+Egami.Barcodes.BarcodeReaderOptions.TryInverted.init -> void
+Egami.Barcodes.BarcodeResult
+Egami.Barcodes.BarcodeResult.Bytes.get -> System.ReadOnlyMemory<byte>
+Egami.Barcodes.BarcodeResult.Corners.get -> System.Collections.Generic.IReadOnlyList<System.Numerics.Vector2>!
+Egami.Barcodes.BarcodeResult.Eci.get -> int?
+Egami.Barcodes.BarcodeResult.Eci.init -> void
+Egami.Barcodes.BarcodeResult.ErrorsCorrected.get -> int
+Egami.Barcodes.BarcodeResult.ErrorsCorrected.init -> void
+Egami.Barcodes.BarcodeResult.Format.get -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeResult.Gs1.get -> System.Collections.Generic.IReadOnlyList<Egami.Barcodes.Gs1ElementString!>?
+Egami.Barcodes.BarcodeResult.Gs1.init -> void
+Egami.Barcodes.BarcodeResult.Inverted.get -> bool
+Egami.Barcodes.BarcodeResult.Inverted.init -> void
+Egami.Barcodes.BarcodeResult.Mirrored.get -> bool
+Egami.Barcodes.BarcodeResult.Mirrored.init -> void
+Egami.Barcodes.BarcodeResult.Text.get -> string!
 Egami.Barcodes.CanvasBarcodeExtensions
 Egami.Barcodes.Code128Options
 Egami.Barcodes.Code128Options.<Clone>$() -> Egami.Barcodes.Code128Options!
@@ -130,6 +178,10 @@ override Egami.Barcodes.AztecOptions.ToString() -> string!
 override Egami.Barcodes.BarcodeDrawOptions.Equals(object? obj) -> bool
 override Egami.Barcodes.BarcodeDrawOptions.GetHashCode() -> int
 override Egami.Barcodes.BarcodeDrawOptions.ToString() -> string!
+override Egami.Barcodes.BarcodeReaderOptions.Equals(object? obj) -> bool
+override Egami.Barcodes.BarcodeReaderOptions.GetHashCode() -> int
+override Egami.Barcodes.BarcodeReaderOptions.ToString() -> string!
+override Egami.Barcodes.BarcodeResult.ToString() -> string!
 override Egami.Barcodes.Code128Options.Equals(object? obj) -> bool
 override Egami.Barcodes.Code128Options.GetHashCode() -> int
 override Egami.Barcodes.Code128Options.ToString() -> string!
@@ -185,6 +237,11 @@ static Egami.Barcodes.BarcodeDrawOptions.operator !=(Egami.Barcodes.BarcodeDrawO
 static Egami.Barcodes.BarcodeDrawOptions.operator ==(Egami.Barcodes.BarcodeDrawOptions? left, Egami.Barcodes.BarcodeDrawOptions? right) -> bool
 static Egami.Barcodes.BarcodeModules.Create(int width, int height, System.ReadOnlySpan<bool> modules) -> Egami.Barcodes.BarcodeModules!
 static Egami.Barcodes.BarcodeModules.CreateLinear(System.ReadOnlySpan<int> runs, int height) -> Egami.Barcodes.BarcodeModules!
+static Egami.Barcodes.BarcodeReader.ReadBarcode<TPixel>(this Egami.Raster<TPixel>! raster, Egami.Barcodes.BarcodeReaderOptions? options = null) -> Egami.Barcodes.BarcodeResult?
+static Egami.Barcodes.BarcodeReader.ReadBarcodes<TPixel>(this Egami.Raster<TPixel>! raster, Egami.Barcodes.BarcodeReaderOptions? options = null) -> System.Collections.Generic.IReadOnlyList<Egami.Barcodes.BarcodeResult!>!
+static Egami.Barcodes.BarcodeReaderOptions.Default.get -> Egami.Barcodes.BarcodeReaderOptions!
+static Egami.Barcodes.BarcodeReaderOptions.operator !=(Egami.Barcodes.BarcodeReaderOptions? left, Egami.Barcodes.BarcodeReaderOptions? right) -> bool
+static Egami.Barcodes.BarcodeReaderOptions.operator ==(Egami.Barcodes.BarcodeReaderOptions? left, Egami.Barcodes.BarcodeReaderOptions? right) -> bool
 static Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(this Egami.Drawing.Canvas! canvas, Egami.Barcodes.Barcode! barcode, Egami.Drawing.RectF rect, Egami.Drawing.Paint! paint, Egami.Barcodes.BarcodeDrawOptions? options = null) -> void
 static Egami.Barcodes.CanvasBarcodeExtensions.DrawBarcode(this Egami.Drawing.Canvas! canvas, Egami.Barcodes.Barcode! barcode, System.Numerics.Vector2 origin, float moduleSize, Egami.Drawing.Paint! paint, Egami.Barcodes.BarcodeDrawOptions? options = null) -> void
 static Egami.Barcodes.Code128Options.Default.get -> Egami.Barcodes.Code128Options!

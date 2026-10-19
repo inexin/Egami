@@ -14,6 +14,14 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - Reed-Solomon error correction for every symbology the package will write and read: QR, Data Matrix, PDF417 and Aztec, with
   errors and erasures corrected together.
 
+### Reading
+
+- `ReadBarcodes` and `ReadBarcode` read barcodes from a raster of any pixel type, with `BarcodeReaderOptions` for formats,
+  effort, inverted symbols, a region and rendered (pure) barcodes. Each `BarcodeResult` has the format, text, bytes,
+  corners, ECI, GS1 element strings and the codewords error correction restored.
+- The decoders read every symbology the package writes: QR (mirrored too), Data Matrix (DMRE and 144 x 144 too), PDF417
+  (compact too), Aztec (runes too), Code 128 and GS1-128, Code 39 (Full ASCII too), ITF, EAN, UPC and their add-ons.
+
 ### QR Code
 
 - `Barcode.Qr` writes QR Codes from text, bytes or GS1 element strings, versions 1 to 40, with the fewest bits over numeric,

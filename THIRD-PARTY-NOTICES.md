@@ -293,7 +293,10 @@ under the Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2
 Egami's Aztec Code encoder (`src/Egami.Barcodes/Matrix/AztecEncoder.cs`) is written from ISO/IEC 24778. Its layout of the
 data layers, the mapping that skips the reference grid of full-range symbols, the placement of the mode message and the
 bit stuffing follow the structure of ZXing's Aztec encoder (`com.google.zxing.aztec.encoder.Encoder`), and its search over mode
-states for the fewest bits takes the approach of ZXing's `HighLevelEncoder`. ZXing is distributed under the Apache License,
+states for the fewest bits takes the approach of ZXing's `HighLevelEncoder`. The barcode reader's binarizers
+(`src/Egami.Barcodes/Reading/Images.cs`) take the approach of ZXing's `GlobalHistogramBinarizer` (a threshold at the deepest
+valley between the two main histogram peaks) and `HybridBinarizer` (8 x 8 blocks thresholded by the mean of the 5 x 5 blocks
+around them). ZXing is distributed under the Apache License,
 Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0):
 
     Copyright 2013 ZXing authors

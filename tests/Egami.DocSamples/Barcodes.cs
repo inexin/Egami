@@ -350,4 +350,44 @@ public class Barcodes
         #endregion
         Assert.True(recorder.Finish().CallCount >= 3);
     }
+
+    [Fact]
+    public void ReadBarcodes()
+    {
+        using Raster<Gray8> scan = Barcode.Qr("https://inexin.github.io/Egami/").ToRaster(pixelsPerModule: 4);
+        #region barcode-read
+        // Every barcode in the image, of any format.
+        foreach (BarcodeResult result in scan.ReadBarcodes())
+        {
+            Console.WriteLine($"{result.Format}: {result.Text} at {result.Corners[0]}");
+        }
+        #endregion
+        Assert.Single(scan.ReadBarcodes());
+    }
+
+    [Fact]
+    public void ReadWithOptions()
+    {
+        using Raster<Gray8> label = Barcode.DataMatrix(Gs1.Parse("(01)09501101530003(10)AB12")).ToRaster(pixelsPerModule: 4);
+        #region barcode-read-options
+        // Only the formats you expect, searched harder; a rendered barcode can skip the search.
+        BarcodeResult? result = label.ReadBarcode(new BarcodeReaderOptions
+        {
+            Formats = BarcodeFormats.DataMatrix | BarcodeFormats.Qr,
+            Effort = 7,
+        });
+
+        if (result?.Gs1 is { } elements)
+        {
+            foreach (Gs1ElementString element in elements)
+            {
+                Console.WriteLine($"{element.Title}: {element.Value}");
+            }
+        }
+
+        BarcodeResult? rendered = label.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true });
+        #endregion
+        Assert.Equal("(01)09501101530003(10)AB12", result?.Text);
+        Assert.NotNull(rendered);
+    }
 }

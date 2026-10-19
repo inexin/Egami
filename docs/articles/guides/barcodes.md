@@ -3,13 +3,13 @@
 Egami.Barcodes writes and reads barcodes. It draws them through Egami.Drawing's canvas, so a barcode stays vector on a PDF page
 or in SVG output, and reads them from rasters. It is fully managed.
 
-It writes QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, ITF and ITF-14,
-EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on `Barcode` with typed options; `Barcode.Create` takes a format
-chosen at run time with the default options.
+It writes and reads QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, ITF and
+ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on `Barcode` with typed options; `Barcode.Create` takes a
+format chosen at run time with the default options.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-create)]
 
-The package is in development and not yet released; reading barcodes comes next.
+The package is in development and not yet released.
 
 ## QR Code
 
@@ -108,6 +108,26 @@ bars, which reach down into the text line, and an add-on's digits above its bars
 nominal heights.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-ean)]
+
+## Reading barcodes
+
+`ReadBarcodes`, an extension method in `BarcodeReader`, finds every barcode in a raster of any pixel type and returns a
+`BarcodeResult` for each: its `Format`, its `Text`, the `Bytes` it holds, the `Corners` it was found at, its `Eci`, its GS1
+element strings in `Gs1`, and how many codewords error correction restored. `ReadBarcode` returns the first one, or `null`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read)]
+
+Text is decoded with the symbol's ECI; without one, as ISO 8859-1, or as UTF-8 or Shift JIS when the bytes clearly are. GS1
+data comes back in its human-readable form, such as `(01)09501101530003(10)AB12`, and an EAN or UPC add-on after the main
+digits and a space.
+
+`BarcodeReaderOptions` narrows or widens the search. `Formats` names the symbologies to look for; fewer read faster.
+`Effort`, 0 to 10, decides how many binarizations, scan lines and rotations are tried, never what counts as a valid read;
+from effort 5 light symbols on a dark background are tried too (`TryInverted`). `Region` limits the search to part of the
+image. `PureBarcode` reads an image that holds one upright symbol and its quiet zone, such as a rendered barcode, without
+searching.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read-options)]
 
 ## Drawing on a canvas
 
