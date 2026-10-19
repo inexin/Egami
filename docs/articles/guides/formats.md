@@ -1,6 +1,6 @@
 # Formats
 
-Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, and Windows icons and cursors, AVIF, and reads JBIG2, raw CCITT fax data, JPEG 2000 and Photoshop's PSD and PSB. SVG and Windows metafiles (WMF, EMF) load through the separate Egami.Svg and Egami.Metafiles packages. Every reader checks sizes
+Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, and Windows icons and cursors, AVIF, and reads JBIG2, raw CCITT fax data, JPEG 2000 and Photoshop's PSD and PSB. SVG and Windows metafiles (WMF, EMF) load through the separate Egami.Svg and Egami.Metafiles packages. HEIC phone photos load through the separate, opt-in Egami.Heic package; core Egami detects and probes them (see the [HEIC guide](heic.md)). Every reader checks sizes
 against the safety limits before it allocates, and every reader has been fuzzed.
 
 ## At a glance
@@ -34,7 +34,7 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 ## Detection
 
 Loading never trusts the file extension: the format comes from the first bytes, in the order PNG, JPEG, GIF, WebP, BMP, QOI, PNM,
-TIFF, JBIG2, JPEG 2000, ICO, CUR, PSD, Radiance, OpenEXR, JPEG XL (FF 0A or its signature box), AVIF (an ftyp box with the avif or avis brand), then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
+TIFF, JBIG2, JPEG 2000, ICO, CUR, PSD, Radiance, OpenEXR, JPEG XL (FF 0A or its signature box), AVIF (an ftyp box with the avif or avis brand), HEIC (an ftyp box with a HEVC brand such as heic or heix), then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
 Egami's test corpora is taken for TGA, and neither is any of a million random headers. When you know the format, register only
 that one:
 

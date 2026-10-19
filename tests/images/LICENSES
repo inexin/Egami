@@ -242,3 +242,35 @@ avif/, ../reference/avif/
   BY-NC-ND 4.0, Xiph CC BY-SA 3.0 and CC BY 3.0, Microsoft with copyright in each file), libavif's test files whose pictures
   carry other licenses, libaom's test vectors, dav1d's test data and the Argon streams stay in .cache/avif and are never
   committed.
+
+heic/, ../reference/heic/
+  HEIF files made by tools/make-heic-references.py (tools/heicref/heiccorpus.py and heif.py) with libheif 1.23.4's heif-enc
+  over x265 4.1, kvazaar 2.3.1 and libjpeg-turbo, and with HM 18.0's TAppEncoder (BSD 3-clause, ITU/ISO/IEC), run as tools
+  only, from: ops/duck.png and ops/egret.png above and crops of them (public domain); hdr/duck-pq.png and hdr/duck-hlg.png above
+  (public domain); metadata/synthetic/phone-orientation6.jpg and its Exif, and xmp-elements.jpg's XMP (public domain); and
+  icc/compact/ profiles (CC0 1.0).
+  heic/phone/ holds phone photos from the Internet Archive, cut by heif.py to the tiles covering their top-left 1024x768, every
+  other item (Exif, XMP, thumbnail, gain map, depth) kept as it was:
+    phone-iphone-se-2nd-generation-img-9570.heic  https://archive.org/details/cicadas_202405, Charles Meyerson, CC0 1.0
+    phone-iphone-7-08ea0a84-063e-4f33-8b95-3c0ed11fcd47.heic
+                                                  https://archive.org/details/08-ea-0-a-84-063-e-4-f-33-8-b-95-3-c-0-ed-11-fcd-47,
+                                                  Tyler Jones, CC0 1.0
+    phone-iphone-xs-max-angela.heic               https://archive.org/details/julians-videos-2, Julian Chan, CC0 1.0
+    phone-iphone-13-img-0303.heic                 https://archive.org/details/kashiwa-sogo, CC0 1.0
+    phone-iphone-13-mini-img-4246.heic            https://archive.org/details/dweb_camp_2023_by_sirodoht, sirodoht, CC0 1.0
+    phone-iphone-13-pro-img-5514.heic             https://archive.org/details/img-5516, Xavier Parés, CC0 1.0
+    phone-iphone-14-pro-img-8445.heic             https://archive.org/details/MuseodelleCiviltaXeniaphotos, Xenia
+                                                  Goriacheva, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); cut
+    phone-iphone-15-pro-max-img-0613.heic         https://archive.org/details/img-0614_202506, livre, CC0 1.0
+    phone-iphone-16-img-1067.heic                 https://archive.org/details/img-1119_202603, Maen, CC0 1.0
+    phone-iphone-16-pro-24-img-0501-19-51-36.heic https://archive.org/details/opencontext-24-img-0501-19-51-36heic, Open
+                                                  Context, CC BY 4.0; cut
+    phone-iphone-16-pro-24-t117closing-12-51-52.heic
+                                                  https://archive.org/details/opencontext-24-t117closing-12-51-52heic, Open
+                                                  Context, CC BY 4.0; cut
+  The references are heif-dec 1.23.4's decodes of each file, and manifest.json with each file's source and options, heif-info's
+  and ExifTool's readings, its items, and the MD5s of HM 18.0's and libde265 1.0.15's decodes of each HEVC item. Same licenses
+  as the files they come from.
+  The phone photos whole, the CC BY-SA and Public Domain Mark ones (tools/heicref/phones.py lists them), MPEG's File Format
+  conformance files and Nokia's HEIF conformance files (no licence of their own), and the ITU-T H.265.1 conformance streams
+  (redistribution terms not confirmed) stay in .cache/heic and are never committed.

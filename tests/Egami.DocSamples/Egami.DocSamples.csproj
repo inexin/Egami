@@ -34,6 +34,7 @@
     <None Include="../images/avif/duck-pq.avif" Link="images/hdr.avif" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/avif/gainmap-sdr-base.avif" Link="images/gainmap.avif" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/avif/pan-sequence-keyframes.avif" Link="images/sequence.avif" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/heic/phone/phone-iphone-13-pro-img-5514.heic" Link="images/photo.heic" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jxl/sprite-anim-lossless.jxl" Link="images/sprite.jxl" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jxl/jpeg-duck-420.jxl" Link="images/recompressed.jxl" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/jxl/duck-pq-d1.jxl" Link="images/hdr.jxl" CopyToOutputDirectory="PreserveNewest" />
@@ -74,6 +75,7 @@
     <ProjectReference Include="..\..\src\Egami.Fonts.Substitutes\Egami.Fonts.Substitutes.csproj" />
     <ProjectReference Include="..\..\src\Egami.Svg\Egami.Svg.csproj" />
     <ProjectReference Include="..\..\src\Egami.Metafiles\Egami.Metafiles.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Heic\Egami.Heic.csproj" />
     <ProjectReference Include="..\..\samples\Animation\Animation.csproj" />
     <ProjectReference Include="..\..\samples\Color\Color.csproj" />
     <ProjectReference Include="..\..\samples\Compositing\Compositing.csproj" />

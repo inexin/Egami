@@ -3,6 +3,7 @@
   <PropertyGroup>
     <RootNamespace>Egami</RootNamespace>
     <PackageId>Egami</PackageId>
+    <Version>$(EgamiVersion)</Version>
     <Description>A fully managed, MIT-licensed 2D imaging library for .NET.</Description>
     <PackageTags>$(EgamiPackageTags);image;png;jpeg;gif;webp;tiff;bmp;avif;jpegxl;jxl;openexr;hdr;resize;color-management;exif</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -32,6 +33,8 @@
     <InternalsVisibleTo Include="Egami.Tests" />
     <InternalsVisibleTo Include="Egami.Benchmarks" />
     <InternalsVisibleTo Include="Egami.Fuzz" />
+    <!-- Egami.Heic plugs its HEVC decoder into the HEIF reader, at exactly this version (2.9.4 design, question 8). -->
+    <InternalsVisibleTo Include="Egami.Heic" />
   </ItemGroup>
 
 </Project>

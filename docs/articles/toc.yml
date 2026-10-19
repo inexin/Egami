@@ -76,6 +76,8 @@
       href: guides/jxl.md
     - name: AVIF
       href: guides/avif.md
+    - name: HEIC
+      href: guides/heic.md
     - name: ICO and CUR
       href: guides/ico.md
     - name: PSD and PSB
