@@ -99,6 +99,14 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
   from HM, the reference.
 - An iPhone photo loads in about the time heif-dec takes on one thread, and well under half of it on all threads.
 
+### Gain maps, items and sequences
+
+- iPhone HDR photos: Apple's HDRGainMap auxiliary image and ISO 21496-1 tone-map items load into `RasterMetadata.GainMap`, and
+  `ReaderOptions.Hdr` renders them as HDR. Apple's map loads with the same samples as heif-dec's auxiliary image output.
+- `HeicDetails` (core) describes a file: brands, HEVC profile, color, grid, and `Items`, every item with its `HeicItemRole`.
+  `HeicImage.ReadItem` reads thumbnails, depth maps and mattes on their own.
+- Image sequences whose frames are all intra load every frame; others give their still image or first frame.
+
 ### HEVC decoder
 
 - A managed HEVC decoder for intra pictures: Main, Main 10, Main Still Picture and the 4:0:0 to 4:4:4 range extensions up to 12
@@ -115,6 +123,9 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - HEIC files (HEIF with HEVC-coded images, as iPhones and most Android phones save photos) are recognized by their brands.
   `Raster.Probe` reads their container (size after the clean aperture, pixel type by bit depth, alpha, orientation), and
   `Raster.Load` throws an `UnsupportedFormatException` that names the Egami.Heic package. Core Egami holds no HEVC code.
+- `HeicDetails`, `HeicItem` and `HeicItemRole` describe a HEIC file's brands, HEVC profile, color, grid and items; Egami.Heic
+  fills them when it loads.
+- `AvifImage.ReadItem` gives an item's own rotation and mirroring (irot, imir) as its orientation, as `HeicImage.ReadItem` does.
 
 ### AVIF writing
 

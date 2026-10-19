@@ -1,4 +1,5 @@
 using Egami.Formats;
+using Egami.Formats.Heic;
 using Egami.Heic;
 using Egami.Pixels;
 
@@ -72,5 +73,33 @@ public class Heic
         Assert.True(File.Exists("photo.jpg"));
         Assert.Equal(ChromaFormat.Yuv420, chroma);
         Assert.Equal(8, depth);
+    }
+
+    [Fact]
+    public void HdrAndItems()
+    {
+        using SampleFiles files = new();
+        EgamiContext heic = new EgamiContext().WithHeic();
+
+        #region hdr
+        // An iPhone photo's gain map (Apple's HDRGainMap, or ISO 21496-1 on newer iPhones) comes with the SDR image; ask for the HDR
+        // rendition for a display with 2 stops of headroom.
+        using Raster sdr = Raster.Load("portrait.heic", heic);
+        bool hasGainMap = sdr.Metadata.GainMap is not null;
+        using Raster hdr = Raster.Load("portrait.heic", heic, new ReaderOptions { Hdr = new HdrDecode { Headroom = 2 } });
+        #endregion
+
+        #region items
+        // The other images a photo holds: thumbnails, gain maps, depth maps and mattes (portrait, skin, sky).
+        HeicDetails details = (HeicDetails)sdr.Metadata.FormatDetails!;
+        HeicItem sky = details.Items.First(i => i.AuxiliaryType == "urn:com:apple:photo:2020:aux:semanticskymatte");
+        using Raster matte = HeicImage.ReadItem("portrait.heic", sky.Id, context: heic);
+        matte.Apply(ops => ops.AutoOrient());
+        matte.Save("sky-matte.png");
+        #endregion
+
+        Assert.True(hasGainMap);
+        Assert.IsType<Raster<Egami.Pixels.RgbaF16>>(hdr);
+        Assert.True(File.Exists("sky-matte.png"));
     }
 }

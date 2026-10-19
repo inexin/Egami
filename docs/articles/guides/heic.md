@@ -4,9 +4,9 @@ HEIC is the format iPhones and most Android phones save photos in: HEIF files wh
 covered by patents, so Egami reads HEIC through a separate package, Egami.Heic, that an app opts in to. The core Egami package
 contains no HEVC code and never depends on Egami.Heic.
 
-Egami.Heic decodes still HEIC images with a managed HEVC decoder: the intra pictures of the Main, Main 10, Main Still Picture
-and format range extensions profiles, up to 12 bits and from 4:0:0 to 4:4:4. Image sequences, gain maps and auxiliary items
-such as depth maps come in a later version.
+Egami.Heic decodes HEIC images with a managed HEVC decoder: the intra pictures of the Main, Main 10, Main Still Picture and
+format range extensions profiles, up to 12 bits and from 4:0:0 to 4:4:4. Gain maps, the photo's other images (thumbnails,
+depth maps, mattes) and image sequences whose frames are all intra are read too.
 
 ## Without Egami.Heic
 
@@ -53,6 +53,32 @@ The decoded HEVC planes are available without the conversion to RGB, as for AVIF
 [!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#yuv)]
 
 Every intra picture of the HEVC conformance streams in these profiles decodes bit-exact to HM, the reference decoder.
+
+## HDR photos
+
+iPhones store an HDR photo as an SDR image with a gain map: Apple's HDRGainMap auxiliary image (its headroom in the maker note
+or the map's XMP), and on newer iPhones an ISO 21496-1 tone-map item as well, which is preferred. Load gives the SDR image with
+the map in `RasterMetadata.GainMap`; `ReaderOptions.Hdr` gives the HDR rendition for a display's headroom, as for
+[Ultra HDR JPEGs](hdr.md).
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#hdr)]
+
+A gain map that cannot be read (Apple's without a headroom, a damaged tone-map item) never fails the load: the image loads as
+SDR with a `Heic.GainMapDropped` warning.
+
+## Thumbnails, depth maps and mattes
+
+`HeicDetails.Items` lists every item of the file with its `HeicItemRole`, what it is to the photo: the primary image, thumbnails, the gain map,
+depth maps and other auxiliary images (an iPhone's portrait, skin and sky mattes), Exif and XMP. `HeicImage.ReadItem` reads an
+image item on its own, with its own color and crop, and its own rotation as the orientation.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#items)]
+
+## Image sequences
+
+A HEIC image sequence (the hevc and hevx brands) whose frames are all intra loads every frame, as an animation; Egami.Heic does
+not decode inter frames. A sequence with inter frames gives its still image when the file has one, and otherwise its first frame
+with a `Heic.SequenceFirstFrame` warning.
 
 ## Patents
 

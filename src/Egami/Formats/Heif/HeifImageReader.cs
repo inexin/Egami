@@ -18,7 +18,7 @@ namespace Egami.Formats.Heif;
 /// <param name="format">Gets the registration the metadata and RasterInfo name.</param>
 /// <param name="ids">The format's diagnostic ids.</param>
 /// <param name="createCodec">Makes the codec for one read.</param>
-internal sealed class HeifImageReader(Func<FormatInfo> format, HeifDiagnosticIds ids, Func<ReaderOptions, IHeifCodec> createCodec)
+internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagnosticIds ids, Func<ReaderOptions, IHeifCodec> createCodec)
 {
     /// <summary>Gets or sets what adds the format's own details to the metadata after decoding.</summary>
     internal Action<HeifImage, IHeifCodec, RasterMetadata>? Describe { get; init; }
@@ -55,7 +55,7 @@ internal sealed class HeifImageReader(Func<FormatInfo> format, HeifDiagnosticIds
 
         (int width, int height) = size ?? OutputSize(file);
         input.Limits.CheckFrameSize(width, height);
-        PixelLayoutInfo layout = options.Hdr is not null && file.ToneMap is not null ? RgbaF16.Layout : NaturalLayout(file);
+        PixelLayoutInfo layout = options.Hdr is not null && (file.ToneMap is not null || file.AppleGainMap is not null) ? RgbaF16.Layout : NaturalLayout(file);
         return new RasterInfo
         {
             Format = format(),
@@ -251,6 +251,78 @@ internal sealed class HeifImageReader(Func<FormatInfo> format, HeifDiagnosticIds
         return HeifPlanes.Grid(decoded, layout.Rows, layout.Columns, layout.Width, layout.Height, input);
     }
 
+    /// <summary>
+    /// Reads image item <paramref name="itemId"/>: a coded item (of <paramref name="codedType"/>) or a grid, with its own color and
+    /// clean aperture, and no alpha; its own irot and imir are given as the orientation.
+    /// </summary>
+    internal Raster ReadItem(EgamiInput input, HeifImage file, uint itemId, ReaderOptions options, uint codedType, string codedName)
+    {
+        HeifFile heif = file.Heif;
+        string name = format().Name;
+        HeifItem item = heif.Item(itemId) ?? throw new ArgumentException($"The {name} file has no item {itemId}.", nameof(itemId));
+        if (item.Type != codedType && item.Type != HeifImage.Grid)
+        {
+            throw new ArgumentException($"Item {itemId} is a \"{FourCC.ToString(item.Type)}\" item, not an image ({codedName} or grid).", nameof(itemId));
+        }
+
+        IHeifCodec codec = createCodec(options);
+        HeifItem first = item;
+        HeifPlanes planes;
+        if (item.Type == HeifImage.Grid)
+        {
+            (List<HeifItem> cells, int rows, int columns, int width, int height) = file.ReadGrid(item);
+            planes = Grid(file, codec, cells, (rows, columns, width, height), input, null, lumaOnly: false);
+            first = cells[0];
+        }
+        else
+        {
+            planes = Cell(file, codec, item, input);
+        }
+
+        NclxColor? nclx = null;
+        ReadOnlyMemory<byte> icc = default;
+        (int X, int Y, int Width, int Height)? crop = null;
+        foreach (HeifItem source in (HeifItem[])[item, first])
+        {
+            foreach ((HeifProperty property, _) in heif.PropertiesOf(source))
+            {
+                if (property.Type == AvifProperties.Colr)
+                {
+                    (NclxColor? n, ReadOnlyMemory<byte> profile) = AvifProperties.ReadColor(heif, property);
+                    nclx ??= n;
+                    icc = icc.IsEmpty ? profile : icc;
+                }
+                else if (property.Type == AvifProperties.Clap && source == item)
+                {
+                    crop = AvifProperties.ReadCleanAperture(heif, property).CropRectangle(planes.Width, planes.Height);
+                }
+            }
+        }
+
+        ColorCodePoints points = nclx is NclxColor c ? new ColorCodePoints((byte)c.Primaries, (byte)c.Transfer, (byte)c.Matrix, c.FullRange) : codec.CodePoints;
+        IHeifRgbConverter converter = Converter(new HeifConversion(planes, null, false, points, false));
+        (int x, int y, int w, int h) = crop ?? (0, 0, planes.Width, planes.Height);
+        input.Limits.CheckFrameSize(w, h);
+        PixelRows rows2 = new(converter.Channels, converter.OutputDepth, (row, column, samples) => converter.Row(y + row, x + column, samples.Length / converter.Channels, samples))
+        {
+            Write = (row, column, width, target) => converter.Write(y + row, x + column, width, target),
+        };
+        RasterMetadata metadata = new() { FormatName = name, IccProfile = icc, CodePoints = RasterCodePoints(points, icc) };
+        if (!converter.Supported)
+        {
+            metadata.WarningList.Add(ids.MatrixApproximated, $"Matrix coefficients {points.MatrixCoefficients} are not converted with this range and chroma; the nearest matrix was used.");
+        }
+
+        ImageOrientation orientation = file.OrientationOf(item);
+        if (orientation != ImageOrientation.Normal)
+        {
+            metadata.Exif = new ExifData { Orientation = orientation };
+        }
+
+        PixelLayoutInfo natural = NaturalLayout(planes.BitDepth, planes.Monochrome, false);
+        return Natural(input, new Prepared(w, h, natural, rows2, metadata, 0));
+    }
+
     /// <summary>Decodes one coded item.</summary>
     internal static HeifPlanes Cell(HeifImage file, IHeifCodec codec, HeifItem item, EgamiInput input) =>
         codec.Decode(file, item, input, input.Context.MaxParallelism);
@@ -357,6 +429,10 @@ internal sealed class HeifImageReader(Func<FormatInfo> format, HeifDiagnosticIds
         {
             ReadGainMap(file, codec, input, metadata);
         }
+        else if (file.AppleGainMap is not null && options.ReadMetadata)
+        {
+            ReadAppleGainMap(file, codec, input, metadata);
+        }
 
         if (layered)
         {
@@ -404,26 +480,7 @@ internal sealed class HeifImageReader(Func<FormatInfo> format, HeifDiagnosticIds
                 ColorCodePoints points = GainMapColor(file) ?? codec.CodePoints;
                 IHeifRgbConverter converter = Converter(new HeifConversion(planes, null, false, points, false));
                 int channels = converter.Channels;
-                byte[] pixels = new byte[planes.Width * planes.Height * channels];
-                byte[] row = new byte[planes.Width * channels * 2];
-                for (int y = 0; y < planes.Height; y++)
-                {
-                    converter.Write(y, 0, planes.Width, row);
-                    Span<byte> target = pixels.AsSpan(y * planes.Width * channels, planes.Width * channels);
-                    if (converter.OutputDepth > 8)
-                    {
-                        ReadOnlySpan<ushort> words = MemoryMarshal.Cast<byte, ushort>(row);
-                        for (int i = 0; i < target.Length; i++)
-                        {
-                            target[i] = (byte)(((words[i] * 255) + 32767) / 65535);
-                        }
-                    }
-                    else
-                    {
-                        row.AsSpan(0, target.Length).CopyTo(target);
-                    }
-                }
-
+                byte[] pixels = Pixels8(converter, planes.Width, planes.Height);
                 metadata.GainMap = new GainMap(info, planes.Width, planes.Height, channels, pixels);
                 return;
             }
@@ -436,11 +493,127 @@ internal sealed class HeifImageReader(Func<FormatInfo> format, HeifDiagnosticIds
         metadata.WarningList.Add(ids.GainMapDropped, $"The gain map could not be read ({problem}); the image loads as SDR only.");
     }
 
+    /// <summary>
+    /// Reads Apple's HDRGainMap auxiliary image into <see cref="RasterMetadata.GainMap"/>: its luma, 8 bits a sample, with the
+    /// headroom from the map's XMP or the base image's maker note, as for Apple's JPEG files. A map that cannot be read is dropped
+    /// with a GainMapDropped warning.
+    /// </summary>
+    private void ReadAppleGainMap(HeifImage file, IHeifCodec codec, EgamiInput input, RasterMetadata metadata)
+    {
+        string problem;
+        try
+        {
+            XmpData? xmp = file.AppleGainMapXmp is HeifItem x ? XmpData.Parse(file.Heif.ItemData(x, input.Limits).Span, input.Limits) : null;
+            if (Jpeg.JpegGainMap.Apple(xmp, metadata.Exif) is not GainMapInfo info)
+            {
+                problem = "it has no headroom in its XMP or the maker note";
+            }
+            else
+            {
+                (int rows, int columns, _, _) = file.GainMapLayout;
+                HeifPlanes planes = (file.GainMapCells.Count == 1 && rows * columns == 1
+                    ? Cell(file, codec, file.GainMapCells[0], input)
+                    : Grid(file, codec, file.GainMapCells, file.GainMapLayout, input, null, lumaOnly: true)).LumaOnly();
+                ColorCodePoints points = GainMapColor(file, file.AppleGainMap!) ?? codec.CodePoints;
+                IHeifRgbConverter converter = Converter(new HeifConversion(planes, null, false, points, false));
+                byte[] pixels = Pixels8(converter, planes.Width, planes.Height);
+                (int width, int height) = (planes.Width, planes.Height);
+
+                // The map may be stored turned differently from the image (iPhones store it landscape with its own irot): turn it as it
+                // displays, then back as the image is stored, so it lies over the image's stored pixels.
+                ImageOrientation mapOrientation = file.OrientationOf(file.AppleGainMap!);
+                if (mapOrientation != file.Orientation)
+                {
+                    (pixels, width, height) = Turn(pixels, width, height, mapOrientation);
+                    (pixels, width, height) = Turn(pixels, width, height, Inverse(file.Orientation));
+                }
+
+                metadata.GainMap = new GainMap(info, width, height, 1, pixels);
+                return;
+            }
+        }
+        catch (EgamiException e)
+        {
+            problem = e.Message;
+        }
+
+        metadata.WarningList.Add(ids.GainMapDropped, $"The gain map could not be read ({problem}); the image loads as SDR only.");
+    }
+
+    /// <summary>Turns one-sample-a-pixel rows as an EXIF orientation displays them (what AutoOrient does).</summary>
+    private static (byte[] Pixels, int Width, int Height) Turn(byte[] pixels, int width, int height, ImageOrientation orientation)
+    {
+        if (orientation == ImageOrientation.Normal)
+        {
+            return (pixels, width, height);
+        }
+
+        bool swap = orientation is ImageOrientation.Transpose or ImageOrientation.Rotate90 or ImageOrientation.Transverse or ImageOrientation.Rotate270;
+        (int w, int h) = swap ? (height, width) : (width, height);
+        byte[] turned = new byte[pixels.Length];
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                (int sx, int sy) = orientation switch
+                {
+                    ImageOrientation.FlipHorizontal => (width - 1 - x, y),
+                    ImageOrientation.Rotate180 => (width - 1 - x, height - 1 - y),
+                    ImageOrientation.FlipVertical => (x, height - 1 - y),
+                    ImageOrientation.Transpose => (y, x),
+                    ImageOrientation.Rotate90 => (y, height - 1 - x),
+                    ImageOrientation.Transverse => (width - 1 - y, height - 1 - x),
+                    _ => (width - 1 - y, x),
+                };
+                turned[(y * w) + x] = pixels[(sy * width) + sx];
+            }
+        }
+
+        return (turned, w, h);
+    }
+
+    /// <summary>Gets the orientation that undoes another.</summary>
+    private static ImageOrientation Inverse(ImageOrientation orientation) => orientation switch
+    {
+        ImageOrientation.Rotate90 => ImageOrientation.Rotate270,
+        ImageOrientation.Rotate270 => ImageOrientation.Rotate90,
+        _ => orientation,
+    };
+
+    /// <summary>Converts planes to 8-bit samples, as gain map pixels are kept.</summary>
+    private static byte[] Pixels8(IHeifRgbConverter converter, int width, int height)
+    {
+        int channels = converter.Channels;
+        byte[] pixels = new byte[width * height * channels];
+        byte[] row = new byte[width * channels * 2];
+        for (int y = 0; y < height; y++)
+        {
+            converter.Write(y, 0, width, row);
+            Span<byte> target = pixels.AsSpan(y * width * channels, width * channels);
+            if (converter.OutputDepth > 8)
+            {
+                ReadOnlySpan<ushort> words = MemoryMarshal.Cast<byte, ushort>(row);
+                for (int i = 0; i < target.Length; i++)
+                {
+                    target[i] = (byte)(((words[i] * 255) + 32767) / 65535);
+                }
+            }
+            else
+            {
+                row.AsSpan(0, target.Length).CopyTo(target);
+            }
+        }
+
+        return pixels;
+    }
+
     /// <summary>Gets the gain map image's nclx color, from its item or its first cell, or null to take its stream's.</summary>
-    private static ColorCodePoints? GainMapColor(HeifImage file)
+    private static ColorCodePoints? GainMapColor(HeifImage file) => GainMapColor(file, file.Heif.Item(file.ToneMap!.ReferencesOf(HeifImage.Dimg)[1])!);
+
+    /// <summary>Gets a gain map item's nclx color, from the item or its first cell, or null to take its stream's.</summary>
+    private static ColorCodePoints? GainMapColor(HeifImage file, HeifItem map)
     {
         HeifFile heif = file.Heif;
-        HeifItem map = heif.Item(file.ToneMap!.ReferencesOf(HeifImage.Dimg)[1])!;
         foreach (HeifItem item in (HeifItem[])[map, file.GainMapCells[0]])
         {
             foreach ((HeifProperty property, _) in heif.PropertiesOf(item))
@@ -889,5 +1062,9 @@ internal sealed class HeifImageReader(Func<FormatInfo> format, HeifDiagnosticIds
 /// <param name="MatrixUnknown">The planes' matrix has no <see cref="YuvMatrix"/>.</param>
 /// <param name="ExifDamaged">An Exif item's TIFF header offset points past its end.</param>
 /// <param name="GainMapDropped">The gain map could not be read.</param>
+/// <param name="SequenceFirstFrame">A sequence's frames are not all key frames, so only the first loaded.</param>
+/// <param name="FramesDropped">A damaged frame ended a sequence's lenient load.</param>
+/// <param name="InterFrames">Why a sequence with inter frames gives its first frame only, as the end of a sentence.</param>
 /// <param name="BaseLayerOnly">Only a layered image's base layer was loaded, for formats that have layers.</param>
-internal sealed record HeifDiagnosticIds(string MatrixApproximated, string MatrixUnknown, string ExifDamaged, string GainMapDropped, string? BaseLayerOnly = null);
+internal sealed record HeifDiagnosticIds(string MatrixApproximated, string MatrixUnknown, string ExifDamaged, string GainMapDropped,
+    string SequenceFirstFrame, string FramesDropped, string InterFrames, string? BaseLayerOnly = null);

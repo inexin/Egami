@@ -771,6 +771,19 @@ in parallel, and the pixels equal libheif's heif-dec output. See the [HEIC guide
 
 `YuvRaster.Load` gives the decoded HEVC planes, as HM, the reference decoder, decodes them.
 
+## Show an iPhone HDR photo as HDR
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#hdr)]
+
+The gain map, Apple's or ISO 21496-1, loads with the SDR image; `ReaderOptions.Hdr` renders the HDR rendition for a display's
+headroom. See the [HEIC guide](../guides/heic.md#hdr-photos).
+
+## Read an iPhone photo's mattes and depth map
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#items)]
+
+`HeicDetails.Items` lists the thumbnails, gain map, depth maps and mattes; `HeicImage.ReadItem` reads one.
+
 ## Read an HDR AVIF file as SDR
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-sdr)]

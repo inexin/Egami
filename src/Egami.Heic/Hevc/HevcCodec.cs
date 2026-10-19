@@ -9,7 +9,7 @@ namespace Egami.Heic.Hevc;
 /// HEIC's codec behind the HEIF image layer: an hvc1 item's parameter sets (from hvcC) and data decoded by <see cref="HevcDecoder"/>,
 /// cropped to the SPS's conformance window, as planes. It keeps no state between items, so a grid's cells decode in parallel.
 /// </summary>
-internal sealed class HevcCodec : IHeifCodec
+internal sealed class HevcCodec : IHeifCodec, IHevcSampleCodec
 {
     private readonly Lock _lock = new();
     private ColorCodePoints _codePoints = new(2, 2, 2, false);
@@ -36,9 +36,14 @@ internal sealed class HevcCodec : IHeifCodec
             throw input.Corrupt(-1, $"Item {item.Id} has no hvcC property.");
         }
 
-        HevcConfig config = HevcConfig.Read(heif, property);
+        return Decode(HevcConfig.Read(heif, property), heif.ItemData(item, input.Limits), input, parallelism);
+    }
+
+    /// <summary>Decodes a sample or item's data (length-prefixed NAL units) after the configuration's parameter sets.</summary>
+    public HeifPlanes Decode(HevcConfig config, ReadOnlyMemory<byte> data, EgamiInput input, int parallelism)
+    {
         List<HevcNal> nals = [.. config.NalUnits.Select(n => HevcNal.Parse(n.Span))];
-        foreach (ReadOnlyMemory<byte> unit in HevcNal.SplitLengthPrefixed(heif.ItemData(item, input.Limits), config.LengthSize))
+        foreach (ReadOnlyMemory<byte> unit in HevcNal.SplitLengthPrefixed(data, config.LengthSize))
         {
             nals.Add(HevcNal.Parse(unit.Span));
         }
