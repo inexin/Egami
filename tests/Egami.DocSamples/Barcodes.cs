@@ -116,4 +116,32 @@ public class Barcodes
         #endregion
         Assert.Equal(44, image.Width);
     }
+
+    [Fact]
+    public void MakeCode128()
+    {
+        #region barcode-code128
+        // The shortest mix of code sets A, B and C; the digits go in pairs.
+        Barcode code = Barcode.Code128("ORDER-1180042", new Code128Options { Height = 40 });
+        using Raster<Gray8> image = code.ToRaster(pixelsPerModule: 2);
+        #endregion
+        Assert.Equal("ORDER-1180042", code.HumanReadableText);
+    }
+
+    [Fact]
+    public void MakeGs1128()
+    {
+        #region barcode-gs1
+        // Each element string is checked: the AI, the length, the GTIN's check digit, the date.
+        IReadOnlyList<Gs1ElementString> elements = Gs1.Parse("(01)09501101530003(17)261231(10)AB12");
+        Barcode label = Barcode.Gs1_128(elements);
+
+        // Mistakes say what is wrong.
+        if (!Gs1.TryParse("(01)09501101530004", out _))
+        {
+            Console.WriteLine("(01) has a wrong check digit");
+        }
+        #endregion
+        Assert.Equal("(01)09501101530003(17)261231(10)AB12", label.HumanReadableText);
+    }
 }

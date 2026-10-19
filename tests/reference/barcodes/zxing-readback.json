@@ -1,0 +1,77 @@
+{
+ "code128-control": {
+  "format": "Code128",
+  "grid": "c641b6ae73bd0da3",
+  "text": "\u0001AB"
+ },
+ "code128-control-run": {
+  "format": "Code128",
+  "grid": "6cfd5cb175e74e85",
+  "text": "ab\u0001\u0002\u0003"
+ },
+ "code128-digits-even": {
+  "format": "Code128",
+  "grid": "0f936d457635d704",
+  "text": "123456"
+ },
+ "code128-digits-in-middle": {
+  "format": "Code128",
+  "grid": "054af3c6d0dc257f",
+  "text": "X12345Y"
+ },
+ "code128-digits-long": {
+  "format": "Code128",
+  "grid": "b71a4a5e72c5e8da",
+  "text": "00123456789012345678"
+ },
+ "code128-digits-odd": {
+  "format": "Code128",
+  "grid": "b204d9d6291eeaa0",
+  "text": "1234567"
+ },
+ "code128-latin1": {
+  "format": "Code128",
+  "grid": "4f51d93c1f93a739",
+  "text": "\u00c41"
+ },
+ "code128-letters-digits": {
+  "format": "Code128",
+  "grid": "fc8cb3f535cb8c64",
+  "text": "ABC123456def"
+ },
+ "code128-mixed": {
+  "format": "Code128",
+  "grid": "d91d0a37b719bbd7",
+  "text": "Hello123456"
+ },
+ "code128-punctuation": {
+  "format": "Code128",
+  "grid": "ce6de15c3bd8e167",
+  "text": "Code 128!"
+ },
+ "code128-shift": {
+  "format": "Code128",
+  "grid": "32982131e8c504a2",
+  "text": "AB\u0001cd"
+ },
+ "gs1-128-batch-serial": {
+  "format": "Code128",
+  "grid": "a79b650a5f9d6646",
+  "text": "(10)ABC123(21)XYZ"
+ },
+ "gs1-128-gtin-expiry-batch": {
+  "format": "Code128",
+  "grid": "d83bf5e3eb26c144",
+  "text": "(01)09501101530003(17)261231(10)AB12"
+ },
+ "gs1-128-sscc": {
+  "format": "Code128",
+  "grid": "2f1afcb47966916d",
+  "text": "(00)106141411234567897"
+ },
+ "gs1-128-weight": {
+  "format": "Code128",
+  "grid": "95f1a543eaeb228c",
+  "text": "(01)09501101530003(3103)000123"
+ }
+}

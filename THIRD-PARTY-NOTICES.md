@@ -272,6 +272,22 @@ libultrahdr is distributed under the Apache License, Version 2.0 (https://www.ap
     on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
     specific language governing permissions and limitations under the License.
 
+## GS1 Barcode Syntax Dictionary
+
+`src/Egami.Barcodes/Gs1Data/gs1-syntax-dictionary.txt`, embedded in Egami.Barcodes.dll, is the GS1 Barcode Syntax Dictionary
+release 2026-01-27 ([gs1/gs1-syntax-dictionary](https://github.com/gs1/gs1-syntax-dictionary)), unchanged. Egami.Barcodes reads
+it to check GS1 element strings: each Application Identifier's data components, lengths and content checks. It is distributed
+under the Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0):
+
+    Copyright (c) 2020-2021 BWIPP project. https://bwipp.terryburton.co.uk/
+    Copyright (c) 2020-2021 Zint Project. https://zint.org.uk/
+    Copyright (c) 2021-2025 GS1 AISBL
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+    License. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+    on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations under the License.
+
 ## resvg
 
 Egami.Svg is written from the SVG 1.1 and SVG 2 specifications, with resvg (linebender/resvg 0.48.1) as its model, as

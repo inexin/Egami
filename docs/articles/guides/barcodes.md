@@ -16,6 +16,32 @@ encoder.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-modules)]
 
+## Linear barcodes
+
+### Code 128
+
+`Barcode.Code128` writes any text of characters 0 to 255. It picks the code sets A, B and C, and the changes and shifts
+between them, that give the shortest symbol, so runs of digits go in pairs. `Code128Options.Height` sets the bar height in
+modules when the barcode is drawn at a module size; drawn into a rectangle, the bars fill it.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-code128)]
+
+### GS1-128 and GS1 element strings
+
+`Gs1.Parse` reads GS1 element strings written with each Application Identifier in parentheses, such as
+`(01)09501101530003(17)261231`, and checks each one against the GS1 General Specifications: the AI is defined, the
+characters and lengths fit it, and check digits, dates and times are right. A bad field throws a `FormatException` that says
+which AI is wrong and how; `Gs1.TryParse` returns `false` instead. Each `Gs1ElementString` has its `Ai`, `Value` and GS1's
+`Title` for the AI. A parenthesis inside a value is written `\(`.
+
+`Barcode.Gs1_128` encodes element strings as Code 128 with FNC1 first, and an FNC1 after each field whose AI has no
+predefined length, unless it is the last.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-gs1)]
+
+The checks come from the GS1 Barcode Syntax Dictionary. Checks that need outside lists (country and currency codes, company
+prefixes) and the rules about which AIs go together are not applied.
+
 ## Barcodes
 
 A `Barcode` is one symbol: its `BarcodeFormat`, its `Modules`, the `QuietZone` its standard asks for in modules (4 for QR, 1 for
