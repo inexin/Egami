@@ -3,18 +3,55 @@
 Egami.Barcodes writes and reads barcodes. It draws them through Egami.Drawing's canvas, so a barcode stays vector on a PDF page
 or in SVG output, and reads them from rasters. It is fully managed.
 
-The package is in development and not yet released. This guide grows as barcode types are added.
+It writes QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, ITF and ITF-14,
+EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on `Barcode` with typed options; `Barcode.Create` takes a format
+chosen at run time with the default options.
 
-## Modules
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-create)]
 
-Every symbol is a `BarcodeModules`: a grid of dark and light modules for a 2D code, or a row of bars and spaces for a linear
-one. `Width` and `Height` are in modules, the indexer says whether a module is dark, and a linear symbol also lists its bar and
-space widths in `Runs`. A grid holds the symbol only, without its quiet zone.
+The package is in development and not yet released; reading barcodes comes next.
 
-`BarcodeModules.Create` and `BarcodeModules.CreateLinear` make one from modules you already have, for example from another
-encoder.
+## QR Code
 
-[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-modules)]
+`Barcode.Qr` writes a QR Code from text, bytes or GS1 element strings. Text is split into numeric, alphanumeric, byte and
+Kanji segments that give the fewest bits. Text in ISO 8859-1 is written as it is, text that Shift JIS holds is written in
+Shift JIS (its kanji in Kanji mode), and anything else as UTF-8 with an ECI that tells readers so.
+
+By default the symbol is the smallest that holds the data at level M, and the level is then raised to Q or H while the
+symbol stays the same size, so spare room goes to error correction. `QrOptions` fixes the level, the version (1 to 40) or the
+mask instead.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-qr)]
+
+## Data Matrix
+
+`Barcode.DataMatrix` writes Data Matrix ECC 200 from text, bytes or GS1 element strings. The six encodation modes (ASCII,
+C40, Text, X12, EDIFACT and Base 256) are switched for the fewest codewords, and the symbol is the smallest that holds them.
+Text in ISO 8859-1 is written as it is, anything else as UTF-8 with an ECI.
+
+Symbols are square by default. `DataMatrixOptions.Shape` allows rectangular symbols, or the smallest of either, and
+`AllowDmre` adds the rectangular sizes of ISO/IEC 21471 (DMRE), which older readers may not read.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-datamatrix)]
+
+## PDF417
+
+`Barcode.Pdf417` writes PDF417 from text or bytes, as on boarding passes and driving licences. Text, numeric and byte
+compaction are chosen run by run. The error correction level follows the standard's recommended minimum for the amount of
+data, and the columns are picked so the symbol is about three times as wide as tall; `Pdf417Options` sets either, or asks for
+compact PDF417, which leaves out the right row indicators for a narrower symbol. Rows are 3 modules tall.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-pdf417)]
+
+## Aztec Code
+
+`Barcode.Aztec` writes Aztec Code from text or bytes, as on rail and airline tickets. The text is written in the Upper,
+Lower, Mixed, Punctuation and Digit modes and Binary Shift, switched for the fewest bits. The symbol is the smallest compact
+(up to 4 layers) or full-range (up to 32 layers) one that leaves at least 23 % of its codewords, plus 3, for error correction;
+`AztecOptions` raises that share or fixes the form and layers. Aztec Code finds itself by its bullseye, so it needs no quiet
+zone. `Barcode.AztecRune` makes an Aztec Rune, an 11 x 11 core that holds one value from 0 to 255.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-aztec)]
 
 ## Linear barcodes
 
@@ -72,19 +109,11 @@ nominal heights.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-ean)]
 
-## Barcodes
-
-A `Barcode` is one symbol: its `BarcodeFormat`, its `Modules`, the `QuietZone` its standard asks for in modules (4 for QR, 1 for
-Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39 and ITF, 11 for EAN-13, 7
-for EAN-8 and 9 for UPC) and the `HumanReadableText` printed under a linear symbol. `Barcode.FromModules` makes one from modules you already have.
-
-[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-from-modules)]
-
 ## Drawing on a canvas
 
-`DrawBarcode`, an extension method in `CanvasBarcodeExtensions`, draws on any canvas: a raster, a PDF or SVG page, a recording. The whole symbol is one filled path, a rectangle for
-each run of dark modules in a row, so a QR code is a few hundred rectangles rather than one per module, and neighbouring
-rectangles leave no seams.
+`DrawBarcode`, an extension method in `CanvasBarcodeExtensions`, draws on any canvas: a raster, a PDF or SVG page, a
+recording. The whole symbol is one filled path, a rectangle for each run of dark modules in a row, so a QR code is a few
+hundred rectangles rather than one per module, and neighbouring rectangles leave no seams.
 
 Given a rectangle, the barcode is fitted into it and centered, with its quiet zone kept clear inside it. 2D symbols keep square
 modules; linear bars fill the rectangle's height. On a raster canvas with no rotation or skew, the module size snaps to whole
@@ -116,3 +145,23 @@ drawing. It holds no text.
 font, the text.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-raster)]
+
+## Barcodes from modules
+
+A `Barcode` is one symbol: its `BarcodeFormat`, its `Modules`, the `QuietZone` its standard asks for in modules (4 for QR, 1 for
+Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39 and ITF, 11 for EAN-13, 7
+for EAN-8 and 9 for UPC) and the `HumanReadableText` printed under a linear symbol. `Barcode.FromModules` makes one from
+modules you already have, such as from another encoder.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-from-modules)]
+
+## Modules
+
+Every symbol is a `BarcodeModules`: a grid of dark and light modules for a 2D code, or a row of bars and spaces for a linear
+one. `Width` and `Height` are in modules, the indexer says whether a module is dark, and a linear symbol also lists its bar and
+space widths in `Runs`. A grid holds the symbol only, without its quiet zone.
+
+`BarcodeModules.Create` and `BarcodeModules.CreateLinear` make one from modules you already have, for example from another
+encoder.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-modules)]

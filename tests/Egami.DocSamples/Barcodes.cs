@@ -192,4 +192,162 @@ public class Barcodes
         Assert.Equal("9780201379624 52495", book.HumanReadableText);
         Assert.Equal("04252614", small.HumanReadableText);
     }
+
+    [Fact]
+    public void MakeQr()
+    {
+        #region barcode-qr
+        // Level M, raised to Q or H when that fits in the same size; segments chosen for the fewest bits.
+        Barcode link = Barcode.Qr("https://inexin.github.io/Egami/");
+
+        // A fixed size and level, for a layout that must not change.
+        Barcode fixedSize = Barcode.Qr("ORDER-1180042", new QrOptions { Version = 3, ErrorCorrection = QrErrorCorrection.H });
+
+        // Bytes as they are, and GS1 element strings with FNC1.
+        Barcode bytes = Barcode.Qr([0x45, 0x67, 0x61, 0x6D, 0x69]);
+        Barcode gs1 = Barcode.Qr(Gs1.Parse("(01)09501101530003(10)AB12"));
+
+        using Raster<Gray8> image = link.ToRaster(pixelsPerModule: 4);
+        #endregion
+        Assert.Equal(29, fixedSize.Modules.Width);
+        Assert.Equal("(01)09501101530003(10)AB12", gs1.HumanReadableText);
+        Assert.Equal(BarcodeFormat.Qr, bytes.Format);
+    }
+
+    [Fact]
+    public void MakeDataMatrix()
+    {
+        #region barcode-datamatrix
+        // Square by default; the encodation modes are switched for the fewest codewords.
+        Barcode part = Barcode.DataMatrix("PN 4711-0815 / LOT 2026-10");
+
+        // A narrow label: rectangular sizes, the DMRE ones too.
+        Barcode narrow = Barcode.DataMatrix("PN 4711-0815 / LOT 2026-10", new DataMatrixOptions
+        {
+            Shape = DataMatrixShape.Rectangle,
+            AllowDmre = true,
+        });
+
+        // GS1 Data Matrix, as on medicine packs.
+        Barcode pack = Barcode.DataMatrix(Gs1.Parse("(01)09501101530003(17)261231(10)AB12(21)XYZ"));
+        #endregion
+        Assert.Equal(part.Modules.Width, part.Modules.Height);
+        Assert.True(narrow.Modules.Width > narrow.Modules.Height);
+        Assert.Equal(BarcodeFormat.DataMatrix, pack.Format);
+    }
+
+    [Fact]
+    public void MakePdf417()
+    {
+        #region barcode-pdf417
+        // About three times as wide as tall, error level from the standard's table for the amount of data.
+        Barcode ticket = Barcode.Pdf417("PASSENGER DOE/JANE  FLIGHT EG1234  SEAT 12A  GATE B17");
+
+        // Six data columns and error level 5, or the compact form for a narrow space.
+        Barcode wide = Barcode.Pdf417("PASSENGER DOE/JANE", new Pdf417Options { Columns = 6, ErrorLevel = 5 });
+        Barcode compact = Barcode.Pdf417("PASSENGER DOE/JANE", new Pdf417Options { Compact = true });
+        #endregion
+        Assert.True(ticket.Modules.Width > ticket.Modules.Height);
+        Assert.True(compact.Modules.Width < wide.Modules.Width);
+    }
+
+    [Fact]
+    public void MakeAztec()
+    {
+        #region barcode-aztec
+        // The smallest compact or full-range symbol with at least 23 % error correction; no quiet zone needed.
+        Barcode ticket = Barcode.Aztec("EG1234 BER-MUC 2026-10-19 SEAT 12A DOE/JANE");
+
+        // More error correction for a ticket that gets folded, or a fixed compact size.
+        Barcode robust = Barcode.Aztec("EG1234 BER-MUC", new AztecOptions { ErrorCorrectionPercent = 50 });
+        Barcode compact = Barcode.Aztec("EG1234", new AztecOptions { Compact = true, Layers = 2 });
+
+        // A rune: one value from 0 to 255 in an 11 x 11 core.
+        Barcode rune = Barcode.AztecRune(42);
+        #endregion
+        Assert.Equal(0, ticket.QuietZone);
+        Assert.Equal(19, compact.Modules.Width);
+        Assert.Equal(11, rune.Modules.Width);
+        Assert.True(robust.Modules.Width >= 15);
+    }
+
+    [Fact]
+    public void CreateFromData()
+    {
+        #region barcode-create
+        // Labels from a table that stores each barcode's format with its data.
+        (BarcodeFormat Format, string Data)[] rows =
+        [
+            (BarcodeFormat.Ean13, "590123412345"),
+            (BarcodeFormat.Code128, "SHIP-0042"),
+            (BarcodeFormat.Qr, "https://inexin.github.io/Egami/"),
+        ];
+
+        foreach ((BarcodeFormat format, string data) in rows)
+        {
+            Barcode barcode = Barcode.Create(format, data);
+            using Raster<Gray8> image = barcode.ToRaster(pixelsPerModule: 3);
+        }
+        #endregion
+        Assert.Equal(BarcodeFormat.Qr, Barcode.Create(BarcodeFormat.Qr, "x").Format);
+    }
+
+    [Fact]
+    public void LabelWithQrAndText()
+    {
+        Font font = new(Typeface.FromFile(FontFile), 18);
+        #region barcode-label
+        // A 600 x 300 label: a QR code on the left, the address beside it.
+        using Raster<Rgba8> label = Raster.Create(600, 300, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = label.CreateCanvas())
+        {
+            canvas.DrawBarcode(Barcode.Qr("https://example.com/track/4711"), new RectF(20, 20, 260, 260), Rgba8.Black);
+            canvas.DrawText("Parcel 4711", new Vector2(300, 80), font, Rgba8.Black);
+            canvas.DrawText("Track at example.com", new Vector2(300, 120), font, Rgba8.Black);
+        }
+        #endregion
+        Assert.Equal(Rgba8.White, label.GetPixel(10, 10));
+    }
+
+    [Fact]
+    public void SaveAsSvg()
+    {
+        string file = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"egami-doc-{Guid.NewGuid():N}.svg");
+        try
+        {
+            #region barcode-svg
+            // One path, 1 unit a module, the quiet zone as the view box.
+            Barcode barcode = Barcode.DataMatrix("PN 4711-0815");
+            Path path = barcode.ToPath(moduleSize: 1);
+            int width = barcode.Modules.Width + (2 * barcode.QuietZone), height = barcode.Modules.Height + (2 * barcode.QuietZone);
+            File.WriteAllText(file, $"""
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" shape-rendering="crispEdges">
+                  <rect width="{width}" height="{height}" fill="#fff"/>
+                  <path d="{path.ToSvg()}"/>
+                </svg>
+                """);
+            #endregion
+            Assert.Contains("<path d=\"M", File.ReadAllText(file), StringComparison.Ordinal);
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
+    [Fact]
+    public void ShippingLabel()
+    {
+        Font font = new(Typeface.FromFile(FontFile), 8);
+        var recorder = new PictureRecorder(new RectF(0, 0, 288, 432));
+        Canvas page = recorder;
+        #region barcode-shipping
+        // A 4 x 6 inch label in points: an SSCC as GS1-128 at 0.5 mm a module with its text, and a GS1 Data Matrix.
+        float module = 0.5f / 25.4f * 72;
+        Barcode sscc = Barcode.Gs1_128("(00)106141411234567897");
+        page.DrawBarcode(sscc, new Vector2(18, 300), module, Rgba8.Black, new BarcodeDrawOptions { Font = font });
+        page.DrawBarcode(Barcode.DataMatrix(Gs1.Parse("(01)09501101530003(10)AB12")), new RectF(18, 18, 100, 100), Rgba8.Black);
+        #endregion
+        Assert.True(recorder.Finish().CallCount >= 3);
+    }
 }

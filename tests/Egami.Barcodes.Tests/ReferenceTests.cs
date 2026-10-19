@@ -16,20 +16,43 @@ public class ReferenceTests
         [.. Load("cases.json").GetProperty("cases").EnumerateArray()]);
 
     /// <summary>The factories the cases may name; cases for others are not run yet.</summary>
-    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE"];
+    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune"];
 
     public static TheoryData<string> Cases =>
         [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!)).Select(c => c.GetProperty("name").GetString()!)];
 
+    /// <summary>The cases zint encodes too; for the others only the read-back is checked.</summary>
+    public static TheoryData<string> ZintCases =>
+        [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!) && c.TryGetProperty("zint", out _)).Select(c => c.GetProperty("name").GetString()!)];
+
     private static string Folder => System.IO.Path.Combine(TestFiles.Root, "tests", "reference", "barcodes");
 
     [Theory]
-    [MemberData(nameof(Cases))]
+    [MemberData(nameof(ZintCases))]
     public void ModulesEqualZints(string name)
     {
-        Barcode barcode = Make(Case(name));
+        JsonElement test = Case(name);
+        Barcode barcode = Make(test);
         JsonElement zint = Load("zint-grids.json").GetProperty(name);
+        if (zint.TryGetProperty("versions", out JsonElement versions))
+        {
+            // QR: masks may differ, so the version and level are compared. Without a level, Egami takes M's version and raises
+            // the level while that version holds (design question 9); zint, given a level, does not raise it.
+            (int version, char level) = QrVersionAndLevel(barcode.Modules);
+            string? asked = test.TryGetProperty("options", out JsonElement o) ? Text(o, "level") : null;
+            char expectedLevel = asked?[0] ?? "HQM".First(l => versions.GetProperty(l.ToString()).GetInt32() == versions.GetProperty("M").GetInt32());
+            Assert.Equal(versions.GetProperty((asked ?? "M")).GetInt32(), version);
+            Assert.Equal(expectedLevel, level);
+            return;
+        }
+
         Assert.Equal(zint.GetProperty("width").GetInt32(), barcode.Modules.Width);
+        if (!barcode.Modules.IsLinear)
+        {
+            Assert.Equal(string.Join('\n', zint.GetProperty("modules").EnumerateArray().Select(r => r.GetString())), Grid(barcode.Modules).TrimEnd('\n'));
+            return;
+        }
+
         Assert.Equal(zint.GetProperty("modules")[0].GetString(), Row(barcode.Modules));
     }
 
@@ -80,9 +103,43 @@ public class ReferenceTests
             "Ean8" => Barcode.Ean8(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
             "UpcA" => Barcode.UpcA(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
             "UpcE" => Barcode.UpcE(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
+            "Qr" => Barcode.Qr(data, new QrOptions { ErrorCorrection = Text(options, "level") is string level ? Enum.Parse<QrErrorCorrection>(level) : null }),
+            "QrGs1" => Barcode.Qr(Gs1.Parse(data)),
+            "DataMatrix" => Barcode.DataMatrix(data, Text(options, "shape") switch
+            {
+                "Any" => new DataMatrixOptions { Shape = DataMatrixShape.Any },
+                "AnyWithDmre" => new DataMatrixOptions { Shape = DataMatrixShape.Any, AllowDmre = true },
+                _ => null,
+            }),
+            "DataMatrixGs1" => Barcode.DataMatrix(Gs1.Parse(data)),
+            "Pdf417" => Barcode.Pdf417(data, new Pdf417Options
+            {
+                Compact = Flag(options, "compact"),
+                Columns = Number(options, "columns"),
+                ErrorLevel = Number(options, "level"),
+            }),
+            "Aztec" => Barcode.Aztec(data, new AztecOptions
+            {
+                Compact = options.ValueKind == JsonValueKind.Object && options.TryGetProperty("compact", out JsonElement compact) ? compact.GetBoolean() : null,
+                Layers = Number(options, "layers"),
+                ErrorCorrectionPercent = Number(options, "percent"),
+            }),
+            "AztecRune" => Barcode.AztecRune(int.Parse(data, System.Globalization.CultureInfo.InvariantCulture)),
             string call => throw new NotSupportedException(call),
             _ => throw new NotSupportedException(),
         };
+    }
+
+    /// <summary>Reads a QR Code's version from its size and its level from the format bits next to the top-left finder.</summary>
+    internal static (int Version, char Level) QrVersionAndLevel(BarcodeModules modules)
+    {
+        int bits = 0;
+        foreach ((int x, int y) in (ReadOnlySpan<(int, int)>)[(0, 8), (1, 8), (2, 8), (3, 8), (4, 8), (5, 8), (7, 8), (8, 8), (8, 7), (8, 5), (8, 4), (8, 3), (8, 2), (8, 1), (8, 0)])
+        {
+            bits = (bits << 1) | (modules[x, y] ? 1 : 0);
+        }
+
+        return ((modules.Width - 17) / 4, "MLHQ"[((bits ^ 0x5412) >> 13) & 3]);
     }
 
     internal static JsonElement Case(string name) => s_cases.Value.Single(c => c.GetProperty("name").GetString() == name);
@@ -116,6 +173,9 @@ public class ReferenceTests
 
     private static string? Text(JsonElement options, string name) =>
         options.ValueKind == JsonValueKind.Object && options.TryGetProperty(name, out JsonElement value) ? value.GetString() : null;
+
+    private static int? Number(JsonElement options, string name) =>
+        options.ValueKind == JsonValueKind.Object && options.TryGetProperty(name, out JsonElement value) ? value.GetInt32() : null;
 
     private static bool Flag(JsonElement options, string name) =>
         options.ValueKind == JsonValueKind.Object && options.TryGetProperty(name, out JsonElement value) && value.GetBoolean();

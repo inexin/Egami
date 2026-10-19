@@ -37,20 +37,37 @@ def write_json(path, data):
         f.write("\n")
 
 
+def zint_line(name, z, option1=None):
+    data = z["input"].encode("utf-8" if z.get("mode", 0) in (1, 2) else "latin-1").hex()
+    option1 = z.get("option1", 0) if option1 is None else option1
+    fields = [name, z["symbology"], option1, z.get("option2", 0), z.get("option3", 0), z.get("mode", 0), z.get("eci", 0), data]
+    return "\t".join(map(str, fields)) + "\n"
+
+
 def grids(cases):
+    # QR runs at each level (option_1 1 to 4 for L, M, Q, H), since only the version each level gives is compared.
     lines = []
     for case in cases:
-        z = case["zint"]
-        data = z["input"].encode("utf-8" if z.get("mode", 0) in (1, 2) else "latin-1").hex()
-        lines.append(f"{case['name']}\t{z['symbology']}\t0\t{z.get('option2', 0)}\t0\t{z.get('mode', 0)}\t{data}\n")
+        z = case.get("zint")
+        if z is None:
+            continue
+        if z["symbology"] == 58:
+            lines += [zint_line(f"{case['name']}@{level}", z, i + 1) for i, level in enumerate("LMQH")]
+        else:
+            lines.append(zint_line(case["name"], z))
     out = subprocess.run(["docker", "run", "--rm", "-i", IMAGE, "zintdump"], input="".join(lines), capture_output=True,
                          text=True, check=True, env=ENV).stdout
     result = {}
     for line in out.splitlines():
         entry = json.loads(line)
+        name, _, level = entry["name"].partition("@")
+        if level:
+            versions = result.setdefault(name, {"versions": {}})["versions"]
+            versions[level] = (entry["width"] - 17) // 4 if entry["error"] < 5 else None
+            continue
         if entry["error"] >= 5:
             sys.exit(f"zint failed on {entry['name']}: {entry['message']}")
-        result[entry["name"]] = {"width": entry["width"], "text": entry["text"], "modules": entry["modules"]}
+        result[name] = {"width": entry["width"], "text": entry["text"], "modules": entry["modules"]}
     write_json(f"{REFERENCES}/zint-grids.json", result)
     print(f"{len(result)} zint grids written")
 
@@ -70,11 +87,13 @@ def readback(cases):
             continue
         with open(f"{IMAGES}/{case['name']}.grid", encoding="ascii") as f:
             grid = hashlib.sha256(f.read().encode("ascii")).hexdigest()[:16]
-        read = reads.get(case["name"], {"format": None, "text": None})
-        result[case["name"]] = {"format": read["format"], "text": read["text"], "grid": grid}
+        read = reads.get(case["name"], {"format": None, "text": None, "bytes": None})
         expected = case.get("read", case["text"])
-        if read["text"] != expected:
-            failures.append(f"{case['name']}: read {read['text']!r} as {read['format']}, expected {expected!r}")
+        # The text as zxing-cpp decoded it (character set from the ECI, or guessed), or its bytes as ISO 8859-1.
+        text = read["text"] if read["text"] == expected or read["bytes"] is None else read["bytes"]
+        result[case["name"]] = {"format": read["format"], "text": text, "grid": grid}
+        if text != expected:
+            failures.append(f"{case['name']}: read {text!r} as {read['format']}, expected {expected!r}")
     write_json(f"{REFERENCES}/zxing-readback.json", result)
     print(f"{len(result) - len(failures)} of {len(result)} read back")
     if failures:

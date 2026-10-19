@@ -1,4 +1,74 @@
 {
+ "aztec-binary": {
+  "format": "Aztec",
+  "grid": "2c7d9d590982bc54",
+  "text": "\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd\u00ff\u00fe\u00fd"
+ },
+ "aztec-digits": {
+  "format": "Aztec",
+  "grid": "63461cf0862658cf",
+  "text": "1234567890123456789012345"
+ },
+ "aztec-ecc50": {
+  "format": "Aztec",
+  "grid": "a423c7d3ddcfcdfa",
+  "text": "Half error correction"
+ },
+ "aztec-full-forced": {
+  "format": "Aztec",
+  "grid": "48f250e53ee1510a",
+  "text": "Full range"
+ },
+ "aztec-latin1": {
+  "format": "Aztec",
+  "grid": "f968eed089236ce0",
+  "text": "\u00c4\u00d6\u00dc\u00e4\u00f6\u00fc\u00df \u00e9\u00e8 Stra\u00dfe"
+ },
+ "aztec-layers": {
+  "format": "Aztec",
+  "grid": "22d9867c1c800baf",
+  "text": "Four layers"
+ },
+ "aztec-long": {
+  "format": "Aztec",
+  "grid": "2b712048757d90ca",
+  "text": "Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. Aztec Code layers wrap around a bullseye; full-range symbols carry a reference grid. "
+ },
+ "aztec-mixed": {
+  "format": "Aztec",
+  "grid": "21c33668a91d4e49",
+  "text": "Ticket #4711: BER-MUC, seat 12A. Gate b17!"
+ },
+ "aztec-punctuation": {
+  "format": "Aztec",
+  "grid": "c4a49c06c5fd1937",
+  "text": "a.b, c: d\r\ne; [f] {g} @h \\i ^j"
+ },
+ "aztec-rune-0": {
+  "format": "Aztec",
+  "grid": "c90d52bca11bbde6",
+  "text": "000"
+ },
+ "aztec-rune-25": {
+  "format": "Aztec",
+  "grid": "c24d654a54139a37",
+  "text": "025"
+ },
+ "aztec-rune-255": {
+  "format": "Aztec",
+  "grid": "fa09083e0d61e638",
+  "text": "255"
+ },
+ "aztec-text": {
+  "format": "Aztec",
+  "grid": "960a10e541c8d4ae",
+  "text": "Hello World"
+ },
+ "aztec-utf8": {
+  "format": "Aztec",
+  "grid": "3b2a7db66ea08f10",
+  "text": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac \u2192 OK"
+ },
  "code128-control": {
   "format": "Code128",
   "grid": "c641b6ae73bd0da3",
@@ -79,6 +149,111 @@
   "grid": "12b707e56c50164a",
   "text": "HELLO WORLD-1.$/+%"
  },
+ "dm-144": {
+  "format": "DataMatrix",
+  "grid": "4a4f1cdc128a4f00",
+  "text": "\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9"
+ },
+ "dm-any-medium": {
+  "format": "DataMatrix",
+  "grid": "391d5aa50014a6d9",
+  "text": "Hello World 1234567890"
+ },
+ "dm-any-small": {
+  "format": "DataMatrix",
+  "grid": "19f29464a400e4e6",
+  "text": "ABC123"
+ },
+ "dm-base256": {
+  "format": "DataMatrix",
+  "grid": "a8781863fd46cab9",
+  "text": "\u00ff\u00fe\u00fd\u00fc\u00fb\u00fa\u00f9\u00f8\u00f7\u00f6\u00f5\u00f4\u00f3\u00f2\u00f1\u00f0\u00ff\u00fe\u00fd\u00fc\u00fb\u00fa\u00f9\u00f8\u00f7\u00f6\u00f5\u00f4\u00f3\u00f2\u00f1\u00f0\u00ff\u00fe\u00fd\u00fc\u00fb\u00fa\u00f9\u00f8\u00f7\u00f6\u00f5\u00f4\u00f3\u00f2\u00f1\u00f0"
+ },
+ "dm-c40": {
+  "format": "DataMatrix",
+  "grid": "0f305b0243e1c57d",
+  "text": "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+ },
+ "dm-digits": {
+  "format": "DataMatrix",
+  "grid": "beb66976611d0533",
+  "text": "1234567890"
+ },
+ "dm-digits-odd": {
+  "format": "DataMatrix",
+  "grid": "2de5108b4b7c1500",
+  "text": "123456789"
+ },
+ "dm-dmre": {
+  "format": "DataMatrix",
+  "grid": "9e605dac657880f9",
+  "text": "ABCDEFGHIJ0123456789abcdefghij"
+ },
+ "dm-dmre-12x64": {
+  "format": "DataMatrix",
+  "grid": "a1d041c35582ed1b",
+  "text": "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345"
+ },
+ "dm-edifact": {
+  "format": "DataMatrix",
+  "grid": "db16342899a601c6",
+  "text": "ABC^DEF@GHI:JKL;MNO<PQR=STU?VWX"
+ },
+ "dm-gs1": {
+  "format": "DataMatrix",
+  "grid": "1c6f483d7e8eb45a",
+  "text": "(01)09501101530003(17)261231(10)AB12"
+ },
+ "dm-gs1-serial": {
+  "format": "DataMatrix",
+  "grid": "e8684ca2e30de7c6",
+  "text": "(01)09501101530003(21)ABC123(10)X1"
+ },
+ "dm-latin1": {
+  "format": "DataMatrix",
+  "grid": "de79eb0df6e0cb57",
+  "text": "\u00c4\u00d6\u00dc\u00e4\u00f6\u00fc\u00df \u00e9\u00e8\u00ea \u00e5\u00f8\u00e6"
+ },
+ "dm-long": {
+  "format": "DataMatrix",
+  "grid": "4f8415e8e5746871",
+  "text": "Data Matrix holds text, numbers and bytes in a small square. Data Matrix holds text, numbers and bytes in a small square. Data Matrix holds text, numbers and bytes in a small square. Data Matrix holds text, numbers and bytes in a small square. Data Matrix holds text, numbers and bytes in a small square. Data Matrix holds text, numbers and bytes in a small square. Data Matrix holds text, numbers and bytes in a small square. Data Matrix holds text, numbers and bytes in a small square. "
+ },
+ "dm-lowercase": {
+  "format": "DataMatrix",
+  "grid": "8f586241754720f5",
+  "text": "the quick brown fox jumps over the lazy dog"
+ },
+ "dm-mixed": {
+  "format": "DataMatrix",
+  "grid": "5be1a672b58f5f64",
+  "text": "Order: 4711, qty 12; ship to DE-10115 Berlin"
+ },
+ "dm-text": {
+  "format": "DataMatrix",
+  "grid": "7649627da128249a",
+  "text": "Hello World"
+ },
+ "dm-url": {
+  "format": "DataMatrix",
+  "grid": "7c1c534c06578bfb",
+  "text": "https://inexin.github.io/Egami/v1/articles/guides/barcodes.html"
+ },
+ "dm-utf8": {
+  "format": "DataMatrix",
+  "grid": "7393bdbc829d80ae",
+  "text": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac \u65e5\u672c"
+ },
+ "dm-very-long": {
+  "format": "DataMatrix",
+  "grid": "5350910b8921d05e",
+  "text": "0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ0123456789ABCDEFGHIJ"
+ },
+ "dm-x12": {
+  "format": "DataMatrix",
+  "grid": "b959f00b3593dea1",
+  "text": "ABC*DEF>GHI*123>456*789"
+ },
  "ean13-add-check": {
   "format": "EAN13",
   "grid": "7aea709139d47680",
@@ -153,6 +328,151 @@
   "format": "ITF",
   "grid": "b60c137c0c7b0212",
   "text": "15400141288763"
+ },
+ "pdf417-byte-shift": {
+  "format": "PDF417",
+  "grid": "e81ec85bc380c1ca",
+  "text": "Caf\u00e9 au lait"
+ },
+ "pdf417-bytes": {
+  "format": "PDF417",
+  "grid": "255030e9debd05d3",
+  "text": "\u00c4\u00d6\u00dc\u00e4\u00f6\u00fc\u00df\u00e9\u00e8\u00ea\u00e5\u00f8"
+ },
+ "pdf417-columns": {
+  "format": "PDF417",
+  "grid": "e238db7f832ab0dc",
+  "text": "Five data columns, fixed"
+ },
+ "pdf417-compact": {
+  "format": "PDF417",
+  "grid": "a83a32788f0507b5",
+  "text": "Compact PDF417 symbol"
+ },
+ "pdf417-level6": {
+  "format": "PDF417",
+  "grid": "79eeb8b8f2c84be7",
+  "text": "Error level 6"
+ },
+ "pdf417-long": {
+  "format": "PDF417",
+  "grid": "3d4082a15e23a86e",
+  "text": "PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. PDF417 stacks rows of codewords; each row has start and stop patterns and row indicators. "
+ },
+ "pdf417-mixed": {
+  "format": "PDF417",
+  "grid": "20514782883167aa",
+  "text": "Order 4711: 12 x part A-17/B; total $93.50 (incl. 19% VAT)"
+ },
+ "pdf417-numeric": {
+  "format": "PDF417",
+  "grid": "d6dfed7e3cbc2ccf",
+  "text": "012345678901234567890123456789"
+ },
+ "pdf417-punctuation": {
+  "format": "PDF417",
+  "grid": "543604d15764fbd6",
+  "text": "a@b.c; x<y>z! [q] {r} ~s~ \"t\""
+ },
+ "pdf417-text": {
+  "format": "PDF417",
+  "grid": "9ea68f29230a11f3",
+  "text": "Hello World"
+ },
+ "pdf417-utf8": {
+  "format": "PDF417",
+  "grid": "8f31c51605da9dfc",
+  "text": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac"
+ },
+ "qr-alphanumeric": {
+  "format": "QRCode",
+  "grid": "6530a3ae2fa5f14b",
+  "text": "HELLO WORLD"
+ },
+ "qr-byte": {
+  "format": "QRCode",
+  "grid": "d9379490ebb98196",
+  "text": "Hello, world!"
+ },
+ "qr-digits-large": {
+  "format": "QRCode",
+  "grid": "d5413dfc1afaa69e",
+  "text": "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+ },
+ "qr-gs1": {
+  "format": "QRCode",
+  "grid": "e7f7a89a342a7045",
+  "text": "(01)09501101530003(17)261231(10)AB12"
+ },
+ "qr-gs1-percent": {
+  "format": "QRCode",
+  "grid": "5b8cb8affc980f18",
+  "text": "(10)A%B(21)XYZ"
+ },
+ "qr-kanji": {
+  "format": "QRCode",
+  "grid": "7de53255d69f7a2b",
+  "text": "\u65e5\u672c\u8a9e\u306e\u30c6\u30ad\u30b9\u30c8"
+ },
+ "qr-kanji-mixed": {
+  "format": "QRCode",
+  "grid": "c07a27cefbe79c3f",
+  "text": "\u30c6\u30b9\u30c8123ABC"
+ },
+ "qr-large": {
+  "format": "QRCode",
+  "grid": "ea9c5defd59289b5",
+  "text": "Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. "
+ },
+ "qr-latin1": {
+  "format": "QRCode",
+  "grid": "9486bcba0a35d594",
+  "text": "\u00c6r\u00f8sk\u00f8bing caf\u00e9"
+ },
+ "qr-level-h": {
+  "format": "QRCode",
+  "grid": "758fda2f3c03ac36",
+  "text": "Hello, world!"
+ },
+ "qr-level-l": {
+  "format": "QRCode",
+  "grid": "8b050eb8485151b3",
+  "text": "Hello, world!"
+ },
+ "qr-level-q": {
+  "format": "QRCode",
+  "grid": "584ab4dad5a9d4bc",
+  "text": "Hello, world!"
+ },
+ "qr-medium": {
+  "format": "QRCode",
+  "grid": "7713bb0968b030c3",
+  "text": "Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D imaging library for .NET. Egami is a fully managed 2D im"
+ },
+ "qr-mixed-segments": {
+  "format": "QRCode",
+  "grid": "f5be1e9e7bb69844",
+  "text": "ABC1234567890123456def"
+ },
+ "qr-numeric": {
+  "format": "QRCode",
+  "grid": "03f7e52b6349e854",
+  "text": "01234567890123456789"
+ },
+ "qr-url": {
+  "format": "QRCode",
+  "grid": "0cc8b480126e9829",
+  "text": "https://inexin.github.io/Egami/v1/articles/guides/barcodes.html"
+ },
+ "qr-utf8-emoji": {
+  "format": "QRCode",
+  "grid": "b01554a2aa361556",
+  "text": "Smile \ud83d\ude00 please"
+ },
+ "qr-utf8-greek": {
+  "format": "QRCode",
+  "grid": "90b37268e396e511",
+  "text": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac"
  },
  "upca-add-check": {
   "format": "EAN13",

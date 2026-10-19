@@ -288,6 +288,61 @@ under the Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2
     on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
     specific language governing permissions and limitations under the License.
 
+## ZXing
+
+Egami's Aztec Code encoder (`src/Egami.Barcodes/Matrix/AztecEncoder.cs`) is written from ISO/IEC 24778. Its layout of the
+data layers, the mapping that skips the reference grid of full-range symbols, the placement of the mode message and the
+bit stuffing follow the structure of ZXing's Aztec encoder (`com.google.zxing.aztec.encoder.Encoder`), and its search over mode
+states for the fewest bits takes the approach of ZXing's `HighLevelEncoder`. ZXing is distributed under the Apache License,
+Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0):
+
+    Copyright 2013 ZXing authors
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+    License. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+    on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations under the License.
+
+## zint
+
+Egami.Barcodes' encoders are written from the ISO/IEC barcode standards. These tables, which the standards print, were
+transcribed through zint's backend library (zint 2.16.0, BSD-3), whose frontends and GUI (GPL) are not used:
+
+- QR Code capacities: codewords per version, data codewords and error correction blocks per version and level
+  (ISO/IEC 18004 Tables 1, 7 and 9; zint `backend/qr.h`), in `src/Egami.Barcodes/Matrix/QrTables.cs`.
+- Data Matrix symbol sizes and C40 and Text character tables (ISO/IEC 16022 Table 7 and Annex C, ISO/IEC 21471; zint
+  `backend/dmatrix.h`), in `src/Egami.Barcodes/Matrix/DataMatrixTables.cs`.
+- PDF417 symbol character patterns for clusters 0, 3 and 6 (ISO/IEC 15438 Annex A; zint `backend/pdf417_tabs.h`), in
+  `src/Egami.Barcodes/Matrix/Pdf417Tables.cs`.
+
+Egami's Data Matrix encodation (`src/Egami.Barcodes/Matrix/DataMatrixEncoder.cs`) is translated from zint's minimal
+encodation in `backend/dmatrix.c` (itself based on Alex Geller's algorithm), with its end-of-data rules, padding, block
+interleaving and 144 x 144 placement, so that Egami's symbols equal zint's.
+
+zint's backend is distributed under the BSD 3-clause license:
+
+    libzint - the open source barcode library
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2006 Kentaro Fukuchi <fukuchi@megaui.net>
+
+    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+    following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+       disclaimer.
+    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+       disclaimer in the documentation and/or other materials provided with the distribution.
+    3. Neither the name of the project nor the names of its contributors may be used to endorse or promote products derived
+       from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 ## resvg
 
 Egami.Svg is written from the SVG 1.1 and SVG 2 specifications, with resvg (linebender/resvg 0.48.1) as its model, as

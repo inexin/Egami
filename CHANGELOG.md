@@ -14,6 +14,28 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - Reed-Solomon error correction for every symbology the package will write and read: QR, Data Matrix, PDF417 and Aztec, with
   errors and erasures corrected together.
 
+### QR Code
+
+- `Barcode.Qr` writes QR Codes from text, bytes or GS1 element strings, versions 1 to 40, with the fewest bits over numeric,
+  alphanumeric, byte and Kanji segments, and ECI 26 (UTF-8) for text outside ISO 8859-1 and Shift JIS.
+- Level M by default, raised to Q or H while the symbol keeps its size; `QrOptions` fixes the level, version or mask.
+
+### Data Matrix
+
+- `Barcode.DataMatrix` writes Data Matrix ECC 200 from text, bytes or GS1 element strings, switching between its six
+  encodation modes for the fewest codewords. Square by default; rectangular and DMRE sizes on request
+  (`DataMatrixOptions`).
+
+### PDF417
+
+- `Barcode.Pdf417` writes PDF417 and compact PDF417 from text or bytes, with text, numeric and byte compaction, the error
+  level from the standard's table and columns for about 3:1; `Pdf417Options` sets columns, level and the compact form.
+
+### Aztec Code
+
+- `Barcode.Aztec` writes compact and full-range Aztec Code from text or bytes, with the fewest bits over its modes and Binary
+  Shift and at least 23 % error correction by default (`AztecOptions`); `Barcode.AztecRune` writes Aztec Runes.
+
 ### Code 128 and GS1
 
 - `Barcode.Code128` writes Code 128 with the shortest mix of code sets A, B and C.
@@ -36,7 +58,8 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 ### Drawing
 
 - `Barcode` is one symbol: format, modules, the quiet zone of its standard and its human-readable text.
-  `Barcode.FromModules` makes one from modules you already have.
+  `Barcode.FromModules` makes one from modules you already have, and `Barcode.Create` makes one of a format chosen at run
+  time.
 - `DrawBarcode` draws a barcode on any canvas as one path, fitted into a rectangle or at a module size. On raster canvases with
   no rotation or skew, modules snap to whole pixels.
 - `ToPath` returns the symbol as one path, and `ToRaster` renders it to a `Raster<Gray8>` with whole-pixel modules.
