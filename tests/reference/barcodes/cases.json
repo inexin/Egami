@@ -1,5 +1,5 @@
 {
-  "about": "Barcode reference cases. tools/make-barcode-references.py encodes each with zint 2.16.0 (zint-grids.json) and reads Egami's rendering of each back with zxing-cpp 3.1.1 (zxing-readback.json); Egami.Barcodes.Tests compares Egami's modules with zint's. 'call' is the Egami factory, 'data' its input, 'options' its options; 'zint' is the zint symbology, input mode, option_2 and input; 'text' is what a reader returns.",
+  "about": "Barcode reference cases. tools/make-barcode-references.py encodes each with zint 2.16.0 (zint-grids.json) and reads Egami's rendering of each back with zxing-cpp 3.1.1 (zxing-readback.json); Egami.Barcodes.Tests compares Egami's modules with zint's. 'call' is the Egami factory, 'data' its input, 'options' its options; 'zint' is the zint symbology, input mode, option_2 and input; 'text' is the human-readable text, and 'read' what zxing-cpp returns when it differs (UPC-A as a GTIN-13, UPC-E expanded to one).",
   "cases": [
     { "name": "code128-mixed", "call": "Code128", "data": "Hello123456", "zint": { "symbology": 20, "input": "Hello123456" }, "text": "Hello123456" },
     { "name": "code128-digits-even", "call": "Code128", "data": "123456", "zint": { "symbology": 20, "input": "123456" }, "text": "123456" },
@@ -32,15 +32,15 @@
     { "name": "ean13-addon5", "call": "Ean13", "data": "9780201379624", "options": { "addOn": "52495" }, "zint": { "symbology": 15, "input": "9780201379624+52495" }, "text": "9780201379624 52495" },
     { "name": "ean8-add-check", "call": "Ean8", "data": "9638507", "zint": { "symbology": 10, "input": "9638507" }, "text": "96385074" },
     { "name": "ean8-with-check", "call": "Ean8", "data": "40170725", "zint": { "symbology": 10, "input": "40170725" }, "text": "40170725" },
-    { "name": "upca-add-check", "call": "UpcA", "data": "03600029145", "zint": { "symbology": 34, "input": "03600029145" }, "text": "036000291452" },
-    { "name": "upca-with-check", "call": "UpcA", "data": "042100005264", "zint": { "symbology": 34, "input": "042100005264" }, "text": "042100005264" },
-    { "name": "upca-addon5", "call": "UpcA", "data": "036000291452", "options": { "addOn": "12345" }, "zint": { "symbology": 34, "input": "036000291452+12345" }, "text": "036000291452 12345" },
-    { "name": "upce-six", "call": "UpcE", "data": "123456", "zint": { "symbology": 37, "input": "0123456" }, "text": "01234565" },
-    { "name": "upce-with-check", "call": "UpcE", "data": "01234565", "zint": { "symbology": 37, "input": "01234565" }, "text": "01234565" },
-    { "name": "upce-from-upca-0", "call": "UpcE", "data": "04210000526", "zint": { "symbology": 37, "input": "0425261" }, "text": "04252614" },
-    { "name": "upce-from-upca-3", "call": "UpcE", "data": "01230000045", "zint": { "symbology": 37, "input": "0123453" }, "text": "01234531" },
-    { "name": "upce-from-upca-4", "call": "UpcE", "data": "01234000005", "zint": { "symbology": 37, "input": "0123454" }, "text": "01234543" },
-    { "name": "upce-from-upca-9", "call": "UpcE", "data": "01234500009", "zint": { "symbology": 37, "input": "0123459" }, "text": "01234596" },
-    { "name": "upce-system-1", "call": "UpcE", "data": "1234567", "zint": { "symbology": 37, "input": "1234567" }, "text": "12345670" }
+    { "name": "upca-add-check", "call": "UpcA", "data": "03600029145", "zint": { "symbology": 34, "input": "03600029145" }, "text": "036000291452", "read": "0036000291452" },
+    { "name": "upca-with-check", "call": "UpcA", "data": "042100005264", "zint": { "symbology": 34, "input": "042100005264" }, "text": "042100005264", "read": "0042100005264" },
+    { "name": "upca-addon5", "call": "UpcA", "data": "036000291452", "options": { "addOn": "12345" }, "zint": { "symbology": 34, "input": "036000291452+12345" }, "text": "036000291452 12345", "read": "0036000291452 12345" },
+    { "name": "upce-six", "call": "UpcE", "data": "123456", "zint": { "symbology": 37, "input": "0123456" }, "text": "01234565", "read": "0012345000065" },
+    { "name": "upce-with-check", "call": "UpcE", "data": "01234565", "zint": { "symbology": 37, "input": "01234565" }, "text": "01234565", "read": "0012345000065" },
+    { "name": "upce-from-upca-0", "call": "UpcE", "data": "04210000526", "zint": { "symbology": 37, "input": "0425261" }, "text": "04252614", "read": "0042100005264" },
+    { "name": "upce-from-upca-3", "call": "UpcE", "data": "01230000045", "zint": { "symbology": 37, "input": "0123453" }, "text": "01234531", "read": "0012300000451" },
+    { "name": "upce-from-upca-4", "call": "UpcE", "data": "01234000005", "zint": { "symbology": 37, "input": "0123454" }, "text": "01234543", "read": "0012340000053" },
+    { "name": "upce-from-upca-9", "call": "UpcE", "data": "01234500009", "zint": { "symbology": 37, "input": "0123459" }, "text": "01234596", "read": "0012345000096" },
+    { "name": "upce-system-1", "call": "UpcE", "data": "1234567", "zint": { "symbology": 37, "input": "1234567" }, "text": "12345670", "read": "0123456000070" }
   ]
 }

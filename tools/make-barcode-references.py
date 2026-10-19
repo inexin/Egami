@@ -8,7 +8,7 @@ zintdump.c; zxing-cpp 3.1.1, Apache-2.0) is built if needed. Two steps, both by 
   readback  Egami.Barcodes.Tests renders every case to a PNG in .cache/barcodes (ReferenceTests.WriteImages, run with
             EGAMI_BARCODE_IMAGES set), and zxing-cpp reads each back; what it read goes to zxing-readback.json with a hash of
             Egami's grid, so the tests notice when a grid changes without a new read-back. Fails if any image does not read
-            back as the case's text.
+            back as the case's text (or its 'read' text).
 
 Usage, from the repo root with Docker running:
   python tools/make-barcode-references.py [grids|readback]
@@ -72,8 +72,9 @@ def readback(cases):
             grid = hashlib.sha256(f.read().encode("ascii")).hexdigest()[:16]
         read = reads.get(case["name"], {"format": None, "text": None})
         result[case["name"]] = {"format": read["format"], "text": read["text"], "grid": grid}
-        if read["text"] != case["text"]:
-            failures.append(f"{case['name']}: read {read['text']!r} as {read['format']}, expected {case['text']!r}")
+        expected = case.get("read", case["text"])
+        if read["text"] != expected:
+            failures.append(f"{case['name']}: read {read['text']!r} as {read['format']}, expected {expected!r}")
     write_json(f"{REFERENCES}/zxing-readback.json", result)
     print(f"{len(result) - len(failures)} of {len(result)} read back")
     if failures:

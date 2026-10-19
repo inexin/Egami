@@ -79,6 +79,36 @@
   "grid": "12b707e56c50164a",
   "text": "HELLO WORLD-1.$/+%"
  },
+ "ean13-add-check": {
+  "format": "EAN13",
+  "grid": "7aea709139d47680",
+  "text": "5901234123457"
+ },
+ "ean13-addon2": {
+  "format": "EAN13",
+  "grid": "f1b1e7b1fbf277f0",
+  "text": "5901234123457 12"
+ },
+ "ean13-addon5": {
+  "format": "EAN13",
+  "grid": "dc1094b6d5974f05",
+  "text": "9780201379624 52495"
+ },
+ "ean13-with-check": {
+  "format": "EAN13",
+  "grid": "60217a3099aa9a49",
+  "text": "4006381333931"
+ },
+ "ean8-add-check": {
+  "format": "EAN8",
+  "grid": "96930944d32a894f",
+  "text": "96385074"
+ },
+ "ean8-with-check": {
+  "format": "EAN8",
+  "grid": "4fe29d7c97c70e1b",
+  "text": "40170725"
+ },
  "gs1-128-batch-serial": {
   "format": "Code128",
   "grid": "a79b650a5f9d6646",
@@ -123,5 +153,55 @@
   "format": "ITF",
   "grid": "b60c137c0c7b0212",
   "text": "15400141288763"
+ },
+ "upca-add-check": {
+  "format": "EAN13",
+  "grid": "c58a0089c8c7b6d1",
+  "text": "0036000291452"
+ },
+ "upca-addon5": {
+  "format": "EAN13",
+  "grid": "a488d4248d4b8021",
+  "text": "0036000291452 12345"
+ },
+ "upca-with-check": {
+  "format": "EAN13",
+  "grid": "8e91d6f23b02537f",
+  "text": "0042100005264"
+ },
+ "upce-from-upca-0": {
+  "format": "UPCE",
+  "grid": "40dbda9ed202ecdc",
+  "text": "0042100005264"
+ },
+ "upce-from-upca-3": {
+  "format": "UPCE",
+  "grid": "d44b36682d48454a",
+  "text": "0012300000451"
+ },
+ "upce-from-upca-4": {
+  "format": "UPCE",
+  "grid": "c17b601fac4d6ab9",
+  "text": "0012340000053"
+ },
+ "upce-from-upca-9": {
+  "format": "UPCE",
+  "grid": "6effb03dfb744026",
+  "text": "0012345000096"
+ },
+ "upce-six": {
+  "format": "UPCE",
+  "grid": "83cd04a50647728e",
+  "text": "0012345000065"
+ },
+ "upce-system-1": {
+  "format": "UPCE",
+  "grid": "41119ebad00f7d7f",
+  "text": "0123456000070"
+ },
+ "upce-with-check": {
+  "format": "UPCE",
+  "grid": "83cd04a50647728e",
+  "text": "0012345000065"
  }
 }

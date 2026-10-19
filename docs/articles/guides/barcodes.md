@@ -59,11 +59,24 @@ and its quiet zone. `ItfOptions` sets the wide ratio (3 by default), the bearer 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-itf)]
 
+### EAN and UPC
+
+`Barcode.Ean13`, `Barcode.Ean8`, `Barcode.UpcA` and `Barcode.UpcE` write retail barcodes. The check digit is added when it is
+left out and checked when it is given; a wrong one throws. `Barcode.UpcE` also takes a UPC-A number and writes its
+zero-suppressed form, or throws when the number has too few zeros. `EanUpcOptions.AddOn` adds a 2-digit or 5-digit add-on to
+the right, such as a magazine's issue or a book's price.
+
+With a font, the digits are drawn as on a product: EAN-13's first digit left of the symbol and the others between the guard
+bars, which reach down into the text line, and an add-on's digits above its bars. Bar heights default to the standards'
+nominal heights.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-ean)]
+
 ## Barcodes
 
 A `Barcode` is one symbol: its `BarcodeFormat`, its `Modules`, the `QuietZone` its standard asks for in modules (4 for QR, 1 for
-Data Matrix, 2 for PDF417, none for Aztec and 10 at each end of a linear symbol) and the `HumanReadableText` printed under a
-linear symbol. `Barcode.FromModules` makes one from modules you already have.
+Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39 and ITF, 11 for EAN-13, 7
+for EAN-8 and 9 for UPC) and the `HumanReadableText` printed under a linear symbol. `Barcode.FromModules` makes one from modules you already have.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-from-modules)]
 

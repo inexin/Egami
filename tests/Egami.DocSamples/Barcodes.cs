@@ -170,4 +170,26 @@ public class Barcodes
         Assert.Equal("15400141288763", carton.HumanReadableText);
         Assert.Equal(BarcodeFormat.Itf, itf.Format);
     }
+
+    [Fact]
+    public void MakeEan13()
+    {
+        Font font = new(Typeface.FromFile(FontFile), 9);
+        #region barcode-ean
+        // A book: the ISBN as EAN-13, its check digit added, and the price as an EAN-5 add-on.
+        Barcode book = Barcode.Ean13("978020137962", new EanUpcOptions { AddOn = "52495" });
+
+        // Fitted into a rectangle, with the digits between the guard bars.
+        using Raster<Rgba8> label = Raster.Create(400, 200, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = label.CreateCanvas())
+        {
+            canvas.DrawBarcode(book, new RectF(10, 10, 380, 180), Rgba8.Black, new BarcodeDrawOptions { Font = font });
+        }
+
+        // A UPC-A number written in its short UPC-E form.
+        Barcode small = Barcode.UpcE("042100005264");
+        #endregion
+        Assert.Equal("9780201379624 52495", book.HumanReadableText);
+        Assert.Equal("04252614", small.HumanReadableText);
+    }
 }

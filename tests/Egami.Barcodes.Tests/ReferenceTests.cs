@@ -16,7 +16,7 @@ public class ReferenceTests
         [.. Load("cases.json").GetProperty("cases").EnumerateArray()]);
 
     /// <summary>The factories the cases may name; cases for others are not run yet.</summary>
-    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Itf", "Itf14"];
+    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE"];
 
     public static TheoryData<string> Cases =>
         [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!)).Select(c => c.GetProperty("name").GetString()!)];
@@ -40,7 +40,8 @@ public class ReferenceTests
         JsonElement test = Case(name);
         JsonElement read = Load("zxing-readback.json").GetProperty(name);
         Assert.Equal(Hash(Make(test).Modules), read.GetProperty("grid").GetString());
-        Assert.Equal(test.GetProperty("text").GetString(), read.GetProperty("text").GetString());
+        string expected = (test.TryGetProperty("read", out JsonElement r) ? r : test.GetProperty("text")).GetString()!;
+        Assert.Equal(expected, read.GetProperty("text").GetString());
     }
 
     /// <summary>Writes each case as a PNG and its grid as text, for tools/make-barcode-references.py; does nothing otherwise.</summary>
@@ -75,6 +76,10 @@ public class ReferenceTests
             "Code39" => Barcode.Code39(data, new Code39Options { CheckDigit = Flag(options, "checkDigit") }),
             "Itf" => Barcode.Itf(data),
             "Itf14" => Barcode.Itf14(data),
+            "Ean13" => Barcode.Ean13(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
+            "Ean8" => Barcode.Ean8(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
+            "UpcA" => Barcode.UpcA(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
+            "UpcE" => Barcode.UpcE(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
             string call => throw new NotSupportedException(call),
             _ => throw new NotSupportedException(),
         };
@@ -108,6 +113,9 @@ public class ReferenceTests
         using var stream = File.OpenRead(System.IO.Path.Combine(Folder, file));
         return JsonDocument.Parse(stream).RootElement.Clone();
     }
+
+    private static string? Text(JsonElement options, string name) =>
+        options.ValueKind == JsonValueKind.Object && options.TryGetProperty(name, out JsonElement value) ? value.GetString() : null;
 
     private static bool Flag(JsonElement options, string name) =>
         options.ValueKind == JsonValueKind.Object && options.TryGetProperty(name, out JsonElement value) && value.GetBoolean();

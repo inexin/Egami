@@ -27,6 +27,12 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - `Barcode.Itf` writes Interleaved 2 of 5, and `Barcode.Itf14` writes ITF-14 with its check digit added or checked and bearer
   bars around it.
 
+### EAN and UPC
+
+- `Barcode.Ean13`, `Ean8`, `UpcA` and `UpcE` add the check digit when it is left out and check it when it is given.
+  `Barcode.UpcE` also compresses a UPC-A number. `EanUpcOptions.AddOn` adds an EAN-2 or EAN-5 add-on.
+- With a font, the digits go between the guard bars, which reach into the text line, and an add-on's digits above it.
+
 ### Drawing
 
 - `Barcode` is one symbol: format, modules, the quiet zone of its standard and its human-readable text.

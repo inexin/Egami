@@ -23,10 +23,11 @@ def main():
             result = results[0]
             # GS1 data in its human-readable form with AIs in parentheses; anything else as the bytes it holds (ISO 8859-1).
             text = result.text if result.content_type == zxingcpp.ContentType.GS1 else bytes(result.bytes).decode("latin-1")
+            # zxing-cpp returns UPC-A as a GTIN-13 and UPC-E expanded to one, with any add-on's digits after the main ones.
+            main = 8 if result.format == zxingcpp.BarcodeFormat.EAN8 else 13
             if result.format in (zxingcpp.BarcodeFormat.EAN13, zxingcpp.BarcodeFormat.EAN8, zxingcpp.BarcodeFormat.UPCA,
-                                 zxingcpp.BarcodeFormat.UPCE) and len(text) > {"EAN8": 8, "UPCE": 8, "UPCA": 12}.get(result.format.name, 13):
-                main_length = {"EAN8": 8, "UPCE": 8, "UPCA": 12}.get(result.format.name, 13)
-                text = text[:main_length] + " " + text[main_length:]
+                                 zxingcpp.BarcodeFormat.UPCE) and len(text) > main:
+                text = text[:main] + " " + text[main:]
             entry = {"name": file[:-4], "format": result.format.name, "text": text}
         print(json.dumps(entry))
 
