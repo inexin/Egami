@@ -1591,6 +1591,21 @@ ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for most AVIF file
 </code></pre>
 <p><code>YuvRaster.Load</code> gives the decoded AV1 planes at 8, 10 or 12 bits, with the alpha image as a fourth plane, as dav1d decodes
 them; see <a href="../guides/planar-yuv.html">Planar YUV</a>.</p>
+<h2 id="load-an-iphone-photo-heic">Load an iPhone photo (HEIC)</h2>
+<pre><code class="lang-csharp">// An iPhone photo: a grid of HEVC tiles, decoded in parallel and converted to RGB as heif-dec converts them.
+using Raster photo = Raster.Load(&quot;photo.heic&quot;, heic);
+photo.Apply(ops =&gt; ops.AutoOrient());           // irot and imir come as the orientation
+photo.Save(&quot;photo.jpg&quot;);
+</code></pre>
+<p>HEIC needs the Egami.Heic package, registered with <code>WithHeic()</code>, because HEVC is covered by patents. The photo's tiles decode
+in parallel, and the pixels equal libheif's heif-dec output. See the <a href="../guides/heic.html">HEIC guide</a>.</p>
+<h2 id="get-a-heic-photos-yuv-planes">Get a HEIC photo's YUV planes</h2>
+<pre><code class="lang-csharp">// The HEVC planes themselves, without the conversion to RGB: luma, then chroma at the file's subsampling.
+using YuvRaster planes = YuvRaster.Load(&quot;photo.heic&quot;, heic);
+ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for phone photos
+int depth = planes.BitDepth;                        // 8, or 10 for HDR photos
+</code></pre>
+<p><code>YuvRaster.Load</code> gives the decoded HEVC planes, as HM, the reference decoder, decodes them.</p>
 <h2 id="read-an-hdr-avif-file-as-sdr">Read an HDR AVIF file as SDR</h2>
 <pre><code class="lang-csharp">// An HDR (PQ or HLG) AVIF, tone mapped into sRGB as it loads; the peak comes from the file's clli box when it has one.
 using Raster&lt;Rgb8&gt; sdr = Raster.Load&lt;Rgb8&gt;(&quot;hdr.avif&quot;, options: new ReaderOptions { ConvertColorTo = Egami.Colors.ColorProfile.Srgb });

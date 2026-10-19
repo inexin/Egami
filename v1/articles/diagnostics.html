@@ -469,6 +469,26 @@ are found on the finalizer thread after the call has ended; see <a href="guides/
 <td>The XMP application extension lacks its magic trailer</td>
 </tr>
 <tr>
+<td><code>Heic.ExifDamaged</code></td>
+<td>Warning</td>
+<td>A HEIC Exif item's TIFF header offset points past its end; the item was skipped</td>
+</tr>
+<tr>
+<td><code>Heic.GainMapDropped</code></td>
+<td>Warning</td>
+<td>A HEIC gain map (tmap item) has metadata or an image that cannot be read, or a version Egami does not know; the image loads as SDR only</td>
+</tr>
+<tr>
+<td><code>Heic.MatrixApproximated</code></td>
+<td>Warning</td>
+<td>A HEIC image's matrix coefficients are reserved or constant luminance, which heif-dec does not convert; BT.601's were used</td>
+</tr>
+<tr>
+<td><code>Heic.MatrixUnknown</code></td>
+<td>Warning</td>
+<td>A HEIC image's matrix coefficients have no YuvMatrix; YuvRaster.Load marks the planes BT.601</td>
+</tr>
+<tr>
 <td><code>Heif.ItemCount</code></td>
 <td>Warning</td>
 <td>A HEIF (AVIF) iinf box's entry count differs from the infe boxes it holds; the boxes found are read</td>

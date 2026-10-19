@@ -90,8 +90,9 @@
 <p>HEIC is the format iPhones and most Android phones save photos in: HEIF files whose images are coded with HEVC (H.265). HEVC is
 covered by patents, so Egami reads HEIC through a separate package, Egami.Heic, that an app opts in to. The core Egami package
 contains no HEVC code and never depends on Egami.Heic.</p>
-<p>Egami.Heic is a work in progress: this version reads HEIC containers and holds the managed HEVC decoder, which <code>Raster.Load</code>
-does not use yet.</p>
+<p>Egami.Heic decodes still HEIC images with a managed HEVC decoder: the intra pictures of the Main, Main 10, Main Still Picture
+and format range extensions profiles, up to 12 bits and from 4:0:0 to 4:4:4. Image sequences, gain maps and auxiliary items
+such as depth maps come in a later version.</p>
 <h2 id="without-egamiheic">Without Egami.Heic</h2>
 <p>Core Egami recognizes HEIC by its brands (heic, heix, hevc and the other HEVC brands) and reads the container, so
 <code>Raster.Probe</code> gives the size, the natural pixel type and the orientation. <code>Raster.Load</code> throws an <code>UnsupportedFormatException</code>
@@ -124,6 +125,33 @@ RasterInfo info = Raster.Probe(&quot;photo.heic&quot;, heic);
 bool fromPackage = info.Format == HeicFormat.Info;
 </code></pre>
 <p>Egami.Heic ships with every Egami release, at the same version, and depends on exactly that version of Egami.</p>
+<h2 id="loading">Loading</h2>
+<p>With Egami.Heic registered, HEIC loads like any format, in its natural pixel type.</p>
+<pre><code class="lang-csharp">// An iPhone photo: a grid of HEVC tiles, decoded in parallel and converted to RGB as heif-dec converts them.
+using Raster photo = Raster.Load(&quot;photo.heic&quot;, heic);
+photo.Apply(ops =&gt; ops.AutoOrient());           // irot and imir come as the orientation
+photo.Save(&quot;photo.jpg&quot;);
+</code></pre>
+<ul>
+<li><strong>Grids.</strong> Phone photos are grids of tiles (an iPhone photo has 48 or more). The tiles decode in parallel, on up to
+<code>EgamiContext.MaxParallelism</code> threads, and a <code>ReaderOptions.Region</code> decodes only the tiles it touches. Tiles and wavefront rows
+inside one HEVC picture decode in parallel too. The pixels are the same at any number of threads.</li>
+<li><strong>Color.</strong> The planes are converted to RGB as libheif's heif-dec converts them, so <code>Raster.Load</code> gives the same samples.
+The phone photos and HEVC-coded files of Egami's test corpus equal heif-dec's output sample for sample, except a clean
+aperture at half-sample offsets, which Egami crops at whole samples. The colors come from the <code>colr</code> property, or else from
+the HEVC stream's own color description. An ICC profile is kept in <code>RasterMetadata.IccProfile</code>.</li>
+<li><strong>Geometry and alpha.</strong> The clean aperture (<code>clap</code>) is cropped; rotation and mirroring (<code>irot</code> and <code>imir</code>) are kept as the
+orientation, which <code>AutoOrient</code> applies. An alpha image loads as straight alpha. Overlays (<code>iovl</code>) are composed.</li>
+<li><strong>Metadata.</strong> Exif and XMP items are read into <code>RasterMetadata.Exif</code> and <code>RasterMetadata.Xmp</code>.</li>
+</ul>
+<p>The decoded HEVC planes are available without the conversion to RGB, as for AVIF and JPEG (see
+<a href="planar-yuv.html">Planar YUV</a>):</p>
+<pre><code class="lang-csharp">// The HEVC planes themselves, without the conversion to RGB: luma, then chroma at the file's subsampling.
+using YuvRaster planes = YuvRaster.Load(&quot;photo.heic&quot;, heic);
+ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for phone photos
+int depth = planes.BitDepth;                        // 8, or 10 for HDR photos
+</code></pre>
+<p>Every intra picture of the HEVC conformance streams in these profiles decodes bit-exact to HM, the reference decoder.</p>
 <h2 id="patents">Patents</h2>
 <p>Egami.Heic decodes HEVC (H.265), a format covered by patents. Egami's authors grant no patent rights and are not lawyers.
 Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products
