@@ -7615,6 +7615,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Heic.HeicContextExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Heic.HeicContextExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Heic.HeicContextExtensions",
+      "Summary": "<p sourcefile=\"api/Egami.Heic.HeicContextExtensions.yml\" sourcestartlinenumber=\"1\">Registers Egami.Heic with an <xref href=\"Egami.EgamiContext\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Heic.HeicFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Heic.HeicFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Heic.HeicFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Heic.HeicFormat.yml\" sourcestartlinenumber=\"1\">The HEIC format (HEIF with HEVC-coded images, as iPhones and most Android phones save photos), registered with\n<xref href=\"Egami.Heic.HeicContextExtensions.WithHeic(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>. It replaces core Egami's own HEIC entry, which detects and probes HEIC files but\ndoes not load them.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Heic.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Heic.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Heic",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.IPixelMemorySource.yml",
       "output": {
         ".html": {
@@ -10650,6 +10692,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/hdr.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/heic.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/heic.html"
         }
       },
       "version": ""
