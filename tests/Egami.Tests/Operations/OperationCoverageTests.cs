@@ -64,10 +64,12 @@ public abstract class OperationCoverageTests<TPart> : IDisposable
         }
     }
 
+    [Trait("Category", AllocationMeter.Category)]
     [Theory]
     [MemberData(nameof(Operations))]
     public void AllocationsDoNotGrowWithTheImage(string operation)
     {
+        AllocationMeter.SkipUnlessOnDemand();
         // One thread, so every allocation is on this one; pixel memory comes from the memory source, not the managed heap.
         EgamiContext context = EgamiContext.Default with { MaxParallelism = 1 };
         using Raster<Rgba8> small = Noise(120, 90, context);

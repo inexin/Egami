@@ -33,7 +33,8 @@ python tools/update-public-api.py                  # adds new public API to Publ
   solution before landing. Large corpora are fetched into `.cache` and run only when `EGAMI_CORPUS` names them (see
   CONTRIBUTING.md).
 - Hot code (pixel conversion, codecs, operations) must not get slower or allocate more than `main`; run the benchmarks in
-  `benchmarks/Egami.Benchmarks` and include the before and after numbers.
+  `benchmarks/Egami.Benchmarks` and include the before and after numbers. Also run the allocation-budget tests, which skip in a
+  normal run: `EGAMI_ALLOCATION_TESTS=1 dotnet test tests/Egami.Tests --filter Category=Allocation` (see CONTRIBUTING.md).
 - **Fuzzing:** runs are 10 minutes (`tools/fuzz-afl.py`). Longer runs only when the maintainer asks: they load the machine and
   skew other sessions' speed measurements.
 - Reference outputs come from the `tools/make-*-references.py` scripts, most of them in Docker; regenerate them with the script,

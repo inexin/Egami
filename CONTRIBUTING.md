@@ -32,6 +32,16 @@ platform-specific code, run the tests with the intrinsics turned off before you 
 
 The large third-party corpora (conformance suites and test vectors) are fetched into `.cache` by the `tools/make-*-references.py` scripts and never committed. A normal run skips them; set `EGAMI_CORPUS` to the codecs you are working on (`avif`, `exr`, `heic`, `jbig2`, `jpeg2000`, `jxl`, `tiff`, `vp8`, comma-separated, or `all`) to check them too, for example `EGAMI_CORPUS=jxl dotnet test --filter FullyQualifiedName~Jxl`. The same switch takes a folder of `tests/images` (`avif`, `jpeg`, `pngsuite` and so on): the streaming tests that run over every file skip in a normal run and stream the files of the folders it names.
 
+The allocation-budget tests (managed allocations must not grow with the image, and warm calls allocate nothing) measure bytes
+allocated by the test thread, so other tests running alongside can push them a few bytes over. They skip in a normal run and in
+CI; run them on demand, alone, when you change hot code:
+
+```
+EGAMI_ALLOCATION_TESTS=1 dotnet test tests/Egami.Tests --filter Category=Allocation
+```
+
+In PowerShell: `$env:EGAMI_ALLOCATION_TESTS=1; dotnet test tests/Egami.Tests --filter Category=Allocation`.
+
 Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks`.
 
 ## Repository layout

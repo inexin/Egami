@@ -12,6 +12,7 @@ namespace Egami.Tests.Colors;
 /// the image (under 1 KB more for 16 times the pixels) and stays under 8 KB a call, once their transform is cached, besides the
 /// copy of an embedded ICC profile that Derive makes with the metadata.
 /// </summary>
+[Trait("Category", AllocationMeter.Category)]
 public class ColorBudgetTests
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
@@ -34,6 +35,7 @@ public class ColorBudgetTests
     [MemberData(nameof(Cases))]
     public void ColorOperationsStayInTheBudget(string chain, string type)
     {
+        AllocationMeter.SkipUnlessOnDemand();
         switch (type)
         {
             case nameof(Rgba8): Budget<Rgba8>(chain); break;

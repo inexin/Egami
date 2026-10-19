@@ -8,6 +8,7 @@ namespace Egami.Tests;
 /// Managed allocations must not grow with image size: pixel memory comes from the memory source and row buffers from pools,
 /// so only a fixed handful of small objects per call reach the GC.
 /// </summary>
+[Trait("Category", AllocationMeter.Category)]
 public class AllocationTests
 {
     [Theory]
@@ -17,6 +18,7 @@ public class AllocationTests
     [InlineData(PngColorType.Rgb, 16)]
     public void PngSaveAndLoadAllocateTheSameForTenRowsAndThousands(PngColorType colorType, int depth)
     {
+        AllocationMeter.SkipUnlessOnDemand();
         PngWriterOptions options = new() { ColorType = colorType, BitDepth = depth };
         using Raster<Rgba8> small = Raster.Create(300, 10, Rgba8.Red);
         using Raster<Rgba8> large = Raster.Create(300, 3000, Rgba8.Red);

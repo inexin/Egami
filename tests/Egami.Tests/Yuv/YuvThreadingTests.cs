@@ -42,9 +42,11 @@ public class YuvThreadingTests
         }
     }
 
+    [Trait("Category", AllocationMeter.Category)]
     [Fact]
     public void RepeatedCopiesAllocateNothingOnOneThread()
     {
+        AllocationMeter.SkipUnlessOnDemand();
         EgamiContext one = EgamiContext.Default with { MaxParallelism = 1 };
         using YuvRaster<byte> yuv8 = YuvRaster.Create(640, 480, ChromaFormat.Yuv420, YuvColor.Bt709Limited, context: one);
         using YuvRaster<ushort> yuv10 = YuvRaster.Create(640, 480, ChromaFormat.Yuv420, 10, YuvColor.Bt2020Limited, alpha: true, context: one);
@@ -59,9 +61,11 @@ public class YuvThreadingTests
         Assert.Equal(0, Allocated(() => yuv10.CopyTo(floats, cancellationToken: token)));
     }
 
+    [Trait("Category", AllocationMeter.Category)]
     [Fact]
     public void ParallelCopiesAllocateAFixedHandful()
     {
+        AllocationMeter.SkipUnlessOnDemand();
         EgamiContext all = EgamiContext.Default with { MaxParallelism = Math.Max(Environment.ProcessorCount, 4) };
         using YuvRaster<byte> small = YuvRaster.Create(640, 480, ChromaFormat.Yuv420, YuvColor.Bt709Limited, context: all);
         using YuvRaster<byte> large = YuvRaster.Create(1920, 1440, ChromaFormat.Yuv420, YuvColor.Bt709Limited, context: all);

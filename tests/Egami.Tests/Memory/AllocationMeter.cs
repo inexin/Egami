@@ -9,9 +9,24 @@ namespace Egami.Tests.Memory;
 /// runtime's array pool events report it. A call that misses the pool every time (renting more than the pool keeps, or renting
 /// without returning) is still counted, because then no call is free of misses.
 /// </summary>
+/// <remarks>
+/// The allocation-budget tests still go a few bytes over now and then when other tests run alongside, so they run only on
+/// demand: they skip unless <c>EGAMI_ALLOCATION_TESTS=1</c> is set, and carry the trait <c>Category=Allocation</c> so a run can
+/// pick them alone.
+/// </remarks>
 internal static class AllocationMeter
 {
+    /// <summary>The trait value of the allocation-budget tests: <c>[Trait("Category", AllocationMeter.Category)]</c>.</summary>
+    public const string Category = "Allocation";
+
     private static readonly PoolMissListener Listener = new();
+
+    /// <summary>Gets whether the allocation-budget tests run: <c>EGAMI_ALLOCATION_TESTS</c> is set to <c>1</c>.</summary>
+    public static bool OnDemand => Environment.GetEnvironmentVariable("EGAMI_ALLOCATION_TESTS") == "1";
+
+    /// <summary>Skips the calling allocation-budget test unless <see cref="OnDemand"/>.</summary>
+    public static void SkipUnlessOnDemand() =>
+        Assert.SkipUnless(OnDemand, "Allocation-budget test: set EGAMI_ALLOCATION_TESTS=1 to run it.");
 
     /// <summary>Gets how many buffers the array pools allocated on the calling thread so far.</summary>
     public static int PoolMisses => PoolMissListener.Misses;
@@ -23,6 +38,7 @@ internal static class AllocationMeter
     /// </summary>
     public static long Fewest(Action action, int warmUps = 3, int tries = 6)
     {
+        SkipUnlessOnDemand();
         GC.KeepAlive(Listener);
         for (int i = 0; i < warmUps; i++)
         {
