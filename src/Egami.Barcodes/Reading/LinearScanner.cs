@@ -37,6 +37,23 @@ internal static class LinearScanner
             }
         }
 
+        // A symbol read on one line only: the lines next to it, where small or glary symbols often read, get a look before it
+        // is given up (the scan lines can be further apart than such a symbol is tall).
+        foreach (Candidate candidate in votes.Values.Where(c => !c.Reported).ToList())
+        {
+            var normal = new Vector2(-candidate.LineStep.Y, candidate.LineStep.X);
+            for (int d = 1; d <= 16 && !candidate.Reported; d++)
+            {
+                Vector2 start = candidate.LineStart + (normal * ((d + 1) / 2 * (d % 2 == 0 ? -1 : 1)));
+                if (start.X < 0 || start.Y < 0 || start.X >= image.Width || start.Y >= image.Height)
+                {
+                    continue;
+                }
+
+                ReadLine(Sample(image, start, candidate.LineStep, candidate.LineLength), start, candidate.LineStep, formats, votes, results);
+            }
+        }
+
         // Offset to the source image.
         var offset = new Vector2(image.Left, image.Top);
         return [.. results.Select(f => f with { Corners = [.. f.Corners.Select(c => c + offset)] })];
@@ -48,6 +65,10 @@ internal static class LinearScanner
         public required DecodedData Data;
         public Vector2 FirstStart, FirstEnd, LastStart, LastEnd;
         public bool Reported;
+
+        // The scan line of the first read.
+        public Vector2 LineStart, LineStep;
+        public int LineLength;
     }
 
     /// <summary>The scan lines for an angle: start point, unit step along the line, and length in samples.</summary>
@@ -148,7 +169,7 @@ internal static class LinearScanner
         float[] forward = [.. runs], positions = [.. offsets];
         if (LinearDecoder.Read(forward, positions, formats) is LinearRead read)
         {
-            Vote(read, start + (step * read.Start), start + (step * read.End), votes, results);
+            Vote(read, start + (step * read.Start), start + (step * read.End), (start, step, length), votes, results);
         }
 
         // Reversed: the runs backwards, light first again; positions measured from the far end.
@@ -174,16 +195,16 @@ internal static class LinearScanner
         backPositions.Add(length);
         if (LinearDecoder.Read([.. back], [.. backPositions], formats) is LinearRead reversed)
         {
-            Vote(reversed, start + (step * (length - reversed.Start)), start + (step * (length - reversed.End)), votes, results);
+            Vote(reversed, start + (step * (length - reversed.Start)), start + (step * (length - reversed.End)), (start, step, length), votes, results);
         }
     }
 
-    private static void Vote(LinearRead read, Vector2 from, Vector2 to, Dictionary<(BarcodeFormat, string), Candidate> votes, List<Found> results)
+    private static void Vote(LinearRead read, Vector2 from, Vector2 to, (Vector2 Start, Vector2 Step, int Length) line, Dictionary<(BarcodeFormat, string), Candidate> votes, List<Found> results)
     {
         var key = (read.Data.Format, read.Data.Text);
         if (!votes.TryGetValue(key, out Candidate? candidate))
         {
-            votes[key] = new Candidate { Count = 1, Data = read.Data, FirstStart = from, FirstEnd = to, LastStart = from, LastEnd = to };
+            votes[key] = new Candidate { Count = 1, Data = read.Data, FirstStart = from, FirstEnd = to, LastStart = from, LastEnd = to, LineStart = line.Start, LineStep = line.Step, LineLength = line.Length };
             return;
         }
 
