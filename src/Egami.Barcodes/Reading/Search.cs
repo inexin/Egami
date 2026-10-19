@@ -46,8 +46,13 @@ internal static class Search
             results.Add(pure);
         }
 
-        BitImage? local = options.Effort >= 6 ? Binarizer.Local(image) : null;
-        results.AddRange(LinearScanner.Scan(image, local, formats, options.Effort));
+        BitImage local = Binarizer.Local(image);
+        if ((formats & BarcodeFormats.Qr) != 0)
+        {
+            results.AddRange(QrDetector.Detect(local, options.Effort, new Vector2(image.Left, image.Top)));
+        }
+
+        results.AddRange(LinearScanner.Scan(image, options.Effort >= 6 ? local : null, formats, options.Effort));
         return Merge(results);
     }
 

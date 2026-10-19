@@ -296,7 +296,9 @@ bit stuffing follow the structure of ZXing's Aztec encoder (`com.google.zxing.az
 states for the fewest bits takes the approach of ZXing's `HighLevelEncoder`. The barcode reader's binarizers
 (`src/Egami.Barcodes/Reading/Images.cs`) take the approach of ZXing's `GlobalHistogramBinarizer` (a threshold at the deepest
 valley between the two main histogram peaks) and `HybridBinarizer` (8 x 8 blocks thresholded by the mean of the 5 x 5 blocks
-around them). ZXing is distributed under the Apache License,
+around them). The QR Code detector (`src/Egami.Barcodes/Reading/QrDetector.cs`) follows the method of ZXing's
+`FinderPatternFinder` and `Detector`: finder patterns by 1:1:3:1:1 runs checked across both axes, the size from the finders'
+distances, and the alignment pattern searched around the point 3 modules in from the extrapolated bottom-right corner. ZXing is distributed under the Apache License,
 Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0):
 
     Copyright 2013 ZXing authors
