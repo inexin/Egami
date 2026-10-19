@@ -1,0 +1,45 @@
+"""The phone photos of the Phase 2.9.4 corpus, shared by tools/make-heic-references.py (which fetches them) and
+heiccorpus.py."""
+
+# Internet Archive item, file, SHA-1 (from the item's metadata), licence, creator, camera, and whether it is committed (cut to
+# a corner of its grid). The others stay in .cache/heic/phones: CC BY-SA files, Public Domain Mark files (the mark is the
+# uploader's claim, not a dedication) and files whose uploader name does not look like the photographer's.
+PHONES = [
+    ("cicadas_202405", "IMG_9570.HEIC", "a65af812a2138632b2d0ca2b29eddf55b675bb7b", "CC0 1.0", "Charles Meyerson",
+     "iPhone SE (2nd generation)", True),
+    ("08-ea-0-a-84-063-e-4-f-33-8-b-95-3-c-0-ed-11-fcd-47", "08EA0A84-063E-4F33-8B95-3C0ED11FCD47.heic",
+     "0f59409c7bba87309a9610fcb7b654abd726a5f3", "CC0 1.0", "Tyler Jones", "iPhone 7", True),
+    ("julians-videos-2", "Characters/Angela.HEIC", "f9846e0666c435248ea33ee5304d3b4d2f685010", "CC0 1.0", "Julian Chan",
+     "iPhone XS Max", True),
+    ("kashiwa-sogo", "IMG_0303.HEIC", "8bf80261800306e58946c06cb56761cee4c80e83", "CC0 1.0", "kashiwa-sogo uploader",
+     "iPhone 13", True),
+    ("dweb_camp_2023_by_sirodoht", "dwebcamp2023/IMG_4246.HEIC", "a49d23c2db47247b904fcb489005561bf3fd9a64", "CC0 1.0",
+     "sirodoht", "iPhone 13 mini", True),
+    ("img-5516", "IMG_5514.HEIC", "68a995f54f857b6eaf2b2897be7afe2f1688c905", "CC0 1.0", "Xavier Parés",
+     "iPhone 13 Pro", True),
+    ("MuseodelleCiviltaXeniaphotos", "IMG_8445.HEIC", "9dc751cb59a741f2769eeaeb44d1d7a52c55f6e4", "CC BY 4.0",
+     "Xenia Goriacheva", "iPhone 14 Pro", True),
+    ("img-0614_202506", "IMG_0613.heic", "64be6ea11c36fcc06e02539a628474a1c38a4417", "CC0 1.0", "livre",
+     "iPhone 15 Pro Max", True),
+    ("img-1119_202603", "IMG_1067.HEIC", "cf17e5f1e1b232fd399bb551f8ff48e9c75a4326", "CC0 1.0", "Maen", "iPhone 16", True),
+    ("opencontext-24-t117closing-12-51-52heic", "24-t117closing-12-51-52heic.heic", "a2755e8652dfd00903a7d2e1186ef95a3e1259c3",
+     "CC BY 4.0", "Open Context", "iPhone 16 Pro", True),
+    ("opencontext-24-img-0501-19-51-36heic", "24-img-0501-19-51-36heic.heic", "17224382a527a5a72b9716ad8bc5bc8a83d589b8",
+     "CC BY 4.0", "Open Context", "iPhone 16 Pro", True),
+    ("opencontext-24-img-4453-2-9-45-20heic", "24-img-4453-2-9-45-20heic.heic", "e009186998f9b5e1d85567a17b77d63076c6ff13",
+     "CC BY 4.0", "Open Context", "iPhone 13", False),
+    ("img-4474_202604", "IMG_4474.HEIC", "820b811facf4a349ef20cac4165e005bab293ae9", "CC0 1.0", "CM Archive / Mosslatt",
+     "iPhone 13", False),
+    ("img-2108_202502", "IMG_2111.HEIC", "926e94106f441f606e7fee4458fa030ff078a444", "CC0 1.0 (uploader named Steven Spielberg)",
+     "unknown", "iPhone 15 Pro", False),
+    ("chris-korda-live-at-houghton-festival-2023", "20230812_235014.heic", "fe0bc02ca9c16a8f286a81541cfa5989eef5da67",
+     "CC BY-SA 4.0", "Enrica Pelizzari", "Samsung SM-A137F", False),
+    ("praia-do-campeche-20250101-175308", "20250101_174007.heic", "8fcc82f0d1fd58326d71ead70d6c8b6967079e7e", "CC BY-SA 4.0",
+     "Joel Medeiros", "Samsung SM-S901E", False),
+    ("compaq-ref-library", "20260401_145701.heic", "e4c0bbb98d6a4155a2baa91d07b060f5e8334962", "Public Domain Mark 1.0",
+     "unknown", "Samsung Galaxy S25 FE", False),
+    ("bighorn-sheep-barracks-ranch", "IMG_0621.HEIC", "1aa3b5b9e176884217e836c297647f940e19ac27", "Public Domain Mark 1.0",
+     "Darrell Foote", "iPhone 8 Plus", False),
+    ("img-20240301-180635-2", "IMG_20240301_180800_8.heic", "33b92fde3a33f3d661db7f65e75557fc4572df70", "Public Domain Mark 1.0",
+     "Cresi Juarez", "Amazon KFRAWI (Fire tablet)", False),
+]
