@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Barcodes_Barcode" data-uid="Egami.Barcodes.Barcode" class="text-break">
-Class Barcode  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.EanUpc.cs/#L5"><i class="bi bi-code-slash"></i></a>
+Class Barcode  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Qr.cs/#L7"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -291,6 +291,170 @@ UPC-A and UPC-E.</p>
 </h2>
 
 
+  <a id="Egami_Barcodes_Barcode_Aztec_" data-uid="Egami.Barcodes.Barcode.Aztec*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Aztec_System_ReadOnlySpan_System_Byte__Egami_Barcodes_AztecOptions_" data-uid="Egami.Barcodes.Barcode.Aztec(System.ReadOnlySpan{System.Byte},Egami.Barcodes.AztecOptions)">
+  Aztec(ReadOnlySpan&lt;byte&gt;, AztecOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Aztec.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes an Aztec Code from bytes, without an ECI.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Aztec(ReadOnlySpan&lt;byte&gt; data, AztecOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.AztecOptions.html">AztecOptions</a></dt>
+    <dd><p>The error correction share, compact form and layers, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.AztecOptions.html#Egami_Barcodes_AztecOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with no human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Aztec_System_ReadOnlySpan_System_Byte__Egami_Barcodes_AztecOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// The smallest compact or full-range symbol with at least 23 % error correction; no quiet zone needed.
+Barcode ticket = Barcode.Aztec("EG1234 BER-MUC 2026-10-19 SEAT 12A DOE/JANE");
+
+// More error correction for a ticket that gets folded, or a fixed compact size.
+Barcode robust = Barcode.Aztec("EG1234 BER-MUC", new AztecOptions { ErrorCorrectionPercent = 50 });
+Barcode compact = Barcode.Aztec("EG1234", new AztecOptions { Compact = true, Layers = 2 });
+
+// A rune: one value from 0 to 255 in an 11 x 11 core.
+Barcode rune = Barcode.AztecRune(42);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are no bytes, or they do not fit in a symbol.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Aztec_" data-uid="Egami.Barcodes.Barcode.Aztec*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Aztec_System_String_Egami_Barcodes_AztecOptions_" data-uid="Egami.Barcodes.Barcode.Aztec(System.String,Egami.Barcodes.AztecOptions)">
+  Aztec(string, AztecOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Aztec.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes an Aztec Code (ISO/IEC 24778) from text, as on rail and airline tickets. The text is written in the modes that give
+the fewest bits; text in ISO 8859-1 is written as it is, other text as UTF-8 with ECI 26. Aztec needs no quiet zone.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Aztec(string text, AztecOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.AztecOptions.html">AztecOptions</a></dt>
+    <dd><p>The error correction share, compact form and layers, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.AztecOptions.html#Egami_Barcodes_AztecOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Aztec_System_String_Egami_Barcodes_AztecOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// The smallest compact or full-range symbol with at least 23 % error correction; no quiet zone needed.
+Barcode ticket = Barcode.Aztec("EG1234 BER-MUC 2026-10-19 SEAT 12A DOE/JANE");
+
+// More error correction for a ticket that gets folded, or a fixed compact size.
+Barcode robust = Barcode.Aztec("EG1234 BER-MUC", new AztecOptions { ErrorCorrectionPercent = 50 });
+Barcode compact = Barcode.Aztec("EG1234", new AztecOptions { Compact = true, Layers = 2 });
+
+// A rune: one value from 0 to 255 in an 11 x 11 core.
+Barcode rune = Barcode.AztecRune(42);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is empty or does not fit in a symbol.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_AztecRune_" data-uid="Egami.Barcodes.Barcode.AztecRune*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_AztecRune_System_Int32_" data-uid="Egami.Barcodes.Barcode.AztecRune(System.Int32)">
+  AztecRune(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Aztec.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes an Aztec Rune: an 11 x 11 core that holds one value, 0 to 255, for machine-readable marks.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode AztecRune(int value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The value.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not 0 to 255.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Barcodes_Barcode_Code128_" data-uid="Egami.Barcodes.Barcode.Code128*"></a>
 
   <h3 id="Egami_Barcodes_Barcode_Code128_System_String_Egami_Barcodes_Code128Options_" data-uid="Egami.Barcodes.Barcode.Code128(System.String,Egami.Barcodes.Code128Options)">
@@ -394,6 +558,261 @@ Console.WriteLine(part.HumanReadableText); // PART-0042 and its mod 43 check cha
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
     <dd><p>The text is empty, longer than 1000 characters, or has a character Code 39 cannot hold.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Create_" data-uid="Egami.Barcodes.Barcode.Create*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Create_Egami_Barcodes_BarcodeFormat_System_String_" data-uid="Egami.Barcodes.Barcode.Create(Egami.Barcodes.BarcodeFormat,System.String)">
+  Create(BarcodeFormat, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Create.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a barcode of a format chosen at run time, with that format's default options, for callers that store the format
+with the data. It calls the format's own factory, such as <a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Qr_System_String_Egami_Barcodes_QrOptions_">Qr(string, QrOptions?)</a> or
+<a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Ean13_System_String_Egami_Barcodes_EanUpcOptions_">Ean13(string, EanUpcOptions?)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Create(BarcodeFormat format, string text)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>format</code> <a class="xref" href="Egami.Barcodes.BarcodeFormat.html">BarcodeFormat</a></dt>
+    <dd><p>The symbology.</p>
+</dd>
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text or digits.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Create_Egami_Barcodes_BarcodeFormat_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Labels from a table that stores each barcode's format with its data.
+(BarcodeFormat Format, string Data)[] rows =
+[
+    (BarcodeFormat.Ean13, "590123412345"),
+    (BarcodeFormat.Code128, "SHIP-0042"),
+    (BarcodeFormat.Qr, "https://inexin.github.io/Egami/"),
+];
+
+foreach ((BarcodeFormat format, string data) in rows)
+{
+    Barcode barcode = Barcode.Create(format, data);
+    using Raster&lt;Gray8&gt; image = barcode.ToRaster(pixelsPerModule: 3);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">format</code> is not a <a class="xref" href="Egami.Barcodes.BarcodeFormat.html">BarcodeFormat</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text does not suit the format or does not fit in a symbol.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_DataMatrix_" data-uid="Egami.Barcodes.Barcode.DataMatrix*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_DataMatrix_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_DataMatrixOptions_" data-uid="Egami.Barcodes.Barcode.DataMatrix(System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString},Egami.Barcodes.DataMatrixOptions)">
+  DataMatrix(IReadOnlyList&lt;Gs1ElementString&gt;, DataMatrixOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.DataMatrix.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a GS1 Data Matrix symbol: FNC1 first and the element strings, separated by FNC1 where their AIs need it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode DataMatrix(IReadOnlyList&lt;Gs1ElementString&gt; elements, DataMatrixOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>elements</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Barcodes.Gs1ElementString.html">Gs1ElementString</a>&gt;</dt>
+    <dd><p>The element strings, from <a class="xref" href="Egami.Barcodes.Gs1.html#Egami_Barcodes_Gs1_Parse_System_String_">Parse(string)</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.DataMatrixOptions.html">DataMatrixOptions</a></dt>
+    <dd><p>The shape, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.DataMatrixOptions.html#Egami_Barcodes_DataMatrixOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the element strings in their human-readable form as its text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_DataMatrix_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_DataMatrixOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Square by default; the encodation modes are switched for the fewest codewords.
+Barcode part = Barcode.DataMatrix("PN 4711-0815 / LOT 2026-10");
+
+// A narrow label: rectangular sizes, the DMRE ones too.
+Barcode narrow = Barcode.DataMatrix("PN 4711-0815 / LOT 2026-10", new DataMatrixOptions
+{
+    Shape = DataMatrixShape.Rectangle,
+    AllowDmre = true,
+});
+
+// GS1 Data Matrix, as on medicine packs.
+Barcode pack = Barcode.DataMatrix(Gs1.Parse("(01)09501101530003(17)261231(10)AB12(21)XYZ"));</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are no element strings, or they do not fit in the largest allowed symbol.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_DataMatrix_" data-uid="Egami.Barcodes.Barcode.DataMatrix*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_DataMatrix_System_ReadOnlySpan_System_Byte__Egami_Barcodes_DataMatrixOptions_" data-uid="Egami.Barcodes.Barcode.DataMatrix(System.ReadOnlySpan{System.Byte},Egami.Barcodes.DataMatrixOptions)">
+  DataMatrix(ReadOnlySpan&lt;byte&gt;, DataMatrixOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.DataMatrix.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a Data Matrix symbol from bytes, without an ECI.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode DataMatrix(ReadOnlySpan&lt;byte&gt; data, DataMatrixOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes, at most 3116.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.DataMatrixOptions.html">DataMatrixOptions</a></dt>
+    <dd><p>The shape, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.DataMatrixOptions.html#Egami_Barcodes_DataMatrixOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with no human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_DataMatrix_System_ReadOnlySpan_System_Byte__Egami_Barcodes_DataMatrixOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Square by default; the encodation modes are switched for the fewest codewords.
+Barcode part = Barcode.DataMatrix("PN 4711-0815 / LOT 2026-10");
+
+// A narrow label: rectangular sizes, the DMRE ones too.
+Barcode narrow = Barcode.DataMatrix("PN 4711-0815 / LOT 2026-10", new DataMatrixOptions
+{
+    Shape = DataMatrixShape.Rectangle,
+    AllowDmre = true,
+});
+
+// GS1 Data Matrix, as on medicine packs.
+Barcode pack = Barcode.DataMatrix(Gs1.Parse("(01)09501101530003(17)261231(10)AB12(21)XYZ"));</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are no bytes, or they do not fit in the largest allowed symbol.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_DataMatrix_" data-uid="Egami.Barcodes.Barcode.DataMatrix*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_DataMatrix_System_String_Egami_Barcodes_DataMatrixOptions_" data-uid="Egami.Barcodes.Barcode.DataMatrix(System.String,Egami.Barcodes.DataMatrixOptions)">
+  DataMatrix(string, DataMatrixOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.DataMatrix.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a Data Matrix ECC 200 symbol (ISO/IEC 16022) from text. The six encodation modes are switched for the fewest
+codewords. Text in ISO 8859-1 is written as it is; other text is written as UTF-8 with ECI 26 before it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode DataMatrix(string text, DataMatrixOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text, at most 3116 characters.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.DataMatrixOptions.html">DataMatrixOptions</a></dt>
+    <dd><p>The shape, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.DataMatrixOptions.html#Egami_Barcodes_DataMatrixOptions_Default">Default</a>: square.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_DataMatrix_System_String_Egami_Barcodes_DataMatrixOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Square by default; the encodation modes are switched for the fewest codewords.
+Barcode part = Barcode.DataMatrix("PN 4711-0815 / LOT 2026-10");
+
+// A narrow label: rectangular sizes, the DMRE ones too.
+Barcode narrow = Barcode.DataMatrix("PN 4711-0815 / LOT 2026-10", new DataMatrixOptions
+{
+    Shape = DataMatrixShape.Rectangle,
+    AllowDmre = true,
+});
+
+// GS1 Data Matrix, as on medicine packs.
+Barcode pack = Barcode.DataMatrix(Gs1.Parse("(01)09501101530003(17)261231(10)AB12(21)XYZ"));</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is empty or does not fit in the largest allowed symbol.</p>
 </dd>
   </dl>
 
@@ -817,6 +1236,304 @@ Barcode itf = Barcode.Itf("0123456789", new ItfOptions { WideRatio = 2 });</code
 
 
 
+  <a id="Egami_Barcodes_Barcode_Pdf417_" data-uid="Egami.Barcodes.Barcode.Pdf417*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Pdf417_System_ReadOnlySpan_System_Byte__Egami_Barcodes_Pdf417Options_" data-uid="Egami.Barcodes.Barcode.Pdf417(System.ReadOnlySpan{System.Byte},Egami.Barcodes.Pdf417Options)">
+  Pdf417(ReadOnlySpan&lt;byte&gt;, Pdf417Options?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Pdf417.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a PDF417 symbol from bytes, without an ECI.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Pdf417(ReadOnlySpan&lt;byte&gt; data, Pdf417Options? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.Pdf417Options.html">Pdf417Options</a></dt>
+    <dd><p>The columns, error level and compact form, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.Pdf417Options.html#Egami_Barcodes_Pdf417Options_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with no human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Pdf417_System_ReadOnlySpan_System_Byte__Egami_Barcodes_Pdf417Options__examples">Examples</h4>
+  <pre><code class="lang-csharp">// About three times as wide as tall, error level from the standard's table for the amount of data.
+Barcode ticket = Barcode.Pdf417("PASSENGER DOE/JANE  FLIGHT EG1234  SEAT 12A  GATE B17");
+
+// Six data columns and error level 5, or the compact form for a narrow space.
+Barcode wide = Barcode.Pdf417("PASSENGER DOE/JANE", new Pdf417Options { Columns = 6, ErrorLevel = 5 });
+Barcode compact = Barcode.Pdf417("PASSENGER DOE/JANE", new Pdf417Options { Compact = true });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are no bytes, or they do not fit in a symbol.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Pdf417_" data-uid="Egami.Barcodes.Barcode.Pdf417*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Pdf417_System_String_Egami_Barcodes_Pdf417Options_" data-uid="Egami.Barcodes.Barcode.Pdf417(System.String,Egami.Barcodes.Pdf417Options)">
+  Pdf417(string, Pdf417Options?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Pdf417.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a PDF417 symbol (ISO/IEC 15438) from text, in text, numeric and byte compaction chosen run by run. Text in ISO
+8859-1 is written as it is; other text is written as UTF-8 with ECI 26 before it. Each row is 3 modules tall.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Pdf417(string text, Pdf417Options? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.Pdf417Options.html">Pdf417Options</a></dt>
+    <dd><p>The columns, error level and compact form, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.Pdf417Options.html#Egami_Barcodes_Pdf417Options_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Pdf417_System_String_Egami_Barcodes_Pdf417Options__examples">Examples</h4>
+  <pre><code class="lang-csharp">// About three times as wide as tall, error level from the standard's table for the amount of data.
+Barcode ticket = Barcode.Pdf417("PASSENGER DOE/JANE  FLIGHT EG1234  SEAT 12A  GATE B17");
+
+// Six data columns and error level 5, or the compact form for a narrow space.
+Barcode wide = Barcode.Pdf417("PASSENGER DOE/JANE", new Pdf417Options { Columns = 6, ErrorLevel = 5 });
+Barcode compact = Barcode.Pdf417("PASSENGER DOE/JANE", new Pdf417Options { Compact = true });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is empty or does not fit in a symbol.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Qr_" data-uid="Egami.Barcodes.Barcode.Qr*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Qr_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_QrOptions_" data-uid="Egami.Barcodes.Barcode.Qr(System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString},Egami.Barcodes.QrOptions)">
+  Qr(IReadOnlyList&lt;Gs1ElementString&gt;, QrOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Qr.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a GS1 QR Code: FNC1 in first position and the element strings after it, separated where their AIs need it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Qr(IReadOnlyList&lt;Gs1ElementString&gt; elements, QrOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>elements</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Barcodes.Gs1ElementString.html">Gs1ElementString</a>&gt;</dt>
+    <dd><p>The element strings, from <a class="xref" href="Egami.Barcodes.Gs1.html#Egami_Barcodes_Gs1_Parse_System_String_">Parse(string)</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.QrOptions.html">QrOptions</a></dt>
+    <dd><p>The level, version and mask, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.QrOptions.html#Egami_Barcodes_QrOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the element strings in their human-readable form as its text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Qr_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_QrOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Level M, raised to Q or H when that fits in the same size; segments chosen for the fewest bits.
+Barcode link = Barcode.Qr("https://inexin.github.io/Egami/");
+
+// A fixed size and level, for a layout that must not change.
+Barcode fixedSize = Barcode.Qr("ORDER-1180042", new QrOptions { Version = 3, ErrorCorrection = QrErrorCorrection.H });
+
+// Bytes as they are, and GS1 element strings with FNC1.
+Barcode bytes = Barcode.Qr([0x45, 0x67, 0x61, 0x6D, 0x69]);
+Barcode gs1 = Barcode.Qr(Gs1.Parse("(01)09501101530003(10)AB12"));
+
+using Raster&lt;Gray8&gt; image = link.ToRaster(pixelsPerModule: 4);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are no element strings, or they do not fit in the symbol.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Qr_" data-uid="Egami.Barcodes.Barcode.Qr*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Qr_System_ReadOnlySpan_System_Byte__Egami_Barcodes_QrOptions_" data-uid="Egami.Barcodes.Barcode.Qr(System.ReadOnlySpan{System.Byte},Egami.Barcodes.QrOptions)">
+  Qr(ReadOnlySpan&lt;byte&gt;, QrOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Qr.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a QR Code from bytes, written in byte mode (and numeric and alphanumeric where shorter) without an ECI.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Qr(ReadOnlySpan&lt;byte&gt; data, QrOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.QrOptions.html">QrOptions</a></dt>
+    <dd><p>The level, version and mask, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.QrOptions.html#Egami_Barcodes_QrOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with no human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Qr_System_ReadOnlySpan_System_Byte__Egami_Barcodes_QrOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Level M, raised to Q or H when that fits in the same size; segments chosen for the fewest bits.
+Barcode link = Barcode.Qr("https://inexin.github.io/Egami/");
+
+// A fixed size and level, for a layout that must not change.
+Barcode fixedSize = Barcode.Qr("ORDER-1180042", new QrOptions { Version = 3, ErrorCorrection = QrErrorCorrection.H });
+
+// Bytes as they are, and GS1 element strings with FNC1.
+Barcode bytes = Barcode.Qr([0x45, 0x67, 0x61, 0x6D, 0x69]);
+Barcode gs1 = Barcode.Qr(Gs1.Parse("(01)09501101530003(10)AB12"));
+
+using Raster&lt;Gray8&gt; image = link.ToRaster(pixelsPerModule: 4);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are no bytes, or they do not fit in the symbol.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Qr_" data-uid="Egami.Barcodes.Barcode.Qr*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Qr_System_String_Egami_Barcodes_QrOptions_" data-uid="Egami.Barcodes.Barcode.Qr(System.String,Egami.Barcodes.QrOptions)">
+  Qr(string, QrOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Qr.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a QR Code (ISO/IEC 18004) from text. The text is split into numeric, alphanumeric, byte and Kanji segments that
+give the fewest bits. Text in ISO 8859-1 is written as it is; text that Shift JIS holds is written in Shift JIS, its kanji
+in Kanji mode; other text is written as UTF-8 with ECI 26 before it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Qr(string text, QrOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.QrOptions.html">QrOptions</a></dt>
+    <dd><p>The level, version and mask, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.QrOptions.html#Egami_Barcodes_QrOptions_Default">Default</a>: level M, raised while it fits.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Qr_System_String_Egami_Barcodes_QrOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Level M, raised to Q or H when that fits in the same size; segments chosen for the fewest bits.
+Barcode link = Barcode.Qr("https://inexin.github.io/Egami/");
+
+// A fixed size and level, for a layout that must not change.
+Barcode fixedSize = Barcode.Qr("ORDER-1180042", new QrOptions { Version = 3, ErrorCorrection = QrErrorCorrection.H });
+
+// Bytes as they are, and GS1 element strings with FNC1.
+Barcode bytes = Barcode.Qr([0x45, 0x67, 0x61, 0x6D, 0x69]);
+Barcode gs1 = Barcode.Qr(Gs1.Parse("(01)09501101530003(10)AB12"));
+
+using Raster&lt;Gray8&gt; image = link.ToRaster(pixelsPerModule: 4);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is empty or does not fit in the symbol.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Barcodes_Barcode_ToPath_" data-uid="Egami.Barcodes.Barcode.ToPath*"></a>
 
   <h3 id="Egami_Barcodes_Barcode_ToPath_System_Single_Egami_Barcodes_BarcodeDrawOptions_" data-uid="Egami.Barcodes.Barcode.ToPath(System.Single,Egami.Barcodes.BarcodeDrawOptions)">
@@ -1059,7 +1776,7 @@ has too few zeros to compress.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.EanUpc.cs/#L5" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Qr.cs/#L7" class="edit-link">Edit this page</a>
         </div>
 
 

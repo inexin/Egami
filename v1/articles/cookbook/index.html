@@ -629,6 +629,36 @@ using Raster&lt;Rgba8&gt; image = picture.Rasterize&lt;Rgba8&gt;(new MetafileRen
 });
 </code></pre>
 <p>Each glyph still goes where the file put it, so lines keep their length in a substitute face.</p>
+<h2 id="put-a-qr-code-on-a-label">Put a QR code on a label</h2>
+<pre><code class="lang-csharp">// A 600 x 300 label: a QR code on the left, the address beside it.
+using Raster&lt;Rgba8&gt; label = Raster.Create(600, 300, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
+{
+    canvas.DrawBarcode(Barcode.Qr(&quot;https://example.com/track/4711&quot;), new RectF(20, 20, 260, 260), Rgba8.Black);
+    canvas.DrawText(&quot;Parcel 4711&quot;, new Vector2(300, 80), font, Rgba8.Black);
+    canvas.DrawText(&quot;Track at example.com&quot;, new Vector2(300, 120), font, Rgba8.Black);
+}
+</code></pre>
+<p>On a raster, the QR code's modules snap to whole pixels, so its edges stay sharp at any size.</p>
+<h2 id="save-a-barcode-as-svg">Save a barcode as SVG</h2>
+<pre><code class="lang-csharp">// One path, 1 unit a module, the quiet zone as the view box.
+Barcode barcode = Barcode.DataMatrix(&quot;PN 4711-0815&quot;);
+Path path = barcode.ToPath(moduleSize: 1);
+int width = barcode.Modules.Width + (2 * barcode.QuietZone), height = barcode.Modules.Height + (2 * barcode.QuietZone);
+File.WriteAllText(file, $&quot;&quot;&quot;
+    &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 {width} {height}&quot; shape-rendering=&quot;crispEdges&quot;&gt;
+      &lt;rect width=&quot;{width}&quot; height=&quot;{height}&quot; fill=&quot;#fff&quot;/&gt;
+      &lt;path d=&quot;{path.ToSvg()}&quot;/&gt;
+    &lt;/svg&gt;
+    &quot;&quot;&quot;);
+</code></pre><h2 id="print-a-gs1-shipping-label">Print a GS1 shipping label</h2>
+<pre><code class="lang-csharp">// A 4 x 6 inch label in points: an SSCC as GS1-128 at 0.5 mm a module with its text, and a GS1 Data Matrix.
+float module = 0.5f / 25.4f * 72;
+Barcode sscc = Barcode.Gs1_128(&quot;(00)106141411234567897&quot;);
+page.DrawBarcode(sscc, new Vector2(18, 300), module, Rgba8.Black, new BarcodeDrawOptions { Font = font });
+page.DrawBarcode(Barcode.DataMatrix(Gs1.Parse(&quot;(01)09501101530003(10)AB12&quot;)), new RectF(18, 18, 100, 100), Rgba8.Black);
+</code></pre>
+<p>At a module size in points, the barcode has the X dimension a scanner expects, on a PDF page or any other canvas.</p>
 <h2 id="paint-a-dusk-sky">Paint a dusk sky</h2>
 <pre><code class="lang-csharp">// A dusk sky: stops in Oklch so the hues turn smoothly, dithered so the wide soft ramp shows no bands, and a sun.
 using Raster&lt;Rgba8&gt; sky = Raster.Create&lt;Rgba8&gt;(800, 450);

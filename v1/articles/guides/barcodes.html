@@ -89,35 +89,86 @@
 
 <p>Egami.Barcodes writes and reads barcodes. It draws them through Egami.Drawing's canvas, so a barcode stays vector on a PDF page
 or in SVG output, and reads them from rasters. It is fully managed.</p>
-<p>The package is in development and not yet released. This guide grows as barcode types are added.</p>
-<h2 id="modules">Modules</h2>
-<p>Every symbol is a <code>BarcodeModules</code>: a grid of dark and light modules for a 2D code, or a row of bars and spaces for a linear
-one. <code>Width</code> and <code>Height</code> are in modules, the indexer says whether a module is dark, and a linear symbol also lists its bar and
-space widths in <code>Runs</code>. A grid holds the symbol only, without its quiet zone.</p>
-<p><code>BarcodeModules.Create</code> and <code>BarcodeModules.CreateLinear</code> make one from modules you already have, for example from another
-encoder.</p>
-<pre><code class="lang-csharp">// A 2D grid, row by row from the top; true is a dark module.
-BarcodeModules grid = BarcodeModules.Create(3, 3,
+<p>It writes QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, ITF and ITF-14,
+EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a format
+chosen at run time with the default options.</p>
+<pre><code class="lang-csharp">// Labels from a table that stores each barcode's format with its data.
+(BarcodeFormat Format, string Data)[] rows =
 [
-    true, false, true,
-    false, true, false,
-    true, false, true,
-]);
+    (BarcodeFormat.Ean13, &quot;590123412345&quot;),
+    (BarcodeFormat.Code128, &quot;SHIP-0042&quot;),
+    (BarcodeFormat.Qr, &quot;https://inexin.github.io/Egami/&quot;),
+];
 
-// A linear symbol: bar and space widths in modules, starting and ending with a bar.
-BarcodeModules bars = BarcodeModules.CreateLinear([2, 1, 1, 1, 3], height: 20);
-
-for (int y = 0; y &lt; grid.Height; y++)
+foreach ((BarcodeFormat format, string data) in rows)
 {
-    for (int x = 0; x &lt; grid.Width; x++)
-    {
-        Console.Write(grid[x, y] ? '#' : '.');
-    }
-
-    Console.WriteLine();
+    Barcode barcode = Barcode.Create(format, data);
+    using Raster&lt;Gray8&gt; image = barcode.ToRaster(pixelsPerModule: 3);
 }
+</code></pre>
+<p>The package is in development and not yet released; reading barcodes comes next.</p>
+<h2 id="qr-code">QR Code</h2>
+<p><code>Barcode.Qr</code> writes a QR Code from text, bytes or GS1 element strings. Text is split into numeric, alphanumeric, byte and
+Kanji segments that give the fewest bits. Text in ISO 8859-1 is written as it is, text that Shift JIS holds is written in
+Shift JIS (its kanji in Kanji mode), and anything else as UTF-8 with an ECI that tells readers so.</p>
+<p>By default the symbol is the smallest that holds the data at level M, and the level is then raised to Q or H while the
+symbol stays the same size, so spare room goes to error correction. <code>QrOptions</code> fixes the level, the version (1 to 40) or the
+mask instead.</p>
+<pre><code class="lang-csharp">// Level M, raised to Q or H when that fits in the same size; segments chosen for the fewest bits.
+Barcode link = Barcode.Qr(&quot;https://inexin.github.io/Egami/&quot;);
 
-Console.WriteLine($&quot;{bars.Width} modules wide, bars {string.Join(' ', bars.Runs.ToArray())}&quot;);
+// A fixed size and level, for a layout that must not change.
+Barcode fixedSize = Barcode.Qr(&quot;ORDER-1180042&quot;, new QrOptions { Version = 3, ErrorCorrection = QrErrorCorrection.H });
+
+// Bytes as they are, and GS1 element strings with FNC1.
+Barcode bytes = Barcode.Qr([0x45, 0x67, 0x61, 0x6D, 0x69]);
+Barcode gs1 = Barcode.Qr(Gs1.Parse(&quot;(01)09501101530003(10)AB12&quot;));
+
+using Raster&lt;Gray8&gt; image = link.ToRaster(pixelsPerModule: 4);
+</code></pre><h2 id="data-matrix">Data Matrix</h2>
+<p><code>Barcode.DataMatrix</code> writes Data Matrix ECC 200 from text, bytes or GS1 element strings. The six encodation modes (ASCII,
+C40, Text, X12, EDIFACT and Base 256) are switched for the fewest codewords, and the symbol is the smallest that holds them.
+Text in ISO 8859-1 is written as it is, anything else as UTF-8 with an ECI.</p>
+<p>Symbols are square by default. <code>DataMatrixOptions.Shape</code> allows rectangular symbols, or the smallest of either, and
+<code>AllowDmre</code> adds the rectangular sizes of ISO/IEC 21471 (DMRE), which older readers may not read.</p>
+<pre><code class="lang-csharp">// Square by default; the encodation modes are switched for the fewest codewords.
+Barcode part = Barcode.DataMatrix(&quot;PN 4711-0815 / LOT 2026-10&quot;);
+
+// A narrow label: rectangular sizes, the DMRE ones too.
+Barcode narrow = Barcode.DataMatrix(&quot;PN 4711-0815 / LOT 2026-10&quot;, new DataMatrixOptions
+{
+    Shape = DataMatrixShape.Rectangle,
+    AllowDmre = true,
+});
+
+// GS1 Data Matrix, as on medicine packs.
+Barcode pack = Barcode.DataMatrix(Gs1.Parse(&quot;(01)09501101530003(17)261231(10)AB12(21)XYZ&quot;));
+</code></pre><h2 id="pdf417">PDF417</h2>
+<p><code>Barcode.Pdf417</code> writes PDF417 from text or bytes, as on boarding passes and driving licences. Text, numeric and byte
+compaction are chosen run by run. The error correction level follows the standard's recommended minimum for the amount of
+data, and the columns are picked so the symbol is about three times as wide as tall; <code>Pdf417Options</code> sets either, or asks for
+compact PDF417, which leaves out the right row indicators for a narrower symbol. Rows are 3 modules tall.</p>
+<pre><code class="lang-csharp">// About three times as wide as tall, error level from the standard's table for the amount of data.
+Barcode ticket = Barcode.Pdf417(&quot;PASSENGER DOE/JANE  FLIGHT EG1234  SEAT 12A  GATE B17&quot;);
+
+// Six data columns and error level 5, or the compact form for a narrow space.
+Barcode wide = Barcode.Pdf417(&quot;PASSENGER DOE/JANE&quot;, new Pdf417Options { Columns = 6, ErrorLevel = 5 });
+Barcode compact = Barcode.Pdf417(&quot;PASSENGER DOE/JANE&quot;, new Pdf417Options { Compact = true });
+</code></pre><h2 id="aztec-code">Aztec Code</h2>
+<p><code>Barcode.Aztec</code> writes Aztec Code from text or bytes, as on rail and airline tickets. The text is written in the Upper,
+Lower, Mixed, Punctuation and Digit modes and Binary Shift, switched for the fewest bits. The symbol is the smallest compact
+(up to 4 layers) or full-range (up to 32 layers) one that leaves at least 23 % of its codewords, plus 3, for error correction;
+<code>AztecOptions</code> raises that share or fixes the form and layers. Aztec Code finds itself by its bullseye, so it needs no quiet
+zone. <code>Barcode.AztecRune</code> makes an Aztec Rune, an 11 x 11 core that holds one value from 0 to 255.</p>
+<pre><code class="lang-csharp">// The smallest compact or full-range symbol with at least 23 % error correction; no quiet zone needed.
+Barcode ticket = Barcode.Aztec(&quot;EG1234 BER-MUC 2026-10-19 SEAT 12A DOE/JANE&quot;);
+
+// More error correction for a ticket that gets folded, or a fixed compact size.
+Barcode robust = Barcode.Aztec(&quot;EG1234 BER-MUC&quot;, new AztecOptions { ErrorCorrectionPercent = 50 });
+Barcode compact = Barcode.Aztec(&quot;EG1234&quot;, new AztecOptions { Compact = true, Layers = 2 });
+
+// A rune: one value from 0 to 255 in an 11 x 11 core.
+Barcode rune = Barcode.AztecRune(42);
 </code></pre><h2 id="linear-barcodes">Linear barcodes</h2>
 <h3 id="code-128">Code 128</h3>
 <p><code>Barcode.Code128</code> writes any text of characters 0 to 255. It picks the code sets A, B and C, and the changes and shifts
@@ -184,17 +235,10 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
 
 // A UPC-A number written in its short UPC-E form.
 Barcode small = Barcode.UpcE(&quot;042100005264&quot;);
-</code></pre><h2 id="barcodes-1">Barcodes</h2>
-<p>A <code>Barcode</code> is one symbol: its <code>BarcodeFormat</code>, its <code>Modules</code>, the <code>QuietZone</code> its standard asks for in modules (4 for QR, 1 for
-Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39 and ITF, 11 for EAN-13, 7
-for EAN-8 and 9 for UPC) and the <code>HumanReadableText</code> printed under a linear symbol. <code>Barcode.FromModules</code> makes one from modules you already have.</p>
-<pre><code class="lang-csharp">// Modules from another encoder become a barcode with the quiet zone of their standard: 4 modules for QR.
-Barcode qr = Barcode.FromModules(BarcodeFormat.Qr, modules);
-Console.WriteLine($&quot;{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} on each side&quot;);
 </code></pre><h2 id="drawing-on-a-canvas">Drawing on a canvas</h2>
-<p><code>DrawBarcode</code>, an extension method in <code>CanvasBarcodeExtensions</code>, draws on any canvas: a raster, a PDF or SVG page, a recording. The whole symbol is one filled path, a rectangle for
-each run of dark modules in a row, so a QR code is a few hundred rectangles rather than one per module, and neighbouring
-rectangles leave no seams.</p>
+<p><code>DrawBarcode</code>, an extension method in <code>CanvasBarcodeExtensions</code>, draws on any canvas: a raster, a PDF or SVG page, a
+recording. The whole symbol is one filled path, a rectangle for each run of dark modules in a row, so a QR code is a few
+hundred rectangles rather than one per module, and neighbouring rectangles leave no seams.</p>
 <p>Given a rectangle, the barcode is fitted into it and centered, with its quiet zone kept clear inside it. 2D symbols keep square
 modules; linear bars fill the rectangle's height. On a raster canvas with no rotation or skew, the module size snaps to whole
 pixels, the largest that still fits, so every edge is sharp.</p>
@@ -234,6 +278,42 @@ string svg = path.ToSvg();
 font, the text.</p>
 <pre><code class="lang-csharp">// Black on white, 4 pixels a module, quiet zone included.
 using Raster&lt;Gray8&gt; image = qr.ToRaster(pixelsPerModule: 4);
+</code></pre><h2 id="barcodes-from-modules">Barcodes from modules</h2>
+<p>A <code>Barcode</code> is one symbol: its <code>BarcodeFormat</code>, its <code>Modules</code>, the <code>QuietZone</code> its standard asks for in modules (4 for QR, 1 for
+Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39 and ITF, 11 for EAN-13, 7
+for EAN-8 and 9 for UPC) and the <code>HumanReadableText</code> printed under a linear symbol. <code>Barcode.FromModules</code> makes one from
+modules you already have, such as from another encoder.</p>
+<pre><code class="lang-csharp">// Modules from another encoder become a barcode with the quiet zone of their standard: 4 modules for QR.
+Barcode qr = Barcode.FromModules(BarcodeFormat.Qr, modules);
+Console.WriteLine($&quot;{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} on each side&quot;);
+</code></pre><h2 id="modules">Modules</h2>
+<p>Every symbol is a <code>BarcodeModules</code>: a grid of dark and light modules for a 2D code, or a row of bars and spaces for a linear
+one. <code>Width</code> and <code>Height</code> are in modules, the indexer says whether a module is dark, and a linear symbol also lists its bar and
+space widths in <code>Runs</code>. A grid holds the symbol only, without its quiet zone.</p>
+<p><code>BarcodeModules.Create</code> and <code>BarcodeModules.CreateLinear</code> make one from modules you already have, for example from another
+encoder.</p>
+<pre><code class="lang-csharp">// A 2D grid, row by row from the top; true is a dark module.
+BarcodeModules grid = BarcodeModules.Create(3, 3,
+[
+    true, false, true,
+    false, true, false,
+    true, false, true,
+]);
+
+// A linear symbol: bar and space widths in modules, starting and ending with a bar.
+BarcodeModules bars = BarcodeModules.CreateLinear([2, 1, 1, 1, 3], height: 20);
+
+for (int y = 0; y &lt; grid.Height; y++)
+{
+    for (int x = 0; x &lt; grid.Width; x++)
+    {
+        Console.Write(grid[x, y] ? '#' : '.');
+    }
+
+    Console.WriteLine();
+}
+
+Console.WriteLine($&quot;{bars.Width} modules wide, bars {string.Join(' ', bars.Runs.ToArray())}&quot;);
 </code></pre>
 </article>
 

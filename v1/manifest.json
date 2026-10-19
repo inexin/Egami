@@ -223,6 +223,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.AztecOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.AztecOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.AztecOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.AztecOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.Aztec(System.String%2cEgami.Barcodes.AztecOptions)\" data-throw-if-not-resolved=\"false\"></xref> makes a symbol; every unset property is chosen automatically.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Barcodes.Barcode.yml",
       "output": {
         ".html": {
@@ -321,6 +335,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.DataMatrixOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.DataMatrixOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.DataMatrixOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.DataMatrixOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.DataMatrix(System.String%2cEgami.Barcodes.DataMatrixOptions)\" data-throw-if-not-resolved=\"false\"></xref> makes a symbol.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.DataMatrixShape.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.DataMatrixShape.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.DataMatrixShape",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.DataMatrixShape.yml\" sourcestartlinenumber=\"1\">Which sizes a Data Matrix symbol may take.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Barcodes.EanUpcOptions.yml",
       "output": {
         ".html": {
@@ -374,6 +416,48 @@
       "IsMRef": true,
       "Title": "Egami.Barcodes.ItfOptions",
       "Summary": "<p sourcefile=\"api/Egami.Barcodes.ItfOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.Itf(System.String%2cEgami.Barcodes.ItfOptions)\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Barcodes.Barcode.Itf14(System.String%2cEgami.Barcodes.ItfOptions)\" data-throw-if-not-resolved=\"false\"></xref> make a symbol.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.Pdf417Options.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.Pdf417Options.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.Pdf417Options",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.Pdf417Options.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.Pdf417(System.String%2cEgami.Barcodes.Pdf417Options)\" data-throw-if-not-resolved=\"false\"></xref> makes a symbol; every unset property is chosen automatically.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.QrErrorCorrection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.QrErrorCorrection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.QrErrorCorrection",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.QrErrorCorrection.yml\" sourcestartlinenumber=\"1\">The error correction level of a QR Code: how much of the symbol can be damaged and still read.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.QrOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.QrOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.QrOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.QrOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.Qr(System.String%2cEgami.Barcodes.QrOptions)\" data-throw-if-not-resolved=\"false\"></xref> makes a symbol; every unset property is chosen automatically.</p>\n"
     },
     {
       "type": "ManagedReference",
