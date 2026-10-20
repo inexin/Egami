@@ -92,7 +92,8 @@ jobs:
           done
       - name: No package references in src/
         run: |
-          # Only build-time analyzers are allowed. Anything else would ship as a dependency.
+          # Only build-time analyzers are allowed, plus, in satellite packages, the approved packages in docs/references.md
+          # (none yet). Anything else would ship as a dependency.
           allowed='Microsoft.CodeAnalysis.PublicApiAnalyzers'
           status=0
           for proj in $(find src -name '*.csproj'); do

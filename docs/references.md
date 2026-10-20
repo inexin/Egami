@@ -44,3 +44,11 @@ under the GPL and are never used.
 For HEIC, libheif and libde265 (LGPL-3), FFmpeg's HEVC decoder and openHEVC (LGPL-2.1) and x265 (GPL-2) are never read; they
 only run as black-box tools in Docker to make test files and references. Nokia's HEIF code (non-commercial licence) is never
 read.
+
+## Approved packages
+
+Core Egami references no packages. A satellite package (Egami.Drawing, Egami.Fonts, Egami.Svg and the others) may reference
+a package listed here: managed code under an MIT, BSD or Apache-2.0 licence, approved by name by the maintainer, with its
+licence and minimum version, set in `Directory.Packages.props`. Raise a minimum version on purpose, with a full test run.
+
+None are approved yet. Egap's format add-ons follow the same rule and keep their own list in Egap's docs/references.md.

@@ -11,7 +11,10 @@ Egami.Svg, Egami.Css and Egami.Metafiles (see [docs/articles/packages.md](docs/a
   as permissive in docs/references.md). Never use GPL, LGPL or AGPL code, or code without a license. If you translate code
   closely from a listed library, add its notice to `THIRD-PARTY-NOTICES.md` in the same change.
 - **Managed .NET 10 only.** No P/Invoke, no native binaries, no wrappers around C or C++ libraries. .NET's own APIs (for example
-  `ZLibStream`) are fine. No package references in `src/` other than the build-time `Microsoft.CodeAnalysis.PublicApiAnalyzers`.
+  `ZLibStream`) are fine. Core Egami (`src/Egami`) takes no package references other than the build-time
+  `Microsoft.CodeAnalysis.PublicApiAnalyzers`. A satellite package (Egami.Drawing, Egami.Fonts, Egami.Svg and the others)
+  may also reference a managed MIT, BSD or Apache-2.0 package that the maintainer approved by name; the approved packages
+  are listed in [docs/references.md](docs/references.md) with their licence and minimum version. Ask before adding any other.
 - **Never publish.** Don't push to NuGet, push tags, create releases or change GitHub Actions settings, unless the maintainer explicitly
   asks for that.
 - **Every change goes through a branch and a pull request.** Never commit to `main` or push to it, and never force-push it. The
