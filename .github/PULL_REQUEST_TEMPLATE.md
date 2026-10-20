@@ -5,7 +5,7 @@
 ## Provenance (required)
 
 - [ ] Everything in this change is my own work, written from specs and the libraries in docs/references.md.
-- [ ] This change contains no wrapped native code and no new package references in `src/`.
+- [ ] This change contains no wrapped native code and no new package references in `src/` beyond the approved ones in `docs/references.md`.
 
 Sources used (spec sections, papers, reference libraries from docs/references.md):
 
