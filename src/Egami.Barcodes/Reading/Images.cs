@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
@@ -9,25 +10,49 @@ namespace Egami.Barcodes.Reading;
 /// An 8-bit luminance plane, row by row with a stride, and where it sits in the source image. It may view a caller's buffer,
 /// which then must outlive the search.
 /// </summary>
-internal sealed class LuminanceImage(ReadOnlyMemory<byte> pixels, int width, int height, int stride, int left = 0, int top = 0)
+internal sealed unsafe class LuminanceImage
 {
-    private readonly ReadOnlyMemory<byte> _pixels = pixels;
+    // The pixels: an array from its start, or else a pinned caller's buffer (BarcodeReader keeps it fixed for the search).
+    // Rows are cut from these directly, as ReadOnlyMemory<byte>.Span costs too much per row and pixel.
+    private readonly byte[]? _array;
+    private readonly int _start;
+    private readonly byte* _pointer;
 
-    public int Width { get; } = width;
+    public LuminanceImage(ReadOnlyMemory<byte> pixels, int width, int height, int stride, int left = 0, int top = 0)
+    {
+        if (MemoryMarshal.TryGetArray(pixels, out ArraySegment<byte> segment))
+        {
+            (_array, _start) = (segment.Array, segment.Offset);
+        }
+        else
+        {
+            using System.Buffers.MemoryHandle handle = pixels.Pin();
+            _pointer = (byte*)handle.Pointer;
+        }
 
-    public int Height { get; } = height;
+        (Width, Height, Stride, Left, Top) = (width, height, stride, left, top);
+    }
 
-    public int Stride { get; } = stride;
+    public int Width { get; }
+
+    public int Height { get; }
+
+    public int Stride { get; }
 
     /// <summary>Gets the left edge in the source image.</summary>
-    public int Left { get; } = left;
+    public int Left { get; }
 
     /// <summary>Gets the top edge in the source image.</summary>
-    public int Top { get; } = top;
+    public int Top { get; }
 
-    public byte this[int x, int y] => _pixels.Span[(y * Stride) + x];
+    public byte this[int x, int y]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _array is not null ? _array[_start + (y * Stride) + x] : _pointer[(y * Stride) + x];
+    }
 
-    public ReadOnlySpan<byte> Row(int y) => _pixels.Span.Slice(y * Stride, Width);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlySpan<byte> Row(int y) => _array is not null ? new ReadOnlySpan<byte>(_array, _start + (y * Stride), Width) : new ReadOnlySpan<byte>(_pointer + (y * Stride), Width);
 
     /// <summary>Converts a raster's region to luminance through Egami's pixel conversion.</summary>
     public static LuminanceImage From<TPixel>(Raster<TPixel> raster, Rect? region)
@@ -38,7 +63,14 @@ internal sealed class LuminanceImage(ReadOnlyMemory<byte> pixels, int width, int
         Span<Gray8> gray = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, Gray8>(pixels.AsSpan());
         for (int y = 0; y < area.Height; y++)
         {
-            PixelConvert.Convert<TPixel, Gray8>(raster.Row(area.Y + y).Slice(area.X, area.Width), gray.Slice(y * area.Width, area.Width));
+            if (typeof(TPixel) == typeof(Gray8))
+            {
+                MemoryMarshal.AsBytes(raster.Row(area.Y + y).Slice(area.X, area.Width)).CopyTo(pixels.AsSpan(y * area.Width, area.Width));
+            }
+            else
+            {
+                PixelConvert.Convert<TPixel, Gray8>(raster.Row(area.Y + y).Slice(area.X, area.Width), gray.Slice(y * area.Width, area.Width));
+            }
         }
 
         return new LuminanceImage(pixels, area.Width, area.Height, area.Width, area.X, area.Y);
@@ -153,16 +185,19 @@ internal static class Binarizer
     {
         // Four histograms side by side, so consecutive pixels do not wait on the same counter.
         Span<int> counts = stackalloc int[4 * 32];
+        ref int count = ref MemoryMarshal.GetReference(counts);
         for (int y = 0; y < image.Height; y++)
         {
             ReadOnlySpan<byte> row = image.Row(y);
+            ref byte pixel = ref MemoryMarshal.GetReference(row);
             int x = 0;
             for (; x <= row.Length - 4; x += 4)
             {
-                counts[row[x] >> 3]++;
-                counts[32 + (row[x + 1] >> 3)]++;
-                counts[64 + (row[x + 2] >> 3)]++;
-                counts[96 + (row[x + 3] >> 3)]++;
+                // Each index is below 32 (a byte over 8), within its histogram.
+                Unsafe.Add(ref count, Unsafe.Add(ref pixel, x) >> 3)++;
+                Unsafe.Add(ref count, 32 + (Unsafe.Add(ref pixel, x + 1) >> 3))++;
+                Unsafe.Add(ref count, 64 + (Unsafe.Add(ref pixel, x + 2) >> 3))++;
+                Unsafe.Add(ref count, 96 + (Unsafe.Add(ref pixel, x + 3) >> 3))++;
             }
 
             for (; x < row.Length; x++)
@@ -228,36 +263,49 @@ internal static class Binarizer
 
         int blocksX = (width + BlockSize - 1) / BlockSize, blocksY = (height + BlockSize - 1) / BlockSize;
         int[] levels = new int[blocksX * blocksY];
+        int pairs = width / (2 * BlockSize);
+        Span<Vector128<byte>> mins = pairs <= 128 ? stackalloc Vector128<byte>[pairs] : new Vector128<byte>[pairs];
+        Span<Vector128<byte>> maxs = pairs <= 128 ? stackalloc Vector128<byte>[pairs] : new Vector128<byte>[pairs];
+        Span<Vector128<ushort>> lows = pairs <= 128 ? stackalloc Vector128<ushort>[pairs] : new Vector128<ushort>[pairs];
+        Span<Vector128<ushort>> highs = pairs <= 128 ? stackalloc Vector128<ushort>[pairs] : new Vector128<ushort>[pairs];
         for (int by = 0; by < blocksY; by++)
         {
             int y0 = Math.Min(by * BlockSize, height - BlockSize);
             int bx = 0;
             if (Vector128.IsHardwareAccelerated)
             {
-                // Two blocks at a time, while both sit at their natural place (the last block may overlap the one before it).
-                for (; (bx + 2) * BlockSize <= width; bx += 2)
+                // Two blocks at a time, while both sit at their natural place (the last block may overlap the one before it):
+                // each row of the band is read once, into each pair's running minimum, maximum and sums.
+                mins.Fill(Vector128<byte>.AllBitsSet);
+                maxs.Clear();
+                lows.Clear();
+                highs.Clear();
+                for (int y = 0; y < BlockSize; y++)
                 {
-                    Vector128<byte> min = Vector128<byte>.AllBitsSet, max = Vector128<byte>.Zero;
-                    Vector128<ushort> low = Vector128<ushort>.Zero, high = Vector128<ushort>.Zero;
-                    for (int y = 0; y < BlockSize; y++)
+                    ref byte row = ref MemoryMarshal.GetReference(image.Row(y0 + y));
+                    for (int pair = 0; pair < pairs; pair++)
                     {
-                        Vector128<byte> v = Vector128.LoadUnsafe(ref MemoryMarshal.GetReference(image.Row(y0 + y)), (nuint)(bx * BlockSize));
-                        min = Vector128.Min(min, v);
-                        max = Vector128.Max(max, v);
+                        Vector128<byte> v = Vector128.LoadUnsafe(ref row, (nuint)(pair * 2 * BlockSize));
+                        mins[pair] = Vector128.Min(mins[pair], v);
+                        maxs[pair] = Vector128.Max(maxs[pair], v);
                         (Vector128<ushort> l, Vector128<ushort> h) = Vector128.Widen(v);
-                        low += l;
-                        high += h;
+                        lows[pair] += l;
+                        highs[pair] += h;
                     }
+                }
 
+                for (int pair = 0; pair < pairs; pair++, bx += 2)
+                {
                     // Each 8-byte half folded onto its first byte: the two blocks' minimum and maximum.
+                    Vector128<byte> min = mins[pair], max = maxs[pair];
                     for (int shift = 32; shift >= 8; shift >>= 1)
                     {
                         min = Vector128.Min(min, Vector128.ShiftRightLogical(min.AsUInt64(), shift).AsByte());
                         max = Vector128.Max(max, Vector128.ShiftRightLogical(max.AsUInt64(), shift).AsByte());
                     }
 
-                    levels[(by * blocksX) + bx] = Level(levels, blocksX, bx, by, Vector128.Sum(low), min.GetElement(0), max.GetElement(0));
-                    levels[(by * blocksX) + bx + 1] = Level(levels, blocksX, bx + 1, by, Vector128.Sum(high), min.GetElement(8), max.GetElement(8));
+                    levels[(by * blocksX) + bx] = Level(levels, blocksX, bx, by, Vector128.Sum(lows[pair]), min.GetElement(0), max.GetElement(0));
+                    levels[(by * blocksX) + bx + 1] = Level(levels, blocksX, bx + 1, by, Vector128.Sum(highs[pair]), min.GetElement(8), max.GetElement(8));
                 }
             }
 
@@ -280,9 +328,18 @@ internal static class Binarizer
             }
         }
 
-        // Thresholding in parallel stripes of block rows: each writes only its own pixels, except the last, which may overlap
-        // the one before it and so runs after the others.
         byte[] bits = new byte[width * height];
+        ThresholdBlocks(image, levels, bits, blocksX, blocksY, threads);
+        return new BitImage(bits, width, height);
+    }
+
+    /// <summary>
+    /// Thresholds the image in stripes of block rows, in parallel when asked: each writes only its own pixels, except the last,
+    /// which may overlap the one before it and so runs after the others. (Apart from <see cref="Local"/>, so that its loops
+    /// keep their variables in registers rather than in a closure.)
+    /// </summary>
+    private static void ThresholdBlocks(LuminanceImage image, int[] levels, byte[] bits, int blocksX, int blocksY, int threads)
+    {
         if (threads > 1)
         {
             Parallel.For(0, blocksY - 1, new ParallelOptions { MaxDegreeOfParallelism = threads }, by => Threshold(image, levels, bits, blocksX, blocksY, by));
@@ -296,7 +353,6 @@ internal static class Binarizer
         }
 
         Threshold(image, levels, bits, blocksX, blocksY, blocksY - 1);
-        return new BitImage(bits, width, height);
     }
 
     /// <summary>A block's level from its sum, minimum and maximum; a flat block takes its neighbours' level when it sits in dark.</summary>
@@ -341,19 +397,28 @@ internal static class Binarizer
             thresholds[bx] = sum / 25;
         }
 
+        // Two blocks' thresholds side by side in a vector, for the pairs of blocks at their natural place.
+        int pairs = Vector128.IsHardwareAccelerated ? width / (2 * BlockSize) : 0;
+        Span<Vector128<byte>> limits = pairs <= 128 ? stackalloc Vector128<byte>[pairs] : new Vector128<byte>[pairs];
+        for (int pair = 0; pair < pairs; pair++)
+        {
+            limits[pair] = Vector128.Create((ulong)thresholds[2 * pair] * 0x0101010101010101UL, (ulong)thresholds[(2 * pair) + 1] * 0x0101010101010101UL).AsByte();
+        }
+
         for (int y = 0; y < BlockSize; y++)
         {
             ReadOnlySpan<byte> row = image.Row(y0 + y);
             Span<byte> target = bits.AsSpan((y0 + y) * width, width);
             int bx = 0;
-            if (Vector128.IsHardwareAccelerated)
+            if (pairs > 0)
             {
                 Vector128<byte> one = Vector128<byte>.One;
-                for (; (bx + 2) * BlockSize <= width; bx += 2)
+                ref byte source = ref MemoryMarshal.GetReference(row);
+                ref byte destination = ref MemoryMarshal.GetReference(target);
+                for (int pair = 0; pair < pairs; pair++, bx += 2)
                 {
-                    Vector128<byte> limit = Vector128.Create(Vector64.Create((byte)thresholds[bx]), Vector64.Create((byte)thresholds[bx + 1]));
-                    nuint x = (nuint)(bx * BlockSize);
-                    (Vector128.LessThanOrEqual(Vector128.LoadUnsafe(ref MemoryMarshal.GetReference(row), x), limit) & one).StoreUnsafe(ref MemoryMarshal.GetReference(target), x);
+                    nuint x = (nuint)(pair * 2 * BlockSize);
+                    (Vector128.LessThanOrEqual(Vector128.LoadUnsafe(ref source, x), limits[pair]) & one).StoreUnsafe(ref destination, x);
                 }
             }
 

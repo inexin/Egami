@@ -2,12 +2,19 @@ using System.Numerics;
 
 namespace Egami.Barcodes.Reading;
 
-/// <summary>A connected group of dark pixels: its size, bounding box and boundary pixels (dark pixels next to light ones).</summary>
+/// <summary>
+/// A connected group of dark pixels: its size, bounding box and, for each of its rows, the centers of its first and last
+/// pixel there, which hold its convex hull.
+/// </summary>
 internal sealed class Component
 {
     public int Count;
     public int Left = int.MaxValue, Top = int.MaxValue, Right = -1, Bottom = -1;
-    public List<Vector2> Boundary { get; } = [];
+    public List<Vector2> Ends { get; } = [];
+
+    // The row whose ends are last in Ends, its first column, and whether its last pixel is in Ends yet.
+    internal int EndsRow = -1, EndsRowStart;
+    internal bool EndsRowRight;
 
     public int Width => Right - Left + 1;
 
@@ -21,7 +28,10 @@ internal static class Shapes
     public static List<Component> Components(BitImage bits, int minimum)
     {
         int width = bits.Width, height = bits.Height;
-        int[] labels = new int[width * height];
+
+        // Each dark run of each row: its row, first and last-plus-one column, and label; runs touching (diagonals too) a run
+        // of the row above join its label.
+        var runs = new List<(int Y, int Start, int End, int Label)>();
         var parent = new List<int> { 0 };
         int Find(int x)
         {
@@ -34,43 +44,42 @@ internal static class Shapes
             return x;
         }
 
+        int above = 0, aboveEnd = 0;
         for (int y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            ReadOnlySpan<byte> row = bits.Row(y);
+            int rowStart = runs.Count, at = 0;
+            while (at < width)
             {
-                if (!bits[x, y])
+                int start = row[at..].IndexOf((byte)1);
+                if (start < 0)
                 {
-                    continue;
+                    break;
                 }
 
+                start += at;
+                int end = row[start..].IndexOf((byte)0);
+                end = end < 0 ? width : start + end;
+                at = end;
+
                 int label = 0;
-                for (int k = 0; k < 4; k++)
+                while (above < aboveEnd && runs[above].End < start)
                 {
-                    // Left, top-left, top, top-right: the neighbours already labelled.
-                    int nx = x + (k == 0 ? -1 : k - 2), ny = y + (k == 0 ? 0 : -1);
-                    if ((uint)nx >= (uint)width || ny < 0)
-                    {
-                        continue;
-                    }
+                    above++;
+                }
 
-                    int other = labels[(ny * width) + nx];
-                    if (other == 0)
-                    {
-                        continue;
-                    }
-
+                for (int k = above; k < aboveEnd && runs[k].Start <= end; k++)
+                {
+                    int other = Find(runs[k].Label);
                     if (label == 0)
                     {
-                        label = Find(other);
+                        label = other;
                     }
-                    else
+                    else if (other != label)
                     {
-                        int a = Find(label), b = Find(other);
-                        if (a != b)
-                        {
-                            parent[Math.Max(a, b)] = Math.Min(a, b);
-                            label = Math.Min(a, b);
-                        }
+                        int a = Math.Min(label, other), b = Math.Max(label, other);
+                        parent[b] = a;
+                        label = a;
                     }
                 }
 
@@ -80,35 +89,45 @@ internal static class Shapes
                     parent.Add(label);
                 }
 
-                labels[(y * width) + x] = label;
+                runs.Add((y, start, end, label));
             }
+
+            (above, aboveEnd) = (rowStart, runs.Count);
         }
 
         var components = new Dictionary<int, Component>();
-        for (int y = 0; y < height; y++)
+        foreach ((int y, int start, int end, int label) in runs)
         {
-            for (int x = 0; x < width; x++)
+            int root = Find(label);
+            if (!components.TryGetValue(root, out Component? c))
             {
-                int label = labels[(y * width) + x];
-                if (label == 0)
-                {
-                    continue;
-                }
+                components[root] = c = new Component();
+            }
 
-                int root = Find(label);
-                if (!components.TryGetValue(root, out Component? c))
-                {
-                    components[root] = c = new Component();
-                }
+            c.Count += end - start;
+            c.Left = Math.Min(c.Left, start);
+            c.Right = Math.Max(c.Right, end - 1);
+            c.Top = Math.Min(c.Top, y);
+            c.Bottom = Math.Max(c.Bottom, y);
 
-                c.Count++;
-                c.Left = Math.Min(c.Left, x);
-                c.Right = Math.Max(c.Right, x);
-                c.Top = Math.Min(c.Top, y);
-                c.Bottom = Math.Max(c.Bottom, y);
-                if (!bits.IsDark(x - 1, y) || !bits.IsDark(x + 1, y) || !bits.IsDark(x, y - 1) || !bits.IsDark(x, y + 1))
+            // Runs come row by row and left to right: the row's first run gives its left end, its last run its right end.
+            if (c.EndsRow != y)
+            {
+                c.Ends.Add(new Vector2(start + 0.5f, y + 0.5f));
+                (c.EndsRow, c.EndsRowStart, c.EndsRowRight) = (y, start, false);
+            }
+
+            if (end - 1 > c.EndsRowStart)
+            {
+                var right = new Vector2(end - 0.5f, y + 0.5f);
+                if (c.EndsRowRight)
                 {
-                    c.Boundary.Add(new Vector2(x + 0.5f, y + 0.5f));
+                    c.Ends[^1] = right;
+                }
+                else
+                {
+                    c.Ends.Add(right);
+                    c.EndsRowRight = true;
                 }
             }
         }
@@ -119,7 +138,17 @@ internal static class Shapes
     /// <summary>The convex hull of points, counterclockwise in image coordinates (Andrew's monotone chain).</summary>
     public static List<Vector2> Hull(List<Vector2> points)
     {
-        var sorted = points.Distinct().OrderBy(p => p.X).ThenBy(p => p.Y).ToList();
+        Vector2[] array = [.. points];
+        Array.Sort(array, static (a, b) => a.X != b.X ? a.X.CompareTo(b.X) : a.Y.CompareTo(b.Y));
+        var sorted = new List<Vector2>(array.Length);
+        foreach (Vector2 p in array)
+        {
+            if (sorted.Count == 0 || sorted[^1] != p)
+            {
+                sorted.Add(p);
+            }
+        }
+
         if (sorted.Count < 3)
         {
             return sorted;
