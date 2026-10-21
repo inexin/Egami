@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "basn6a16.png",
+      "format": "PNG",
+      "mimeType": "image/png",
+      "width": 32,
+      "height": 32,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "rgba",
+        "channelCount": 4,
+        "bitsPerChannel": 16,
+        "channelType": "unorm16",
+        "alpha": "straight"
+      },
+      "hasMetadata": true,
+      "estimatedBytes": 8192,
+      "streams": true,
+      "metadata": {
+        "blocks": [],
+        "colorProfile": null,
+        "resolution": null,
+        "gamma": 1,
+        "exif": null,
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

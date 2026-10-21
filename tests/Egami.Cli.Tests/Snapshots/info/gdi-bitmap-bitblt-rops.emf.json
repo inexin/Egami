@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "gdi-bitmap-bitblt-rops.emf",
+      "format": "Metafile",
+      "mimeType": "image/wmf",
+      "width": 182,
+      "height": 136,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "rgba",
+        "channelCount": 4,
+        "bitsPerChannel": 8,
+        "channelType": "unorm8",
+        "alpha": "straight"
+      },
+      "hasMetadata": false,
+      "estimatedBytes": 99008,
+      "streams": false,
+      "metadata": {
+        "blocks": [],
+        "colorProfile": null,
+        "resolution": null,
+        "gamma": null,
+        "exif": null,
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

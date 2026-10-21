@@ -1,0 +1,25 @@
+Description:
+  Join still images, all the same size, into an animation.
+
+Usage:
+  egami frames join <inputs>... [options]
+
+Arguments:
+  <inputs>  The frames in order: files or globs (sorted by name).
+
+Options:
+  -o, --output <path> (REQUIRED)  The animation to write: .gif, .png (APNG) or .webp.
+  -f, --format <format>           The output format, when the extension does not say.
+  --delay <time>                  How long each frame shows: 40ms, 0.04s or 40 (milliseconds). 100ms by default.
+  --delays <path>                 A file of delays in milliseconds, one per frame, as 'frames split --delays' writes.
+  --fps <rate>                    Frames per second, instead of --delay.
+  --loop <count>                  How many times the animation plays; 0 (the default) loops forever.
+  --set <fmt.key=value>           Writer settings as fmt.key=value.
+  --quality <0-100>               Lossy quality for WebP.
+  --lossless                      Lossless WebP.
+  -?, -h, --help                  Show help and usage information
+  -v, --verbose                   Write information to standard error.
+  -vv, --debug                    Write debugging detail to standard error.
+  -q, --quiet                     Write only errors to standard error.
+  --limit <name=value,...>        Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+

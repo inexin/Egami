@@ -1,0 +1,29 @@
+Description:
+  Run steps over images, separated by +: 'egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --quality 82'. Every Egami operation is a step ('egami run --list'); save writes, and may come more than once.
+
+Usage:
+  egami run [<inputs-and-steps>...] [options] [[--] <additional arguments>...]]
+
+Arguments:
+  <inputs-and-steps>  Inputs (files, globs, -), then steps separated by +.
+
+Options:
+  -o, --output <path>       Where a save without a path writes, and where the plan writes when it has no save: a file, folder, template or -.
+  -w, --workflow <file>     Take the steps from a JSON workflow file.
+  --save-workflow <file>    Write the steps to a JSON workflow file (then run them, unless --dry-run).
+  --dry-run                 Print the steps and the files each input would write, and stop.
+  --list                    List every step with its arguments.
+  --to <profile>            Convert colors to this profile while reading.
+  -r, --recursive           Take every image in folders given as inputs.
+  -j, --jobs <count>        How many files to work on at once; 0 for one per processor.
+  --in-place                Allow outputs to replace their inputs.
+  --fail-fast               Stop at the first file that fails.
+  -?, -h, --help            Show help and usage information
+  -v, --verbose             Write information to standard error.
+  -vv, --debug              Write debugging detail to standard error.
+  -q, --quiet               Write only errors to standard error.
+  --limit <name=value,...>  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+
+Additional Arguments:
+  Arguments passed to the application that is being run.
+

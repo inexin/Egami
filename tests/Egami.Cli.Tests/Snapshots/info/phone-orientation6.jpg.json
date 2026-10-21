@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "phone-orientation6.jpg",
+      "format": "JPEG",
+      "mimeType": "image/jpeg",
+      "width": 640,
+      "height": 480,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "rotate90",
+      "pixels": {
+        "channels": "rgb",
+        "channelCount": 3,
+        "bitsPerChannel": 8,
+        "channelType": "unorm8",
+        "alpha": "none"
+      },
+      "hasMetadata": true,
+      "estimatedBytes": 921600,
+      "streams": true,
+      "metadata": {
+        "blocks": [
+          "exif",
+          "xmp"
+        ],
+        "colorProfile": null,
+        "resolution": null,
+        "gamma": null,
+        "exif": {
+          "cameraMake": "Egami",
+          "cameraModel": "Corpus Phone",
+          "dateTaken": null,
+          "orientation": "rotate90",
+          "count": 15
+        },
+        "xmp": {
+          "bytes": 2714
+        },
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

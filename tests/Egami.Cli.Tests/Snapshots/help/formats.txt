@@ -1,0 +1,17 @@
+Description:
+  List the formats egami reads and writes, or one format's writer settings for --set.
+
+Usage:
+  egami formats [<format>] [options]
+
+Arguments:
+  <format>  A format name or extension, to list its writer settings.
+
+Options:
+  --json                    Write JSON instead of text.
+  -?, -h, --help            Show help and usage information
+  -v, --verbose             Write information to standard error.
+  -vv, --debug              Write debugging detail to standard error.
+  -q, --quiet               Write only errors to standard error.
+  --limit <name=value,...>  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+

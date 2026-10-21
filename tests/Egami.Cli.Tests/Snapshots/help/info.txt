@@ -1,0 +1,21 @@
+Description:
+  Show what images are: format, size, frames, pixel layout, orientation; with --all, their metadata. Pixels are not decoded.
+
+Usage:
+  egami info <inputs>... [options]
+
+Arguments:
+  <inputs>  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs <count>        How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast               Stop at the first file that fails.
+  -a, --all                 Also read the metadata: color profile, EXIF, XMP, IPTC, text, resolution.
+  --json                    Write JSON (schema 1, see the command reference) instead of text.
+  -?, -h, --help            Show help and usage information
+  -v, --verbose             Write information to standard error.
+  -vv, --debug              Write debugging detail to standard error.
+  -q, --quiet               Write only errors to standard error.
+  --limit <name=value,...>  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+

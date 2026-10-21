@@ -133,7 +133,7 @@ internal static class InfoCommands
         json.Number("loopCount", info.LoopCount);
         json.WriteString("orientation", MetadataReport.Orientation(info.Orientation));
         json.WriteStartObject("pixels");
-        json.WriteString("channels", info.Layout.ChannelOrder.ToString());
+        json.WriteString("channels", ValueParsers.Kebab(info.Layout.ChannelOrder.ToString()));
         json.WriteNumber("channelCount", info.Layout.ChannelCount);
         json.WriteNumber("bitsPerChannel", info.Layout.BitsPerChannel);
         json.WriteString("channelType", ValueParsers.Kebab(info.Layout.ChannelType.ToString()));

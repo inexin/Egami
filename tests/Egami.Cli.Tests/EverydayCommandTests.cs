@@ -193,7 +193,7 @@ public sealed class EverydayCommandTests : IDisposable
         Assert.Equal(1, document.RootElement.GetProperty("schema").GetInt32());
         Assert.Equal("PNG", file.GetProperty("format").GetString());
         Assert.Equal(32, file.GetProperty("width").GetInt32());
-        Assert.Equal("RGBA", file.GetProperty("pixels").GetProperty("channels").GetString()!.ToUpperInvariant());
+        Assert.Equal("rgba", file.GetProperty("pixels").GetProperty("channels").GetString());
         Assert.Equal(JsonValueKind.Object, file.GetProperty("metadata").ValueKind);
     }
 

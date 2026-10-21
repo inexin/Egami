@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "bmp-13x7.ico",
+      "format": "ICO",
+      "mimeType": "image/x-icon",
+      "width": 13,
+      "height": 7,
+      "frames": 1,
+      "images": 2,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "rgba",
+        "channelCount": 4,
+        "bitsPerChannel": 8,
+        "channelType": "unorm8",
+        "alpha": "straight"
+      },
+      "hasMetadata": false,
+      "estimatedBytes": 364,
+      "streams": false,
+      "metadata": {
+        "blocks": [],
+        "colorProfile": null,
+        "resolution": null,
+        "gamma": null,
+        "exif": null,
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

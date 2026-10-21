@@ -1,0 +1,27 @@
+Description:
+  Lay images out on a contact sheet: a grid of tiles, optionally labeled with their file names.
+
+Usage:
+  egami montage <inputs>... [options]
+
+Arguments:
+  <inputs>  The images, in order: files or globs (sorted by name).
+
+Options:
+  -o, --output <path> (REQUIRED)  The contact sheet to write.
+  -f, --format <format>           The output format, when the extension does not say.
+  -c, --columns <count>           Images per row; enough for a square sheet by default.
+  --tile <WxH>                    Each image's box; images are shrunk to fit it, never enlarged. [default: 200x200]
+  --spacing <pixels>              The gap between tiles, in pixels. [default: 8]
+  --background <color>            The sheet's color (white by default).
+  --labels                        Write each file's name under its image.
+  --font <font>                   The label font: a file, an installed family, or sans-serif, serif or monospace.
+  --label-size <pixels>           The label size in pixels. [default: 13]
+  --set <fmt.key=value>           Writer settings as fmt.key=value.
+  --quality <0-100>               Lossy quality from 0 to 100.
+  -?, -h, --help                  Show help and usage information
+  -v, --verbose                   Write information to standard error.
+  -vv, --debug                    Write debugging detail to standard error.
+  -q, --quiet                     Write only errors to standard error.
+  --limit <name=value,...>        Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+
