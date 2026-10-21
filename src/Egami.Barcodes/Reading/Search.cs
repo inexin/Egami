@@ -7,50 +7,68 @@ internal static class Search
 {
     public static IReadOnlyList<BarcodeResult> Run(LuminanceImage image, BarcodeReaderOptions options, bool firstOnly)
     {
-        var found = new List<(Found Found, bool Inverted)>();
         bool tryInverted = options.TryInverted ?? options.Effort >= 5;
-        foreach (bool inverted in tryInverted ? [false, true] : (ReadOnlySpan<bool>)[false])
+        if (options.PureBarcode)
         {
-            LuminanceImage source = inverted ? image.Inverted() : image;
-            if (options.PureBarcode)
+            BitImage bits = Binarizer.Global(image);
+            if (PureReader.Read(image, bits, options.Formats) is Found pure)
             {
-                if (PureReader.Read(source, options.Formats) is Found pure)
-                {
-                    found.Add((pure, inverted));
-                }
-            }
-            else
-            {
-                foreach (Found f in Scan(source, options))
-                {
-                    found.Add((f, inverted));
-                }
+                return [ToResult(pure, false)];
             }
 
-            if (found.Count > 0 && (firstOnly || options.PureBarcode))
-            {
-                break;
-            }
+            return tryInverted && PureReader.Read(image.Inverted(), bits.Complement(), options.Formats) is Found inverted ? [ToResult(inverted, true)] : [];
         }
 
-        return [.. found.Select(f => ToResult(f.Found, f.Inverted))];
+        return Scan(image, options, tryInverted, firstOnly);
     }
 
     /// <summary>
-    /// The full search: every detector over the image, then duplicates merged. On large images the binarization runs in
-    /// stripes and the detectors side by side, up to the context's parallelism; each detector's results are kept in a fixed
-    /// order, so the results do not depend on the number of threads.
+    /// The full search: every detector over the image, then duplicates merged; then, when asked, the same over the image with
+    /// light and dark swapped. The inverted pass reuses the first pass's thresholds with the bits swapped, and the linear scan
+    /// reads both ways from the same lines. On large images the binarization runs in stripes and the detectors side by side,
+    /// up to the context's parallelism; each detector's results are kept in a fixed order, so the results do not depend on
+    /// the number of threads.
     /// </summary>
-    private static List<Found> Scan(LuminanceImage image, BarcodeReaderOptions options)
+    private static List<BarcodeResult> Scan(LuminanceImage image, BarcodeReaderOptions options, bool tryInverted, bool firstOnly)
     {
         BarcodeFormat formats = options.Formats;
         int effort = options.Effort;
-        var offset = new Vector2(image.Left, image.Top);
         int threads = (long)image.Width * image.Height < 256 * 1024 ? 1 : Math.Max(1, (options.Context ?? EgamiContext.Default).MaxParallelism);
         BitImage local = Binarizer.Local(image, threads);
+        BitImage global = image.Width < 40 || image.Height < 40 ? local : Binarizer.Global(image);
+        List<Found> linearInverted = [];
+        var jobs = Jobs(image, local, global, formats, effort);
+        if ((formats & BarcodeFormat.Linear) != 0)
+        {
+            jobs.Add(() =>
+            {
+                (List<Found> normal, List<Found> inverted) = LinearScanner.Scan(image, effort >= 6 ? local : null, formats, effort, tryInverted);
+                linearInverted = inverted;
+                return normal;
+            });
+        }
+
+        var results = new List<BarcodeResult>();
+        results.AddRange(Merge(RunJobs(jobs, threads)).Select(f => ToResult(f, false)));
+        if (tryInverted && !(firstOnly && results.Count > 0))
+        {
+            LuminanceImage inverted = image.Inverted();
+            BitImage swapped = local.Complement();
+            jobs = Jobs(inverted, swapped, ReferenceEquals(global, local) ? swapped : global.Complement(), formats, effort);
+            jobs.Add(() => linearInverted);
+            results.AddRange(Merge(RunJobs(jobs, threads)).Select(f => ToResult(f, true)));
+        }
+
+        return results;
+    }
+
+    /// <summary>The detectors for the formats asked for, over one pass's bits.</summary>
+    private static List<Func<List<Found>>> Jobs(LuminanceImage image, BitImage local, BitImage global, BarcodeFormat formats, int effort)
+    {
+        var offset = new Vector2(image.Left, image.Top);
         var jobs = new List<Func<List<Found>>>
         {
-            () => PureReader.Read(image, formats) is Found pure ? [pure] : [],
+            () => PureReader.Read(image, global, formats) is Found pure ? [pure] : [],
         };
         if ((formats & BarcodeFormat.Qr) != 0)
         {
@@ -72,14 +90,25 @@ internal static class Search
             jobs.Add(() => Pdf417Detector.Detect(local, image, effort, offset));
         }
 
-        if ((formats & BarcodeFormat.Linear) != 0)
+        return jobs;
+    }
+
+    private static List<Found> RunJobs(List<Func<List<Found>>> jobs, int threads)
+    {
+        var found = new List<Found>[jobs.Count];
+        if (threads > 1 && jobs.Count > 1)
         {
-            jobs.Add(() => LinearScanner.Scan(image, effort >= 6 ? local : null, formats, effort));
+            Parallel.For(0, jobs.Count, new ParallelOptions { MaxDegreeOfParallelism = Math.Min(threads, jobs.Count) }, i => found[i] = jobs[i]());
+        }
+        else
+        {
+            for (int i = 0; i < jobs.Count; i++)
+            {
+                found[i] = jobs[i]();
+            }
         }
 
-        var found = new List<Found>[jobs.Count];
-        Parallel.For(0, jobs.Count, new ParallelOptions { MaxDegreeOfParallelism = Math.Min(threads, jobs.Count) }, i => found[i] = jobs[i]());
-        return Merge([.. found.SelectMany(f => f)]);
+        return [.. found.SelectMany(f => f)];
     }
 
     /// <summary>Keeps one result per symbol: the same format and text found again near the same place is a duplicate.</summary>

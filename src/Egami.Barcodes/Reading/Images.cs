@@ -57,21 +57,33 @@ internal sealed class LuminanceImage(ReadOnlyMemory<byte> pixels, int width, int
         return new LuminanceImage(luminance[start..(start + ((area.Height - 1) * stride) + area.Width)], area.Width, area.Height, stride, area.X, area.Y);
     }
 
-    /// <summary>Returns the image with light and dark swapped.</summary>
-    public LuminanceImage Inverted()
+    private LuminanceImage? _inverted;
+
+    /// <summary>Returns the image with light and dark swapped, made once and kept.</summary>
+    public LuminanceImage Inverted() => LazyInitializer.EnsureInitialized(ref _inverted, () =>
     {
         byte[] pixels = new byte[Width * Height];
         for (int y = 0; y < Height; y++)
         {
             ReadOnlySpan<byte> row = Row(y);
-            for (int x = 0; x < Width; x++)
+            Span<byte> target = pixels.AsSpan(y * Width, Width);
+            int x = 0;
+            if (Vector128.IsHardwareAccelerated)
             {
-                pixels[(y * Width) + x] = (byte)(255 - row[x]);
+                for (; x <= Width - 16; x += 16)
+                {
+                    (~Vector128.LoadUnsafe(ref MemoryMarshal.GetReference(row), (nuint)x)).StoreUnsafe(ref MemoryMarshal.GetReference(target), (nuint)x);
+                }
+            }
+
+            for (; x < Width; x++)
+            {
+                target[x] = (byte)(255 - row[x]);
             }
         }
 
         return new LuminanceImage(pixels, Width, Height, Width, Left, Top);
-    }
+    });
 }
 
 /// <summary>A binarized image: 1 for dark, 0 for light.</summary>
@@ -89,6 +101,28 @@ internal sealed class BitImage(byte[] bits, int width, int height)
     public bool IsDark(int x, int y) => (uint)x < (uint)Width && (uint)y < (uint)Height && Bits[(y * Width) + x] != 0;
 
     public ReadOnlySpan<byte> Row(int y) => Bits.AsSpan(y * Width, Width);
+
+    /// <summary>Returns the bits with dark and light swapped, as the inverted image thresholds.</summary>
+    public BitImage Complement()
+    {
+        byte[] bits = new byte[Bits.Length];
+        int i = 0;
+        if (Vector128.IsHardwareAccelerated)
+        {
+            Vector128<byte> one = Vector128<byte>.One;
+            for (; i <= bits.Length - 16; i += 16)
+            {
+                (Vector128.LoadUnsafe(ref Bits[0], (nuint)i) ^ one).StoreUnsafe(ref bits[0], (nuint)i);
+            }
+        }
+
+        for (; i < bits.Length; i++)
+        {
+            bits[i] = (byte)(Bits[i] ^ 1);
+        }
+
+        return new BitImage(bits, Width, Height);
+    }
 
     /// <summary>Returns the image mirrored about its main diagonal.</summary>
     public BitImage Transposed()
@@ -362,6 +396,13 @@ internal static class Binarizer
     /// </summary>
     public static void RowRuns(ReadOnlySpan<byte> row, List<float> runs, List<float> offsets)
     {
+        float[] work = [];
+        RowRuns(row, runs, offsets, ref work);
+    }
+
+    /// <summary>As <see cref="RowRuns(ReadOnlySpan{byte}, List{float}, List{float})"/>, with a work buffer kept between calls.</summary>
+    public static void RowRuns(ReadOnlySpan<byte> row, List<float> runs, List<float> offsets, ref float[] work)
+    {
         runs.Clear();
         offsets.Clear();
         int n = row.Length;
@@ -372,7 +413,12 @@ internal static class Binarizer
         }
 
         float threshold = Valley(histogram) << 3;
-        float[] sharp = new float[n];
+        if (work.Length < n)
+        {
+            work = new float[n];
+        }
+
+        Span<float> sharp = work.AsSpan(0, n);
         for (int i = 0; i < n; i++)
         {
             int left = row[Math.Max(i - 1, 0)], right = row[Math.Min(i + 1, n - 1)];
@@ -407,18 +453,29 @@ internal static class Binarizer
     /// Cuts a row into runs against a threshold that follows the light: the mean over a window around each sample (an eighth of
     /// the row, at least 15 samples), so a gradient across a label does not swallow its bars. Edges are at sub-pixel positions.
     /// </summary>
-    public static void AdaptiveRowRuns(ReadOnlySpan<byte> row, List<float> runs, List<float> offsets)
+    public static void AdaptiveRowRuns(ReadOnlySpan<byte> row, List<float> runs, List<float> offsets, ref float[] work, ref int[] prefixes)
     {
         runs.Clear();
         offsets.Clear();
         int n = row.Length, radius = Math.Max(7, n / 16);
-        int[] prefix = new int[n + 1];
+        if (work.Length < n)
+        {
+            work = new float[n];
+        }
+
+        if (prefixes.Length < n + 1)
+        {
+            prefixes = new int[n + 1];
+        }
+
+        Span<int> prefix = prefixes.AsSpan(0, n + 1);
+        prefix[0] = 0;
         for (int i = 0; i < n; i++)
         {
             prefix[i + 1] = prefix[i] + row[i];
         }
 
-        float[] level = new float[n];
+        Span<float> level = work.AsSpan(0, n);
         int min = 255, max = 0;
         for (int i = 0; i < n; i++)
         {
