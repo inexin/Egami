@@ -38,6 +38,8 @@ raster that is not square is fitted inside each square and centred on transparen
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Ico.cs#ico-save)]
 
+`FaviconSizes` writes 16, 32 and 48; every browser and Windows read the file.
+
 `IcoWriterOptions.Encoding`, an `IcoEntryEncoding`, forces every entry to PNG or BMP. Left null, the default, it writes 256 × 256 entries as PNG and smaller ones as
 32-bit BMP with an AND mask built from alpha, as Microsoft's guidance asks; a raster loaded from an icon and written at its own
 size keeps its entry's kind. PNG entries are always 8-bit RGBA, the only kind Windows lists. Entries are sorted smallest first,

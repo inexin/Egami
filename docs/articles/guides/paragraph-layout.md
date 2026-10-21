@@ -201,3 +201,41 @@ images: `Paragraph.CreateFlow`, then `NextLine` until it returns null. Each line
 Line breaks equal headless Chromium's on a corpus of eleven scripts at five widths each, and on the feature cases; the few
 differences are Chromium's own (its older quotation mark rule, no break at U+2028, no break after a slash in URLs, letter
 spacing in Arabic).
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### A caption in a box
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#caption-box)]
+
+The layout's height is known before drawing, so the band behind the text fits the lines exactly; `MaxLines` stops a long
+caption from climbing up the photo.
+
+### A justified article column
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#article-column)]
+
+Balanced filling evens out line lengths, so justified lines stretch less; soft hyphens break long words only where a line
+needs them.
+
+### A chat bubble with an emoji
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#chat-bubble)]
+
+`LongestLine` is the width the lines actually use, which is what a bubble should wrap; `DidExceed` and `HiddenRange` say what
+the ellipsis cut.
+
+### Japanese vertical text
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#vertical-japanese)]
+
+Kana and kanji stand upright and Latin turns sideways, as `TextOrientation.Mixed` says; hit tests, carets and selections work
+along the columns.
+
+### Text flowing across two columns
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#two-columns)]
+
+Each line's top is 0, so the caller places it; a line that does not fit goes back with `Rewind` and starts the next column.

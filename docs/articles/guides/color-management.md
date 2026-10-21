@@ -69,6 +69,9 @@ a CMYK file converted to sRGB loads as `Rgb8`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ColorManagement.cs#convert-on-load)]
 
+Display P3 phone photos, Adobe RGB camera files and CMYK print JPEGs all come out as sRGB, converted through their own
+profiles while they decode; files with no color information are taken as sRGB and left alone.
+
 ## Transforms on pixel spans
 
 `ColorTransform` compiles a conversion once and applies it to spans of any pixel type, in place or into another type. Transforms

@@ -57,7 +57,7 @@ Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks`.
 | `samples/` | One small console app per guide; `dotnet run --project samples/Formats` |
 | `tests/Egami.OutsideTests/` | Plugins written with only the public API: a pixel type, a memory source, operations, formats |
 | `tests/images/`, `tests/reference/` | Test images for every format and their reference decodes, with licenses; large corpora are fetched into `.cache` |
-| `docs/` | The documentation site (DocFX): guides, cookbook, API reference. Build it with `docfx docs/docfx.json` (output in `docs/_site`) |
+| `docs/` | The documentation site (DocFX): guides with recipes, API reference. Build it with `docfx docs/docfx.json` (output in `docs/_site`) |
 | `benchmarks/Egami.Benchmarks/` | BenchmarkDotNet benchmarks |
 | `branding/` | Package icons, logos and the favicon |
 | `tools/` | Scripts that regenerate references and the public API baseline, check the docs are complete, and the libpng checker used in CI |

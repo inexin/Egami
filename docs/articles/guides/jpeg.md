@@ -129,6 +129,14 @@ instead, without the RGB step; print-accurate color needs the embedded ICC profi
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#jpeg-details)]
 
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Read a CMYK JPEG's inks
+
+[!code-csharp[](../../../tests/Egami.DocSamples/PixelTypes.cs#cmyk-inks)]
+
 ## Run it
 
 [`samples/Jpeg`](https://github.com/inexin/Egami/tree/main/samples/Jpeg) is a console app that does what this guide shows on the bundled

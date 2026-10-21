@@ -87,6 +87,9 @@ edit is the packet every format saves. JPEG, PNG (an iTXt chunk) and GIF carry X
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#xmp-live)]
 
+Lightroom, Bridge and Windows read the keywords and rating from XMP. For news and stock workflows, set the same keywords in
+[IPTC](#iptc) too.
+
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#xmp-parse)]
 
 ## Color space

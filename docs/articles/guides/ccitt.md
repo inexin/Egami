@@ -55,3 +55,14 @@ later rows of a damaged stream differ from theirs.
 
 `Columns` and `Rows` are checked against `SafetyLimits` before memory is taken, and with `Rows` 0 the output grows only up to
 `MaxPixels`, so a stream of EOLs cannot use up memory.
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Decode a PDF's CCITT image
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Ccitt.cs#ccitt-pdf-image)]
+
+`CcittFax.Decode` gives what the CCITTFaxDecode filter gives, byte-aligned Group 4 included; the image's `/Decode`, `/ImageMask`
+and color space then apply as after any filter. To load the data straight to `Gray8`, use `CcittFormat`.

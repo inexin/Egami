@@ -116,3 +116,28 @@ offer. A table whose structure is damaged is ignored whole, with a `Font.BadTabl
 that drives shaping past its limits stops with `Font.ShapingLimit`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Shaping.cs#layout)]
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Emoji in a caption
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#emoji-caption)]
+
+Color glyphs draw in color on every canvas; on a raster they are cached as images, like other glyphs. A cluster with emoji
+presentation prefers a color face from the fallback list; text presentation (VS15) prefers an outline face.
+
+### An Arabic caption
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#arabic-caption)]
+
+The shaper picks each letter's joining form and the bidi algorithm orders the words; the origin is still the line's left end, so
+right alignment subtracts the measured advance.
+
+### A Hindi label with fallback
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#hindi-fallback)]
+
+Fallback works on whole grapheme clusters, so a conjunct never splits across two faces. `FontFallback.System` would find an
+installed Devanagari face instead, at the cost of output that depends on the machine.

@@ -71,6 +71,8 @@ check every frame unless given one.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Analysis.cs#hashes)]
 
+Keep the 64-bit hashes in a database column; a lookup within a few bits finds recompressed and resized copies.
+
 `PerceptualHash.Dct` (pHash style) and `PerceptualHash.Difference` (dHash) reduce the first frame's brightness, flattened onto
 white, to 32 × 32 or 9 × 8 with a Lanczos filter and keep one bit per low frequency or neighbour pair. The same picture after JPEG
 recompression, resizing or a small brightness change stays within about 6 bits; unrelated photos average about 32 bits apart.

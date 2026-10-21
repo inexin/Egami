@@ -32,6 +32,8 @@ and height, over a background:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-to-png)]
 
+Egami.Metafiles plays the records as Windows does (GDI for WMF and EMF, GDI+ for EMF+), in managed code on any OS.
+
 [!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-draw)]
 
 `MetafileRenderOptions` carries the rest:
@@ -54,6 +56,8 @@ Symbol and Wingdings text maps to Unicode in a substitute. Text given as glyph i
 scripts) is drawn only in the face it was made for, since another face would show the wrong letters.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-fonts)]
+
+Each glyph still goes where the file put it, so lines keep their length in a substitute face.
 
 The open fonts are found only when they are installed, and many servers have none. The
 [Egami.Fonts.Substitutes](text.md#substitute-fonts) package bundles Liberation, Carlito and Caladea, so put its faces in the

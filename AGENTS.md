@@ -48,7 +48,9 @@ python tools/update-public-api.py                  # adds new public API to Publ
 Every user-visible change updates the docs in the same commit:
 
 - The guide in `docs/articles/guides/` for the area (add new guides to `docs/articles/toc.yml`, then run
-  `python tools/make-llms-txt.py` to update `docs/llms.txt`), and a recipe in `docs/articles/cookbook/index.md` where it helps.
+  `python tools/make-llms-txt.py` to update `docs/llms.txt`), and a recipe under the guide's `## Recipes` heading where it helps. A guide explains an
+  area (options, defaults, limits); a recipe is one short task with its code. New guides go into their package's section of `docs/articles/toc.yml` and
+  `docs/articles/guides/index.md`, in the same order.
 - Code shown in docs lives in `tests/Egami.DocSamples/` as `#region` blocks and is compiled and run with the tests; guides
   include it with `[!code-csharp[](../../../tests/Egami.DocSamples/File.cs#region)]`. XML `<example>` tags point at the same
   regions. Never paste untested code into a guide.

@@ -3,19 +3,29 @@
 - name: Packages
   href: packages.md
 - name: Guides
+  href: guides/index.md
+- name: "Egami: basics"
   items:
-    - name: Formats
-      href: guides/formats.md
-    - name: Resizing and geometry
-      href: guides/resizing-and-geometry.md
     - name: Pixel types
       href: guides/pixel-types.md
-    - name: HDR files
-      href: guides/hdr.md
+    - name: Formats
+      href: guides/formats.md
+    - name: Metadata
+      href: guides/metadata.md
+    - name: Memory and threading
+      href: guides/memory-and-threading.md
+    - name: Security
+      href: guides/security.md
+    - name: Diagnostics
+      href: diagnostics.md
+    - name: Performance
+      href: performance.md
+- name: "Egami: editing images"
+  items:
+    - name: Resizing and geometry
+      href: guides/resizing-and-geometry.md
     - name: Color
       href: guides/color.md
-    - name: Color management
-      href: guides/color-management.md
     - name: Tone and color
       href: guides/tone-and-color.md
     - name: Filters
@@ -28,73 +38,83 @@
       href: guides/effects.md
     - name: Compositing
       href: guides/compositing.md
-    - name: Drawing
-      href: guides/drawing.md
-    - name: The .egdr format
-      href: guides/egdr-format.md
-    - name: Fonts and text
-      href: guides/text.md
-    - name: Unicode text and shaping
-      href: guides/unicode-text.md
-    - name: Paragraph layout
-      href: guides/paragraph-layout.md
-    - name: SVG
-      href: guides/svg.md
-    - name: CSS
-      href: guides/css.md
-    - name: Windows metafiles
-      href: guides/metafiles.md
-    - name: Barcodes
-      href: guides/barcodes.md
-    - name: Reading barcodes
-      href: guides/barcode-reading.md
     - name: Regions, masks and channels
       href: guides/regions-and-masks.md
     - name: Keying and arithmetic
       href: guides/keying-and-arithmetic.md
+- name: "Egami: color and HDR"
+  items:
+    - name: Color management
+      href: guides/color-management.md
+    - name: HDR files
+      href: guides/hdr.md
+    - name: Planar YUV
+      href: guides/planar-yuv.md
+- name: "Egami: analysis, palettes and animation"
+  items:
     - name: Comparing and measuring
       href: guides/analysis.md
     - name: Palettes and dithering
       href: guides/palettes.md
     - name: Animation
       href: guides/animation.md
-    - name: Metadata
-      href: guides/metadata.md
+- name: "Egami: file formats"
+  items:
     - name: JPEG
       href: guides/jpeg.md
     - name: WebP
       href: guides/webp.md
-    - name: VP8 video frames
-      href: guides/vp8.md
     - name: TIFF
       href: guides/tiff.md
-    - name: JBIG2
-      href: guides/jbig2.md
-    - name: CCITT fax
-      href: guides/ccitt.md
-    - name: JPEG 2000
-      href: guides/jpeg2000.md
     - name: JPEG XL
       href: guides/jxl.md
     - name: AVIF
       href: guides/avif.md
     - name: HEIC
       href: guides/heic.md
+    - name: JPEG 2000
+      href: guides/jpeg2000.md
+    - name: JBIG2
+      href: guides/jbig2.md
+    - name: CCITT fax
+      href: guides/ccitt.md
     - name: ICO and CUR
       href: guides/ico.md
     - name: PSD and PSB
       href: guides/psd.md
-    - name: Planar YUV
-      href: guides/planar-yuv.md
+    - name: VP8 video frames
+      href: guides/vp8.md
+- name: "Egami: extending"
+  items:
     - name: Custom operations and formats
       href: guides/extending.md
-    - name: Memory and threading
-      href: guides/memory-and-threading.md
-    - name: Security
-      href: guides/security.md
-- name: Diagnostics
-  href: diagnostics.md
-- name: Cookbook
-  href: cookbook/index.md
-- name: Performance
-  href: performance.md
+- name: Egami.Drawing
+  items:
+    - name: Drawing
+      href: guides/drawing.md
+    - name: The .egdr format
+      href: guides/egdr-format.md
+- name: Egami.Fonts
+  items:
+    - name: Fonts and text
+      href: guides/text.md
+    - name: Unicode text and shaping
+      href: guides/unicode-text.md
+    - name: Paragraph layout
+      href: guides/paragraph-layout.md
+- name: Egami.Svg and Egami.Css
+  items:
+    - name: SVG
+      href: guides/svg.md
+    - name: CSS
+      href: guides/css.md
+- name: Egami.Metafiles
+  items:
+    - name: Windows metafiles
+      href: guides/metafiles.md
+- name: Egami.Barcodes
+  items:
+    - name: Barcodes
+      href: guides/barcodes.md
+    - name: Reading barcodes
+      href: guides/barcode-reading.md

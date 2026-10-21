@@ -29,25 +29,33 @@ image.Save("photo-small.png");
 
 ## Packages
 
-| Package | What it does |
-| --- | --- |
-| Egami | Rasters and pixel types; PNG, JPEG, GIF, WebP, TIFF, JPEG XL, AVIF and more; resizing, color management, filters, metadata |
-| Egami.Drawing | Antialiased paths, shapes, text, gradients, layers and recorded drawings on a canvas |
-| Egami.Fonts | TrueType and OpenType fonts, text shaping and paragraph layout |
-| Egami.Fonts.Substitutes | Open fonts that stand in for Arial, Helvetica, Times, Courier, Calibri and Cambria |
-| Egami.Svg | Reads, edits, saves and draws SVG |
-| Egami.Css | CSS parsing, selectors and the cascade |
-| Egami.Metafiles | Plays WMF, EMF and EMF+ pictures |
+Add only the packages you use. Each one has its own guides.
 
-Egami, Egami.Drawing, Egami.Fonts, Egami.Fonts.Substitutes, Egami.Svg, Egami.Css and Egami.Metafiles 1.0.0 are on
-[NuGet](https://www.nuget.org/packages?q=Egami).
+| Package | What it does | Docs |
+| --- | --- | --- |
+| [Egami](https://www.nuget.org/packages/Egami) | Rasters and pixel types; PNG, JPEG, GIF, WebP, TIFF, JPEG XL, AVIF and more; resizing, color management, filters, metadata | [Getting started](https://inexin.github.io/Egami/v1/articles/getting-started.html), [all guides](https://inexin.github.io/Egami/v1/articles/guides/index.html) |
+| [Egami.Drawing](https://www.nuget.org/packages/Egami.Drawing) | Antialiased paths, shapes, text, gradients, layers and recorded drawings on a canvas | [Drawing](https://inexin.github.io/Egami/v1/articles/guides/drawing.html), [.egdr format](https://inexin.github.io/Egami/v1/articles/guides/egdr-format.html) |
+| [Egami.Fonts](https://www.nuget.org/packages/Egami.Fonts) | TrueType and OpenType fonts, text shaping and paragraph layout | [Fonts and text](https://inexin.github.io/Egami/v1/articles/guides/text.html), [Unicode text](https://inexin.github.io/Egami/v1/articles/guides/unicode-text.html), [Paragraph layout](https://inexin.github.io/Egami/v1/articles/guides/paragraph-layout.html) |
+| [Egami.Fonts.Substitutes](https://www.nuget.org/packages/Egami.Fonts.Substitutes) | Open fonts that stand in for Arial, Helvetica, Times, Courier, Calibri and Cambria | [Guide](https://inexin.github.io/Egami/v1/articles/guides/text.html#substitute-fonts) |
+| [Egami.Svg](https://www.nuget.org/packages/Egami.Svg) | Reads, edits, saves and draws SVG | [Guide](https://inexin.github.io/Egami/v1/articles/guides/svg.html) |
+| [Egami.Css](https://www.nuget.org/packages/Egami.Css) | CSS parsing, selectors and the cascade | [Guide](https://inexin.github.io/Egami/v1/articles/guides/css.html) |
+| [Egami.Metafiles](https://www.nuget.org/packages/Egami.Metafiles) | Plays WMF, EMF and EMF+ pictures | [Guide](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html) |
+| [Egami.Barcodes](https://www.nuget.org/packages/Egami.Barcodes) | Writes and reads 1D and 2D barcodes | [Writing](https://inexin.github.io/Egami/v1/articles/guides/barcodes.html), [reading](https://inexin.github.io/Egami/v1/articles/guides/barcode-reading.html) |
+| Egami.Heic | Reads HEIC phone photos; opt-in because HEVC is covered by patents (coming in 1.1) | [Guide](https://inexin.github.io/Egami/v1/articles/guides/heic.html) |
+
+All packages except Egami.Heic are 1.0 and on [NuGet](https://www.nuget.org/packages?q=Egami).
+[Packages](https://inexin.github.io/Egami/v1/articles/packages.html) lists what each one needs.
 
 ## Documentation
 
-The documentation is at [inexin.github.io/Egami](https://inexin.github.io/Egami/): [Getting started](https://inexin.github.io/Egami/v1/articles/getting-started.html),
-the [guides](https://inexin.github.io/Egami/v1/articles/guides/formats.html), the
-[cookbook](https://inexin.github.io/Egami/v1/articles/cookbook/index.html) and the
-[API reference](https://inexin.github.io/Egami/v1/api/Egami.html). What each version adds is in the [changelog](CHANGELOG.md).
+The documentation is at [inexin.github.io/Egami](https://inexin.github.io/Egami/):
+
+- **[Getting started](https://inexin.github.io/Egami/v1/articles/getting-started.html)** loads, edits and saves a first image.
+- **The [guides](https://inexin.github.io/Egami/v1/articles/guides/index.html)** explain one area each: what it does, the options, the defaults and the
+  limits. They are grouped by package and go from the basics to the specialized, and many end with recipes for common tasks.
+- **The [API reference](https://inexin.github.io/Egami/v1/api/Egami.html)** lists every type and member.
+
+What each version adds is in the [changelog](CHANGELOG.md).
 
 ## Contributing
 

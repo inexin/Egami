@@ -224,6 +224,8 @@ PDFium finds.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#names)]
 
+A simple font's `/Differences` names glyphs; `TryGetGlyphByName` finds them in a CFF charset or a TrueType post table.
+
 - `CidSystemInfo`, `GetCid` and `TryGetGlyphByCid` read a CID-keyed CFF font's ROS and charset, for CIDFontType0 fonts.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#cids)]
@@ -236,6 +238,9 @@ PDFium finds.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#cmaps)]
 
+A symbolic TrueType font looks codes up in (3,0), then (1,0); a non-symbolic one in (3,1). A Type1C font without `/Encoding`
+uses the CFF program's own encoding, `BuiltInEncoding`.
+
 - `CffStandardStrings` has the 391 standard strings and the Standard and Expert encodings, for writing CFF (a Type 1 font
   converted for embedding, say).
 
@@ -245,3 +250,28 @@ Everything is read on first use, once per face, and is safe from several threads
 table cannot give is null, a subtable that cannot be read maps nothing, and each reports a warning (`Font.BadTable`) through the
 context's diagnostics, unless `FontLoadOptions.Strict` asks for an exception. On the 1,723 font programs embedded in Egap's
 corpus, names, CIDs, subtables and built-in encodings equal FreeType's and fontTools' (FreeType's where the two differ).
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### A label along a curve
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#label-curve)]
+
+### A variable weight slider
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#weight-slider)]
+
+### Searchable text in a PDF
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#pdf-text)]
+
+A `GlyphRun` from the shaper carries the text and a cluster per glyph, in visual order; that is all a PDF writer needs for
+ToUnicode and ActualText.
+
+### A variable font in a PDF
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#variable-pdf)]
+
+The subset of a variable face is always a static instance; `SubsetOptions.Variations` gives the position without making a face.

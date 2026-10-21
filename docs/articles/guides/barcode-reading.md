@@ -32,6 +32,8 @@ and `ReadBarcode` take the bytes with the width, height and stride. The buffer i
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-read-luminance)]
 
+The Y plane is read where it is, so a frame from a camera API needs no conversion or copy.
+
 ## How each symbology is found
 
 Linear barcodes are found along scan lines: rows, columns from effort 3 and diagonals from effort 7, each read in both

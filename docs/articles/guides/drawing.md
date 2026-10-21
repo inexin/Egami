@@ -205,6 +205,9 @@ and `Playback` replays it without the state `DrawPicture` adds. A drawing replay
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Advanced.cs#recording)]
 
+The drawing is recorded once and replayed as vectors, so it is sharp at every size; `cacheAsImage` trades that for speed when
+it is drawn many times at one size.
+
 ### Drawing patterns
 
 A `PicturePaint` fills shapes with a drawing repeated by tile modes: the tiling patterns of PDF and SVG, and Skia's picture
@@ -250,6 +253,8 @@ for the first four). `Path.Combine` takes any number of paths in one pass, appli
 same area without overlaps or self-intersections.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#booleans)]
+
+Boolean operations keep curves, so the frame exports to PDF or SVG exactly. See [Path geometry](#path-geometry).
 
 - Each input keeps its fill rule; open contours count as closed. Results use `NonZero`, with outer contours clockwise on screen
   and holes counterclockwise, and no contours cross.
@@ -329,3 +334,81 @@ meshes.
 Fills are within a mean level of SkiaSharp's and closer than SkiaSharp's to the exact covered area.
 Boolean operations, outlines, dashes, effects and SVG parsing give paths within a mean level of SkiaSharp's, and measured lengths agree within 1e-3. The figures are in the 2.6.1
 and 2.6.2 release notes.
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Draw a rounded badge
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#badge)]
+
+Drawing at twice the size through `Scale(2)` keeps every shape's coordinates as designed.
+
+### Draw chart axes
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#chart-axes)]
+
+Hairlines on half-pixel coordinates fill exactly one column or row of pixels.
+
+### Clip a photo to a circle
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#clipped-photo)]
+
+### Animate a line drawing itself
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#draw-itself)]
+
+`PathEffect.Trim` keeps a fraction of the path's length; stepping it from 0 to 1 gives the frames.
+
+### Paint a dusk sky
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#sky-gradient)]
+
+Mixing in Oklch keeps the hues from turning gray between stops, and `Dither` hides the bands of a wide soft ramp. See
+[Gradients](#gradients).
+
+### Draw a card with a shadow
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#card-shadow)]
+
+### Fade a photo's edges
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#faded-edge)]
+
+### Fade a group as one
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#group-opacity)]
+
+See [Layers](#layers).
+
+### Stretch a button image to any size
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Advanced.cs#stretchable-button)]
+
+The corners keep their size and the edges and center stretch. An Android .9.png carries its own lattice: see
+[Nine-patches and lattices](#nine-patches-and-lattices).
+
+### Shade a gradient mesh
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Advanced.cs#gradient-mesh)]
+
+See [Meshes and patches](#meshes-and-patches).
+
+### Separations of a CMYK page with spot colours
+
+[!code-csharp[](../../../tests/Egami.DocSamples/InkRecipes.cs#ink-separations)]
+
+`InkCanvas` draws on plates with any `Canvas` call; RGB images and colours convert through the ink set's profile. See
+[Printing inks](#printing-inks).
+
+### A spot-colour label with overprint
+
+[!code-csharp[](../../../tests/Egami.DocSamples/InkRecipes.cs#ink-spot-label)]
+
+`Overprint.On` paints only the inks a colour names; `NonZero` also leaves the plates of a CMYK colour's zero components alone,
+as PDF's overprint mode 1.
+
+### Check total ink coverage before printing
+
+[!code-csharp[](../../../tests/Egami.DocSamples/InkRecipes.cs#ink-coverage)]

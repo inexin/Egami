@@ -171,3 +171,26 @@ space widths in `Runs`. A grid holds the symbol only, without its quiet zone.
 encoder.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-modules)]
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Put a QR code on a label
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-label)]
+
+On a raster, the QR code's modules snap to whole pixels, so its edges stay sharp at any size.
+
+### Save a barcode as SVG
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-svg)]
+
+`Barcode.ToPath` gives the whole symbol as one path, so any canvas can take it; Egami.Svg's `SvgCanvas` writes it as one SVG
+`<path>`. Egami.Barcodes itself does not depend on Egami.Svg.
+
+### Print a GS1 shipping label
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-shipping)]
+
+At a module size in points, the barcode has the X dimension a scanner expects, on a PDF page or any other canvas.

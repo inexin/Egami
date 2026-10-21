@@ -51,6 +51,22 @@ nothing once warm and is safe to call from many threads.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#compositor)]
 
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Watermark with Multiply
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#watermark-multiply)]
+
+A dark logo drawn with `Multiply` reads as ink on the photo: light areas of the logo leave the photo unchanged.
+
+### Blend a row in a custom operation
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#blend-row)]
+
+`Compositor.Blend` works on any pixel type, so one custom step serves every raster.
+
 ## Run it
 
 [`samples/Compositing`](https://github.com/inexin/Egami/tree/main/samples/Compositing) is a console app that does what this guide shows on the bundled

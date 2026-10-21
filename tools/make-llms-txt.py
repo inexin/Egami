@@ -38,7 +38,7 @@ def toc_entries():
     for line in open(TOC, encoding="utf-8"):
         m = re.match(r"^(\s*)- name: (.+)$", line)
         if m:
-            name = m.group(2).strip()
+            name = m.group(2).strip().strip("\"")
             if m.group(1) == "":
                 section = "Docs"
             continue
