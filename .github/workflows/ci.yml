@@ -92,14 +92,20 @@ jobs:
           done
       - name: No package references in src/
         run: |
-          # Only build-time analyzers are allowed, plus, in satellite packages, the approved packages in docs/references.md
-          # (none yet). Anything else would ship as a dependency.
+          # Only build-time analyzers are allowed, plus the approved packages in docs/references.md: System.CommandLine in the
+          # egami tool (an app, not a library). The tool's source generator runs at build time only and is never packed.
+          # Anything else would ship as a dependency.
           allowed='Microsoft.CodeAnalysis.PublicApiAnalyzers'
           status=0
           for proj in $(find src -name '*.csproj'); do
+            case "$proj" in
+              src/Egami.Cli.Generators/*) continue ;;
+              src/Egami.Cli/*) extra='System.CommandLine' ;;
+              *) extra='' ;;
+            esac
             for pkg in $(dotnet list "$proj" package --include-transitive --format json \
                          | jq -r '.projects[].frameworks[]? | (.topLevelPackages // []) + (.transitivePackages // []) | .[] | select(.autoReferenced != "true") | .id'); do
-              if ! grep -qxF "$pkg" <<< "$allowed"; then
+              if ! grep -qxF "$pkg" <<< "$allowed"$'\n'"$extra"; then
                 echo "::error file=$proj::Package reference '$pkg' is not allowed in src/"
                 status=1
               fi
