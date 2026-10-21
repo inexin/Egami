@@ -48,7 +48,7 @@ With Egami.Heic registered, HEIC loads like any format, in its natural pixel typ
 - **Metadata.** Exif and XMP items are read into `RasterMetadata.Exif` and `RasterMetadata.Xmp`.
 
 The decoded HEVC planes are available without the conversion to RGB, as for AVIF and JPEG (see
-[Planar YUV](planar-yuv.md)):
+[Planar YUV](../guides/planar-yuv.md)):
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#yuv)]
 
@@ -59,7 +59,7 @@ Every intra picture of the HEVC conformance streams in these profiles decodes bi
 iPhones store an HDR photo as an SDR image with a gain map: Apple's HDRGainMap auxiliary image (its headroom in the maker note
 or the map's XMP), and on newer iPhones an ISO 21496-1 tone-map item as well, which is preferred. Load gives the SDR image with
 the map in `RasterMetadata.GainMap`; `ReaderOptions.Hdr` gives the HDR rendition for a display's headroom, as for
-[Ultra HDR JPEGs](hdr.md).
+[Ultra HDR JPEGs](../guides/hdr.md).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Heic.cs#hdr)]
 

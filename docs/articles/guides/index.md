@@ -4,20 +4,33 @@ Each guide covers one area of Egami: what it does, the options and their default
 **Recipes**, short answers to common tasks such as making a favicon or blurring a face, with code you can copy. Every code sample
 compiles and runs in Egami's test run.
 
-The guides are grouped by package, and within Egami they go from the basics to the specialized. If you are new, read
-[Getting started](../getting-started.md) first.
+The guides are grouped by package, and within Egami they go from the basics to the specialized. Each file format has its own
+page in [Formats](../formats/index.md). If you are new, read [Getting started](../getting-started.md) first.
 
 ## Egami: basics
 
-What every user meets: pixel types, the file formats, metadata, and how Egami uses memory and handles untrusted files.
+What every user meets: pixel types, metadata, and how Egami uses memory and handles untrusted files.
 
 - [Pixel types](pixel-types.md): how pixels are stored, and which type to pick.
-- [Formats](formats.md): what each format reads and writes, and how to choose one.
 - [Metadata](metadata.md): EXIF, IPTC and XMP, kept, edited or stripped.
 - [Memory and threading](memory-and-threading.md): pooled memory, streaming decode and parallel work.
 - [Security](security.md): the limits that make untrusted files safe to load.
 - [Diagnostics](../diagnostics.md): warnings about damaged or unusual files, and how to log or reject them.
 - [Performance](../performance.md): what keeps loading, editing and saving fast.
+
+## Formats
+
+The [overview](../formats/index.md) says what each format reads and writes and how a format is detected; then one page per
+format, with its options:
+
+- [PNG and APNG](../formats/png.md), [JPEG](../formats/jpeg.md), [GIF](../formats/gif.md), [WebP](../formats/webp.md),
+  [TIFF](../formats/tiff.md), [JPEG XL](../formats/jxl.md), [AVIF](../formats/avif.md), [HEIC](../formats/heic.md) (in the
+  Egami.Heic package)
+- [BMP](../formats/bmp.md), [TGA](../formats/tga.md), [QOI](../formats/qoi.md), [Netpbm](../formats/pnm.md)
+- [Radiance](../formats/radiance.md), [OpenEXR](../formats/openexr.md)
+- [ICO and CUR](../formats/ico.md), [PSD and PSB](../formats/psd.md)
+- [JPEG 2000](../formats/jpeg2000.md), [JBIG2](../formats/jbig2.md), [CCITT fax](../formats/ccitt.md)
+- [VP8 video frames](../formats/vp8.md)
 
 ## Egami: editing images
 
@@ -37,7 +50,7 @@ Operations that run on a raster through `Apply` and `Derive`.
 ## Egami: color and HDR
 
 - [Color management](color-management.md): ICC profiles, converting between color spaces, CMYK.
-- [HDR files](hdr.md): Radiance, OpenEXR, gain maps and tone mapping.
+- [HDR images](hdr.md): HDR pixels, gain maps and Ultra HDR photos.
 - [Planar YUV](planar-yuv.md): video-style YUV planes in and out of JPEG, AVIF and video frames.
 
 ## Egami: analysis, palettes and animation
@@ -45,23 +58,6 @@ Operations that run on a raster through `Apply` and `Derive`.
 - [Comparing and measuring](analysis.md): differences, statistics, hashes and visual regression tests.
 - [Palettes and dithering](palettes.md): reducing colors and indexed images.
 - [Animation](animation.md): frames, timing and animated GIF, APNG and WebP.
-
-## Egami: file formats
-
-One guide per format, for options beyond `Load` and `Save`. [Formats](formats.md) gives the overview.
-
-- [JPEG](jpeg.md)
-- [WebP](webp.md)
-- [TIFF](tiff.md)
-- [JPEG XL](jxl.md)
-- [AVIF](avif.md)
-- [HEIC](heic.md) (in the Egami.Heic package)
-- [JPEG 2000](jpeg2000.md)
-- [JBIG2](jbig2.md)
-- [CCITT fax](ccitt.md)
-- [ICO and CUR](ico.md)
-- [PSD and PSB](psd.md)
-- [VP8 video frames](vp8.md)
 
 ## Egami: extending
 

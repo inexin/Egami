@@ -5,7 +5,7 @@ use. Packages at 1.0 or above keep their public API compatible within the major 
 
 | Package | Version | What it does | Needs | Docs |
 | --- | --- | --- | --- | --- |
-| Egami | 1.x | Rasters and pixel types, every format reader and writer, operations, color management, metadata, streaming decode | Nothing | [Getting started](getting-started.md), [all guides](guides/index.md) |
+| Egami | 1.x | Rasters and pixel types, every format reader and writer, operations, color management, metadata, streaming decode | Nothing | [Getting started](getting-started.md), [formats](formats/index.md), [all guides](guides/index.md) |
 | Egami.Drawing | 1.0 | Antialiased paths, shapes, strokes, clips, paints, layers, meshes and recorded drawings on a canvas | Egami, Egami.Fonts | [Drawing](guides/drawing.md), [The .egdr format](guides/egdr-format.md) |
 | Egami.Fonts | 1.0 | TrueType and OpenType fonts, glyph outlines and metrics, subsetting, text shaping and paragraph layout | Egami | [Fonts and text](guides/text.md), [Unicode text and shaping](guides/unicode-text.md), [Paragraph layout](guides/paragraph-layout.md) |
 | Egami.Fonts.Substitutes | 1.0 | Bundled open fonts, metric-compatible with Arial, Helvetica, Times, Courier, Calibri and Cambria, for when those are not installed | Egami.Fonts | [Fonts and text](guides/text.md#substitute-fonts) |
@@ -13,6 +13,6 @@ use. Packages at 1.0 or above keep their public API compatible within the major 
 | Egami.Css | 1.0 | CSS syntax, selectors, the cascade, media queries and value parsers | Nothing | [CSS](guides/css.md) |
 | Egami.Metafiles | 1.0 | Plays WMF, EMF and EMF+ pictures onto a canvas | Egami, Egami.Drawing, Egami.Fonts | [Windows metafiles](guides/metafiles.md) |
 | Egami.Barcodes | 1.0 | Writes and reads 1D and 2D barcodes | Egami, Egami.Drawing, Egami.Fonts | [Barcodes](guides/barcodes.md), [Reading barcodes](guides/barcode-reading.md) |
-| Egami.Heic | 1.1 (in progress) | Reads HEIC phone photos (HEVC-coded HEIF), opt-in because HEVC is covered by patents | Egami, the same version | [HEIC](guides/heic.md) |
+| Egami.Heic | 1.1 (in progress) | Reads HEIC phone photos (HEVC-coded HEIF), opt-in because HEVC is covered by patents | Egami, the same version | [HEIC](formats/heic.md) |
 
 The [changelog](https://github.com/inexin/Egami/blob/main/CHANGELOG.md) lists what each version adds.

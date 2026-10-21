@@ -68,4 +68,4 @@ collection. Methods that return a new raster say so in their name: `Copy`, `As` 
 | Interchange with older tools | BMP, TGA, PNM |
 
 Next: the [guides](guides/index.md) explain each area in order, starting with [pixel types](guides/pixel-types.md) and
-[formats](guides/formats.md), many ending with recipes for common tasks.
+[formats](formats/index.md), many ending with recipes for common tasks.

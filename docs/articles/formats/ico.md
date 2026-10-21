@@ -15,7 +15,7 @@ directory without decoding a pixel: `RasterInfo.ImageCount`, and `IcoDetails.Ent
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Ico.cs#ico-load)]
 
-`ReaderOptions.MinimumSize` picks the smallest entry at least that big before the [reduction rule](memory-and-threading.md#streaming)
+`ReaderOptions.MinimumSize` picks the smallest entry at least that big before the [reduction rule](../guides/memory-and-threading.md#streaming)
 applies to it, so a 32 × 32 request from a 16, 32, 48 and 256 icon decodes only the 32 × 32 entry. `IcoReaderOptions.Entry`
 names an entry by its index in the directory.
 

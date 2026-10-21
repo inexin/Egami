@@ -8,8 +8,6 @@
   items:
     - name: Pixel types
       href: guides/pixel-types.md
-    - name: Formats
-      href: guides/formats.md
     - name: Metadata
       href: guides/metadata.md
     - name: Memory and threading
@@ -20,6 +18,50 @@
       href: diagnostics.md
     - name: Performance
       href: performance.md
+- name: Formats
+  items:
+    - name: Overview
+      href: formats/index.md
+    - name: PNG and APNG
+      href: formats/png.md
+    - name: JPEG
+      href: formats/jpeg.md
+    - name: GIF
+      href: formats/gif.md
+    - name: WebP
+      href: formats/webp.md
+    - name: TIFF
+      href: formats/tiff.md
+    - name: JPEG XL
+      href: formats/jxl.md
+    - name: AVIF
+      href: formats/avif.md
+    - name: HEIC
+      href: formats/heic.md
+    - name: BMP
+      href: formats/bmp.md
+    - name: TGA
+      href: formats/tga.md
+    - name: QOI
+      href: formats/qoi.md
+    - name: Netpbm
+      href: formats/pnm.md
+    - name: Radiance
+      href: formats/radiance.md
+    - name: OpenEXR
+      href: formats/openexr.md
+    - name: ICO and CUR
+      href: formats/ico.md
+    - name: PSD and PSB
+      href: formats/psd.md
+    - name: JPEG 2000
+      href: formats/jpeg2000.md
+    - name: JBIG2
+      href: formats/jbig2.md
+    - name: CCITT fax
+      href: formats/ccitt.md
+    - name: VP8 video frames
+      href: formats/vp8.md
 - name: "Egami: editing images"
   items:
     - name: Resizing and geometry
@@ -46,7 +88,7 @@
   items:
     - name: Color management
       href: guides/color-management.md
-    - name: HDR files
+    - name: HDR images
       href: guides/hdr.md
     - name: Planar YUV
       href: guides/planar-yuv.md
@@ -58,32 +100,6 @@
       href: guides/palettes.md
     - name: Animation
       href: guides/animation.md
-- name: "Egami: file formats"
-  items:
-    - name: JPEG
-      href: guides/jpeg.md
-    - name: WebP
-      href: guides/webp.md
-    - name: TIFF
-      href: guides/tiff.md
-    - name: JPEG XL
-      href: guides/jxl.md
-    - name: AVIF
-      href: guides/avif.md
-    - name: HEIC
-      href: guides/heic.md
-    - name: JPEG 2000
-      href: guides/jpeg2000.md
-    - name: JBIG2
-      href: guides/jbig2.md
-    - name: CCITT fax
-      href: guides/ccitt.md
-    - name: ICO and CUR
-      href: guides/ico.md
-    - name: PSD and PSB
-      href: guides/psd.md
-    - name: VP8 video frames
-      href: guides/vp8.md
 - name: "Egami: extending"
   items:
     - name: Custom operations and formats
