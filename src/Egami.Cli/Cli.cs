@@ -20,6 +20,10 @@ internal static class Cli
     {
         CliSession session = new(console, workingDirectory, environment);
         ValueParsers.Session = session;
+
+        // Numbers on a command line are written the same way everywhere: 0.8, never 0,8.
+        System.Globalization.CultureInfo culture = System.Globalization.CultureInfo.CurrentCulture;
+        System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
         try
         {
             Command root = CreateRoot(session);
@@ -78,6 +82,7 @@ internal static class Cli
         finally
         {
             ValueParsers.Session = null;
+            System.Globalization.CultureInfo.CurrentCulture = culture;
         }
     }
 
@@ -87,7 +92,7 @@ internal static class Cli
         Command root = new("egami", "Convert, inspect, resize and edit images with Egami, a fully managed imaging library.");
         root.Options.Add(new System.CommandLine.Help.HelpOption());
         root.Options.Add(new VersionOption());
-        GlobalOptions.AddTo(root);
+        GlobalOptions.AddTo(root, session);
         root.Subcommands.Add(InfoCommands.Info(session));
         root.Subcommands.Add(EverydayCommands.Convert(session));
         root.Subcommands.Add(EverydayCommands.Resize(session));
@@ -97,6 +102,14 @@ internal static class Cli
         root.Subcommands.Add(EverydayCommands.Flip(session));
         root.Subcommands.Add(EverydayCommands.AutoOrient(session));
         root.Subcommands.Add(RunCommand.Create(session));
+        root.Subcommands.Add(AnalysisCommands.Compare(session));
+        root.Subcommands.Add(AnalysisCommands.Stats(session));
+        root.Subcommands.Add(FrameCommands.Create(session));
+        root.Subcommands.Add(MetadataCommands.Create(session));
+        root.Subcommands.Add(MetadataCommands.Color(session));
+        root.Subcommands.Add(DrawingCommands.Text(session));
+        root.Subcommands.Add(DrawingCommands.Overlay(session));
+        root.Subcommands.Add(DrawingCommands.Montage(session));
         root.Subcommands.Add(InfoCommands.Formats(session));
         return root;
     }

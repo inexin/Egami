@@ -46,6 +46,11 @@ internal static class Workflow
     /// <summary>Reads a workflow from bytes; <paramref name="name"/> names it in messages.</summary>
     public static List<PipelineItem> Parse(ReadOnlyMemory<byte> json, string name)
     {
+        if (!System.Text.Unicode.Utf8.IsValid(json.Span))
+        {
+            throw new UsageException($"{name} is not UTF-8 text.");
+        }
+
         JsonDocument document;
         try
         {

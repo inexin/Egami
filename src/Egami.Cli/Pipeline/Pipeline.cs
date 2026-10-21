@@ -23,6 +23,11 @@ internal abstract record PipelineItem;
 /// <param name="Step">The bound step.</param>
 internal sealed record StepItem(BoundStep Step) : PipelineItem;
 
+/// <summary>An edit of the whole image outside RasterOps, such as its metadata; it keeps a plan from streaming.</summary>
+/// <param name="Name">The edit's name, for <c>--dry-run</c>.</param>
+/// <param name="Edit">Changes the image.</param>
+internal sealed record EditItem(string Name, Action<Raster> Edit) : PipelineItem;
+
 /// <summary>A save in a pipeline.</summary>
 /// <param name="Save">Where and how to write.</param>
 internal sealed record SaveItem(SaveSpec Save) : PipelineItem;

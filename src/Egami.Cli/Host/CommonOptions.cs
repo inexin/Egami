@@ -5,39 +5,45 @@ using Egami.Cli.Pipeline;
 
 namespace Egami.Cli.Host;
 
-/// <summary>The options every command shares (CLI design Q13): verbosity, quiet and safety limits.</summary>
-internal static class GlobalOptions
+/// <summary>
+/// The options every command shares (CLI design Q13): verbosity, quiet and safety limits. One set per command tree, since an
+/// option belongs to the commands it is added to.
+/// </summary>
+internal sealed class GlobalOptions
 {
-    public static readonly Option<bool> Verbose = new("--verbose", "-v") { Description = "Write information to standard error.", Recursive = true };
+    public Option<bool> Verbose { get; } = new("--verbose", "-v") { Description = "Write information to standard error.", Recursive = true };
 
-    public static readonly Option<bool> Debug = new("--debug", "-vv") { Description = "Write debugging detail to standard error.", Recursive = true };
+    public Option<bool> Debug { get; } = new("--debug", "-vv") { Description = "Write debugging detail to standard error.", Recursive = true };
 
-    public static readonly Option<bool> Quiet = new("--quiet", "-q") { Description = "Write only errors to standard error.", Recursive = true };
+    public Option<bool> Quiet { get; } = new("--quiet", "-q") { Description = "Write only errors to standard error.", Recursive = true };
 
-    public static readonly Option<string?> Limit = new("--limit")
+    public Option<string?> Limit { get; } = new("--limit")
     {
         Description = "Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.",
         HelpName = "name=value,...",
         Recursive = true,
     };
 
-    /// <summary>Adds the shared options to the root command.</summary>
-    public static void AddTo(Command root)
+    /// <summary>Adds the shared options to the root command and keeps them on the session.</summary>
+    public static void AddTo(Command root, CliSession session)
     {
-        root.Options.Add(Verbose);
-        root.Options.Add(Debug);
-        root.Options.Add(Quiet);
-        root.Options.Add(Limit);
+        GlobalOptions options = new();
+        root.Options.Add(options.Verbose);
+        root.Options.Add(options.Debug);
+        root.Options.Add(options.Quiet);
+        root.Options.Add(options.Limit);
+        session.Globals = options;
     }
 
     /// <summary>Configures the session from the shared options.</summary>
     public static void Configure(CliSession session, ParseResult result, int maxParallelism = 0)
     {
-        Verbosity verbosity = result.GetValue(Quiet) ? Verbosity.Quiet
-            : result.GetValue(Debug) ? Verbosity.Debug
-            : result.GetValue(Verbose) ? Verbosity.Verbose
+        GlobalOptions options = session.Globals ?? throw new InvalidOperationException("The command tree has no shared options.");
+        Verbosity verbosity = result.GetValue(options.Quiet) ? Verbosity.Quiet
+            : result.GetValue(options.Debug) ? Verbosity.Debug
+            : result.GetValue(options.Verbose) ? Verbosity.Verbose
             : Verbosity.Normal;
-        session.Configure(verbosity, result.GetValue(Limit), maxParallelism);
+        session.Configure(verbosity, result.GetValue(options.Limit), maxParallelism);
     }
 }
 

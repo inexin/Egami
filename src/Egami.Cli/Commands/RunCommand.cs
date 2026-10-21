@@ -324,6 +324,7 @@ internal static class RunCommand
             text.WriteLine(item switch
             {
                 StepItem step => step.Step.ToString(),
+                EditItem edit => edit.Name,
                 SaveItem save => "save" + (save.Save.Path is { } path ? $" {path}" : string.Empty) + (save.Save.Format is { } format ? $" --format {format}" : string.Empty)
                     + string.Concat(save.Save.Common.Select(c => $" --{c.Key} {c.Value}")) + string.Concat(save.Save.Settings.Select(s => $" --set {s.Key}={s.Value}")),
                 _ => string.Empty,

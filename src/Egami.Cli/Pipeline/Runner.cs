@@ -245,6 +245,10 @@ internal static class Runner
 
                     pending.Add((step, new Size(image.Width, image.Height)));
                     break;
+                case EditItem edit:
+                    Flush(image, pending);
+                    edit.Edit(image);
+                    break;
                 case SaveItem:
                     Flush(image, pending);
                     (SaveSpec save, string path, FormatInfo format) = targets[saveIndex++];

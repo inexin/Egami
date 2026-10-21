@@ -71,6 +71,9 @@ internal sealed class CliSession
     /// <summary>Gets the context to read and write with.</summary>
     public EgamiContext Context { get; private set; }
 
+    /// <summary>Gets or sets the shared options of the command tree.</summary>
+    public GlobalOptions? Globals { get; set; }
+
     /// <summary>Gets or sets a value indicating whether an output may replace its input (<c>--in-place</c>).</summary>
     public bool InPlace { get; set; }
 
