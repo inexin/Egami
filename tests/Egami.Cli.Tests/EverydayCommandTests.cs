@@ -38,7 +38,8 @@ public sealed class EverydayCommandTests : IDisposable
         string duck = _tool.Copy(Duck);
         Assert.Equal(0, _tool.Run("resize", duck, "-o", "fit.png", "--size", "100x100").Code);
         Assert.Equal(0, _tool.Run("resize", duck, "-o", "half.png", "--size", "50%", "--filter", "lanczos3").Code);
-        Assert.Equal(Transcode(duck, ops => ops.Fit(100, 100)), File.ReadAllBytes(_tool.PathOf("fit.png")));
+        // The decoder shrinks to no less than twice the result, which a 320 x 240 JPEG cannot do for 100 x 75.
+        Assert.Equal(Transcode(duck, ops => ops.Fit(100, 100), new ReaderOptions { MinimumSize = new Size(200, 150) }), File.ReadAllBytes(_tool.PathOf("fit.png")));
         Assert.Equal(Transcode(duck, ops => ops.Resize(160, 120, ResampleFilter.Lanczos3)), File.ReadAllBytes(_tool.PathOf("half.png")));
     }
 
@@ -48,7 +49,7 @@ public sealed class EverydayCommandTests : IDisposable
         string duck = _tool.Copy(Duck);
         Assert.Equal(0, _tool.Run("resize", duck, "-o", "cover.png", "--size", "100x100", "--fit", "cover", "--gravity", "top").Code);
         Assert.Equal(0, _tool.Run("resize", duck, "-o", "pad.png", "--size", "100x100", "--fit", "pad", "--background", "white").Code);
-        Assert.Equal(Transcode(duck, ops => ops.Cover(100, 100, Anchor.Top)), File.ReadAllBytes(_tool.PathOf("cover.png")));
+        Assert.Equal(Transcode(duck, ops => ops.Cover(100, 100, Anchor.Top), new ReaderOptions { MinimumSize = new Size(200, 200) }), File.ReadAllBytes(_tool.PathOf("cover.png")));
         using Raster pad = Raster.Load(_tool.PathOf("pad.png"));
         Assert.Equal((100, 100), (pad.Width, pad.Height));
     }
@@ -210,12 +211,12 @@ public sealed class EverydayCommandTests : IDisposable
         Assert.Contains(document.RootElement.GetProperty("settings").EnumerateArray(), s => s.GetProperty("key").GetString() == "jpeg.quality");
     }
 
-    private byte[] Transcode(string input, Action<RasterOps> ops)
+    private byte[] Transcode(string input, Action<RasterOps> ops, ReaderOptions? read = null)
     {
         using MemoryStream output = new();
         using (FileStream source = File.OpenRead(_tool.PathOf(input)))
         {
-            Raster.Transcode(source, output, PngFormat.Info, ops);
+            Raster.Transcode(source, output, PngFormat.Info, ops, read);
         }
 
         return output.ToArray();

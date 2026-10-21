@@ -111,8 +111,10 @@ the files each input would write.
 
 Every single command is turned into the same kind of plan, so `egami resize --size 800x` and `egami run resize 800x` give the
 same bytes. A plan of steps that can stream (crop, resize and the per-pixel color steps) runs through `Raster.Transcode`, a
-band of rows at a time, which also decodes JPEGs at a reduced size when the result is smaller; anything else loads the image,
-runs the steps and saves. Either way the result is what the same `RasterOps` chain gives in C#.
+band of rows at a time; anything else loads the image, runs the steps and saves. When a plan starts with a resize, the image
+is decoded at no less than twice the result (`ReaderOptions.MinimumSize`), so a large JPEG is decoded at a half, a quarter or an
+eighth of its size and the resize filter still has a factor of two to work with. Either way the result is what the same
+`RasterOps` chain with the same reader options gives in C#.
 
 ## Workflow files
 

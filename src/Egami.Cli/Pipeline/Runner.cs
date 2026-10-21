@@ -36,6 +36,7 @@ internal static class Runner
         {
             ConvertColorTo = plan.Read.ConvertTo,
             Frames = plan.Read.FirstFrameOnly ? ..1 : ..,
+            MinimumSize = DecodeSize(work, info),
         };
 
         if (CanStream(work))
@@ -204,32 +205,30 @@ internal static class Runner
         });
     }
 
-    private static void InMemory(CliSession session, InputSource input, List<PipelineItem> work, ReaderOptions read, RasterInfo info, List<(SaveSpec Save, string Path, FormatInfo Format)> targets)
+    /// <summary>
+    /// The size to decode at when the plan starts with a resize (after an auto-orient): at least twice the result, so a JPEG is
+    /// decoded at 1/2, 1/4 or 1/8 of its size where that still leaves the resize filter a factor of two to work with. The
+    /// result stays within a few levels of a full decode, as ImageMagick and libvips resize it, at a fraction of the work.
+    /// </summary>
+    private static Size? DecodeSize(List<PipelineItem> work, RasterInfo info)
     {
-        // A leading resize lets the decoder shrink by a whole factor first, as Transcode does.
-        if (work.Count > 0 && work[0] is StepItem { Step: { Info.Name: "resize", Args: [SizeSpec spec, ..] } first } && !spec.WidthPercent && !spec.HeightPercent)
+        int at = work.Count > 1 && work[0] is StepItem { Step.Info.Name: "auto-orient" } ? 1 : 0;
+        if (work.Count <= at || work[at] is not StepItem { Step: { Info.Name: "resize", Args: [SizeSpec spec, ..] } step } || spec.WidthPercent || spec.HeightPercent)
         {
-            Size stored = new(info.Width, info.Height);
-            Size target = spec.Target(stored, first.Args[1] is FitMode fit ? fit : FitMode.Contain);
-            if (target.Width < stored.Width && target.Height < stored.Height)
-            {
-                read = read with { MinimumSize = target };
-            }
-        }
-        else if (work.Count > 1 && work[0] is StepItem { Step.Info.Name: "auto-orient" } && work[1] is StepItem { Step: { Info.Name: "resize", Args: [SizeSpec oriented, ..] } next }
-            && !oriented.WidthPercent && !oriented.HeightPercent)
-        {
-            // Auto-orient first: the box is measured against the upright image, and the decoder shrinks the stored one.
-            bool swaps = info.Orientation >= ImageOrientation.Transpose;
-            Size upright = swaps ? new Size(info.Height, info.Width) : new Size(info.Width, info.Height);
-            Size target = oriented.Target(upright, next.Args[1] is FitMode fit ? fit : FitMode.Contain);
-            Size stored = swaps ? new Size(target.Height, target.Width) : target;
-            if (stored.Width < info.Width && stored.Height < info.Height)
-            {
-                read = read with { MinimumSize = stored };
-            }
+            return null;
         }
 
+        // An auto-orient first means the box is measured against the upright image, and the decoder shrinks the stored one.
+        bool swaps = at == 1 && info.Orientation >= ImageOrientation.Transpose;
+        Size upright = swaps ? new Size(info.Height, info.Width) : new Size(info.Width, info.Height);
+        Size target = spec.Target(upright, step.Args[1] is FitMode fit ? fit : FitMode.Contain);
+        Size margin = new(target.Width * 2, target.Height * 2);
+        Size stored = swaps ? new Size(margin.Height, margin.Width) : margin;
+        return stored.Width < info.Width && stored.Height < info.Height ? stored : null;
+    }
+
+    private static void InMemory(CliSession session, InputSource input, List<PipelineItem> work, ReaderOptions read, RasterInfo info, List<(SaveSpec Save, string Path, FormatInfo Format)> targets)
+    {
         using Raster image = input.Load(session, read);
         List<(BoundStep Step, Size Size)> pending = [];
         int saveIndex = 0;
