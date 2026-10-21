@@ -16,12 +16,19 @@ Thanks for helping build Egami, a fully managed, MIT-licensed imaging library fo
 
 ## Building and testing
 
-You need the .NET 10 SDK.
+You need the .NET 10 SDK and Python 3 for the scripts in `tools/`.
 
+```sh
+dotnet build Egami.slnx
+dotnet test Egami.slnx
+dotnet format Egami.slnx --verify-no-changes      # formatting; CI fails if this reports changes
+python tools/check-docs.py                         # docs are complete for src/Egami; pass a folder for another package
+python tools/update-public-api.py                  # adds new public API to PublicAPI.Unshipped.txt
 ```
-dotnet build
-dotnet test
-```
+
+Warnings are errors, and the build checks the public API baseline (`PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt` in
+each package). While you work, run only the tests for your area, for example
+`dotnet test Egami.slnx --filter FullyQualifiedName~Jxl`, and run the whole solution before you open the pull request.
 
 To test the SIMD fallback paths locally, run the tests with `DOTNET_EnableHWIntrinsic=0`.
 
@@ -31,6 +38,9 @@ hardware intrinsics turned off, PNG against libpng and the Native AOT smoke app.
 platform-specific code, run the tests with the intrinsics turned off before you open the pull request.
 
 The large third-party corpora (conformance suites and test vectors) are fetched into `.cache` by the `tools/make-*-references.py` scripts and never committed. A normal run skips them; set `EGAMI_CORPUS` to the codecs you are working on (`avif`, `exr`, `heic`, `jbig2`, `jpeg2000`, `jxl`, `tiff`, `vp8`, comma-separated, or `all`) to check them too, for example `EGAMI_CORPUS=jxl dotnet test --filter FullyQualifiedName~Jxl`. The same switch takes a folder of `tests/images` (`avif`, `jpeg`, `pngsuite` and so on): the streaming tests that run over every file skip in a normal run and stream the files of the folders it names.
+
+Reference outputs in `tests/reference` come from the `tools/make-*-references.py` scripts, most of which run the reference
+library in Docker. Regenerate them with the script, never by hand.
 
 The allocation-budget tests (managed allocations must not grow with the image, and warm calls allocate nothing) measure bytes
 allocated by the test thread, so other tests running alongside can push them a few bytes over. They skip in a normal run and in
@@ -42,15 +52,20 @@ EGAMI_ALLOCATION_TESTS=1 dotnet test tests/Egami.Tests --filter Category=Allocat
 
 In PowerShell: `$env:EGAMI_ALLOCATION_TESTS=1; dotnet test tests/Egami.Tests --filter Category=Allocation`.
 
-Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks`.
+Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks` (also `Egami.Drawing.Benchmarks` and
+`Egami.Fonts.Benchmarks`).
+
+Fuzzing: `tools/fuzz-afl.py` runs the readers under AFL++ in Docker; its header explains the usage. A 10-minute run of each
+reader you changed is enough for a pull request.
 
 ## Repository layout
 
 | Path | Contents |
 | --- | --- |
 | `src/Egami/` | The core library |
-| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Fonts.Substitutes/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/` | The other packages ([Packages](docs/articles/packages.md)) |
-| `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) |
+| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Fonts.Substitutes/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/`, `src/Egami.Barcodes/`, `src/Egami.Heic/` | The other packages ([Packages](docs/articles/packages.md)) |
+| `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) for core Egami |
+| `tests/Egami.<Package>.Tests/` | The tests of each other package |
 | `tests/Egami.Fuzz/` | Fuzzing harness (SharpFuzz and AFL++) |
 | `tests/Egami.AotSmoke/` | Console app published with Native AOT in CI |
 | `tests/Egami.DocSamples/` | The code the docs show, compiled and run with the tests |
@@ -58,9 +73,34 @@ Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks`.
 | `tests/Egami.OutsideTests/` | Plugins written with only the public API: a pixel type, a memory source, operations, formats |
 | `tests/images/`, `tests/reference/` | Test images for every format and their reference decodes, with licenses; large corpora are fetched into `.cache` |
 | `docs/` | The documentation site (DocFX): guides with recipes, API reference. Build it with `docfx docs/docfx.json` (output in `docs/_site`) |
-| `benchmarks/Egami.Benchmarks/` | BenchmarkDotNet benchmarks |
+| `benchmarks/` | BenchmarkDotNet benchmarks for Egami, Egami.Drawing and Egami.Fonts |
 | `branding/` | Package icons, logos and the favicon |
 | `tools/` | Scripts that regenerate references and the public API baseline, check the docs are complete, and the libpng checker used in CI |
+
+## Code style
+
+Match the surrounding code: its naming, comment density and idioms. `.editorconfig` and `dotnet format` decide formatting.
+Egami has its own API vocabulary: `Raster<TPixel>` for an image, pixel types such as `Rgba8`, `Rgb8`, `Gray8` and `RgbaF32`,
+`EgamiContext` for configuration, `Raster.Probe` to read a header without decoding, and `Apply` (change in place) and `Derive`
+(return a new raster) for operations. Use these names rather than ones borrowed from other libraries.
+
+## Documentation
+
+Every user-visible change updates the docs in the same pull request:
+
+- The guide in `docs/articles/guides/` for the area. A guide explains an area (options, defaults, limits); a recipe under its
+  `## Recipes` heading is one short task with its code. A new guide goes into its package's section of
+  `docs/articles/toc.yml` and `docs/articles/guides/index.md`, in the same order; then run `python tools/make-llms-txt.py` to
+  update `docs/llms.txt`.
+- Code shown in the docs lives in `tests/Egami.DocSamples/` as `#region` blocks, so it is compiled and run with the tests.
+  Guides include it with `[!code-csharp[](../../../tests/Egami.DocSamples/File.cs#region)]`, and XML `<example>` tags point at
+  the same regions. Don't paste code into a guide that the tests don't run.
+- An entry in `CHANGELOG.md` under the package's next version (for example `## Egami.Fonts 1.1.0 (unreleased)`; add the
+  heading if it is not there yet), grouped by feature.
+- A new package also goes into `docs/docfx.json` (API reference) and `docs/articles/packages.md`.
+- `python tools/check-docs.py <package folder>` must pass for every package you touched.
+
+Write docs in plain, short sentences that say what the user gets. Describe behavior, not how the change was planned.
 
 ## Documentation versions
 
@@ -81,8 +121,16 @@ package at that version, so a package can release on its own. Only maintainers t
 
 ## Pull requests
 
-- One topic per PR. Fill in the PR template, including the provenance section.
-- New public API needs XML docs and an update to `PublicAPI.Unshipped.txt` (`python tools/update-public-api.py` adds what the build reports). `PublicAPI.Shipped.txt` is the frozen 1.0 API: changing or removing anything in it is a breaking change and needs a maintainer's agreement first.
+All changes, including the maintainer's, go through a branch and a pull request to `main`; the maintainer reviews and merges.
+
+- Start from an up-to-date `main` on a branch of your own. One topic per pull request.
+- Commit messages read `Area: what changed`, for example `JPEG XL lossy: faster block-size search`. Sign off every commit.
+- Before you open the pull request, rebase onto `main` and run `dotnet format Egami.slnx --verify-no-changes`, the tests and
+  `python tools/check-docs.py` for each package you touched. If `main` moves on, rebase again and push with
+  `--force-with-lease`; never force-push a branch someone else works on.
+- Fill in the PR template, including the provenance section. List your local results: benchmark numbers for hot code, and the
+  tests with `DOTNET_EnableHWIntrinsic=0` when you touch SIMD code.
+- New public API needs XML docs and an update to `PublicAPI.Unshipped.txt` (`python tools/update-public-api.py` adds what the build reports). `PublicAPI.Shipped.txt` is the frozen 1.0 API: changing or removing anything in it is a breaking change and needs a maintainer's agreement first; say so in the commit and the changelog.
 - A public interface in a package at 1.0 or above (for example `IGlyphOutlineSink`, `IColorPaintVisitor`, `IFontFallbackResolver` and `ITextPaint` in Egami.Fonts, and `ICssElement` in Egami.Css) is frozen for the major version: a member added in 1.x comes as a default interface method, so code that implements the interface keeps compiling.
 - Core Egami takes no package references except build-time analyzers. A satellite package may also use a managed MIT, BSD or
   Apache-2.0 package the maintainer approved by name, listed in [docs/references.md](docs/references.md#approved-packages).
