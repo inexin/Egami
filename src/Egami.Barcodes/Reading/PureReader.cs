@@ -197,7 +197,7 @@ internal static class PureReader
             size += (width / module) > size ? 1 : -1;
         }
 
-        return size < 11 ? null : AztecDecoder.Decode(Sample(bits, left, top, width, height, size, size));
+        return !AztecDecoder.IsSymbolSize(size) ? null : AztecDecoder.Decode(Sample(bits, left, top, width, height, size, size));
     }
 
     private static Found? Pdf417(BitImage bits, LuminanceImage image, int left, int top, int width, int height)

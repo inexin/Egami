@@ -46,7 +46,7 @@ internal static class AztecDecoder
     /// Whether a size is a rune's or that of a compact or full-range symbol of some layer count: no other grid can decode, as the
     /// mode message's layers must give the grid's size.
     /// </summary>
-    private static bool IsSymbolSize(int size)
+    internal static bool IsSymbolSize(int size)
     {
         if (size == 11)
         {

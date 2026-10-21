@@ -8,9 +8,10 @@ namespace Egami.Benchmarks;
 
 /// <summary>
 /// Times the barcode reader on folders of images. Given the ZXing blackbox folder that tools/make-barcode-references.py
-/// blackbox fetches, it reads each set with that set's formats only, on one thread, the best of three passes, as egami-compare's
-/// speed gate does; with zxing-cpp's times (egami-compare's .cache/zxing-cpp-bench.json) it also prints the ratios, per set,
-/// per symbology and in total. Any other folder is read at the default options, at one thread and at all cores.
+/// blackbox fetches, it reads each set with that set's formats only, on one thread, the best of three passes after half a
+/// second of warm-up, as egami-compare's speed gate does; with zxing-cpp's times (egami-compare's
+/// .cache/zxing-cpp-bench.json) it also prints the ratios, per set, per symbology and in total. Any other folder is read at
+/// the default options, at one thread and at all cores.
 /// </summary>
 internal static class BarcodeTiming
 {
@@ -97,6 +98,16 @@ internal static class BarcodeTiming
 
                 var options = new BarcodeReaderOptions { Formats = set.Formats, Context = one };
                 int read = images.Count(i => i.Image.ReadBarcodes(options).Any(r => r.Text == i.Expected || "0" + r.Text == i.Expected));
+                // Half a second of passes first, so that the JIT has compiled the hot code fully, as the speed gate does.
+                long warm = Stopwatch.GetTimestamp();
+                while (Stopwatch.GetElapsedTime(warm).TotalMilliseconds < 500)
+                {
+                    foreach (var (image, _) in images)
+                    {
+                        image.ReadBarcodes(options);
+                    }
+                }
+
                 double best = double.MaxValue;
                 for (int pass = 0; pass < 3; pass++)
                 {
