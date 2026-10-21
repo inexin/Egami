@@ -35,10 +35,11 @@ if (args is ["--time-vp8", .. string[] ivfs])
     return;
 }
 
-// Time the barcode reader on folders of images at one thread and all cores: -- --time-barcodes <folder>...
-if (args is ["--time-barcodes", .. string[] barcodeFolders])
+// Time the barcode reader: -- --time-barcodes [--zxing-cpp <bench.json>] [--only <set prefix>] <folder>... (a blackbox folder is read
+// set by set with its formats, as the 2.11.1 speed gate does; any other folder at one thread and all cores)
+if (args is ["--time-barcodes", .. string[] barcodeArgs])
 {
-    BarcodeTiming.Run(barcodeFolders);
+    BarcodeTiming.Run(barcodeArgs);
     return;
 }
 
