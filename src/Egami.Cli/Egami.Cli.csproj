@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Egami.Cli</RootNamespace>
+    <!-- Not "egami": on a case-insensitive file system egami.dll and Egami.dll would collide. The tool command is egami. -->
+    <AssemblyName>Egami.Cli</AssemblyName>
+    <PackageId>Egami.Cli</PackageId>
+    <!-- Its own version line (CLI design Q1, Q16): 0.x previews until the command review freezes the syntax at 1.0. -->
+    <Version>0.3.0</Version>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>egami</ToolCommandName>
+    <Description>The egami command: convert, inspect, resize and edit images from a shell or a build script with Egami, a fully managed imaging library. Single commands, chained steps, JSON workflows and parallel batches.</Description>
+    <PackageTags>$(EgamiPackageTags);cli;tool;convert;resize;thumbnail</PackageTags>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- AOT-clean from day one (Q15): the trimming and AOT analyzers run in every build, and warnings are errors. -->
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
+    <TieredPGO>true</TieredPGO>
+    <!-- Native AOT single-file binaries (task 22): dotnet publish -r win-x64|linux-x64|osx-arm64 -p:PublishAot=true. -->
+    <StripSymbols>true</StripSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <!-- Every royalty-free package in the repo (Q2); never Egami.Heic. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Egami\Egami.csproj" />
+    <ProjectReference Include="..\Egami.Drawing\Egami.Drawing.csproj" />
+    <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
+    <ProjectReference Include="..\Egami.Svg\Egami.Svg.csproj" />
+    <ProjectReference Include="..\Egami.Metafiles\Egami.Metafiles.csproj" />
+    <ProjectReference Include="..\Egami.Cli.Generators\Egami.Cli.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- The generator reads help text from Egami's XML documentation, added once the referenced project has built it. -->
+  <Target Name="AddEgamiDocumentation" AfterTargets="ResolveProjectReferences" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <AdditionalFiles Include="$(MSBuildThisFileDirectory)..\Egami\bin\$(Configuration)\$(TargetFramework)\Egami.xml" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Cli.Tests" />
+    <InternalsVisibleTo Include="Egami.Fuzz" />
+  </ItemGroup>
+
+</Project>
