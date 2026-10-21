@@ -17,8 +17,11 @@
     <IsAotCompatible>true</IsAotCompatible>
     <IsTrimmable>true</IsTrimmable>
     <TieredPGO>true</TieredPGO>
-    <!-- Native AOT single-file binaries (task 22): dotnet publish -r win-x64|linux-x64|osx-arm64 -p:PublishAot=true. -->
+    <!-- Native AOT binaries: dotnet publish src/Egami.Cli -c Release -r win-x64|linux-x64|osx-arm64 -p:EgamiNativeAot=true.
+         A property of our own, since PublishAot itself would reach the netstandard2.0 generator. -->
+    <PublishAot Condition="'$(EgamiNativeAot)' == 'true'">true</PublishAot>
     <StripSymbols>true</StripSymbols>
+    <OptimizationPreference Condition="'$(EgamiNativeAot)' == 'true'">Speed</OptimizationPreference>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,7 +36,7 @@
     <ProjectReference Include="..\Egami.Fonts.Substitutes\Egami.Fonts.Substitutes.csproj" />
     <ProjectReference Include="..\Egami.Svg\Egami.Svg.csproj" />
     <ProjectReference Include="..\Egami.Metafiles\Egami.Metafiles.csproj" />
-    <ProjectReference Include="..\Egami.Cli.Generators\Egami.Cli.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Egami.Cli.Generators\Egami.Cli.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained;EgamiNativeAot" />
   </ItemGroup>
 
   <!-- The generator reads help text from Egami's XML documentation, added once the referenced project has built it. -->
@@ -41,6 +44,11 @@
     <ItemGroup>
       <AdditionalFiles Include="$(MSBuildThisFileDirectory)..\Egami\bin\$(Configuration)\$(TargetFramework)\Egami.xml" />
     </ItemGroup>
+  </Target>
+
+  <!-- The native program is named egami; the assembly cannot be, since assembly names ignore case and Egami is taken. -->
+  <Target Name="NameNativeProgram" AfterTargets="Publish" Condition="'$(EgamiNativeAot)' == 'true'">
+    <Move SourceFiles="$(PublishDir)$(TargetName)$(_NativeExecutableExtension)" DestinationFiles="$(PublishDir)egami$(_NativeExecutableExtension)" />
   </Target>
 
   <ItemGroup>

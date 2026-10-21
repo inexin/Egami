@@ -51,4 +51,9 @@ Core Egami references no packages. A satellite package (Egami.Drawing, Egami.Fon
 a package listed here: managed code under an MIT, BSD or Apache-2.0 licence, approved by name by the maintainer, with its
 licence and minimum version, set in `Directory.Packages.props`. Raise a minimum version on purpose, with a full test run.
 
-None are approved yet. Egap's format add-ons follow the same rule and keep their own list in Egap's docs/references.md.
+| Package | Licence | Minimum | Used by | Approved |
+| --- | --- | --- | --- | --- |
+| System.CommandLine | MIT (.NET Foundation) | 2.0.13 | Egami.Cli, the egami tool (an app, not a library): argument parsing, help, response files | CLI design Q3, 2026-10-16 |
+| Microsoft.CodeAnalysis.CSharp | MIT (.NET Foundation) | 4.14.0 | Egami.Cli's build-time source generator only; ships nothing | Follows from Q3 and Q15 (no reflection) |
+
+Egap's format add-ons follow the same rule and keep their own list in Egap's docs/references.md.

@@ -136,3 +136,11 @@
       href: guides/barcodes.md
     - name: Reading barcodes
       href: guides/barcode-reading.md
+- name: Egami.Cli
+  items:
+    - name: The egami command
+      href: cli/index.md
+    - name: Command reference
+      href: cli/commands.md
+    - name: Steps for run
+      href: cli/steps.md

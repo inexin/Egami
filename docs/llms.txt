@@ -106,6 +106,12 @@ settings, safety limits and registered formats a call uses.
 - [Barcodes](https://inexin.github.io/Egami/v1/articles/guides/barcodes.html): Egami.Barcodes writes and reads barcodes.
 - [Reading barcodes](https://inexin.github.io/Egami/v1/articles/guides/barcode-reading.html): Egami.Barcodes reads every symbology it writes.
 
+## Egami.Cli
+
+- [The egami command](https://inexin.github.io/Egami/v1/articles/cli/index.html): `egami` converts, inspects, resizes and edits images from a shell or a build script, with no C# to write.
+- [Command reference](https://inexin.github.io/Egami/v1/articles/cli/commands.html): Every egami command with its arguments and options, as `egami <command> --help` prints them.
+- [Steps for run](https://inexin.github.io/Egami/v1/articles/cli/steps.html): The steps `egami run` chains and workflow files list.
+
 ## Optional
 
 - [API reference](https://inexin.github.io/Egami/v1/api/Egami.html): every public type and member of every package.

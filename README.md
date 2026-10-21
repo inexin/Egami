@@ -41,10 +41,25 @@ Add only the packages you use. Each one has its own guides.
 | [Egami.Css](https://www.nuget.org/packages/Egami.Css) | CSS parsing, selectors and the cascade | [Guide](https://inexin.github.io/Egami/v1/articles/guides/css.html) |
 | [Egami.Metafiles](https://www.nuget.org/packages/Egami.Metafiles) | Plays WMF, EMF and EMF+ pictures | [Guide](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html) |
 | [Egami.Barcodes](https://www.nuget.org/packages/Egami.Barcodes) | Writes and reads 1D and 2D barcodes | [Writing](https://inexin.github.io/Egami/v1/articles/guides/barcodes.html), [reading](https://inexin.github.io/Egami/v1/articles/guides/barcode-reading.html) |
+| Egami.Cli | The `egami` command: convert, resize, inspect and edit images from a shell, with chained steps, workflow files and batches (preview) | [The egami command](https://inexin.github.io/Egami/v1/articles/cli/index.html) |
 | Egami.Heic | Reads HEIC phone photos; opt-in because HEVC is covered by patents (coming in 1.1) | [Guide](https://inexin.github.io/Egami/v1/articles/formats/heic.html) |
 
-All packages except Egami.Heic are 1.0 and on [NuGet](https://www.nuget.org/packages?q=Egami).
+All packages except Egami.Heic and Egami.Cli are 1.0 and on [NuGet](https://www.nuget.org/packages?q=Egami).
 [Packages](https://inexin.github.io/Egami/v1/articles/packages.html) lists what each one needs.
+
+## The egami command
+
+Egami.Cli is a .NET tool that brings Egami to the shell and to build scripts:
+
+```sh
+dotnet tool install --global Egami.Cli
+egami info photo.jpg
+egami thumbnail "photos/*.jpg" -o thumbs/{name}.webp --size 256
+egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --quality 82
+```
+
+[The egami command](https://inexin.github.io/Egami/v1/articles/cli/index.html) explains its commands, steps, workflow files and
+batches.
 
 ## Documentation
 
