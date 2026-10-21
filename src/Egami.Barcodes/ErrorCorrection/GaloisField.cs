@@ -14,6 +14,12 @@ internal sealed class GaloisField
     private readonly int[] _log;
     private readonly int[] _productExp;
     private readonly int[] _productLog;
+
+    /// <summary>Gets the exponent table for branch-free products: a · b = ProductExp[ProductLog[a] + ProductLog[b]], 0 included.</summary>
+    internal int[] ProductExp => _productExp;
+
+    /// <summary>Gets the logarithm table for branch-free products, with log 0 past every real sum.</summary>
+    internal int[] ProductLog => _productLog;
     private readonly int[]?[] _generators;
 
     private GaloisField(string name, int size, int polynomial, int primitive, int generatorBase, bool isPrime)

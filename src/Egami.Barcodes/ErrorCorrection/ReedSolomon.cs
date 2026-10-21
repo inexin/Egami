@@ -205,12 +205,24 @@ internal static class ReedSolomon
         int[] connection = new int[sequence.Length + 1], previous = new int[sequence.Length + 1], scratch = new int[sequence.Length + 1];
         connection[0] = previous[0] = 1;
         int length = 0, shift = 1, previousDiscrepancy = 1;
+        int[] exp = field.ProductExp, log = field.ProductLog;
         for (int r = 0; r < sequence.Length; r++)
         {
             int discrepancy = sequence[r];
-            for (int i = 1; i <= length; i++)
+            if (field.IsPrime)
             {
-                discrepancy = field.Add(discrepancy, field.Multiply(connection[i], sequence[r - i]));
+                for (int i = 1; i <= length; i++)
+                {
+                    discrepancy = field.Add(discrepancy, field.Multiply(connection[i], sequence[r - i]));
+                }
+            }
+            else
+            {
+                // Binary fields: addition is exclusive or, products from the tables directly.
+                for (int i = 1; i <= length; i++)
+                {
+                    discrepancy ^= exp[log[connection[i]] + log[sequence[r - i]]];
+                }
             }
 
             if (discrepancy == 0)
@@ -242,6 +254,18 @@ internal static class ReedSolomon
     /// <summary>target -= factor · x^shift · source.</summary>
     private static void Subtract(GaloisField field, int[] target, int[] source, int factor, int shift)
     {
+        if (!field.IsPrime)
+        {
+            int[] exp = field.ProductExp, log = field.ProductLog;
+            int logFactor = log[factor];
+            for (int i = 0; i + shift < target.Length; i++)
+            {
+                target[i + shift] ^= exp[logFactor + log[source[i]]];
+            }
+
+            return;
+        }
+
         for (int i = 0; i + shift < target.Length; i++)
         {
             target[i + shift] = field.Subtract(target[i + shift], field.Multiply(factor, source[i]));
