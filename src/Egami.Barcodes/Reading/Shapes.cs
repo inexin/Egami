@@ -30,9 +30,21 @@ internal static class Shapes
         int width = bits.Width, height = bits.Height;
 
         // Each dark run of each row: its row, first and last-plus-one column, and label; runs touching (diagonals too) a run
-        // of the row above join its label.
-        var runs = new List<(int Y, int Start, int End, int Label)>();
-        var parent = new List<int> { 0 };
+        // of the row above join its label. Arrays grow as needed.
+        int count = 0, labelCount = 1;
+        // The working arrays come from the shared pool (a search labels the image twice, and allocating them each time keeps
+        // the garbage collector busy); they are returned below.
+        var pool = System.Buffers.ArrayPool<int>.Shared;
+        int capacity = Math.Max(256, width * height / 16);
+        int[] ys = pool.Rent(capacity), starts = pool.Rent(capacity), ends = pool.Rent(capacity), labelOf = pool.Rent(capacity), parent = pool.Rent(capacity);
+        void Grow(ref int[] array, int length)
+        {
+            int[] grown = pool.Rent(length * 2);
+            array.AsSpan(0, length).CopyTo(grown);
+            pool.Return(array);
+            array = grown;
+        }
+
         int Find(int x)
         {
             while (parent[x] != x)
@@ -48,56 +60,70 @@ internal static class Shapes
         int[] lengths = new int[width + 2];
         for (int y = 0; y < height; y++)
         {
-            int rowStart = runs.Count, count = Binarizer.IntRuns(bits.Row(y), lengths), at = lengths[0];
-            for (int i = 1; i < count; i += 2)
+            int rowStart = count, cuts = Binarizer.IntRuns(bits.Row(y), lengths), at = lengths[0];
+            for (int i = 1; i < cuts; i += 2)
             {
                 // Odd runs are dark (runs start light).
                 int start = at, end = at + lengths[i];
-                at = end + (i + 1 < count ? lengths[i + 1] : 0);
+                at = end + (i + 1 < cuts ? lengths[i + 1] : 0);
 
                 int label = 0;
-                while (above < aboveEnd && runs[above].End < start)
+                while (above < aboveEnd && ends[above] < start)
                 {
                     above++;
                 }
 
-                for (int k = above; k < aboveEnd && runs[k].Start <= end; k++)
+                for (int k = above; k < aboveEnd && starts[k] <= end; k++)
                 {
-                    int other = Find(runs[k].Label);
+                    int other = Find(labelOf[k]);
                     if (label == 0)
                     {
                         label = other;
                     }
                     else if (other != label)
                     {
-                        int a = Math.Min(label, other), b = Math.Max(label, other);
-                        parent[b] = a;
-                        label = a;
+                        int low = Math.Min(label, other), high = Math.Max(label, other);
+                        parent[high] = low;
+                        label = low;
                     }
                 }
 
                 if (label == 0)
                 {
-                    label = parent.Count;
-                    parent.Add(label);
+                    if (labelCount == parent.Length)
+                    {
+                        Grow(ref parent, labelCount);
+                    }
+
+                    label = labelCount;
+                    parent[labelCount++] = label;
                 }
 
-                runs.Add((y, start, end, label));
+                if (count == ys.Length || count == starts.Length || count == ends.Length || count == labelOf.Length)
+                {
+                    Grow(ref ys, count);
+                    Grow(ref starts, count);
+                    Grow(ref ends, count);
+                    Grow(ref labelOf, count);
+                }
+
+                (ys[count], starts[count], ends[count], labelOf[count]) = (y, start, end, label);
+                count++;
             }
 
-            (above, aboveEnd) = (rowStart, runs.Count);
+            (above, aboveEnd) = (rowStart, count);
         }
 
         // Bounding boxes by root first, in the order the roots are first met; only components large enough get their ends.
-        int labels = parent.Count;
-        int[] roots = new int[runs.Count], left = new int[labels], right = new int[labels], top = new int[labels], bottom = new int[labels];
+        int labels = labelCount;
+        int[] roots = pool.Rent(count), left = pool.Rent(labels), right = pool.Rent(labels), top = pool.Rent(labels), bottom = pool.Rent(labels);
         var order = new List<int>();
-        left.AsSpan().Fill(int.MaxValue);
-        right.AsSpan().Fill(-1);
-        for (int i = 0; i < runs.Count; i++)
+        left.AsSpan(0, labels).Fill(int.MaxValue);
+        right.AsSpan(0, labels).Fill(-1);
+        for (int i = 0; i < count; i++)
         {
-            (int y, int start, int end, int label) = runs[i];
-            int root = roots[i] = Find(label);
+            int y = ys[i], start = starts[i], end = ends[i];
+            int root = roots[i] = Find(labelOf[i]);
             if (right[root] < 0)
             {
                 order.Add(root);
@@ -118,14 +144,14 @@ internal static class Shapes
             }
         }
 
-        for (int i = 0; i < runs.Count; i++)
+        for (int i = 0; i < count; i++)
         {
             if (components[roots[i]] is not Component c)
             {
                 continue;
             }
 
-            (int y, int start, int end, _) = runs[i];
+            int y = ys[i], start = starts[i], end = ends[i];
             c.Count += end - start;
 
             // Runs come row by row and left to right: the row's first run gives its left end, its last run its right end.
@@ -148,6 +174,11 @@ internal static class Shapes
                     c.EndsRowRight = true;
                 }
             }
+        }
+
+        foreach (int[] array in (ReadOnlySpan<int[]>)[ys, starts, ends, labelOf, parent, roots, left, right, top, bottom])
+        {
+            pool.Return(array);
         }
 
         return [.. order.Select(root => components[root]).OfType<Component>().OrderByDescending(c => c.Count)];
