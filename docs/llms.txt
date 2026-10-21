@@ -50,6 +50,7 @@ settings, safety limits and registered formats a call uses.
 - [JBIG2](https://inexin.github.io/Egami/v1/articles/formats/jbig2.html): Egami reads JBIG2 (ITU-T T.88 | ISO/IEC 14492), the bi-level format of scanned documents and of the JBIG2Decode images in PDF, written from the 2018 edition of T.88 and the PDF specification.
 - [CCITT fax](https://inexin.github.io/Egami/v1/articles/formats/ccitt.html): Egami decodes raw CCITT fax data.
 - [VP8 video frames](https://inexin.github.io/Egami/v1/articles/formats/vp8.html): `Vp8StreamDecoder` decodes VP8 video (RFC 6386) a frame at a time.
+- [Your own format](https://inexin.github.io/Egami/v1/articles/formats/custom.html): Egami's formats are plug-ins like any other.
 
 ## Egami: editing images
 

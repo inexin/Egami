@@ -62,6 +62,8 @@
       href: formats/ccitt.md
     - name: VP8 video frames
       href: formats/vp8.md
+    - name: Your own format
+      href: formats/custom.md
 - name: "Egami: editing images"
   items:
     - name: Resizing and geometry

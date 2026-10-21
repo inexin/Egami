@@ -31,6 +31,7 @@ format, with its options:
 - [ICO and CUR](../formats/ico.md), [PSD and PSB](../formats/psd.md)
 - [JPEG 2000](../formats/jpeg2000.md), [JBIG2](../formats/jbig2.md), [CCITT fax](../formats/ccitt.md)
 - [VP8 video frames](../formats/vp8.md)
+- [Your own format](../formats/custom.md): plug in a reader and writer for a format Egami does not have
 
 ## Egami: editing images
 
@@ -61,7 +62,7 @@ Operations that run on a raster through `Apply` and `Derive`.
 
 ## Egami: extending
 
-- [Custom operations and formats](extending.md): write your own operation or plug in a format.
+- [Custom operations and formats](extending.md): write your own operation or pixel type, or wrap your own memory.
 
 ## Egami.Drawing
 
