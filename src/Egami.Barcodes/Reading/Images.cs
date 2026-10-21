@@ -1,3 +1,6 @@
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
 using Egami.Pixels;
 
 namespace Egami.Barcodes.Reading;
@@ -114,27 +117,67 @@ internal static class Binarizer
     /// </summary>
     public static BitImage Global(LuminanceImage image)
     {
-        Span<int> histogram = stackalloc int[32];
+        // Four histograms side by side, so consecutive pixels do not wait on the same counter.
+        Span<int> counts = stackalloc int[4 * 32];
         for (int y = 0; y < image.Height; y++)
         {
-            foreach (byte p in image.Row(y))
+            ReadOnlySpan<byte> row = image.Row(y);
+            int x = 0;
+            for (; x <= row.Length - 4; x += 4)
             {
-                histogram[p >> 3]++;
+                counts[row[x] >> 3]++;
+                counts[32 + (row[x + 1] >> 3)]++;
+                counts[64 + (row[x + 2] >> 3)]++;
+                counts[96 + (row[x + 3] >> 3)]++;
             }
+
+            for (; x < row.Length; x++)
+            {
+                counts[row[x] >> 3]++;
+            }
+        }
+
+        Span<int> histogram = stackalloc int[32];
+        for (int i = 0; i < 32; i++)
+        {
+            histogram[i] = counts[i] + counts[32 + i] + counts[64 + i] + counts[96 + i];
         }
 
         int threshold = Valley(histogram) << 3;
         byte[] bits = new byte[image.Width * image.Height];
         for (int y = 0; y < image.Height; y++)
         {
-            ReadOnlySpan<byte> row = image.Row(y);
-            for (int x = 0; x < row.Length; x++)
-            {
-                bits[(y * image.Width) + x] = row[x] < threshold ? (byte)1 : (byte)0;
-            }
+            ThresholdRow(image.Row(y), bits.AsSpan(y * image.Width, image.Width), threshold - 1);
         }
 
         return new BitImage(bits, image.Width, image.Height);
+    }
+
+    /// <summary>Sets each bit to 1 where the pixel is at most <paramref name="threshold"/>, else 0.</summary>
+    private static void ThresholdRow(ReadOnlySpan<byte> row, Span<byte> bits, int threshold)
+    {
+        if (threshold < 0)
+        {
+            bits.Clear();
+            return;
+        }
+
+        int x = 0;
+        if (Vector128.IsHardwareAccelerated)
+        {
+            Vector128<byte> limit = Vector128.Create((byte)threshold), one = Vector128<byte>.One;
+            ref byte source = ref MemoryMarshal.GetReference(row);
+            ref byte target = ref MemoryMarshal.GetReference(bits);
+            for (; x <= row.Length - 16; x += 16)
+            {
+                (Vector128.LessThanOrEqual(Vector128.LoadUnsafe(ref source, (nuint)x), limit) & one).StoreUnsafe(ref target, (nuint)x);
+            }
+        }
+
+        for (; x < row.Length; x++)
+        {
+            bits[x] = row[x] <= threshold ? (byte)1 : (byte)0;
+        }
     }
 
     /// <summary>
@@ -154,7 +197,30 @@ internal static class Binarizer
         for (int by = 0; by < blocksY; by++)
         {
             int y0 = Math.Min(by * BlockSize, height - BlockSize);
-            for (int bx = 0; bx < blocksX; bx++)
+            int bx = 0;
+            if (Vector128.IsHardwareAccelerated)
+            {
+                // Two blocks at a time, while both sit at their natural place (the last block may overlap the one before it).
+                for (; (bx + 2) * BlockSize <= width; bx += 2)
+                {
+                    Vector128<byte> min = Vector128<byte>.AllBitsSet, max = Vector128<byte>.Zero;
+                    Vector128<ushort> low = Vector128<ushort>.Zero, high = Vector128<ushort>.Zero;
+                    for (int y = 0; y < BlockSize; y++)
+                    {
+                        Vector128<byte> v = Vector128.LoadUnsafe(ref MemoryMarshal.GetReference(image.Row(y0 + y)), (nuint)(bx * BlockSize));
+                        min = Vector128.Min(min, v);
+                        max = Vector128.Max(max, v);
+                        (Vector128<ushort> l, Vector128<ushort> h) = Vector128.Widen(v);
+                        low += l;
+                        high += h;
+                    }
+
+                    levels[(by * blocksX) + bx] = Level(levels, blocksX, bx, by, Vector128.Sum(low), Lanes(min, 0, true), Lanes(max, 0, false));
+                    levels[(by * blocksX) + bx + 1] = Level(levels, blocksX, bx + 1, by, Vector128.Sum(high), Lanes(min, 8, true), Lanes(max, 8, false));
+                }
+            }
+
+            for (; bx < blocksX; bx++)
             {
                 int x0 = Math.Min(bx * BlockSize, width - BlockSize);
                 int sum = 0, min = 255, max = 0;
@@ -169,35 +235,61 @@ internal static class Binarizer
                     }
                 }
 
-                int average;
-                if (max - min > MinimumDynamicRange)
-                {
-                    average = sum / (BlockSize * BlockSize);
-                }
-                else
-                {
-                    // A flat block: assume it is light, unless the blocks above and to the left say it sits in dark.
-                    average = min / 2;
-                    if (by > 0 && bx > 0)
-                    {
-                        int neighbours = (levels[((by - 1) * blocksX) + bx] + (2 * levels[(by * blocksX) + bx - 1]) + levels[((by - 1) * blocksX) + bx - 1]) / 4;
-                        if (min < neighbours)
-                        {
-                            average = neighbours;
-                        }
-                    }
-                }
-
-                levels[(by * blocksX) + bx] = average;
+                levels[(by * blocksX) + bx] = Level(levels, blocksX, bx, by, sum, min, max);
             }
         }
 
         // Thresholding in parallel stripes of block rows: each writes only its own pixels, except the last, which may overlap
         // the one before it and so runs after the others.
         byte[] bits = new byte[width * height];
-        Parallel.For(0, blocksY - 1, new ParallelOptions { MaxDegreeOfParallelism = threads }, by => Threshold(image, levels, bits, blocksX, blocksY, by));
+        if (threads > 1)
+        {
+            Parallel.For(0, blocksY - 1, new ParallelOptions { MaxDegreeOfParallelism = threads }, by => Threshold(image, levels, bits, blocksX, blocksY, by));
+        }
+        else
+        {
+            for (int by = 0; by < blocksY - 1; by++)
+            {
+                Threshold(image, levels, bits, blocksX, blocksY, by);
+            }
+        }
+
         Threshold(image, levels, bits, blocksX, blocksY, blocksY - 1);
         return new BitImage(bits, width, height);
+    }
+
+    /// <summary>The smallest or largest of eight lanes from <paramref name="start"/>.</summary>
+    private static int Lanes(Vector128<byte> v, int start, bool smallest)
+    {
+        int result = v.GetElement(start);
+        for (int i = start + 1; i < start + 8; i++)
+        {
+            result = smallest ? Math.Min(result, v.GetElement(i)) : Math.Max(result, v.GetElement(i));
+        }
+
+        return result;
+    }
+
+    /// <summary>A block's level from its sum, minimum and maximum; a flat block takes its neighbours' level when it sits in dark.</summary>
+    private static int Level(int[] levels, int blocksX, int bx, int by, int sum, int min, int max)
+    {
+        if (max - min > MinimumDynamicRange)
+        {
+            return sum / (BlockSize * BlockSize);
+        }
+
+        // A flat block: assume it is light, unless the blocks above and to the left say it sits in dark.
+        int average = min / 2;
+        if (by > 0 && bx > 0)
+        {
+            int neighbours = (levels[((by - 1) * blocksX) + bx] + (2 * levels[(by * blocksX) + bx - 1]) + levels[((by - 1) * blocksX) + bx - 1]) / 4;
+            if (min < neighbours)
+            {
+                average = neighbours;
+            }
+        }
+
+        return average;
     }
 
     /// <summary>Thresholds one row of blocks by the mean level of the 5 x 5 blocks around each.</summary>
@@ -206,27 +298,42 @@ internal static class Binarizer
         int width = image.Width, height = image.Height;
         int y0 = Math.Min(by * BlockSize, height - BlockSize);
         int cy = Math.Clamp(by, 2, blocksY - 3);
+        Span<int> thresholds = blocksX <= 1024 ? stackalloc int[blocksX] : new int[blocksX];
         for (int bx = 0; bx < blocksX; bx++)
         {
-            int x0 = Math.Min(bx * BlockSize, width - BlockSize);
             int cx = Math.Clamp(bx, 2, blocksX - 3);
             int sum = 0;
             for (int dy = -2; dy <= 2; dy++)
             {
-                for (int dx = -2; dx <= 2; dx++)
+                int at = ((cy + dy) * blocksX) + cx;
+                sum += levels[at - 2] + levels[at - 1] + levels[at] + levels[at + 1] + levels[at + 2];
+            }
+
+            thresholds[bx] = sum / 25;
+        }
+
+        for (int y = 0; y < BlockSize; y++)
+        {
+            ReadOnlySpan<byte> row = image.Row(y0 + y);
+            Span<byte> target = bits.AsSpan((y0 + y) * width, width);
+            int bx = 0;
+            if (Vector128.IsHardwareAccelerated)
+            {
+                Vector128<byte> one = Vector128<byte>.One;
+                for (; (bx + 2) * BlockSize <= width; bx += 2)
                 {
-                    sum += levels[((cy + dy) * blocksX) + cx + dx];
+                    Vector128<byte> limit = Vector128.Create(Vector64.Create((byte)thresholds[bx]), Vector64.Create((byte)thresholds[bx + 1]));
+                    nuint x = (nuint)(bx * BlockSize);
+                    (Vector128.LessThanOrEqual(Vector128.LoadUnsafe(ref MemoryMarshal.GetReference(row), x), limit) & one).StoreUnsafe(ref MemoryMarshal.GetReference(target), x);
                 }
             }
 
-            int threshold = sum / 25;
-            for (int y = 0; y < BlockSize; y++)
+            for (; bx < blocksX; bx++)
             {
-                int offset = ((y0 + y) * width) + x0;
-                ReadOnlySpan<byte> row = image.Row(y0 + y).Slice(x0, BlockSize);
-                for (int x = 0; x < BlockSize; x++)
+                int x0 = Math.Min(bx * BlockSize, width - BlockSize), threshold = thresholds[bx];
+                for (int x = x0; x < x0 + BlockSize; x++)
                 {
-                    bits[offset + x] = row[x] <= threshold ? (byte)1 : (byte)0;
+                    target[x] = row[x] <= threshold ? (byte)1 : (byte)0;
                 }
             }
         }
