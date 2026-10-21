@@ -6,6 +6,8 @@ to `ILogger`, Serilog or the console.
 
 [!code-csharp[](../../tests/Egami.DocSamples/Diagnostics.cs#logger)]
 
+Set it once at startup; every call that passes no context then reports to the log.
+
 ## The handler
 
 `EgamiContext.Diagnostics` is an `Action<EgamiDiagnostic>`, `null` by default. With no handler, nothing is built and nothing is
@@ -37,6 +39,8 @@ Ids are listed below and are never renamed or reused once shipped, like the publ
   allocated is leaked.
 
   [!code-csharp[](../../tests/Egami.DocSamples/Diagnostics.cs#errors)]
+
+A handler that throws turns every warning into an error; `RecoveryMode.Strict` does the same for damage alone, without a handler.
 
 - **Repeats.** One id is delivered at most 10 times per call, then once more as "The same problem came up N more times".
   `Metadata.Warnings` holds the same capped list, so the two always agree. A hostile file cannot flood a log.

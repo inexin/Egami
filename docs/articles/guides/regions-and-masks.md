@@ -7,6 +7,8 @@ mask with `Within(Mask, …)`. The inner chain is the same lambda `Apply` and `D
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Scopes.cs#within-rect)]
 
+The blur reads the real pixels around the rectangle, so its edge has no seam.
+
 - Only pixels inside the rectangle change. It is clipped to the image; one that misses it changes nothing.
 - Filters read the real pixels around the rectangle, so a blurred rectangle has no seam: inside, it equals the whole-image blur.
 - Positions inside the scope (DrawImage, FillColor) are the image's coordinates, as outside it.
@@ -18,6 +20,8 @@ mask with `Within(Mask, …)`. The inner chain is the same lambda `Apply` and `D
 ## A mask
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Scopes.cs#within-mask)]
+
+A soft mask gives a soft transition; blur the mask raster first to feather a hard selection.
 
 A `Mask` reads coverage from any raster: a one-channel raster's value (gray, or `Alpha8`'s alpha) by default, otherwise its alpha,
 otherwise its luminance; `MaskChannel` picks a channel explicitly. `Offset` places it, `Inverted` flips it, and outside the raster

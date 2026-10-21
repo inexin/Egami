@@ -36,6 +36,8 @@ alone, exactly as ImageMagick's `-despeckle`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Filters.cs#despeckle)]
 
+For heavy salt-and-pepper noise use `Median(1)` or `Median(2)` instead; both keep edges, and both give ImageMagick's pixels.
+
 ## Lens and bilateral blur
 
 `LensBlur` convolves with an aperture: a disc, or a polygon of 5 to 12 blades turned by `Rotation`. It works in linear light,
@@ -43,6 +45,9 @@ since a lens adds light, and `HighlightGain` brightens light above `HighlightThr
 bright discs. It runs by FFT on tiles, so its cost does not grow with the radius.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Filters.cs#lens-blur)]
+
+`LensBlur` works in linear light, so bright points stay bright discs instead of gray smudges; `Within` with a mask feathers the
+edge between the sharp subject and the blurred background.
 
 `BilateralBlur` weighs each neighbour by its distance and by how different its color is, so noise flattens and edges stay. The
 color difference is the root-mean-square difference of red, green and blue on 0..1; on gray images the sigmas mean what
@@ -65,6 +70,8 @@ Each value's noise is a hash of the seed, frame and position, so the same seed g
 inside `Within` an area gets the noise the whole image would get there.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Filters.cs#noise)]
+
+The grain depends only on the seed and the pixel's position, so a batch of frames with the same seed grains alike.
 
 ## Edges
 

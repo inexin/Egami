@@ -91,6 +91,8 @@ covers an editor's layer styles, and on a canvas layer it is a `LayerOptions.Fil
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FilterEffects.cs#logo-shadow)]
 
+The canvas grows to hold the shadow; pass `Expand = false` to keep the size, as inside `Within`.
+
 ### Blur a face
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FilterEffects.cs#blur-face)]

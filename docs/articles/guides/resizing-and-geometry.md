@@ -69,6 +69,8 @@ canvas:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Transforms.cs#homography)]
 
+Give the page's four corners in the photo, top-left first and clockwise; the perspective maps them onto an upright canvas.
+
 `TransformOptions` (a `SamplingOptions` with a viewport) chooses the filter, the color space it blends in, what samples outside
 the source read (`Edges`: transparent background, or the image clamped, mirrored or wrapped), and the background color:
 
@@ -92,6 +94,8 @@ antialiasing where they shrink the image, and edge modes. `Warps` holds ImageMag
 and their pixels land where ImageMagick's do, and Skia's `Magnifier`:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Warps.cs#warps)]
+
+Barrel takes the PanoTools coefficients a lens database such as lensfun gives for the camera and focal length.
 
 Your own warp is an `IWarp`, which maps a whole output row per call, or `Warp.FromFunction` for a quick experiment:
 
@@ -162,6 +166,22 @@ embedded thumbnail, which no longer matches.
 [!code-csharp[](../../../tests/Egami.DocSamples/Geometry.cs#planning)]
 
 Animations: every step runs on every frame. See the [animation guide](animation.md).
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Thumbnails for the web
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#thumbnail)]
+
+The JPEG decodes at 1/2, 1/4 or 1/8 scale, `AutoOrient` turns only the small result, and the metadata is left out of the file.
+
+### Rotate a region in place
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Transforms.cs#rotate-region)]
+
+A viewport the size of the area keeps the size, so the transform runs inside `Within`.
 
 ## Run it
 

@@ -79,6 +79,14 @@ times (0 loops it for the base's whole length) from `Start`. A still base lasts 
 count. `AnimationTiming.ByIndex` pairs base frame i with overlay frame i instead, as ImageMagick's -layers Composite does. The
 number of frames the result will have is checked against `MaxFrames` and `MaxTotalBytes` before anything is drawn.
 
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Make an animated GIF from frames
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#gif-from-frames)]
+
 ## Run it
 
 [`samples/Animation`](https://github.com/inexin/Egami/tree/main/samples/Animation) is a console app that does what this guide shows on the bundled

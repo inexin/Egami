@@ -83,6 +83,8 @@ turn system fonts off, so the output does not depend on the machine.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#fonts)]
 
+With system fonts off, the label looks the same on every machine.
+
 Color fonts with an OpenType SVG table, such as many emoji fonts, draw in color through `SvgGlyphRenderer`, an
 `IColorGlyphRenderer` that Egami.Drawing asks when `CanvasOptions.ColorGlyphRenderer` holds it: each glyph's document is read once
 per font. A glyph that also has a COLR version 1 form draws that instead; COLR version 0, sbix and CBDT come after SVG.
@@ -155,3 +157,27 @@ with `EmbedSubset` each font's glyphs used are embedded as an OpenType subset in
 forbids it, reported as `Svg.FontNotEmbedded`). Synthetic bold and italic are drawn as Egami draws them, as a stroke and a slant.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#svg-canvas-text)]
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Render an SVG to PNG
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#svg-to-png)]
+
+Egami.Svg draws as resvg does where SVG leaves a choice.
+
+### Recolor an SVG icon
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#recolor)]
+
+### Draw icons from an SVG sprite sheet
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#sprite-sheet)]
+
+A symbol's viewBox fits it into each cell; the same calls draw on a PDF page.
+
+### Flow SVG text into a shape
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#wrapped-text)]

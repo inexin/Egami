@@ -37,6 +37,8 @@ each get their own. Past the border the edge pixel repeats.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/EdgesAndMorphology.cs#canny)]
 
+Canny's white-on-black map works directly as a `Mask`; thicken it with `Dilate` first to catch the pixels beside each edge.
+
 `CannyEdges` runs the four steps of Canny's detector: a Gaussian blur of the luma with standard deviation `sigma`, the
 gradient from Canny's own 2 × 2 first differences, non-maximum suppression (a pixel is kept only if neither neighbour across
 its edge is stronger), and hysteresis: pixels at least `high` times the image's strongest gradient start edges, and edges

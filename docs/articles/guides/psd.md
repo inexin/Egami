@@ -8,6 +8,8 @@ Photoshop stores after the layers, in every color mode and depth, and lists the 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-load)]
 
+A file saved without Maximize Compatibility holds only a placeholder; `PsdDetails.HasRealComposite` says so.
+
 | Color mode | 1-bit | 8-bit | 16-bit | 32-bit |
 | --- | --- | --- | --- | --- |
 | Bitmap | `Gray8`, 1 black | | | |

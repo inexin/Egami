@@ -52,6 +52,8 @@ A player converts every frame into the same raster; after the first frame nothin
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PlanarYuv.cs#reuse)]
 
+Decoder frames in NV12 or P010 copy into the planes first; see [Interleaved layouts](#interleaved-layouts).
+
 ## Interleaved layouts
 
 Media Foundation, MediaCodec, GPU decoders and webcams hand out NV12, NV21, P010, P016, YUYV or UYVY. One SIMD pass copies them

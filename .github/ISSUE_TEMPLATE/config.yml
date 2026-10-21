@@ -7,4 +7,4 @@ contact_links:
       here, not in a public issue, and attach the file there. See SECURITY.md.
   - name: Documentation
     url: https://inexin.github.io/Egami/v1/
-    about: Getting started, the guides, the cookbook and the API reference.
+    about: Getting started, the guides and recipes, and the API reference.

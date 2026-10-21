@@ -13,6 +13,8 @@ two fully transparent pixels always match.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Keying.cs#green-screen)]
 
+Raise the tolerance until the screen is gone, then add softness for clean hair and edges.
+
 `MakeTransparent` clears alpha where a pixel lies within the tolerance and keeps its color, as ImageMagick's -transparent does.
 `softness` ramps alpha back up over the next band of distance, for antialiased edges; with no softness the result is ImageMagick's.
 

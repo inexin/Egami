@@ -3,7 +3,7 @@
 - a documented member has an empty summary;
 - a public type, or a public method that takes options or limits, has no <example>;
 - an <example> points at a snippet file or region that does not exist;
-- a public type is mentioned in no guide, cookbook page or getting-started page, and is not listed in REFERENCE_ONLY below;
+- a public type is mentioned in no guide or getting-started page, and is not listed in REFERENCE_ONLY below;
 - a guide links a sample in samples/ that does not exist.
 
 Usage: python tools/check-docs.py [src/Egami.Drawing]   (from the repo root; builds src/Egami, or the package given, in Release first)

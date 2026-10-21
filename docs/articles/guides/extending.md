@@ -90,6 +90,14 @@ block.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#row-band-operation)]
 
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Interop with raw buffers
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#raw-buffers)]
+
 ## Run it
 
 [`samples/Extending`](https://github.com/inexin/Egami/tree/main/samples/Extending) is a console app that does what this guide shows on the bundled

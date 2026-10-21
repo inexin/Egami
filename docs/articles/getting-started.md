@@ -67,5 +67,5 @@ collection. Methods that return a new raster say so in their name: `Copy`, `As` 
 | Fast lossless storage | QOI |
 | Interchange with older tools | BMP, TGA, PNM |
 
-Next: the [formats guide](guides/formats.md) lists what each format reads and writes, and the [cookbook](cookbook/index.md) has
-task-sized recipes.
+Next: the [guides](guides/index.md) explain each area in order, starting with [pixel types](guides/pixel-types.md) and
+[formats](guides/formats.md), many ending with recipes for common tasks.

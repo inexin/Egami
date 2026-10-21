@@ -43,3 +43,13 @@ Median times on one machine (24 cores, .NET 10, x64 with AVX2), decoding from me
 | BMP 24-bit encode | 0.46 ms | 0.46 ms |
 
 Steady-state decoding and encoding allocate only the result raster: under 2.5 KB of managed memory a call for these formats.
+
+## Native AOT
+
+Egami is trimming- and AOT-clean: no reflection, no runtime code generation. Publish as usual:
+
+```sh
+dotnet publish -c Release -r linux-x64 -p:PublishAot=true
+```
+
+Egami's own build publishes a small console app this way on every change and checks that it runs with no warnings.

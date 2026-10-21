@@ -12,6 +12,8 @@ keep alpha, and clamp to 0..1 after each step.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#tone)]
 
+Levels, an S-curve and a tint run as one pass over the pixels.
+
 | Step | Does | ImageMagick |
 | --- | --- | --- |
 | `Level(black, white, gamma, outputBlack, outputWhite)` | Stretches black..white to outputBlack..outputWhite with a midtone gamma | `-level`, `+level` |
@@ -103,3 +105,11 @@ window around it (Bradley and Roth), for pages under uneven light.
 [!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#threshold)]
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Tone.cs#auto-threshold)]
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Tint a photo
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Blending.cs#tint)]

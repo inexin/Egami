@@ -88,3 +88,27 @@ quality 95) and each can be changed; `Create` also takes an SDR rendition you gr
 PNG, JPEG and the other 8 and 16-bit formats hold 0 to 1. Saving a floating-point raster to them clamps, as other libraries do;
 when the raster holds light above reference white, the save also reports `Save.HdrClipped`, naming `ToneMap`, which rolls the
 highlights off instead of cutting them.
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### A render pass from OpenEXR as JPEG
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Hdr.cs#cookbook-exr-layer)]
+
+`ExrReaderOptions.Layer` picks a pass by name; `ExrDetails` lists the parts and layers a file has. `ToneMap` rolls off what is
+brighter than white instead of clipping it.
+
+### Show an Ultra HDR photo as HDR
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Hdr.cs#cookbook-ultrahdr-view)]
+
+The gain map is applied for the display's headroom: 1 gives the SDR picture, and the map's own capacity (leave `Headroom` null)
+the full HDR rendition.
+
+### Make an Ultra HDR JPEG from an OpenEXR render
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Hdr.cs#cookbook-exr-to-ultrahdr)]
+
+The SDR picture is the render tone mapped with BT.2390; the gain map, half the size here, brings the HDR render back.

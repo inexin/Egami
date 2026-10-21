@@ -36,6 +36,17 @@ finding.
 
 Please report security issues privately, as [SECURITY.md](https://github.com/inexin/Egami/blob/main/SECURITY.md) describes.
 
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Use from ASP.NET Core
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#upload)]
+
+Egami has no ASP.NET Core dependency: it reads and writes any `Stream`. The async calls read the upload into a pooled buffer,
+counted against `MaxTotalBytes`, so a slow client never holds a thread.
+
 ## Run it
 
 [`samples/Security`](https://github.com/inexin/Egami/tree/main/samples/Security) is a console app that does what this guide shows on the bundled

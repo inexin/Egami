@@ -73,6 +73,8 @@ as pages.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-fax)]
 
+Group 4 is the usual choice for scanned text; it takes 1-bit pages only, so threshold first or set `Reduce`.
+
 Files are checked against libtiff (no tiffinfo warnings, identical samples), ImageMagick and Pillow, and open in Windows' WIC
 except for BigTIFF and tiled gray-with-alpha or 16-bit CMYK, which WIC does not read from any writer.
 
@@ -94,3 +96,17 @@ for, so a region or a reduced decode of a large tiled file reads only the tiles 
 where they lie. A stream that cannot seek is read whole first, since a TIFF's index often comes last; the bytes count against
 `SafetyLimits.MaxTotalBytes`. Every IFD offset is checked against the file and against loops, and a strip or tile that decodes
 short is padded with zero samples and noted in one warning per page (`RecoveryMode.Strict` throws instead).
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Split a multi-page scan into PNGs
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-split)]
+
+Each page keeps its own size and pixel type; see [Reading](#reading).
+
+### Combine pages into one TIFF
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tiff.cs#tiff-save-all)]

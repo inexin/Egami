@@ -148,6 +148,20 @@ Each format is described by a `FormatInfo`: its name, extensions, MIME types, an
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#format-info)]
 
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Batch convert a folder
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#batch-convert)]
+
+### Read the size without decoding
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#read-size)]
+
+`Probe` reads only the header, and reports the EXIF orientation, so you know how the image will be shown.
+
 ## Run it
 
 [`samples/Formats`](https://github.com/inexin/Egami/tree/main/samples/Formats) is a console app that does what this guide shows on the bundled

@@ -60,3 +60,13 @@ even offsets, blended over the canvas when its new pixels are opaque and replaci
 milliseconds and capped at 16,777,215.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Webp.cs#webp-animation)]
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Convert images to WebP for the web
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#webp-web)]
+
+Quality and Effort mean what cwebp's `-q` and `-m` mean; lossless keeps every pixel.
