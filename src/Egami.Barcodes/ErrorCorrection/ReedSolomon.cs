@@ -59,12 +59,7 @@ internal static class ReedSolomon
         bool clean = true;
         for (int j = 0; j < checkCount; j++)
         {
-            int x = field.Exp(field.GeneratorBase + j), value = 0;
-            foreach (int symbol in codeword)
-            {
-                value = field.Add(field.Multiply(value, x), symbol);
-            }
-
+            int value = field.EvaluateAtPower(codeword, field.GeneratorBase + j);
             syndromes[j] = value;
             clean &= value == 0;
         }
@@ -175,13 +170,7 @@ internal static class ReedSolomon
     {
         for (int j = 0; j < checkCount; j++)
         {
-            int x = field.Exp(field.GeneratorBase + j), value = 0;
-            foreach (int symbol in codeword)
-            {
-                value = field.Add(field.Multiply(value, x), symbol);
-            }
-
-            if (value != 0)
+            if (field.EvaluateAtPower(codeword, field.GeneratorBase + j) != 0)
             {
                 return false;
             }

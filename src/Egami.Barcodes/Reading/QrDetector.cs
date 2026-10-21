@@ -151,6 +151,24 @@ internal static class QrDetector
         return null;
     }
 
+    /// <summary>
+    /// Whether the timing patterns (row and column 6, alternating dark and light between the finders) are mostly right under a
+    /// transform: one placed off the symbol gets about half of them wrong, and sampling and decoding its grid would only fail
+    /// later. The mirrored grid has the same timing modules.
+    /// </summary>
+    private static bool TimingLooksRight(BitImage bits, Perspective transform, int size)
+    {
+        int wrong = 0;
+        for (int i = 8; i < size - 8; i++)
+        {
+            bool dark = (i & 1) == 0;
+            Vector2 p = transform.Map(i + 0.5f, 6.5f), q = transform.Map(6.5f, i + 0.5f);
+            wrong += (bits.IsDark((int)MathF.Floor(p.X), (int)MathF.Floor(p.Y)) != dark ? 1 : 0) + (bits.IsDark((int)MathF.Floor(q.X), (int)MathF.Floor(q.Y)) != dark ? 1 : 0);
+        }
+
+        return wrong * 3 <= (size - 16) * 2;
+    }
+
     /// <summary>Rounds to the nearest QR size: 17 plus a multiple of 4.</summary>
     private static int Dimension(int estimate) => (estimate & 3) switch
     {
@@ -182,7 +200,7 @@ internal static class QrDetector
         var transform = Perspective.QuadToQuad(
             [new(3.5f, 3.5f), new(dimension - 3.5f, 3.5f), new(target, target), new(3.5f, dimension - 3.5f)],
             [tl, tr, fourth, bl]);
-        return transform.Sample(bits, dimension, dimension) is BarcodeModules grid ? (grid, transform) : null;
+        return TimingLooksRight(bits, transform, dimension) && transform.Sample(bits, dimension, dimension) is BarcodeModules grid ? (grid, transform) : null;
     }
 
     /// <summary>Searches around an estimate for an alignment pattern: a dark module in a light ring in a dark ring (1:1:1 runs).</summary>
@@ -323,24 +341,21 @@ internal static class QrDetector
     {
         var finders = new List<Finder>();
         int step = effort >= 7 ? 1 : Math.Max(1, Math.Min(3, bits.Height / 200));
-        var runs = new List<float>();
-        var offsets = new List<float>();
-        Span<int> counts = stackalloc int[5];
+        int[] runs = new int[bits.Width + 2];
         for (int y = step - 1; y < bits.Height; y += step)
         {
             // Runs start light; windows of five runs from each dark run.
-            Binarizer.BitRuns(bits.Row(y), runs, offsets);
-            for (int i = 1; i + 4 < runs.Count; i += 2)
+            int count = Binarizer.IntRuns(bits.Row(y), runs);
+            int at = runs[0];
+            for (int i = 1; i + 4 < count; i += 2)
             {
-                for (int k = 0; k < 5; k++)
-                {
-                    counts[k] = (int)runs[i + k];
-                }
-
+                ReadOnlySpan<int> counts = runs.AsSpan(i, 5);
                 if (Ratio(counts))
                 {
-                    Confirm(bits, counts, (int)offsets[i + 5], y, finders);
+                    Confirm(bits, counts, at + counts[0] + counts[1] + counts[2] + counts[3] + counts[4], y, finders);
                 }
+
+                at += runs[i] + runs[i + 1];
             }
         }
 

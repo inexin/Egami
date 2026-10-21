@@ -249,8 +249,15 @@ internal static class Binarizer
                         high += h;
                     }
 
-                    levels[(by * blocksX) + bx] = Level(levels, blocksX, bx, by, Vector128.Sum(low), Lanes(min, 0, true), Lanes(max, 0, false));
-                    levels[(by * blocksX) + bx + 1] = Level(levels, blocksX, bx + 1, by, Vector128.Sum(high), Lanes(min, 8, true), Lanes(max, 8, false));
+                    // Each 8-byte half folded onto its first byte: the two blocks' minimum and maximum.
+                    for (int shift = 32; shift >= 8; shift >>= 1)
+                    {
+                        min = Vector128.Min(min, Vector128.ShiftRightLogical(min.AsUInt64(), shift).AsByte());
+                        max = Vector128.Max(max, Vector128.ShiftRightLogical(max.AsUInt64(), shift).AsByte());
+                    }
+
+                    levels[(by * blocksX) + bx] = Level(levels, blocksX, bx, by, Vector128.Sum(low), min.GetElement(0), max.GetElement(0));
+                    levels[(by * blocksX) + bx + 1] = Level(levels, blocksX, bx + 1, by, Vector128.Sum(high), min.GetElement(8), max.GetElement(8));
                 }
             }
 
@@ -290,18 +297,6 @@ internal static class Binarizer
 
         Threshold(image, levels, bits, blocksX, blocksY, blocksY - 1);
         return new BitImage(bits, width, height);
-    }
-
-    /// <summary>The smallest or largest of eight lanes from <paramref name="start"/>.</summary>
-    private static int Lanes(Vector128<byte> v, int start, bool smallest)
-    {
-        int result = v.GetElement(start);
-        for (int i = start + 1; i < start + 8; i++)
-        {
-            result = smallest ? Math.Min(result, v.GetElement(i)) : Math.Max(result, v.GetElement(i));
-        }
-
-        return result;
     }
 
     /// <summary>A block's level from its sum, minimum and maximum; a flat block takes its neighbours' level when it sits in dark.</summary>
@@ -514,6 +509,31 @@ internal static class Binarizer
         runs.Add(n - start);
         offsets.Add(start);
         offsets.Add(n);
+    }
+
+    /// <summary>
+    /// Cuts a row of dark and light bits into run lengths, light first (possibly empty), and returns how many; the runs are found
+    /// by vectorized searches for the next change.
+    /// </summary>
+    public static int IntRuns(ReadOnlySpan<byte> dark, Span<int> runs)
+    {
+        int count = 0, at = 0;
+        byte color = 0;
+        while (at < dark.Length)
+        {
+            int length = dark[at..].IndexOfAnyExcept(color);
+            length = length < 0 ? dark.Length - at : length;
+            runs[count++] = length;
+            at += length;
+            color ^= 1;
+        }
+
+        if (count == 0)
+        {
+            runs[count++] = 0;
+        }
+
+        return count;
     }
 
     /// <summary>Cuts a row of dark and light bits into runs, light first, at whole-pixel edges.</summary>

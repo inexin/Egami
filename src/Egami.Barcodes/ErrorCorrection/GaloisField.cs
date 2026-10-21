@@ -113,6 +113,30 @@ internal sealed class GaloisField
         return _exp[(Size - 1) - _log[a]];
     }
 
+    /// <summary>Evaluates a polynomial, highest power first, at α^<paramref name="power"/> by Horner's rule.</summary>
+    public int EvaluateAtPower(ReadOnlySpan<int> coefficients, int power)
+    {
+        if (IsPrime)
+        {
+            long x = Exp(power), prime = Size, sum = 0;
+            foreach (int c in coefficients)
+            {
+                sum = ((sum * x) + c) % prime;
+            }
+
+            return (int)sum;
+        }
+
+        int logX = power % (Size - 1), value = 0;
+        int[] exp = _exp, log = _log;
+        foreach (int c in coefficients)
+        {
+            value = (value == 0 ? 0 : exp[log[value] + logX]) ^ c;
+        }
+
+        return value;
+    }
+
     /// <summary>Returns <paramref name="a"/> added to itself <paramref name="n"/> times, as formal derivatives need.</summary>
     public int MultiplyByInteger(int a, int n) => IsPrime ? (int)((long)a * n % Size) : (n & 1) != 0 ? a : 0;
 
