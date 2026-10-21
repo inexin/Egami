@@ -244,8 +244,9 @@ internal static class Pdf417Detector
     }
 
     /// <summary>
-    /// Reads rows sampled through the perspective between the start and stop edges, every half pixel across and every pixel
-    /// down.
+    /// Reads rows sampled through the perspective between the start and stop edges, every half pixel across and every three
+    /// quarters of a module down (at least every pixel): a symbol row is at least three modules high, so each is read four
+    /// times or more.
     /// </summary>
     private static Found? Read(BitImage bits, LuminanceImage image, Vector2 startTop, Vector2 startBottom, Vector2 stopTop, Vector2 stopBottom, float unit)
     {
@@ -265,18 +266,29 @@ internal static class Pdf417Detector
         var runs = new List<int>();
         var positions = new List<int>();
         byte[] gray = new byte[across];
+        var points = new Vector2[across];
         var fineRuns = new List<float>();
         var fineOffsets = new List<float>();
-        for (int row = 0; row < down; row++)
+        float[] work = [];
+        float[] xs = new float[across];
+        for (int i = 0; i < across; i++)
+        {
+            xs[i] = -margin + ((1 + (2 * margin)) * i / across);
+        }
+
+        int rowStep = Math.Max(1, (int)(unit * 0.75f));
+        for (int row = 0; row < down; row += rowStep)
         {
             float v = (row + 0.5f) / down;
             runs.Clear();
             positions.Clear();
             bool? previous = null;
+
+            // The row's sample points, for the binarized reading and the gray one below.
+            square.MapRow(xs, v, points);
             for (int i = 0; i < across; i++)
             {
-                float x = -margin + ((1 + (2 * margin)) * i / across);
-                Vector2 p = square.Map(x, v);
+                Vector2 p = points[i];
                 bool dark = bits.IsDark((int)MathF.Floor(p.X), (int)MathF.Floor(p.Y));
                 if (dark == previous)
                 {
@@ -300,11 +312,10 @@ internal static class Pdf417Detector
             // binarization blurs together, still read. Both readings vote.
             for (int i = 0; i < across; i++)
             {
-                Vector2 p = square.Map(-margin + ((1 + (2 * margin)) * i / across), v);
-                gray[i] = Bilinear(image, p.X, p.Y);
+                gray[i] = Bilinear(image, points[i].X, points[i].Y);
             }
 
-            Binarizer.RowRuns(gray, fineRuns, fineOffsets);
+            Binarizer.RowRuns(gray, fineRuns, fineOffsets, ref work);
             runs.Clear();
             positions.Clear();
             for (int i = 0; i < fineRuns.Count; i++)

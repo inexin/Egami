@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.Intrinsics;
 
 namespace Egami.Barcodes.Reading;
 
@@ -39,6 +40,36 @@ internal readonly struct Perspective
     {
         double w = (_a13 * x) + (_a23 * y) + _a33;
         return new Vector2((float)(((_a11 * x) + (_a21 * y) + _a31) / w), (float)(((_a12 * x) + (_a22 * y) + _a32) / w));
+    }
+
+    /// <summary>
+    /// Maps the points (x, <paramref name="y"/>) for each x, as <see cref="Map"/> does one by one, with the same arithmetic in
+    /// the same order, four at a time where vectors are fast.
+    /// </summary>
+    public void MapRow(ReadOnlySpan<float> xs, float y, Span<Vector2> points)
+    {
+        int i = 0;
+        if (Vector256.IsHardwareAccelerated)
+        {
+            Vector256<double> a11 = Vector256.Create(_a11), a12 = Vector256.Create(_a12), a13 = Vector256.Create(_a13);
+            Vector256<double> a21y = Vector256.Create(_a21 * y), a22y = Vector256.Create(_a22 * y), a23y = Vector256.Create(_a23 * y);
+            Vector256<double> a31 = Vector256.Create(_a31), a32 = Vector256.Create(_a32), a33 = Vector256.Create(_a33);
+            for (; i <= xs.Length - 4; i += 4)
+            {
+                Vector256<double> x = Vector256.Create((double)xs[i], xs[i + 1], xs[i + 2], xs[i + 3]);
+                Vector256<double> w = ((a13 * x) + a23y) + a33;
+                Vector256<double> px = (((a11 * x) + a21y) + a31) / w, py = (((a12 * x) + a22y) + a32) / w;
+                for (int k = 0; k < 4; k++)
+                {
+                    points[i + k] = new Vector2((float)px.GetElement(k), (float)py.GetElement(k));
+                }
+            }
+        }
+
+        for (; i < xs.Length; i++)
+        {
+            points[i] = Map(xs[i], y);
+        }
     }
 
     private Perspective Adjoint() => new(
