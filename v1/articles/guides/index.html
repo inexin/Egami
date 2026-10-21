@@ -90,80 +90,90 @@
 <p>Each guide covers one area of Egami: what it does, the options and their defaults, and the limits. Many guides end with
 <strong>Recipes</strong>, short answers to common tasks such as making a favicon or blurring a face, with code you can copy. Every code sample
 compiles and runs in Egami's test run.</p>
-<p>The guides are grouped by package, and within Egami they go from the basics to the specialized. If you are new, read
-<a href="../getting-started.html">Getting started</a> first.</p>
+<p>The guides are grouped by package, and within Egami the groups go from the basics to the specialized. Within a group, pages are
+in alphabetical order. Each file format has its own
+page in <a href="../formats/index.html">Formats</a>. If you are new, read <a href="../getting-started.html">Getting started</a> first.</p>
 <h2 id="egami-basics">Egami: basics</h2>
-<p>What every user meets: pixel types, the file formats, metadata, and how Egami uses memory and handles untrusted files.</p>
+<p>What every user meets: pixel types, metadata, and how Egami uses memory and handles untrusted files.</p>
 <ul>
-<li><a href="pixel-types.html">Pixel types</a>: how pixels are stored, and which type to pick.</li>
-<li><a href="formats.html">Formats</a>: what each format reads and writes, and how to choose one.</li>
-<li><a href="metadata.html">Metadata</a>: EXIF, IPTC and XMP, kept, edited or stripped.</li>
-<li><a href="memory-and-threading.html">Memory and threading</a>: pooled memory, streaming decode and parallel work.</li>
-<li><a href="security.html">Security</a>: the limits that make untrusted files safe to load.</li>
 <li><a href="../diagnostics.html">Diagnostics</a>: warnings about damaged or unusual files, and how to log or reject them.</li>
+<li><a href="memory-and-threading.html">Memory and threading</a>: pooled memory, streaming decode and parallel work.</li>
+<li><a href="metadata.html">Metadata</a>: EXIF, IPTC and XMP, kept, edited or stripped.</li>
 <li><a href="../performance.html">Performance</a>: what keeps loading, editing and saving fast.</li>
+<li><a href="pixel-types.html">Pixel types</a>: how pixels are stored, and which type to pick.</li>
+<li><a href="security.html">Security</a>: the limits that make untrusted files safe to load.</li>
+</ul>
+<h2 id="formats">Formats</h2>
+<p>The <a href="../formats/index.html">overview</a> says what each format reads and writes and how a format is detected; then one page per
+format, with its options:</p>
+<ul>
+<li><a href="../formats/avif.html">AVIF</a></li>
+<li><a href="../formats/bmp.html">BMP</a></li>
+<li><a href="../formats/ccitt.html">CCITT fax</a></li>
+<li><a href="../formats/gif.html">GIF</a></li>
+<li><a href="../formats/heic.html">HEIC</a> (in the Egami.Heic package)</li>
+<li><a href="../formats/ico.html">ICO and CUR</a></li>
+<li><a href="../formats/jbig2.html">JBIG2</a></li>
+<li><a href="../formats/jpeg.html">JPEG</a></li>
+<li><a href="../formats/jpeg2000.html">JPEG 2000</a></li>
+<li><a href="../formats/jxl.html">JPEG XL</a></li>
+<li><a href="../formats/pnm.html">Netpbm</a></li>
+<li><a href="../formats/openexr.html">OpenEXR</a></li>
+<li><a href="../formats/png.html">PNG and APNG</a></li>
+<li><a href="../formats/psd.html">PSD and PSB</a></li>
+<li><a href="../formats/qoi.html">QOI</a></li>
+<li><a href="../formats/radiance.html">Radiance</a></li>
+<li><a href="../formats/tga.html">TGA</a></li>
+<li><a href="../formats/tiff.html">TIFF</a></li>
+<li><a href="../formats/vp8.html">VP8 video frames</a></li>
+<li><a href="../formats/webp.html">WebP</a></li>
+<li><a href="../formats/custom.html">Your own format</a>: plug in a reader and writer for a format Egami does not have</li>
 </ul>
 <h2 id="egami-editing-images">Egami: editing images</h2>
 <p>Operations that run on a raster through <code>Apply</code> and <code>Derive</code>.</p>
 <ul>
-<li><a href="resizing-and-geometry.html">Resizing and geometry</a>: resize, crop, rotate, warp and combine images.</li>
 <li><a href="color.html">Color</a>: brightness, contrast, saturation and other CSS-style color filters.</li>
-<li><a href="tone-and-color.html">Tone and color</a>: levels, curves, grading, auto fixes and thresholds.</li>
-<li><a href="filters.html">Filters</a>: blurs, sharpening, convolution, noise and median.</li>
-<li><a href="edges-and-morphology.html">Edges and morphology</a>: edge detection, Canny, and dilate, erode, open and close.</li>
-<li><a href="lighting-and-relief.html">Lighting and relief</a>: bevels, embossing and lighting from a height map.</li>
-<li><a href="effects.html">Effects and shadows</a>: vignette, glow, pixelate, oil paint and shadows.</li>
 <li><a href="compositing.html">Compositing</a>: blend modes and drawing one image over another.</li>
-<li><a href="regions-and-masks.html">Regions, masks and channels</a>: edit part of an image, and move channels around.</li>
+<li><a href="edges-and-morphology.html">Edges and morphology</a>: edge detection, Canny, and dilate, erode, open and close.</li>
+<li><a href="effects.html">Effects and shadows</a>: vignette, glow, pixelate, oil paint and shadows.</li>
+<li><a href="filters.html">Filters</a>: blurs, sharpening, convolution, noise and median.</li>
 <li><a href="keying-and-arithmetic.html">Keying and arithmetic</a>: transparent colors, flood fill and arithmetic between images.</li>
+<li><a href="lighting-and-relief.html">Lighting and relief</a>: bevels, embossing and lighting from a height map.</li>
+<li><a href="regions-and-masks.html">Regions, masks and channels</a>: edit part of an image, and move channels around.</li>
+<li><a href="resizing-and-geometry.html">Resizing and geometry</a>: resize, crop, rotate, warp and combine images.</li>
+<li><a href="tone-and-color.html">Tone and color</a>: levels, curves, grading, auto fixes and thresholds.</li>
 </ul>
 <h2 id="egami-color-and-hdr">Egami: color and HDR</h2>
 <ul>
 <li><a href="color-management.html">Color management</a>: ICC profiles, converting between color spaces, CMYK.</li>
-<li><a href="hdr.html">HDR files</a>: Radiance, OpenEXR, gain maps and tone mapping.</li>
+<li><a href="hdr.html">HDR images</a>: HDR pixels, gain maps and Ultra HDR photos.</li>
 <li><a href="planar-yuv.html">Planar YUV</a>: video-style YUV planes in and out of JPEG, AVIF and video frames.</li>
 </ul>
 <h2 id="egami-analysis-palettes-and-animation">Egami: analysis, palettes and animation</h2>
 <ul>
+<li><a href="animation.html">Animation</a>: frames, timing and animated GIF, APNG and WebP.</li>
 <li><a href="analysis.html">Comparing and measuring</a>: differences, statistics, hashes and visual regression tests.</li>
 <li><a href="palettes.html">Palettes and dithering</a>: reducing colors and indexed images.</li>
-<li><a href="animation.html">Animation</a>: frames, timing and animated GIF, APNG and WebP.</li>
-</ul>
-<h2 id="egami-file-formats">Egami: file formats</h2>
-<p>One guide per format, for options beyond <code>Load</code> and <code>Save</code>. <a href="formats.html">Formats</a> gives the overview.</p>
-<ul>
-<li><a href="jpeg.html">JPEG</a></li>
-<li><a href="webp.html">WebP</a></li>
-<li><a href="tiff.html">TIFF</a></li>
-<li><a href="jxl.html">JPEG XL</a></li>
-<li><a href="avif.html">AVIF</a></li>
-<li><a href="heic.html">HEIC</a> (in the Egami.Heic package)</li>
-<li><a href="jpeg2000.html">JPEG 2000</a></li>
-<li><a href="jbig2.html">JBIG2</a></li>
-<li><a href="ccitt.html">CCITT fax</a></li>
-<li><a href="ico.html">ICO and CUR</a></li>
-<li><a href="psd.html">PSD and PSB</a></li>
-<li><a href="vp8.html">VP8 video frames</a></li>
 </ul>
 <h2 id="egami-extending">Egami: extending</h2>
 <ul>
-<li><a href="extending.html">Custom operations and formats</a>: write your own operation or plug in a format.</li>
+<li><a href="extending.html">Custom operations and formats</a>: write your own operation or pixel type, or wrap your own memory.</li>
 </ul>
 <h2 id="egamidrawing">Egami.Drawing</h2>
 <ul>
 <li><a href="drawing.html">Drawing</a>: paths, shapes, strokes, paints, layers and recorded drawings on a canvas.</li>
-<li><a href="egdr-format.html">The .egdr format</a>: the file format for recorded drawings.</li>
+<li><a href="egdr-format.html">Drawing files (.egdr)</a>: the file format for recorded drawings.</li>
 </ul>
 <h2 id="egamifonts">Egami.Fonts</h2>
 <ul>
 <li><a href="text.html">Fonts and text</a>: loading fonts, drawing text and preparing fonts for PDF.</li>
-<li><a href="unicode-text.html">Unicode text and shaping</a>: complex scripts, bidirectional text and emoji.</li>
 <li><a href="paragraph-layout.html">Paragraph layout</a>: line breaking, justification, columns and vertical text.</li>
+<li><a href="unicode-text.html">Unicode text and shaping</a>: complex scripts, bidirectional text and emoji.</li>
 </ul>
 <h2 id="egamisvg-and-egamicss">Egami.Svg and Egami.Css</h2>
 <ul>
-<li><a href="svg.html">SVG</a>: read, edit, save and draw SVG.</li>
 <li><a href="css.html">CSS</a>: parse style sheets, match selectors and run the cascade.</li>
+<li><a href="svg.html">SVG</a>: read, edit, save and draw SVG.</li>
 </ul>
 <h2 id="egamimetafiles">Egami.Metafiles</h2>
 <ul>

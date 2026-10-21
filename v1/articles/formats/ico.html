@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/ico.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/ico.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -104,7 +104,7 @@ using RasterList entries = Raster.LoadAll(&quot;app.ico&quot;);
 // MinimumSize picks the smallest entry at least that big, so a 32 × 32 toolbar icon decodes only the 32 × 32 entry.
 using Raster small = Raster.Load(&quot;app.ico&quot;, options: new ReaderOptions { MinimumSize = new Size(32, 32) });
 </code></pre>
-<p><code>ReaderOptions.MinimumSize</code> picks the smallest entry at least that big before the <a href="memory-and-threading.html#streaming">reduction rule</a>
+<p><code>ReaderOptions.MinimumSize</code> picks the smallest entry at least that big before the <a href="../guides/memory-and-threading.html#streaming">reduction rule</a>
 applies to it, so a 32 × 32 request from a 16, 32, 48 and 256 icon decodes only the 32 × 32 entry. <code>IcoReaderOptions.Entry</code>
 names an entry by its index in the directory.</p>
 <pre><code class="lang-csharp">// Pick an entry by its place in the file's directory.
@@ -164,7 +164,7 @@ warning, and the load fails only when no entry is left. A BMP entry that ends be
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/ico.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/ico.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

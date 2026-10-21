@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/jpeg.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/jpeg.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -111,7 +111,7 @@ at that scale straight from the DCT. For a thumbnail from a 12-megapixel photo i
 resizing. Other formats ignore it.</p>
 <h2 id="orientation">Orientation</h2>
 <p>Cameras and phones store pixels as the sensor saw them and say in EXIF how to turn them. <code>Raster.Probe</code> reports the orientation,
-and <code>AutoOrient</code> applies it; see <a href="resizing-and-geometry.html#orientation">resizing and geometry</a>. To turn the file itself upright
+and <code>AutoOrient</code> applies it; see <a href="../guides/resizing-and-geometry.html#orientation">resizing and geometry</a>. To turn the file itself upright
 without re-encoding it, use <code>JpegTransform</code> with <code>AutoOrient</code> (see <a href="#lossless-rotation-flips-and-crops">lossless rotation</a>).</p>
 <h2 id="writing">Writing</h2>
 <pre><code class="lang-csharp">using FileStream output = File.Create(&quot;duck-q85.jpg&quot;);
@@ -301,7 +301,25 @@ foreach (JpegComponent component in details.Components)
 // Gray output, and 4:4:4 (no chroma subsampling) for sharp colored edges.
 photo.Save(&quot;gray.jpg&quot;, new JpegWriterOptions { ColorType = JpegColorType.Gray });
 photo.Save(&quot;sharp.jpg&quot;, new JpegWriterOptions { Quality = 90, Subsampling = ChromaSubsampling.Subsample444 });
-</code></pre><h2 id="recipes">Recipes</h2>
+</code></pre><h2 id="multi-picture-jpeg-files">Multi-Picture JPEG files</h2>
+<p>Phones store more than one image in a JPEG: a gain map for HDR, large previews, the second view of a stereo pair. The CIPA
+Multi-Picture Format (MPF) lists them in an APP2 segment. <code>JpegDetails.MultiPicture</code> gives that index as <code>MpfData</code>: an
+<code>MpfImage</code> for each image with its <code>MpfImageType</code>, flags, length, and offset from the start of the file (the same numbers
+ExifTool prints). <code>Raster.Probe</code> counts them in <code>RasterInfo.ImageCount</code>, and <code>Raster.LoadAll</code> loads each JPEG one, the primary
+first. A damaged index never fails a load: the primary loads with a <code>Jpeg.MpfDamaged</code> warning.</p>
+<pre><code class="lang-csharp">// A JPEG's Multi-Picture index lists the images stored after the primary: previews, stereo views, a gain map.
+using Raster photo = Raster.Load(&quot;ultrahdr.jpg&quot;);
+MpfData? index = ((JpegDetails)photo.Metadata.FormatDetails!).MultiPicture;
+foreach (MpfImage image in index?.Images ?? [])
+{
+    Console.WriteLine($&quot;{image.Type}: {image.Length:N0} bytes at {image.Offset:N0}&quot;);
+}
+
+// LoadAll gives every JPEG image the index lists, the primary first; a plain JPEG gives one.
+using RasterList all = Raster.LoadAll(&quot;ultrahdr.jpg&quot;);
+</code></pre>
+<p>The gain maps of Ultra HDR photos are in the <a href="../guides/hdr.html#gain-maps">HDR guide</a>.</p>
+<h2 id="recipes">Recipes</h2>
 <p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
 <h3 id="read-a-cmyk-jpegs-inks">Read a CMYK JPEG's inks</h3>
 <pre><code class="lang-csharp">// A CMYK JPEG loads as RGB by the plain formula, as before; ask for Cmyk8 to get the file's ink amounts instead.
@@ -318,7 +336,7 @@ images: <code>dotnet run --project samples/Jpeg</code> writes its results to <co
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/jpeg.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/jpeg.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

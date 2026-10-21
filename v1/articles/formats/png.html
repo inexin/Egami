@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>PNG and APNG | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="PNG and APNG | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/png.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="png-and-apng">PNG and APNG</h1>
+
+<p>Egami reads and writes PNG and its animated form, APNG: every color type and bit depth, interlaced files, transparency, text,
+EXIF, XMP and ICC profiles.</p>
+<h2 id="reading">Reading</h2>
+<p>A PNG loads in its own layout: <code>Gray8</code>, <code>Gray16</code>, <code>GrayAlpha8</code>, <code>Rgb8</code>, <code>Rgba8</code> or <code>Rgba16</code>. An APNG loads as <code>Rgba8</code>, or
+<code>Rgba16</code> for 16-bit files, with every frame composited to full size through every disposal and blend, as a browser shows it.
+Damage is handled as the <a href="../diagnostics.html">Diagnostics</a> page lists under <code>Png.</code>: ancillary chunks with a bad checksum are
+ignored, and when the image data ends early the rows not decoded are transparent black.</p>
+<h2 id="writing">Writing</h2>
+<pre><code class="lang-csharp">using FileStream output = File.Create(&quot;duck-small.png&quot;);
+image.Save(output, PngFormat.Info, new PngWriterOptions
+{
+    Reduce = true,          // the smallest exact form: no alpha if all opaque, gray or a palette when nothing is lost
+    CompressionLevel = 9,   // 0 (fastest) to 9 (smallest); 5 by default
+});
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ColorType</code>, <code>BitDepth</code></td>
+<td>The pixel type's own</td>
+<td>Force a layout, such as <code>PngColorType.Palette</code></td>
+</tr>
+<tr>
+<td><code>Reduce</code></td>
+<td><code>false</code></td>
+<td>Scan the image and write the smallest exact form</td>
+</tr>
+<tr>
+<td><code>Palette</code></td>
+<td>256 colors, Floyd–Steinberg</td>
+<td>How a palette is built when <code>ColorType</code> is <code>Palette</code> and the image has more colors</td>
+</tr>
+<tr>
+<td><code>CompressionLevel</code></td>
+<td>5</td>
+<td>zlib level, 0 to 9</td>
+</tr>
+<tr>
+<td><code>Filter</code></td>
+<td><code>Adaptive</code></td>
+<td>Row filter, or one fixed filter</td>
+</tr>
+<tr>
+<td><code>FirstFrameOnly</code></td>
+<td><code>false</code></td>
+<td>Write a still PNG from an animation</td>
+</tr>
+<tr>
+<td><code>Interlace</code></td>
+<td><code>false</code></td>
+<td>Write Adam7, so a viewer can show a coarse image early; files are usually larger</td>
+</tr>
+<tr>
+<td><code>ParallelCompression</code></td>
+<td><code>false</code></td>
+<td>Compress images with more than 4 MiB of image data on several cores</td>
+</tr>
+</tbody>
+</table>
+<p><code>Interlace</code> is never taken from the source: an interlaced PNG is written plain unless you set it. With <code>ParallelCompression</code>,
+the image data is cut into fixed bands of 1 MiB that compress on up to <code>EgamiContext.MaxParallelism</code> threads. The file is the
+same on any machine and at any thread count, and in Egami's tests it was 0.1% to 0.3% larger; a 24-megapixel photo saved
+8 times as fast on 12 cores. Smaller images are written exactly as with the option off.</p>
+<pre><code class="lang-csharp">image.Save(&quot;duck-large.png&quot;, new PngWriterOptions
+{
+    ParallelCompression = true, // big images compress on several cores; the same file at any thread count
+    Interlace = true,           // Adam7: a coarse image shows before the whole file has arrived
+});
+</code></pre>
+<p>Kept for round trips in <code>PngDetails</code>: gamma, chromaticities, sRGB intent, cICP, the ICC profile name, and every chunk Egami does
+not read itself.</p>
+<p>The writer also takes a palette you force, a fixed filter and a zlib strategy, and writes chunks you add to <code>PngDetails</code>:</p>
+<pre><code class="lang-csharp">// Force a palette, choose a filter and a zlib strategy, and keep a private chunk.
+((PngDetails)image.Metadata.FormatDetails!).OtherChunks.Add(
+    new PngChunk(&quot;prVt&quot;, &quot;hello&quot;u8.ToArray(), PngChunkPosition.AfterImageData));
+image.Save(&quot;duck-palette.png&quot;, new PngWriterOptions
+{
+    ColorType = PngColorType.Palette,
+    Filter = PngFilterMode.Paeth,
+    CompressionStrategy = PngCompressionStrategy.Filtered,
+});
+</code></pre><h2 id="apng">APNG</h2>
+<p>Saving a raster with more than one frame as PNG writes an APNG. APNG keeps full color and partial alpha, so nothing is
+quantized. Each frame stores only the rectangle that changed, and blends with <code>Over</code> when that stores less. Set
+<code>PngWriterOptions.FirstFrameOnly</code> to write a still PNG from an animation. The <a href="../guides/animation.html">animation guide</a> covers
+frames, delays and loops.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/png.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

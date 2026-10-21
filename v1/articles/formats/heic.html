@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/heic.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/heic.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -145,7 +145,7 @@ orientation, which <code>AutoOrient</code> applies. An alpha image loads as stra
 <li><strong>Metadata.</strong> Exif and XMP items are read into <code>RasterMetadata.Exif</code> and <code>RasterMetadata.Xmp</code>.</li>
 </ul>
 <p>The decoded HEVC planes are available without the conversion to RGB, as for AVIF and JPEG (see
-<a href="planar-yuv.html">Planar YUV</a>):</p>
+<a href="../guides/planar-yuv.html">Planar YUV</a>):</p>
 <pre><code class="lang-csharp">// The HEVC planes themselves, without the conversion to RGB: luma, then chroma at the file's subsampling.
 using YuvRaster planes = YuvRaster.Load(&quot;photo.heic&quot;, heic);
 ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for phone photos
@@ -156,7 +156,7 @@ int depth = planes.BitDepth;                        // 8, or 10 for HDR photos
 <p>iPhones store an HDR photo as an SDR image with a gain map: Apple's HDRGainMap auxiliary image (its headroom in the maker note
 or the map's XMP), and on newer iPhones an ISO 21496-1 tone-map item as well, which is preferred. Load gives the SDR image with
 the map in <code>RasterMetadata.GainMap</code>; <code>ReaderOptions.Hdr</code> gives the HDR rendition for a display's headroom, as for
-<a href="hdr.html">Ultra HDR JPEGs</a>.</p>
+<a href="../guides/hdr.html">Ultra HDR JPEGs</a>.</p>
 <pre><code class="lang-csharp">// An iPhone photo's gain map (Apple's HDRGainMap, or ISO 21496-1 on newer iPhones) comes with the SDR image; ask for the HDR
 // rendition for a display with 2 stops of headroom.
 using Raster sdr = Raster.Load(&quot;portrait.heic&quot;, heic);
@@ -188,7 +188,7 @@ package.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/heic.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/heic.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

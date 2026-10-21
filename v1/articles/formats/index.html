@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/formats.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/index.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -87,8 +87,14 @@
         <article data-uid="">
 <h1 id="formats">Formats</h1>
 
-<p>Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, and Windows icons and cursors, AVIF, and reads JBIG2, raw CCITT fax data, JPEG 2000 and Photoshop's PSD and PSB. SVG and Windows metafiles (WMF, EMF) load through the separate Egami.Svg and Egami.Metafiles packages. HEIC phone photos load through the separate, opt-in Egami.Heic package; core Egami detects and probes them (see the <a href="heic.html">HEIC guide</a>). Every reader checks sizes
-against the safety limits before it allocates, and every reader has been fuzzed.</p>
+<p>Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float
+map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors, and reads JBIG2, raw CCITT fax data, JPEG 2000
+and Photoshop's PSD and PSB. HEIC phone photos load through the separate, opt-in Egami.Heic package; core Egami detects and probes
+them. SVG and Windows metafiles (WMF, EMF) load through the separate <a href="../guides/svg.html">Egami.Svg</a> and
+<a href="../guides/metafiles.html">Egami.Metafiles</a> packages. Every reader checks sizes against the safety limits before it allocates, and
+every reader has been fuzzed.</p>
+<p>Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 video frames decode
+through <a href="vp8.html"><code>Vp8StreamDecoder</code></a>. This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.</p>
 <h2 id="at-a-glance">At a glance</h2>
 <table>
 <thead>
@@ -101,115 +107,121 @@ against the safety limits before it allocates, and every reader has been fuzzed.
 </thead>
 <tbody>
 <tr>
-<td>PNG</td>
+<td><a href="png.html">PNG</a></td>
 <td>Every color type and bit depth, interlaced, transparency, text, EXIF, XMP, ICC</td>
 <td>Every color type and bit depth, adaptive filtering, built palettes, Adam7 interlacing, compression on several cores</td>
 <td>The file's own: <code>Gray8</code>, <code>Gray16</code>, <code>GrayAlpha8</code>, <code>Rgb8</code>, <code>Rgba8</code> or <code>Rgba16</code></td>
 </tr>
 <tr>
-<td>APNG</td>
+<td><a href="png.html">APNG</a></td>
 <td>Every PNG color type and depth, every disposal and blend</td>
 <td>Any raster with more than one frame, changed rectangles only</td>
 <td><code>Rgba8</code>, or <code>Rgba16</code> for 16-bit</td>
 </tr>
 <tr>
-<td>JPEG</td>
+<td><a href="jpeg.html">JPEG</a></td>
 <td>Baseline, extended and progressive, Huffman or arithmetic, 8 and 12-bit, lossless at 2 to 16 bits, any subsampling, gray, CMYK, YCCK, scaled decode, EXIF, XMP, ICC</td>
 <td>Baseline or progressive, 8 or 12-bit, quality 1 to 100, 4:4:4, 4:2:2, 4:2:0, gray, CMYK or YCCK, optimized Huffman tables</td>
 <td><code>Gray8</code> or <code>Rgb8</code>; <code>Gray16</code>, <code>Rgb16</code> or <code>Cmyk16</code> above 8 bits</td>
 </tr>
 <tr>
-<td>GIF</td>
+<td><a href="gif.html">GIF</a></td>
 <td>87a and 89a, every disposal, interlaced, transparency, loop count, comments, XMP, ICC</td>
 <td>89a, exact or quantized palettes, global or per frame, dithering, frame optimization</td>
 <td><code>Rgba8</code></td>
 </tr>
 <tr>
-<td>WebP</td>
-<td>Lossless (VP8L) with every transform; lossy (VP8) with alpha, as RGB or as YUV planes; ICC, EXIF, XMP; see the <a href="webp.html">WebP guide</a></td>
+<td><a href="webp.html">WebP</a></td>
+<td>Lossless (VP8L) with every transform; lossy (VP8) with alpha, as RGB or as YUV planes; ICC, EXIF, XMP</td>
 <td>Lossless at effort 0 to 6, exact transparent colors; ICC, EXIF with resolution, XMP</td>
 <td><code>Rgb8</code>, or <code>Rgba8</code> with alpha</td>
 </tr>
 <tr>
-<td>BMP</td>
+<td><a href="bmp.html">BMP</a></td>
 <td>Core, info, V2 to V5 and OS/2 2.x headers; 1 to 32 bits; RLE4, RLE8, RLE24; bit fields; embedded PNG and JPEG; V5 ICC</td>
 <td>24-bit, 32-bit with alpha, 1, 2, 4 or 8-bit palettes; resolution and ICC</td>
 <td><code>Bgr8</code>, or <code>Bgra8</code> with alpha</td>
 </tr>
 <tr>
-<td>TGA</td>
+<td><a href="tga.html">TGA</a></td>
 <td>Color-mapped, true-color and gray, raw and RLE, 8 to 32 bits, all origins, TGA 2.0 footer and extension area</td>
 <td>8-bit gray, 24 and 32-bit, 8-bit palette, raw or RLE, TGA 2.0 footer</td>
 <td><code>Bgr8</code>, <code>Bgra8</code>, <code>Gray8</code> or <code>GrayAlpha8</code></td>
 </tr>
 <tr>
-<td>QOI</td>
+<td><a href="qoi.html">QOI</a></td>
 <td>The whole format, 3 or 4 channels, both colorspaces</td>
 <td>3 or 4 channels, byte-identical to the reference encoder</td>
 <td><code>Rgb8</code> or <code>Rgba8</code></td>
 </tr>
 <tr>
-<td>TIFF</td>
-<td>Every page, strips and tiles, chunky and planar, classic and BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, old-style JPEG, ThunderScan, SGILog, WebP, JPEG XL; gray, palette, RGB, CMYK, YCbCr, Lab and LogLuv at 1 to 64 bits; see the <a href="tiff.html">TIFF guide</a></td>
+<td><a href="tiff.html">TIFF</a></td>
+<td>Every page, strips and tiles, chunky and planar, classic and BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, old-style JPEG, ThunderScan, SGILog, WebP, JPEG XL; gray, palette, RGB, CMYK, YCbCr, Lab and LogLuv at 1 to 64 bits</td>
 <td>Every pixel type at its own depth, strips or tiles, classic or BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, WebP</td>
 <td>The page's own: <code>Gray8</code>, <code>Gray16</code>, <code>Rgb8</code>, <code>Rgb16</code>, <code>Cmyk8</code>, <code>Cmyk16</code>, float types and more</td>
 </tr>
 <tr>
-<td>CCITT</td>
-<td>Raw Group 3 and Group 4 data (T.4, T.6) with PDF's eight CCITTFaxDecode parameters, byte-aligned rows included; see the <a href="ccitt.html">CCITT guide</a></td>
+<td><a href="ccitt.html">CCITT</a></td>
+<td>Raw Group 3 and Group 4 data (T.4, T.6) with PDF's eight CCITTFaxDecode parameters, byte-aligned rows included</td>
 <td>No</td>
 <td><code>Gray8</code>, black 0 and white 255</td>
 </tr>
 <tr>
-<td>JBIG2</td>
-<td>Every T.88 region and dictionary but the colour extension; standalone files (sequential and random-access, many pages) and the embedded form a PDF holds, with its globals; see the <a href="jbig2.html">JBIG2 guide</a></td>
+<td><a href="jbig2.html">JBIG2</a></td>
+<td>Every T.88 region and dictionary but the colour extension; standalone files (sequential and random-access, many pages) and the embedded form a PDF holds, with its globals</td>
 <td>No</td>
 <td><code>Gray8</code>, black 0 and white 255</td>
 </tr>
 <tr>
-<td>JPEG 2000</td>
-<td>All of Part 1 (T.800): every progression order, code-block style, tiling and precinct size, reversible and irreversible; JP2 and JPX boxes, palettes, channel definitions, sYCC, CIELab, ICC; reduced and region decodes; see the <a href="jpeg2000.html">JPEG 2000 guide</a></td>
+<td><a href="jpeg2000.html">JPEG 2000</a></td>
+<td>All of Part 1 (T.800): every progression order, code-block style, tiling and precinct size, reversible and irreversible; JP2 and JPX boxes, palettes, channel definitions, sYCC, CIELab, ICC; reduced and region decodes</td>
 <td>No</td>
 <td><code>Gray8</code>, <code>Rgb8</code>, <code>Rgba8</code>, <code>Cmyk8</code> or their 16-bit forms, by depth and color space</td>
 </tr>
 <tr>
-<td>ICO, CUR</td>
-<td>Every entry: PNG, and BMP at 1 to 32 bits with the AND mask; the best entry, or one by <code>MinimumSize</code> or index; cursor hotspots; see the <a href="ico.html">ICO guide</a></td>
+<td><a href="ico.html">ICO, CUR</a></td>
+<td>Every entry: PNG, and BMP at 1 to 32 bits with the AND mask; the best entry, or one by <code>MinimumSize</code> or index; cursor hotspots</td>
 <td>One entry a raster, or sets resized to favicon or Windows sizes; PNG at 256 and 32-bit BMP below; hotspots</td>
 <td><code>Rgba8</code></td>
 </tr>
 <tr>
-<td>PSD, PSB</td>
-<td>The flattened image in every color mode (bitmap, gray, indexed, RGB, CMYK, Lab, duotone, multichannel) at 1 to 32 bits, raw, PackBits and Deflate; layer records and resources as metadata; see the <a href="psd.html">PSD guide</a></td>
+<td><a href="psd.html">PSD, PSB</a></td>
+<td>The flattened image in every color mode (bitmap, gray, indexed, RGB, CMYK, Lab, duotone, multichannel) at 1 to 32 bits, raw, PackBits and Deflate; layer records and resources as metadata</td>
 <td>No</td>
 <td>By mode and depth: <code>Gray8</code>, <code>Rgb8</code>, <code>Rgba8</code>, <code>Cmyk8</code>, their 16-bit forms, float types</td>
 </tr>
 <tr>
-<td>Radiance</td>
-<td>RGBE and XYZE, every scan order, flat, old repeat-pixel and per-channel run-length scanlines; see the <a href="hdr.html">HDR guide</a></td>
+<td><a href="radiance.html">Radiance</a></td>
+<td>RGBE and XYZE, every scan order, flat, old repeat-pixel and per-channel run-length scanlines</td>
 <td>RGBE, run-length encoded or flat, optional EXPOSURE line</td>
 <td><code>RgbF32</code>, linear</td>
 </tr>
 <tr>
-<td>OpenEXR</td>
-<td>Scanline and tiled, single and multi-part, every OpenEXR 3 compression but HTJ2K, half, float and uint channels, luminance-chroma; any part, layer or channel; see the <a href="hdr.html">HDR guide</a></td>
+<td><a href="openexr.html">OpenEXR</a></td>
+<td>Scanline and tiled, single and multi-part, every OpenEXR 3 compression but HTJ2K, half, float and uint channels, luminance-chroma; any part, layer or channel</td>
 <td>One scanline part, R, G, B and A, ZIP, ZIPS, RLE, PIZ or none, in half or float</td>
 <td><code>RgbaF16</code> when the channels are half, <code>RgbaF32</code> otherwise, <code>GrayF32</code> for luminance alone; linear</td>
 </tr>
 <tr>
-<td>JPEG XL</td>
-<td>Every still, lossless Modular and lossy VarDCT or Modular, at 1 to 31 bits and float, with alpha, CMYK, extra channels, animations and layers, previews, PQ and HLG, gain maps, and recompressed JPEGs (given back byte for byte); see the <a href="jxl.html">JPEG XL guide</a></td>
+<td><a href="jxl.html">JPEG XL</a></td>
+<td>Every still, lossless Modular and lossy VarDCT or Modular, at 1 to 31 bits and float, with alpha, CMYK, extra channels, animations and layers, previews, PQ and HLG, gain maps, and recompressed JPEGs (given back byte for byte)</td>
 <td>Lossless in the raster's own precision, or lossy VarDCT in XYB, at cjxl's effort and quality scales; JPEGs recompressed losslessly</td>
 <td>By bit depth: <code>Rgb8</code>, <code>Rgba8</code>, <code>Gray8</code>, their 16-bit forms, <code>RgbaF16</code> for 16-bit float, <code>RgbF32</code>, <code>RgbaF32</code> or <code>GrayF32</code> beyond</td>
 </tr>
 <tr>
-<td>AVIF</td>
-<td>Still images: AV1 intra frames with every coding tool, equal to dav1d's decode and converted to RGB as libavif does; alpha, grids, overlays, clean aperture, orientation, ICC, CICP, HDR, gain maps, every item, and sequences of key frames; see the <a href="avif.html">AVIF guide</a></td>
+<td><a href="avif.html">AVIF</a></td>
+<td>Still images: AV1 intra frames with every coding tool, equal to dav1d's decode and converted to RGB as libavif does; alpha, grids, overlays, clean aperture, orientation, ICC, CICP, HDR, gain maps, every item, and sequences of key frames</td>
 <td>Yes: lossy and lossless still images with alpha, 8, 10 and 12 bits, 4:2:0, 4:2:2, 4:4:4 and 4:0:0</td>
 <td>By bit depth: <code>Rgb8</code> or <code>Rgba8</code> for 8-bit files, <code>Rgb16</code> or <code>Rgba16</code> for 10 and 12 bits, <code>Gray8</code> or <code>Gray16</code> (with alpha, <code>GrayAlpha8</code> or <code>GrayAlpha16</code>) for monochrome</td>
 </tr>
 <tr>
-<td>PNM</td>
+<td><a href="heic.html">HEIC</a></td>
+<td>With Egami.Heic: HEVC intra pictures up to 12 bits, grids, alpha, gain maps, depth maps, mattes and all-intra sequences; core Egami probes them</td>
+<td>No</td>
+<td><code>Rgb8</code> for 8-bit files, <code>Rgb16</code> for 10 and 12 bits, with alpha when the file has it, gray for monochrome</td>
+</tr>
+<tr>
+<td><a href="pnm.html">PNM</a></td>
 <td>P1 to P6 plain and binary, maxval 1 to 65,535, P7 PAM with alpha, PF and Pf float maps</td>
 <td>P1 to P7, plain or binary; PF and Pf</td>
 <td><code>Gray8</code>, <code>Gray16</code>, <code>GrayAlpha8</code>, <code>Rgb8</code>, <code>Rgba8</code> or <code>Rgba16</code>; <code>RgbF32</code> or <code>GrayF32</code> for PFM</td>
@@ -263,120 +275,7 @@ foreach (Raster page in pages)
 
 // Keep one page after the list is gone.
 using Raster first = pages.Detach(0);
-</code></pre><h2 id="png">PNG</h2>
-<pre><code class="lang-csharp">using FileStream output = File.Create(&quot;duck-small.png&quot;);
-image.Save(output, PngFormat.Info, new PngWriterOptions
-{
-    Reduce = true,          // the smallest exact form: no alpha if all opaque, gray or a palette when nothing is lost
-    CompressionLevel = 9,   // 0 (fastest) to 9 (smallest); 5 by default
-});
-</code></pre>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Default</th>
-<th>Does</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>ColorType</code>, <code>BitDepth</code></td>
-<td>The pixel type's own</td>
-<td>Force a layout, such as <code>PngColorType.Palette</code></td>
-</tr>
-<tr>
-<td><code>Reduce</code></td>
-<td><code>false</code></td>
-<td>Scan the image and write the smallest exact form</td>
-</tr>
-<tr>
-<td><code>Palette</code></td>
-<td>256 colors, Floyd–Steinberg</td>
-<td>How a palette is built when <code>ColorType</code> is <code>Palette</code> and the image has more colors</td>
-</tr>
-<tr>
-<td><code>CompressionLevel</code></td>
-<td>5</td>
-<td>zlib level, 0 to 9</td>
-</tr>
-<tr>
-<td><code>Filter</code></td>
-<td><code>Adaptive</code></td>
-<td>Row filter, or one fixed filter</td>
-</tr>
-<tr>
-<td><code>FirstFrameOnly</code></td>
-<td><code>false</code></td>
-<td>Write a still PNG from an animation</td>
-</tr>
-<tr>
-<td><code>Interlace</code></td>
-<td><code>false</code></td>
-<td>Write Adam7, so a viewer can show a coarse image early; files are usually larger</td>
-</tr>
-<tr>
-<td><code>ParallelCompression</code></td>
-<td><code>false</code></td>
-<td>Compress images with more than 4 MiB of image data on several cores</td>
-</tr>
-</tbody>
-</table>
-<p><code>Interlace</code> is never taken from the source: an interlaced PNG is written plain unless you set it. With <code>ParallelCompression</code>,
-the image data is cut into fixed bands of 1 MiB that compress on up to <code>EgamiContext.MaxParallelism</code> threads. The file is the
-same on any machine and at any thread count, and in Egami's tests it was 0.1% to 0.3% larger; a 24-megapixel photo saved
-8 times as fast on 12 cores. Smaller images are written exactly as with the option off.</p>
-<pre><code class="lang-csharp">image.Save(&quot;duck-large.png&quot;, new PngWriterOptions
-{
-    ParallelCompression = true, // big images compress on several cores; the same file at any thread count
-    Interlace = true,           // Adam7: a coarse image shows before the whole file has arrived
-});
-</code></pre>
-<p>Kept for round trips in <code>PngDetails</code>: gamma, chromaticities, sRGB intent, cICP, the ICC profile name, and every chunk Egami does
-not read itself.</p>
-<h2 id="bmp">BMP</h2>
-<pre><code class="lang-csharp">// Auto (the default): 24-bit when every pixel is opaque, 32-bit with alpha otherwise.
-image.Save(&quot;duck.bmp&quot;);
-
-// A 16-color palette, built from the image and dithered.
-image.Save(&quot;duck-16.bmp&quot;, new BmpWriterOptions { PixelFormat = BmpPixelFormat.Indexed4 });
-</code></pre>
-<p>A plain 32-bit BMP's fourth byte is used as alpha unless it is 0 in every pixel, in which case the image loads opaque; an alpha
-mask in the header is always used. Pixels that an RLE delta skips are black. <code>BmpPixelFormat.Indexed2</code> writes Windows CE 2-bit
-files, which many desktop readers cannot open, so <code>Auto</code> never picks it. Resolution is written in pixels per meter, and an ICC
-profile switches the header to V5 with the profile embedded.</p>
-<h2 id="tga">TGA</h2>
-<pre><code class="lang-csharp">// Run-length encoded by default, bottom-left origin, with a TGA 2.0 footer that states the alpha type.
-image.Save(&quot;duck.tga&quot;);
-image.Save(&quot;duck-raw.tga&quot;, new TgaWriterOptions { Rle = false });
-</code></pre>
-<p>The descriptor's attribute bits say whether the extra bits are alpha, and a TGA 2.0 alpha type of &quot;none&quot; overrides them;
-premultiplied alpha is divided out on load. The extension area's author and comments become <code>Author</code> and <code>Comment</code> text entries,
-and the writer stores them back. <code>TgaPixelFormat.Bgr24</code> drops alpha rather than blending it onto a background.</p>
-<h2 id="qoi">QOI</h2>
-<pre><code class="lang-csharp">// 3 channels when every pixel is opaque, 4 otherwise. The bytes match the reference encoder's.
-image.Save(&quot;duck.qoi&quot;);
-image.Save(&quot;duck-rgba.qoi&quot;, new QoiWriterOptions { IncludeAlpha = true });
-</code></pre>
-<p>QOI's colorspace byte maps to <code>RasterMetadata.ColorSpace</code> (sRGB or linear) and back.</p>
-<h2 id="pnm">PNM</h2>
-<pre><code class="lang-csharp">// Auto: P5 (PGM) for gray, P6 (PPM) for color, P7 (PAM) when the pixel type has alpha.
-image.Save(&quot;duck.ppm&quot;);
-
-// The plain-text forms, for tools that read them; lines are at most 70 characters.
-image.Save(&quot;duck-plain.ppm&quot;, new PnmWriterOptions { PlainText = true });
-
-// A 1-bit bitmap, thresholded at 50% gray.
-image.Save(&quot;duck.pbm&quot;, new PnmWriterOptions { Kind = PnmKind.Bitmap });
-</code></pre>
-<p>Maxvals other than 255 and 65,535 are scaled exactly, as round(v × 255 / maxval). A PAM with an unknown tuple type is read by its
-depth, with a warning. A stream with several images reads the first and warns. <code>#</code> comments become <code>Comment</code> text entries and
-are written back. Saving to a .pbm, .pgm, .ppm, .pam or .pfm path writes that variant unless <code>PnmWriterOptions.Kind</code> names one; .pnm
-chooses from the pixel type.</p>
-<p>PFM float maps load as <code>RgbF32</code> (PF) or <code>GrayF32</code> (Pf), marked as linear light, with their scale and byte order in
-<code>PnmDetails</code>; values outside 0..1 are kept. Writing uses PFM for float types without alpha, or when <code>PnmKind.FloatMap</code> is
-asked for: little-endian, scale −1, as Netpbm and ImageMagick write it.</p>
-<h2 id="what-each-writer-drops">What each writer drops</h2>
+</code></pre><h2 id="what-each-writer-drops">What each writer drops</h2>
 <p>Writers never change the raster. When a format cannot hold something, it is left out:</p>
 <ul>
 <li><strong>Alpha</strong>: JPEG (unless <code>JpegWriterOptions.Background</code> blends it onto a color), BMP and TGA with <code>Bgr24</code>, PPM, QOI with
@@ -415,22 +314,6 @@ Console.WriteLine($&quot;QOI {qoiDetails.Channels} channels, linear: {qoiDetails
 using Raster pgm = Raster.Load(&quot;duck.pgm&quot;);
 PnmDetails pnmDetails = (PnmDetails)pgm.Metadata.FormatDetails!;
 Console.WriteLine($&quot;PNM {pnmDetails.Kind}, maxval {pnmDetails.MaxValue}, plain text: {pnmDetails.PlainText}&quot;);
-</code></pre>
-<p>More PNG and TGA writer settings:</p>
-<pre><code class="lang-csharp">// Force a palette, choose a filter and a zlib strategy, and keep a private chunk.
-((PngDetails)image.Metadata.FormatDetails!).OtherChunks.Add(
-    new PngChunk(&quot;prVt&quot;, &quot;hello&quot;u8.ToArray(), PngChunkPosition.AfterImageData));
-image.Save(&quot;duck-palette.png&quot;, new PngWriterOptions
-{
-    ColorType = PngColorType.Palette,
-    Filter = PngFilterMode.Paeth,
-    CompressionStrategy = PngCompressionStrategy.Filtered,
-});
-</code></pre><pre><code class="lang-csharp">image.Save(&quot;duck-gray.tga&quot;, new TgaWriterOptions { PixelFormat = TgaPixelFormat.Gray8, Rle = false });
-using Raster back = Raster.Load(&quot;duck-gray.tga&quot;);
-TgaDetails details = (TgaDetails)back.Metadata.FormatDetails!;
-bool upsideDown = details.Origin is TgaOrigin.BottomLeft or TgaOrigin.BottomRight;
-bool hasAlpha = details.AlphaType is TgaAlphaType.Straight or TgaAlphaType.Premultiplied;
 </code></pre>
 <p>Each format is described by a <code>FormatInfo</code>: its name, extensions, MIME types, and how to recognize it from its first bytes.</p>
 <pre><code class="lang-csharp">// Every built-in format, with its name, extensions and MIME types; Raster.Save picks one by extension.
@@ -474,7 +357,7 @@ images: <code>dotnet run --project samples/Formats</code> writes its results to 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/formats.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/index.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

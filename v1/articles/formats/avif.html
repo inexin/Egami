@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/avif.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/avif.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -114,7 +114,7 @@ using Raster image = Raster.Load(&quot;duck.avif&quot;);
 using Raster clean = Raster.Load(&quot;duck.avif&quot;, options: new AvifReaderOptions { FilmGrain = false });
 AvifFilmGrain? grain = ((AvifDetails)clean.Metadata.FormatDetails!).FilmGrain;   // null when there is none
 </code></pre>
-<p><code>YuvRaster.Load</code> gives the AV1 planes themselves, without the conversion to RGB (see <a href="planar-yuv.html">Planar YUV</a>):</p>
+<p><code>YuvRaster.Load</code> gives the AV1 planes themselves, without the conversion to RGB (see <a href="../guides/planar-yuv.html">Planar YUV</a>):</p>
 <pre><code class="lang-csharp">// The AV1 planes themselves, without the conversion to RGB: luma, then chroma at the file's subsampling.
 using YuvRaster planes = YuvRaster.Load(&quot;duck.avif&quot;);
 ChromaFormat chroma = planes.ChromaFormat;          // Yuv420 for most AVIF files
@@ -164,7 +164,7 @@ using Raster&lt;Rgb8&gt; sdr = Raster.Load&lt;Rgb8&gt;(&quot;hdr.avif&quot;, opt
 sdr.Save(&quot;hdr-as-sdr.jpg&quot;);
 </code></pre>
 <p>Gain maps (tmap) load into <code>RasterMetadata.GainMap</code>, and <code>ReaderOptions.Hdr</code> renders the HDR rendition from them, as for Ultra HDR
-JPEGs (see the <a href="hdr.html">HDR guide</a>):</p>
+JPEGs (see the <a href="../guides/hdr.html">HDR guide</a>):</p>
 <pre><code class="lang-csharp">// An AVIF with a gain map loads as its base image, the map in Metadata.GainMap; ReaderOptions.Hdr renders the HDR
 // rendition for a display with the given headroom (its peak over SDR white), as linear RgbaF16.
 using Raster sdr = Raster.Load(&quot;gainmap.avif&quot;);
@@ -199,7 +199,7 @@ frames.Save(&quot;sequence.webp&quot;);
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/avif.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/avif.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

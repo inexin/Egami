@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>HDR files | Egami </title>
+      <title>HDR images | Egami </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="HDR files | Egami ">
+      <meta name="title" content="HDR images | Egami ">
       
       
       <link rel="icon" href="../../images/favicon.ico">
@@ -85,84 +85,16 @@
         </div>
 
         <article data-uid="">
-<h1 id="hdr-files">HDR files</h1>
+<h1 id="hdr-images">HDR images</h1>
 
-<p>Egami reads and writes Radiance pictures (.hdr) and OpenEXR images (.exr), lists the images of Multi-Picture JPEG files, and
-reads, keeps and writes the gain maps of Ultra HDR, ISO 21496-1 and Apple JPEGs. HDR pixels load as linear light in floating
-point, unclamped, with 1.0 as reference white (203 cd/m²), the same scale the <a href="color-management.html">color management</a> guide's
-tone mapping and HDR metadata use.</p>
-<h2 id="radiance">Radiance</h2>
-<p>Radiance pictures hold three 8-bit mantissas and a shared exponent per pixel (RGBE), or CIE X, Y and Z the same way (XYZE).
-<code>RadianceFormat</code> reads both, every scan order a resolution line can name (<code>-Y 512 +X 768</code> and the other seven), and flat,
-old-style repeat-pixel and per-channel run-length scanlines. Pixels load as <code>RgbF32</code>, bit for bit what stb_image decodes; XYZE
-converts to RGB in Radiance's standard primaries, which <code>RasterMetadata.Primaries</code> then names. A <code>PRIMARIES</code> line sets the
-primaries of an RGBE file the same way; without one, Rec. 709 is assumed.</p>
-<p><code>RadianceDetails</code> keeps the header: the <code>RadiancePixelFormat</code>, <code>Exposure</code>, <code>ColorCorrection</code>, <code>Primaries</code>, <code>Software</code>, <code>View</code>, <code>PixelAspectRatio</code>, the scan
-order as stored and every header line. The reader also measures the brightest value and stores it as
-<code>HdrMetadata.MaxContentLightLevel</code>, so <code>ToneMap</code> fits the image rather than a fixed 1,000 cd/m² peak.</p>
-<pre><code class="lang-csharp">// Linear light, unclamped: 1.0 is reference white. The brightest value is measured as the light level ToneMap fits.
-using Raster&lt;RgbF32&gt; hdr = Raster.Load&lt;RgbF32&gt;(&quot;desk.hdr&quot;);
-var details = (RadianceDetails)hdr.Metadata.FormatDetails!;
-double? exposure = details.Exposure;                    // the header's EXPOSURE lines; the pixels are kept as stored
-
-// To SDR: tone map, then save. Saving the HDR raster to PNG or JPEG as it is would clip the highlights.
-using Raster&lt;RgbF32&gt; mapped = hdr.Derive(ops =&gt; ops.ToneMap(ToneMapping.Bt2390));
-mapped.Save(&quot;desk.jpg&quot;);
-
-// RGBE with per-channel run-length scanlines, as Radiance writes them; EXPOSURE only when asked for.
-hdr.Save(&quot;copy.hdr&quot;);
-hdr.Save(&quot;labeled.hdr&quot;, new RadianceWriterOptions { Exposure = 1.5 });
-</code></pre>
-<p>The writer writes RGBE, top row first, with per-channel run-length scanlines (<code>RadianceWriterOptions.Compress = false</code> writes them
-flat) and an <code>EXPOSURE</code> line only when <code>RadianceWriterOptions.Exposure</code> is set. Reading a file and writing it again gives the same
-floats, and the same bytes once written by Egami.</p>
-<h2 id="openexr">OpenEXR</h2>
-<p><code>ExrFormat</code> reads scanline and tiled files, single and multi-part (<code>ExrPartKind</code>), with every compression of OpenEXR 3
-(<code>ExrCompression</code>: NONE, RLE, ZIPS, ZIP, PIZ, PXR24, B44, B44A, DWAA and DWAB; HTJ2K is refused), half, float and uint channels
-(<code>ExrPixelType</code>), and luminance-chroma images. Pixels match OpenEXR's own decode bit for bit, DWA within one half-float step.
-A load gives the first part's R, G, B and A (or Y, YA or the luminance-chroma channels) as linear light; a tiled part loads its
-full-resolution level (<code>ExrLevelMode</code> says which levels it has). Deep parts throw <code>UnsupportedFormatException</code>.</p>
-<p><code>ExrDetails</code> lists every part as an <code>ExrPart</code>: its name, channels (<code>ExrChannel</code>), layers, data and display windows, tile size,
-chromaticities and every header attribute as an <code>ExrHeaderEntry</code>. <code>ExrReaderOptions</code> picks the <code>Part</code>, a <code>Layer</code> (such as
-<code>diffuse</code> for <code>diffuse.R</code>, <code>diffuse.G</code> and <code>diffuse.B</code>) and the <code>ExrWindow</code> to load: the data window, the pixels the file
-stores (the default), or the display window, padded with transparent black where there is no data. <code>ExrImage.ReadChannel</code> loads any one channel, such as depth
-or an object id, as 32-bit float.</p>
-<pre><code class="lang-csharp">// The first part's RGBA channels as linear light, 1.0 reference white; other layers by name.
-using Raster&lt;RgbaF32&gt; beauty = Raster.Load&lt;RgbaF32&gt;(&quot;render.exr&quot;);
-var details = (ExrDetails)beauty.Metadata.FormatDetails!;
-IReadOnlyList&lt;string&gt; layers = details.Parts[details.Part].Layers;       // &quot;diffuse&quot;, &quot;specular&quot;
-using Raster&lt;RgbaF32&gt; diffuse = Raster.Load&lt;RgbaF32&gt;(&quot;render.exr&quot;, options: new ExrReaderOptions { Layer = &quot;diffuse&quot; });
-
-// Any one channel, such as depth or an object id, as 32-bit float.
-using Raster&lt;GrayF32&gt; depth = ExrImage.ReadChannel(&quot;aov.exr&quot;, &quot;Z&quot;);
-</code></pre>
-<p>The writer writes one scanline part with R, G, B and A when the raster has alpha (<code>ExrWriterOptions</code>): ZIP by default, or NONE,
-RLE, ZIPS or PIZ, in half or float (<code>ExrWriterOptions.PixelType</code>; by default float for float rasters other than <code>RgbaF16</code>,
-half otherwise). A
-non-linear raster, such as sRGB, is converted to linear light first, and primaries other than Rec. 709 are written as
-chromaticities. OpenEXR reads every file Egami writes to the same values.</p>
-<pre><code class="lang-csharp">// Half-float RGBA, ZIP-compressed, by default; a sRGB or other non-linear raster is linearized first.
-beauty.Save(&quot;copy.exr&quot;);
-beauty.Save(&quot;float.exr&quot;, new ExrWriterOptions { Compression = ExrCompression.Piz, PixelType = ExrPixelType.Float });
-</code></pre><h2 id="multi-picture-jpeg-files">Multi-Picture JPEG files</h2>
-<p>Phones store more than one image in a JPEG: a gain map for HDR, large previews, the second view of a stereo pair. The CIPA
-Multi-Picture Format (MPF) lists them in an APP2 segment. <code>JpegDetails.MultiPicture</code> gives that index as <code>MpfData</code>: an
-<code>MpfImage</code> for each image with its <code>MpfImageType</code>, flags, length, and offset from the start of the file (the same numbers
-ExifTool prints). <code>Raster.Probe</code> counts them in <code>RasterInfo.ImageCount</code>, and <code>Raster.LoadAll</code> loads each JPEG one, the primary
-first. A damaged index never fails a load: the primary loads with a <code>Jpeg.MpfDamaged</code> warning.</p>
-<pre><code class="lang-csharp">// A JPEG's Multi-Picture index lists the images stored after the primary: previews, stereo views, a gain map.
-using Raster photo = Raster.Load(&quot;ultrahdr.jpg&quot;);
-MpfData? index = ((JpegDetails)photo.Metadata.FormatDetails!).MultiPicture;
-foreach (MpfImage image in index?.Images ?? [])
-{
-    Console.WriteLine($&quot;{image.Type}: {image.Length:N0} bytes at {image.Offset:N0}&quot;);
-}
-
-// LoadAll gives every JPEG image the index lists, the primary first; a plain JPEG gives one.
-using RasterList all = Raster.LoadAll(&quot;ultrahdr.jpg&quot;);
-</code></pre><h2 id="gain-maps">Gain maps</h2>
+<p>HDR images hold light brighter than SDR white. Egami loads HDR pixels as linear light in floating point, unclamped, with 1.0 as
+reference white (203 cd/m²), the same scale the <a href="color-management.html">color management</a> guide's tone mapping and HDR metadata
+use. Radiance (.hdr) and OpenEXR (.exr) files hold such pixels directly; see the <a href="../formats/radiance.html">Radiance</a> and
+<a href="../formats/openexr.html">OpenEXR</a> pages. Phone photos carry HDR as a gain map beside an SDR picture, which this guide covers. PQ and
+HLG images are covered with their formats: <a href="../formats/avif.html">AVIF</a>, <a href="../formats/heic.html">HEIC</a> and <a href="../formats/jxl.html">JPEG XL</a>.</p>
+<h2 id="gain-maps">Gain maps</h2>
 <p>An Ultra HDR JPEG, as Android phones, Chrome and Photoshop write it, is an SDR picture any viewer shows, followed (through
-MPF) by a gain map: how much brighter each part of the picture is in the HDR rendition. ISO 21496-1, Adobe's hdrgm XMP (Ultra
+<a href="../formats/jpeg.html#multi-picture-jpeg-files">MPF</a>) by a gain map: how much brighter each part of the picture is in the HDR rendition. ISO 21496-1, Adobe's hdrgm XMP (Ultra
 HDR 1.0) and Apple's HDRGainMap are three ways of writing the same idea down; <code>GainMapFormat</code> says which a file used, and
 <code>GainMapInfo</code> holds its values, in log2 units as the standards give them. A load gives the SDR picture as stored, with the map in
 <code>RasterMetadata.GainMap</code> as a <code>GainMap</code> (<code>GainMapValues</code> per channel); a damaged map is dropped with <code>Jpeg.GainMapDropped</code>.</p>
@@ -208,14 +140,6 @@ when the raster holds light above reference white, the save also reports <code>S
 highlights off instead of cutting them.</p>
 <h2 id="recipes">Recipes</h2>
 <p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
-<h3 id="a-render-pass-from-openexr-as-jpeg">A render pass from OpenEXR as JPEG</h3>
-<pre><code class="lang-csharp">// One render pass of a multi-layer OpenEXR file, tone mapped for the web.
-using Raster&lt;RgbaF32&gt; diffuse = Raster.Load&lt;RgbaF32&gt;(&quot;render.exr&quot;, options: new ExrReaderOptions { Layer = &quot;diffuse&quot; });
-diffuse.Apply(ops =&gt; ops.ToneMap(ToneMapping.Bt2390));
-diffuse.Save(&quot;diffuse.jpg&quot;, new JpegWriterOptions { Quality = 90 });
-</code></pre>
-<p><code>ExrReaderOptions.Layer</code> picks a pass by name; <code>ExrDetails</code> lists the parts and layers a file has. <code>ToneMap</code> rolls off what is
-brighter than white instead of clipping it.</p>
 <h3 id="show-an-ultra-hdr-photo-as-hdr">Show an Ultra HDR photo as HDR</h3>
 <pre><code class="lang-csharp">// An Ultra HDR photo for an HDR display whose peak is displayHeadroom times SDR white: linear light, 1.0 = SDR white,
 // here written as a half-float OpenEXR file; an SDR display shows the JPEG as it is.

@@ -10788,6 +10788,226 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/formats/avif.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/avif.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/bmp.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/bmp.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/ccitt.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/ccitt.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/custom.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/custom.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/gif.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/gif.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/heic.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/heic.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/ico.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/ico.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/jbig2.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/jbig2.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/jpeg.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/jpeg.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/jpeg2000.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/jpeg2000.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/jxl.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/jxl.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/openexr.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/openexr.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/png.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/png.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/pnm.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/pnm.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/psd.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/psd.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/qoi.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/qoi.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/radiance.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/radiance.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/tga.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/tga.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/tiff.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/tiff.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/vp8.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/vp8.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/webp.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/webp.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/getting-started.md",
       "output": {
         ".html": {
@@ -10818,16 +11038,6 @@
     },
     {
       "type": "Conceptual",
-      "source_relative_path": "articles/guides/avif.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/avif.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
       "source_relative_path": "articles/guides/barcode-reading.md",
       "output": {
         ".html": {
@@ -10842,16 +11052,6 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/barcodes.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
-      "source_relative_path": "articles/guides/ccitt.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/ccitt.html"
         }
       },
       "version": ""
@@ -10958,16 +11158,6 @@
     },
     {
       "type": "Conceptual",
-      "source_relative_path": "articles/guides/formats.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/formats.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
       "source_relative_path": "articles/guides/hdr.md",
       "output": {
         ".html": {
@@ -10978,70 +11168,10 @@
     },
     {
       "type": "Conceptual",
-      "source_relative_path": "articles/guides/heic.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/heic.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
-      "source_relative_path": "articles/guides/ico.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/ico.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
       "source_relative_path": "articles/guides/index.md",
       "output": {
         ".html": {
           "relative_path": "articles/guides/index.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
-      "source_relative_path": "articles/guides/jbig2.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/jbig2.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
-      "source_relative_path": "articles/guides/jpeg.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/jpeg.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
-      "source_relative_path": "articles/guides/jpeg2000.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/jpeg2000.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
-      "source_relative_path": "articles/guides/jxl.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/jxl.html"
         }
       },
       "version": ""
@@ -11138,16 +11268,6 @@
     },
     {
       "type": "Conceptual",
-      "source_relative_path": "articles/guides/psd.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/psd.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
       "source_relative_path": "articles/guides/regions-and-masks.md",
       "output": {
         ".html": {
@@ -11198,16 +11318,6 @@
     },
     {
       "type": "Conceptual",
-      "source_relative_path": "articles/guides/tiff.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/tiff.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
       "source_relative_path": "articles/guides/tone-and-color.md",
       "output": {
         ".html": {
@@ -11222,26 +11332,6 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/unicode-text.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
-      "source_relative_path": "articles/guides/vp8.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/vp8.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
-      "source_relative_path": "articles/guides/webp.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/guides/webp.html"
         }
       },
       "version": ""

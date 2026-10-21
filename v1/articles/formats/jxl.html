@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/jxl.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/jxl.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -116,7 +116,7 @@ using Raster&lt;Rgb8&gt; sdr = Raster.Load&lt;Rgb8&gt;(&quot;hdr.jxl&quot;, opti
 sdr.Save(&quot;hdr-as-sdr.jpg&quot;);
 </code></pre>
 <p>A jhgm gain map loads into <code>RasterMetadata.GainMap</code>, and <code>ReaderOptions.Hdr</code> renders HDR from it as for Ultra HDR JPEGs (see the
-<a href="hdr.html">HDR guide</a>). Groups decode on several threads (<code>EgamiContext.MaxParallelism</code>), and <code>ReaderOptions.Region</code> on a still
+<a href="../guides/hdr.html">HDR guide</a>). Groups decode on several threads (<code>EgamiContext.MaxParallelism</code>), and <code>ReaderOptions.Region</code> on a still
 decodes only the groups it touches.</p>
 <p><code>JxlReaderOptions</code> adds three choices on top of the general reader options:</p>
 <table>
@@ -290,7 +290,7 @@ encoder replace it, as libjxl does by default, for a smaller file.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/jxl.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/jxl.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

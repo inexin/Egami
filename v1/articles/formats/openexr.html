@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>OpenEXR | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="OpenEXR | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/openexr.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="openexr">OpenEXR</h1>
+
+<p><code>ExrFormat</code> reads scanline and tiled files, single and multi-part (<code>ExrPartKind</code>), with every compression of OpenEXR 3
+(<code>ExrCompression</code>: NONE, RLE, ZIPS, ZIP, PIZ, PXR24, B44, B44A, DWAA and DWAB; HTJ2K is refused), half, float and uint channels
+(<code>ExrPixelType</code>), and luminance-chroma images. Pixels match OpenEXR's own decode bit for bit, DWA within one half-float step.
+A load gives the first part's R, G, B and A (or Y, YA or the luminance-chroma channels) as linear light; a tiled part loads its
+full-resolution level (<code>ExrLevelMode</code> says which levels it has). Deep parts throw <code>UnsupportedFormatException</code>.</p>
+<p><code>ExrDetails</code> lists every part as an <code>ExrPart</code>: its name, channels (<code>ExrChannel</code>), layers, data and display windows, tile size,
+chromaticities and every header attribute as an <code>ExrHeaderEntry</code>. <code>ExrReaderOptions</code> picks the <code>Part</code>, a <code>Layer</code> (such as
+<code>diffuse</code> for <code>diffuse.R</code>, <code>diffuse.G</code> and <code>diffuse.B</code>) and the <code>ExrWindow</code> to load: the data window, the pixels the file
+stores (the default), or the display window, padded with transparent black where there is no data. <code>ExrImage.ReadChannel</code> loads any one channel, such as depth
+or an object id, as 32-bit float.</p>
+<pre><code class="lang-csharp">// The first part's RGBA channels as linear light, 1.0 reference white; other layers by name.
+using Raster&lt;RgbaF32&gt; beauty = Raster.Load&lt;RgbaF32&gt;(&quot;render.exr&quot;);
+var details = (ExrDetails)beauty.Metadata.FormatDetails!;
+IReadOnlyList&lt;string&gt; layers = details.Parts[details.Part].Layers;       // &quot;diffuse&quot;, &quot;specular&quot;
+using Raster&lt;RgbaF32&gt; diffuse = Raster.Load&lt;RgbaF32&gt;(&quot;render.exr&quot;, options: new ExrReaderOptions { Layer = &quot;diffuse&quot; });
+
+// Any one channel, such as depth or an object id, as 32-bit float.
+using Raster&lt;GrayF32&gt; depth = ExrImage.ReadChannel(&quot;aov.exr&quot;, &quot;Z&quot;);
+</code></pre>
+<p>The writer writes one scanline part with R, G, B and A when the raster has alpha (<code>ExrWriterOptions</code>): ZIP by default, or NONE,
+RLE, ZIPS or PIZ, in half or float (<code>ExrWriterOptions.PixelType</code>; by default float for float rasters other than <code>RgbaF16</code>,
+half otherwise). A
+non-linear raster, such as sRGB, is converted to linear light first, and primaries other than Rec. 709 are written as
+chromaticities. OpenEXR reads every file Egami writes to the same values.</p>
+<pre><code class="lang-csharp">// Half-float RGBA, ZIP-compressed, by default; a sRGB or other non-linear raster is linearized first.
+beauty.Save(&quot;copy.exr&quot;);
+beauty.Save(&quot;float.exr&quot;, new ExrWriterOptions { Compression = ExrCompression.Piz, PixelType = ExrPixelType.Float });
+</code></pre>
+<p>Pixels are linear light with 1.0 as reference white; the <a href="../guides/hdr.html">HDR guide</a> explains the scale, and <code>ToneMap</code> in
+<a href="../guides/color-management.html">color management</a> turns them into SDR.</p>
+<h2 id="recipes">Recipes</h2>
+<h3 id="a-render-pass-from-openexr-as-jpeg">A render pass from OpenEXR as JPEG</h3>
+<pre><code class="lang-csharp">// One render pass of a multi-layer OpenEXR file, tone mapped for the web.
+using Raster&lt;RgbaF32&gt; diffuse = Raster.Load&lt;RgbaF32&gt;(&quot;render.exr&quot;, options: new ExrReaderOptions { Layer = &quot;diffuse&quot; });
+diffuse.Apply(ops =&gt; ops.ToneMap(ToneMapping.Bt2390));
+diffuse.Save(&quot;diffuse.jpg&quot;, new JpegWriterOptions { Quality = 90 });
+</code></pre>
+<p><code>ExrReaderOptions.Layer</code> picks a pass by name; <code>ExrDetails</code> lists the parts and layers a file has. <code>ToneMap</code> rolls off what is
+brighter than white instead of clipping it.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/openexr.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

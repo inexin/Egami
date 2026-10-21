@@ -115,20 +115,8 @@ using Raster first = Raster.Load(&quot;pan.gif&quot;, options: new ReaderOptions
 <h2 id="writing-animations">Writing animations</h2>
 <p>Saving a raster with more than one frame as GIF or PNG writes an animation. The writers work out each frame's stored rectangle,
 disposal and blend from the pixels, so an edited animation stays small: only what changed between frames is stored.</p>
-<h3 id="gif">GIF</h3>
-<pre><code class="lang-csharp">using FileStream output = File.Create(&quot;duck.gif&quot;);
-photo.Save(output, GifFormat.Info, new GifWriterOptions
-{
-    Palette = new PaletteOptions { MaxColors = 128, Dither = DitherMode.Ordered }, // FloydSteinberg (default), Ordered or None
-    PaletteScope = GifPaletteScope.PerFrame,   // Auto (default): one table when all frames fit, else one per frame
-});
-</code></pre>
-<p>GIF holds at most 256 colors per frame. Frames with few enough colors keep them exactly. Others get a palette from Wu's
-quantizer, dithered with Floyd–Steinberg by default. GIF transparency is on or off, so pixels below
-<code>PaletteOptions.AlphaThreshold</code> (128 by default) become transparent.</p>
-<h3 id="apng">APNG</h3>
-<p>APNG keeps full color and partial alpha, so nothing is quantized; frames blend with <code>Over</code> when that stores less. Set
-<code>PngWriterOptions.FirstFrameOnly</code> to write a still PNG from an animation.</p>
+<p>GIF holds at most 256 colors per frame and has on-or-off transparency; APNG keeps full color and partial alpha. The <a href="../formats/gif.html">GIF</a>
+and <a href="../formats/png.html">PNG and APNG</a> pages have each writer's options.</p>
 <h2 id="frame-by-frame">Frame by frame</h2>
 <p><code>Raster&lt;TPixel&gt;.Frames</code> is a <code>FrameList&lt;TPixel&gt;</code>: index, add, insert, move and remove frames. Each frame's <code>FrameMetadata</code> holds
 its delay, how it is disposed (<code>FrameDisposal</code>) and blended (<code>FrameBlend</code>) when written as APNG, and the area that changed.</p>
@@ -153,23 +141,6 @@ foreach (Frame&lt;Rgba8&gt; frame in clip.Frames)
     FrameMetadata timing = frame.Metadata;
     length += timing.Delay;
     Console.WriteLine($&quot;{timing.Delay.TotalMilliseconds} ms, {timing.Disposal}, {timing.Blend}, changed area {timing.Bounds}&quot;);
-}
-</code></pre>
-<p>GIF files keep their palettes, version and application extensions in <code>GifDetails</code>, and each frame's in <code>GifFrameDetails</code>:</p>
-<pre><code class="lang-csharp">using Raster&lt;Rgba8&gt; clip = Raster.Load&lt;Rgba8&gt;(&quot;pan.gif&quot;);
-GifDetails details = (GifDetails)clip.Metadata.FormatDetails!;
-Console.WriteLine($&quot;GIF{details.Version}, {details.GlobalPalette.Length} global colors, repeats {details.RepetitionCount}&quot;);
-foreach (GifApplicationExtension extension in details.OtherExtensions)
-{
-    Console.WriteLine($&quot;Kept extension {extension.Identifier}: {extension.Data.Length} bytes&quot;);
-}
-
-foreach (Frame&lt;Rgba8&gt; frame in clip.Frames)
-{
-    if (frame.Metadata.FormatDetails is GifFrameDetails frameDetails)
-    {
-        Console.WriteLine($&quot;Frame: {frameDetails.LocalPalette.Length} local colors, transparent index {frameDetails.TransparentIndex}&quot;);
-    }
 }
 </code></pre><h2 id="animation-tools">Animation tools</h2>
 <p>Six steps work on the whole animation rather than on each frame. They run in <code>Apply</code>, <code>Derive</code> and <code>Transcode</code> (which then decodes

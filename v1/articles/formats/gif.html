@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>GIF | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="GIF | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/gif.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="gif">GIF</h1>
+
+<p>Egami reads GIF 87a and 89a files, with every disposal method, interlaced images, transparency, the loop count, comments, XMP and
+ICC profiles, and writes GIF 89a.</p>
+<h2 id="reading">Reading</h2>
+<p>A GIF loads as <code>Rgba8</code>, every frame composited to full size as a browser shows it. Damaged files load as far as
+they can, with the warnings the <a href="../diagnostics.html">Diagnostics</a> page lists under <code>Gif.</code>.</p>
+<p>GIF files keep their palettes, version and application extensions in <code>GifDetails</code>, and each frame's in <code>GifFrameDetails</code>:</p>
+<pre><code class="lang-csharp">using Raster&lt;Rgba8&gt; clip = Raster.Load&lt;Rgba8&gt;(&quot;pan.gif&quot;);
+GifDetails details = (GifDetails)clip.Metadata.FormatDetails!;
+Console.WriteLine($&quot;GIF{details.Version}, {details.GlobalPalette.Length} global colors, repeats {details.RepetitionCount}&quot;);
+foreach (GifApplicationExtension extension in details.OtherExtensions)
+{
+    Console.WriteLine($&quot;Kept extension {extension.Identifier}: {extension.Data.Length} bytes&quot;);
+}
+
+foreach (Frame&lt;Rgba8&gt; frame in clip.Frames)
+{
+    if (frame.Metadata.FormatDetails is GifFrameDetails frameDetails)
+    {
+        Console.WriteLine($&quot;Frame: {frameDetails.LocalPalette.Length} local colors, transparent index {frameDetails.TransparentIndex}&quot;);
+    }
+}
+</code></pre><h2 id="writing">Writing</h2>
+<pre><code class="lang-csharp">using FileStream output = File.Create(&quot;duck.gif&quot;);
+photo.Save(output, GifFormat.Info, new GifWriterOptions
+{
+    Palette = new PaletteOptions { MaxColors = 128, Dither = DitherMode.Ordered }, // FloydSteinberg (default), Ordered or None
+    PaletteScope = GifPaletteScope.PerFrame,   // Auto (default): one table when all frames fit, else one per frame
+});
+</code></pre>
+<p>GIF holds at most 256 colors per frame. Frames with few enough colors keep them exactly. Others get a palette from Wu's
+quantizer, dithered with Floyd–Steinberg by default. GIF transparency is on or off, so pixels below
+<code>PaletteOptions.AlphaThreshold</code> (128 by default) become transparent.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Default</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Palette</code></td>
+<td>256 colors, Floyd–Steinberg</td>
+<td>How a palette is built when a frame has more colors than fit; see <a href="../guides/palettes.html">Palettes and dithering</a></td>
+</tr>
+<tr>
+<td><code>PaletteScope</code></td>
+<td><code>Auto</code></td>
+<td>One global table when all frames fit in it, else one per frame; <code>Global</code> and <code>PerFrame</code> choose</td>
+</tr>
+<tr>
+<td><code>OptimizeFrames</code></td>
+<td><code>true</code></td>
+<td>Each frame after the first stores only the rectangle that changed; <code>false</code> writes every frame whole</td>
+</tr>
+</tbody>
+</table>
+<p>Saving a raster with more than one frame writes an animation; see the <a href="../guides/animation.html">animation guide</a>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/gif.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
