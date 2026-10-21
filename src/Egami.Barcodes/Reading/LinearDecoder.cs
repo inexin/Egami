@@ -345,7 +345,7 @@ internal static class LinearDecoder
 
     private static LinearRead? Code39(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start)
     {
-        if (start + 9 > runs.Length || Code39Character(runs.Slice(start, 9)) != '*' || !QuietBefore(runs, start, Sum(runs.Slice(start, 9)) / 2f, edge: true))
+        if (start + 9 > runs.Length || !MayBeCode39Start(runs.Slice(start, 9)) || Code39Character(runs.Slice(start, 9)) != '*' || !QuietBefore(runs, start, Sum(runs.Slice(start, 9)) / 2f, edge: true))
         {
             return null;
         }
@@ -382,6 +382,17 @@ internal static class LinearDecoder
         string text = FullAscii(chars.ToString()) ?? chars.ToString();
         byte[] bytes = Encoding.Latin1.GetBytes(text);
         return Result(new DecodedData(BarcodeFormat.Code39, text, bytes), offsets, start, at + 9);
+    }
+
+    /// <summary>
+    /// Whether 9 runs can be the start character '*' (wide space 1, wide bars 4 and 6): its wide bars are at least as wide as
+    /// the other bars and its wide space as the other spaces, in either way <see cref="Code39Character"/> tells them apart.
+    /// A quick test before sorting, as most positions on a line are not a start.
+    /// </summary>
+    private static bool MayBeCode39Start(ReadOnlySpan<float> r)
+    {
+        float bar = MathF.Max(r[0], MathF.Max(r[2], r[8]));
+        return r[4] >= bar && r[6] >= bar && r[1] >= MathF.Max(r[3], MathF.Max(r[5], r[7]));
     }
 
     /// <summary>

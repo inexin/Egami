@@ -86,7 +86,19 @@ internal static class LinearScanner
         public byte[] Samples = [];
         public float[] Work = [];
         public int[] Prefix = [];
-        public readonly List<float> Runs = [], Offsets = [], Back = [], BackOffsets = [];
+        public float[] Shifted = [], ShiftedOffsets = [], Back = [], BackOffsets = [];
+        public readonly List<float> Runs = [], Offsets = [];
+
+        /// <summary>Returns the first <paramref name="length"/> items of the buffer, grown when it is shorter.</summary>
+        public static Span<float> Grow(ref float[] buffer, int length)
+        {
+            if (buffer.Length < length)
+            {
+                buffer = new float[Math.Max(length, buffer.Length * 2)];
+            }
+
+            return buffer.AsSpan(0, length);
+        }
     }
 
     private sealed class Candidate
@@ -190,52 +202,53 @@ internal static class LinearScanner
     /// <summary>Reads a line's runs as seen and, when asked, with light and dark swapped: the runs behind an empty light run.</summary>
     private static void ReadRuns(LineBuffers line, int length, Vector2 start, Vector2 step, BarcodeFormat formats, Reads? normal, Reads? swapped)
     {
+        ReadOnlySpan<float> runs = CollectionsMarshal.AsSpan(line.Runs), offsets = CollectionsMarshal.AsSpan(line.Offsets);
         if (normal is not null)
         {
-            ReadRuns(line, line.Runs, line.Offsets, length, start, step, formats, normal);
+            ReadRuns(line, runs, offsets, length, start, step, formats, normal);
         }
 
         if (swapped is not null)
         {
-            line.Runs.Insert(0, 0);
-            line.Offsets.Insert(0, 0);
-            ReadRuns(line, line.Runs, line.Offsets, length, start, step, formats, swapped);
-            line.Runs.RemoveAt(0);
-            line.Offsets.RemoveAt(0);
+            Span<float> shifted = LineBuffers.Grow(ref line.Shifted, runs.Length + 1), shiftedOffsets = LineBuffers.Grow(ref line.ShiftedOffsets, offsets.Length + 1);
+            shifted[0] = 0;
+            shiftedOffsets[0] = 0;
+            runs.CopyTo(shifted[1..]);
+            offsets.CopyTo(shiftedOffsets[1..]);
+            ReadRuns(line, shifted, shiftedOffsets, length, start, step, formats, swapped);
         }
     }
 
     /// <summary>Reads the runs left to right, then right to left (the symbol upside down).</summary>
-    private static void ReadRuns(LineBuffers line, List<float> runs, List<float> offsets, int length, Vector2 start, Vector2 step, BarcodeFormat formats, Reads reads)
+    private static void ReadRuns(LineBuffers line, ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int length, Vector2 start, Vector2 step, BarcodeFormat formats, Reads reads)
     {
-        if (LinearDecoder.Read(CollectionsMarshal.AsSpan(runs), CollectionsMarshal.AsSpan(offsets), formats) is LinearRead read)
+        if (LinearDecoder.Read(runs, offsets, formats) is LinearRead read)
         {
             Vote(read, start + (step * read.Start), start + (step * read.End), (start, step, length), reads);
         }
 
         // Reversed: the runs backwards, light first again; positions measured from the far end.
-        List<float> back = line.Back, backPositions = line.BackOffsets;
-        back.Clear();
-        backPositions.Clear();
-        if (runs.Count % 2 == 0)
+        int lead = runs.Length % 2 == 0 ? 1 : 0, count = runs.Length + lead;
+        Span<float> back = LineBuffers.Grow(ref line.Back, count), backPositions = LineBuffers.Grow(ref line.BackOffsets, count + 1);
+        if (lead == 1)
         {
-            back.Add(0);
+            back[0] = 0;
         }
 
-        for (int i = runs.Count - 1; i >= 0; i--)
+        for (int i = 0; i < runs.Length; i++)
         {
-            back.Add(runs[i]);
+            back[lead + i] = runs[runs.Length - 1 - i];
         }
 
         float at = 0;
-        foreach (float r in back)
+        for (int i = 0; i < count; i++)
         {
-            backPositions.Add(at);
-            at += r;
+            backPositions[i] = at;
+            at += back[i];
         }
 
-        backPositions.Add(length);
-        if (LinearDecoder.Read(CollectionsMarshal.AsSpan(back), CollectionsMarshal.AsSpan(backPositions), formats) is LinearRead reversed)
+        backPositions[count] = length;
+        if (LinearDecoder.Read(back, backPositions, formats) is LinearRead reversed)
         {
             Vote(reversed, start + (step * (length - reversed.Start)), start + (step * (length - reversed.End)), (start, step, length), reads);
         }

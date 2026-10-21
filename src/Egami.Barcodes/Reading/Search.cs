@@ -11,12 +11,12 @@ internal static class Search
         if (options.PureBarcode)
         {
             BitImage bits = Binarizer.Global(image);
-            if (PureReader.Read(image, bits, options.Formats) is Found pure)
+            if (PureReader.Read(image, bits, options.Formats, inverted: false) is Found pure)
             {
                 return [ToResult(pure, false)];
             }
 
-            return tryInverted && PureReader.Read(image.Inverted(), bits.Complement(), options.Formats) is Found inverted ? [ToResult(inverted, true)] : [];
+            return tryInverted && PureReader.Read(image, bits.Complement(), options.Formats, inverted: true) is Found inverted ? [ToResult(inverted, true)] : [];
         }
 
         return Scan(image, options, tryInverted, firstOnly);
@@ -34,10 +34,12 @@ internal static class Search
         BarcodeFormat formats = options.Formats;
         int effort = options.Effort;
         int threads = (long)image.Width * image.Height < 256 * 1024 ? 1 : Math.Max(1, (options.Context ?? EgamiContext.Default).MaxParallelism);
-        BitImage local = Binarizer.Local(image, threads);
-        BitImage global = image.Width < 40 || image.Height < 40 ? local : Binarizer.Global(image);
+        // The local threshold serves the 2D detectors and, from effort 6, the linear scan; the global one the pure reader.
+        bool matrix = (formats & (BarcodeFormat.Qr | BarcodeFormat.DataMatrix | BarcodeFormat.Aztec | BarcodeFormat.Pdf417)) != 0;
+        BitImage? local = matrix || effort >= 6 ? Binarizer.Local(image, threads) : null;
+        BitImage global = local is not null && (image.Width < 40 || image.Height < 40) ? local : Binarizer.Global(image);
         List<Found> linearInverted = [];
-        var jobs = Jobs(image, local, global, formats, effort);
+        var jobs = Jobs(image, false, local, global, formats, effort);
         if ((formats & BarcodeFormat.Linear) != 0)
         {
             jobs.Add(() =>
@@ -52,9 +54,8 @@ internal static class Search
         results.AddRange(Merge(RunJobs(jobs, threads)).Select(f => ToResult(f, false)));
         if (tryInverted && !(firstOnly && results.Count > 0))
         {
-            LuminanceImage inverted = image.Inverted();
-            BitImage swapped = local.Complement();
-            jobs = Jobs(inverted, swapped, ReferenceEquals(global, local) ? swapped : global.Complement(), formats, effort);
+            BitImage? swapped = local?.Complement();
+            jobs = Jobs(image, true, swapped, ReferenceEquals(global, local) ? swapped! : global.Complement(), formats, effort);
             jobs.Add(() => linearInverted);
             results.AddRange(Merge(RunJobs(jobs, threads)).Select(f => ToResult(f, true)));
         }
@@ -62,14 +63,22 @@ internal static class Search
         return results;
     }
 
-    /// <summary>The detectors for the formats asked for, over one pass's bits.</summary>
-    private static List<Func<List<Found>>> Jobs(LuminanceImage image, BitImage local, BitImage global, BarcodeFormat formats, int effort)
+    /// <summary>
+    /// The detectors for the formats asked for, over one pass's bits; in the inverted pass the gray levels that PDF417 samples
+    /// are the inverted image's, made when first needed.
+    /// </summary>
+    private static List<Func<List<Found>>> Jobs(LuminanceImage image, bool inverted, BitImage? local, BitImage global, BarcodeFormat formats, int effort)
     {
         var offset = new Vector2(image.Left, image.Top);
         var jobs = new List<Func<List<Found>>>
         {
-            () => PureReader.Read(image, global, formats) is Found pure ? [pure] : [],
+            () => PureReader.Read(image, global, formats, inverted) is Found pure ? [pure] : [],
         };
+        if (local is null)
+        {
+            return jobs;
+        }
+
         if ((formats & BarcodeFormat.Qr) != 0)
         {
             jobs.Add(() => QrDetector.Detect(local, effort, offset));
@@ -87,7 +96,7 @@ internal static class Search
 
         if ((formats & BarcodeFormat.Pdf417) != 0)
         {
-            jobs.Add(() => Pdf417Detector.Detect(local, image, effort, offset));
+            jobs.Add(() => Pdf417Detector.Detect(local, inverted ? image.Inverted() : image, effort, offset));
         }
 
         return jobs;

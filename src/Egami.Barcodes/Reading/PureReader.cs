@@ -11,8 +11,11 @@ internal sealed record class Found(DecodedData Data, Vector2[] Corners);
 /// </summary>
 internal static class PureReader
 {
-    /// <summary>Reads the image from its globally thresholded bits; the luminance is only sampled for PDF417.</summary>
-    public static Found? Read(LuminanceImage image, BitImage bits, BarcodeFormat formats)
+    /// <summary>
+    /// Reads the image from its globally thresholded bits. The luminance is only sampled for PDF417, from the inverted image
+    /// when the bits are swapped.
+    /// </summary>
+    public static Found? Read(LuminanceImage image, BitImage bits, BarcodeFormat formats, bool inverted)
     {
         if (Bounds(bits) is not (int left, int top, int right, int bottom))
         {
@@ -52,7 +55,7 @@ internal static class PureReader
             }
         }
 
-        if ((formats & BarcodeFormat.Pdf417) != 0 && Pdf417(bits, image, left, top, width, height) is Found pdf)
+        if ((formats & BarcodeFormat.Pdf417) != 0 && Pdf417(bits, inverted ? image.Inverted() : image, left, top, width, height) is Found pdf)
         {
             return pdf;
         }
