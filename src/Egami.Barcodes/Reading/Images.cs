@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -579,27 +580,50 @@ internal static class Binarizer
     }
 
     /// <summary>
-    /// Cuts a row of dark and light bits into run lengths, light first (possibly empty), and returns how many; the runs are found
-    /// by vectorized searches for the next change.
+    /// Cuts a row of dark and light bits into run lengths, light first (possibly empty), and returns how many; the changes of
+    /// color are found sixteen pixels at a time.
     /// </summary>
     public static int IntRuns(ReadOnlySpan<byte> dark, Span<int> runs)
     {
-        int count = 0, at = 0;
-        byte color = 0;
-        while (at < dark.Length)
+        int n = dark.Length, count = 0, start = 0, x = 1;
+        if (n == 0)
         {
-            int length = dark[at..].IndexOfAnyExcept(color);
-            length = length < 0 ? dark.Length - at : length;
-            runs[count++] = length;
-            at += length;
-            color ^= 1;
+            runs[0] = 0;
+            return 1;
         }
 
-        if (count == 0)
+        if (dark[0] != 0)
         {
             runs[count++] = 0;
         }
 
+        if (Vector128.IsHardwareAccelerated)
+        {
+            // Sixteen neighbours compared at a time; each set bit of the mask is a change of color.
+            ref byte row = ref MemoryMarshal.GetReference(dark);
+            for (; x + 16 <= n; x += 16)
+            {
+                uint changes = (~Vector128.Equals(Vector128.LoadUnsafe(ref row, (nuint)x), Vector128.LoadUnsafe(ref row, (nuint)(x - 1)))).ExtractMostSignificantBits();
+                while (changes != 0)
+                {
+                    int at = x + BitOperations.TrailingZeroCount(changes);
+                    runs[count++] = at - start;
+                    start = at;
+                    changes &= changes - 1;
+                }
+            }
+        }
+
+        for (; x < n; x++)
+        {
+            if (dark[x] != dark[x - 1])
+            {
+                runs[count++] = x - start;
+                start = x;
+            }
+        }
+
+        runs[count++] = n - start;
         return count;
     }
 

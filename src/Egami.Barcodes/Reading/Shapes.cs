@@ -45,22 +45,15 @@ internal static class Shapes
         }
 
         int above = 0, aboveEnd = 0;
+        int[] lengths = new int[width + 2];
         for (int y = 0; y < height; y++)
         {
-            ReadOnlySpan<byte> row = bits.Row(y);
-            int rowStart = runs.Count, at = 0;
-            while (at < width)
+            int rowStart = runs.Count, count = Binarizer.IntRuns(bits.Row(y), lengths), at = lengths[0];
+            for (int i = 1; i < count; i += 2)
             {
-                int start = row[at..].IndexOf((byte)1);
-                if (start < 0)
-                {
-                    break;
-                }
-
-                start += at;
-                int end = row[start..].IndexOf((byte)0);
-                end = end < 0 ? width : start + end;
-                at = end;
+                // Odd runs are dark (runs start light).
+                int start = at, end = at + lengths[i];
+                at = end + (i + 1 < count ? lengths[i + 1] : 0);
 
                 int label = 0;
                 while (above < aboveEnd && runs[above].End < start)
