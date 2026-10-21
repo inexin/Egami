@@ -48,7 +48,7 @@ Positional values fill the parameters in order; `--name value` sets one by name.
 | [fill-color](#fill-color) | Sets every pixel in rect, or the whole image, to one color. |
 | [fit](#fit) | Scales the image to fit inside width × height with its aspect ratio kept, so one side matches the box and the other is no larger. |
 | [flatten](#flatten) | Composites the image over background and makes it opaque, as ImageMagick's -alpha remove does. |
-| [flip](#flip) | Mirrors the image: horizontal (left to right, the default), vertical (top to bottom) or both. |
+| [flip](#flip) | Mirrors the image: horizontal (left to right), vertical (top to bottom) or both. |
 | [flip-horizontal](#flip-horizontal) | Mirrors the image left to right. |
 | [flip-vertical](#flip-vertical) | Mirrors the image top to bottom. |
 | [flood-fill](#flood-fill) | Fills the region connected to seed whose colors lie within tolerance of the seed's own with fill, as ImageMagick's -fuzz with -floodfill does. |
@@ -720,11 +720,11 @@ flatten: Composites the image over background and makes it opaque, as ImageMagic
 ## flip
 
 ```text
-flip: Mirrors the image: horizontal (left to right, the default), vertical (top to bottom) or both.
+flip: Mirrors the image: horizontal (left to right), vertical (top to bottom) or both.
 
-  flip [--direction <choice>]
-    --direction <horizontal|vertical|both>, default horizontal
-        Which way to mirror.
+  flip <direction>
+    --direction <horizontal|vertical|both>, required
+        Which way to mirror: horizontal (left to right), vertical (top to bottom) or both.
 ```
 
 ## flip-horizontal

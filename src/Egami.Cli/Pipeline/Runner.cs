@@ -32,6 +32,8 @@ internal static class Runner
             work.RemoveAt(0);
         }
 
+        KeepColorProfileWhenStripping(work, plan);
+
         ReaderOptions read = new()
         {
             ConvertColorTo = plan.Read.ConvertTo,
@@ -54,6 +56,41 @@ internal static class Runner
 
         InMemory(session, input, work, read, info, targets);
         return targets.Select(t => t.Path).ToList();
+    }
+
+    /// <summary>
+    /// --strip leaves out metadata but keeps the color profile (review R4), where the writer's own StripMetadata would drop the
+    /// profile too. A save that strips gets an edit before it that removes the other blocks, unless the image is converted to
+    /// sRGB while reading, which needs no profile; then the writer strips, and the plan can still stream.
+    /// </summary>
+    private static void KeepColorProfileWhenStripping(List<PipelineItem> work, Plan plan)
+    {
+        if (ReferenceEquals(plan.Read.ConvertTo, Colors.ColorProfile.Srgb))
+        {
+            return;
+        }
+
+        for (int i = 0; i < work.Count; i++)
+        {
+            if (work[i] is SaveItem { Save: var save } && save.Common.TryGetValue("strip-metadata", out string? strip) && strip == "true")
+            {
+                Dictionary<string, string> common = new(save.Common, StringComparer.Ordinal);
+                common.Remove("strip-metadata");
+                work[i] = new SaveItem(save with { Common = common });
+                work.Insert(i, new EditItem("strip", image => StripAllButProfile(image.Metadata)));
+                i++;
+            }
+        }
+    }
+
+    private static void StripAllButProfile(RasterMetadata metadata)
+    {
+        metadata.Exif = null;
+        metadata.Xmp = default;
+        metadata.XmpData = null;
+        metadata.Iptc = null;
+        metadata.Text.Clear();
+        metadata.Resolution = null;
     }
 
     /// <summary>Finds a format by its name or one of its extensions, among those the tool can read or write.</summary>
@@ -261,9 +298,10 @@ internal static class Runner
                     Flush(image, pending);
                     edit.Edit(image);
                     break;
-                case SaveItem:
+                case SaveItem { Save: var save }:
+                    // The path and format were resolved up front; the writer settings are the item's, which an edit may have changed.
                     Flush(image, pending);
-                    (SaveSpec save, string path, FormatInfo format) = targets[saveIndex++];
+                    (_, string path, FormatInfo format) = targets[saveIndex++];
                     WriterOptions options = Options(session, save, format);
                     Output.Write(session, path, output => image.Save(output, format, options));
                     break;

@@ -12,12 +12,12 @@ command review freezes the names and options at 1.0.
 
 - `info` (summary, `--all`, `--json` with schema 1), `formats` (what egami reads and writes, and each format's writer settings).
 - `convert`, `resize` (the size syntax `W`, `xH`, `WxH`, `P%` with `!`, `^`, `>` and `<`, and `--fit contain|cover|fill|pad`),
-  `thumbnail` (upright, shrunk, sRGB, metadata left out), `crop`, `rotate`, `flip` and `autoorient`, the last three lossless on
-  JPEG.
+  `thumbnail` (upright, shrunk, sRGB, metadata left out), `crop`, `rotate`, `flip` (a direction is required) and `auto-orient`, the last three
+  lossless on JPEG.
 - `compare` (MAE, MSE, RMSE, PSNR, SSIM, DSSIM, peak and AE, `--threshold`, `--diff`, exit code 1 on a difference) and `stats`.
 - `frames split` and `frames join` for GIF, APNG and WebP animations, with their delays.
-- `metadata show`, `strip` (lossless for JPEG) and `copy`; `color` for ICC conversion and HDR tone mapping.
-- `text` (captions and watermarks with the paragraph layout, any font, a bundled default) and `overlay` (any image, SVG
+- `metadata show`, `strip` (lossless for JPEG) and `copy`, which write a lossy format again only with `--reencode`; `color` for ICC conversion and HDR tone mapping.
+- `text` (captions and watermarks with the paragraph layout, any font, a bundled default, `--font-size`) and `overlay` (any image, SVG
   included, by anchor, with opacity and blend mode); `montage` contact sheets.
 
 ### Pipelines and batches
@@ -27,10 +27,11 @@ command review freezes the names and options at 1.0.
 - JSON workflow files with a published schema, `run --workflow` and `run --save-workflow`.
 - Every command takes many inputs, with egami's own glob expansion (`*`, `?`, `**`), `--recursive`, output templates (`{name}`,
   `{ext}`, `{dir}`, `{index}`, `{format}`), `--jobs`, `--fail-fast`, and `--in-place` to allow replacing an input.
-- Writer settings: `--quality`, `--lossless`, `--effort`, `--bit-depth`, `--strip`, and `--set fmt.key=value` for every
+- Writer settings: `--quality`, `--lossless`, `--effort`, `--bit-depth`, `--strip` (keeps the color profile), and `--set fmt.key=value` for every
   `WriterOptions` property, generated from the library.
 - Exit codes 0 to 3, diagnostics on standard error (`-v`, `-vv`, `-q`), safety limits with `--limit` and `EGAMI_LIMITS`.
-- `egami <name>` runs an `egami-<name>` program from the PATH, so other families' tools join in.
+- `egami <name>` runs an `egami-<name>` program from the PATH, so other families' tools join in; `egami formats` names
+  `egami-heic` for HEIC, which the tool leaves out.
 
 ## Egami.Barcodes 1.0.0 (2026-10-19)
 

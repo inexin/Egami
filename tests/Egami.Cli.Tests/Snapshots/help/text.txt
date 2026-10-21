@@ -14,7 +14,7 @@ Options:
   --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
-  --strip                   Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
+  --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
   --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   --auto-orient             Turn the image upright from its EXIF orientation first.
   --to <profile>            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
@@ -24,7 +24,7 @@ Options:
   --fail-fast               Stop at the first file that fails.
   -t, --text <text>         The text; the last input may give it instead: egami text in.png "(c) 2026" -o out.png.
   --font <font>             A font file, an installed family name, or sans-serif, serif or monospace. Liberation Sans (bundled) by default.
-  -s, --size <pixels>       The font size in pixels. [default: 24]
+  --font-size <pixels>      The font size in pixels. [default: 24]
   --color <color>           The text color, a CSS color (white by default).
   --anchor <anchor>         Where the text sits: bottom-right (the default), bottom, center, top-left, ...
   --margin <pixels>         The distance from the image's edges in pixels. [default: 16]

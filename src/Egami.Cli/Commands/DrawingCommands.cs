@@ -24,7 +24,7 @@ internal static class DrawingCommands
         ImageOptions options = new();
         Option<string?> text = new("--text", "-t") { Description = "The text; the last input may give it instead: egami text in.png \"(c) 2026\" -o out.png.", HelpName = "text" };
         Option<string?> font = new("--font") { Description = $"A font file, an installed family name, or sans-serif, serif or monospace. {DefaultFamily} (bundled) by default.", HelpName = "font" };
-        Option<float> size = new("--size", "-s") { Description = "The font size in pixels.", HelpName = "pixels", DefaultValueFactory = _ => 24 };
+        Option<float> size = new("--font-size") { Description = "The font size in pixels.", HelpName = "pixels", DefaultValueFactory = _ => 24 };
         Option<string?> color = new("--color") { Description = "The text color, a CSS color (white by default).", HelpName = "color" };
         Option<string?> anchor = new("--anchor") { Description = "Where the text sits: bottom-right (the default), bottom, center, top-left, ...", HelpName = "anchor" };
         Option<int> margin = new("--margin") { Description = "The distance from the image's edges in pixels.", HelpName = "pixels", DefaultValueFactory = _ => 16 };
@@ -50,7 +50,7 @@ internal static class DrawingCommands
                 TextOptions draw = new(
                     caption,
                     family,
-                    result.GetValue(size) is > 0 and <= 4096 and var px ? px : throw new UsageException("--size must be above 0 and at most 4096."),
+                    result.GetValue(size) is > 0 and <= 4096 and var px ? px : throw new UsageException("--font-size must be above 0 and at most 4096."),
                     result.GetValue(color) is { } c ? ValueParsers.ParseColor(c) : Rgba8.White,
                     result.GetValue(anchor) is { } a ? ValueParsers.Enum<Anchor>(a) : Anchor.BottomRight,
                     result.GetValue(margin),

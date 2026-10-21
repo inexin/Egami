@@ -4,7 +4,7 @@
 `Egami.Cli` package, a .NET tool built on Egami's public API, and reads every format Egami and its packages read: SVG,
 WMF and EMF included. It has three layers:
 
-- **Single commands** for everyday jobs: `info`, `convert`, `resize`, `thumbnail`, `crop`, `rotate`, `flip`, `autoorient`,
+- **Single commands** for everyday jobs: `info`, `convert`, `resize`, `thumbnail`, `crop`, `rotate`, `flip`, `auto-orient`,
   `compare`, `stats`, `frames`, `metadata`, `color`, `text`, `overlay`, `montage` and `formats`.
 - **`run`**, which chains any number of steps over each image. Every Egami operation is a step, and the same steps can be
   saved as a JSON workflow file.
@@ -57,7 +57,8 @@ replace the target only when complete.
 ## Formats and writer settings
 
 The output format comes from the extension or `--format`. The common settings have flags: `--quality`, `--lossless`, `--effort`,
-`--bit-depth` and `--strip` (leave out metadata). A flag the format does not have is skipped with a warning. Every other writer
+`--bit-depth` and `--strip`, which leaves out EXIF, XMP, IPTC, text and resolution but keeps the color profile, so colors
+stay right (ImageMagick's `-strip` drops the profile too). A flag the format does not have is skipped with a warning. Every other writer
 setting is `--set fmt.key=value`, where the keys are the format's `WriterOptions` properties in kebab case:
 
 ```sh
@@ -93,8 +94,11 @@ Every command keeps the library's defaults, except `thumbnail`, which is the web
 its EXIF orientation, shrinks it (never enlarges) to fit `--size` (256 by default), converts it to sRGB and leaves out
 metadata. The other commands do those only when asked: `--auto-orient`, `--to srgb` and `--strip`.
 
-`rotate`, `flip` and `autoorient` turn a JPEG written as JPEG without decoding it, so no quality is lost, when the angle allows;
-`--reencode` decodes instead.
+`rotate`, `flip` and `auto-orient` turn a JPEG written as JPEG without decoding it, so no quality is lost, when the angle
+allows; `--reencode` decodes instead. `flip` has no default direction: give `horizontal`, `vertical` or `both`, since
+ImageMagick's `-flip` and a photo app's flip mirror opposite ways. `metadata strip` without `--keep` rewrites a JPEG without
+decoding it too; any other metadata edit that would write a lossy format again (JPEG, lossy WebP, AVIF, JPEG XL) asks for
+`--reencode`.
 
 ## Chaining steps with run
 

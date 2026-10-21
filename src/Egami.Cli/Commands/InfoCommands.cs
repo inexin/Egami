@@ -177,8 +177,13 @@ internal static class InfoCommands
                     }
 
                     json.WriteEndArray();
-                    json.WriteBoolean("read", format.Reader is not null);
+                    json.WriteBoolean("read", format.Reader is not null && !NeedsHeic(format));
                     json.WriteBoolean("write", format.Writer is not null);
+                    if (NeedsHeic(format))
+                    {
+                        json.WriteString("needs", "egami-heic");
+                    }
+
                     json.WriteEndObject();
                 }
 
@@ -192,7 +197,7 @@ internal static class InfoCommands
         output.WriteLine($"{"Format",-14} {"Read",-5} {"Write",-6} Extensions");
         foreach (FormatInfo format in formats)
         {
-            output.WriteLine($"{format.Name,-14} {(format.Reader is null ? "-" : "yes"),-5} {(format.Writer is null ? "-" : "yes"),-6} {string.Join(' ', format.Extensions)}");
+            output.WriteLine($"{format.Name,-14} {Reads(format),-5} {(format.Writer is null ? "-" : "yes"),-6} {string.Join(' ', format.Extensions)}{(NeedsHeic(format) ? "  (needs egami-heic)" : string.Empty)}");
         }
 
         output.WriteLine();
@@ -244,7 +249,7 @@ internal static class InfoCommands
 
         TextWriter output = session.Console.Text;
         output.WriteLine($"{format.Name}: {string.Join(' ', format.Extensions)} ({string.Join(", ", format.MimeTypes)})");
-        output.WriteLine($"  reads: {(format.Reader is null ? "no" : "yes")}, writes: {(format.Writer is null ? "no" : "yes")}");
+        output.WriteLine($"  reads: {(NeedsHeic(format) ? "no, the egami-heic tool would (HEVC is covered by patents)" : format.Reader is null ? "no" : "yes")}, writes: {(format.Writer is null ? "no" : "yes")}");
         if (format.Writer is null)
         {
             return;
@@ -262,6 +267,14 @@ internal static class InfoCommands
             }
         }
     }
+
+    /// <summary>
+    /// Whether the format is HEIC, which core Egami lists with a reader that asks for Egami.Heic; the tool leaves HEVC out for
+    /// its patents (CLI design Q2) and names the egami-heic tool that would read it (review R9).
+    /// </summary>
+    private static bool NeedsHeic(FormatInfo format) => format.Name == "HEIC";
+
+    private static string Reads(FormatInfo format) => NeedsHeic(format) ? "-" : format.Reader is null ? "-" : "yes";
 
     private static string? Display(object? value)
     {

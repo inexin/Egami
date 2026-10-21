@@ -138,11 +138,13 @@ internal static class MetadataCommands
     {
         ImageOptions options = new();
         Option<string?> keep = new("--keep") { Description = $"Blocks to keep, comma-separated: {string.Join(", ", Blocks)}.", HelpName = "blocks" };
+        Option<bool> reencode = new("--reencode") { Description = "Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation." };
         Command command = new(
             "strip",
-            "Remove metadata. A JPEG losing everything is rewritten without decoding; otherwise the image is written again with the format's defaults.");
+            "Remove metadata. A JPEG losing everything is rewritten without decoding; otherwise the image is written again, which a lossy format allows only with --reencode.");
         options.AddTo(command, read: false);
         command.Options.Add(keep);
+        command.Options.Add(reencode);
         command.SetAction(result =>
         {
             HashSet<string> kept = ParseBlocks(result.GetValue(keep), "--keep");
@@ -151,7 +153,8 @@ internal static class MetadataCommands
                 result,
                 options,
                 () => new Plan([new EditItem("metadata-strip", image => Strip(image.Metadata, kept)), new SaveItem(options.Save(result))], ReadSpec.Default),
-                kept.Count == 0 && !options.Save(result).HasSettings ? (input, output) => LosslessJpegStrip(session, result, options, input, output) : null);
+                (input, output) => (kept.Count == 0 && !options.Save(result).HasSettings ? LosslessJpegStrip(session, result, options, input, output) : null)
+                    ?? RefuseLossy(session, result, options, reencode, input, output));
         });
         return command;
     }
@@ -161,10 +164,12 @@ internal static class MetadataCommands
         ImageOptions options = new();
         Option<string> from = new("--from") { Description = "The image to copy metadata from.", HelpName = "image", Required = true };
         Option<string?> only = new("--only") { Description = $"Blocks to copy, comma-separated: {string.Join(", ", Blocks)}; all by default.", HelpName = "blocks" };
-        Command command = new("copy", "Copy metadata from one image to others, which are written again with it.");
+        Option<bool> reencode = new("--reencode") { Description = "Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation." };
+        Command command = new("copy", "Copy metadata from one image to others, which are written again with it; a lossy format only with --reencode.");
         options.AddTo(command, read: false);
         command.Options.Add(from);
         command.Options.Add(only);
+        command.Options.Add(reencode);
         command.SetAction(result =>
         {
             HashSet<string> blocks = ParseBlocks(result.GetValue(only), "--only");
@@ -173,12 +178,17 @@ internal static class MetadataCommands
                 blocks = [.. Blocks];
             }
 
-            return ImageCommand.Run(session, result, options, () =>
-            {
-                InputFile source = Globber.Expand(session, [result.GetValue(from)!], recursive: false)[0];
-                RasterMetadata donor = MetadataReport.Load(session, new InputSource(source));
-                return new Plan([new EditItem("metadata-copy", image => CopyInto(donor, image.Metadata, blocks)), new SaveItem(options.Save(result))], ReadSpec.Default);
-            });
+            return ImageCommand.Run(
+                session,
+                result,
+                options,
+                () =>
+                {
+                    InputFile source = Globber.Expand(session, [result.GetValue(from)!], recursive: false)[0];
+                    RasterMetadata donor = MetadataReport.Load(session, new InputSource(source));
+                    return new Plan([new EditItem("metadata-copy", image => CopyInto(donor, image.Metadata, blocks)), new SaveItem(options.Save(result))], ReadSpec.Default);
+                },
+                (input, output) => RefuseLossy(session, result, options, reencode, input, output));
         });
         return command;
     }
@@ -271,6 +281,28 @@ internal static class MetadataCommands
         }
 
         return blocks;
+    }
+
+    /// <summary>
+    /// Refuses to write a lossy format again for a metadata edit, which would lose quality the user did not ask to lose, unless
+    /// --reencode allows it (review R5). Returns <see langword="null"/> so the plan runs when the output is lossless.
+    /// </summary>
+    private static IReadOnlyList<string>? RefuseLossy(CliSession session, System.CommandLine.ParseResult result, ImageOptions options, Option<bool> reencode, InputSource input, OutputTemplate? output)
+    {
+        if (result.GetValue(reencode))
+        {
+            return null;
+        }
+
+        SaveSpec save = options.Save(result);
+        (_, _, FormatInfo format) = Runner.Resolve(session, input, save, output, input.Probe(session).Format);
+        bool lossless = save.Common.TryGetValue("lossless", out string? value) && value == "true";
+        if (format == JpegFormat.Info || (!lossless && WriterInfo.Normalize(format.Name) is "webp" or "avif" or "jpegxl"))
+        {
+            throw new UsageException($"{input.File.Display}: writing {format.Name} again loses quality; add --reencode to allow it, or write a lossless format.");
+        }
+
+        return null;
     }
 
     private static IReadOnlyList<string>? LosslessJpegStrip(CliSession session, System.CommandLine.ParseResult result, ImageOptions options, InputSource input, OutputTemplate? output)

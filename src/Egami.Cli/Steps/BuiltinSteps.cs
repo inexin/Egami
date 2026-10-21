@@ -91,11 +91,11 @@ internal static class BuiltinSteps
         return new StepInfo(
             "flip",
             "Flip",
-            "Mirrors the image: horizontal (left to right, the default), vertical (top to bottom) or both.",
-            [new OverloadInfo([new("direction", "choice", static text => FlipNames[(int)ValueParsers.Choice(text, FlipNames, [0, 1, 2])], false, "horizontal", "Which way to mirror.", FlipNames)])],
+            "Mirrors the image: horizontal (left to right), vertical (top to bottom) or both.",
+            [new OverloadInfo([new("direction", "choice", static text => FlipNames[(int)ValueParsers.Choice(text, FlipNames, [0, 1, 2])], true, null, "Which way to mirror: horizontal (left to right), vertical (top to bottom) or both.", FlipNames)])],
             static (ops, _, args) =>
             {
-                string direction = args[0] as string ?? "horizontal";
+                string direction = (string)args[0]!;
                 if (direction is "horizontal" or "both")
                 {
                     ops.FlipHorizontal();

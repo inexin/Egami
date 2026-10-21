@@ -19,7 +19,7 @@ Commands:
   thumbnail <inputs>                Make thumbnails for the web: turned upright, shrunk (never enlarged) to fit --size (256 by default), converted to sRGB, metadata left out.
   crop <inputs>                     Crop images to a rectangle.
   rotate <inputs>                   Rotate images clockwise. A JPEG turned by a multiple of 90 degrees into a JPEG is rotated losslessly.
-  flip <inputs>                     Mirror images left to right, top to bottom or both. A JPEG flipped into a JPEG is flipped losslessly.
+  flip <inputs>                     Mirror images left to right (horizontal), top to bottom (vertical) or both. A JPEG flipped into a JPEG is flipped losslessly.
   auto-orient, autoorient <inputs>  Turn images upright from their EXIF orientation and reset it. A JPEG into a JPEG is turned losslessly.
   run <inputs-and-steps>            Run steps over images, separated by +: 'egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --quality 82'. Every Egami operation is a step ('egami run --list'); save writes, and may come more than once.
   compare <image> <other>           Compare two images: print a metric and exit with 1 when they differ more than --threshold.

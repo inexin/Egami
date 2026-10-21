@@ -1,5 +1,5 @@
 Description:
-  Remove metadata. A JPEG losing everything is rewritten without decoding; otherwise the image is written again with the format's defaults.
+  Remove metadata. A JPEG losing everything is rewritten without decoding; otherwise the image is written again, which a lossy format allows only with --reencode.
 
 Usage:
   egami metadata strip <inputs>... [options]
@@ -14,13 +14,14 @@ Options:
   --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
-  --strip                   Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
+  --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
   --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   -r, --recursive           Take every image in folders given as inputs, at any depth.
   -j, --jobs <count>        How many files to work on at once; 0 (the default) for one per processor.
   --in-place                Allow outputs to replace their inputs.
   --fail-fast               Stop at the first file that fails.
   --keep <blocks>           Blocks to keep, comma-separated: icc, exif, xmp, iptc, text, resolution.
+  --reencode                Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation.
   -?, -h, --help            Show help and usage information
   -v, --verbose             Write information to standard error.
   -vv, --debug              Write debugging detail to standard error.

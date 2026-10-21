@@ -10,7 +10,7 @@ using Egami.Formats.Jpeg;
 
 namespace Egami.Cli.Commands;
 
-/// <summary>The everyday commands (stage A): convert, resize, thumbnail, crop, rotate, flip and autoorient.</summary>
+/// <summary>The everyday commands (stage A): convert, resize, thumbnail, crop, rotate, flip and auto-orient.</summary>
 internal static class EverydayCommands
 {
     public static Command Convert(CliSession session)
@@ -118,15 +118,17 @@ internal static class EverydayCommands
     public static Command Flip(CliSession session)
     {
         ImageOptions options = new();
-        Option<string?> direction = new("--direction", "-d") { Description = "horizontal (mirror left to right, the default), vertical or both; the last input may give it instead.", HelpName = "direction" };
+        Option<string?> direction = new("--direction", "-d") { Description = "horizontal (mirror left to right), vertical (top to bottom) or both; the last input may give it instead.", HelpName = "direction" };
         Option<bool> reencode = new("--reencode") { Description = "Decode and encode a JPEG even when a lossless flip is possible." };
-        Command command = new("flip", "Mirror images left to right, top to bottom or both. A JPEG flipped into a JPEG is flipped losslessly.");
+        Command command = new("flip", "Mirror images left to right (horizontal), top to bottom (vertical) or both. A JPEG flipped into a JPEG is flipped losslessly.");
         options.AddTo(command);
         command.Options.Add(direction);
         command.Options.Add(reencode);
         command.SetAction(result =>
         {
-            string which = result.GetValue(direction) ?? TakeTrailingValue(result, options, t => t is "horizontal" or "vertical" or "both") ?? "horizontal";
+            // No default: ImageMagick's -flip is top to bottom and a photo app's flip is left to right, so egami asks (review R1).
+            string which = result.GetValue(direction) ?? TakeTrailingValue(result, options, t => t is "horizontal" or "vertical" or "both")
+                ?? throw new UsageException("Give the direction: egami flip in.jpg horizontal|vertical|both -o out.jpg, or --direction.");
             JpegTransformOperation? lossless = which switch
             {
                 "horizontal" => JpegTransformOperation.FlipHorizontal,
@@ -148,8 +150,8 @@ internal static class EverydayCommands
     {
         ImageOptions options = new();
         Option<bool> reencode = new("--reencode") { Description = "Decode and encode a JPEG even when a lossless turn is possible." };
-        Command command = new("autoorient", "Turn images upright from their EXIF orientation and reset it. A JPEG into a JPEG is turned losslessly.");
-        command.Aliases.Add("auto-orient");
+        Command command = new("auto-orient", "Turn images upright from their EXIF orientation and reset it. A JPEG into a JPEG is turned losslessly.");
+        command.Aliases.Add("autoorient");
         options.AddTo(command, read: false);
         command.Options.Add(options.To);
         command.Options.Add(reencode);

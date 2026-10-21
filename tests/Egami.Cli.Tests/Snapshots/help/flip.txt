@@ -1,5 +1,5 @@
 Description:
-  Mirror images left to right, top to bottom or both. A JPEG flipped into a JPEG is flipped losslessly.
+  Mirror images left to right (horizontal), top to bottom (vertical) or both. A JPEG flipped into a JPEG is flipped losslessly.
 
 Usage:
   egami flip <inputs>... [options]
@@ -14,7 +14,7 @@ Options:
   --lossless                   Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>             Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>           Bits per channel to write (PNG, AVIF).
-  --strip                      Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
+  --strip                      Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
   --set <fmt.key=value>        Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   --auto-orient                Turn the image upright from its EXIF orientation first.
   --to <profile>               Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
@@ -22,7 +22,7 @@ Options:
   -j, --jobs <count>           How many files to work on at once; 0 (the default) for one per processor.
   --in-place                   Allow outputs to replace their inputs.
   --fail-fast                  Stop at the first file that fails.
-  -d, --direction <direction>  horizontal (mirror left to right, the default), vertical or both; the last input may give it instead.
+  -d, --direction <direction>  horizontal (mirror left to right), vertical (top to bottom) or both; the last input may give it instead.
   --reencode                   Decode and encode a JPEG even when a lossless flip is possible.
   -?, -h, --help               Show help and usage information
   -v, --verbose                Write information to standard error.
