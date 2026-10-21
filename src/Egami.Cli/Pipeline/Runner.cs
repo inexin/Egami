@@ -206,14 +206,15 @@ internal static class Runner
     }
 
     /// <summary>
-    /// The size to decode at when the plan starts with a resize (after an auto-orient): at least twice the result, so a JPEG is
-    /// decoded at 1/2, 1/4 or 1/8 of its size where that still leaves the resize filter a factor of two to work with. The
-    /// result stays within a few levels of a full decode, as ImageMagick and libvips resize it, at a fraction of the work.
+    /// The size to decode at when the plan starts with a resize (after an auto-orient): at least one and a half times the result,
+    /// so a JPEG is decoded at 1/2, 1/4 or 1/8 of its size only where that still leaves the resize filter real work. The
+    /// result stays within a few levels of a full decode, as ImageMagick and libvips resize it, at a fraction of the work. When
+    /// no reduction is that safe, the stored size itself is asked for, which keeps Transcode from reducing to the result.
     /// </summary>
     private static Size? DecodeSize(List<PipelineItem> work, RasterInfo info)
     {
         int at = work.Count > 1 && work[0] is StepItem { Step.Info.Name: "auto-orient" } ? 1 : 0;
-        if (work.Count <= at || work[at] is not StepItem { Step: { Info.Name: "resize", Args: [SizeSpec spec, ..] } step } || spec.WidthPercent || spec.HeightPercent)
+        if (work.Count <= at || work[at] is not StepItem { Step: var step })
         {
             return null;
         }
@@ -221,10 +222,22 @@ internal static class Runner
         // An auto-orient first means the box is measured against the upright image, and the decoder shrinks the stored one.
         bool swaps = at == 1 && info.Orientation >= ImageOrientation.Transpose;
         Size upright = swaps ? new Size(info.Height, info.Width) : new Size(info.Width, info.Height);
-        Size target = spec.Target(upright, step.Args[1] is FitMode fit ? fit : FitMode.Contain);
-        Size margin = new(target.Width * 2, target.Height * 2);
+        Size? target = step switch
+        {
+            { Info.Name: "resize", Args: [SizeSpec spec, var fit, ..] } => spec.Target(upright, fit is FitMode mode ? mode : FitMode.Contain),
+            { Info.Name: "fit", Args: [int w, int h, ..] } => new SizeSpec(w, false, h, false, false, false, false, false).Target(upright, FitMode.Contain),
+            { Info.Name: "cover", Args: [int w, int h, ..] } => new SizeSpec(w, false, h, false, false, true, false, false).Target(upright, FitMode.Contain),
+            { Info.Name: "resize", Args: [int w, int h, ..] } => new Size(w > 0 ? w : upright.Width * h / Math.Max(1, upright.Height), h > 0 ? h : upright.Height * w / Math.Max(1, upright.Width)),
+            _ => null,
+        };
+        if (target is not { } result)
+        {
+            return null;
+        }
+
+        Size margin = new((result.Width * 3 + 1) / 2, (result.Height * 3 + 1) / 2);
         Size stored = swaps ? new Size(margin.Height, margin.Width) : margin;
-        return stored.Width < info.Width && stored.Height < info.Height ? stored : null;
+        return stored.Width < info.Width && stored.Height < info.Height ? stored : new Size(info.Width, info.Height);
     }
 
     private static void InMemory(CliSession session, InputSource input, List<PipelineItem> work, ReaderOptions read, RasterInfo info, List<(SaveSpec Save, string Path, FormatInfo Format)> targets)
