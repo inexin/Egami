@@ -153,7 +153,43 @@ Compositor.Blend&lt;Rgba8&gt;(BlendMode.Multiply, source, destination, coverage)
 
 // One color through coverage, the way a rasterizer fills a shape's spans.
 Compositor.Blend(BlendMode.SourceOver, new Rgba8(255, 0, 0, 128), destination.AsSpan(), coverage);
-</code></pre><h2 id="run-it">Run it</h2>
+</code></pre><h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="watermark-with-multiply">Watermark with Multiply</h3>
+<pre><code class="lang-csharp">// A dark logo that should read as printed on the photo: Multiply darkens by the logo's colors and never adds white.
+using Raster&lt;Rgba8&gt; logo = Raster.Create(120, 40, new Rgba8(40, 60, 120, 255));
+photo.Apply(ops =&gt; ops.DrawImage(logo, new Point(photo.Width - 140, photo.Height - 60), BlendMode.Multiply, opacity: 0.6f), Ct);
+</code></pre>
+<p>A dark logo drawn with <code>Multiply</code> reads as ink on the photo: light areas of the logo leave the photo unchanged.</p>
+<h3 id="blend-a-row-in-a-custom-operation">Blend a row in a custom operation</h3>
+<pre><code class="lang-csharp">/// &lt;summary&gt;A custom step that screens a horizontal gradient over each row, blending with the Compositor.&lt;/summary&gt;
+public sealed class ScreenGradient : IRasterOperation
+{
+    public Size OutputSize(Size input) =&gt; input;
+
+    public void Run&lt;TPixel&gt;(OperationInput&lt;TPixel&gt; input)
+        where TPixel : unmanaged, IPixelType&lt;TPixel&gt;
+    {
+        int width = input.Destination.Width;
+        TPixel[] gradient = new TPixel[width];
+        for (int x = 0; x &lt; width; x++)
+        {
+            gradient[x] = TPixel.FromRgba8(new Rgba8(255, 220, 160, (byte)(255 * x / Math.Max(1, width - 1))));
+        }
+
+        input.ForEachBand((start, end) =&gt;
+        {
+            for (int y = start; y &lt; end; y++)
+            {
+                input.Source.Row(y).CopyTo(input.Destination.Row(y));
+                Compositor.Blend&lt;TPixel&gt;(BlendMode.Screen, gradient, input.Destination.Row(y));
+            }
+        });
+    }
+}
+</code></pre>
+<p><code>Compositor.Blend</code> works on any pixel type, so one custom step serves every raster.</p>
+<h2 id="run-it">Run it</h2>
 <p><a href="https://github.com/inexin/Egami/tree/main/samples/Compositing"><code>samples/Compositing</code></a> is a console app that does what this guide shows on the bundled
 images: <code>dotnet run --project samples/Compositing</code> writes its results to <code>./output</code>.</p>
 

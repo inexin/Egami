@@ -164,6 +164,11 @@ anyone can reproduce them.</p>
 </tbody>
 </table>
 <p>Steady-state decoding and encoding allocate only the result raster: under 2.5 KB of managed memory a call for these formats.</p>
+<h2 id="native-aot">Native AOT</h2>
+<p>Egami is trimming- and AOT-clean: no reflection, no runtime code generation. Publish as usual:</p>
+<pre><code class="lang-sh">dotnet publish -c Release -r linux-x64 -p:PublishAot=true
+</code></pre>
+<p>Egami's own build publishes a small console app this way on every change and checks that it runs with no warnings.</p>
 
 </article>
 

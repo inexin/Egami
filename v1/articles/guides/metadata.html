@@ -297,7 +297,10 @@ xmp.Rating = 5;
 
 // The edit is the packet now: Metadata.Xmp returns it and every format saves it.
 photo.Save(&quot;rated.png&quot;);
-</code></pre><pre><code class="lang-csharp">// An XMP packet from a sidecar file or a database; DTDs are refused and nothing outside it is read.
+</code></pre>
+<p>Lightroom, Bridge and Windows read the keywords and rating from XMP. For news and stock workflows, set the same keywords in
+<a href="#iptc">IPTC</a> too.</p>
+<pre><code class="lang-csharp">// An XMP packet from a sidecar file or a database; DTDs are refused and nothing outside it is read.
 XmpData xmp = XmpData.Parse(packet.Span, SafetyLimits.Default with { MaxMetadataBytes = 1024 * 1024 });
 Console.WriteLine(xmp.IsDamaged ? string.Join(&quot; &quot;, xmp.Warnings) : $&quot;Label: {xmp.Label}&quot;);
 </code></pre><h2 id="color-space">Color space</h2>

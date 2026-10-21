@@ -442,7 +442,32 @@ foreach (FormatInfo format in new[] { PngFormat.Info, JpegFormat.Info, GifFormat
 // A SignatureMatcher decides from the first SignatureLength bytes whether a file is in the format.
 SignatureMatcher isPng = PngFormat.Info.Matches;
 bool png = isPng(File.ReadAllBytes(&quot;duck.png&quot;).AsSpan(0, PngFormat.Info.SignatureLength));
-</code></pre><h2 id="run-it">Run it</h2>
+</code></pre><h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="batch-convert-a-folder">Batch convert a folder</h3>
+<pre><code class="lang-csharp">// Convert a folder of images to QOI, a few at a time. Each image runs on one thread, so the files run side by side.
+EgamiContext oneThread = EgamiContext.Default with { MaxParallelism = 1 };
+Directory.CreateDirectory(&quot;out&quot;);
+Parallel.ForEach(Directory.GetFiles(&quot;in&quot;), new ParallelOptions { MaxDegreeOfParallelism = 4 }, path =&gt;
+{
+    try
+    {
+        using Raster image = Raster.Load(path, oneThread);
+        image.Save(Path.Combine(&quot;out&quot;, Path.GetFileNameWithoutExtension(path) + &quot;.qoi&quot;));
+    }
+    catch (EgamiException e)
+    {
+        Console.WriteLine($&quot;{path}: {e.Message}&quot;);
+    }
+});
+</code></pre><h3 id="read-the-size-without-decoding">Read the size without decoding</h3>
+<pre><code class="lang-csharp">RasterInfo info = Raster.Probe(&quot;sideways.jpg&quot;);
+bool sideways = info.Orientation is &gt;= Egami.Metadata.ImageOrientation.Transpose;
+(int width, int height) = sideways ? (info.Height, info.Width) : (info.Width, info.Height);
+Console.WriteLine($&quot;{info.Format.Name}, shown as {width} × {height}, about {info.EstimatedBytes:N0} bytes to load&quot;);
+</code></pre>
+<p><code>Probe</code> reads only the header, and reports the EXIF orientation, so you know how the image will be shown.</p>
+<h2 id="run-it">Run it</h2>
 <p><a href="https://github.com/inexin/Egami/tree/main/samples/Formats"><code>samples/Formats</code></a> is a console app that does what this guide shows on the bundled
 images: <code>dotnet run --project samples/Formats</code> writes its results to <code>./output</code>.</p>
 

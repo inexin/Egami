@@ -135,7 +135,9 @@ using Raster&lt;Rgba8&gt; image = chart.Rasterize&lt;Rgba8&gt;(new MetafileRende
     Background = new RgbaF32(1, 1, 1, 1),
 });
 image.Save(output);
-</code></pre><pre><code class="lang-csharp">Metafile picture = Metafile.Load(path);
+</code></pre>
+<p>Egami.Metafiles plays the records as Windows does (GDI for WMF and EMF, GDI+ for EMF+), in managed code on any OS.</p>
+<pre><code class="lang-csharp">Metafile picture = Metafile.Load(path);
 
 // The frame is stretched to the box, as Word stretches a picture to its frame. The same calls draw on a PDF page.
 using Raster&lt;Rgba8&gt; page = Raster.Create&lt;Rgba8&gt;(400, 300);
@@ -170,6 +172,7 @@ using Raster&lt;Rgba8&gt; image = picture.Rasterize&lt;Rgba8&gt;(new MetafileRen
     Antialias = false, // GDI's own aliased look, for comparing with Windows
 });
 </code></pre>
+<p>Each glyph still goes where the file put it, so lines keep their length in a substitute face.</p>
 <p>The open fonts are found only when they are installed, and many servers have none. The
 <a href="text.html#substitute-fonts">Egami.Fonts.Substitutes</a> package bundles Liberation, Carlito and Caladea, so put its faces in the
 <code>Fonts</code> you pass:</p>

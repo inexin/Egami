@@ -182,6 +182,7 @@ edges.Apply(o =&gt; o.CannyEdges(sigma: 1.4f).Dilate(1), Ct);                 //
 
 photo.Apply(o =&gt; o.Within(new Mask(edges), s =&gt; s.FillColor(Rgba8.Red)), Ct);  // paint over them
 </code></pre>
+<p>Canny's white-on-black map works directly as a <code>Mask</code>; thicken it with <code>Dilate</code> first to catch the pixels beside each edge.</p>
 <p><code>CannyEdges</code> runs the four steps of Canny's detector: a Gaussian blur of the luma with standard deviation <code>sigma</code>, the
 gradient from Canny's own 2 × 2 first differences, non-maximum suppression (a pixel is kept only if neither neighbour across
 its edge is stronger), and hysteresis: pixels at least <code>high</code> times the image's strongest gradient start edges, and edges

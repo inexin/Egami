@@ -301,6 +301,16 @@ foreach (JpegComponent component in details.Components)
 // Gray output, and 4:4:4 (no chroma subsampling) for sharp colored edges.
 photo.Save(&quot;gray.jpg&quot;, new JpegWriterOptions { ColorType = JpegColorType.Gray });
 photo.Save(&quot;sharp.jpg&quot;, new JpegWriterOptions { Quality = 90, Subsampling = ChromaSubsampling.Subsample444 });
+</code></pre><h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="read-a-cmyk-jpegs-inks">Read a CMYK JPEG's inks</h3>
+<pre><code class="lang-csharp">// A CMYK JPEG loads as RGB by the plain formula, as before; ask for Cmyk8 to get the file's ink amounts instead.
+using Raster&lt;Cmyk8&gt; inks = Raster.Load&lt;Cmyk8&gt;(&quot;duck-cmyk.jpg&quot;);
+Cmyk8 corner = inks.Row(0)[0];
+Console.WriteLine($&quot;Cyan {corner.C}, magenta {corner.M}, yellow {corner.Y}, black {corner.K} (0 = no ink)&quot;);
+
+// Resizing filters the four inks, so black stays in the black channel; color adjustments go through RGB instead.
+inks.Apply(ops =&gt; ops.Fit(160, 160));
 </code></pre><h2 id="run-it">Run it</h2>
 <p><a href="https://github.com/inexin/Egami/tree/main/samples/Jpeg"><code>samples/Jpeg</code></a> is a console app that does what this guide shows on the bundled
 images: <code>dotnet run --project samples/Jpeg</code> writes its results to <code>./output</code>.</p>

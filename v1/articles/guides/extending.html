@@ -433,6 +433,26 @@ private sealed class Threshold(float level) : IRasterOperation
         input.ForEachBand(band);
     }
 }
+</code></pre><h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="interop-with-raw-buffers">Interop with raw buffers</h3>
+<pre><code class="lang-csharp">// Pixels from somewhere else, such as a camera SDK: 640 × 480 BGRA, rows 2,560 bytes apart.
+byte[] buffer = new byte[2560 * 480];
+
+// Wrap them without copying, work on them, and save.
+using (Raster&lt;Bgra8&gt; frame = Raster.Wrap&lt;Bgra8&gt;(buffer, 640, 480, byteStride: 2560))
+{
+    frame.Apply(ops =&gt; ops.FillColor(Rgba8.Black).Opacity(1));
+    frame.Save(&quot;frame.png&quot;);
+}
+
+// Or copy the pixels out of a raster into your own buffer, row by row.
+using Raster&lt;Rgba8&gt; image = Raster.Load&lt;Rgba8&gt;(&quot;duck.png&quot;);
+Rgba8[] pixels = new Rgba8[image.Width * image.Height];
+for (int y = 0; y &lt; image.Height; y++)
+{
+    image.Row(y).CopyTo(pixels.AsSpan(y * image.Width, image.Width));
+}
 </code></pre><h2 id="run-it">Run it</h2>
 <p><a href="https://github.com/inexin/Egami/tree/main/samples/Extending"><code>samples/Extending</code></a> is a console app that does what this guide shows on the bundled
 images: <code>dotnet run --project samples/Extending</code> writes its results to <code>./output</code>.</p>

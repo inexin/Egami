@@ -130,7 +130,9 @@ BarcodeResult? rendered = label.ReadBarcode(new BarcodeReaderOptions { PureBarco
 and <code>ReadBarcode</code> take the bytes with the width, height and stride. The buffer is only read, and only during the call.</p>
 <pre><code class="lang-csharp">// A camera frame's Y plane (8-bit luminance, rows padded to the stride), read in place.
 BarcodeResult? code = BarcodeReader.ReadBarcode(yPlane, width, height, stride);
-</code></pre><h2 id="how-each-symbology-is-found">How each symbology is found</h2>
+</code></pre>
+<p>The Y plane is read where it is, so a frame from a camera API needs no conversion or copy.</p>
+<h2 id="how-each-symbology-is-found">How each symbology is found</h2>
 <p>Linear barcodes are found along scan lines: rows, columns from effort 3 and diagonals from effort 7, each read in both
 directions with its edges placed between pixels, so low-resolution and blurred photos read. A linear barcode counts once two
 scan lines agree on it. ITF, whose check is weakest, is read from 4 digits on.</p>

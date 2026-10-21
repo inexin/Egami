@@ -102,6 +102,7 @@ raster.Apply(o =&gt; o
     .Tint(new Rgba8(255, 200, 150, 255), 0.15f), Ct);
 raster.Save(&quot;duck-toned.jpg&quot;);
 </code></pre>
+<p>Levels, an S-curve and a tint run as one pass over the pixels.</p>
 <table>
 <thead>
 <tr>
@@ -284,6 +285,11 @@ using Raster&lt;Rgba8&gt; stamp = raster.Derive(o =&gt; o.Threshold(0.5f, Thresh
 float level = page.FindThreshold(ThresholdMethod.Otsu);
 using Raster&lt;Gray8&gt; even = page.Derive(o =&gt; o.AutoThreshold(ThresholdMethod.Otsu), Ct);
 using Raster&lt;Gray8&gt; uneven = page.Derive(o =&gt; o.AdaptiveThreshold(limit: 0.15f), Ct);
+</code></pre><h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="tint-a-photo">Tint a photo</h3>
+<pre><code class="lang-csharp">// Tint toward sepia-orange, keeping the shading: Color takes the tint's hue and saturation and the photo's luminosity.
+photo.Apply(ops =&gt; ops.BlendColor(new Rgba8(220, 150, 80, 255), BlendMode.Color, opacity: 0.5f), Ct);
 </code></pre>
 </article>
 

@@ -95,6 +95,7 @@ photo.Apply(ops =&gt; ops
     .Within(new Rect(200, 120, 160, 120), o =&gt; o.Blur(6))
     .Within(new Rect(0, 0, photo.Width, 60), o =&gt; o.Brightness(0.8f).Saturation(0.5f)), Ct);   // a darker band on top
 </code></pre>
+<p>The blur reads the real pixels around the rectangle, so its edge has no seam.</p>
 <ul>
 <li>Only pixels inside the rectangle change. It is clipped to the image; one that misses it changes nothing.</li>
 <li>Filters read the real pixels around the rectangle, so a blurred rectangle has no seam: inside, it equals the whole-image blur.</li>
@@ -112,6 +113,7 @@ photo.Apply(ops =&gt; ops
     // Or take coverage from a logo's alpha, placed on the photo, and invert the area under it.
     .Within(new Mask(logo, new Point(20, 20), MaskChannel.Alpha), o =&gt; o.Invert()), Ct);
 </code></pre>
+<p>A soft mask gives a soft transition; blur the mask raster first to feather a hard selection.</p>
 <p>A <code>Mask</code> reads coverage from any raster: a one-channel raster's value (gray, or <code>Alpha8</code>'s alpha) by default, otherwise its alpha,
 otherwise its luminance; <code>MaskChannel</code> picks a channel explicitly. <code>Offset</code> places it, <code>Inverted</code> flips it, and outside the raster
 coverage is 0 (full when inverted).</p>

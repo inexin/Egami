@@ -171,6 +171,7 @@ bool duplicate = PerceptualHash.Distance(a, b) &lt;= 10;
 bool unrelated = PerceptualHash.Distance(a, c) &gt; 10;
 string key = a.ToString(&quot;x16&quot;, System.Globalization.CultureInfo.InvariantCulture);
 </code></pre>
+<p>Keep the 64-bit hashes in a database column; a lookup within a few bits finds recompressed and resized copies.</p>
 <p><code>PerceptualHash.Dct</code> (pHash style) and <code>PerceptualHash.Difference</code> (dHash) reduce the first frame's brightness, flattened onto
 white, to 32 × 32 or 9 × 8 with a Lanczos filter and keep one bit per low frequency or neighbour pair. The same picture after JPEG
 recompression, resizing or a small brightness change stays within about 6 bits; unrelated photos average about 32 bits apart.

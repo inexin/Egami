@@ -193,6 +193,30 @@ Data that ends before <code>Rows</code> rows warns <code>Ccitt.Truncated</code>.
 later rows of a damaged stream differ from theirs.</p>
 <p><code>Columns</code> and <code>Rows</code> are checked against <code>SafetyLimits</code> before memory is taken, and with <code>Rows</code> 0 the output grows only up to
 <code>MaxPixels</code>, so a stream of EOLs cannot use up memory.</p>
+<h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="decode-a-pdfs-ccitt-image">Decode a PDF's CCITT image</h3>
+<pre><code class="lang-csharp">// An image XObject with /Filter /CCITTFaxDecode: DecodeParms keys not given keep PDF's defaults. The image's /Height
+// stands in for a missing Rows, so the decoder stops where the image does.
+CcittFaxParameters parameters = new() { K = k, EncodedByteAlign = aligned, Columns = columns, Rows = rows &gt; 0 ? rows : height };
+byte[] bits = CcittFax.Decode(data, parameters, out int decoded);
+
+// The filter's samples: 0 black, 1 white. /Decode [1 0] inverts them, and an /ImageMask paints where a sample is 0.
+bool invert = decode is [&gt; 0.5, ..];
+int rowBytes = (columns + 7) / 8;
+using Raster&lt;Gray8&gt; image = Raster.Create&lt;Gray8&gt;(width, decoded);
+for (int y = 0; y &lt; decoded; y++)
+{
+    Span&lt;Gray8&gt; row = image.Row(y);
+    for (int x = 0; x &lt; Math.Min(width, columns); x++)
+    {
+        bool sample = ((bits[(y * rowBytes) + (x &gt;&gt; 3)] &gt;&gt; (7 - (x &amp; 7))) &amp; 1) != 0;
+        row[x] = new Gray8(sample != invert ? (byte)255 : (byte)0);
+    }
+}
+</code></pre>
+<p><code>CcittFax.Decode</code> gives what the CCITTFaxDecode filter gives, byte-aligned Group 4 included; the image's <code>/Decode</code>, <code>/ImageMask</code>
+and color space then apply as after any filter. To load the data straight to <code>Gray8</code>, use <code>CcittFormat</code>.</p>
 
 </article>
 

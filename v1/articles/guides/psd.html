@@ -101,6 +101,7 @@ using Raster photo = Raster.Load(&quot;photo.psd&quot;);
 ReadOnlyMemory&lt;byte&gt; icc = photo.Metadata.IccProfile;
 Resolution? dpi = photo.Metadata.Resolution;
 </code></pre>
+<p>A file saved without Maximize Compatibility holds only a placeholder; <code>PsdDetails.HasRealComposite</code> says so.</p>
 <table>
 <thead>
 <tr>

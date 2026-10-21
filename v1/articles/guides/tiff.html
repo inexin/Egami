@@ -289,6 +289,7 @@ as pages.</p>
 <pre><code class="lang-csharp">// A page where every pixel is black or white saves as a 1-bit CCITT Group 4 fax.
 page.Save(&quot;fax.tif&quot;, new TiffWriterOptions { Compression = TiffCompression.CcittGroup4 });
 </code></pre>
+<p>Group 4 is the usual choice for scanned text; it takes 1-bit pages only, so threshold first or set <code>Reduce</code>.</p>
 <p>Files are checked against libtiff (no tiffinfo warnings, identical samples), ImageMagick and Pillow, and open in Windows' WIC
 except for BigTIFF and tiled gray-with-alpha or 16-bit CMYK, which WIC does not read from any writer.</p>
 <h2 id="format-details-and-metadata">Format details and metadata</h2>
@@ -314,7 +315,23 @@ for, so a region or a reduced decode of a large tiled file reads only the tiles 
 where they lie. A stream that cannot seek is read whole first, since a TIFF's index often comes last; the bytes count against
 <code>SafetyLimits.MaxTotalBytes</code>. Every IFD offset is checked against the file and against loops, and a strip or tile that decodes
 short is padded with zero samples and noted in one warning per page (<code>RecoveryMode.Strict</code> throws instead).</p>
+<h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="split-a-multi-page-scan-into-pngs">Split a multi-page scan into PNGs</h3>
+<pre><code class="lang-csharp">using RasterList pages = Raster.LoadAll(&quot;scan.tif&quot;);
+for (int i = 0; i &lt; pages.Count; i++)
+{
+    pages[i].Save($&quot;page-{i + 1}.png&quot;);
+}
+</code></pre>
+<p>Each page keeps its own size and pixel type; see <a href="#reading">Reading</a>.</p>
+<h3 id="combine-pages-into-one-tiff">Combine pages into one TIFF</h3>
+<pre><code class="lang-csharp">using RasterList pages = Raster.LoadAll(&quot;scan.tif&quot;);
 
+// Several rasters make a multi-page TIFF; one raster saves to any format.
+Raster.SaveAll(pages, &quot;copy.tif&quot;);
+Raster.SaveAll([pages[1]], &quot;second.png&quot;);
+</code></pre>
 </article>
 
         <div class="contribution d-print-none">

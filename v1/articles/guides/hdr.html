@@ -206,6 +206,30 @@ sdr.Save(&quot;graded.jpg&quot;, new JpegWriterOptions { Quality = 90 });
 <p>PNG, JPEG and the other 8 and 16-bit formats hold 0 to 1. Saving a floating-point raster to them clamps, as other libraries do;
 when the raster holds light above reference white, the save also reports <code>Save.HdrClipped</code>, naming <code>ToneMap</code>, which rolls the
 highlights off instead of cutting them.</p>
+<h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="a-render-pass-from-openexr-as-jpeg">A render pass from OpenEXR as JPEG</h3>
+<pre><code class="lang-csharp">// One render pass of a multi-layer OpenEXR file, tone mapped for the web.
+using Raster&lt;RgbaF32&gt; diffuse = Raster.Load&lt;RgbaF32&gt;(&quot;render.exr&quot;, options: new ExrReaderOptions { Layer = &quot;diffuse&quot; });
+diffuse.Apply(ops =&gt; ops.ToneMap(ToneMapping.Bt2390));
+diffuse.Save(&quot;diffuse.jpg&quot;, new JpegWriterOptions { Quality = 90 });
+</code></pre>
+<p><code>ExrReaderOptions.Layer</code> picks a pass by name; <code>ExrDetails</code> lists the parts and layers a file has. <code>ToneMap</code> rolls off what is
+brighter than white instead of clipping it.</p>
+<h3 id="show-an-ultra-hdr-photo-as-hdr">Show an Ultra HDR photo as HDR</h3>
+<pre><code class="lang-csharp">// An Ultra HDR photo for an HDR display whose peak is displayHeadroom times SDR white: linear light, 1.0 = SDR white,
+// here written as a half-float OpenEXR file; an SDR display shows the JPEG as it is.
+using Raster&lt;RgbaF16&gt; photo = Raster.Load&lt;RgbaF16&gt;(&quot;ultrahdr.jpg&quot;, options: new ReaderOptions { Hdr = new HdrDecode { Headroom = displayHeadroom } });
+photo.Save(&quot;photo-hdr.exr&quot;);
+</code></pre>
+<p>The gain map is applied for the display's headroom: 1 gives the SDR picture, and the map's own capacity (leave <code>Headroom</code> null)
+the full HDR rendition.</p>
+<h3 id="make-an-ultra-hdr-jpeg-from-an-openexr-render">Make an Ultra HDR JPEG from an OpenEXR render</h3>
+<pre><code class="lang-csharp">// An HDR render as a JPEG every viewer opens, which HDR displays (Android, Chrome, Apple Photos) show brighter.
+using Raster&lt;RgbaF32&gt; render = Raster.Load&lt;RgbaF32&gt;(&quot;render.exr&quot;);
+render.Save(&quot;render-ultrahdr.jpg&quot;, new JpegWriterOptions { Quality = 90, GainMap = new GainMapOptions { Scale = 2 } });
+</code></pre>
+<p>The SDR picture is the render tone mapped with BT.2390; the gain map, half the size here, brings the HDR render back.</p>
 
 </article>
 

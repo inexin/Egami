@@ -224,6 +224,7 @@ using Raster page = photo.Derive(ops =&gt; ops.Transform(straighten, new Transfo
 Vector2 middle = straighten.Map(new Vector2(340, 240));
 bool invertible = straighten.TryInvert(out Homography back);
 </code></pre>
+<p>Give the page's four corners in the photo, top-left first and clockwise; the perspective maps them onto an upright canvas.</p>
 <p><code>TransformOptions</code> (a <code>SamplingOptions</code> with a viewport) chooses the filter, the color space it blends in, what samples outside
 the source read (<code>Edges</code>: transparent background, or the image clamped, mirrored or wrapped), and the background color:</p>
 <pre><code class="lang-csharp">// Keep the input's size (and the matrix's translation), fill the uncovered corners with white, blend in linear light.
@@ -274,6 +275,7 @@ using Raster arc = photo.Derive(ops =&gt; ops.Warp(Warps.Arc(120)), Ct);
 // A magnifying glass over the duck's head, blending into the photo over 12 pixels.
 using Raster loupe = photo.Derive(ops =&gt; ops.Warp(Warps.Magnifier(new Rect(380, 60, 160, 160), 2.5f, 12)), Ct);
 </code></pre>
+<p>Barrel takes the PanoTools coefficients a lens database such as lensfun gives for the camera and focal length.</p>
 <p>Your own warp is an <code>IWarp</code>, which maps a whole output row per call, or <code>Warp.FromFunction</code> for a quick experiment:</p>
 <pre><code class="lang-csharp">// Any mapping from output points back to source points; the sampler antialiases wherever it shrinks the image.
 IWarp ripple = Warp.FromFunction(p =&gt; new Vector2(p.X + (6 * MathF.Sin(p.Y / 15)), p.Y));
@@ -377,6 +379,22 @@ catch (ArgumentOutOfRangeException)
 }
 </code></pre>
 <p>Animations: every step runs on every frame. See the <a href="animation.html">animation guide</a>.</p>
+<h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="thumbnails-for-the-web">Thumbnails for the web</h3>
+<pre><code class="lang-csharp">// Decode at the smallest JPEG scale that still covers 400 × 400, turn it upright, fit it, and save at quality 80.
+using Raster photo = Raster.Load(&quot;sideways.jpg&quot;, options: new ReaderOptions { MinimumSize = new Size(400, 400) });
+photo.Apply(ops =&gt; ops.AutoOrient().Fit(400, 400, enlarge: false));
+photo.Save(&quot;thumb.jpg&quot;, new JpegWriterOptions { Quality = 80, StripMetadata = true });
+</code></pre>
+<p>The JPEG decodes at 1/2, 1/4 or 1/8 scale, <code>AutoOrient</code> turns only the small result, and the metadata is left out of the file.</p>
+<h3 id="rotate-a-region-in-place">Rotate a region in place</h3>
+<pre><code class="lang-csharp">// Turn a 200 × 200 square of the photo by 30° about its own center; the rest of the photo stays as it was.
+Rect area = new(380, 40, 200, 200);
+Matrix3x2 turn = Matrix3x2.CreateRotation(MathF.PI / 6, new Vector2(100, 100));
+using Raster turned = photo.Derive(ops =&gt; ops.Within(area, s =&gt; s.Transform(turn, new TransformOptions { Viewport = new Rect(0, 0, 200, 200), Edges = EdgeMode.Clamp })), Ct);
+</code></pre>
+<p>A viewport the size of the area keeps the size, so the transform runs inside <code>Within</code>.</p>
 <h2 id="run-it">Run it</h2>
 <p><a href="https://github.com/inexin/Egami/tree/main/samples/Geometry"><code>samples/Geometry</code></a> is a console app that does what this guide shows on the bundled
 images: <code>dotnet run --project samples/Geometry</code> writes its results to <code>./output</code>.</p>

@@ -214,7 +214,21 @@ foreach (Frame&lt;Rgba8&gt; frame in webp.Frames)
 {
     Console.WriteLine($&quot;{frame.Metadata.Delay.TotalMilliseconds} ms, changed {frame.Metadata.Bounds}, blend {frame.Metadata.Blend}&quot;);
 }
+</code></pre><h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="convert-images-to-webp-for-the-web">Convert images to WebP for the web</h3>
+<pre><code class="lang-csharp">// Photos as lossy WebP, graphics with few colors as lossless: Probe reads only the header to tell them apart.
+foreach (string path in new[] { &quot;duck.png&quot;, &quot;egret.png&quot; })
+{
+    using Raster image = Raster.Load(path);
+    bool photo = image.Width * image.Height &gt; 100_000;
+    image.Save(Path.ChangeExtension(path, &quot;.webp&quot;), photo
+        ? new WebpWriterOptions { Quality = 80, Effort = 4 }
+        : new WebpWriterOptions { Lossless = true, Effort = 6 });
+}
 </code></pre>
+<p>Quality and Effort mean what cwebp's <code>-q</code> and <code>-m</code> mean; lossless keeps every pixel.</p>
+
 </article>
 
         <div class="contribution d-print-none">

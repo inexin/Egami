@@ -568,7 +568,10 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
 }
 
 using Raster&lt;Rgba8&gt; icon = logo.ToRaster&lt;Rgba8&gt;(scale: 2);
-</code></pre><h3 id="drawing-patterns">Drawing patterns</h3>
+</code></pre>
+<p>The drawing is recorded once and replayed as vectors, so it is sharp at every size; <code>cacheAsImage</code> trades that for speed when
+it is drawn many times at one size.</p>
+<h3 id="drawing-patterns">Drawing patterns</h3>
 <p>A <code>PicturePaint</code> fills shapes with a drawing repeated by tile modes: the tiling patterns of PDF and SVG, and Skia's picture
 shader. The raster backend renders one tile at the scale it is drawn at and keeps it with the drawing, so a zoomed pattern stays
 sharp.</p>
@@ -639,6 +642,7 @@ Path dots = Path.Combine([Path.Circle(new Vector2(40, 40), 30), Path.Circle(new 
 Path clean = Path.Star(new Vector2(50, 50), 45, 20, 5).Simplify();
 Path halo = dots.Inflate(4, LineJoin.Round);
 </code></pre>
+<p>Boolean operations keep curves, so the frame exports to PDF or SVG exactly. See <a href="#path-geometry">Path geometry</a>.</p>
 <ul>
 <li>Each input keeps its fill rule; open contours count as closed. Results use <code>NonZero</code>, with outer contours clockwise on screen
 and holes counterclockwise, and no contours cross.</li>
@@ -809,7 +813,225 @@ public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
 <p>Fills are within a mean level of SkiaSharp's and closer than SkiaSharp's to the exact covered area.
 Boolean operations, outlines, dashes, effects and SVG parsing give paths within a mean level of SkiaSharp's, and measured lengths agree within 1e-3. The figures are in the 2.6.1
 and 2.6.2 release notes.</p>
+<h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="draw-a-rounded-badge">Draw a rounded badge</h3>
+<pre><code class="lang-csharp">// A rounded badge with an outline and a dot, drawn at twice the size for a sharp result on high-density screens.
+using Raster&lt;Rgba8&gt; badge = Raster.Create&lt;Rgba8&gt;(240, 80);
+using (RasterCanvas&lt;Rgba8&gt; canvas = badge.CreateCanvas())
+{
+    canvas.Scale(2);
+    RoundRect pill = new(new RectF(2, 2, 116, 36), 18);
+    canvas.FillRoundRect(pill, new Rgba8(46, 160, 67, 255));
+    canvas.StrokeRoundRect(pill, new Stroke(2), new Rgba8(20, 100, 40, 255));
+    canvas.FillCircle(new Vector2(22, 20), 7, Rgba8.White);
+}
+</code></pre>
+<p>Drawing at twice the size through <code>Scale(2)</code> keeps every shape's coordinates as designed.</p>
+<h3 id="draw-chart-axes">Draw chart axes</h3>
+<pre><code class="lang-csharp">// Axes, ticks and a data line for a chart: hairlines stay one pixel wide whatever the scale.
+double[] values = [3, 7, 4, 9, 6, 11, 8];
+using Raster&lt;Rgba8&gt; chart = Raster.Create(420, 260, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = chart.CreateCanvas())
+{
+    Rgba8 axis = new(60, 60, 60, 255);
+    canvas.DrawLine(new Vector2(40.5f, 20), new Vector2(40.5f, 230.5f), Stroke.Hairline, axis);
+    canvas.DrawLine(new Vector2(40, 230.5f), new Vector2(400, 230.5f), Stroke.Hairline, axis);
+    for (int i = 0; i &lt; values.Length; i++)
+    {
+        float x = 40.5f + (i * 55);
+        canvas.DrawLine(new Vector2(x, 230), new Vector2(x, 236), Stroke.Hairline, axis);
+    }
 
+    Vector2[] points = [.. values.Select((v, i) =&gt; new Vector2(40 + (i * 55), 230 - (float)(v * 18)))];
+    canvas.DrawPoints(PointMode.Polygon, points, new Stroke(3) { Join = LineJoin.Round, Cap = LineCap.Round }, new Rgba8(30, 90, 200, 255));
+    canvas.DrawPoints(PointMode.Points, points, new Stroke(8) { Cap = LineCap.Round }, new Rgba8(30, 90, 200, 255));
+}
+</code></pre>
+<p>Hairlines on half-pixel coordinates fill exactly one column or row of pixels.</p>
+<h3 id="clip-a-photo-to-a-circle">Clip a photo to a circle</h3>
+<pre><code class="lang-csharp">// A round avatar: clip to a circle, draw the photo scaled to fill it, then ring it.
+using Raster photo = Raster.Load(&quot;duck.png&quot;);
+using Raster&lt;Rgba8&gt; avatar = Raster.Create&lt;Rgba8&gt;(256, 256);
+using (RasterCanvas&lt;Rgba8&gt; canvas = avatar.CreateCanvas())
+{
+    Path circle = Path.Circle(new Vector2(128, 128), 120);
+    canvas.Save();
+    canvas.ClipPath(circle);
+    int side = Math.Min(photo.Width, photo.Height);
+    RectF square = new((photo.Width - side) / 2, (photo.Height - side) / 2, side, side);
+    canvas.DrawImage(photo, square, new RectF(8, 8, 240, 240));
+    canvas.Restore();
+    canvas.StrokePath(circle, new Stroke(6), Rgba8.White);
+}
+
+avatar.Save(&quot;avatar.png&quot;);
+</code></pre><h3 id="animate-a-line-drawing-itself">Animate a line drawing itself</h3>
+<pre><code class="lang-csharp">// Frames of a signature drawing itself: each frame strokes a longer part of the path.
+Path signature = Path.ParseSvg(&quot;M10 60 C30 10 50 110 70 60 S110 10 130 60 S170 110 190 40&quot;);
+List&lt;Raster&lt;Rgba8&gt;&gt; frames = [];
+for (int i = 1; i &lt;= 24; i++)
+{
+    Raster&lt;Rgba8&gt; frame = Raster.Create(200, 100, Rgba8.White);
+    using (RasterCanvas&lt;Rgba8&gt; canvas = frame.CreateCanvas())
+    {
+        Stroke pen = new(3) { Cap = LineCap.Round, Effect = PathEffect.Trim(0, i / 24f) };
+        canvas.StrokePath(signature, pen, new Rgba8(20, 40, 120, 255));
+    }
+
+    frames.Add(frame);
+}
+</code></pre>
+<p><code>PathEffect.Trim</code> keeps a fraction of the path's length; stepping it from 0 to 1 gives the frames.</p>
+<h3 id="paint-a-dusk-sky">Paint a dusk sky</h3>
+<pre><code class="lang-csharp">// A dusk sky: stops in Oklch so the hues turn smoothly, dithered so the wide soft ramp shows no bands, and a sun.
+using Raster&lt;Rgba8&gt; sky = Raster.Create&lt;Rgba8&gt;(800, 450);
+using (RasterCanvas&lt;Rgba8&gt; canvas = sky.CreateCanvas())
+{
+    canvas.DrawPaint(new LinearGradient(
+        new Vector2(0, 0),
+        new Vector2(0, 450),
+        new GradientStop(0, new Rgba8(20, 30, 90, 255)),
+        new GradientStop(0.6f, new Rgba8(220, 110, 120, 255)),
+        new GradientStop(1, new Rgba8(255, 200, 120, 255)))
+    {
+        Interpolation = GradientInterpolation.Oklch(),
+        Dither = true,
+    });
+    canvas.FillCircle(new Vector2(560, 380), 160, new RadialGradient(new Vector2(560, 380), 160, new RgbaF32(1, 0.95f, 0.8f, 0.9f), new RgbaF32(1, 0.8f, 0.5f, 0)));
+}
+
+sky.Save(&quot;sky.png&quot;);
+</code></pre>
+<p>Mixing in Oklch keeps the hues from turning gray between stops, and <code>Dither</code> hides the bands of a wide soft ramp. See
+<a href="#gradients">Gradients</a>.</p>
+<h3 id="draw-a-card-with-a-shadow">Draw a card with a shadow</h3>
+<pre><code class="lang-csharp">// A UI card: a Material-style shadow from its elevation, the card, and a soft inner highlight along its top edge.
+using Raster&lt;Rgba8&gt; screen = Raster.Create(400, 260, new Rgba8(236, 239, 244, 255));
+using (RasterCanvas&lt;Rgba8&gt; canvas = screen.CreateCanvas())
+{
+    RoundRect card = new(new RectF(50, 40, 300, 170), 14);
+    canvas.DrawShadow(Path.RoundRect(card), new ShadowOptions { Elevation = 16 });
+    canvas.FillRoundRect(card, Rgba8.White);
+    canvas.Save();
+    canvas.ClipRoundRect(card);
+    canvas.FillRect(new RectF(50, 40, 300, 30), new LinearGradient(new Vector2(0, 40), new Vector2(0, 70), new RgbaF32(0.85f, 0.9f, 1, 1), new RgbaF32(1, 1, 1, 1)));
+    canvas.Restore();
+}
+
+screen.Save(&quot;card.png&quot;);
+</code></pre><h3 id="fade-a-photos-edges">Fade a photo's edges</h3>
+<pre><code class="lang-csharp">// A photo whose edges fade to transparent: an alpha soft mask of a radial gradient, opaque in the middle.
+using Raster photo = Raster.Load(&quot;duck.png&quot;);
+using Raster&lt;Rgba8&gt; faded = Raster.Create&lt;Rgba8&gt;(photo.Width, photo.Height);
+using (RasterCanvas&lt;Rgba8&gt; canvas = faded.CreateCanvas())
+{
+    Vector2 center = new(photo.Width / 2f, photo.Height / 2f);
+    float radius = MathF.Min(photo.Width, photo.Height) / 2f;
+    SoftMask vignette = new(
+        mask =&gt; mask.DrawPaint(new RadialGradient(center, radius, new GradientStop(0.6f, Rgba8.Black), new GradientStop(1, new Rgba8(0, 0, 0, 0)))),
+        SoftMaskKind.Alpha);
+    canvas.SaveLayer(new LayerOptions { Mask = vignette });
+    canvas.DrawImage(photo, Vector2.Zero);
+    canvas.Restore();
+}
+
+faded.Save(&quot;faded.png&quot;);
+</code></pre><h3 id="fade-a-group-as-one">Fade a group as one</h3>
+<pre><code class="lang-csharp">// A translucent logo made of overlapping parts: drawn in a layer at 60%, the overlaps do not show through.
+using Raster&lt;Rgba8&gt; banner = Raster.Create(300, 120, new Rgba8(30, 40, 60, 255));
+using (RasterCanvas&lt;Rgba8&gt; canvas = banner.CreateCanvas())
+{
+    canvas.SaveLayer(0.6f);
+    canvas.FillCircle(new Vector2(60, 60), 40, new Rgba8(255, 200, 0, 255));
+    canvas.FillRoundRect(new RoundRect(new RectF(60, 40, 200, 40), 20), new Rgba8(255, 200, 0, 255));
+    canvas.Restore();
+}
+
+banner.Save(&quot;banner.png&quot;);
+</code></pre>
+<p>See <a href="#layers">Layers</a>.</p>
+<h3 id="stretch-a-button-image-to-any-size">Stretch a button image to any size</h3>
+<pre><code class="lang-csharp">// One small button image serves every size: corners stay round, the label sits on the stretched center.
+using Raster&lt;Rgba8&gt; button = Raster.Create&lt;Rgba8&gt;(200, 48);
+using (RasterCanvas&lt;Rgba8&gt; canvas = button.CreateCanvas())
+{
+    canvas.DrawImageNinePatch(skin, new Rect(12, 12, 6, 6), new RectF(0, 0, 200, 48), new SamplingOptions { Filter = ResampleFilter.Bilinear });
+}
+</code></pre>
+<p>The corners keep their size and the edges and center stretch. An Android .9.png carries its own lattice: see
+<a href="#nine-patches-and-lattices">Nine-patches and lattices</a>.</p>
+<h3 id="shade-a-gradient-mesh">Shade a gradient mesh</h3>
+<pre><code class="lang-csharp">// A gradient mesh, as an illustration app draws one: a 3×3 grid of colored points, smoothly shaded.
+Vector2[] grid = new Vector2[16];
+RgbaF32[] colors = new RgbaF32[16];
+for (int j = 0; j &lt; 4; j++)
+{
+    for (int i = 0; i &lt; 4; i++)
+    {
+        grid[(j * 4) + i] = new Vector2(i * 60, j * 40) + new Vector2(MathF.Sin(j) * 8, MathF.Cos(i) * 6);
+        colors[(j * 4) + i] = new RgbaF32(i / 3f, 0.3f + (j * 0.2f), 1 - (i / 3f), 1);
+    }
+}
+
+int[] indices = [.. Enumerable.Range(0, 9).SelectMany(k =&gt; new[] { k + (k / 3), k + (k / 3) + 1, k + (k / 3) + 5, k + (k / 3), k + (k / 3) + 5, k + (k / 3) + 4 })];
+using Raster&lt;Rgba8&gt; mesh = Raster.Create(200, 140, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = mesh.CreateCanvas())
+{
+    canvas.Translate(10, 10);
+    canvas.DrawMesh(new Mesh(MeshMode.Triangles, grid, colors, indices: indices), Rgba8.White);
+}
+</code></pre>
+<p>See <a href="#meshes-and-patches">Meshes and patches</a>.</p>
+<h3 id="separations-of-a-cmyk-page-with-spot-colours">Separations of a CMYK page with spot colours</h3>
+<pre><code class="lang-csharp">// A CMYK page with two spot colours: a photo converted into the process inks, a Pantone band and a gold rule.
+InkSet inks = InkSet.FromProfile(ColorProfile.Fogra39)
+    .WithSpot(&quot;PANTONE 186 C&quot;, InkAppearance.Cmyk(0, 1, 0.81f, 0.04f))
+    .WithSpot(&quot;Gold&quot;, InkAppearance.Lab(new LabColor(70, 5, 60)));
+using InkRaster page = new(inks, 600, 400);
+using (InkCanvas canvas = new(page))
+{
+    canvas.Clear(InkColor.None);
+    canvas.DrawImage(photo, new RectF(40, 40, 360, 240));
+    canvas.FillRect(new RectF(0, 320, 600, 50), new SolidPaint(InkColor.Spot(inks[4], 1)));
+    canvas.FillRect(new RectF(40, 300, 520, 4), new SolidPaint(InkColor.Spot(inks[5], 1)));
+}
+
+// Every plate as its own gray image (ink shows light), and all of them as one separated TIFF for the RIP.
+foreach (InkPlate plate in page.Plates)
+{
+    using Raster&lt;Gray8&gt; gray = plate.AsRaster&lt;Gray8&gt;();
+    gray.Save($&quot;page-{plate.Name}.png&quot;);
+}
+
+page.Save(&quot;page.tif&quot;);
+</code></pre>
+<p><code>InkCanvas</code> draws on plates with any <code>Canvas</code> call; RGB images and colours convert through the ink set's profile. See
+<a href="#printing-inks">Printing inks</a>.</p>
+<h3 id="a-spot-colour-label-with-overprint">A spot-colour label with overprint</h3>
+<pre><code class="lang-csharp">// A label in one spot colour over a CMYK background, overprinted so the press needs no trapping: the background's
+// plates stay under the spot. Black text overprints too, leaving every other plate alone where it prints.
+using (InkCanvas canvas = new(page))
+{
+    canvas.FillRect(new RectF(0, 0, 300, 120), new SolidPaint(InkColor.Cmyk(0.1f, 0.05f, 0.4f, 0)));
+    canvas.FillPath(Path.RoundRect(new RoundRect(new RectF(20, 20, 260, 80), 12)),
+        new SolidPaint(InkColor.Spot(inks[4], 1)) { Overprint = Overprint.On });
+    canvas.FillPath(Path.Circle(new Vector2(150, 60), 20), new SolidPaint(InkColor.Cmyk(0, 0, 0, 1)) { Overprint = Overprint.NonZero });
+}
+</code></pre>
+<p><code>Overprint.On</code> paints only the inks a colour names; <code>NonZero</code> also leaves the plates of a CMYK colour's zero components alone,
+as PDF's overprint mode 1.</p>
+<h3 id="check-total-ink-coverage-before-printing">Check total ink coverage before printing</h3>
+<pre><code class="lang-csharp">// Before sending a page to a press with a 300% total ink limit: where is there too much ink, and how much of the page?
+InkCoverage coverage = page.MeasureCoverage(limit: 3.0f);
+if (coverage.MaxTotal &gt; coverage.Limit)
+{
+    Console.WriteLine($&quot;{coverage.MaxTotal:P0} at {coverage.MaxAt}; {coverage.ShareOver:P1} of the page is over {coverage.Limit:P0}.&quot;);
+}
+
+// A soft proof shows how it will look on paper, the paper's own tone included.
+using Raster&lt;Rgba8&gt; proof = page.Proof&lt;Rgba8&gt;(new ProofOptions { SimulatePaper = true });
+</code></pre>
 </article>
 
         <div class="contribution d-print-none">

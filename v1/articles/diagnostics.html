@@ -96,7 +96,9 @@ EgamiContext.SetDefault(new EgamiContext
 {
     Diagnostics = d =&gt; logger.Log(d.Level.ToLogLevel(), &quot;{Source} {Id} at {Offset}: {Message}&quot;, d.Source, d.Id, d.Offset, d.Message),
 });
-</code></pre><h2 id="the-handler">The handler</h2>
+</code></pre>
+<p>Set it once at startup; every call that passes no context then reports to the log.</p>
+<h2 id="the-handler">The handler</h2>
 <p><code>EgamiContext.Diagnostics</code> is an <code>Action&lt;EgamiDiagnostic&gt;</code>, <code>null</code> by default. With no handler, nothing is built and nothing is
 allocated. Each <code>EgamiDiagnostic</code> carries:</p>
 <table>
@@ -175,6 +177,9 @@ catch (InvalidDataException e)
     Console.WriteLine($&quot;Rejected: {e.Message}&quot;);
 }
 </code></pre></li>
+</ul>
+<p>A handler that throws turns every warning into an error; <code>RecoveryMode.Strict</code> does the same for damage alone, without a handler.</p>
+<ul>
 <li><p><strong>Repeats.</strong> One id is delivered at most 10 times per call, then once more as &quot;The same problem came up N more times&quot;.
 <code>Metadata.Warnings</code> holds the same capped list, so the two always agree. A hostile file cannot flood a log.</p>
 </li>

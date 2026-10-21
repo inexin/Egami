@@ -10778,16 +10778,6 @@
     },
     {
       "type": "Conceptual",
-      "source_relative_path": "articles/cookbook/index.md",
-      "output": {
-        ".html": {
-          "relative_path": "articles/cookbook/index.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
       "source_relative_path": "articles/diagnostics.md",
       "output": {
         ".html": {
@@ -11002,6 +10992,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/ico.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/index.html"
         }
       },
       "version": ""

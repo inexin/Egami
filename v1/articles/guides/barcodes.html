@@ -320,7 +320,42 @@ for (int y = 0; y &lt; grid.Height; y++)
 }
 
 Console.WriteLine($&quot;{bars.Width} modules wide, bars {string.Join(' ', bars.Runs.ToArray())}&quot;);
+</code></pre><h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="put-a-qr-code-on-a-label">Put a QR code on a label</h3>
+<pre><code class="lang-csharp">// A 600 x 300 label: a QR code on the left, the address beside it.
+using Raster&lt;Rgba8&gt; label = Raster.Create(600, 300, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
+{
+    canvas.DrawBarcode(Barcode.Qr(&quot;https://example.com/track/4711&quot;), new RectF(20, 20, 260, 260), Rgba8.Black);
+    canvas.DrawText(&quot;Parcel 4711&quot;, new Vector2(300, 80), font, Rgba8.Black);
+    canvas.DrawText(&quot;Track at example.com&quot;, new Vector2(300, 120), font, Rgba8.Black);
+}
 </code></pre>
+<p>On a raster, the QR code's modules snap to whole pixels, so its edges stay sharp at any size.</p>
+<h3 id="save-a-barcode-as-svg">Save a barcode as SVG</h3>
+<pre><code class="lang-csharp">// The symbol as one path, 4 units a module, drawn on Egami.Svg's canvas over a white quiet zone.
+Barcode barcode = Barcode.DataMatrix(&quot;PN 4711-0815&quot;);
+Path path = barcode.ToPath(moduleSize: 4);
+float width = (barcode.Modules.Width + (2 * barcode.QuietZone)) * 4, height = (barcode.Modules.Height + (2 * barcode.QuietZone)) * 4;
+using (FileStream stream = File.Create(file))
+using (var canvas = new Egami.Svg.SvgCanvas(stream, width, height))
+{
+    canvas.FillRect(new RectF(0, 0, width, height), Rgba8.White);
+    canvas.FillPath(path, Rgba8.Black);
+}
+</code></pre>
+<p><code>Barcode.ToPath</code> gives the whole symbol as one path, so any canvas can take it; Egami.Svg's <code>SvgCanvas</code> writes it as one SVG
+<code>&lt;path&gt;</code>. Egami.Barcodes itself does not depend on Egami.Svg.</p>
+<h3 id="print-a-gs1-shipping-label">Print a GS1 shipping label</h3>
+<pre><code class="lang-csharp">// A 4 x 6 inch label in points: an SSCC as GS1-128 at 0.5 mm a module with its text, and a GS1 Data Matrix.
+float module = 0.5f / 25.4f * 72;
+Barcode sscc = Barcode.Gs1Code128(&quot;(00)106141411234567897&quot;);
+page.DrawBarcode(sscc, new Vector2(18, 300), module, Rgba8.Black, new BarcodeDrawOptions { Font = font });
+page.DrawBarcode(Barcode.DataMatrix(Gs1.Parse(&quot;(01)09501101530003(10)AB12&quot;)), new RectF(18, 18, 100, 100), Rgba8.Black);
+</code></pre>
+<p>At a module size in points, the barcode has the X dimension a scanner expects, on a PDF page or any other canvas.</p>
+
 </article>
 
         <div class="contribution d-print-none">

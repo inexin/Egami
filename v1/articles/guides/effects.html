@@ -224,7 +224,9 @@ logo.Apply(ops =&gt; ops
     .DropShadow(5, 7, 6, new Rgba8(0, 0, 0, 110))
     .Flatten(Rgba8.White), Ct);
 logo.Save(&quot;logo-shadow.jpg&quot;);
-</code></pre><h3 id="blur-a-face">Blur a face</h3>
+</code></pre>
+<p>The canvas grows to hold the shadow; pass <code>Expand = false</code> to keep the size, as inside <code>Within</code>.</p>
+<h3 id="blur-a-face">Blur a face</h3>
 <pre><code class="lang-csharp">// Hide a face: pixelate only the rectangle around it, with the grid starting at its corner so cells line up with it.
 Rect face = new(100, 40, 72, 64);
 photo.Apply(ops =&gt; ops.Within(face, o =&gt; o.Pixelate(12, new Point(face.X, face.Y))), Ct);

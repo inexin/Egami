@@ -204,7 +204,24 @@ in hundredths), and each piece shows the base frame and the overlay frame of tha
 times (0 loops it for the base's whole length) from <code>Start</code>. A still base lasts as long as the overlay plays and takes its loop
 count. <code>AnimationTiming.ByIndex</code> pairs base frame i with overlay frame i instead, as ImageMagick's -layers Composite does. The
 number of frames the result will have is checked against <code>MaxFrames</code> and <code>MaxTotalBytes</code> before anything is drawn.</p>
-<h2 id="run-it">Run it</h2>
+<h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="make-an-animated-gif-from-frames">Make an animated GIF from frames</h3>
+<pre><code class="lang-csharp">// Start from one picture and add frames: each Add copies the frame you pass.
+using Raster&lt;Rgba8&gt; animation = Raster.Load&lt;Rgba8&gt;(&quot;duck.png&quot;);
+animation.Apply(ops =&gt; ops.Fit(120, 120));
+using Raster&lt;Rgba8&gt; next = animation.Derive(ops =&gt; ops.HueRotate(120));
+using Raster&lt;Rgba8&gt; last = animation.Derive(ops =&gt; ops.HueRotate(240));
+animation.Frames.Add(next.Frames[0]);
+animation.Frames.Add(last.Frames[0]);
+foreach (Frame&lt;Rgba8&gt; frame in animation.Frames)
+{
+    frame.Metadata.Delay = TimeSpan.FromMilliseconds(400);
+}
+
+animation.Metadata.LoopCount = 0;   // forever
+animation.Save(&quot;hues.gif&quot;);
+</code></pre><h2 id="run-it">Run it</h2>
 <p><a href="https://github.com/inexin/Egami/tree/main/samples/Animation"><code>samples/Animation</code></a> is a console app that does what this guide shows on the bundled
 images: <code>dotnet run --project samples/Animation</code> writes its results to <code>./output</code>.</p>
 

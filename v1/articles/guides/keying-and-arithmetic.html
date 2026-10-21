@@ -97,6 +97,7 @@ two fully transparent pixels always match.</p>
 <pre><code class="lang-csharp">// Remove a green screen: within 0.15 of pure green becomes transparent, and alpha ramps back over the next 0.1 for soft edges.
 photo.Apply(ops =&gt; ops.MakeTransparent(new Rgba8(0, 177, 64, 255), tolerance: 0.15f, softness: 0.1f), Ct);
 </code></pre>
+<p>Raise the tolerance until the screen is gone, then add softness for clean hair and edges.</p>
 <p><code>MakeTransparent</code> clears alpha where a pixel lies within the tolerance and keeps its color, as ImageMagick's -transparent does.
 <code>softness</code> ramps alpha back up over the next band of distance, for antialiased edges; with no softness the result is ImageMagick's.</p>
 <h2 id="replace-a-color">Replace a color</h2>

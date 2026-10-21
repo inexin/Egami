@@ -138,6 +138,7 @@ logo.Save(&quot;app.ico&quot;, new IcoWriterOptions { Sizes = IcoWriterOptions.W
 using Raster&lt;Rgba8&gt; drawn16 = logo.Derive(ops =&gt; ops.Fit(16, 16));
 Raster.SaveAll([logo, drawn16], &quot;drawn.ico&quot;, new IcoWriterOptions { Sizes = [16, 48] });
 </code></pre>
+<p><code>FaviconSizes</code> writes 16, 32 and 48; every browser and Windows read the file.</p>
 <p><code>IcoWriterOptions.Encoding</code>, an <code>IcoEntryEncoding</code>, forces every entry to PNG or BMP. Left null, the default, it writes 256 × 256 entries as PNG and smaller ones as
 32-bit BMP with an AND mask built from alpha, as Microsoft's guidance asks; a raster loaded from an icon and written at its own
 size keeps its entry's kind. PNG entries are always 8-bit RGBA, the only kind Windows lists. Entries are sorted smallest first,

@@ -171,7 +171,9 @@ alone, exactly as ImageMagick's <code>-despeckle</code>.</p>
 photo.Apply(ops =&gt; ops.Median(2), Ct);
 </code></pre><pre><code class="lang-csharp">// Clean a scan: specks shrink, edges and text stay. Median(1) is the stronger alternative.
 scan.Apply(ops =&gt; ops.Despeckle(), Ct);
-</code></pre><h2 id="lens-and-bilateral-blur">Lens and bilateral blur</h2>
+</code></pre>
+<p>For heavy salt-and-pepper noise use <code>Median(1)</code> or <code>Median(2)</code> instead; both keep edges, and both give ImageMagick's pixels.</p>
+<h2 id="lens-and-bilateral-blur">Lens and bilateral blur</h2>
 <p><code>LensBlur</code> convolves with an aperture: a disc, or a polygon of 5 to 12 blades turned by <code>Rotation</code>. It works in linear light,
 since a lens adds light, and <code>HighlightGain</code> brightens light above <code>HighlightThreshold</code> before the blur, so small lights bloom into
 bright discs. It runs by FFT on tiles, so its cost does not grow with the radius.</p>
@@ -179,6 +181,8 @@ bright discs. It runs by FFT on tiles, so its cost does not grow with the radius
 LensBlurOptions lens = new() { Blades = 6, Rotation = 15, HighlightGain = 4, HighlightThreshold = 0.8f };
 photo.Apply(ops =&gt; ops.Within(new Rect(0, 0, photo.Width, photo.Height / 3), o =&gt; o.LensBlur(12, lens)), Ct);
 </code></pre>
+<p><code>LensBlur</code> works in linear light, so bright points stay bright discs instead of gray smudges; <code>Within</code> with a mask feathers the
+edge between the sharp subject and the blurred background.</p>
 <p><code>BilateralBlur</code> weighs each neighbour by its distance and by how different its color is, so noise flattens and edges stay. The
 color difference is the root-mean-square difference of red, green and blue on 0..1; on gray images the sigmas mean what
 ImageMagick's <code>-bilateral-blur</code> means, with its intensity sigma 255 times <code>rangeSigma</code>.</p>
@@ -197,7 +201,9 @@ Each value's noise is a hash of the seed, frame and position, so the same seed g
 inside <code>Within</code> an area gets the noise the whole image would get there.</p>
 <pre><code class="lang-csharp">// Film grain: gray Gaussian noise at a third of ImageMagick's default strength; the same seed gives the same grain.
 photo.Apply(ops =&gt; ops.AddNoise(NoiseKind.Gaussian, 0.3f, monochrome: true, seed: 42), Ct);
-</code></pre><h2 id="edges">Edges</h2>
+</code></pre>
+<p>The grain depends only on the seed and the pixel's position, so a batch of frames with the same seed grains alike.</p>
+<h2 id="edges">Edges</h2>
 <p><code>EdgeMode</code> says what a kernel sees past the border: <code>Clamp</code> repeats the edge pixel (the default), <code>Mirror</code> reflects the image,
 <code>Wrap</code> tiles it, and <code>Transparent</code> treats it as transparent black. The filters above repeat the edge pixel, as ImageMagick's
 default virtual pixel does.</p>

@@ -169,6 +169,21 @@ harness runs with <code>MaxTotalBytes</code> at 256 MB and treats any exception 
 finding.</p>
 <h2 id="reporting-a-vulnerability">Reporting a vulnerability</h2>
 <p>Please report security issues privately, as <a href="https://github.com/inexin/Egami/blob/main/SECURITY.md">SECURITY.md</a> describes.</p>
+<h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="use-from-aspnet-core">Use from ASP.NET Core</h3>
+<pre><code class="lang-csharp">// In an ASP.NET Core endpoint: `upload` is IFormFile.OpenReadStream(), `response` is HttpResponse.Body.
+EgamiContext limits = EgamiContext.Default with
+{
+    Limits = SafetyLimits.Default with { MaxPixels = 40_000_000, MaxTotalBytes = 512L * 1024 * 1024 },
+};
+
+using Raster image = await Raster.LoadAsync(upload, limits, new ReaderOptions { MinimumSize = new Size(256, 256) }, Ct);
+image.Apply(ops =&gt; ops.AutoOrient().Cover(256, 256), Ct);
+await image.SaveAsync(response, JpegFormat.Info, new JpegWriterOptions { Quality = 85, StripMetadata = true }, Ct);
+</code></pre>
+<p>Egami has no ASP.NET Core dependency: it reads and writes any <code>Stream</code>. The async calls read the upload into a pooled buffer,
+counted against <code>MaxTotalBytes</code>, so a slow client never holds a thread.</p>
 <h2 id="run-it">Run it</h2>
 <p><a href="https://github.com/inexin/Egami/tree/main/samples/Security"><code>samples/Security</code></a> is a console app that does what this guide shows on the bundled
 images: <code>dotnet run --project samples/Security</code> writes its results to <code>./output</code>.</p>

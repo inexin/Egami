@@ -172,7 +172,10 @@ using Raster&lt;Rgb8&gt; screen = print.ConvertColor&lt;Rgb8&gt;(ColorProfile.Sr
 a CMYK file converted to sRGB loads as <code>Rgb8</code>.</p>
 <pre><code class="lang-csharp">// Load straight into sRGB: the same pixels as loading and then calling ConvertColor.
 using Raster web = Raster.Load(path, options: new ReaderOptions { ConvertColorTo = ColorProfile.Srgb });
-</code></pre><h2 id="transforms-on-pixel-spans">Transforms on pixel spans</h2>
+</code></pre>
+<p>Display P3 phone photos, Adobe RGB camera files and CMYK print JPEGs all come out as sRGB, converted through their own
+profiles while they decode; files with no color information are taken as sRGB and left alone.</p>
+<h2 id="transforms-on-pixel-spans">Transforms on pixel spans</h2>
 <p><code>ColorTransform</code> compiles a conversion once and applies it to spans of any pixel type, in place or into another type. Transforms
 are cached per <code>EgamiContext</code>. Matrix encodings (sRGB, Display P3, Adobe RGB, matrix ICC profiles, gray) run as curves and one
 matrix; table profiles and CMYK are sampled onto a 33 or 17 point grid and interpolated. 8-bit pixels take a fast path; float

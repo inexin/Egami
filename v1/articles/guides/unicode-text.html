@@ -261,7 +261,54 @@ OpenTypeLayout layout = face.Layout;
 IReadOnlyList&lt;FontTag&gt; scripts = layout.Scripts;                                // DFLT, cyrl, grek, latn
 IReadOnlyList&lt;FontTag&gt; languages = layout.GetLanguageSystems(new FontTag(&quot;latn&quot;));
 IReadOnlyList&lt;FontTag&gt; features = layout.GetFeatures(new FontTag(&quot;latn&quot;));      // liga, kern, ...
+</code></pre><h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="emoji-in-a-caption">Emoji in a caption</h3>
+<pre><code class="lang-csharp">// A caption mixing words and emoji: the emoji fall back to the color face, cluster by cluster, so a ZWJ sequence or a flag
+// stays whole; one call shapes and draws every run.
+string caption = &quot;Launch day \U0001F680 thanks, team \U0001F389&quot;;
+var fallback = new FontCollection();
+fallback.Add(emoji);
+var options = new Egami.Fonts.Shaping.ShapingOptions { Fallback = new Egami.Fonts.Shaping.FontFallback(fallback.Families) };
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.DrawText(caption, new Vector2(8, 32), new Font(text, 20), Rgba8.Black, options);
+}
 </code></pre>
+<p>Color glyphs draw in color on every canvas; on a raster they are cached as images, like other glyphs. A cluster with emoji
+presentation prefers a color face from the fallback list; text presentation (VS15) prefers an outline face.</p>
+<h3 id="an-arabic-caption">An Arabic caption</h3>
+<pre><code class="lang-csharp">// An Arabic caption, right-aligned: the shaper joins the letters and puts the words in right-to-left order, and the measured
+// advance places the line's right end at the margin.
+using Raster&lt;Rgba8&gt; photo = Raster.Create(640, 120, new Rgba8(40, 60, 80, 255));
+var font = new Font(arabic, 32);
+string caption = &quot;\u0645\u0631\u062D\u0628\u0627\u0020\u0628\u0627\u0644\u0639\u0627\u0644\u0645&quot;;
+float width = font.MeasureText(caption).Advance;
+using (RasterCanvas&lt;Rgba8&gt; canvas = photo.CreateCanvas())
+{
+    canvas.DrawText(caption, new Vector2(photo.Width - 24 - width, 80), font, Rgba8.White);
+}
+</code></pre>
+<p>The shaper picks each letter's joining form and the bidi algorithm orders the words; the origin is still the line's left end, so
+right alignment subtracts the measured advance.</p>
+<h3 id="a-hindi-label-with-fallback">A Hindi label with fallback</h3>
+<pre><code class="lang-csharp">// A label in Hindi and English with a Latin font: Devanagari clusters (conjuncts, vowel signs, the reph) fall back whole to
+// the Devanagari face, and the Indic shaper reorders them.
+var families = new FontCollection();
+families.Add(devanagari);
+var options = new Egami.Fonts.Shaping.ShapingOptions
+{
+    Language = &quot;hi&quot;,
+    Fallback = new Egami.Fonts.Shaping.FontFallback(families.Families),
+};
+using (RasterCanvas&lt;Rgba8&gt; canvas = image.CreateCanvas())
+{
+    canvas.DrawText(&quot;Price: \u0915\u0940\u092E\u0924\u0020\u0915\u094D\u0937\u0947\u0924\u094D\u0930&quot;, new Vector2(10, 40), new Font(latin, 22), Rgba8.Black, options);
+}
+</code></pre>
+<p>Fallback works on whole grapheme clusters, so a conjunct never splits across two faces. <code>FontFallback.System</code> would find an
+installed Devanagari face instead, at the cost of output that depends on the machine.</p>
+
 </article>
 
         <div class="contribution d-print-none">

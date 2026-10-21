@@ -206,6 +206,7 @@ SvgDocument label = SvgDocument.Parse(
     options);
 using Raster&lt;Rgba8&gt; raster = label.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { TextAsPaths = false });
 </code></pre>
+<p>With system fonts off, the label looks the same on every machine.</p>
 <p>Color fonts with an OpenType SVG table, such as many emoji fonts, draw in color through <code>SvgGlyphRenderer</code>, an
 <code>IColorGlyphRenderer</code> that Egami.Drawing asks when <code>CanvasOptions.ColorGlyphRenderer</code> holds it: each glyph's document is read once
 per font. A glyph that also has a COLR version 1 form draws that instead; COLR version 0, sbix and CBDT come after SVG.
@@ -318,6 +319,56 @@ using (SvgCanvas canvas = new(file, 300, 60, options))
 {
     canvas.DrawText(&quot;Hello, SVG&quot;, new Vector2(10, 40), new Font(face, 28), new Rgba8(20, 20, 20, 255));
 }
+</code></pre><h2 id="recipes">Recipes</h2>
+<p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
+<h3 id="render-an-svg-to-png">Render an SVG to PNG</h3>
+<pre><code class="lang-csharp">// An SVG drawn 256 pixels wide and saved as PNG; the height keeps the aspect ratio.
+SvgDocument document = SvgDocument.Load(input);
+using Raster&lt;Rgba8&gt; raster = document.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { Width = 256 });
+raster.Save(output);
+</code></pre>
+<p>Egami.Svg draws as resvg does where SVG leaves a choice.</p>
+<h3 id="recolor-an-svg-icon">Recolor an SVG icon</h3>
+<pre><code class="lang-csharp">// Every fill and stroke of a one-color icon set to a brand color, then drawn: edits redraw at once.
+SvgDocument icon = SvgDocument.Parse(Icon);
+foreach (SvgElement element in icon.Root.Descendants())
+{
+    foreach (string paint in (string[])[&quot;fill&quot;, &quot;stroke&quot;])
+    {
+        if (element.Attributes[paint] is string value &amp;&amp; value != &quot;none&quot;)
+        {
+            element.Attributes[paint] = &quot;#7b2ff7&quot;;
+        }
+    }
+}
+
+using Raster&lt;Rgba8&gt; branded = icon.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { Width = 64 });
+</code></pre><h3 id="draw-icons-from-an-svg-sprite-sheet">Draw icons from an SVG sprite sheet</h3>
+<pre><code class="lang-csharp">// Each symbol of a sprite sheet drawn into its own 32-pixel cell of a toolbar strip.
+SvgDocument sheet = SvgDocument.Parse(Sheet);
+string[] icons = [&quot;plus&quot;, &quot;dot&quot;, &quot;plus&quot;];
+using Raster&lt;Rgba8&gt; strip = Raster.Create&lt;Rgba8&gt;(32 * icons.Length, 32);
+using (RasterCanvas&lt;Rgba8&gt; canvas = strip.CreateCanvas())
+{
+    for (int i = 0; i &lt; icons.Length; i++)
+    {
+        sheet.Draw(canvas, icons[i], new RectF(32 * i, 0, 32, 32));
+    }
+}
+</code></pre>
+<p>A symbol's viewBox fits it into each cell; the same calls draw on a PDF page.</p>
+<h3 id="flow-svg-text-into-a-shape">Flow SVG text into a shape</h3>
+<pre><code class="lang-csharp">// SVG 2 text that wraps: inside a circle (as Inkscape writes flowed text), or in lines 160 units long.
+SvgDocument card = SvgDocument.Parse(&quot;&quot;&quot;
+    &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;400&quot; height=&quot;200&quot; font-family=&quot;Noto Sans&quot; font-size=&quot;14&quot;&gt;
+      &lt;circle id=&quot;area&quot; cx=&quot;100&quot; cy=&quot;100&quot; r=&quot;90&quot; fill=&quot;#eef&quot;/&gt;
+      &lt;text style=&quot;shape-inside: url(#area); shape-padding: 6px; text-align: center&quot;&gt;
+        Text flows into the circle line by line, each line as wide as the circle is at that height.
+      &lt;/text&gt;
+      &lt;text x=&quot;220&quot; y=&quot;40&quot; style=&quot;inline-size: 160px&quot;&gt;Wrapped at 160 units, as a paragraph fills a column.&lt;/text&gt;
+    &lt;/svg&gt;
+    &quot;&quot;&quot;, options);
+using Raster&lt;Rgba8&gt; raster = card.Rasterize&lt;Rgba8&gt;();
 </code></pre>
 </article>
 

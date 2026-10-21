@@ -190,6 +190,8 @@ using Raster plain = Raster.Load(&quot;sprite.jxl&quot;, options: new JxlReaderO
 JxlImage.RecompressJpeg(&quot;duck.jpg&quot;, &quot;duck.jxl&quot;);
 JxlImage.ReconstructJpeg(&quot;duck.jxl&quot;, &quot;duck-again.jpg&quot;);
 </code></pre>
+<p>Baseline and progressive JPEGs with any Huffman tables, restart markers, ICC, Exif and XMP are taken; arithmetic-coded,
+lossless, hierarchical, 12-bit and CMYK JPEGs, and 4:1:1 sampling, are refused.</p>
 <p>Such files also load as pixels like any other:</p>
 <pre><code class="lang-csharp">// A JPEG recompressed into JPEG XL loads as pixels like any other file, and gives its JPEG back byte for byte.
 using Raster image = Raster.Load(&quot;recompressed.jxl&quot;);
@@ -254,19 +256,37 @@ orientation. <code>JxlWriterOptions</code> follows cjxl's own knobs, so the same
 <pre><code class="lang-csharp">// Lossless JPEG XL, about the size cjxl -d 0 makes at the same effort (1 fastest to 7 smallest, 5 by default).
 using Raster photo = Raster.Load(&quot;duck.png&quot;);
 photo.Save(&quot;duck-lossless.jxl&quot;, new JxlWriterOptions { Lossless = true, Effort = 7 });
-</code></pre><pre><code class="lang-csharp">// Lossy JPEG XL at cjxl's default: quality 90, which is distance 1.0 (visually lossless).
+</code></pre>
+<p>Lossless files give back every pixel exactly, in the raster's own precision: 8 or 16-bit, half or single float, gray or RGB,
+with alpha when it is not opaque everywhere. The effort follows cjxl's: 1 is its fast path, 7 learns a context tree and tries
+palettes and color transforms, for files within a few bytes of cjxl's. The ICC profile (or an enumerated sRGB, linear or HDR
+space), EXIF, XMP and orientation are kept.</p>
+<pre><code class="lang-csharp">// Lossy JPEG XL at cjxl's default: quality 90, which is distance 1.0 (visually lossless).
 using Raster photo = Raster.Load(&quot;duck.png&quot;);
 photo.Save(&quot;duck-lossy.jxl&quot;, new JxlWriterOptions { Lossless = false });
 
 // A distance as cjxl -d takes it instead of a quality, and more effort for a smaller file.
 photo.Save(&quot;duck-small.jxl&quot;, new JxlWriterOptions { Lossless = false, Distance = 2.5f, Effort = 7 });
-</code></pre><pre><code class="lang-csharp">// Alpha stays exact in lossy files by default, and fully transparent pixels keep their color.
+</code></pre>
+<p>Lossy files are VarDCT in XYB, as cjxl writes them for PNG input, and come out within 5% of cjxl's size and Butteraugli score at the
+same settings (libjxl 0.12.0). Pick either a quality or a distance: <code>Quality</code> is cjxl's <code>-q</code> (90 by default, 100 lossless) and
+<code>Distance</code> its <code>-d</code>, where 1.0 is visually lossless and each step up gives a smaller file with more visible loss; a distance,
+when set, wins. <code>Effort</code> 6 adds the full block-size search and a per-block edge-preserving filter strength, 7 patches for
+repeated shapes such as text. Large images are coded in 2048-pixel chunks, as cjxl does, so memory stays bounded.</p>
+<p>A JPEG source is better recompressed than re-encoded: <a href="#recompressed-jpegs">recompressing</a> keeps its pixels exactly and the
+original file recoverable, where lossy encoding its decoded pixels loses detail a second time.</p>
+<pre><code class="lang-csharp">// Alpha stays exact in lossy files by default, and fully transparent pixels keep their color.
 using Raster&lt;Rgba8&gt; logo = Raster.Load&lt;Rgba8&gt;(&quot;duck.png&quot;);
 logo.Save(&quot;logo.jxl&quot;, new JxlWriterOptions { Lossless = false, Quality = 85 });
 
 // Smaller: alpha coded lossy too, and the color under transparent pixels left to the encoder (as cjxl does).
 logo.Save(&quot;logo-small.jxl&quot;, new JxlWriterOptions { Lossless = false, AlphaDistance = 1, KeepTransparentColors = false });
 </code></pre>
+<p>Alpha is an extra channel coded apart from the color, exact by default, so cut-outs keep their edges (below distance 10;
+from there cjxl and Egami code the whole image at half size). <code>AlphaDistance</code> above 0 codes it lossy as cjxl's
+<code>--alpha_distance</code> does. Fully transparent pixels keep their color unless <code>KeepTransparentColors</code> is false, which lets the
+encoder replace it, as libjxl does by default, for a smaller file.</p>
+
 </article>
 
         <div class="contribution d-print-none">

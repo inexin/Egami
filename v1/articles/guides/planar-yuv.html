@@ -196,7 +196,9 @@ for (int i = 0; i &lt; 3; i++)
 
 // And the other way, for an encoder: CopyFrom fills existing planes.
 frame.CopyFrom(screen);
-</code></pre><h2 id="interleaved-layouts">Interleaved layouts</h2>
+</code></pre>
+<p>Decoder frames in NV12 or P010 copy into the planes first; see <a href="#interleaved-layouts">Interleaved layouts</a>.</p>
+<h2 id="interleaved-layouts">Interleaved layouts</h2>
 <p>Media Foundation, MediaCodec, GPU decoders and webcams hand out NV12, NV21, P010, P016, YUYV or UYVY. One SIMD pass copies them
 to and from the planes:</p>
 <pre><code class="lang-csharp">// An NV12 frame from Media Foundation or MediaCodec: Y rows, then interleaved U, V rows, both at the same stride.
