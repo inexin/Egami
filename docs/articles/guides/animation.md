@@ -22,18 +22,8 @@ composited to full size, as a browser shows them, so each frame is a complete pi
 Saving a raster with more than one frame as GIF or PNG writes an animation. The writers work out each frame's stored rectangle,
 disposal and blend from the pixels, so an edited animation stays small: only what changed between frames is stored.
 
-### GIF
-
-[!code-csharp[](../../../tests/Egami.DocSamples/AnimationAndMetadata.cs#gif)]
-
-GIF holds at most 256 colors per frame. Frames with few enough colors keep them exactly. Others get a palette from Wu's
-quantizer, dithered with Floyd–Steinberg by default. GIF transparency is on or off, so pixels below
-`PaletteOptions.AlphaThreshold` (128 by default) become transparent.
-
-### APNG
-
-APNG keeps full color and partial alpha, so nothing is quantized; frames blend with `Over` when that stores less. Set
-`PngWriterOptions.FirstFrameOnly` to write a still PNG from an animation.
+GIF holds at most 256 colors per frame and has on-or-off transparency; APNG keeps full color and partial alpha. The [GIF](../formats/gif.md)
+and [PNG and APNG](../formats/png.md) pages have each writer's options.
 
 ## Frame by frame
 
@@ -43,10 +33,6 @@ its delay, how it is disposed (`FrameDisposal`) and blended (`FrameBlend`) when 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#frame-list)]
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#frame-metadata)]
-
-GIF files keep their palettes, version and application extensions in `GifDetails`, and each frame's in `GifFrameDetails`:
-
-[!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#gif-details)]
 
 ## Animation tools
 

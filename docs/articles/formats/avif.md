@@ -24,7 +24,7 @@ coded; the grain's parameters are in `AvifDetails.FilmGrain` as an `AvifFilmGrai
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#options)]
 
-`YuvRaster.Load` gives the AV1 planes themselves, without the conversion to RGB (see [Planar YUV](planar-yuv.md)):
+`YuvRaster.Load` gives the AV1 planes themselves, without the conversion to RGB (see [Planar YUV](../guides/planar-yuv.md)):
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-yuv)]
 
@@ -73,7 +73,7 @@ PQ and HLG files keep their curve; converting to sRGB as they load tone maps the
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-sdr)]
 
 Gain maps (tmap) load into `RasterMetadata.GainMap`, and `ReaderOptions.Hdr` renders the HDR rendition from them, as for Ultra HDR
-JPEGs (see the [HDR guide](hdr.md)):
+JPEGs (see the [HDR guide](../guides/hdr.md)):
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-gainmap)]
 

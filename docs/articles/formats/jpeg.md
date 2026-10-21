@@ -32,7 +32,7 @@ resizing. Other formats ignore it.
 ## Orientation
 
 Cameras and phones store pixels as the sensor saw them and say in EXIF how to turn them. `Raster.Probe` reports the orientation,
-and `AutoOrient` applies it; see [resizing and geometry](resizing-and-geometry.md#orientation). To turn the file itself upright
+and `AutoOrient` applies it; see [resizing and geometry](../guides/resizing-and-geometry.md#orientation). To turn the file itself upright
 without re-encoding it, use `JpegTransform` with `AutoOrient` (see [lossless rotation](#lossless-rotation-flips-and-crops)).
 
 ## Writing
@@ -128,6 +128,18 @@ CMYK and YCCK files load as RGB by the plain formula, R = (1 − C)(1 − K). `R
 instead, without the RGB step; print-accurate color needs the embedded ICC profile, which Egami keeps but does not apply yet.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#jpeg-details)]
+
+## Multi-Picture JPEG files
+
+Phones store more than one image in a JPEG: a gain map for HDR, large previews, the second view of a stereo pair. The CIPA
+Multi-Picture Format (MPF) lists them in an APP2 segment. `JpegDetails.MultiPicture` gives that index as `MpfData`: an
+`MpfImage` for each image with its `MpfImageType`, flags, length, and offset from the start of the file (the same numbers
+ExifTool prints). `Raster.Probe` counts them in `RasterInfo.ImageCount`, and `Raster.LoadAll` loads each JPEG one, the primary
+first. A damaged index never fails a load: the primary loads with a `Jpeg.MpfDamaged` warning.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Hdr.cs#mpf)]
+
+The gain maps of Ultra HDR photos are in the [HDR guide](../guides/hdr.md#gain-maps).
 
 ## Recipes
 

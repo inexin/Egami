@@ -28,7 +28,7 @@ intensity_target as `HdrMetadata.MaxContentLightLevel`; converting to sRGB as th
 [!code-csharp[](../../../tests/Egami.DocSamples/Jxl.cs#cookbook-sdr)]
 
 A jhgm gain map loads into `RasterMetadata.GainMap`, and `ReaderOptions.Hdr` renders HDR from it as for Ultra HDR JPEGs (see the
-[HDR guide](hdr.md)). Groups decode on several threads (`EgamiContext.MaxParallelism`), and `ReaderOptions.Region` on a still
+[HDR guide](../guides/hdr.md)). Groups decode on several threads (`EgamiContext.MaxParallelism`), and `ReaderOptions.Region` on a still
 decodes only the groups it touches.
 
 `JxlReaderOptions` adds three choices on top of the general reader options:
