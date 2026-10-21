@@ -76,6 +76,20 @@ internal static class BarcodeTiming
 
         var one = EgamiContext.Default with { MaxParallelism = 1 };
         var totals = new SortedDictionary<string, (double Egami, double Cpp, int Images)>(StringComparer.Ordinal);
+
+        // One untimed pass over every set first, so that no set pays for compiling code the JIT has not seen yet.
+        foreach (string folder in Directory.EnumerateDirectories(root))
+        {
+            if (s_sets.TryGetValue(Path.GetFileName(folder).Split('-')[0], out var warm))
+            {
+                foreach (string file in Directory.EnumerateFiles(folder, "*.png"))
+                {
+                    using Raster<Gray8> image = Raster.Load<Gray8>(file);
+                    image.ReadBarcodes(new BarcodeReaderOptions { Formats = warm.Formats, Context = one });
+                }
+            }
+        }
+
         Console.WriteLine("| Set | Read | Egami ms | zxing-cpp ms | Ratio |");
         Console.WriteLine("|---|---|---|---|---|");
         foreach (string folder in Directory.EnumerateDirectories(root).Order(StringComparer.Ordinal))
