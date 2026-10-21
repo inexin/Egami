@@ -1,0 +1,9 @@
+{
+  "egami": 1,
+  "steps": [
+    { "op": "autoorient" },
+    { "op": "resize", "size": "1200x", "filter": "lanczos3" },
+    { "op": "sharpen", "sigma": 0.6 },
+    { "op": "save", "format": "webp", "quality": 82, "set": { "webp.effort": 3 } }
+  ]
+}

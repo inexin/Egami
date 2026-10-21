@@ -48,7 +48,9 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "emfplus": "tests/images/fuzz/emfplus-seeds/*",
          **{f"barcode-{kind}": "tests/images/fuzz/barcode-text-seeds/*" for kind in ("qr", "datamatrix", "pdf417", "aztec", "code128", "code39")},
          "barcode-itf": "tests/images/fuzz/barcode-digit-seeds/*", "barcode-eanupc": "tests/images/fuzz/barcode-digit-seeds/*",
-         "barcode-read": "tests/images/fuzz/barcode-read-seeds/*"}
+         "barcode-read": "tests/images/fuzz/barcode-read-seeds/*",
+         "cli-size": "tests/images/fuzz/cli-size-seeds/*", "cli-template": "tests/images/fuzz/cli-template-seeds/*",
+         "cli-workflow": "tests/images/fuzz/cli-workflow-seeds/*", "cli-run": "tests/images/fuzz/cli-run-seeds/*"}
 
 SCRIPT = """
 set -e
@@ -67,6 +69,7 @@ if [ -f /out/Egami.Drawing.dll ]; then sharpfuzz /out/Egami.Drawing.dll; fi
 if [ -f /out/Egami.Css.dll ]; then sharpfuzz /out/Egami.Css.dll; fi
 if [ -f /out/Egami.Metafiles.dll ]; then sharpfuzz /out/Egami.Metafiles.dll; fi
 if [ -f /out/Egami.Barcodes.dll ]; then sharpfuzz /out/Egami.Barcodes.dll; fi
+if [ -f /out/Egami.Cli.dll ]; then sharpfuzz /out/Egami.Cli.dll; fi
 mkdir -p /seeds && cp {seeds} /seeds/
 afl-fuzz -V {seconds} -i /seeds -o /findings/{target} {role} -t 5000 -m none -- /out/Egami.Fuzz {target}
 """

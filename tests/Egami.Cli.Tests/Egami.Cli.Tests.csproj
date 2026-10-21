@@ -20,6 +20,10 @@
     <ProjectReference Include="..\..\src\Egami.Cli\Egami.Cli.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Egami.Fuzz\CliFuzzTarget.cs" Link="CliFuzzTarget.cs" />
+  </ItemGroup>
+
   <!-- The help and info JSON snapshots, compared as text. -->
   <ItemGroup>
     <None Include="Snapshots\**" CopyToOutputDirectory="PreserveNewest" />

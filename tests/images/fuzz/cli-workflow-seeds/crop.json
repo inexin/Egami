@@ -1,0 +1,1 @@
+{ "egami": 1, "steps": [ { "op": "crop", "rect": "1,2,3,4" }, { "op": "blur", "sigma": 2, "color-space": "linear" }, { "op": "save", "path": "x.png", "strip": true } ] }

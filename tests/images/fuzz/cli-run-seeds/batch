@@ -1,0 +1,12 @@
+a.png
+b.png
+blur
+2
+--color-space=linear
++
+flip
+vertical
+-o
+out/{name}.png
+--jobs
+2
