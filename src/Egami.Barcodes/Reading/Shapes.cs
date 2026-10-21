@@ -95,20 +95,45 @@ internal static class Shapes
             (above, aboveEnd) = (rowStart, runs.Count);
         }
 
-        var components = new Dictionary<int, Component>();
-        foreach ((int y, int start, int end, int label) in runs)
+        // Bounding boxes by root first, in the order the roots are first met; only components large enough get their ends.
+        int labels = parent.Count;
+        int[] roots = new int[runs.Count], left = new int[labels], right = new int[labels], top = new int[labels], bottom = new int[labels];
+        var order = new List<int>();
+        left.AsSpan().Fill(int.MaxValue);
+        right.AsSpan().Fill(-1);
+        for (int i = 0; i < runs.Count; i++)
         {
-            int root = Find(label);
-            if (!components.TryGetValue(root, out Component? c))
+            (int y, int start, int end, int label) = runs[i];
+            int root = roots[i] = Find(label);
+            if (right[root] < 0)
             {
-                components[root] = c = new Component();
+                order.Add(root);
+                top[root] = y;
             }
 
+            left[root] = Math.Min(left[root], start);
+            right[root] = Math.Max(right[root], end - 1);
+            bottom[root] = y;
+        }
+
+        var components = new Component?[labels];
+        foreach (int root in order)
+        {
+            if (right[root] - left[root] + 1 >= minimum && bottom[root] - top[root] + 1 >= minimum)
+            {
+                components[root] = new Component { Left = left[root], Right = right[root], Top = top[root], Bottom = bottom[root] };
+            }
+        }
+
+        for (int i = 0; i < runs.Count; i++)
+        {
+            if (components[roots[i]] is not Component c)
+            {
+                continue;
+            }
+
+            (int y, int start, int end, _) = runs[i];
             c.Count += end - start;
-            c.Left = Math.Min(c.Left, start);
-            c.Right = Math.Max(c.Right, end - 1);
-            c.Top = Math.Min(c.Top, y);
-            c.Bottom = Math.Max(c.Bottom, y);
 
             // Runs come row by row and left to right: the row's first run gives its left end, its last run its right end.
             if (c.EndsRow != y)
@@ -119,20 +144,20 @@ internal static class Shapes
 
             if (end - 1 > c.EndsRowStart)
             {
-                var right = new Vector2(end - 0.5f, y + 0.5f);
+                var last = new Vector2(end - 0.5f, y + 0.5f);
                 if (c.EndsRowRight)
                 {
-                    c.Ends[^1] = right;
+                    c.Ends[^1] = last;
                 }
                 else
                 {
-                    c.Ends.Add(right);
+                    c.Ends.Add(last);
                     c.EndsRowRight = true;
                 }
             }
         }
 
-        return [.. components.Values.Where(c => c.Width >= minimum && c.Height >= minimum).OrderByDescending(c => c.Count)];
+        return [.. order.Select(root => components[root]).OfType<Component>().OrderByDescending(c => c.Count)];
     }
 
     /// <summary>The convex hull of points, counterclockwise in image coordinates (Andrew's monotone chain).</summary>

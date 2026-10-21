@@ -10,10 +10,15 @@ namespace Egami.Barcodes.Reading;
 /// </summary>
 internal static class DataMatrixDetector
 {
-    public static List<Found> Detect(BitImage bits, List<Component> components, Vector2 offset)
+    /// <summary>
+    /// Finds the symbols among the components, largest first. A component centered inside a symbol already found, in this
+    /// search or in <paramref name="found"/> (image coordinates; the first pass's symbols in the inverted pass), is part of that
+    /// symbol and not looked at.
+    /// </summary>
+    public static List<Found> Detect(BitImage bits, List<Component> components, Vector2 offset, IEnumerable<Vector2[]>? found = null)
     {
         var results = new List<Found>();
-        var claimed = new List<Vector2[]>();
+        var claimed = found is null ? [] : found.Select(q => q.Select(p => p - offset).ToArray()).ToList();
         foreach (Component component in components.Take(200))
         {
             // Bars of linear and stacked symbols are far thinner than any Data Matrix shape (DMRE is 1 : 6 at most).
@@ -28,10 +33,10 @@ internal static class DataMatrixDetector
                 continue;
             }
 
-            if (DetectOne(bits, component) is Found found)
+            if (DetectOne(bits, component) is Found symbol)
             {
-                claimed.Add(found.Corners);
-                results.Add(found with { Corners = [.. found.Corners.Select(p => p + offset)] });
+                claimed.Add(symbol.Corners);
+                results.Add(symbol with { Corners = [.. symbol.Corners.Select(p => p + offset)] });
             }
         }
 
@@ -137,6 +142,11 @@ internal static class DataMatrixDetector
                     }
 
                     var transform = Perspective.QuadToQuad([new(0, 0), new(c, 0), new(c, r), new(0, r)], [tl, upperRight, br, bottomLeft]);
+                    if (!FinderLooksRight(bits, transform, c, r))
+                    {
+                        continue;
+                    }
+
                     BarcodeModules? sampled = transform.Sample(bits, c, r);
                     if (sampled is BarcodeModules grid && DataMatrixDecoder.Decode(grid) is DecodedData data)
                     {
@@ -147,6 +157,33 @@ internal static class DataMatrixDetector
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Whether the border is mostly right under a transform: the L (left column and bottom row) dark, the clock tracks (top row
+    /// and right column) alternating. A grid placed off the symbol, or with the wrong module count, gets far more of them wrong
+    /// than a readable one, and sampling and decoding it would only fail later.
+    /// </summary>
+    private static bool FinderLooksRight(BitImage bits, Perspective transform, int columns, int rows)
+    {
+        int wrong = 0;
+        bool Dark(float x, float y)
+        {
+            Vector2 p = transform.Map(x, y);
+            return bits.IsDark((int)MathF.Floor(p.X), (int)MathF.Floor(p.Y));
+        }
+
+        for (int x = 0; x < columns; x++)
+        {
+            wrong += (Dark(x + 0.5f, rows - 0.5f) ? 0 : 1) + (Dark(x + 0.5f, 0.5f) != ((x & 1) == 0) ? 1 : 0);
+        }
+
+        for (int y = 0; y < rows; y++)
+        {
+            wrong += (Dark(0.5f, y + 0.5f) ? 0 : 1) + (Dark(columns - 0.5f, y + 0.5f) != ((y & 1) == 1) ? 1 : 0);
+        }
+
+        return wrong * 3 <= (columns + rows) * 2;
     }
 
     private static bool Clockwise(Vector2[] q)

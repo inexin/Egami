@@ -50,12 +50,12 @@ internal static class Search
             });
         }
 
-        var results = new List<BarcodeResult>();
-        results.AddRange(Merge(RunJobs(jobs, threads)).Select(f => ToResult(f, false)));
+        List<Found> first = Merge(RunJobs(jobs, threads));
+        var results = first.Select(f => ToResult(f, false)).ToList();
         if (tryInverted && !(firstOnly && results.Count > 0))
         {
             BitImage? swapped = local?.Complement();
-            jobs = Jobs(image, true, swapped, ReferenceEquals(global, local) ? swapped! : global.Complement(), formats, effort);
+            jobs = Jobs(image, true, swapped, ReferenceEquals(global, local) ? swapped! : global.Complement(), formats, effort, first);
             jobs.Add(() => linearInverted);
             results.AddRange(Merge(RunJobs(jobs, threads)).Select(f => ToResult(f, true)));
         }
@@ -65,9 +65,10 @@ internal static class Search
 
     /// <summary>
     /// The detectors for the formats asked for, over one pass's bits; in the inverted pass the gray levels that PDF417 samples
-    /// are the inverted image's, made when first needed.
+    /// are the inverted image's, made when first needed, and the Data Matrix detector skips the light modules of the first
+    /// pass's 2D symbols (<paramref name="found"/>).
     /// </summary>
-    private static List<Func<List<Found>>> Jobs(LuminanceImage image, bool inverted, BitImage? local, BitImage global, BarcodeFormat formats, int effort)
+    private static List<Func<List<Found>>> Jobs(LuminanceImage image, bool inverted, BitImage? local, BitImage global, BarcodeFormat formats, int effort, List<Found>? found = null)
     {
         var offset = new Vector2(image.Left, image.Top);
         var jobs = new List<Func<List<Found>>>
@@ -86,7 +87,7 @@ internal static class Search
 
         if ((formats & BarcodeFormat.DataMatrix) != 0)
         {
-            jobs.Add(() => DataMatrixDetector.Detect(local, Shapes.Components(local, 10), offset));
+            jobs.Add(() => DataMatrixDetector.Detect(local, Shapes.Components(local, 10), offset, found?.Where(f => IsMatrix(f.Data.Format)).Select(f => f.Corners)));
         }
 
         if ((formats & BarcodeFormat.Aztec) != 0)
