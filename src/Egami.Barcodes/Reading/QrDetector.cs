@@ -125,20 +125,37 @@ internal static class QrDetector
                 continue;
             }
 
-            // The parallelogram (or alignment) estimate first, then nearby positions of the fourth point for perspective.
-            for (int attempt = 0; attempt < 25; attempt++)
+            // The alignment patterns near where the bottom-right one should be, nearest first (under strong perspective the
+            // nearest can be another symbol module ring), or the parallelogram estimate; then nearby positions of the fourth
+            // point for perspective.
+            List<Vector2?> firsts = [null];
+            if (dimension >= 25)
             {
-                var shift = new Vector2((attempt % 5) - 2, (attempt / 5) - 2) * (module * 0.75f);
+                Vector2 bottomRight = topRight.Center - topLeft.Center + bottomLeft.Center;
+                float correction = 1 - (3f / (dimension - 7));
+                List<Vector2> alignments = FindAlignments(bits, topLeft.Center + (correction * (bottomRight - topLeft.Center)), module);
+                if (alignments.Count > 0)
+                {
+                    firsts = [.. alignments.Take(6).Select(p => (Vector2?)p)];
+                }
+            }
+
+            for (int attempt = 0; attempt < Shifts.Length; attempt++)
+            {
+                Vector2 shift = Shifts[attempt] * (module * 0.75f);
                 if (attempt > 0 && shift == Vector2.Zero)
                 {
                     continue;
                 }
 
-                if (Sample(bits, topLeft, topRight, bottomLeft, dimension, module, attempt == 0 ? null : shift) is (BarcodeModules grid, Perspective transform)
-                    && QrDecoder.Decode(grid) is DecodedData data)
+                foreach (Vector2? alignment in attempt == 0 ? firsts : [null])
                 {
-                    Vector2[] corners = [transform.Map(0, 0), transform.Map(dimension, 0), transform.Map(dimension, dimension), transform.Map(0, dimension)];
-                    return new Found(data, corners);
+                    if (Sample(bits, topLeft, topRight, bottomLeft, dimension, attempt == 0 ? null : shift, alignment) is (BarcodeModules grid, Perspective transform)
+                        && QrDecoder.Decode(grid) is DecodedData data)
+                    {
+                        Vector2[] corners = [transform.Map(0, 0), transform.Map(dimension, 0), transform.Map(dimension, dimension), transform.Map(0, dimension)];
+                        return new Found(data, corners);
+                    }
                 }
 
                 if (attempt == 0 && dimension >= 25 && delta != 0)
@@ -169,6 +186,9 @@ internal static class QrDetector
         return wrong * 3 <= (size - 16) * 2;
     }
 
+    /// <summary>The shifts of the fourth point tried, in steps of three quarters of a module: the 5 x 5 around the estimate.</summary>
+    private static readonly Vector2[] Shifts = [.. Enumerable.Range(0, 25).Select(a => new Vector2((a % 5) - 2, (a / 5) - 2))];
+
     /// <summary>Rounds to the nearest QR size: 17 plus a multiple of 4.</summary>
     private static int Dimension(int estimate) => (estimate & 3) switch
     {
@@ -178,41 +198,33 @@ internal static class QrDetector
         _ => estimate,
     };
 
-    /// <summary>Samples the grid through the finders and, from version 2, the bottom-right alignment pattern when found.</summary>
-    private static (BarcodeModules, Perspective)? Sample(BitImage bits, Finder topLeft, Finder topRight, Finder bottomLeft, int dimension, float module, Vector2? shift)
+    /// <summary>
+    /// Samples the grid through the finders and a fourth point: the bottom-right alignment pattern when given (from version 2),
+    /// else the parallelogram's corner, shifted when asked.
+    /// </summary>
+    private static (BarcodeModules, Perspective)? Sample(BitImage bits, Finder topLeft, Finder topRight, Finder bottomLeft, int dimension, Vector2? shift, Vector2? alignment)
     {
         Vector2 tl = topLeft.Center, tr = topRight.Center, bl = bottomLeft.Center;
-        Vector2 bottomRight = tr - tl + bl;
-        Vector2 fourth = bottomRight + (shift ?? Vector2.Zero);
-        float target = dimension - 3.5f;
-        if (dimension >= 25 && shift is null)
-        {
-            // The alignment pattern centered 3 modules in from the bottom-right corner's finder position.
-            float correction = 1 - (3f / (dimension - 7));
-            var estimate = tl + (correction * (bottomRight - tl));
-            if (FindAlignment(bits, estimate, module) is Vector2 alignment)
-            {
-                fourth = alignment;
-                target = dimension - 6.5f;
-            }
-        }
-
+        Vector2 fourth = alignment ?? (tr - tl + bl + (shift ?? Vector2.Zero));
+        float target = alignment is null ? dimension - 3.5f : dimension - 6.5f;
         var transform = Perspective.QuadToQuad(
             [new(3.5f, 3.5f), new(dimension - 3.5f, 3.5f), new(target, target), new(3.5f, dimension - 3.5f)],
             [tl, tr, fourth, bl]);
         return TimingLooksRight(bits, transform, dimension) && transform.Sample(bits, dimension, dimension) is BarcodeModules grid ? (grid, transform) : null;
     }
 
-    /// <summary>Searches around an estimate for an alignment pattern: a dark module in a light ring in a dark ring (1:1:1 runs).</summary>
-    private static Vector2? FindAlignment(BitImage bits, Vector2 estimate, float module)
+    /// <summary>
+    /// Searches around an estimate for alignment patterns: a dark module in a light ring in a dark ring (1:1:1 runs). Returns
+    /// those of the smallest search square that has any, nearest first, one per pattern.
+    /// </summary>
+    private static List<Vector2> FindAlignments(BitImage bits, Vector2 estimate, float module)
     {
-        for (int radius = 4; radius <= 16; radius *= 2)
+        var found = new List<Vector2>();
+        for (int radius = 4; radius <= 16 && found.Count == 0; radius *= 2)
         {
             int allowance = (int)(radius * module);
             int left = Math.Max(0, (int)(estimate.X - allowance)), right = Math.Min(bits.Width - 1, (int)(estimate.X + allowance));
             int top = Math.Max(0, (int)(estimate.Y - allowance)), bottom = Math.Min(bits.Height - 1, (int)(estimate.Y + allowance));
-            Vector2? best = null;
-            float bestDistance = float.MaxValue;
             for (int y = top; y <= bottom; y++)
             {
                 int x = left;
@@ -233,12 +245,7 @@ internal static class QrDetector
                             float cx = (start + x) / 2f;
                             if (CrossCheckAlignment(bits, cx, y, module) is float cy)
                             {
-                                var p = new Vector2(cx, cy);
-                                float d = Vector2.DistanceSquared(p, estimate);
-                                if (d < bestDistance)
-                                {
-                                    (best, bestDistance) = (p, d);
-                                }
+                                found.Add(new Vector2(cx, cy));
                             }
                         }
                     }
@@ -248,14 +255,21 @@ internal static class QrDetector
                     }
                 }
             }
+        }
 
-            if (best is not null)
+        // Nearest first (ties in the order found, as before), then one per pattern: the rows through one pattern find it
+        // several times.
+        var ordered = found.Select((p, i) => (p, i)).OrderBy(t => Vector2.DistanceSquared(t.p, estimate)).ThenBy(t => t.i).Select(t => t.p).ToList();
+        var distinct = new List<Vector2>();
+        foreach (Vector2 p in ordered)
+        {
+            if (!distinct.Any(q => Vector2.Distance(p, q) < module))
             {
-                return best;
+                distinct.Add(p);
             }
         }
 
-        return null;
+        return distinct;
     }
 
     private static bool LightAround(BitImage bits, int start, int end, int y, float module)
