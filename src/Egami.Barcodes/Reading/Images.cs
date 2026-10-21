@@ -183,10 +183,12 @@ internal static class Binarizer
     /// </summary>
     public static BitImage Global(LuminanceImage image)
     {
-        // Four histograms side by side, so consecutive pixels do not wait on the same counter.
+        // The histogram of every other row (all rows of small images) is enough to place the valley; four histograms side by
+        // side, so consecutive pixels do not wait on the same counter.
         Span<int> counts = stackalloc int[4 * 32];
         ref int count = ref MemoryMarshal.GetReference(counts);
-        for (int y = 0; y < image.Height; y++)
+        int rowStep = image.Height >= 64 ? 2 : 1;
+        for (int y = 0; y < image.Height; y += rowStep)
         {
             ReadOnlySpan<byte> row = image.Row(y);
             ref byte pixel = ref MemoryMarshal.GetReference(row);
