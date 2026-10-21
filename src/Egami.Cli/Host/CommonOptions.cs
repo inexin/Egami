@@ -76,7 +76,7 @@ internal sealed class ImageOptions
 
     public Option<int?> BitDepth { get; } = new("--bit-depth") { Description = "Bits per channel to write (PNG, AVIF).", HelpName = "bits" };
 
-    public Option<bool> Strip { get; } = new("--strip") { Description = "Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile." };
+    public Option<bool> Strip { get; } = new("--strip") { Description = "Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does." };
 
     public Option<string[]> Set { get; } = new("--set")
     {

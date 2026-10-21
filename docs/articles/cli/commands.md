@@ -78,7 +78,7 @@ Options:
   --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
-  --strip                   Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                   Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   --auto-orient             Turn the image upright from its EXIF orientation first.
   --to <profile>            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
@@ -107,7 +107,7 @@ Options:
   --lossless                    Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>              Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>            Bits per channel to write (PNG, AVIF).
-  --strip                       Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                       Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>         Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   --auto-orient                 Turn the image upright from its EXIF orientation first.
   --to <profile>                Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
@@ -142,7 +142,7 @@ Options:
   --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
-  --strip                   Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                   Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   --auto-orient             Turn the image upright from its EXIF orientation first.
   --to <profile>            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
@@ -178,7 +178,7 @@ Options:
   --lossless                   Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>             Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>           Bits per channel to write (PNG, AVIF).
-  --strip                      Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                      Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>        Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   --auto-orient                Turn the image upright from its EXIF orientation first.
   --to <profile>               Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
@@ -208,7 +208,7 @@ Options:
   --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
-  --strip                   Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                   Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   --auto-orient             Turn the image upright from its EXIF orientation first.
   --to <profile>            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
@@ -241,7 +241,7 @@ Options:
   --lossless                   Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>             Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>           Bits per channel to write (PNG, AVIF).
-  --strip                      Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                      Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>        Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   --auto-orient                Turn the image upright from its EXIF orientation first.
   --to <profile>               Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
@@ -272,7 +272,7 @@ Options:
   --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
-  --strip                   Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                   Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   -r, --recursive           Take every image in folders given as inputs, at any depth.
   -j, --jobs <count>        How many files to work on at once; 0 (the default) for one per processor.
@@ -467,7 +467,7 @@ Options:
   --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
-  --strip                   Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                   Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   -r, --recursive           Take every image in folders given as inputs, at any depth.
   -j, --jobs <count>        How many files to work on at once; 0 (the default) for one per processor.
@@ -495,7 +495,7 @@ Options:
   --lossless                 Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>           Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>         Bits per channel to write (PNG, AVIF).
-  --strip                    Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                    Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>      Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   -r, --recursive            Take every image in folders given as inputs, at any depth.
   -j, --jobs <count>         How many files to work on at once; 0 (the default) for one per processor.
@@ -524,7 +524,7 @@ Options:
   --lossless                  Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>            Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>          Bits per channel to write (PNG, AVIF).
-  --strip                     Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                     Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>       Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   -r, --recursive             Take every image in folders given as inputs, at any depth.
   -j, --jobs <count>          How many files to work on at once; 0 (the default) for one per processor.
@@ -558,7 +558,7 @@ Options:
   --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
-  --strip                   Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                   Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   --auto-orient             Turn the image upright from its EXIF orientation first.
   --to <profile>            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
@@ -598,7 +598,7 @@ Options:
   --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
   --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
   --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
-  --strip                   Leave out metadata (EXIF, XMP, IPTC, text) but keep the color profile.
+  --strip                   Leave out all metadata: EXIF, XMP, IPTC, text and the color profile, as ImageMagick's -strip does.
   --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
   --auto-orient             Turn the image upright from its EXIF orientation first.
   --to <profile>            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
