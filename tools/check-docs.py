@@ -52,6 +52,11 @@ def doc_id(type_name):
 
 
 def main():
+    if not os.path.exists(API_FILES[0]):
+        # An app or build tool (Egami.Cli, its generator) has no public API, so there is no reference to check.
+        print(f"{FOLDER} has no public API (no PublicAPI.Shipped.txt): nothing to check.")
+        return
+
     build = subprocess.run(["dotnet", "build", PROJECT, "-c", "Release"], capture_output=True, text=True)
     if build.returncode != 0:
         print(build.stdout[-3000:])

@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "camera-dji-fc6310-srgb-d1.jxl",
+      "format": "JPEG XL",
+      "mimeType": "image/jxl",
+      "width": 64,
+      "height": 64,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "rgb",
+        "channelCount": 3,
+        "bitsPerChannel": 8,
+        "channelType": "unorm8",
+        "alpha": "none"
+      },
+      "hasMetadata": false,
+      "estimatedBytes": 12288,
+      "streams": false,
+      "metadata": {
+        "blocks": [],
+        "colorProfile": null,
+        "resolution": null,
+        "gamma": null,
+        "exif": null,
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

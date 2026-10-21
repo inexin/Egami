@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "aov-dwaa.exr",
+      "format": "OpenEXR",
+      "mimeType": "image/x-exr",
+      "width": 96,
+      "height": 64,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "rgba",
+        "channelCount": 4,
+        "bitsPerChannel": 16,
+        "channelType": "float16",
+        "alpha": "straight"
+      },
+      "hasMetadata": true,
+      "estimatedBytes": 49152,
+      "streams": false,
+      "metadata": {
+        "blocks": [],
+        "colorProfile": null,
+        "resolution": null,
+        "gamma": null,
+        "exif": null,
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": true,
+        "gainMap": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "bitmap-raw.psd",
+      "format": "PSD",
+      "mimeType": "image/vnd.adobe.photoshop",
+      "width": 64,
+      "height": 48,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "gray",
+        "channelCount": 1,
+        "bitsPerChannel": 8,
+        "channelType": "unorm8",
+        "alpha": "none"
+      },
+      "hasMetadata": false,
+      "estimatedBytes": 3072,
+      "streams": true,
+      "metadata": {
+        "blocks": [],
+        "colorProfile": null,
+        "resolution": null,
+        "gamma": null,
+        "exif": null,
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

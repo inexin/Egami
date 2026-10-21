@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/inexin/Egami/main/docs/schemas/egami-workflow-1.json",
+  "title": "egami workflow",
+  "description": "The steps of 'egami run' as a file: one object per step, with the step's options as properties. 'egami run --list' lists the steps and their options.",
+  "type": "object",
+  "required": [ "egami", "steps" ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "egami": { "description": "The workflow format's version.", "const": 1 },
+    "description": { "type": "string" },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/step" }
+    }
+  },
+  "$defs": {
+    "value": {
+      "description": "An option's value: text as the command line writes it (a size, a color, x,y), a number or true or false.",
+      "type": [ "string", "number", "boolean", "array" ],
+      "items": { "type": [ "string", "number" ] }
+    },
+    "step": {
+      "type": "object",
+      "required": [ "op" ],
+      "properties": {
+        "op": { "description": "The step's name, such as resize, blur or save.", "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+      },
+      "if": { "properties": { "op": { "const": "save" } } },
+      "then": {
+        "additionalProperties": false,
+        "properties": {
+          "op": { "const": "save" },
+          "path": { "description": "Where to write; without it the save writes to -o. Templates such as out/{name}.webp work.", "type": "string" },
+          "format": { "description": "The format by name or extension, when the path's extension does not say.", "type": "string" },
+          "quality": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "lossless": { "type": "boolean" },
+          "effort": { "type": "integer" },
+          "bit-depth": { "type": "integer" },
+          "strip": { "description": "Leave out metadata.", "type": "boolean" },
+          "set": {
+            "description": "Writer settings as in --set: keys such as png.compression-level, values as text, numbers or true or false.",
+            "type": "object",
+            "additionalProperties": { "type": [ "string", "number", "boolean" ] }
+          }
+        }
+      },
+      "else": {
+        "additionalProperties": { "$ref": "#/$defs/value" }
+      }
+    }
+  }
+}

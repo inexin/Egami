@@ -1,0 +1,34 @@
+Description:
+  Convert, inspect, resize and edit images with Egami, a fully managed imaging library.
+
+Usage:
+  egami [command] [options]
+
+Options:
+  -v, --verbose             Write information to standard error.
+  -vv, --debug              Write debugging detail to standard error.
+  -q, --quiet               Write only errors to standard error.
+  --limit <name=value,...>  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+  -?, -h, --help            Show help and usage information
+  --version                 Show version information
+
+Commands:
+  info <inputs>                     Show what images are: format, size, frames, pixel layout, orientation; with --all, their metadata. Pixels are not decoded.
+  convert <inputs>                  Convert images to another format, or write them again with other settings.
+  resize <inputs>                   Resize images: to a width, a height, a box, a percentage, filling or padding a box.
+  thumbnail <inputs>                Make thumbnails for the web: turned upright, shrunk (never enlarged) to fit --size (256 by default), converted to sRGB, metadata left out.
+  crop <inputs>                     Crop images to a rectangle.
+  rotate <inputs>                   Rotate images clockwise. A JPEG turned by a multiple of 90 degrees into a JPEG is rotated losslessly.
+  flip <inputs>                     Mirror images left to right (horizontal), top to bottom (vertical) or both. A JPEG flipped into a JPEG is flipped losslessly.
+  auto-orient, autoorient <inputs>  Turn images upright from their EXIF orientation and reset it. A JPEG into a JPEG is turned losslessly.
+  run <inputs-and-steps>            Run steps over images, separated by +: 'egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --quality 82'. Every Egami operation is a step ('egami run --list'); save writes, and may come more than once.
+  compare <image> <other>           Compare two images: print a metric and exit with 1 when they differ more than --threshold.
+  stats <inputs>                    Measure images: per-channel minimum, maximum, mean, deviation, skewness, kurtosis and entropy, as ImageMagick's identify -verbose.
+  frames                            Split an animation (GIF, APNG, WebP) into still images, or join stills into one.
+  metadata                          Show, strip or copy metadata: color profile, EXIF, XMP, IPTC, text and resolution.
+  color <inputs>                    Convert images to another color profile (ICC, 2.1.2), tone mapping HDR to SDR where needed (2.9.1).
+  text <inputs>                     Draw a caption or watermark on images, with any font and script, wrapped to fit (2.8.2 layout).
+  overlay <inputs>                  Lay an image (a logo, a watermark, an SVG) on images, placed by anchor, with opacity and a blend mode.
+  montage <inputs>                  Lay images out on a contact sheet: a grid of tiles, optionally labeled with their file names.
+  formats <format>                  List the formats egami reads and writes, or one format's writer settings for --set.
+

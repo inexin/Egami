@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Egami.Cli</RootNamespace>
+    <!-- Not "egami": on a case-insensitive file system egami.dll and Egami.dll would collide. The tool command is egami. -->
+    <AssemblyName>Egami.Cli</AssemblyName>
+    <PackageId>Egami.Cli</PackageId>
+    <!-- Its own version line (CLI design Q1, Q16): 0.x previews until the command review freezes the syntax at 1.0. -->
+    <Version>0.3.0</Version>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>egami</ToolCommandName>
+    <Description>The egami command: convert, inspect, resize and edit images from a shell or a build script with Egami, a fully managed imaging library. Single commands, chained steps, JSON workflows and parallel batches.</Description>
+    <PackageTags>$(EgamiPackageTags);cli;tool;convert;resize;thumbnail</PackageTags>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- AOT-clean from day one (Q15): the trimming and AOT analyzers run in every build, and warnings are errors. -->
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
+    <!-- A run is short, so loops get optimized code at once rather than after on-stack replacement: a 12-megapixel JPEG
+         converts about a quarter faster. -->
+    <TieredCompilationQuickJitForLoops>false</TieredCompilationQuickJitForLoops>
+    <!-- Native AOT binaries: dotnet publish src/Egami.Cli -c Release -r win-x64|linux-x64|osx-arm64 -p:EgamiNativeAot=true.
+         A property of our own, since PublishAot itself would reach the netstandard2.0 generator. -->
+    <PublishAot Condition="'$(EgamiNativeAot)' == 'true'">true</PublishAot>
+    <StripSymbols>true</StripSymbols>
+    <OptimizationPreference Condition="'$(EgamiNativeAot)' == 'true'">Speed</OptimizationPreference>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <!-- Every royalty-free package in the repo (Q2); never Egami.Heic. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Egami\Egami.csproj" />
+    <ProjectReference Include="..\Egami.Drawing\Egami.Drawing.csproj" />
+    <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
+    <ProjectReference Include="..\Egami.Fonts.Substitutes\Egami.Fonts.Substitutes.csproj" />
+    <ProjectReference Include="..\Egami.Svg\Egami.Svg.csproj" />
+    <ProjectReference Include="..\Egami.Metafiles\Egami.Metafiles.csproj" />
+    <ProjectReference Include="..\Egami.Cli.Generators\Egami.Cli.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained;EgamiNativeAot" />
+  </ItemGroup>
+
+  <!-- The generator reads help text from Egami's XML documentation, added once the referenced project has built it. -->
+  <Target Name="AddEgamiDocumentation" AfterTargets="ResolveProjectReferences" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <AdditionalFiles Include="$(MSBuildThisFileDirectory)..\Egami\bin\$(Configuration)\$(TargetFramework)\Egami.xml" />
+    </ItemGroup>
+  </Target>
+
+  <!-- The native program is named egami; the assembly cannot be, since assembly names ignore case and Egami is taken. -->
+  <Target Name="NameNativeProgram" AfterTargets="Publish" Condition="'$(EgamiNativeAot)' == 'true'">
+    <Move SourceFiles="$(PublishDir)$(TargetName)$(_NativeExecutableExtension)" DestinationFiles="$(PublishDir)egami$(_NativeExecutableExtension)" />
+  </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Cli.Tests" />
+    <InternalsVisibleTo Include="Egami.Fuzz" />
+  </ItemGroup>
+
+</Project>

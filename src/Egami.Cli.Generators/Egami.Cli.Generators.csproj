@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Build-time only: turns Egami's public RasterOps methods and writer options into the tool's steps and settings, so the
+       tool never needs reflection (CLI design Q3, Q5, Q8, Q15). It ships nothing and is not packed. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>false</IsPackable>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- The newer analysis rules assume a modern target; a netstandard2.0 generator keeps to the defaults. -->
+    <AnalysisLevel>latest-default</AnalysisLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

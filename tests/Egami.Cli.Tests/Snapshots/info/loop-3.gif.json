@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "loop-3.gif",
+      "format": "GIF",
+      "mimeType": "image/gif",
+      "width": 64,
+      "height": 48,
+      "frames": 6,
+      "images": 1,
+      "loopCount": 4,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "rgba",
+        "channelCount": 4,
+        "bitsPerChannel": 8,
+        "channelType": "unorm8",
+        "alpha": "straight"
+      },
+      "hasMetadata": false,
+      "estimatedBytes": 86016,
+      "streams": true,
+      "metadata": {
+        "blocks": [],
+        "colorProfile": null,
+        "resolution": null,
+        "gamma": null,
+        "exif": null,
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "camera-huawei-eva-srgb-422.avif",
+      "format": "AVIF",
+      "mimeType": "image/avif",
+      "width": 64,
+      "height": 64,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "rgb",
+        "channelCount": 3,
+        "bitsPerChannel": 8,
+        "channelType": "unorm8",
+        "alpha": "none"
+      },
+      "hasMetadata": true,
+      "estimatedBytes": 12288,
+      "streams": true,
+      "metadata": {
+        "blocks": [
+          "icc",
+          "exif"
+        ],
+        "colorProfile": {
+          "name": "sRGB",
+          "bytes": 8940
+        },
+        "resolution": null,
+        "gamma": null,
+        "exif": {
+          "cameraMake": "HUAWEI",
+          "cameraModel": "EVA-L09",
+          "dateTaken": "2016-12-27T11:56:10",
+          "orientation": "normal",
+          "count": 39
+        },
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

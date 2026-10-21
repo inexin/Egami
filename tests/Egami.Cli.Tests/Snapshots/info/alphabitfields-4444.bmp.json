@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "alphabitfields-4444.bmp",
+      "format": "BMP",
+      "mimeType": "image/bmp",
+      "width": 13,
+      "height": 7,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "bgra",
+        "channelCount": 4,
+        "bitsPerChannel": 8,
+        "channelType": "unorm8",
+        "alpha": "straight"
+      },
+      "hasMetadata": false,
+      "estimatedBytes": 364,
+      "streams": true,
+      "metadata": {
+        "blocks": [],
+        "colorProfile": null,
+        "resolution": {
+          "x": 2835,
+          "y": 2835,
+          "unit": "per-meter"
+        },
+        "gamma": null,
+        "exif": null,
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

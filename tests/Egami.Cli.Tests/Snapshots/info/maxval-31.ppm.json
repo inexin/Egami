@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "maxval-31.ppm",
+      "format": "PNM",
+      "mimeType": "image/x-portable-anymap",
+      "width": 64,
+      "height": 48,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "rgb",
+        "channelCount": 3,
+        "bitsPerChannel": 8,
+        "channelType": "unorm8",
+        "alpha": "none"
+      },
+      "hasMetadata": false,
+      "estimatedBytes": 9216,
+      "streams": true,
+      "metadata": {
+        "blocks": [],
+        "colorProfile": null,
+        "resolution": null,
+        "gamma": null,
+        "exif": null,
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

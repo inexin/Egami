@@ -1,0 +1,30 @@
+Description:
+  Convert images to another format, or write them again with other settings.
+
+Usage:
+  egami convert <inputs>... [options]
+
+Arguments:
+  <inputs>  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output <path>       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format <format>     The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality <0-100>         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort <level>          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth <bits>        Bits per channel to write (PNG, AVIF).
+  --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set <fmt.key=value>     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  --auto-orient             Turn the image upright from its EXIF orientation first.
+  --to <profile>            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs <count>        How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                Allow outputs to replace their inputs.
+  --fail-fast               Stop at the first file that fails.
+  -?, -h, --help            Show help and usage information
+  -v, --verbose             Write information to standard error.
+  -vv, --debug              Write debugging detail to standard error.
+  -q, --quiet               Write only errors to standard error.
+  --limit <name=value,...>  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+

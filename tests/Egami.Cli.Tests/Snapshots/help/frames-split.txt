@@ -1,0 +1,20 @@
+Description:
+  Write every frame of an animation as its own image, each a full picture as the animation shows it.
+
+Usage:
+  egami frames split <input> [options]
+
+Arguments:
+  <input>  The animation, or - for standard input.
+
+Options:
+  -o, --output <template> (REQUIRED)  A template for each frame's file: {frame} or {index} is the frame number from 0, padded as in {frame:000}; {name} is the input's name.
+  -f, --format <format>               The output format, when the template's extension does not say.
+  --set <fmt.key=value>               Writer settings as fmt.key=value.
+  --delays <path>                     Also write each frame's delay in milliseconds, one per line, to this file, so 'frames join --delays' can restore the timing.
+  -?, -h, --help                      Show help and usage information
+  -v, --verbose                       Write information to standard error.
+  -vv, --debug                        Write debugging detail to standard error.
+  -q, --quiet                         Write only errors to standard error.
+  --limit <name=value,...>            Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+

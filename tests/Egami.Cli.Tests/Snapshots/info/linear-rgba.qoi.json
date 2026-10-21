@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "linear-rgba.qoi",
+      "format": "QOI",
+      "mimeType": "image/qoi",
+      "width": 40,
+      "height": 30,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "rgba",
+        "channelCount": 4,
+        "bitsPerChannel": 8,
+        "channelType": "unorm8",
+        "alpha": "straight"
+      },
+      "hasMetadata": false,
+      "estimatedBytes": 4800,
+      "streams": true,
+      "metadata": {
+        "blocks": [],
+        "colorProfile": null,
+        "resolution": null,
+        "gamma": null,
+        "exif": null,
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

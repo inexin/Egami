@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "bilevel-bz.tif",
+      "format": "TIFF",
+      "mimeType": "image/tiff",
+      "width": 64,
+      "height": 48,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "gray",
+        "channelCount": 1,
+        "bitsPerChannel": 8,
+        "channelType": "unorm8",
+        "alpha": "none"
+      },
+      "hasMetadata": true,
+      "estimatedBytes": 3072,
+      "streams": true,
+      "metadata": {
+        "blocks": [
+          "exif"
+        ],
+        "colorProfile": null,
+        "resolution": {
+          "x": 72,
+          "y": 72,
+          "unit": "per-inch"
+        },
+        "gamma": null,
+        "exif": {
+          "cameraMake": null,
+          "cameraModel": null,
+          "dateTaken": null,
+          "orientation": "normal",
+          "count": 3
+        },
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": false,
+        "gainMap": false
+      }
+    }
+  ]
+}

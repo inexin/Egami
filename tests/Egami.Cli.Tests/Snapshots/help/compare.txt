@@ -1,0 +1,23 @@
+Description:
+  Compare two images: print a metric and exit with 1 when they differ more than --threshold.
+
+Usage:
+  egami compare <image> <other> [options]
+
+Arguments:
+  <image>  The first image.
+  <other>  The image to compare it with, the same size.
+
+Options:
+  -m, --metric <metric>     The number to print and test: ae (pixels that differ), mae, mse, rmse (the default), peak, psnr, ssim or dssim. [default: rmse]
+  -t, --threshold <value>   Exit with 1 when the metric is worse than this (above it, or below it for psnr and ssim); without it, any difference exits with 1.
+  --fuzz <0-1>              How far apart two values may be and still count as equal, from 0 to 1, for ae and the exit code.
+  -d, --diff <path>         Write a picture of the differences.
+  --diff-style <style>      highlight (differing pixels in red, as ImageMagick's compare) or absolute (|a - b|). [default: highlight]
+  --json                    Write every metric per channel as JSON.
+  -?, -h, --help            Show help and usage information
+  -v, --verbose             Write information to standard error.
+  -vv, --debug              Write debugging detail to standard error.
+  -q, --quiet               Write only errors to standard error.
+  --limit <name=value,...>  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+

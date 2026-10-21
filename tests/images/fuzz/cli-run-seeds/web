@@ -1,0 +1,12 @@
+in.jpg
+auto-orient
++
+resize
+1200x
+--filter
+lanczos3
++
+save
+out.webp
+--quality
+82

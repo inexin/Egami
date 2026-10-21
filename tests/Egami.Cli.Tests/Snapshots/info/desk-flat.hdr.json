@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "desk-flat.hdr",
+      "format": "Radiance",
+      "mimeType": "image/vnd.radiance",
+      "width": 96,
+      "height": 64,
+      "frames": 1,
+      "images": 1,
+      "loopCount": null,
+      "orientation": "normal",
+      "pixels": {
+        "channels": "rgb",
+        "channelCount": 3,
+        "bitsPerChannel": 32,
+        "channelType": "float32",
+        "alpha": "none"
+      },
+      "hasMetadata": true,
+      "estimatedBytes": 73728,
+      "streams": false,
+      "metadata": {
+        "blocks": [],
+        "colorProfile": null,
+        "resolution": null,
+        "gamma": null,
+        "exif": null,
+        "xmp": null,
+        "iptc": null,
+        "text": [],
+        "hdr": true,
+        "gainMap": false
+      }
+    }
+  ]
+}
