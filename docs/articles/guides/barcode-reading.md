@@ -37,11 +37,12 @@ The Y plane is read where it is, so a frame from a camera API needs no conversio
 ## How each symbology is found
 
 Linear barcodes are found along scan lines: rows, columns from effort 3 and diagonals from effort 7, each read in both
-directions with its edges placed between pixels, so low-resolution and blurred photos read. A linear barcode counts once two
-scan lines agree on it. ITF, whose check is weakest, is read from 4 digits on.
+directions with its edges placed between pixels, so low-resolution and blurred photos read. From effort 5 rows are also read
+through the local threshold, which keeps bars under glare apart. A linear barcode counts once two scan lines agree on it.
+ITF, whose check is weakest, is read from 4 digits on.
 
 QR Codes are found by their three finder patterns, at any rotation and in perspective; from version 2 the alignment pattern
-corrects the perspective, and a mirrored symbol reads too.
+corrects the perspective (each one near the expected place is tried, nearest first), and a mirrored symbol reads too.
 
 Data Matrix symbols are found by their L-shaped finder, square and rectangular (DMRE too), at any rotation and in
 perspective, on a label lighter than its background or not; the clock tracks count the modules.
@@ -81,7 +82,8 @@ any character set is applied.
 
 ## Speed
 
-The reader allocates per call only and can run on many threads at once. These settle how long a call takes:
+The reader allocates per call only and can run on many threads at once. On one thread it reads the ZXing test images in
+about the time zxing-cpp takes (0.9 times over 817 images, each read for its own symbology). These settle how long a call takes:
 
 - `Formats`: only the symbologies you expect. Each detector skipped saves its time.
 - `Effort`: 5 is the default. Lower efforts try fewer scan lines and rotations and no inverted image; higher ones try more.

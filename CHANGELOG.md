@@ -32,6 +32,27 @@ command review freezes the names and options at 1.0.
 - Exit codes 0 to 3, diagnostics on standard error (`-v`, `-vv`, `-q`), safety limits with `--limit` and `EGAMI_LIMITS`.
 - `egami <name>` runs an `egami-<name>` program from the PATH, so other families' tools join in; `egami formats` names
   `egami-heic` for HEIC, which the tool leaves out.
+## Egami.Barcodes 1.0.1 (unreleased)
+
+### Faster reading
+
+- Reading takes about 0.9 times zxing-cpp 3.1.1's time on one thread over the 817 ZXing test images, each read for its own symbology (3.1 times before), with
+  the same symbols read or more. Linear barcodes, PDF417 and QR codes are within 1.5 times zxing-cpp's time; Aztec and Data
+  Matrix within about 1.8 times.
+- The inverted pass reuses the first pass's thresholds with dark and light swapped, the linear scan reads light-on-dark bars
+  from the same scan lines, and inside a symbol the first pass found the inverted pass looks for no other.
+- The thresholds, run cutting and Reed-Solomon decoding work on several pixels or values at a time; QR, Data Matrix and
+  Aztec check a grid's fixed patterns (timing patterns, the L and clock tracks, the mode message) before sampling and
+  decoding it.
+- PDF417 rows are read every three quarters of a module instead of every pixel.
+
+### Reading
+
+- From effort 5 the linear scan also reads rows through the local threshold, which keeps bars under glare apart (from effort 6
+  before), and scans 29 lines instead of 25, including effort 0 to 2's lines. EAN-13 photos with glare read 16 of 22 ZXing
+  test images (11 before).
+- QR tries every alignment pattern near the expected place, nearest first, so strongly tilted symbols read (39 of 42 of the
+  ZXing qrcode-3 set, 37 before).
 
 ## Egami.Barcodes 1.0.0 (2026-10-19)
 
