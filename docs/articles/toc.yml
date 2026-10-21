@@ -6,86 +6,86 @@
   href: guides/index.md
 - name: "Egami: basics"
   items:
-    - name: Pixel types
-      href: guides/pixel-types.md
-    - name: Metadata
-      href: guides/metadata.md
-    - name: Memory and threading
-      href: guides/memory-and-threading.md
-    - name: Security
-      href: guides/security.md
     - name: Diagnostics
       href: diagnostics.md
+    - name: Memory and threading
+      href: guides/memory-and-threading.md
+    - name: Metadata
+      href: guides/metadata.md
     - name: Performance
       href: performance.md
+    - name: Pixel types
+      href: guides/pixel-types.md
+    - name: Security
+      href: guides/security.md
 - name: Formats
   items:
     - name: Overview
       href: formats/index.md
-    - name: PNG and APNG
-      href: formats/png.md
-    - name: JPEG
-      href: formats/jpeg.md
-    - name: GIF
-      href: formats/gif.md
-    - name: WebP
-      href: formats/webp.md
-    - name: TIFF
-      href: formats/tiff.md
-    - name: JPEG XL
-      href: formats/jxl.md
     - name: AVIF
       href: formats/avif.md
-    - name: HEIC
-      href: formats/heic.md
     - name: BMP
       href: formats/bmp.md
-    - name: TGA
-      href: formats/tga.md
-    - name: QOI
-      href: formats/qoi.md
-    - name: Netpbm
-      href: formats/pnm.md
-    - name: Radiance
-      href: formats/radiance.md
-    - name: OpenEXR
-      href: formats/openexr.md
-    - name: ICO and CUR
-      href: formats/ico.md
-    - name: PSD and PSB
-      href: formats/psd.md
-    - name: JPEG 2000
-      href: formats/jpeg2000.md
-    - name: JBIG2
-      href: formats/jbig2.md
     - name: CCITT fax
       href: formats/ccitt.md
+    - name: GIF
+      href: formats/gif.md
+    - name: HEIC
+      href: formats/heic.md
+    - name: ICO and CUR
+      href: formats/ico.md
+    - name: JBIG2
+      href: formats/jbig2.md
+    - name: JPEG
+      href: formats/jpeg.md
+    - name: JPEG 2000
+      href: formats/jpeg2000.md
+    - name: JPEG XL
+      href: formats/jxl.md
+    - name: Netpbm
+      href: formats/pnm.md
+    - name: OpenEXR
+      href: formats/openexr.md
+    - name: PNG and APNG
+      href: formats/png.md
+    - name: PSD and PSB
+      href: formats/psd.md
+    - name: QOI
+      href: formats/qoi.md
+    - name: Radiance
+      href: formats/radiance.md
+    - name: TGA
+      href: formats/tga.md
+    - name: TIFF
+      href: formats/tiff.md
     - name: VP8 video frames
       href: formats/vp8.md
+    - name: WebP
+      href: formats/webp.md
     - name: Your own format
       href: formats/custom.md
 - name: "Egami: editing images"
   items:
-    - name: Resizing and geometry
-      href: guides/resizing-and-geometry.md
     - name: Color
       href: guides/color.md
-    - name: Tone and color
-      href: guides/tone-and-color.md
-    - name: Filters
-      href: guides/filters.md
-    - name: Edges and morphology
-      href: guides/edges-and-morphology.md
-    - name: Lighting and relief
-      href: guides/lighting-and-relief.md
-    - name: Effects and shadows
-      href: guides/effects.md
     - name: Compositing
       href: guides/compositing.md
-    - name: Regions, masks and channels
-      href: guides/regions-and-masks.md
+    - name: Edges and morphology
+      href: guides/edges-and-morphology.md
+    - name: Effects and shadows
+      href: guides/effects.md
+    - name: Filters
+      href: guides/filters.md
     - name: Keying and arithmetic
       href: guides/keying-and-arithmetic.md
+    - name: Lighting and relief
+      href: guides/lighting-and-relief.md
+    - name: Regions, masks and channels
+      href: guides/regions-and-masks.md
+    - name: Resizing and geometry
+      href: guides/resizing-and-geometry.md
+    - name: Tone and color
+      href: guides/tone-and-color.md
 - name: "Egami: color and HDR"
   items:
     - name: Color management
@@ -96,12 +96,12 @@
       href: guides/planar-yuv.md
 - name: "Egami: analysis, palettes and animation"
   items:
+    - name: Animation
+      href: guides/animation.md
     - name: Comparing and measuring
       href: guides/analysis.md
     - name: Palettes and dithering
       href: guides/palettes.md
-    - name: Animation
-      href: guides/animation.md
 - name: "Egami: extending"
   items:
     - name: Custom operations and formats
@@ -110,22 +110,22 @@
   items:
     - name: Drawing
       href: guides/drawing.md
-    - name: The .egdr format
+    - name: Drawing files (.egdr)
       href: guides/egdr-format.md
 - name: Egami.Fonts
   items:
     - name: Fonts and text
       href: guides/text.md
-    - name: Unicode text and shaping
-      href: guides/unicode-text.md
     - name: Paragraph layout
       href: guides/paragraph-layout.md
+    - name: Unicode text and shaping
+      href: guides/unicode-text.md
 - name: Egami.Svg and Egami.Css
   items:
-    - name: SVG
-      href: guides/svg.md
     - name: CSS
       href: guides/css.md
+    - name: SVG
+      href: guides/svg.md
 - name: Egami.Metafiles
   items:
     - name: Windows metafiles

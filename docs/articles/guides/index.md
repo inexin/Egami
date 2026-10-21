@@ -4,49 +4,62 @@ Each guide covers one area of Egami: what it does, the options and their default
 **Recipes**, short answers to common tasks such as making a favicon or blurring a face, with code you can copy. Every code sample
 compiles and runs in Egami's test run.
 
-The guides are grouped by package, and within Egami they go from the basics to the specialized. Each file format has its own
+The guides are grouped by package, and within Egami the groups go from the basics to the specialized. Within a group, pages are
+in alphabetical order. Each file format has its own
 page in [Formats](../formats/index.md). If you are new, read [Getting started](../getting-started.md) first.
 
 ## Egami: basics
 
 What every user meets: pixel types, metadata, and how Egami uses memory and handles untrusted files.
 
-- [Pixel types](pixel-types.md): how pixels are stored, and which type to pick.
-- [Metadata](metadata.md): EXIF, IPTC and XMP, kept, edited or stripped.
-- [Memory and threading](memory-and-threading.md): pooled memory, streaming decode and parallel work.
-- [Security](security.md): the limits that make untrusted files safe to load.
 - [Diagnostics](../diagnostics.md): warnings about damaged or unusual files, and how to log or reject them.
+- [Memory and threading](memory-and-threading.md): pooled memory, streaming decode and parallel work.
+- [Metadata](metadata.md): EXIF, IPTC and XMP, kept, edited or stripped.
 - [Performance](../performance.md): what keeps loading, editing and saving fast.
+- [Pixel types](pixel-types.md): how pixels are stored, and which type to pick.
+- [Security](security.md): the limits that make untrusted files safe to load.
 
 ## Formats
 
 The [overview](../formats/index.md) says what each format reads and writes and how a format is detected; then one page per
 format, with its options:
 
-- [PNG and APNG](../formats/png.md), [JPEG](../formats/jpeg.md), [GIF](../formats/gif.md), [WebP](../formats/webp.md),
-  [TIFF](../formats/tiff.md), [JPEG XL](../formats/jxl.md), [AVIF](../formats/avif.md), [HEIC](../formats/heic.md) (in the
-  Egami.Heic package)
-- [BMP](../formats/bmp.md), [TGA](../formats/tga.md), [QOI](../formats/qoi.md), [Netpbm](../formats/pnm.md)
-- [Radiance](../formats/radiance.md), [OpenEXR](../formats/openexr.md)
-- [ICO and CUR](../formats/ico.md), [PSD and PSB](../formats/psd.md)
-- [JPEG 2000](../formats/jpeg2000.md), [JBIG2](../formats/jbig2.md), [CCITT fax](../formats/ccitt.md)
+- [AVIF](../formats/avif.md)
+- [BMP](../formats/bmp.md)
+- [CCITT fax](../formats/ccitt.md)
+- [GIF](../formats/gif.md)
+- [HEIC](../formats/heic.md) (in the Egami.Heic package)
+- [ICO and CUR](../formats/ico.md)
+- [JBIG2](../formats/jbig2.md)
+- [JPEG](../formats/jpeg.md)
+- [JPEG 2000](../formats/jpeg2000.md)
+- [JPEG XL](../formats/jxl.md)
+- [Netpbm](../formats/pnm.md)
+- [OpenEXR](../formats/openexr.md)
+- [PNG and APNG](../formats/png.md)
+- [PSD and PSB](../formats/psd.md)
+- [QOI](../formats/qoi.md)
+- [Radiance](../formats/radiance.md)
+- [TGA](../formats/tga.md)
+- [TIFF](../formats/tiff.md)
 - [VP8 video frames](../formats/vp8.md)
+- [WebP](../formats/webp.md)
 - [Your own format](../formats/custom.md): plug in a reader and writer for a format Egami does not have
 
 ## Egami: editing images
 
 Operations that run on a raster through `Apply` and `Derive`.
 
-- [Resizing and geometry](resizing-and-geometry.md): resize, crop, rotate, warp and combine images.
 - [Color](color.md): brightness, contrast, saturation and other CSS-style color filters.
-- [Tone and color](tone-and-color.md): levels, curves, grading, auto fixes and thresholds.
-- [Filters](filters.md): blurs, sharpening, convolution, noise and median.
-- [Edges and morphology](edges-and-morphology.md): edge detection, Canny, and dilate, erode, open and close.
-- [Lighting and relief](lighting-and-relief.md): bevels, embossing and lighting from a height map.
-- [Effects and shadows](effects.md): vignette, glow, pixelate, oil paint and shadows.
 - [Compositing](compositing.md): blend modes and drawing one image over another.
-- [Regions, masks and channels](regions-and-masks.md): edit part of an image, and move channels around.
+- [Edges and morphology](edges-and-morphology.md): edge detection, Canny, and dilate, erode, open and close.
+- [Effects and shadows](effects.md): vignette, glow, pixelate, oil paint and shadows.
+- [Filters](filters.md): blurs, sharpening, convolution, noise and median.
 - [Keying and arithmetic](keying-and-arithmetic.md): transparent colors, flood fill and arithmetic between images.
+- [Lighting and relief](lighting-and-relief.md): bevels, embossing and lighting from a height map.
+- [Regions, masks and channels](regions-and-masks.md): edit part of an image, and move channels around.
+- [Resizing and geometry](resizing-and-geometry.md): resize, crop, rotate, warp and combine images.
+- [Tone and color](tone-and-color.md): levels, curves, grading, auto fixes and thresholds.
 
 ## Egami: color and HDR
 
@@ -56,9 +69,9 @@ Operations that run on a raster through `Apply` and `Derive`.
 
 ## Egami: analysis, palettes and animation
 
+- [Animation](animation.md): frames, timing and animated GIF, APNG and WebP.
 - [Comparing and measuring](analysis.md): differences, statistics, hashes and visual regression tests.
 - [Palettes and dithering](palettes.md): reducing colors and indexed images.
-- [Animation](animation.md): frames, timing and animated GIF, APNG and WebP.
 
 ## Egami: extending
 
@@ -67,18 +80,18 @@ Operations that run on a raster through `Apply` and `Derive`.
 ## Egami.Drawing
 
 - [Drawing](drawing.md): paths, shapes, strokes, paints, layers and recorded drawings on a canvas.
-- [The .egdr format](egdr-format.md): the file format for recorded drawings.
+- [Drawing files (.egdr)](egdr-format.md): the file format for recorded drawings.
 
 ## Egami.Fonts
 
 - [Fonts and text](text.md): loading fonts, drawing text and preparing fonts for PDF.
-- [Unicode text and shaping](unicode-text.md): complex scripts, bidirectional text and emoji.
 - [Paragraph layout](paragraph-layout.md): line breaking, justification, columns and vertical text.
+- [Unicode text and shaping](unicode-text.md): complex scripts, bidirectional text and emoji.
 
 ## Egami.Svg and Egami.Css
 
-- [SVG](svg.md): read, edit, save and draw SVG.
 - [CSS](css.md): parse style sheets, match selectors and run the cascade.
+- [SVG](svg.md): read, edit, save and draw SVG.
 
 ## Egami.Metafiles
 
