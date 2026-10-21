@@ -10778,6 +10778,36 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/cli/commands.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/cli/commands.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/cli/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/cli/index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/cli/steps.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/cli/steps.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/diagnostics.md",
       "output": {
         ".html": {

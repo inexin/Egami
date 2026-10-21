@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Steps for run | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Steps for run | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/cli/steps.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="steps-for-run">Steps for run</h1>
+
+<p>The steps <code>egami run</code> chains and workflow files list. Every public <code>RasterOps</code> method whose arguments a command line can
+spell is a step, named in kebab case (<code>ContrastStretch</code> is <code>contrast-stretch</code>); its options are the method's parameters.
+Positional values fill the parameters in order; <code>--name value</code> sets one by name. <code>egami run --list &lt;step&gt;</code> prints one.</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#adaptive-threshold">adaptive-threshold</a></td>
+<td>Thresholds each pixel against the mean of the window around it (Bradley and Roth, 2007): a pixel is dark when its luminance is more than limit below its window's mean, so uneven lighting on a scanned page does not swallow text.</td>
+</tr>
+<tr>
+<td><a href="#add-noise">add-noise</a></td>
+<td>Adds noise to red, green and blue (or a CMYK raster's inks), as ImageMagick's +noise with -attenuate does: film grain, sensor noise, or salt and pepper for testing filters.</td>
+</tr>
+<tr>
+<td><a href="#alpha-to-gray">alpha-to-gray</a></td>
+<td>Makes the image a gray picture of its alpha: red, green and blue become the alpha value and alpha becomes opaque, as ImageMagick's -alpha extract does.</td>
+</tr>
+<tr>
+<td><a href="#arithmetic">arithmetic</a></td>
+<td>Applies op with value to every value of channels, on values scaled 0 to 1 and clamped back to 0..1, as ImageMagick's -evaluate defines each operator.</td>
+</tr>
+<tr>
+<td><a href="#auto-gamma">auto-gamma</a></td>
+<td>Applies the Gamma that moves the image's mean to 0.5, as ImageMagick's -auto-gamma; an image whose mean is 0 or 1 is left alone.</td>
+</tr>
+<tr>
+<td><a href="#auto-level">auto-level</a></td>
+<td>Stretches the darkest value to 0 and the lightest to 1, as ImageMagick's -auto-level.</td>
+</tr>
+<tr>
+<td><a href="#auto-orient">auto-orient</a></td>
+<td>Turns the image the way its EXIF orientation says, so it looks as the camera meant, and sets the orientation to Normal.</td>
+</tr>
+<tr>
+<td><a href="#auto-threshold">auto-threshold</a></td>
+<td>Thresholds at the level method finds in the histogram, as ImageMagick's -auto-threshold; see FindThreshold.</td>
+</tr>
+<tr>
+<td><a href="#auto-white-balance">auto-white-balance</a></td>
+<td>Removes a color cast it measures, by method.</td>
+</tr>
+<tr>
+<td><a href="#bilateral-blur">bilateral-blur</a></td>
+<td>Smooths while keeping edges (Tomasi and Manduchi's bilateral filter): each neighbour counts by its distance, through a Gaussian of spatialSigma, and by how much its color differs, through a Gaussian of rangeSigma, so noise flattens and edges stay.</td>
+</tr>
+<tr>
+<td><a href="#blend-color">blend-color</a></td>
+<td>Blends one color over every pixel by mode: Multiply tints, Screen washes out, Color colorizes.</td>
+</tr>
+<tr>
+<td><a href="#bloom">bloom</a></td>
+<td>Makes bright areas glow, as a camera's bloom: the parts of each channel above threshold, stretched to 0..1 and scaled by intensity, blurred in linear light with Fast and screened onto the image in linear light.</td>
+</tr>
+<tr>
+<td><a href="#blur">blur</a></td>
+<td>Blurs with a Gaussian of standard deviation sigma pixels, computed by method.</td>
+</tr>
+<tr>
+<td><a href="#box-blur">box-blur</a></td>
+<td>Replaces each pixel with the mean of the (2r + 1) square around it.</td>
+</tr>
+<tr>
+<td><a href="#brightness">brightness</a></td>
+<td>Multiplies red, green and blue by amount: 1 changes nothing, 0 gives black.</td>
+</tr>
+<tr>
+<td><a href="#canny-edges">canny-edges</a></td>
+<td>Finds thin edges with Canny's detector, as ImageMagick's -canny 0x{sigma}+{low × 100}%+{high × 100}% does: the luma is smoothed by a Gaussian, Canny's first differences give the gradient, pixels that are not the strongest across their edge are dropped, and hysteresis keeps pixels whose magnitude reaches high times the largest, plus those 8-connected to them that reach low times it.</td>
+</tr>
+<tr>
+<td><a href="#change-speed">change-speed</a></td>
+<td>Plays the animation factor times as fast: every delay is divided by it, rounded to whole milliseconds.</td>
+</tr>
+<tr>
+<td><a href="#clahe">clahe</a></td>
+<td>Contrast-limited adaptive histogram equalization (Zuiderveld, 1994) on L*, as ImageMagick's -clahe: each of tilesX × tilesY tiles gets its own clipped, equalized curve, blended smoothly between tile centers, so local detail comes up without the noise of plain equalization.</td>
+</tr>
+<tr>
+<td><a href="#colorize">colorize</a></td>
+<td>Blends red, green and blue toward color, as ImageMagick's -colorize.</td>
+</tr>
+<tr>
+<td><a href="#contrast">contrast</a></td>
+<td>Scales red, green and blue around mid-gray: 1 changes nothing, 0 gives flat gray.</td>
+</tr>
+<tr>
+<td><a href="#contrast-stretch">contrast-stretch</a></td>
+<td>Clips the darkest black and lightest white fractions of the pixels, then stretches the rest to 0..1, as ImageMagick's -contrast-stretch.</td>
+</tr>
+<tr>
+<td><a href="#convert-color">convert-color</a></td>
+<td>Converts the pixels from the encoding the raster is in (GetColorProfile, or the target of an earlier ConvertColor in the chain) to target, in place, and records the new encoding in the metadata: no profile for sRGB, the target's ICC profile otherwise.</td>
+</tr>
+<tr>
+<td><a href="#cover">cover</a></td>
+<td>Scales the image to cover width × height with its aspect ratio kept, keeping the part at anchor.</td>
+</tr>
+<tr>
+<td><a href="#crop">crop</a></td>
+<td>Keeps one rectangle of the image.</td>
+</tr>
+<tr>
+<td><a href="#deskew">deskew</a></td>
+<td>Straightens a scanned or photographed page: detects the tilt of its text lines (see DetectSkew) and turns the image back by it.</td>
+</tr>
+<tr>
+<td><a href="#despeckle">despeckle</a></td>
+<td>Removes specks while keeping edges, by Crimmins' complementary hulling exactly as ImageMagick's -despeckle runs it: each color channel is nudged, a level at a time, toward neighbours that differ by two levels or more, in 16 passes along four directions.</td>
+</tr>
+<tr>
+<td><a href="#dilate">dilate</a></td>
+<td>The maximum over the (2rx + 1) × (2ry + 1) rectangle around each pixel, as Skia's dilate filter with those radii.</td>
+</tr>
+<tr>
+<td><a href="#displace">displace</a></td>
+<td>Moves each pixel by a displacement map, as Skia's DisplacementMap and ImageMagick's -displace do: pixel (x, y) shows the source at (x + scaleX × (mx − 0.5), y + scaleY × (my − 0.5)), with mx and my the map's chosen channels from 0 to 1, so mid-gray moves nothing.</td>
+</tr>
+<tr>
+<td><a href="#draw-animation">draw-animation</a></td>
+<td>Draws an animation (or a still) onto this one at position.</td>
+</tr>
+<tr>
+<td><a href="#draw-arithmetic">draw-arithmetic</a></td>
+<td>Draws image with the arithmetic composite (SVG's feComposite arithmetic operator, Skia's arithmetic blender): each channel of the premultiplied result is k1·S·D + k2·S + k3·D + k4, with S the image and D this raster, in 0..1.</td>
+</tr>
+<tr>
+<td><a href="#draw-image">draw-image</a></td>
+<td>Draws the part of image inside sourceArea onto this raster with that part's top-left corner at position, combining pixels by mode as DrawImage does for the whole image.</td>
+</tr>
+<tr>
+<td><a href="#drop-shadow">drop-shadow</a></td>
+<td>Adds a drop shadow, as Skia's DropShadow image filter: the image's alpha, moved by (dx, dy), blurred by a Gaussian of sigma and filled with color, with the image drawn over it source-over.</td>
+</tr>
+<tr>
+<td><a href="#drop-zero-delay">drop-zero-delay</a></td>
+<td>Removes frames with no delay, which no viewer shows, as ImageMagick's -layers RemoveZero; when every frame has none, nothing is removed.</td>
+</tr>
+<tr>
+<td><a href="#duotone">duotone</a></td>
+<td>Maps luminance onto the line from shadows to highlights.</td>
+</tr>
+<tr>
+<td><a href="#edges">edges</a></td>
+<td>Replaces each pixel with the strength of the edge through it: the gradient magnitude of op's kernels, scaled so a full black-to-white step gives 1, clamped to 0 to 1.</td>
+</tr>
+<tr>
+<td><a href="#emboss">emboss</a></td>
+<td>Embosses: blurs with a Gaussian of sigma, takes the slope toward the light at angle with a 3 × 3 Sobel stencil, scales it by depth and adds mid gray, so flat areas become 0.5 and slopes facing the light are lighter.</td>
+</tr>
+<tr>
+<td><a href="#entropy-crop">entropy-crop</a></td>
+<td>Crops to the busiest part of the image: the bounding box of the 16 × 16 tiles whose luminance entropy (the Shannon entropy of the tile's 256-level histogram, over 8 bits) reaches threshold.</td>
+</tr>
+<tr>
+<td><a href="#equalize">equalize</a></td>
+<td>Spreads the values evenly by histogram equalization: of L* by default, keeping a* and b* so colors hold, or of each channel as ImageMagick's -equalize.</td>
+</tr>
+<tr>
+<td><a href="#erode">erode</a></td>
+<td>The minimum over the (2rx + 1) × (2ry + 1) rectangle around each pixel, as Skia's erode filter with those radii.</td>
+</tr>
+<tr>
+<td><a href="#fill-color">fill-color</a></td>
+<td>Sets every pixel in rect, or the whole image, to one color.</td>
+</tr>
+<tr>
+<td><a href="#fit">fit</a></td>
+<td>Scales the image to fit inside width × height with its aspect ratio kept, so one side matches the box and the other is no larger.</td>
+</tr>
+<tr>
+<td><a href="#flatten">flatten</a></td>
+<td>Composites the image over background and makes it opaque, as ImageMagick's -alpha remove does.</td>
+</tr>
+<tr>
+<td><a href="#flip">flip</a></td>
+<td>Mirrors the image: horizontal (left to right), vertical (top to bottom) or both.</td>
+</tr>
+<tr>
+<td><a href="#flip-horizontal">flip-horizontal</a></td>
+<td>Mirrors the image left to right.</td>
+</tr>
+<tr>
+<td><a href="#flip-vertical">flip-vertical</a></td>
+<td>Mirrors the image top to bottom.</td>
+</tr>
+<tr>
+<td><a href="#flood-fill">flood-fill</a></td>
+<td>Fills the region connected to seed whose colors lie within tolerance of the seed's own with fill, as ImageMagick's -fuzz with -floodfill does.</td>
+</tr>
+<tr>
+<td><a href="#gamma">gamma</a></td>
+<td>Raises red, green and blue to 1/gamma, as ImageMagick's -gamma: 2.2 brightens.</td>
+</tr>
+<tr>
+<td><a href="#glow">glow</a></td>
+<td>Adds a glow around the image's alpha shape, as an editor's outer glow layer style: the alpha, blurred with Fast, spread, and filled with color, drawn behind the image.</td>
+</tr>
+<tr>
+<td><a href="#grayscale">grayscale</a></td>
+<td>Converts toward gray.</td>
+</tr>
+<tr>
+<td><a href="#high-contrast">high-contrast</a></td>
+<td>Skia's high-contrast accessibility filter.</td>
+</tr>
+<tr>
+<td><a href="#hue-rotate">hue-rotate</a></td>
+<td>Rotates hue around the luma axis.</td>
+</tr>
+<tr>
+<td><a href="#inner-shadow">inner-shadow</a></td>
+<td>Adds a shadow inside the image's alpha shape, as an editor's inner shadow layer style: everything outside the shape, moved by (dx, dy) rounded to whole pixels, blurred with Fast and filled with color, drawn on the image inside the shape only.</td>
+</tr>
+<tr>
+<td><a href="#invert">invert</a></td>
+<td>Replaces red, green and blue with 1 − value, blended by amount.</td>
+</tr>
+<tr>
+<td><a href="#kuwahara">kuwahara</a></td>
+<td>Smooths while keeping edges, with the Kuwahara filter as ImageMagick's -kuwahara defines it: of the four (r + 1) squares that have the pixel as a corner, the one whose luma varies least gives the pixel its value, sampled at that square's middle.</td>
+</tr>
+<tr>
+<td><a href="#lens-blur">lens-blur</a></td>
+<td>Blurs as an out-of-focus lens does: each point spreads into the aperture's shape, a disc or a polygon of 5 to 12 blades, so small lights become discs, unlike a Gaussian's soft spots.</td>
+</tr>
+<tr>
+<td><a href="#level">level</a></td>
+<td>Stretches black..white to outputBlack..outputWhite with a midtone gamma, as ImageMagick's -level and +level.</td>
+</tr>
+<tr>
+<td><a href="#local-contrast">local-contrast</a></td>
+<td>Brings out local detail, as ImageMagick's -local-contrast: L* is pushed away from a wide blur of itself by strength, so large-scale light changes less than detail.</td>
+</tr>
+<tr>
+<td><a href="#luminance-to-alpha">luminance-to-alpha</a></td>
+<td>Sets alpha to the luminance of the stored values, 0.212656 R + 0.715158 G + 0.072186 B (the Rec.</td>
+</tr>
+<tr>
+<td><a href="#make-transparent">make-transparent</a></td>
+<td>Makes pixels within tolerance of color transparent, keeping their color, by ImageMagick's -fuzz distance, so with no softness the result equals ImageMagick's -fuzz with -transparent.</td>
+</tr>
+<tr>
+<td><a href="#median">median</a></td>
+<td>Replaces each channel with its median over the (2r + 1) square around the pixel, as ImageMagick's -statistic Median does: removes salt-and-pepper noise while keeping edges.</td>
+</tr>
+<tr>
+<td><a href="#merge-duplicates">merge-duplicates</a></td>
+<td>Removes each frame equal to the one before it and adds its delay to the frame that stays, as ImageMagick's -layers RemoveDups: a screen recording that sat still for seconds becomes one long frame.</td>
+</tr>
+<tr>
+<td><a href="#motion-blur">motion-blur</a></td>
+<td>Streaks the image along a direction, as a camera moving during the exposure, with ImageMagick's -motion-blur meaning: each pixel averages 2⌈radius⌉ + 1 samples one pixel apart, from itself toward angle, weighted by a Gaussian of sigma from the pixel.</td>
+</tr>
+<tr>
+<td><a href="#normalize">normalize</a></td>
+<td>ContrastStretch at ImageMagick's -normalize points: the darkest 2% of the pixels become black and the lightest 1% white.</td>
+</tr>
+<tr>
+<td><a href="#offset">offset</a></td>
+<td>Moves the image by whole pixels, right by dx and down by dy, with no resampling.</td>
+</tr>
+<tr>
+<td><a href="#oil-paint">oil-paint</a></td>
+<td>Makes the image look painted, as ImageMagick's -paint does: around each pixel, in the (2r + 1) square, pixels are sorted into levels bins by intensity, and the pixel becomes a pixel of the most common bin, unchanged.</td>
+</tr>
+<tr>
+<td><a href="#opacity">opacity</a></td>
+<td>Multiplies alpha by amount.</td>
+</tr>
+<tr>
+<td><a href="#pad">pad</a></td>
+<td>Enlarges the canvas to width × height, placing the image at anchor and filling the new area with background.</td>
+</tr>
+<tr>
+<td><a href="#pixelate">pixelate</a></td>
+<td>Pixelates: the image is cut into square cells, and every pixel of a cell becomes the cell's average, taken on premultiplied values so transparent pixels do not darken it.</td>
+</tr>
+<tr>
+<td><a href="#posterize">posterize</a></td>
+<td>Rounds red, green and blue to levels evenly spaced values each, as ImageMagick's -posterize, optionally dithered: ordered dithering adds a fixed 8 × 8 pattern before rounding, Floyd–Steinberg spreads each value's rounding error to its neighbours.</td>
+</tr>
+<tr>
+<td><a href="#quad-distort">quad-distort</a></td>
+<td>Moves the image's four corners to four points, bending it in perspective: ImageMagick's Perspective distort.</td>
+</tr>
+<tr>
+<td><a href="#quantize">quantize</a></td>
+<td>Reduces each frame to at most MaxColors colors, as a palette format would, but keeps the pixel type: an Rgba16 image stays Rgba16 with at most that many distinct values.</td>
+</tr>
+<tr>
+<td><a href="#replace-color">replace-color</a></td>
+<td>Replaces every pixel within tolerance of from with to, by ImageMagick's -fuzz distance, as ImageMagick's -fill with -opaque does.</td>
+</tr>
+<tr>
+<td><a href="#resize">resize</a></td>
+<td>Resizes to a size in the size syntax (W, xH, WxH, P%, with !, ^, &gt; or &lt;) with a fit mode.</td>
+</tr>
+<tr>
+<td><a href="#retime">retime</a></td>
+<td>Resamples the animation to framesPerSecond, as ffmpeg's fps filter: fixed ticks, each showing the frame visible when it starts, with neighbours that show the same frame merged.</td>
+</tr>
+<tr>
+<td><a href="#reverse">reverse</a></td>
+<td>Plays the animation backwards; each frame keeps its delay and metadata.</td>
+</tr>
+<tr>
+<td><a href="#rotate">rotate</a></td>
+<td>Rotates the image clockwise.</td>
+</tr>
+<tr>
+<td><a href="#rotational-blur">rotational-blur</a></td>
+<td>Spins the image around center, as ImageMagick's -rotational-blur: each pixel averages samples along an arc of degrees centered on it, about one per pixel of arc (at most 256), read bilinearly.</td>
+</tr>
+<tr>
+<td><a href="#saturation">saturation</a></td>
+<td>Mixes each color with its luma: 1 changes nothing, 0 gives gray, above 1 oversaturates.</td>
+</tr>
+<tr>
+<td><a href="#sepia">sepia</a></td>
+<td>Tints toward sepia.</td>
+</tr>
+<tr>
+<td><a href="#shade">shade</a></td>
+<td>Shades the image as ImageMagick's -shade does: the luminance is a height field, and each pixel becomes the Lambertian shading of its surface normal by a distant light at azimuth and elevation, a gray relief; with colored the shading multiplies the image's own colors instead, as +shade does.</td>
+</tr>
+<tr>
+<td><a href="#sharpen">sharpen</a></td>
+<td>Sharpens with an unsharp mask: out = src + amount × (src − Blur(sigma)).</td>
+</tr>
+<tr>
+<td><a href="#shuffle-channels">shuffle-channels</a></td>
+<td>Rearranges the working RGBA channels: each output channel takes the input channel, or the constant, its argument names.</td>
+</tr>
+<tr>
+<td><a href="#sigmoidal-contrast">sigmoidal-contrast</a></td>
+<td>Adds (or removes) contrast with ImageMagick's scaled logistic curve, which never clips.</td>
+</tr>
+<tr>
+<td><a href="#simulate-color-blindness">simulate-color-blindness</a></td>
+<td>Shows how the image looks with a color vision deficiency.</td>
+</tr>
+<tr>
+<td><a href="#skew">skew</a></td>
+<td>Shears the image about its center: vertical lines lean by degreesX (x moves by y × tan) and horizontal lines by degreesY.</td>
+</tr>
+<tr>
+<td><a href="#solarize">solarize</a></td>
+<td>Inverts red, green and blue values above threshold, as ImageMagick's -solarize.</td>
+</tr>
+<tr>
+<td><a href="#spread">spread</a></td>
+<td>Scatters pixels, as ImageMagick's -spread does: each pixel takes the value of a random pixel at most radius away (a whole-pixel offset in the disc; edges repeat the edge pixel).</td>
+</tr>
+<tr>
+<td><a href="#threshold">threshold</a></td>
+<td>Makes a two-color image: pixels above level take above, the others below, with alpha kept.</td>
+</tr>
+<tr>
+<td><a href="#tile">tile</a></td>
+<td>Makes a new width × height canvas filled by repeating the image, or the source rectangle of it, with one copy's top-left corner at origin, as Skia's Tile filter and ImageMagick's tile: fill do.</td>
+</tr>
+<tr>
+<td><a href="#tint">tint</a></td>
+<td>Pushes midtones toward color and keeps black and white, as ImageMagick's -tint.</td>
+</tr>
+<tr>
+<td><a href="#tone-map">tone-map</a></td>
+<td>Maps HDR linear light into 0..1: pixel values are read as linear light with reference white at 1.0 (as RgbaF32, RgbaF16 and RgbF32 rasters hold PQ and HLG images converted to a linear encoding), and the tone curve brings the brightest down to 1 on max(R, G, B), which keeps hue.</td>
+</tr>
+<tr>
+<td><a href="#trim">trim</a></td>
+<td>Removes the border: the rows and columns at the edges whose pixels all lie within tolerance of the border color, by ImageMagick's -fuzz distance, so the rectangle equals ImageMagick's -trim.</td>
+</tr>
+<tr>
+<td><a href="#vignette">vignette</a></td>
+<td>Darkens (or tints) the image toward its corners, outside an ellipse fitted to the image, with a soft edge: the shape of ImageMagick's -vignette, which blurs a drawn ellipse.</td>
+</tr>
+<tr>
+<td><a href="#white-balance">white-balance</a></td>
+<td>Applies WhiteBalance: corrects for a light of temperature kelvin.</td>
+</tr>
+<tr>
+<td><a href="#zoom-blur">zoom-blur</a></td>
+<td>Streaks the image along rays from center, as a zoom during the exposure (Photoshop's radial zoom blur): each pixel averages samples on the ray through it, spanning amount of its distance from the center, half inward and half outward, about one per pixel (at most 256).</td>
+</tr>
+<tr>
+<td><a href="#save">save</a></td>
+<td>Writes the image: save <path> [--format f] [--quality q] [--lossless] [--effort e] [--bit-depth b] [--strip] [--set fmt.key=value].</path></td>
+</tr>
+</tbody>
+</table>
+<h2 id="adaptive-threshold">adaptive-threshold</h2>
+<pre><code class="lang-text">adaptive-threshold: Thresholds each pixel against the mean of the window around it (Bradley and Roth, 2007): a pixel is dark when its luminance is more than limit below its window's mean, so uneven lighting on a scanned page does not swallow text.
+
+  adaptive-threshold [--limit &lt;number&gt;] [--window &lt;int&gt;] [--below &lt;color&gt;] [--above &lt;color&gt;]
+    --limit &lt;number&gt;, default 0.15
+        How far below the local mean a pixel must be to count as dark, from 0 to 1.
+    --window &lt;int&gt;
+        The window's side in pixels, at least 1, or null (the default) for an eighth of the width.
+    --below &lt;color&gt;
+        The dark color, or null for black.
+    --above &lt;color&gt;
+        The light color, or null for white.
+</code></pre>
+<h2 id="add-noise">add-noise</h2>
+<pre><code class="lang-text">add-noise: Adds noise to red, green and blue (or a CMYK raster's inks), as ImageMagick's +noise with -attenuate does: film grain, sensor noise, or salt and pepper for testing filters.
+
+  add-noise &lt;kind&gt; [--amount &lt;number&gt;] [--monochrome &lt;bool&gt;] [--seed &lt;integer&gt;]
+    --kind &lt;gaussian|uniform|impulse|laplacian|multiplicative|poisson&gt;, required
+        The kind of noise.
+    --amount &lt;number&gt;, default 1
+        The strength, as ImageMagick's -attenuate, from 0 (changes nothing) to 10; 1 gives ImageMagick's default.
+    --monochrome &lt;bool&gt;, default false
+        Whether red, green and blue get the same noise, so it has no color.
+    --seed &lt;integer&gt;, default 0
+        The seed: change it for different noise.
+</code></pre>
+<h2 id="alpha-to-gray">alpha-to-gray</h2>
+<pre><code class="lang-text">alpha-to-gray: Makes the image a gray picture of its alpha: red, green and blue become the alpha value and alpha becomes opaque, as ImageMagick's -alpha extract does.
+
+  alpha-to-gray no arguments
+</code></pre>
+<h2 id="arithmetic">arithmetic</h2>
+<pre><code class="lang-text">arithmetic: Applies op with value to every value of channels, on values scaled 0 to 1 and clamped back to 0..1, as ImageMagick's -evaluate defines each operator.
+
+  arithmetic &lt;op&gt; &lt;value&gt; [--channels &lt;choice&gt;]
+    --op &lt;add|subtract|multiply|divide|pow|log|min|max|set&gt;, required
+        The operator.
+    --value &lt;number&gt;, required
+        The constant, on the same 0 to 1 scale for Add, Subtract, Min, Max and Set.
+    --channels &lt;none|red|green|blue|alpha|color|all&gt;, default color
+        The channels to change.
+</code></pre>
+<h2 id="auto-gamma">auto-gamma</h2>
+<pre><code class="lang-text">auto-gamma: Applies the Gamma that moves the image's mean to 0.5, as ImageMagick's -auto-gamma; an image whose mean is 0 or 1 is left alone.
+
+  auto-gamma [--linked &lt;bool&gt;] [--per-frame &lt;bool&gt;]
+    --linked &lt;bool&gt;, default true
+        Whether the channels share one gamma from their joint mean (the default) or each gets its own.
+    --per-frame &lt;bool&gt;, default false
+        Whether each frame is measured alone.
+</code></pre>
+<h2 id="auto-level">auto-level</h2>
+<pre><code class="lang-text">auto-level: Stretches the darkest value to 0 and the lightest to 1, as ImageMagick's -auto-level.
+
+  auto-level [--linked &lt;bool&gt;] [--per-frame &lt;bool&gt;]
+    --linked &lt;bool&gt;, default true
+        Whether red, green and blue share one black and one white point (the default, which keeps colors), or each gets its own, which also removes a cast.
+    --per-frame &lt;bool&gt;, default false
+        Whether each frame is measured alone, as ImageMagick does, instead of all frames together so an animation does not flicker.
+</code></pre>
+<h2 id="auto-orient">auto-orient</h2>
+<pre><code class="lang-text">auto-orient: Turns the image the way its EXIF orientation says, so it looks as the camera meant, and sets the orientation to Normal.
+
+  auto-orient no arguments
+</code></pre>
+<h2 id="auto-threshold">auto-threshold</h2>
+<pre><code class="lang-text">auto-threshold: Thresholds at the level method finds in the histogram, as ImageMagick's -auto-threshold; see FindThreshold.
+
+  auto-threshold [--method &lt;choice&gt;] [--mode &lt;choice&gt;] [--below &lt;color&gt;] [--above &lt;color&gt;] [--per-frame &lt;bool&gt;]
+    --method &lt;otsu|triangle|kapur&gt;, default otsu
+        How the level is found.
+    --mode &lt;luminance|channels|saturation|max-chroma&gt;, default luminance
+        What is measured.
+    --below &lt;color&gt;
+        The lower color, or null for black.
+    --above &lt;color&gt;
+        The upper color, or null for white.
+    --per-frame &lt;bool&gt;, default false
+        Whether each frame is measured alone.
+</code></pre>
+<h2 id="auto-white-balance">auto-white-balance</h2>
+<pre><code class="lang-text">auto-white-balance: Removes a color cast it measures, by method.
+
+  auto-white-balance [--method &lt;choice&gt;] [--per-frame &lt;bool&gt;]
+    --method &lt;gray-world|white-patch&gt;, default gray-world
+        How the cast is found.
+    --per-frame &lt;bool&gt;, default false
+        Whether each frame is measured alone.
+</code></pre>
+<h2 id="bilateral-blur">bilateral-blur</h2>
+<pre><code class="lang-text">bilateral-blur: Smooths while keeping edges (Tomasi and Manduchi's bilateral filter): each neighbour counts by its distance, through a Gaussian of spatialSigma, and by how much its color differs, through a Gaussian of rangeSigma, so noise flattens and edges stay.
+
+  bilateral-blur &lt;spatial-sigma&gt; &lt;range-sigma&gt; [--radius &lt;int&gt;]
+    --spatial-sigma &lt;number&gt;, required
+        The reach in pixels, above 0 and at most 50.
+    --range-sigma &lt;number&gt;, required
+        How different a color may be and still count, above 0, on the 0..1 scale: 0.1 keeps most edges.
+    --radius &lt;int&gt;
+        The window's radius, or null for ⌈2 · spatialSigma⌉ as ImageMagick's width; at most 100.
+</code></pre>
+<h2 id="blend-color">blend-color</h2>
+<pre><code class="lang-text">blend-color: Blends one color over every pixel by mode: Multiply tints, Screen washes out, Color colorizes.
+
+  blend-color &lt;color&gt; &lt;mode&gt; [--opacity &lt;number&gt;] [--color-space &lt;choice&gt;]
+    --color &lt;color&gt;, required
+        The color, with straight alpha.
+    --mode &lt;source-over|clear|source|destination|destination-over|source-in|destination-in|source-out|destination-out|source-atop|destination-atop|xor|plus|modulate|multiply|screen|overlay|darken|lighten|color-dodge|color-burn|hard-light|soft-light|difference|exclusion|add|subtract|hue|saturation|color|luminosity&gt;, required
+        How the color combines with each pixel.
+    --opacity &lt;number&gt;, default 1
+        Multiplies the color's alpha before the mode: 1 uses it as it is.
+    --color-space &lt;encoded|linear&gt;, default encoded
+        Where pixels are blended.
+</code></pre>
+<h2 id="bloom">bloom</h2>
+<pre><code class="lang-text">bloom: Makes bright areas glow, as a camera's bloom: the parts of each channel above threshold, stretched to 0..1 and scaled by intensity, blurred in linear light with Fast and screened onto the image in linear light.
+
+  bloom [--threshold &lt;number&gt;] [--sigma &lt;number&gt;] [--intensity &lt;number&gt;]
+    --threshold &lt;number&gt;, default 0.8
+        The stored value above which a channel blooms, from 0 to under 1.
+    --sigma &lt;number&gt;, default 10
+        The bloom's blur in pixels, from 0 to 1000.
+    --intensity &lt;number&gt;, default 1
+        How strongly the bloom is added, from 0 (nothing) to 100; values are clamped to 1 before the blur.
+</code></pre>
+<h2 id="blur">blur</h2>
+<pre><code class="lang-text">blur: Blurs with a Gaussian of standard deviation sigma pixels, computed by method.
+
+  blur &lt;sigma&gt; &lt;color-space&gt; &lt;method&gt;
+    --sigma &lt;number&gt;, required
+        The standard deviation in pixels; 0 changes nothing.
+    --color-space &lt;encoded|linear&gt;, required
+        Where pixels are blended.
+    --method &lt;exact|fast&gt;, required
+        How the blur is computed.
+
+  blur &lt;sigma&gt; [--color-space &lt;choice&gt;]
+    --sigma &lt;number&gt;, required
+        The standard deviation in pixels; 0 changes nothing.
+    --color-space &lt;encoded|linear&gt;, default encoded
+        Where pixels are blended.
+</code></pre>
+<h2 id="box-blur">box-blur</h2>
+<pre><code class="lang-text">box-blur: Replaces each pixel with the mean of the (2r + 1) square around it.
+
+  box-blur &lt;radius&gt;
+    --radius &lt;int&gt;, required
+        The radius in pixels; 0 changes nothing.
+</code></pre>
+<h2 id="brightness">brightness</h2>
+<pre><code class="lang-text">brightness: Multiplies red, green and blue by amount: 1 changes nothing, 0 gives black.
+
+  brightness &lt;amount&gt;
+    --amount &lt;number&gt;, required
+        The factor, 0 or more.
+</code></pre>
+<h2 id="canny-edges">canny-edges</h2>
+<pre><code class="lang-text">canny-edges: Finds thin edges with Canny's detector, as ImageMagick's -canny 0x{sigma}+{low × 100}%+{high × 100}% does: the luma is smoothed by a Gaussian, Canny's first differences give the gradient, pixels that are not the strongest across their edge are dropped, and hysteresis keeps pixels whose magnitude reaches high times the largest, plus those 8-connected to them that reach low times it.
+
+  canny-edges [--sigma &lt;number&gt;] [--low &lt;number&gt;] [--high &lt;number&gt;]
+    --sigma &lt;number&gt;, default 1
+        The Gaussian's standard deviation in pixels, 0 (no smoothing) to 100.
+    --low &lt;number&gt;, default 0.1
+        The low threshold, as a fraction 0 to 1 of the largest gradient; at most high.
+    --high &lt;number&gt;, default 0.3
+        The high threshold, as a fraction 0 to 1 of the largest gradient.
+</code></pre>
+<h2 id="change-speed">change-speed</h2>
+<pre><code class="lang-text">change-speed: Plays the animation factor times as fast: every delay is divided by it, rounded to whole milliseconds.
+
+  change-speed &lt;factor&gt;
+    --factor &lt;number&gt;, required
+        The speed-up, more than 0: 2 plays twice as fast, 0.5 at half speed.
+</code></pre>
+<h2 id="clahe">clahe</h2>
+<pre><code class="lang-text">clahe: Contrast-limited adaptive histogram equalization (Zuiderveld, 1994) on L*, as ImageMagick's -clahe: each of tilesX × tilesY tiles gets its own clipped, equalized curve, blended smoothly between tile centers, so local detail comes up without the noise of plain equalization.
+
+  clahe [--tiles-x &lt;int&gt;] [--tiles-y &lt;int&gt;] [--clip-limit &lt;number&gt;] [--bins &lt;int&gt;]
+    --tiles-x &lt;int&gt;, default 8
+        Tiles across, from 1 to 256.
+    --tiles-y &lt;int&gt;, default 8
+        Tiles down, from 1 to 256.
+    --clip-limit &lt;number&gt;, default 2
+        How far a tile's histogram may rise, as a multiple of its mean bin (2 is mild, 4 strong); 0 does not clip.
+    --bins &lt;int&gt;, default 256
+        The histogram bins, from 2 to 4,096.
+</code></pre>
+<h2 id="colorize">colorize</h2>
+<pre><code class="lang-text">colorize: Blends red, green and blue toward color, as ImageMagick's -colorize.
+
+  colorize &lt;color&gt; &lt;amount&gt;
+    --color &lt;color&gt;, required
+        The color.
+    --amount &lt;number&gt;, required
+        The blend, from 0 to 1.
+</code></pre>
+<h2 id="contrast">contrast</h2>
+<pre><code class="lang-text">contrast: Scales red, green and blue around mid-gray: 1 changes nothing, 0 gives flat gray.
+
+  contrast &lt;amount&gt;
+    --amount &lt;number&gt;, required
+        The factor, 0 or more.
+</code></pre>
+<h2 id="contrast-stretch">contrast-stretch</h2>
+<pre><code class="lang-text">contrast-stretch: Clips the darkest black and lightest white fractions of the pixels, then stretches the rest to 0..1, as ImageMagick's -contrast-stretch.
+
+  contrast-stretch &lt;black&gt; &lt;white&gt; [--linked &lt;bool&gt;] [--per-frame &lt;bool&gt;]
+    --black &lt;number&gt;, required
+        The fraction of pixels that becomes black, from 0 to 1.
+    --white &lt;number&gt;, required
+        The fraction that becomes white, from 0 to 1; with black less than 1.
+    --linked &lt;bool&gt;, default true
+        Whether the channels share one pair of points (the default) or each gets its own.
+    --per-frame &lt;bool&gt;, default false
+        Whether each frame is measured alone.
+</code></pre>
+<h2 id="convert-color">convert-color</h2>
+<pre><code class="lang-text">convert-color: Converts the pixels from the encoding the raster is in (GetColorProfile, or the target of an earlier ConvertColor in the chain) to target, in place, and records the new encoding in the metadata: no profile for sRGB, the target's ICC profile otherwise.
+
+  convert-color &lt;target&gt;
+    --target &lt;profile&gt;, required
+        The encoding to convert to.
+</code></pre>
+<h2 id="cover">cover</h2>
+<pre><code class="lang-text">cover: Scales the image to cover width × height with its aspect ratio kept, keeping the part at anchor.
+
+  cover &lt;width&gt; &lt;height&gt; [--anchor &lt;choice&gt;] [--filter &lt;choice&gt;] [--color-space &lt;choice&gt;]
+    --width &lt;int&gt;, required
+        The output width, at least 1.
+    --height &lt;int&gt;, required
+        The output height, at least 1.
+    --anchor &lt;center|top-left|top|top-right|left|right|bottom-left|bottom|bottom-right&gt;, default center
+        Which part of the image to keep.
+    --filter &lt;bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline&gt;, default bicubic
+        The resampling kernel.
+    --color-space &lt;encoded|linear&gt;, default encoded
+        Where pixels are blended.
+</code></pre>
+<h2 id="crop">crop</h2>
+<pre><code class="lang-text">crop: Keeps one rectangle of the image.
+
+  crop &lt;x&gt; &lt;y&gt; &lt;width&gt; &lt;height&gt;
+    --x &lt;int&gt;, required
+        The left edge of the rectangle.
+    --y &lt;int&gt;, required
+        The top edge of the rectangle.
+    --width &lt;int&gt;, required
+        The width of the rectangle, at least 1.
+    --height &lt;int&gt;, required
+        The height of the rectangle, at least 1.
+
+  crop &lt;rect&gt;
+    --rect &lt;x,y,w,h&gt;, required
+        The rectangle to keep.
+</code></pre>
+<h2 id="deskew">deskew</h2>
+<pre><code class="lang-text">deskew: Straightens a scanned or photographed page: detects the tilt of its text lines (see DetectSkew) and turns the image back by it.
+
+  deskew [--max-angle &lt;number&gt;] [--background &lt;color&gt;] [--keep-size &lt;bool&gt;] [--filter &lt;choice&gt;]
+    --max-angle &lt;number&gt;, default 15
+        The largest tilt looked for, in degrees, more than 0 and at most 45.
+    --background &lt;color&gt;
+        The color of the uncovered corners, or null (the default) for the top-left pixel's, the border color Trim would use.
+    --keep-size &lt;bool&gt;, default true
+        Whether the page keeps its size (the default, as a scanner user expects), or the canvas grows to the turned bounds as Rotate does.
+    --filter &lt;bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline&gt;, default bicubic
+        The resampling kernel for the turn.
+</code></pre>
+<h2 id="despeckle">despeckle</h2>
+<pre><code class="lang-text">despeckle: Removes specks while keeping edges, by Crimmins' complementary hulling exactly as ImageMagick's -despeckle runs it: each color channel is nudged, a level at a time, toward neighbours that differ by two levels or more, in 16 passes along four directions.
+
+  despeckle no arguments
+</code></pre>
+<h2 id="dilate">dilate</h2>
+<pre><code class="lang-text">dilate: The maximum over the (2rx + 1) × (2ry + 1) rectangle around each pixel, as Skia's dilate filter with those radii.
+
+  dilate &lt;radius-x&gt; &lt;radius-y&gt;
+    --radius-x &lt;int&gt;, required
+        The horizontal radius in pixels, 0 to 1000.
+    --radius-y &lt;int&gt;, required
+        The vertical radius in pixels, 0 to 1000.
+
+  dilate &lt;radius&gt;
+    --radius &lt;int&gt;, required
+        The radius in pixels, 0 (changes nothing) to 1000.
+</code></pre>
+<h2 id="displace">displace</h2>
+<pre><code class="lang-text">displace: Moves each pixel by a displacement map, as Skia's DisplacementMap and ImageMagick's -displace do: pixel (x, y) shows the source at (x + scaleX × (mx − 0.5), y + scaleY × (my − 0.5)), with mx and my the map's chosen channels from 0 to 1, so mid-gray moves nothing.
+
+  displace &lt;map&gt; &lt;scale-x&gt; &lt;scale-y&gt; [--x-channel &lt;choice&gt;] [--y-channel &lt;choice&gt;]
+    --map &lt;image&gt;, required
+        The displacement map, the image's size (Resize it first if it is not).
+    --scale-x &lt;number&gt;, required
+        The horizontal move, in pixels, for a channel going from 0 to 1.
+    --scale-y &lt;number&gt;, required
+        The vertical move, in pixels, for a channel going from 0 to 1.
+    --x-channel &lt;red|green|blue|alpha|luminance&gt;, default red
+        The map channel that moves pixels horizontally.
+    --y-channel &lt;red|green|blue|alpha|luminance&gt;, default green
+        The map channel that moves pixels vertically.
+</code></pre>
+<h2 id="draw-animation">draw-animation</h2>
+<pre><code class="lang-text">draw-animation: Draws an animation (or a still) onto this one at position.
+
+  draw-animation &lt;overlay&gt; &lt;position&gt;
+    --overlay &lt;image&gt;, required
+        The animation or still to draw.
+    --position &lt;x,y&gt;, required
+        Where its top-left corner goes; it may lie partly or wholly outside.
+</code></pre>
+<h2 id="draw-arithmetic">draw-arithmetic</h2>
+<pre><code class="lang-text">draw-arithmetic: Draws image with the arithmetic composite (SVG's feComposite arithmetic operator, Skia's arithmetic blender): each channel of the premultiplied result is k1·S·D + k2·S + k3·D + k4, with S the image and D this raster, in 0..1.
+
+  draw-arithmetic &lt;image&gt; &lt;position&gt; &lt;k1&gt; &lt;k2&gt; &lt;k3&gt; &lt;k4&gt; [--clamp &lt;bool&gt;]
+    --image &lt;image&gt;, required
+        The image to draw.
+    --position &lt;x,y&gt;, required
+        Where its top-left corner goes; may be negative.
+    --k1 &lt;number&gt;, required
+        The weight of the product S·D.
+    --k2 &lt;number&gt;, required
+        The weight of S.
+    --k3 &lt;number&gt;, required
+        The weight of D.
+    --k4 &lt;number&gt;, required
+        The constant added.
+    --clamp &lt;bool&gt;, default true
+        Whether each result is kept a valid premultiplied pixel: every channel in 0..1 and color no higher than alpha.
+</code></pre>
+<h2 id="draw-image">draw-image</h2>
+<pre><code class="lang-text">draw-image: Draws the part of image inside sourceArea onto this raster with that part's top-left corner at position, combining pixels by mode as DrawImage does for the whole image.
+
+  draw-image &lt;image&gt; &lt;source-area&gt; &lt;position&gt; &lt;mode&gt; [--opacity &lt;number&gt;] [--color-space &lt;choice&gt;]
+    --image &lt;image&gt;, required
+        The image to draw from.
+    --source-area &lt;x,y,w,h&gt;, required
+        The part of the image to draw, clipped to the image.
+    --position &lt;x,y&gt;, required
+        Where the area's top-left corner goes; may be negative.
+    --mode &lt;source-over|clear|source|destination|destination-over|source-in|destination-in|source-out|destination-out|source-atop|destination-atop|xor|plus|modulate|multiply|screen|overlay|darken|lighten|color-dodge|color-burn|hard-light|soft-light|difference|exclusion|add|subtract|hue|saturation|color|luminosity&gt;, required
+        How each pixel combines with the one under it.
+    --opacity &lt;number&gt;, default 1
+        Multiplies the image's alpha before the mode: 1 draws it as it is.
+    --color-space &lt;encoded|linear&gt;, default encoded
+        Where pixels are blended.
+
+  draw-image &lt;image&gt; &lt;position&gt; &lt;mode&gt; [--opacity &lt;number&gt;] [--color-space &lt;choice&gt;]
+    --image &lt;image&gt;, required
+        The image to draw, of any pixel type.
+    --position &lt;x,y&gt;, required
+        Where its top-left corner goes; may be negative.
+    --mode &lt;source-over|clear|source|destination|destination-over|source-in|destination-in|source-out|destination-out|source-atop|destination-atop|xor|plus|modulate|multiply|screen|overlay|darken|lighten|color-dodge|color-burn|hard-light|soft-light|difference|exclusion|add|subtract|hue|saturation|color|luminosity&gt;, required
+        How each pixel combines with the one under it.
+    --opacity &lt;number&gt;, default 1
+        Multiplies the image's alpha before the mode: 1 draws it as it is.
+    --color-space &lt;encoded|linear&gt;, default encoded
+        Where pixels are blended.
+
+  draw-image &lt;image&gt; &lt;source-area&gt; &lt;position&gt; [--opacity &lt;number&gt;]
+    --image &lt;image&gt;, required
+        The image to draw from.
+    --source-area &lt;x,y,w,h&gt;, required
+        The part of the image to draw, clipped to the image.
+    --position &lt;x,y&gt;, required
+        Where the area's top-left corner goes; may be negative.
+    --opacity &lt;number&gt;, default 1
+        Multiplies the image's alpha: 1 draws it as it is, 0 draws nothing.
+
+  draw-image &lt;image&gt; &lt;position&gt; [--opacity &lt;number&gt;]
+    --image &lt;image&gt;, required
+        The image to draw.
+    --position &lt;x,y&gt;, required
+        Where its top-left corner goes; may be negative.
+    --opacity &lt;number&gt;, default 1
+        Multiplies the image's alpha: 1 draws it as it is, 0 draws nothing.
+</code></pre>
+<h2 id="drop-shadow">drop-shadow</h2>
+<pre><code class="lang-text">drop-shadow: Adds a drop shadow, as Skia's DropShadow image filter: the image's alpha, moved by (dx, dy), blurred by a Gaussian of sigma and filled with color, with the image drawn over it source-over.
+
+  drop-shadow &lt;dx&gt; &lt;dy&gt; &lt;sigma&gt; &lt;color&gt;
+    --dx &lt;number&gt;, required
+        How far the shadow moves right, in pixels (negative moves it left), at most 10000 either way.
+    --dy &lt;number&gt;, required
+        How far the shadow moves down, in pixels, at most 10000 either way.
+    --sigma &lt;number&gt;, required
+        The shadow's blur in pixels, from 0 (a hard shadow) to 1000.
+    --color &lt;color&gt;, required
+        The shadow's color, with its alpha as the shadow's opacity.
+</code></pre>
+<h2 id="drop-zero-delay">drop-zero-delay</h2>
+<pre><code class="lang-text">drop-zero-delay: Removes frames with no delay, which no viewer shows, as ImageMagick's -layers RemoveZero; when every frame has none, nothing is removed.
+
+  drop-zero-delay no arguments
+</code></pre>
+<h2 id="duotone">duotone</h2>
+<pre><code class="lang-text">duotone: Maps luminance onto the line from shadows to highlights.
+
+  duotone &lt;shadows&gt; &lt;highlights&gt; [--weights &lt;choice&gt;]
+    --shadows &lt;color&gt;, required
+        The color for black.
+    --highlights &lt;color&gt;, required
+        The color for white.
+    --weights &lt;rec709|rec601&gt;, default rec709
+        The luma weights.
+</code></pre>
+<h2 id="edges">edges</h2>
+<pre><code class="lang-text">edges: Replaces each pixel with the strength of the edge through it: the gradient magnitude of op's kernels, scaled so a full black-to-white step gives 1, clamped to 0 to 1.
+
+  edges [--op &lt;choice&gt;] [--grayscale &lt;bool&gt;]
+    --op &lt;sobel|scharr|prewitt|roberts-cross|kirsch|robinson|laplacian3x3|laplacian5x5|laplacian-of-gaussian&gt;, default sobel
+        The kernels; Sobel by default.
+    --grayscale &lt;bool&gt;, default true
+        Whether to find edges in the luma (gray result) rather than per channel.
+</code></pre>
+<h2 id="emboss">emboss</h2>
+<pre><code class="lang-text">emboss: Embosses: blurs with a Gaussian of sigma, takes the slope toward the light at angle with a 3 × 3 Sobel stencil, scales it by depth and adds mid gray, so flat areas become 0.5 and slopes facing the light are lighter.
+
+  emboss [--angle &lt;number&gt;] [--depth &lt;number&gt;] [--sigma &lt;number&gt;] [--grayscale &lt;bool&gt;]
+    --angle &lt;number&gt;, default 135
+        Where the light comes from, in degrees counterclockwise from the right with y up, as -shade's azimuth; 135 is the top left.
+    --depth &lt;number&gt;, default 1
+        The strength of the relief, from 0 (flat gray) to 100; 1 maps a slope of one level per pixel to one level.
+    --sigma &lt;number&gt;, default 1
+        The blur before the slope is taken, in pixels, from 0 (none) to 100.
+    --grayscale &lt;bool&gt;, default true
+        Whether the height is the Rec.
+</code></pre>
+<h2 id="entropy-crop">entropy-crop</h2>
+<pre><code class="lang-text">entropy-crop: Crops to the busiest part of the image: the bounding box of the 16 × 16 tiles whose luminance entropy (the Shannon entropy of the tile's 256-level histogram, over 8 bits) reaches threshold.
+
+  entropy-crop [--threshold &lt;number&gt;]
+    --threshold &lt;number&gt;, default 0.5
+        The entropy a tile needs, from 0 (every tile) to 1 (only uniformly random noise).
+</code></pre>
+<h2 id="equalize">equalize</h2>
+<pre><code class="lang-text">equalize: Spreads the values evenly by histogram equalization: of L* by default, keeping a* and b* so colors hold, or of each channel as ImageMagick's -equalize.
+
+  equalize [--mode &lt;choice&gt;] [--per-frame &lt;bool&gt;]
+    --mode &lt;luminance|channels&gt;, default luminance
+        What is equalized.
+    --per-frame &lt;bool&gt;, default false
+        Whether each frame is measured alone.
+</code></pre>
+<h2 id="erode">erode</h2>
+<pre><code class="lang-text">erode: The minimum over the (2rx + 1) × (2ry + 1) rectangle around each pixel, as Skia's erode filter with those radii.
+
+  erode &lt;radius-x&gt; &lt;radius-y&gt;
+    --radius-x &lt;int&gt;, required
+        The horizontal radius in pixels, 0 to 1000.
+    --radius-y &lt;int&gt;, required
+        The vertical radius in pixels, 0 to 1000.
+
+  erode &lt;radius&gt;
+    --radius &lt;int&gt;, required
+        The radius in pixels, 0 (changes nothing) to 1000.
+</code></pre>
+<h2 id="fill-color">fill-color</h2>
+<pre><code class="lang-text">fill-color: Sets every pixel in rect, or the whole image, to one color.
+
+  fill-color &lt;color&gt; [--rect &lt;x,y,w,h&gt;]
+    --color &lt;color&gt;, required
+        The color.
+    --rect &lt;x,y,w,h&gt;
+        The area to fill, which must lie inside the image, or null for the whole image.
+</code></pre>
+<h2 id="fit">fit</h2>
+<pre><code class="lang-text">fit: Scales the image to fit inside width × height with its aspect ratio kept, so one side matches the box and the other is no larger.
+
+  fit &lt;width&gt; &lt;height&gt; [--filter &lt;choice&gt;] [--color-space &lt;choice&gt;] [--enlarge &lt;bool&gt;]
+    --width &lt;int&gt;, required
+        The width of the box, at least 1.
+    --height &lt;int&gt;, required
+        The height of the box, at least 1.
+    --filter &lt;bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline&gt;, default bicubic
+        The resampling kernel.
+    --color-space &lt;encoded|linear&gt;, default encoded
+        Where pixels are blended.
+    --enlarge &lt;bool&gt;, default true
+        Whether an image smaller than the box is enlarged.
+</code></pre>
+<h2 id="flatten">flatten</h2>
+<pre><code class="lang-text">flatten: Composites the image over background and makes it opaque, as ImageMagick's -alpha remove does.
+
+  flatten &lt;background&gt; [--color-space &lt;choice&gt;]
+    --background &lt;color&gt;, required
+        The color to show through transparent pixels.
+    --color-space &lt;encoded|linear&gt;, default encoded
+        Where pixels are blended.
+</code></pre>
+<h2 id="flip">flip</h2>
+<pre><code class="lang-text">flip: Mirrors the image: horizontal (left to right), vertical (top to bottom) or both.
+
+  flip &lt;direction&gt;
+    --direction &lt;horizontal|vertical|both&gt;, required
+        Which way to mirror: horizontal (left to right), vertical (top to bottom) or both.
+</code></pre>
+<h2 id="flip-horizontal">flip-horizontal</h2>
+<pre><code class="lang-text">flip-horizontal: Mirrors the image left to right.
+
+  flip-horizontal no arguments
+</code></pre>
+<h2 id="flip-vertical">flip-vertical</h2>
+<pre><code class="lang-text">flip-vertical: Mirrors the image top to bottom.
+
+  flip-vertical no arguments
+</code></pre>
+<h2 id="flood-fill">flood-fill</h2>
+<pre><code class="lang-text">flood-fill: Fills the region connected to seed whose colors lie within tolerance of the seed's own with fill, as ImageMagick's -fuzz with -floodfill does.
+
+  flood-fill &lt;seed&gt; &lt;fill&gt; [--tolerance &lt;number&gt;] [--connectivity &lt;choice&gt;]
+    --seed &lt;x,y&gt;, required
+        Where the fill starts.
+    --fill &lt;color&gt;, required
+        The color to fill with.
+    --tolerance &lt;number&gt;, default 0
+        The color distance, from 0 (the seed's exact color) to 1 (every color).
+    --connectivity &lt;four|eight&gt;, default four
+        Whether the fill spreads to the four side neighbours (the default) or also the diagonal ones.
+</code></pre>
+<h2 id="gamma">gamma</h2>
+<pre><code class="lang-text">gamma: Raises red, green and blue to 1/gamma, as ImageMagick's -gamma: 2.2 brightens.
+
+  gamma &lt;gamma&gt;
+    --gamma &lt;number&gt;, required
+        The gamma, above 0.
+</code></pre>
+<h2 id="glow">glow</h2>
+<pre><code class="lang-text">glow: Adds a glow around the image's alpha shape, as an editor's outer glow layer style: the alpha, blurred with Fast, spread, and filled with color, drawn behind the image.
+
+  glow &lt;sigma&gt; &lt;color&gt; [--spread &lt;number&gt;] [--inner &lt;bool&gt;]
+    --sigma &lt;number&gt;, required
+        The glow's blur in pixels, from 0 to 1000.
+    --color &lt;color&gt;, required
+        The glow's color, with its alpha as the glow's opacity.
+    --spread &lt;number&gt;, default 0
+        How much the glow is hardened before it fades, from 0 (a plain blur) to just under 1 (a hard edge): the blurred alpha is divided by 1 − spread.
+    --inner &lt;bool&gt;, default false
+        Whether the glow is inside the shape instead of around it.
+</code></pre>
+<h2 id="grayscale">grayscale</h2>
+<pre><code class="lang-text">grayscale: Converts toward gray.
+
+  grayscale [--mode &lt;choice&gt;] [--amount &lt;number&gt;] [--color-space &lt;choice&gt;]
+    --mode &lt;rec709|rec601&gt;, default rec709
+        The luma weights.
+    --amount &lt;number&gt;, default 1
+        0 changes nothing, 1 gives full gray.
+    --color-space &lt;encoded|linear&gt;, default encoded
+        Where the luma is taken.
+</code></pre>
+<h2 id="high-contrast">high-contrast</h2>
+<pre><code class="lang-text">high-contrast: Skia's high-contrast accessibility filter.
+
+  high-contrast [--grayscale &lt;bool&gt;] [--invert &lt;choice&gt;] [--contrast &lt;number&gt;]
+    --grayscale &lt;bool&gt;, default false
+        Whether colors become gray first.
+    --invert &lt;none|brightness|lightness&gt;, default none
+        How to invert.
+    --contrast &lt;number&gt;, default 0
+        The contrast, from −1 to 1.
+</code></pre>
+<h2 id="hue-rotate">hue-rotate</h2>
+<pre><code class="lang-text">hue-rotate: Rotates hue around the luma axis.
+
+  hue-rotate &lt;degrees&gt;
+    --degrees &lt;number&gt;, required
+        The angle; 0 changes nothing.
+</code></pre>
+<h2 id="inner-shadow">inner-shadow</h2>
+<pre><code class="lang-text">inner-shadow: Adds a shadow inside the image's alpha shape, as an editor's inner shadow layer style: everything outside the shape, moved by (dx, dy) rounded to whole pixels, blurred with Fast and filled with color, drawn on the image inside the shape only.
+
+  inner-shadow &lt;dx&gt; &lt;dy&gt; &lt;sigma&gt; &lt;color&gt;
+    --dx &lt;number&gt;, required
+        How far the shadow moves right, in pixels (negative moves it left), at most 10000 either way.
+    --dy &lt;number&gt;, required
+        How far the shadow moves down, in pixels, at most 10000 either way.
+    --sigma &lt;number&gt;, required
+        The shadow's blur in pixels, from 0 (a hard shadow) to 1000.
+    --color &lt;color&gt;, required
+        The shadow's color, with its alpha as the shadow's opacity.
+</code></pre>
+<h2 id="invert">invert</h2>
+<pre><code class="lang-text">invert: Replaces red, green and blue with 1 − value, blended by amount.
+
+  invert [--amount &lt;number&gt;]
+    --amount &lt;number&gt;, default 1
+        0 changes nothing, 1 inverts fully.
+</code></pre>
+<h2 id="kuwahara">kuwahara</h2>
+<pre><code class="lang-text">kuwahara: Smooths while keeping edges, with the Kuwahara filter as ImageMagick's -kuwahara defines it: of the four (r + 1) squares that have the pixel as a corner, the one whose luma varies least gives the pixel its value, sampled at that square's middle.
+
+  kuwahara [--radius &lt;int&gt;] [--sigma &lt;number&gt;]
+    --radius &lt;int&gt;, default 3
+        The radius in pixels, from 1 to 100.
+    --sigma &lt;number&gt;, default 0
+        The blur before, in pixels, from 0 (none) to 100.
+</code></pre>
+<h2 id="lens-blur">lens-blur</h2>
+<pre><code class="lang-text">lens-blur: Blurs as an out-of-focus lens does: each point spreads into the aperture's shape, a disc or a polygon of 5 to 12 blades, so small lights become discs, unlike a Gaussian's soft spots.
+
+  lens-blur &lt;radius&gt;
+    --radius &lt;number&gt;, required
+        The aperture's radius in pixels, from 0 (changes nothing) to 128.
+</code></pre>
+<h2 id="level">level</h2>
+<pre><code class="lang-text">level: Stretches black..white to outputBlack..outputWhite with a midtone gamma, as ImageMagick's -level and +level.
+
+  level [--black &lt;number&gt;] [--white &lt;number&gt;] [--gamma &lt;number&gt;] [--output-black &lt;number&gt;] [--output-white &lt;number&gt;]
+    --black &lt;number&gt;, default 0
+        The input that becomes outputBlack, from 0 to 1.
+    --white &lt;number&gt;, default 1
+        The input that becomes outputWhite, from 0 to 1.
+    --gamma &lt;number&gt;, default 1
+        The midtone gamma, above 0: above 1 brightens.
+    --output-black &lt;number&gt;, default 0
+        The output for black, from 0 to 1.
+    --output-white &lt;number&gt;, default 1
+        The output for white, from 0 to 1.
+</code></pre>
+<h2 id="local-contrast">local-contrast</h2>
+<pre><code class="lang-text">local-contrast: Brings out local detail, as ImageMagick's -local-contrast: L* is pushed away from a wide blur of itself by strength, so large-scale light changes less than detail.
+
+  local-contrast [--radius &lt;number&gt;] [--strength &lt;number&gt;]
+    --radius &lt;number&gt;, default 0.1
+        The blur radius as a fraction of 20% of the longer side, above 0 and at most 1; the default 0.1 blurs over 2%.
+    --strength &lt;number&gt;, default 0.125
+        How strongly detail is raised, 0 or more; the default 0.125 is ImageMagick's 12.5%.
+</code></pre>
+<h2 id="luminance-to-alpha">luminance-to-alpha</h2>
+<pre><code class="lang-text">luminance-to-alpha: Sets alpha to the luminance of the stored values, 0.212656 R + 0.715158 G + 0.072186 B (the Rec.
+
+  luminance-to-alpha no arguments
+</code></pre>
+<h2 id="make-transparent">make-transparent</h2>
+<pre><code class="lang-text">make-transparent: Makes pixels within tolerance of color transparent, keeping their color, by ImageMagick's -fuzz distance, so with no softness the result equals ImageMagick's -fuzz with -transparent.
+
+  make-transparent &lt;color&gt; [--tolerance &lt;number&gt;] [--softness &lt;number&gt;]
+    --color &lt;color&gt;, required
+        The color to remove, with its alpha (opaque for most keys).
+    --tolerance &lt;number&gt;, default 0
+        The color distance that becomes fully transparent, from 0 (the exact color) to 1 (every color).
+    --softness &lt;number&gt;, default 0
+        The band of distance beyond the tolerance over which alpha returns to full; 0 for a hard edge.
+</code></pre>
+<h2 id="median">median</h2>
+<pre><code class="lang-text">median: Replaces each channel with its median over the (2r + 1) square around the pixel, as ImageMagick's -statistic Median does: removes salt-and-pepper noise while keeping edges.
+
+  median &lt;radius&gt; [--include-alpha &lt;bool&gt;]
+    --radius &lt;int&gt;, required
+        The radius in pixels, from 0 (changes nothing) to 100.
+    --include-alpha &lt;bool&gt;, default false
+        Whether alpha gets its own median too; by default it is kept.
+</code></pre>
+<h2 id="merge-duplicates">merge-duplicates</h2>
+<pre><code class="lang-text">merge-duplicates: Removes each frame equal to the one before it and adds its delay to the frame that stays, as ImageMagick's -layers RemoveDups: a screen recording that sat still for seconds becomes one long frame.
+
+  merge-duplicates [--tolerance &lt;number&gt;]
+    --tolerance &lt;number&gt;, default 0
+        How far a pixel may differ and still count as equal, by ImageMagick's -fuzz distance, from 0 (the default, exact) to 1.
+</code></pre>
+<h2 id="motion-blur">motion-blur</h2>
+<pre><code class="lang-text">motion-blur: Streaks the image along a direction, as a camera moving during the exposure, with ImageMagick's -motion-blur meaning: each pixel averages 2⌈radius⌉ + 1 samples one pixel apart, from itself toward angle, weighted by a Gaussian of sigma from the pixel.
+
+  motion-blur &lt;radius&gt; &lt;sigma&gt; &lt;angle&gt; [--centered &lt;bool&gt;]
+    --radius &lt;number&gt;, required
+        Half the streak's length in pixels, from 0 (changes nothing) to 127.
+    --sigma &lt;number&gt;, required
+        How fast the weights fall along the streak, above 0.
+    --angle &lt;number&gt;, required
+        The direction in degrees, clockwise from the x axis (y points down).
+    --centered &lt;bool&gt;, default false
+        Whether the streak runs both ways from the pixel, instead of only toward angle.
+</code></pre>
+<h2 id="normalize">normalize</h2>
+<pre><code class="lang-text">normalize: ContrastStretch at ImageMagick's -normalize points: the darkest 2% of the pixels become black and the lightest 1% white.
+
+  normalize [--linked &lt;bool&gt;] [--per-frame &lt;bool&gt;]
+    --linked &lt;bool&gt;, default true
+        Whether the channels share one pair of points (the default) or each gets its own.
+    --per-frame &lt;bool&gt;, default false
+        Whether each frame is measured alone.
+</code></pre>
+<h2 id="offset">offset</h2>
+<pre><code class="lang-text">offset: Moves the image by whole pixels, right by dx and down by dy, with no resampling.
+
+  offset &lt;dx&gt; &lt;dy&gt; [--edges &lt;choice&gt;] [--background &lt;color&gt;]
+    --dx &lt;int&gt;, required
+        The horizontal move, in pixels.
+    --dy &lt;int&gt;, required
+        The vertical move, in pixels.
+    --edges &lt;clamp|mirror|wrap|transparent&gt;, default wrap
+        What fills the uncovered strips.
+    --background &lt;color&gt;
+        The color of uncovered strips under Transparent.
+</code></pre>
+<h2 id="oil-paint">oil-paint</h2>
+<pre><code class="lang-text">oil-paint: Makes the image look painted, as ImageMagick's -paint does: around each pixel, in the (2r + 1) square, pixels are sorted into levels bins by intensity, and the pixel becomes a pixel of the most common bin, unchanged.
+
+  oil-paint [--radius &lt;int&gt;] [--levels &lt;int&gt;]
+    --radius &lt;int&gt;, default 3
+        The brush radius in pixels, from 1 to 50.
+    --levels &lt;int&gt;, default 20
+        The number of intensity bins, from 2 to 256.
+</code></pre>
+<h2 id="opacity">opacity</h2>
+<pre><code class="lang-text">opacity: Multiplies alpha by amount.
+
+  opacity &lt;amount&gt;
+    --amount &lt;number&gt;, required
+        0 makes the image transparent, 1 changes nothing.
+</code></pre>
+<h2 id="pad">pad</h2>
+<pre><code class="lang-text">pad: Enlarges the canvas to width × height, placing the image at anchor and filling the new area with background.
+
+  pad &lt;width&gt; &lt;height&gt; [--background &lt;color&gt;] [--anchor &lt;choice&gt;]
+    --width &lt;int&gt;, required
+        The new width, at least the image's width.
+    --height &lt;int&gt;, required
+        The new height, at least the image's height.
+    --background &lt;color&gt;
+        The color of the new area.
+    --anchor &lt;center|top-left|top|top-right|left|right|bottom-left|bottom|bottom-right&gt;, default center
+        Where the image sits on the new canvas.
+</code></pre>
+<h2 id="pixelate">pixelate</h2>
+<pre><code class="lang-text">pixelate: Pixelates: the image is cut into square cells, and every pixel of a cell becomes the cell's average, taken on premultiplied values so transparent pixels do not darken it.
+
+  pixelate &lt;cell-size&gt; [--origin &lt;x,y&gt;]
+    --cell-size &lt;int&gt;, required
+        The side of a cell in pixels, from 1 (changes nothing) to 4096.
+    --origin &lt;x,y&gt;
+        Where a cell's top-left corner falls, in the raster's coordinates; the grid repeats from there both ways.
+</code></pre>
+<h2 id="posterize">posterize</h2>
+<pre><code class="lang-text">posterize: Rounds red, green and blue to levels evenly spaced values each, as ImageMagick's -posterize, optionally dithered: ordered dithering adds a fixed 8 × 8 pattern before rounding, Floyd–Steinberg spreads each value's rounding error to its neighbours.
+
+  posterize &lt;levels&gt; [--dither &lt;choice&gt;]
+    --levels &lt;int&gt;, required
+        Values per channel, from 2 to 256.
+    --dither &lt;floyd-steinberg|ordered|none|atkinson|burkes|jarvis-judice-ninke|sierra3|sierra2|sierra-lite|stevenson-arce|stucki|riemersma|bayer2x2|bayer4x4|bayer16x16|ordered3x3&gt;, default none
+        The dithering.
+</code></pre>
+<h2 id="quad-distort">quad-distort</h2>
+<pre><code class="lang-text">quad-distort: Moves the image's four corners to four points, bending it in perspective: ImageMagick's Perspective distort.
+
+  quad-distort &lt;top-left&gt; &lt;top-right&gt; &lt;bottom-right&gt; &lt;bottom-left&gt;
+    --top-left &lt;x,y&gt;, required
+        Where the top-left corner goes.
+    --top-right &lt;x,y&gt;, required
+        Where the top-right corner goes.
+    --bottom-right &lt;x,y&gt;, required
+        Where the bottom-right corner goes.
+    --bottom-left &lt;x,y&gt;, required
+        Where the bottom-left corner goes.
+</code></pre>
+<h2 id="quantize">quantize</h2>
+<pre><code class="lang-text">quantize: Reduces each frame to at most MaxColors colors, as a palette format would, but keeps the pixel type: an Rgba16 image stays Rgba16 with at most that many distinct values.
+
+  quantize no arguments
+</code></pre>
+<h2 id="replace-color">replace-color</h2>
+<pre><code class="lang-text">replace-color: Replaces every pixel within tolerance of from with to, by ImageMagick's -fuzz distance, as ImageMagick's -fill with -opaque does.
+
+  replace-color &lt;from&gt; &lt;to&gt; [--tolerance &lt;number&gt;]
+    --from &lt;color&gt;, required
+        The color to replace, with its alpha.
+    --to &lt;color&gt;, required
+        The color to put in its place.
+    --tolerance &lt;number&gt;, default 0
+        The color distance, from 0 (the exact color) to 1 (every color).
+</code></pre>
+<h2 id="resize">resize</h2>
+<pre><code class="lang-text">resize: Resizes to a size in the size syntax (W, xH, WxH, P%, with !, ^, &gt; or &lt;) with a fit mode.
+
+  resize &lt;size&gt; [--fit &lt;choice&gt;] [--gravity &lt;choice&gt;] [--filter &lt;choice&gt;] [--linear &lt;bool&gt;] [--background &lt;color&gt;]
+    --size &lt;size&gt;, required
+        The size: W, xH, WxH or P%, optionally followed by ! (ignore the aspect ratio), ^ (fill the box), &gt; (only shrink) or &lt; (only enlarge).
+    --fit &lt;contain|cover|fill|pad&gt;, default contain
+        How the image fills a WxH box: inside it (contain), filling and cropped (cover), stretched (fill) or inside and padded (pad).
+    --gravity &lt;center|top-left|top|top-right|left|right|bottom-left|bottom|bottom-right&gt;, default center
+        Which part stays for cover, and where the image sits for pad.
+    --filter &lt;bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline&gt;, default bicubic
+        The resampling kernel; bicubic is Catmull-Rom.
+    --linear &lt;bool&gt;, default false
+        Blend pixels in linear light rather than as encoded.
+    --background &lt;color&gt;, default transparent
+        The color pad fills with.
+</code></pre>
+<h2 id="retime">retime</h2>
+<pre><code class="lang-text">retime: Resamples the animation to framesPerSecond, as ffmpeg's fps filter: fixed ticks, each showing the frame visible when it starts, with neighbours that show the same frame merged.
+
+  retime &lt;frames-per-second&gt;
+    --frames-per-second &lt;number&gt;, required
+        The rate, more than 0 and at most 1,000.
+</code></pre>
+<h2 id="reverse">reverse</h2>
+<pre><code class="lang-text">reverse: Plays the animation backwards; each frame keeps its delay and metadata.
+
+  reverse no arguments
+</code></pre>
+<h2 id="rotate">rotate</h2>
+<pre><code class="lang-text">rotate: Rotates the image clockwise.
+
+  rotate &lt;degrees&gt; [--filter &lt;choice&gt;] [--background &lt;color&gt;]
+    --degrees &lt;number&gt;, required
+        The angle, clockwise.
+    --filter &lt;bicubic|nearest|box|bilinear|mitchell|lanczos3|lanczos2|hermite|gaussian|spline&gt;, default bicubic
+        The resampling kernel for angles that are not multiples of 90°.
+    --background &lt;color&gt;
+        The color of the canvas outside the rotated image.
+</code></pre>
+<h2 id="rotational-blur">rotational-blur</h2>
+<pre><code class="lang-text">rotational-blur: Spins the image around center, as ImageMagick's -rotational-blur: each pixel averages samples along an arc of degrees centered on it, about one per pixel of arc (at most 256), read bilinearly.
+
+  rotational-blur &lt;degrees&gt; [--center &lt;x,y&gt;]
+    --degrees &lt;number&gt;, required
+        The arc in degrees, from 0 (changes nothing) to 360.
+    --center &lt;x,y&gt;
+        The center in pixels, pixel centers at +0.5, or null for the image's center.
+</code></pre>
+<h2 id="saturation">saturation</h2>
+<pre><code class="lang-text">saturation: Mixes each color with its luma: 1 changes nothing, 0 gives gray, above 1 oversaturates.
+
+  saturation &lt;amount&gt;
+    --amount &lt;number&gt;, required
+        The factor, 0 or more.
+</code></pre>
+<h2 id="sepia">sepia</h2>
+<pre><code class="lang-text">sepia: Tints toward sepia.
+
+  sepia [--amount &lt;number&gt;]
+    --amount &lt;number&gt;, default 1
+        0 changes nothing, 1 gives full sepia.
+</code></pre>
+<h2 id="shade">shade</h2>
+<pre><code class="lang-text">shade: Shades the image as ImageMagick's -shade does: the luminance is a height field, and each pixel becomes the Lambertian shading of its surface normal by a distant light at azimuth and elevation, a gray relief; with colored the shading multiplies the image's own colors instead, as +shade does.
+
+  shade [--azimuth &lt;number&gt;] [--elevation &lt;number&gt;] [--colored &lt;bool&gt;]
+    --azimuth &lt;number&gt;, default 30
+        The light's direction in the image plane, in degrees counterclockwise from the right with y up, as ImageMagick's.
+    --elevation &lt;number&gt;, default 30
+        The light's angle above the image plane, in degrees, from 0 to 90; flat areas get sin(elevation).
+    --colored &lt;bool&gt;, default false
+        Whether the shading multiplies the colors (+shade) rather than replacing them with gray (-shade).
+</code></pre>
+<h2 id="sharpen">sharpen</h2>
+<pre><code class="lang-text">sharpen: Sharpens with an unsharp mask: out = src + amount × (src − Blur(sigma)).
+
+  sharpen [--amount &lt;number&gt;] [--sigma &lt;number&gt;]
+    --amount &lt;number&gt;, default 1
+        How strongly to sharpen; 0 changes nothing.
+    --sigma &lt;number&gt;, default 1
+        The blur radius that sets which details are sharpened, in pixels.
+</code></pre>
+<h2 id="shuffle-channels">shuffle-channels</h2>
+<pre><code class="lang-text">shuffle-channels: Rearranges the working RGBA channels: each output channel takes the input channel, or the constant, its argument names.
+
+  shuffle-channels &lt;red&gt; &lt;green&gt; &lt;blue&gt; &lt;alpha&gt;
+    --red &lt;red|green|blue|alpha|zero|one&gt;, required
+        Where the output's red comes from.
+    --green &lt;red|green|blue|alpha|zero|one&gt;, required
+        Where the output's green comes from.
+    --blue &lt;red|green|blue|alpha|zero|one&gt;, required
+        Where the output's blue comes from.
+    --alpha &lt;red|green|blue|alpha|zero|one&gt;, required
+        Where the output's alpha comes from.
+</code></pre>
+<h2 id="sigmoidal-contrast">sigmoidal-contrast</h2>
+<pre><code class="lang-text">sigmoidal-contrast: Adds (or removes) contrast with ImageMagick's scaled logistic curve, which never clips.
+
+  sigmoidal-contrast &lt;contrast&gt; [--midpoint &lt;number&gt;] [--increase &lt;bool&gt;]
+    --contrast &lt;number&gt;, required
+        How steep the curve is, 0 or more: 3 is gentle, 10 strong.
+    --midpoint &lt;number&gt;, default 0.5
+        Where the curve is steepest, from 0 to 1.
+    --increase &lt;bool&gt;, default true
+        Whether contrast increases (the default) or decreases.
+</code></pre>
+<h2 id="simulate-color-blindness">simulate-color-blindness</h2>
+<pre><code class="lang-text">simulate-color-blindness: Shows how the image looks with a color vision deficiency.
+
+  simulate-color-blindness &lt;kind&gt; [--severity &lt;number&gt;]
+    --kind &lt;protanopia|deuteranopia|tritanopia|achromatopsia&gt;, required
+        The deficiency.
+    --severity &lt;number&gt;, default 1
+        From 0 (normal vision) to 1.
+</code></pre>
+<h2 id="skew">skew</h2>
+<pre><code class="lang-text">skew: Shears the image about its center: vertical lines lean by degreesX (x moves by y × tan) and horizontal lines by degreesY.
+
+  skew &lt;degrees-x&gt; &lt;degrees-y&gt;
+    --degrees-x &lt;number&gt;, required
+        The horizontal shear angle, strictly between −90 and 90.
+    --degrees-y &lt;number&gt;, required
+        The vertical shear angle, strictly between −90 and 90.
+</code></pre>
+<h2 id="solarize">solarize</h2>
+<pre><code class="lang-text">solarize: Inverts red, green and blue values above threshold, as ImageMagick's -solarize.
+
+  solarize [--threshold &lt;number&gt;]
+    --threshold &lt;number&gt;, default 0.5
+        The level, from 0 to 1.
+</code></pre>
+<h2 id="spread">spread</h2>
+<pre><code class="lang-text">spread: Scatters pixels, as ImageMagick's -spread does: each pixel takes the value of a random pixel at most radius away (a whole-pixel offset in the disc; edges repeat the edge pixel).
+
+  spread &lt;radius&gt; [--seed &lt;integer&gt;]
+    --radius &lt;number&gt;, required
+        The farthest a value moves, in pixels, from 0 to 1000; below 1 nothing moves.
+    --seed &lt;integer&gt;, default 0
+        Picks the pattern; the same seed gives the same result.
+</code></pre>
+<h2 id="threshold">threshold</h2>
+<pre><code class="lang-text">threshold: Makes a two-color image: pixels above level take above, the others below, with alpha kept.
+
+  threshold [--level &lt;number&gt;] [--mode &lt;choice&gt;] [--below &lt;color&gt;] [--above &lt;color&gt;]
+    --level &lt;number&gt;, default 0.5
+        The level, from 0 to 1.
+    --mode &lt;luminance|channels|saturation|max-chroma&gt;, default luminance
+        What is measured.
+    --below &lt;color&gt;
+        The lower color, or null for black.
+    --above &lt;color&gt;
+        The upper color, or null for white.
+</code></pre>
+<h2 id="tile">tile</h2>
+<pre><code class="lang-text">tile: Makes a new width × height canvas filled by repeating the image, or the source rectangle of it, with one copy's top-left corner at origin, as Skia's Tile filter and ImageMagick's tile: fill do.
+
+  tile &lt;width&gt; &lt;height&gt; [--origin &lt;x,y&gt;] [--source &lt;x,y,w,h&gt;]
+    --width &lt;int&gt;, required
+        The canvas width, at least 1.
+    --height &lt;int&gt;, required
+        The canvas height, at least 1.
+    --origin &lt;x,y&gt;
+        Where one copy's top-left corner goes; copies repeat from there in every direction.
+    --source &lt;x,y,w,h&gt;
+        The rectangle to repeat, inside the image, or null (the default) for the whole image.
+</code></pre>
+<h2 id="tint">tint</h2>
+<pre><code class="lang-text">tint: Pushes midtones toward color and keeps black and white, as ImageMagick's -tint.
+
+  tint &lt;color&gt; [--amount &lt;number&gt;]
+    --color &lt;color&gt;, required
+        The tint.
+    --amount &lt;number&gt;, default 1
+        The strength, from 0 to 1.
+</code></pre>
+<h2 id="tone-map">tone-map</h2>
+<pre><code class="lang-text">tone-map: Maps HDR linear light into 0..1: pixel values are read as linear light with reference white at 1.0 (as RgbaF32, RgbaF16 and RgbF32 rasters hold PQ and HLG images converted to a linear encoding), and the tone curve brings the brightest down to 1 on max(R, G, B), which keeps hue.
+
+  tone-map [--method &lt;choice&gt;] [--source-peak-nits &lt;number&gt;]
+    --method &lt;bt2390|reinhard|clip&gt;, default bt2390
+        The curve.
+    --source-peak-nits &lt;number&gt;
+        The brightest light in the image, in cd/m² (reference white is 203), or null to take it from the metadata's Hdr (MaxCLL, then the mastering peak), else 1,000.
+</code></pre>
+<h2 id="trim">trim</h2>
+<pre><code class="lang-text">trim: Removes the border: the rows and columns at the edges whose pixels all lie within tolerance of the border color, by ImageMagick's -fuzz distance, so the rectangle equals ImageMagick's -trim.
+
+  trim [--tolerance &lt;number&gt;] [--color &lt;color&gt;]
+    --tolerance &lt;number&gt;, default 0
+        The color distance still counted as border, from 0 (the exact color) to 1 (every color).
+    --color &lt;color&gt;
+        The border color, or null (the default) for the top-left pixel's.
+</code></pre>
+<h2 id="vignette">vignette</h2>
+<pre><code class="lang-text">vignette: Darkens (or tints) the image toward its corners, outside an ellipse fitted to the image, with a soft edge: the shape of ImageMagick's -vignette, which blurs a drawn ellipse.
+
+  vignette [--radius &lt;number&gt;] [--softness &lt;number&gt;] [--color &lt;color&gt;] [--center &lt;x,y&gt;]
+    --radius &lt;number&gt;, default 1
+        The ellipse's size as a fraction of the half-diagonal: at 1 the ellipse passes through the corners, at 0.7 it is about as wide as the image.
+    --softness &lt;number&gt;, default 0.5
+        The share of the radius over which the edge fades, from 0 (hard) to 1: the fade is a Gaussian-blurred edge whose ±2σ spans softness × radius.
+    --color &lt;color&gt;
+        The color toward the corners, with its alpha as its strength; black and opaque when null.
+    --center &lt;x,y&gt;
+        The ellipse's center in the raster's pixel coordinates (0, 0 is the top-left corner of the image); the image's middle when null.
+</code></pre>
+<h2 id="white-balance">white-balance</h2>
+<pre><code class="lang-text">white-balance: Applies WhiteBalance: corrects for a light of temperature kelvin.
+
+  white-balance &lt;temperature&gt; [--tint &lt;number&gt;]
+    --temperature &lt;number&gt;, required
+        The light's correlated color temperature, from 1,500 to 15,000 kelvin; 6504 changes almost nothing.
+    --tint &lt;number&gt;, default 0
+        The light's offset from a black body's color, from −1 to 1; positive for a greener light.
+
+  white-balance &lt;neutral&gt;
+    --neutral &lt;color&gt;, required
+        A color that should be gray, such as a gray card's pixels.
+</code></pre>
+<h2 id="zoom-blur">zoom-blur</h2>
+<pre><code class="lang-text">zoom-blur: Streaks the image along rays from center, as a zoom during the exposure (Photoshop's radial zoom blur): each pixel averages samples on the ray through it, spanning amount of its distance from the center, half inward and half outward, about one per pixel (at most 256).
+
+  zoom-blur &lt;amount&gt; [--center &lt;x,y&gt;]
+    --amount &lt;number&gt;, required
+        The streak's length as a fraction of the distance from the center, from 0 (changes nothing) to 1.
+    --center &lt;x,y&gt;
+        The center in pixels, pixel centers at +0.5, or null for the image's center.
+</code></pre>
+<h2 id="save">save</h2>
+<pre><code class="lang-text">save [path] [--format f] [--quality q] [--lossless] [--effort e] [--bit-depth b] [--strip] [--set fmt.key=value]
+</code></pre>
+<p>Writes the image as it is at that point. A plan may save more than once; a save without a path writes to <code>-o</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/cli/steps.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

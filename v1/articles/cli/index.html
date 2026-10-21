@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>The egami command | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="The egami command | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/cli/index.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="the-egami-command">The egami command</h1>
+
+<p><code>egami</code> converts, inspects, resizes and edits images from a shell or a build script, with no C# to write. It is the
+<code>Egami.Cli</code> package, a .NET tool built on Egami's public API, and reads every format Egami and its packages read: SVG,
+WMF and EMF included. It has three layers:</p>
+<ul>
+<li><strong>Single commands</strong> for everyday jobs: <code>info</code>, <code>convert</code>, <code>resize</code>, <code>thumbnail</code>, <code>crop</code>, <code>rotate</code>, <code>flip</code>, <code>auto-orient</code>,
+<code>compare</code>, <code>stats</code>, <code>frames</code>, <code>metadata</code>, <code>color</code>, <code>text</code>, <code>overlay</code>, <code>montage</code> and <code>formats</code>.</li>
+<li><strong><code>run</code></strong>, which chains any number of steps over each image. Every Egami operation is a step, and the same steps can be
+saved as a JSON workflow file.</li>
+<li><strong>Batches</strong>: every command takes many files, globs and folders, and works on several at once.</li>
+</ul>
+<p>The <a href="commands.html">command reference</a> lists every option, and <a href="steps.html">steps for run</a> every step.</p>
+<pre><code class="lang-sh">egami info photo.jpg
+egami convert in.png -o out.webp --quality 80
+egami resize in.jpg -o out.jpg --size 800x600
+egami thumbnail &quot;photos/*.jpg&quot; -o thumbs/{name}.webp --size 256
+egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --quality 82
+cat in.png | egami convert - -o - --format qoi &gt; out.qoi
+</code></pre>
+<h2 id="installing">Installing</h2>
+<p>Egami.Cli is a .NET tool, so it needs the .NET 10 runtime:</p>
+<pre><code class="lang-sh">dotnet tool install --global Egami.Cli
+</code></pre>
+<p><code>dnx Egami.Cli info photo.jpg</code> runs it once without installing. The tool is built free of reflection, with the trimming and
+Native AOT analyzers on, so it also publishes as a standalone native program (see <a href="#native-binaries">Native binaries</a>).</p>
+<h2 id="inputs">Inputs</h2>
+<p>Inputs are files, globs or <code>-</code> for standard input. egami expands globs itself, so they work the same in bash, zsh, cmd and
+PowerShell: <code>*</code> and <code>?</code> match within a name, <code>[abc]</code> a set, and <code>**</code> any depth of folders. Quote them so the shell leaves them
+alone. A folder needs <code>--recursive</code>, and then means every image below it. Files come in sorted order, so <code>{index}</code> and the
+order of a batch never depend on the file system.</p>
+<h2 id="outputs">Outputs</h2>
+<p><code>-o</code> names where to write:</p>
+<table>
+<thead>
+<tr>
+<th><code>-o</code></th>
+<th>Writes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out.png</code></td>
+<td>That file. The format comes from the extension, or <code>--format</code>.</td>
+</tr>
+<tr>
+<td><code>out/</code> or an existing folder</td>
+<td><code>out/&lt;name&gt;.&lt;ext&gt;</code>, keeping each input's name.</td>
+</tr>
+<tr>
+<td><code>web/{dir}/{name}.webp</code></td>
+<td>A template: <code>{name}</code> (the input's name without extension), <code>{ext}</code> (its extension), <code>{dir}</code> (its folder below the glob's start), <code>{index}</code> (its position from 0, padded with <code>{index:000}</code>), <code>{format}</code> (the output format's extension). <code>{{</code> and <code>}}</code> write braces.</td>
+</tr>
+<tr>
+<td><code>-</code></td>
+<td>Standard output. The format is <code>--format</code>, or the input's.</td>
+</tr>
+</tbody>
+</table>
+<p>With several inputs, <code>-o</code> must be a folder or a template that names each input. An output never replaces its input unless
+<code>--in-place</code> is given; <code>--in-place</code> without <code>-o</code> writes each file over itself. Files are written to a temporary name first and
+replace the target only when complete.</p>
+<h2 id="formats-and-writer-settings">Formats and writer settings</h2>
+<p>The output format comes from the extension or <code>--format</code>. The common settings have flags: <code>--quality</code>, <code>--lossless</code>, <code>--effort</code>,
+<code>--bit-depth</code> and <code>--strip</code>, which leaves out EXIF, XMP, IPTC, text and resolution but keeps the color profile, so colors
+stay right (ImageMagick's <code>-strip</code> drops the profile too). A flag the format does not have is skipped with a warning. Every other writer
+setting is <code>--set fmt.key=value</code>, where the keys are the format's <code>WriterOptions</code> properties in kebab case:</p>
+<pre><code class="lang-sh">egami formats png        # lists png.compression-level, png.filter, png.palette.max-colors, ...
+egami convert in.tif -o out.png --set png.compression-level=9 --set png.filter=paeth
+</code></pre>
+<p><code>egami formats</code> lists what egami reads and writes. The keys come straight from the library, so the tool never lags it. HEIC is
+not part of the tool, since HEVC is covered by patents.</p>
+<h2 id="sizes">Sizes</h2>
+<p><code>resize</code>, <code>thumbnail</code> and the <code>resize</code> step take the size syntax, the common subset of ImageMagick's geometry:</p>
+<table>
+<thead>
+<tr>
+<th>Size</th>
+<th>Means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>800</code></td>
+<td>800 wide, height in proportion</td>
+</tr>
+<tr>
+<td><code>x600</code></td>
+<td>600 high, width in proportion</td>
+</tr>
+<tr>
+<td><code>800x600</code></td>
+<td>Fit inside 800 × 600, aspect ratio kept</td>
+</tr>
+<tr>
+<td><code>50%</code>, <code>50%x25%</code></td>
+<td>A percentage of the size</td>
+</tr>
+<tr>
+<td><code>800x600!</code></td>
+<td>Exactly 800 × 600, aspect ratio ignored</td>
+</tr>
+<tr>
+<td><code>800x600^</code></td>
+<td>At least 800 × 600, aspect ratio kept (fills the box, nothing cropped)</td>
+</tr>
+<tr>
+<td><code>800x600&gt;</code></td>
+<td>Only shrink: images already smaller are left alone</td>
+</tr>
+<tr>
+<td><code>800x600&lt;</code></td>
+<td>Only enlarge</td>
+</tr>
+</tbody>
+</table>
+<p><code>--fit</code> says how a box is filled: <code>contain</code> (inside it, the default), <code>cover</code> (filled and cropped, with <code>--gravity</code> choosing what
+stays), <code>fill</code> (stretched) or <code>pad</code> (inside, then padded with <code>--background</code>). <code>--filter</code> picks the resampling kernel (<code>bicubic</code>,
+Catmull-Rom, by default, as in the library) and <code>--linear</code> blends in linear light.</p>
+<h2 id="defaults">Defaults</h2>
+<p>Every command keeps the library's defaults, except <code>thumbnail</code>, which is the web-image shortcut: it turns the image upright from
+its EXIF orientation, shrinks it (never enlarges) to fit <code>--size</code> (256 by default), converts it to sRGB and leaves out
+metadata. The other commands do those only when asked: <code>--auto-orient</code>, <code>--to srgb</code> and <code>--strip</code>.</p>
+<p><code>rotate</code>, <code>flip</code> and <code>auto-orient</code> turn a JPEG written as JPEG without decoding it, so no quality is lost, when the angle
+allows; <code>--reencode</code> decodes instead. <code>flip</code> has no default direction: give <code>horizontal</code>, <code>vertical</code> or <code>both</code>, since
+ImageMagick's <code>-flip</code> and a photo app's flip mirror opposite ways. <code>metadata strip</code> without <code>--keep</code> rewrites a JPEG without
+decoding it too; any other metadata edit that would write a lossy format again (JPEG, lossy WebP, AVIF, JPEG XL) asks for
+<code>--reencode</code>.</p>
+<h2 id="chaining-steps-with-run">Chaining steps with run</h2>
+<pre><code class="lang-sh">egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --quality 82
+egami run in.jpg save full.png + resize 256x256 + save thumb.webp
+egami run &quot;photos/**/*.jpg&quot; grayscale + contrast 1.2 -o gray/{dir}/{name}.jpg --jobs 8
+</code></pre>
+<p>Steps are separated by a bare <code>+</code>, which no shell treats specially. Each step's options follow its name: positional values fill
+the parameters in order, <code>--name value</code> sets one by name. <code>save</code> writes the image as it is at that point, and may come more than
+once; a plan without a save writes to <code>-o</code>. Writer flags outside a <code>save</code> apply to every save. <code>--dry-run</code> prints the steps and
+the files each input would write.</p>
+<p>Every single command is turned into the same kind of plan, so <code>egami resize --size 800x</code> and <code>egami run resize 800x</code> give the
+same bytes. A plan of steps that can stream (crop, resize and the per-pixel color steps) runs through <code>Raster.Transcode</code>, a
+band of rows at a time; anything else loads the image, runs the steps and saves. When a plan starts with a resize, the image
+is decoded at no less than one and a half times the result (<code>ReaderOptions.MinimumSize</code>), so a large JPEG is decoded at a half,
+a quarter or an eighth of its size and the resize filter still has real work to do. Either way the result is what the same
+<code>RasterOps</code> chain with the same reader options gives in C#.</p>
+<h2 id="workflow-files">Workflow files</h2>
+<p>A workflow file holds the steps of <code>run</code> as JSON, one object per step with the step's options as properties. It is checked
+against <a href="https://raw.githubusercontent.com/inexin/Egami/main/docs/schemas/egami-workflow-1.json">the published schema</a>:</p>
+<pre><code class="lang-json">{
+  &quot;egami&quot;: 1,
+  &quot;steps&quot;: [
+    { &quot;op&quot;: &quot;auto-orient&quot; },
+    { &quot;op&quot;: &quot;resize&quot;, &quot;size&quot;: &quot;1200x&quot;, &quot;filter&quot;: &quot;lanczos3&quot; },
+    { &quot;op&quot;: &quot;sharpen&quot;, &quot;sigma&quot;: 0.6 },
+    { &quot;op&quot;: &quot;save&quot;, &quot;format&quot;: &quot;webp&quot;, &quot;quality&quot;: 82, &quot;set&quot;: { &quot;webp.effort&quot;: 5 } }
+  ]
+}
+</code></pre>
+<pre><code class="lang-sh">egami run in.jpg resize 1200x + sharpen 0.6 --save-workflow web.json --dry-run   # write the file from a command line
+egami run &quot;photos/*.jpg&quot; --workflow web.json -o web/{name}.webp
+</code></pre>
+<p>A <code>save</code> in a workflow may give a <code>path</code>; one without writes to <code>-o</code>. Branching and conditions stay out: a script is the right
+tool for logic.</p>
+<h2 id="batches">Batches</h2>
+<p>Every command takes many inputs. <code>--jobs</code> sets how many files run at once (one per processor by default); each image is then
+worked on by one core, and since Egami gives the same bytes at any core count, <code>--jobs</code> never changes an output. A file that
+fails is reported and the rest carry on; <code>--fail-fast</code> stops at the first. A summary goes to standard error when anything failed.</p>
+<h2 id="exit-codes-messages-and-limits">Exit codes, messages and limits</h2>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Everything worked</td>
+</tr>
+<tr>
+<td>1</td>
+<td>A file failed (missing, corrupt, unwritable), or <code>compare</code> found a difference above <code>--threshold</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>The command line is wrong: an unknown command, option or value</td>
+</tr>
+<tr>
+<td>3</td>
+<td>An input exceeded a safety limit</td>
+</tr>
+</tbody>
+</table>
+<p>Messages and Egami's own diagnostics go to standard error: warnings by default, <code>-v</code> adds information, <code>-vv</code> debugging detail,
+and <code>-q</code> keeps only errors. Results (<code>info</code>, <code>stats</code>, <code>compare</code>) go to standard output, so they can be piped.</p>
+<p>The library's safety limits apply to every input. <code>--limit</code> raises or lowers them, and the <code>EGAMI_LIMITS</code> environment variable
+sets them for a service:</p>
+<pre><code class="lang-sh">egami convert big.tif -o big.png --limit pixels=400M,memory=4GB
+EGAMI_LIMITS=pixels=20M,frames=100 egami thumbnail uploads/* -o thumbs/
+</code></pre>
+<p>Names: <code>pixels</code> (a count such as <code>50M</code>, or <code>WxH</code>), <code>width</code>, <code>height</code>, <code>frames</code>, <code>memory</code> and <code>metadata</code> (bytes, such as <code>512MB</code>).</p>
+<h2 id="json-output">JSON output</h2>
+<p><code>info --json</code>, <code>stats --json</code>, <code>compare --json</code>, <code>metadata show --json</code> and <code>formats --json</code> write JSON for scripts. <code>info</code>'s
+has a version, <code>&quot;schema&quot;: 1</code>, which changes only when a field changes meaning or goes away; new fields may be added:</p>
+<pre><code class="lang-json">{
+  &quot;schema&quot;: 1,
+  &quot;files&quot;: [
+    {
+      &quot;path&quot;: &quot;photo.jpg&quot;, &quot;format&quot;: &quot;JPEG&quot;, &quot;mimeType&quot;: &quot;image/jpeg&quot;, &quot;width&quot;: 4032, &quot;height&quot;: 3024,
+      &quot;frames&quot;: 1, &quot;images&quot;: 1, &quot;loopCount&quot;: null, &quot;orientation&quot;: &quot;rotate90&quot;,
+      &quot;pixels&quot;: { &quot;channels&quot;: &quot;rgb&quot;, &quot;channelCount&quot;: 3, &quot;bitsPerChannel&quot;: 8, &quot;channelType&quot;: &quot;unorm8&quot;, &quot;alpha&quot;: &quot;none&quot; },
+      &quot;hasMetadata&quot;: true, &quot;estimatedBytes&quot;: 36578304, &quot;streams&quot;: true
+    }
+  ]
+}
+</code></pre>
+<p>With <code>--all</code>, each file also has <code>metadata</code>: the blocks it holds (<code>icc</code>, <code>exif</code>, <code>xmp</code>, <code>iptc</code>, <code>text</code>, <code>gain-map</code>), the color
+profile's name and size, resolution, gamma, EXIF's camera, date, orientation and location, the XMP size, IPTC datasets and
+text entries. <code>info</code> never decodes pixels; <code>--all</code> reads the metadata, which may decode a pixel.</p>
+<h2 id="other-tools">Other tools</h2>
+<p>A command egami does not know runs the program <code>egami-&lt;name&gt;</code> from the PATH with the rest of the arguments, as git does, so
+<code>egami video info clip.webm</code> starts <code>egami-video</code> once Egami.Video's tool is installed. Egap (documents) has its own <code>egap</code> tool
+with the same conventions.</p>
+<h2 id="native-binaries">Native binaries</h2>
+<p>Egami.Cli publishes as a single native program that needs no .NET runtime. It answers <code>egami info</code> in about 14 ms, where the
+dotnet tool takes about 140 ms, most of it starting the runtime:</p>
+<pre><code class="lang-sh">dotnet publish src/Egami.Cli -c Release -r linux-x64 -p:EgamiNativeAot=true
+</code></pre>
+<p>The release builds these for win-x64, linux-x64 and osx-arm64.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/cli/index.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

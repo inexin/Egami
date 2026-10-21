@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Command reference | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Command reference | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/cli/commands.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="command-reference">Command reference</h1>
+
+<p>Every egami command with its arguments and options, as <code>egami &lt;command&gt; --help</code> prints them. The options of all commands
+(<code>-v</code>, <code>-vv</code>, <code>-q</code>, <code>--limit</code>) are listed once, at the top. <a href="index.html">The egami command</a> explains the conventions they share.</p>
+<pre><code class="lang-text">Description:
+  Convert, inspect, resize and edit images with Egami, a fully managed imaging library.
+
+Usage:
+  egami [command] [options]
+
+Options:
+  -v, --verbose             Write information to standard error.
+  -vv, --debug              Write debugging detail to standard error.
+  -q, --quiet               Write only errors to standard error.
+  --limit &lt;name=value,...&gt;  Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+  -?, -h, --help            Show help and usage information
+  --version                 Show version information
+
+Commands:
+  info &lt;inputs&gt;                     Show what images are: format, size, frames, pixel layout, orientation; with --all, their metadata. Pixels are not decoded.
+  convert &lt;inputs&gt;                  Convert images to another format, or write them again with other settings.
+  resize &lt;inputs&gt;                   Resize images: to a width, a height, a box, a percentage, filling or padding a box.
+  thumbnail &lt;inputs&gt;                Make thumbnails for the web: turned upright, shrunk (never enlarged) to fit --size (256 by default), converted to sRGB, metadata left out.
+  crop &lt;inputs&gt;                     Crop images to a rectangle.
+  rotate &lt;inputs&gt;                   Rotate images clockwise. A JPEG turned by a multiple of 90 degrees into a JPEG is rotated losslessly.
+  flip &lt;inputs&gt;                     Mirror images left to right (horizontal), top to bottom (vertical) or both. A JPEG flipped into a JPEG is flipped losslessly.
+  auto-orient, autoorient &lt;inputs&gt;  Turn images upright from their EXIF orientation and reset it. A JPEG into a JPEG is turned losslessly.
+  run &lt;inputs-and-steps&gt;            Run steps over images, separated by +: 'egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --quality 82'. Every Egami operation is a step ('egami run --list'); save writes, and may come more than once.
+  compare &lt;image&gt; &lt;other&gt;           Compare two images: print a metric and exit with 1 when they differ more than --threshold.
+  stats &lt;inputs&gt;                    Measure images: per-channel minimum, maximum, mean, deviation, skewness, kurtosis and entropy, as ImageMagick's identify -verbose.
+  frames                            Split an animation (GIF, APNG, WebP) into still images, or join stills into one.
+  metadata                          Show, strip or copy metadata: color profile, EXIF, XMP, IPTC, text and resolution.
+  color &lt;inputs&gt;                    Convert images to another color profile (ICC, 2.1.2), tone mapping HDR to SDR where needed (2.9.1).
+  text &lt;inputs&gt;                     Draw a caption or watermark on images, with any font and script, wrapped to fit (2.8.2 layout).
+  overlay &lt;inputs&gt;                  Lay an image (a logo, a watermark, an SVG) on images, placed by anchor, with opacity and a blend mode.
+  montage &lt;inputs&gt;                  Lay images out on a contact sheet: a grid of tiles, optionally labeled with their file names.
+  formats &lt;format&gt;                  List the formats egami reads and writes, or one format's writer settings for --set.
+</code></pre>
+<h2 id="info">info</h2>
+<pre><code class="lang-text">Description:
+  Show what images are: format, size, frames, pixel layout, orientation; with --all, their metadata. Pixels are not decoded.
+
+Usage:
+  egami info &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;        How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast               Stop at the first file that fails.
+  -a, --all                 Also read the metadata: color profile, EXIF, XMP, IPTC, text, resolution.
+  --json                    Write JSON (schema 1, see the command reference) instead of text.
+</code></pre>
+<h2 id="convert">convert</h2>
+<pre><code class="lang-text">Description:
+  Convert images to another format, or write them again with other settings.
+
+Usage:
+  egami convert &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;     The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;        Bits per channel to write (PNG, AVIF).
+  --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  --auto-orient             Turn the image upright from its EXIF orientation first.
+  --to &lt;profile&gt;            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;        How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                Allow outputs to replace their inputs.
+  --fail-fast               Stop at the first file that fails.
+</code></pre>
+<h2 id="resize">resize</h2>
+<pre><code class="lang-text">Description:
+  Resize images: to a width, a height, a box, a percentage, filling or padding a box.
+
+Usage:
+  egami resize &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;           Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;         The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;             Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                    Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;              Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;            Bits per channel to write (PNG, AVIF).
+  --strip                       Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;         Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  --auto-orient                 Turn the image upright from its EXIF orientation first.
+  --to &lt;profile&gt;                Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
+  -r, --recursive               Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;            How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                    Allow outputs to replace their inputs.
+  --fail-fast                   Stop at the first file that fails.
+  -s, --size &lt;size&gt; (REQUIRED)  The size: W, xH, WxH or P%, then optionally ! (ignore the aspect ratio), ^ (fill the box), &gt; (only shrink) or &lt; (only enlarge).
+  --fit &lt;mode&gt;                  How a WxH box is filled: contain (inside, the default), cover (filled and cropped), fill (stretched) or pad.
+  --gravity &lt;anchor&gt;            What cover keeps and where pad places the image: center (the default), top, top-left, ...
+  --filter &lt;filter&gt;             The resampling kernel: bicubic (Catmull-Rom, the default), lanczos3, mitchell, bilinear, nearest, ...
+  --linear                      Blend in linear light rather than in the encoded values.
+  --background &lt;color&gt;          The color --fit pad fills with (transparent by default).
+</code></pre>
+<h2 id="thumbnail">thumbnail</h2>
+<pre><code class="lang-text">Description:
+  Make thumbnails for the web: turned upright, shrunk (never enlarged) to fit --size (256 by default), converted to sRGB, metadata left out.
+
+Usage:
+  egami thumbnail &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;     The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;        Bits per channel to write (PNG, AVIF).
+  --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  --auto-orient             Turn the image upright from its EXIF orientation first.
+  --to &lt;profile&gt;            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;        How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                Allow outputs to replace their inputs.
+  --fail-fast               Stop at the first file that fails.
+  -s, --size &lt;size&gt;         The size: W, xH, WxH or P%, then optionally ! (ignore the aspect ratio), ^ (fill the box), &gt; (only shrink) or &lt; (only enlarge).
+  --fit &lt;mode&gt;              How a WxH box is filled: contain (inside, the default), cover (filled and cropped), fill (stretched) or pad.
+  --gravity &lt;anchor&gt;        What cover keeps and where pad places the image: center (the default), top, top-left, ...
+  --filter &lt;filter&gt;         The resampling kernel: bicubic (Catmull-Rom, the default), lanczos3, mitchell, bilinear, nearest, ...
+  --linear                  Blend in linear light rather than in the encoded values.
+  --background &lt;color&gt;      The color --fit pad fills with (transparent by default).
+  --keep-metadata           Keep EXIF, XMP, IPTC and text, which thumbnails leave out by default.
+</code></pre>
+<h2 id="crop">crop</h2>
+<pre><code class="lang-text">Description:
+  Crop images to a rectangle.
+
+Usage:
+  egami crop &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;          Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;        The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;            Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                   Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;             Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;           Bits per channel to write (PNG, AVIF).
+  --strip                      Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;        Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  --auto-orient                Turn the image upright from its EXIF orientation first.
+  --to &lt;profile&gt;               Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
+  -r, --recursive              Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;           How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                   Allow outputs to replace their inputs.
+  --fail-fast                  Stop at the first file that fails.
+  --rect &lt;x,y,w,h&gt; (REQUIRED)  The area to keep: x,y,width,height in pixels.
+</code></pre>
+<h2 id="rotate">rotate</h2>
+<pre><code class="lang-text">Description:
+  Rotate images clockwise. A JPEG turned by a multiple of 90 degrees into a JPEG is rotated losslessly.
+
+Usage:
+  egami rotate &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;     The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;        Bits per channel to write (PNG, AVIF).
+  --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  --auto-orient             Turn the image upright from its EXIF orientation first.
+  --to &lt;profile&gt;            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;        How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                Allow outputs to replace their inputs.
+  --fail-fast               Stop at the first file that fails.
+  -a, --angle &lt;degrees&gt;     Degrees clockwise; the last input may give it instead, as in 'egami rotate in.jpg 90 -o out.jpg'.
+  --filter &lt;filter&gt;         The resampling kernel for angles that are not a multiple of 90.
+  --background &lt;color&gt;      The color of the corners an angle uncovers (transparent by default).
+  --reencode                Decode and encode a JPEG even when a lossless rotation is possible.
+</code></pre>
+<h2 id="flip">flip</h2>
+<pre><code class="lang-text">Description:
+  Mirror images left to right (horizontal), top to bottom (vertical) or both. A JPEG flipped into a JPEG is flipped losslessly.
+
+Usage:
+  egami flip &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;          Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;        The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;            Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                   Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;             Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;           Bits per channel to write (PNG, AVIF).
+  --strip                      Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;        Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  --auto-orient                Turn the image upright from its EXIF orientation first.
+  --to &lt;profile&gt;               Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
+  -r, --recursive              Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;           How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                   Allow outputs to replace their inputs.
+  --fail-fast                  Stop at the first file that fails.
+  -d, --direction &lt;direction&gt;  horizontal (mirror left to right), vertical (top to bottom) or both; the last input may give it instead.
+  --reencode                   Decode and encode a JPEG even when a lossless flip is possible.
+</code></pre>
+<h2 id="auto-orient">auto-orient</h2>
+<pre><code class="lang-text">Description:
+  Turn images upright from their EXIF orientation and reset it. A JPEG into a JPEG is turned losslessly.
+
+Usage:
+  egami auto-orient &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;     The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;        Bits per channel to write (PNG, AVIF).
+  --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;        How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                Allow outputs to replace their inputs.
+  --fail-fast               Stop at the first file that fails.
+  --to &lt;profile&gt;            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
+  --reencode                Decode and encode a JPEG even when a lossless turn is possible.
+</code></pre>
+<h2 id="run">run</h2>
+<pre><code class="lang-text">Description:
+  Run steps over images, separated by +: 'egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --quality 82'. Every Egami operation is a step ('egami run --list'); save writes, and may come more than once.
+
+Usage:
+  egami run [&lt;inputs-and-steps&gt;...] [options] [[--] &lt;additional arguments&gt;...]]
+
+Arguments:
+  &lt;inputs-and-steps&gt;  Inputs (files, globs, -), then steps separated by +.
+
+Options:
+  -o, --output &lt;path&gt;       Where a save without a path writes, and where the plan writes when it has no save: a file, folder, template or -.
+  -w, --workflow &lt;file&gt;     Take the steps from a JSON workflow file.
+  --save-workflow &lt;file&gt;    Write the steps to a JSON workflow file (then run them, unless --dry-run).
+  --dry-run                 Print the steps and the files each input would write, and stop.
+  --list                    List every step with its arguments.
+  --to &lt;profile&gt;            Convert colors to this profile while reading.
+  -r, --recursive           Take every image in folders given as inputs.
+  -j, --jobs &lt;count&gt;        How many files to work on at once; 0 for one per processor.
+  --in-place                Allow outputs to replace their inputs.
+  --fail-fast               Stop at the first file that fails.
+
+Additional Arguments:
+  Arguments passed to the application that is being run.
+</code></pre>
+<h2 id="compare">compare</h2>
+<pre><code class="lang-text">Description:
+  Compare two images: print a metric and exit with 1 when they differ more than --threshold.
+
+Usage:
+  egami compare &lt;image&gt; &lt;other&gt; [options]
+
+Arguments:
+  &lt;image&gt;  The first image.
+  &lt;other&gt;  The image to compare it with, the same size.
+
+Options:
+  -m, --metric &lt;metric&gt;     The number to print and test: ae (pixels that differ), mae, mse, rmse (the default), peak, psnr, ssim or dssim. [default: rmse]
+  -t, --threshold &lt;value&gt;   Exit with 1 when the metric is worse than this (above it, or below it for psnr and ssim); without it, any difference exits with 1.
+  --fuzz &lt;0-1&gt;              How far apart two values may be and still count as equal, from 0 to 1, for ae and the exit code.
+  -d, --diff &lt;path&gt;         Write a picture of the differences.
+  --diff-style &lt;style&gt;      highlight (differing pixels in red, as ImageMagick's compare) or absolute (|a - b|). [default: highlight]
+  --json                    Write every metric per channel as JSON.
+</code></pre>
+<h2 id="stats">stats</h2>
+<pre><code class="lang-text">Description:
+  Measure images: per-channel minimum, maximum, mean, deviation, skewness, kurtosis and entropy, as ImageMagick's identify -verbose.
+
+Usage:
+  egami stats &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;        How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast               Stop at the first file that fails.
+  --json                    Write JSON instead of text.
+  --frame &lt;index&gt;           The frame to measure, from 0.
+  -a, --all                 Also count the colors and give perceptual hashes and the pixel signature.
+</code></pre>
+<h2 id="frames">frames</h2>
+<pre><code class="lang-text">Description:
+  Split an animation (GIF, APNG, WebP) into still images, or join stills into one.
+
+Usage:
+  egami frames [command] [options]
+
+Options:
+
+Commands:
+  split &lt;input&gt;  Write every frame of an animation as its own image, each a full picture as the animation shows it.
+  join &lt;inputs&gt;  Join still images, all the same size, into an animation.
+</code></pre>
+<h3 id="frames-split">frames split</h3>
+<pre><code class="lang-text">Description:
+  Write every frame of an animation as its own image, each a full picture as the animation shows it.
+
+Usage:
+  egami frames split &lt;input&gt; [options]
+
+Arguments:
+  &lt;input&gt;  The animation, or - for standard input.
+
+Options:
+  -o, --output &lt;template&gt; (REQUIRED)  A template for each frame's file: {frame} or {index} is the frame number from 0, padded as in {frame:000}; {name} is the input's name.
+  -f, --format &lt;format&gt;               The output format, when the template's extension does not say.
+  --set &lt;fmt.key=value&gt;               Writer settings as fmt.key=value.
+  --delays &lt;path&gt;                     Also write each frame's delay in milliseconds, one per line, to this file, so 'frames join --delays' can restore the timing.
+</code></pre>
+<h3 id="frames-join">frames join</h3>
+<pre><code class="lang-text">Description:
+  Join still images, all the same size, into an animation.
+
+Usage:
+  egami frames join &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  The frames in order: files or globs (sorted by name).
+
+Options:
+  -o, --output &lt;path&gt; (REQUIRED)  The animation to write: .gif, .png (APNG) or .webp.
+  -f, --format &lt;format&gt;           The output format, when the extension does not say.
+  --delay &lt;time&gt;                  How long each frame shows: 40ms, 0.04s or 40 (milliseconds). 100ms by default.
+  --delays &lt;path&gt;                 A file of delays in milliseconds, one per frame, as 'frames split --delays' writes.
+  --fps &lt;rate&gt;                    Frames per second, instead of --delay.
+  --loop &lt;count&gt;                  How many times the animation plays; 0 (the default) loops forever.
+  --set &lt;fmt.key=value&gt;           Writer settings as fmt.key=value.
+  --quality &lt;0-100&gt;               Lossy quality for WebP.
+  --lossless                      Lossless WebP.
+</code></pre>
+<h2 id="metadata">metadata</h2>
+<pre><code class="lang-text">Description:
+  Show, strip or copy metadata: color profile, EXIF, XMP, IPTC, text and resolution.
+
+Usage:
+  egami metadata [command] [options]
+
+Options:
+
+Commands:
+  show &lt;inputs&gt;   Show every piece of metadata an image holds.
+  strip &lt;inputs&gt;  Remove metadata. A JPEG losing everything is rewritten without decoding; otherwise the image is written again, which a lossy format allows only with --reencode.
+  copy &lt;inputs&gt;   Copy metadata from one image to others, which are written again with it; a lossy format only with --reencode.
+</code></pre>
+<h3 id="metadata-show">metadata show</h3>
+<pre><code class="lang-text">Description:
+  Show every piece of metadata an image holds.
+
+Usage:
+  egami metadata show &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;        How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast               Stop at the first file that fails.
+  --json                    Write JSON, with every EXIF entry, IPTC dataset, text entry and the XMP packet.
+</code></pre>
+<h3 id="metadata-strip">metadata strip</h3>
+<pre><code class="lang-text">Description:
+  Remove metadata. A JPEG losing everything is rewritten without decoding; otherwise the image is written again, which a lossy format allows only with --reencode.
+
+Usage:
+  egami metadata strip &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;     The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;        Bits per channel to write (PNG, AVIF).
+  --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;        How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                Allow outputs to replace their inputs.
+  --fail-fast               Stop at the first file that fails.
+  --keep &lt;blocks&gt;           Blocks to keep, comma-separated: icc, exif, xmp, iptc, text, resolution.
+  --reencode                Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation.
+</code></pre>
+<h3 id="metadata-copy">metadata copy</h3>
+<pre><code class="lang-text">Description:
+  Copy metadata from one image to others, which are written again with it; a lossy format only with --reencode.
+
+Usage:
+  egami metadata copy &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;        Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;      The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;          Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                 Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;           Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;         Bits per channel to write (PNG, AVIF).
+  --strip                    Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;      Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  -r, --recursive            Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;         How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                 Allow outputs to replace their inputs.
+  --fail-fast                Stop at the first file that fails.
+  --from &lt;image&gt; (REQUIRED)  The image to copy metadata from.
+  --only &lt;blocks&gt;            Blocks to copy, comma-separated: icc, exif, xmp, iptc, text, resolution; all by default.
+  --reencode                 Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation.
+</code></pre>
+<h2 id="color">color</h2>
+<pre><code class="lang-text">Description:
+  Convert images to another color profile (ICC, 2.1.2), tone mapping HDR to SDR where needed (2.9.1).
+
+Usage:
+  egami color &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;         Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;       The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;           Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                  Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;            Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;          Bits per channel to write (PNG, AVIF).
+  --strip                     Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;       Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  -r, --recursive             Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;          How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                  Allow outputs to replace their inputs.
+  --fail-fast                 Stop at the first file that fails.
+  --auto-orient               Turn the image upright from its EXIF orientation first.
+  --to &lt;profile&gt; (REQUIRED)   The profile to convert to: srgb, display-p3, adobe-rgb, rec2020, rec2100-pq, ... or an ICC file.
+  --intent &lt;intent&gt;           perceptual (the default), relative-colorimetric, saturation or absolute-colorimetric.
+  --black-point-compensation  Map black to black between profiles with different black points.
+  --tone-map &lt;method&gt;         How HDR is brought into a standard range: bt2390 (the default), reinhard or clip.
+  --peak &lt;nits&gt;               The HDR source's peak brightness in nits, when the file does not say.
+  --reference-white &lt;nits&gt;    The brightness of SDR white in nits (203 by default).
+</code></pre>
+<h2 id="text">text</h2>
+<pre><code class="lang-text">Description:
+  Draw a caption or watermark on images, with any font and script, wrapped to fit (2.8.2 layout).
+
+Usage:
+  egami text &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;     The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;        Bits per channel to write (PNG, AVIF).
+  --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  --auto-orient             Turn the image upright from its EXIF orientation first.
+  --to &lt;profile&gt;            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;        How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                Allow outputs to replace their inputs.
+  --fail-fast               Stop at the first file that fails.
+  -t, --text &lt;text&gt;         The text; the last input may give it instead: egami text in.png &quot;(c) 2026&quot; -o out.png.
+  --font &lt;font&gt;             A font file, an installed family name, or sans-serif, serif or monospace. Liberation Sans (bundled) by default.
+  --font-size &lt;pixels&gt;      The font size in pixels. [default: 24]
+  --color &lt;color&gt;           The text color, a CSS color (white by default).
+  --anchor &lt;anchor&gt;         Where the text sits: bottom-right (the default), bottom, center, top-left, ...
+  --margin &lt;pixels&gt;         The distance from the image's edges in pixels. [default: 16]
+  --offset &lt;x,y&gt;            A further shift of the text in pixels, x,y.
+  --rotate &lt;degrees&gt;        Degrees clockwise to turn the text around its center.
+  --opacity &lt;0-1&gt;           From 0 (invisible) to 1 (the default). [default: 1]
+  --width &lt;pixels&gt;          The width to wrap lines at, in pixels; the image's width less the margins by default.
+  --shadow &lt;color&gt;          A drop shadow in this color, offset by a tenth of the size.
+</code></pre>
+<h2 id="overlay">overlay</h2>
+<pre><code class="lang-text">Description:
+  Lay an image (a logo, a watermark, an SVG) on images, placed by anchor, with opacity and a blend mode.
+
+Usage:
+  egami overlay &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;       Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output.
+  -f, --format &lt;format&gt;     The output format by name or extension, when -o's extension does not say (and always for -o -).
+  --quality &lt;0-100&gt;         Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG).
+  --lossless                Lossless encoding (WebP, AVIF, JPEG XL).
+  --effort &lt;level&gt;          Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL).
+  --bit-depth &lt;bits&gt;        Bits per channel to write (PNG, AVIF).
+  --strip                   Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right.
+  --set &lt;fmt.key=value&gt;     Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  --auto-orient             Turn the image upright from its EXIF orientation first.
+  --to &lt;profile&gt;            Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
+  -r, --recursive           Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;        How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                Allow outputs to replace their inputs.
+  --fail-fast               Stop at the first file that fails.
+  -i, --image &lt;image&gt;       The image to lay on top (SVG too); the last input may give it instead: egami overlay in.png logo.svg -o out.png.
+  --anchor &lt;anchor&gt;         Where it sits: bottom-right (the default), center, top-left, ...
+  --margin &lt;pixels&gt;         The distance from the image's edges in pixels.
+  --offset &lt;x,y&gt;            A further shift in pixels, x,y.
+  --opacity &lt;0-1&gt;           From 0 (invisible) to 1 (the default). [default: 1]
+  --blend &lt;mode&gt;            The blend mode: normal (the default), multiply, screen, overlay, darken, lighten, ...
+  -s, --size &lt;size&gt;         Resize the overlay first, in the size syntax (W, xH, WxH, P%).
+</code></pre>
+<h2 id="montage">montage</h2>
+<pre><code class="lang-text">Description:
+  Lay images out on a contact sheet: a grid of tiles, optionally labeled with their file names.
+
+Usage:
+  egami montage &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  The images, in order: files or globs (sorted by name).
+
+Options:
+  -o, --output &lt;path&gt; (REQUIRED)  The contact sheet to write.
+  -f, --format &lt;format&gt;           The output format, when the extension does not say.
+  -c, --columns &lt;count&gt;           Images per row; enough for a square sheet by default.
+  --tile &lt;WxH&gt;                    Each image's box; images are shrunk to fit it, never enlarged. [default: 200x200]
+  --spacing &lt;pixels&gt;              The gap between tiles, in pixels. [default: 8]
+  --background &lt;color&gt;            The sheet's color (white by default).
+  --labels                        Write each file's name under its image.
+  --font &lt;font&gt;                   The label font: a file, an installed family, or sans-serif, serif or monospace.
+  --label-size &lt;pixels&gt;           The label size in pixels. [default: 13]
+  --set &lt;fmt.key=value&gt;           Writer settings as fmt.key=value.
+  --quality &lt;0-100&gt;               Lossy quality from 0 to 100.
+</code></pre>
+<h2 id="formats">formats</h2>
+<pre><code class="lang-text">Description:
+  List the formats egami reads and writes, or one format's writer settings for --set.
+
+Usage:
+  egami formats [&lt;format&gt;] [options]
+
+Arguments:
+  &lt;format&gt;  A format name or extension, to list its writer settings.
+
+Options:
+  --json                    Write JSON instead of text.
+</code></pre>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/cli/commands.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
