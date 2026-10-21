@@ -124,44 +124,42 @@ internal sealed class GaloisField
 
     /// <summary>
     /// Evaluates a polynomial, highest power first, at α^(<paramref name="firstPower"/> + j) for each j of
-    /// <paramref name="values"/>, by Horner's rule run for all of them side by side (each step's products are independent, so
-    /// they do not wait on each other as one evaluation's would).
+    /// <paramref name="values"/>: each nonzero coefficient c of power p adds c α^((first + j) p), whose exponent grows by p from
+    /// one j to the next, so each term costs one table lookup and the terms do not wait on each other.
     /// </summary>
     public void EvaluateAtPowers(ReadOnlySpan<int> coefficients, int firstPower, Span<int> values)
     {
         values.Clear();
-        int count = values.Length;
-        if (IsPrime)
+        int order = Size - 1, n = coefficients.Length;
+        int[] exp = _exp, log = _log;
+        for (int i = 0; i < n; i++)
         {
-            Span<int> xs = count <= 256 ? stackalloc int[count] : new int[count];
-            for (int j = 0; j < count; j++)
+            int c = coefficients[i];
+            if (c == 0)
             {
-                xs[j] = Exp(firstPower + j);
+                continue;
             }
 
-            foreach (int c in coefficients)
+            int power = (n - 1 - i) % order;
+            int e = (int)((log[c] + ((long)firstPower * power)) % order);
+            if (IsPrime)
             {
-                for (int j = 0; j < count; j++)
+                for (int j = 0; j < values.Length; j++)
                 {
-                    values[j] = (int)((((long)values[j] * xs[j]) + c) % Size);
+                    int sum = values[j] + exp[e];
+                    values[j] = sum >= Size ? sum - Size : sum;
+                    e += power;
+                    e = e >= order ? e - order : e;
                 }
             }
-
-            return;
-        }
-
-        Span<int> logs = count <= 256 ? stackalloc int[count] : new int[count];
-        for (int j = 0; j < count; j++)
-        {
-            logs[j] = (firstPower + j) % (Size - 1);
-        }
-
-        int[] exp = _productExp, log = _productLog;
-        foreach (int c in coefficients)
-        {
-            for (int j = 0; j < count; j++)
+            else
             {
-                values[j] = exp[log[values[j]] + logs[j]] ^ c;
+                for (int j = 0; j < values.Length; j++)
+                {
+                    values[j] ^= exp[e];
+                    e += power;
+                    e = e >= order ? e - order : e;
+                }
             }
         }
     }

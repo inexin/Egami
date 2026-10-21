@@ -161,8 +161,23 @@ internal static class ReedSolomon
             }
         }
 
-        // A pattern past the correction limit can land on another codeword's locator; check the result is a codeword.
-        if (!IsCodeword(field, codeword, checkCount))
+        // A pattern past the correction limit can land on another codeword's locator; check the result is a codeword: its
+        // syndromes are the received word's less each correction's share, Y_k X_k^(b+j).
+        bool codewordNow = true;
+        for (int j = 0; j < checkCount && codewordNow; j++)
+        {
+            int syndrome = syndromes[j];
+            for (int k = 0; k < degree; k++)
+            {
+                int power = (n - 1 - positions[k]) % (field.Size - 1);
+                int exponent = (int)((long)(field.GeneratorBase + j) * power % (field.Size - 1));
+                syndrome = field.Subtract(syndrome, field.Multiply(values[k], field.Exp(exponent)));
+            }
+
+            codewordNow = syndrome == 0;
+        }
+
+        if (!codewordNow)
         {
             for (int k = 0; k < degree; k++)
             {

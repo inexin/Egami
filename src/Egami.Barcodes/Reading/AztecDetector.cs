@@ -11,20 +11,25 @@ internal static class AztecDetector
 {
     private readonly record struct Center(Vector2 Point, float Module);
 
-    public static List<Found> Detect(BitImage bits, int effort, Vector2 offset)
+    /// <summary>
+    /// Finds the symbols around bullseye centers. A center inside a symbol already found, in this search or in
+    /// <paramref name="found"/> (image coordinates; the first pass's symbols in the inverted pass), is not looked at.
+    /// </summary>
+    public static List<Found> Detect(BitImage bits, int effort, Vector2 offset, IEnumerable<Vector2[]>? found = null)
     {
         var results = new List<Found>();
+        List<Vector2[]> claimed = found is null ? [] : [.. found];
         foreach (Center center in Centers(bits, effort >= 7 ? 1 : 2))
         {
             Vector2 c = center.Point + offset;
-            if (results.Any(r => Search.Inside(r.Corners, c)))
+            if (results.Any(r => Search.Inside(r.Corners, c)) || claimed.Any(q => Search.Inside(q, c)))
             {
                 continue;
             }
 
-            if (Read(bits, center) is Found found)
+            if (Read(bits, center) is Found symbol)
             {
-                results.Add(found with { Corners = [.. found.Corners.Select(p => p + offset)] });
+                results.Add(symbol with { Corners = [.. symbol.Corners.Select(p => p + offset)] });
             }
         }
 
@@ -35,22 +40,28 @@ internal static class AztecDetector
     private static List<Center> Centers(BitImage bits, int step)
     {
         var centers = new List<Center>();
-        var runs = new List<float>();
-        var offsets = new List<float>();
+        int[] buffer = new int[bits.Width + 2], starts = new int[bits.Width + 3];
         for (int y = 0; y < bits.Height; y += step)
         {
-            Binarizer.BitRuns(bits.Row(y), runs, offsets);
+            // Runs light first (the first possibly empty), with where each starts.
+            int count = Binarizer.IntRuns(bits.Row(y), buffer);
+            ReadOnlySpan<int> runs = buffer.AsSpan(0, count);
+            for (int i = 0, at = 0; i < count; at += runs[i++])
+            {
+                starts[i] = at;
+            }
 
-            // Runs alternate from the first; find dark ones (the bullseye's center) with three equal runs on each side.
+            // Find center runs with three equal runs on each side. (The parity follows the row's first pixel, as it always has:
+            // a row that starts dark offers its light runs, which the dark-center check below turns down.)
             bool firstDark = bits[0, y];
-            for (int i = 3; i + 3 < runs.Count; i++)
+            for (int i = 3; i + 3 < count; i++)
             {
                 if (((i % 2 == 0) != firstDark) || !Equal(runs, i - 3, 7))
                 {
                     continue;
                 }
 
-                float cx = offsets[i] + (runs[i] / 2), module = Mean(runs, i - 3, 7);
+                float cx = starts[i] + (runs[i] / 2f), module = Mean(runs, i - 3, 7);
                 if (Across(bits, new Vector2(cx, y + 0.5f), new Vector2(0, 1), module) is not float cy
                     || Across(bits, new Vector2(cx, cy), new Vector2(1, 0), module) is not float refinedX
                     || Across(bits, new Vector2(refinedX, cy), new Vector2(0, 1), module) is not float refinedY)
@@ -77,7 +88,7 @@ internal static class AztecDetector
         return centers;
     }
 
-    private static bool Equal(List<float> runs, int start, int count)
+    private static bool Equal(ReadOnlySpan<int> runs, int start, int count)
     {
         float mean = Mean(runs, start, count);
         for (int k = start; k < start + count; k++)
@@ -91,7 +102,7 @@ internal static class AztecDetector
         return mean >= 1;
     }
 
-    private static float Mean(List<float> runs, int start, int count)
+    private static float Mean(ReadOnlySpan<int> runs, int start, int count)
     {
         float sum = 0;
         for (int k = start; k < start + count; k++)

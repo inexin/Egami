@@ -65,8 +65,8 @@ internal static class Search
 
     /// <summary>
     /// The detectors for the formats asked for, over one pass's bits; in the inverted pass the gray levels that PDF417 samples
-    /// are the inverted image's, made when first needed, and the Data Matrix detector skips the light modules of the first
-    /// pass's 2D symbols (<paramref name="found"/>).
+    /// are the inverted image's, made when first needed, and the Data Matrix and Aztec detectors skip what lies inside the
+    /// first pass's 2D symbols (<paramref name="found"/>).
     /// </summary>
     private static List<Func<List<Found>>> Jobs(LuminanceImage image, bool inverted, BitImage? local, BitImage global, BarcodeFormat formats, int effort, List<Found>? found = null)
     {
@@ -92,7 +92,7 @@ internal static class Search
 
         if ((formats & BarcodeFormat.Aztec) != 0)
         {
-            jobs.Add(() => AztecDetector.Detect(local, effort, offset));
+            jobs.Add(() => AztecDetector.Detect(local, effort, offset, found?.Where(f => IsMatrix(f.Data.Format)).Select(f => f.Corners)));
         }
 
         if ((formats & BarcodeFormat.Pdf417) != 0)
