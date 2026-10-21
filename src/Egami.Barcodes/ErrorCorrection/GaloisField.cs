@@ -9,6 +9,8 @@ internal sealed class GaloisField
 {
     private readonly int[] _exp;
     private readonly int[] _log;
+    private readonly int[] _productExp;
+    private readonly int[] _productLog;
     private readonly int[]?[] _generators;
 
     private GaloisField(string name, int size, int polynomial, int primitive, int generatorBase, bool isPrime)
@@ -43,6 +45,13 @@ internal sealed class GaloisField
         {
             _exp[i] = _exp[i - (size - 1)];
         }
+
+        // For products without a branch on zero: log 0 is taken as 2 (size - 1), past every sum of two real logarithms, and
+        // exponents from there on are 0.
+        _productExp = new int[4 * size];
+        _exp.AsSpan(0, 2 * (size - 1)).CopyTo(_productExp);
+        _productLog = (int[])_log.Clone();
+        _productLog[0] = 2 * (size - 1);
 
         _generators = new int[]?[size];
     }
@@ -99,7 +108,7 @@ internal sealed class GaloisField
 
     public int Negate(int a) => IsPrime ? (Size - a) % Size : a;
 
-    public int Multiply(int a, int b) => a == 0 || b == 0 ? 0 : _exp[_log[a] + _log[b]];
+    public int Multiply(int a, int b) => _productExp[_productLog[a] + _productLog[b]];
 
     public int Divide(int a, int b)
     {
@@ -113,28 +122,48 @@ internal sealed class GaloisField
         return _exp[(Size - 1) - _log[a]];
     }
 
-    /// <summary>Evaluates a polynomial, highest power first, at α^<paramref name="power"/> by Horner's rule.</summary>
-    public int EvaluateAtPower(ReadOnlySpan<int> coefficients, int power)
+    /// <summary>
+    /// Evaluates a polynomial, highest power first, at α^(<paramref name="firstPower"/> + j) for each j of
+    /// <paramref name="values"/>, by Horner's rule run for all of them side by side (each step's products are independent, so
+    /// they do not wait on each other as one evaluation's would).
+    /// </summary>
+    public void EvaluateAtPowers(ReadOnlySpan<int> coefficients, int firstPower, Span<int> values)
     {
+        values.Clear();
+        int count = values.Length;
         if (IsPrime)
         {
-            long x = Exp(power), prime = Size, sum = 0;
-            foreach (int c in coefficients)
+            Span<int> xs = count <= 256 ? stackalloc int[count] : new int[count];
+            for (int j = 0; j < count; j++)
             {
-                sum = ((sum * x) + c) % prime;
+                xs[j] = Exp(firstPower + j);
             }
 
-            return (int)sum;
+            foreach (int c in coefficients)
+            {
+                for (int j = 0; j < count; j++)
+                {
+                    values[j] = (int)((((long)values[j] * xs[j]) + c) % Size);
+                }
+            }
+
+            return;
         }
 
-        int logX = power % (Size - 1), value = 0;
-        int[] exp = _exp, log = _log;
+        Span<int> logs = count <= 256 ? stackalloc int[count] : new int[count];
+        for (int j = 0; j < count; j++)
+        {
+            logs[j] = (firstPower + j) % (Size - 1);
+        }
+
+        int[] exp = _productExp, log = _productLog;
         foreach (int c in coefficients)
         {
-            value = (value == 0 ? 0 : exp[log[value] + logX]) ^ c;
+            for (int j = 0; j < count; j++)
+            {
+                values[j] = exp[log[values[j]] + logs[j]] ^ c;
+            }
         }
-
-        return value;
     }
 
     /// <summary>Returns <paramref name="a"/> added to itself <paramref name="n"/> times, as formal derivatives need.</summary>

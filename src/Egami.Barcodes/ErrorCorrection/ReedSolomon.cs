@@ -56,13 +56,8 @@ internal static class ReedSolomon
 
         // Syndromes S_j = r(α^(b+j)).
         int[] syndromes = new int[checkCount];
-        bool clean = true;
-        for (int j = 0; j < checkCount; j++)
-        {
-            int value = field.EvaluateAtPower(codeword, field.GeneratorBase + j);
-            syndromes[j] = value;
-            clean &= value == 0;
-        }
+        field.EvaluateAtPowers(codeword, field.GeneratorBase, syndromes);
+        bool clean = !syndromes.AsSpan().ContainsAnyExcept(0);
 
         if (clean)
         {
@@ -96,14 +91,29 @@ internal static class ReedSolomon
         int[] evaluator = Multiply(field, syndromes, locator);
         Array.Resize(ref evaluator, Math.Min(evaluator.Length, checkCount));
 
-        // Chien search over the codeword's positions.
+        // Chien search over the codeword's positions: Λ at X^-1 = α^-(n - 1 - i), which grows by a factor α from one position
+        // to the next, so each term λ_k X^-k is kept and multiplied by α^k (the terms are independent of each other).
         int degree = locator.Length - 1;
         Span<int> positions = degree <= 256 ? stackalloc int[degree] : new int[degree];
+        Span<int> terms = degree <= 256 ? stackalloc int[degree + 1] : new int[degree + 1], steps = degree <= 256 ? stackalloc int[degree + 1] : new int[degree + 1];
+        int first = field.Exp((field.Size - 1) - ((n - 1) % (field.Size - 1)));
+        for (int k = 0, power = 1; k <= degree; k++, power = field.Multiply(power, first))
+        {
+            terms[k] = field.Multiply(locator[k], power);
+            steps[k] = field.Exp(k);
+        }
+
         int found = 0;
         for (int i = 0; i < n && found <= degree; i++)
         {
-            int inverse = field.Exp((field.Size - 1) - ((n - 1 - i) % (field.Size - 1)));
-            if (Evaluate(field, locator, inverse) == 0)
+            int value = 0;
+            for (int k = 0; k <= degree; k++)
+            {
+                value = field.Add(value, terms[k]);
+                terms[k] = field.Multiply(terms[k], steps[k]);
+            }
+
+            if (value == 0)
             {
                 if (found == degree)
                 {
@@ -168,15 +178,9 @@ internal static class ReedSolomon
     /// <summary>Returns whether the symbols form a codeword: every syndrome is zero.</summary>
     public static bool IsCodeword(GaloisField field, ReadOnlySpan<int> codeword, int checkCount)
     {
-        for (int j = 0; j < checkCount; j++)
-        {
-            if (field.EvaluateAtPower(codeword, field.GeneratorBase + j) != 0)
-            {
-                return false;
-            }
-        }
-
-        return true;
+        Span<int> syndromes = checkCount <= 256 ? stackalloc int[checkCount] : new int[checkCount];
+        field.EvaluateAtPowers(codeword, field.GeneratorBase, syndromes);
+        return !syndromes.ContainsAnyExcept(0);
     }
 
     /// <summary>The shortest linear recurrence of a power-sum sequence: its connection polynomial, lowest power first.</summary>

@@ -72,7 +72,7 @@ internal static class Search
         var offset = new Vector2(image.Left, image.Top);
         var jobs = new List<Func<List<Found>>>
         {
-            () => PureReader.Read(image, global, formats, inverted) is Found pure ? [pure] : [],
+            () => PureReader.Read(image, global, formats, inverted, searching: true) is Found pure ? [pure] : [],
         };
         if (local is null)
         {
