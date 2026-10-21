@@ -33,7 +33,7 @@ internal static class LinearScanner
             {
                 ReadOnlySpan<byte> samples = Sample(image, start, step, length, line);
                 ReadLine(samples, start, step, formats, line, normal, swapped);
-                if (local is not null && angle == 0 && effort >= 6)
+                if (local is not null && angle == 0 && effort >= 5)
                 {
                     // The local binarization of the same row, for uneven light.
                     Binarizer.BitRuns(local.Row((int)start.Y), line.Runs, line.Offsets);
@@ -117,7 +117,7 @@ internal static class LinearScanner
     private static IEnumerable<(Vector2 Start, Vector2 Step, int Length)> Lines(int width, int height, int angle, int effort)
     {
         // Lines from the middle outwards; more of them at higher effort.
-        int count = effort <= 2 ? 9 : effort <= 5 ? 25 : effort <= 8 ? 61 : 151;
+        int count = effort <= 2 ? 9 : effort <= 5 ? 29 : effort <= 8 ? 61 : 151;
         if (angle is 0 or 90)
         {
             int across = angle == 0 ? height : width, along = angle == 0 ? width : height;

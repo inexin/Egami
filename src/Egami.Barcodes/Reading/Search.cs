@@ -36,7 +36,7 @@ internal static class Search
         int threads = (long)image.Width * image.Height < 256 * 1024 ? 1 : Math.Max(1, (options.Context ?? EgamiContext.Default).MaxParallelism);
         // The local threshold serves the 2D detectors and, from effort 6, the linear scan; the global one the pure reader.
         bool matrix = (formats & (BarcodeFormat.Qr | BarcodeFormat.DataMatrix | BarcodeFormat.Aztec | BarcodeFormat.Pdf417)) != 0;
-        BitImage? local = matrix || effort >= 6 ? Binarizer.Local(image, threads) : null;
+        BitImage? local = matrix || effort >= 5 ? Binarizer.Local(image, threads) : null;
         BitImage global = local is not null && (image.Width < 40 || image.Height < 40) ? local : Binarizer.Global(image);
         List<Found> linearInverted = [];
         var jobs = Jobs(image, false, local, global, formats, effort);
@@ -44,7 +44,7 @@ internal static class Search
         {
             jobs.Add(() =>
             {
-                (List<Found> normal, List<Found> inverted) = LinearScanner.Scan(image, effort >= 6 ? local : null, formats, effort, tryInverted);
+                (List<Found> normal, List<Found> inverted) = LinearScanner.Scan(image, effort >= 5 ? local : null, formats, effort, tryInverted);
                 linearInverted = inverted;
                 return normal;
             });
