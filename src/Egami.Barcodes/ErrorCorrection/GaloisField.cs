@@ -1,3 +1,6 @@
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+
 namespace Egami.Barcodes.ErrorCorrection;
 
 /// <summary>
@@ -154,7 +157,14 @@ internal sealed class GaloisField
             }
             else
             {
-                for (int j = 0; j < values.Length; j++)
+                int j = 0;
+                if (Avx2.IsSupported && values.Length >= 8)
+                {
+                    j = AddTermsGathered(exp, values, e, power, order);
+                    e = (int)((e + ((long)j * power)) % order);
+                }
+
+                for (; j < values.Length; j++)
                 {
                     values[j] ^= exp[e];
                     e += power;
@@ -162,6 +172,39 @@ internal sealed class GaloisField
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Adds a coefficient's terms α^e, α^(e + p), α^(e + 2p), ... into eight values at a time, the powers looked up by
+    /// gathering; returns how many values it did (a multiple of eight).
+    /// </summary>
+    private static unsafe int AddTermsGathered(int[] exp, Span<int> values, int e, int power, int order)
+    {
+        int count = values.Length & ~7;
+        Vector256<int> exponents = Vector256.Create(0, 1, 2, 3, 4, 5, 6, 7) * Vector256.Create(power % order);
+        exponents += Vector256.Create(e);
+
+        // Lanes may pass the order once or more: bring them back below it (each lane is below 8 times the order).
+        Vector256<int> orders = Vector256.Create(order);
+        for (int k = 0; k < 8; k++)
+        {
+            exponents -= orders & Vector256.GreaterThanOrEqual(exponents, orders);
+        }
+
+        Vector256<int> step = Vector256.Create((int)(8L * power % order));
+        fixed (int* table = exp)
+        fixed (int* target = values)
+        {
+            for (int j = 0; j < count; j += 8)
+            {
+                Vector256<int> terms = Avx2.GatherVector256(table, exponents, 4);
+                Vector256.Store(Vector256.Load(target + j) ^ terms, target + j);
+                exponents += step;
+                exponents -= orders & Vector256.GreaterThanOrEqual(exponents, orders);
+            }
+        }
+
+        return count;
     }
 
     /// <summary>Returns <paramref name="a"/> added to itself <paramref name="n"/> times, as formal derivatives need.</summary>

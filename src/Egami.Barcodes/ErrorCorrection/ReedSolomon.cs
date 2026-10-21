@@ -76,9 +76,10 @@ internal static class ReedSolomon
             erasureLocator = Multiply(field, erasureLocator, [1, field.Negate(field.Exp(n - 1 - index))]);
         }
 
-        // Forney syndromes T = Γ S mod x^checkCount; from index e on they are power sums over the errors alone.
+        // Forney syndromes T = Γ S mod x^checkCount; from index e on they are power sums over the errors alone (without
+        // erasures, Γ = 1 and T = S).
         int e = erasures.Length;
-        int[] forney = Multiply(field, erasureLocator, syndromes);
+        int[] forney = e == 0 ? syndromes : Multiply(field, erasureLocator, syndromes);
         int[] errorLocator = BerlekampMassey(field, forney.AsSpan(e, checkCount - e));
         int errors = errorLocator.Length - 1;
         if ((2 * errors) + e > checkCount)
@@ -86,10 +87,8 @@ internal static class ReedSolomon
             return -1;
         }
 
-        // Λ = σ Γ locates errors and erasures; Ω = S Λ mod x^checkCount gives their values.
-        int[] locator = Multiply(field, errorLocator, erasureLocator);
-        int[] evaluator = Multiply(field, syndromes, locator);
-        Array.Resize(ref evaluator, Math.Min(evaluator.Length, checkCount));
+        // Λ = σ Γ locates errors and erasures.
+        int[] locator = e == 0 ? errorLocator : Multiply(field, errorLocator, erasureLocator);
 
         // Chien search over the codeword's positions: Λ at X^-1 = α^-(n - 1 - i), which grows by a factor α from one position
         // to the next, so each term λ_k X^-k is kept and multiplied by α^k (the terms are independent of each other).
@@ -129,7 +128,9 @@ internal static class ReedSolomon
             return -1;
         }
 
-        // Forney: Y_k = -X_k^(1-b) Ω(X_k^-1) / Λ'(X_k^-1).
+        // Ω = S Λ mod x^checkCount gives the values. Forney: Y_k = -X_k^(1-b) Ω(X_k^-1) / Λ'(X_k^-1).
+        int[] evaluator = Multiply(field, syndromes, locator);
+        Array.Resize(ref evaluator, Math.Min(evaluator.Length, checkCount));
         int[] derivative = new int[Math.Max(degree, 1)];
         for (int i = 1; i <= degree; i++)
         {
