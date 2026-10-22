@@ -89,12 +89,12 @@
 
 <p>Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:</p>
 <ul>
-<li>Codecs: FLAC (RFC 9639) decode and encode, and integer and float PCM.</li>
-<li>Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64 and native FLAC, read and written; FLAC and PCM in
-Matroska, WebM and MP4 too.</li>
+<li>Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, and Opus (RFC 6716) decode.</li>
+<li>Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC and Ogg, read and written; FLAC, PCM
+and Opus in Matroska, WebM and MP4 too.</li>
 <li>A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.</li>
 </ul>
-<p>Opus, Vorbis and other audio tracks are copied through untouched.</p>
+<p>Vorbis and other audio tracks are copied through untouched.</p>
 <h2 id="frames">Frames</h2>
 <p>An <code>AudioFrame</code> holds <code>SampleCount</code> samples for every channel of its <code>Layout</code>, its <code>SampleRate</code>, its <code>Format</code> (a
 <code>SampleFormat</code>) and the <code>Timestamp</code> of its first sample. Frame memory comes from the context's memory source; dispose each
@@ -254,6 +254,24 @@ foreach (EncodedPacket packet in packets)
 }
 
 // FLAC decodes to its own integers: S16Planar up to 16 bits, S32Planar above.
+</code></pre><h2 id="opus">Opus</h2>
+<p><code>OpusCodec</code> decodes every Opus stream: SILK (speech), CELT (music) and hybrid frames at every bandwidth, mono, stereo and the
+multichannel mappings of RFC 7845 (families 0, 1 and 255). Frames come out as planar float at 48 kHz, Opus's own rate, with the
+channels in the canonical order; ask <code>AudioReaderOptions.SampleRate</code> for another rate. The pre-skip (the track's
+<code>CodecDelay</code>) and the end padding are trimmed. A lost packet, reported with <code>IAudioDecoder.SendLoss</code> or seen as a gap in the
+timestamps, is concealed, or recovered from the next packet's in-band FEC when it carries some. The decoder passes the RFC
+8251 test vectors.</p>
+<pre><code class="lang-csharp">// Opus decodes to planar float at 48 kHz; pre-skip and end padding are trimmed, so the length is the original's.
+using AudioReader reader = AudioReader.Open(&quot;talk.opus&quot;);
+Console.WriteLine($&quot;{reader.Track.CodecId}, {reader.Track.Channels} channels, pre-skip {reader.Track.CodecDelay?.ToTimeSpan()}&quot;);
+long samples = 0;
+while (reader.TryRead(out AudioFrame? frame))
+{
+    using (frame)
+    {
+        samples += frame.SampleCount;
+    }
+}
 </code></pre><h2 id="containers">Containers</h2>
 <p><code>WavFormat.Instance</code> reads WAV, RF64 and BW64 (PCM, float, WAVE_FORMAT_EXTENSIBLE with its channel mask, and streamed files
 whose sizes were never filled in), and writes WAV that turns into RF64 by itself past 4 GB. <code>WavFormat.Wave64</code> is Sony
@@ -264,6 +282,15 @@ MediaFile.Remux(&quot;tone.wav&quot;, &quot;tone.w64&quot;);
 MediaInfo info = MediaFile.Probe(&quot;tone.w64&quot;);
 AudioTrackInfo track = (AudioTrackInfo)info.Tracks[0];
 Console.WriteLine($&quot;{info.FormatName}: {track.CodecId}, {track.SampleRate} Hz, {track.BitsPerSample} bits, {track.Layout}&quot;);
+</code></pre>
+<p><code>OggFormat</code> reads and writes Ogg (.ogg, .opus, .oga) with Opus, Vorbis and FLAC. Timestamps come from the granule positions,
+seeking from an index built in one pass over the page headers, and pages with a bad CRC are skipped with an <code>ogg-crc</code>
+warning. A chained file (one stream after another) reads as one track when the settings stay the same, each link's TITLE a
+chapter; a link that changes them ends the track with an <code>ogg-chained-stream</code> warning.</p>
+<pre><code class="lang-csharp">// An Opus track moves from WebM to an .opus file and back without decoding; the tags travel in OpusTags.
+MediaFile.Remux(&quot;music.webm&quot;, &quot;music.opus&quot;);
+MediaInfo info = MediaFile.Probe(&quot;music.opus&quot;);
+Console.WriteLine($&quot;{info.FormatName}: {info.Tracks[0].CodecId}, {info.Duration?.ToTimeSpan()}, {info.Chapters.Count} chapters&quot;);
 </code></pre>
 </article>
 

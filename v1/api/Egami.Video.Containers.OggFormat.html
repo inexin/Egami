@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class OggFormat | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class OggFormat | Egami ">
+      
+      <meta name="description" content="Ogg (.ogg, .opus, .oga), RFC 3533, with the Opus (RFC 7845), Vorbis and FLAC mappings. Pages are CRC-checked and packets rebuilt across them; timestamps come from granule positions, with Opus&#39;s pre-skip as the track&#39;s codec delay and the last page&#39;s granule position trimming the end. Seeking uses an index of granule positions built in one pass over the page headers on open. Chained files (one stream after another, as internet radio dumps are) read as one track when the codec settings stay the same, each link&#39;s TITLE a chapter; a link that changes them ends the track with an &amp;quot;ogg-chained-stream&amp;quot; warning. The writer stores Opus, Vorbis and FLAC with tags, so a WebM&#39;s Opus track remuxes to .opus without decoding.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Containers_OggFormat.md&amp;value=---%0Auid%3A%20Egami.Video.Containers.OggFormat%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Containers.OggFormat">
+
+
+
+  <h1 id="Egami_Video_Containers_OggFormat" data-uid="Egami.Video.Containers.OggFormat" class="text-break">
+Class OggFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Ogg/OggFormat.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Containers.html">Containers</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Ogg (.ogg, .opus, .oga), RFC 3533, with the Opus (RFC 7845), Vorbis and FLAC mappings. Pages are CRC-checked and packets
+rebuilt across them; timestamps come from granule positions, with Opus's pre-skip as the track's codec delay and the last
+page's granule position trimming the end. Seeking uses an index of granule positions built in one pass over the page headers
+on open. Chained files (one stream after another, as internet radio dumps are) read as one track when the codec settings stay
+the same, each link's TITLE a chapter; a link that changes them ends the track with an &quot;ogg-chained-stream&quot; warning. The
+writer stores Opus, Vorbis and FLAC with tags, so a WebM's Opus track remuxes to .opus without decoding.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class OggFormat : ContainerFormat</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Video.Containers.ContainerFormat.html">ContainerFormat</a></div>
+      <div><span class="xref">OggFormat</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaContext_System_Boolean_">ContainerFormat.CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaContext, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_ToString">ContainerFormat.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Containers_OggFormat_examples">Examples</h2>
+  <pre><code class="lang-csharp">// An Opus track moves from WebM to an .opus file and back without decoding; the tags travel in OpusTags.
+MediaFile.Remux("music.webm", "music.opus");
+MediaInfo info = MediaFile.Probe("music.opus");
+Console.WriteLine($"{info.FormatName}: {info.Tracks[0].CodecId}, {info.Duration?.ToTimeSpan()}, {info.Chapters.Count} chapters");</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Containers_OggFormat_CanMux_" data-uid="Egami.Video.Containers.OggFormat.CanMux*"></a>
+
+  <h3 id="Egami_Video_Containers_OggFormat_CanMux" data-uid="Egami.Video.Containers.OggFormat.CanMux">
+  CanMux
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Ogg/OggFormat.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_">CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaMetadata, MediaContext, bool)</a> is supported.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool CanMux { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_OggFormat_Extensions_" data-uid="Egami.Video.Containers.OggFormat.Extensions*"></a>
+
+  <h3 id="Egami_Video_Containers_OggFormat_Extensions" data-uid="Egami.Video.Containers.OggFormat.Extensions">
+  Extensions
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Ogg/OggFormat.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the file extensions, with the dot, the first being the one writers use.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IReadOnlyList&lt;string&gt; Extensions { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_OggFormat_Instance_" data-uid="Egami.Video.Containers.OggFormat.Instance*"></a>
+
+  <h3 id="Egami_Video_Containers_OggFormat_Instance" data-uid="Egami.Video.Containers.OggFormat.Instance">
+  Instance
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Ogg/OggFormat.cs/#L23"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Ogg format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static OggFormat Instance { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Containers.OggFormat.html">OggFormat</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_OggFormat_Name_" data-uid="Egami.Video.Containers.OggFormat.Name*"></a>
+
+  <h3 id="Egami_Video_Containers_OggFormat_Name" data-uid="Egami.Video.Containers.OggFormat.Name">
+  Name
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Ogg/OggFormat.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the format's name, such as &quot;AVI&quot; or &quot;Matroska&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string Name { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_OggFormat_SignatureLength_" data-uid="Egami.Video.Containers.OggFormat.SignatureLength*"></a>
+
+  <h3 id="Egami_Video_Containers_OggFormat_SignatureLength" data-uid="Egami.Video.Containers.OggFormat.SignatureLength">
+  SignatureLength
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Ogg/OggFormat.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many leading bytes <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_IsMatch_System_ReadOnlySpan_System_Byte__">IsMatch(ReadOnlySpan&lt;byte&gt;)</a> needs to decide.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int SignatureLength { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Containers_OggFormat_CreateMuxer_" data-uid="Egami.Video.Containers.OggFormat.CreateMuxer*"></a>
+
+  <h3 id="Egami_Video_Containers_OggFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.Containers.OggFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)">
+  CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaMetadata, MediaContext, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Ogg/OggFormat.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a muxer for Opus, Vorbis and FLAC tracks, writing the tags as Vorbis comments in each stream's headers.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IMuxer CreateMuxer(Stream stream, IReadOnlyList&lt;TrackInfo&gt; tracks, MediaMetadata metadata, MediaContext context, bool leaveOpen)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write; it need not be seekable.</p>
+</dd>
+    <dt><code>tracks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a>&gt;</dt>
+    <dd><p>The audio tracks.</p>
+</dd>
+    <dt><code>metadata</code> <a class="xref" href="Egami.Video.MediaMetadata.html">MediaMetadata</a></dt>
+    <dd><p>The tags. Chapters and attachments are left out with a &quot;metadata-dropped&quot; warning.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context, for warnings.</p>
+</dd>
+    <dt><code>leaveOpen</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether disposing the muxer leaves the stream open.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Containers.IMuxer.html">IMuxer</a></dt>
+    <dd><p>The muxer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>A track is not Opus, Vorbis or FLAC.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Containers_OggFormat_IsMatch_" data-uid="Egami.Video.Containers.OggFormat.IsMatch*"></a>
+
+  <h3 id="Egami_Video_Containers_OggFormat_IsMatch_System_ReadOnlySpan_System_Byte__" data-uid="Egami.Video.Containers.OggFormat.IsMatch(System.ReadOnlySpan{System.Byte})">
+  IsMatch(ReadOnlySpan&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Ogg/OggFormat.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns whether the file's first bytes belong to this format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool IsMatch(ReadOnlySpan&lt;byte&gt; header)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>header</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>Up to <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_SignatureLength">SignatureLength</a> leading bytes; fewer when the file is shorter.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the format matches.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_OggFormat_OpenDemuxer_" data-uid="Egami.Video.Containers.OggFormat.OpenDemuxer*"></a>
+
+  <h3 id="Egami_Video_Containers_OggFormat_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.Containers.OggFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)">
+  OpenDemuxer(Stream, MediaContext, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Ogg/OggFormat.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Opens a demuxer that reads packets from <code class="paramref">stream</code>, starting at its current position.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IDemuxer OpenDemuxer(Stream stream, MediaContext context, bool leaveOpen)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The file. Seeking is used when the stream supports it.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The limits and registered codecs.</p>
+</dd>
+    <dt><code>leaveOpen</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether disposing the demuxer leaves the stream open.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Containers.IDemuxer.html">IDemuxer</a></dt>
+    <dd><p>The demuxer, with its tracks read.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The headers break the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The file breaks a limit in <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Limits">Limits</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Ogg/OggFormat.cs/#L16" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

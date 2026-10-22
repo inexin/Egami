@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_AudioReaderOptions" data-uid="Egami.Video.AudioReaderOptions" class="text-break">
-Class AudioReaderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L322"><i class="bi bi-code-slash"></i></a>
+Class AudioReaderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L333"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -181,7 +181,7 @@ using AudioReader mono = AudioReader.Open("tone.wav", options);</code></pre>
 
   <h3 id="Egami_Video_AudioReaderOptions_Decoder" data-uid="Egami.Video.AudioReaderOptions.Decoder">
   Decoder
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L349"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L360"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how to decode, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
@@ -213,7 +213,7 @@ using AudioReader mono = AudioReader.Open("tone.wav", options);</code></pre>
 
   <h3 id="Egami_Video_AudioReaderOptions_Default" data-uid="Egami.Video.AudioReaderOptions.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L325"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L336"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the default options: the first audio track, as planar float at its own rate and layout.</p>
@@ -245,7 +245,7 @@ using AudioReader mono = AudioReader.Open("tone.wav", options);</code></pre>
 
   <h3 id="Egami_Video_AudioReaderOptions_Dither" data-uid="Egami.Video.AudioReaderOptions.Dither">
   Dither
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L346"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L357"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether to dither when converting to a smaller integer format. Off by default.</p>
@@ -277,7 +277,7 @@ using AudioReader mono = AudioReader.Open("tone.wav", options);</code></pre>
 
   <h3 id="Egami_Video_AudioReaderOptions_Errors" data-uid="Egami.Video.AudioReaderOptions.Errors">
   Errors
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L356"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L367"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets what to do with a packet that cannot be decoded: <a class="xref" href="Egami.Video.DecodeErrorMode.html#Egami_Video_DecodeErrorMode_Skip">Skip</a> (the default) reports and drops it,
@@ -311,11 +311,12 @@ using AudioReader mono = AudioReader.Open("tone.wav", options);</code></pre>
 
   <h3 id="Egami_Video_AudioReaderOptions_KeepAllSamples" data-uid="Egami.Video.AudioReaderOptions.KeepAllSamples">
   KeepAllSamples
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L362"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L374"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets whether to keep every decoded sample: the codec's priming delay (samples before time zero) and the samples of packets an
-edit list leaves out. Off by default, so the audio has exactly the samples the encoder was given.</p>
+  <div class="markdown level1 summary"><p>Gets whether to keep every decoded sample: the codec's priming delay (samples before time zero, such as Opus's pre-skip), the
+padding past a packet's stated duration at the end, and the samples of packets an edit list leaves out. Off by default, so
+the audio has exactly the samples the encoder was given.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -344,7 +345,7 @@ edit list leaves out. Off by default, so the audio has exactly the samples the e
 
   <h3 id="Egami_Video_AudioReaderOptions_Layout" data-uid="Egami.Video.AudioReaderOptions.Layout">
   Layout
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L340"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L351"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the layout to mix to with <a class="xref" href="Egami.Video.Audio.ChannelMixer.html">ChannelMixer</a>'s default matrix, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the track's.</p>
@@ -376,7 +377,7 @@ edit list leaves out. Off by default, so the audio has exactly the samples the e
 
   <h3 id="Egami_Video_AudioReaderOptions_Quality" data-uid="Egami.Video.AudioReaderOptions.Quality">
   Quality
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L343"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L354"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the resampler's quality, when the rate changes. Default <a class="xref" href="Egami.Video.Audio.ResamplerQuality.html#Egami_Video_Audio_ResamplerQuality_Good">Good</a>.</p>
@@ -408,7 +409,7 @@ edit list leaves out. Off by default, so the audio has exactly the samples the e
 
   <h3 id="Egami_Video_AudioReaderOptions_SampleFormat" data-uid="Egami.Video.AudioReaderOptions.SampleFormat">
   SampleFormat
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L334"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L345"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the sample format of the frames handed out, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the codec's own (FLAC's and PCM's integers).
@@ -441,7 +442,7 @@ Default <a class="xref" href="Egami.Video.Audio.SampleFormat.html#Egami_Video_Au
 
   <h3 id="Egami_Video_AudioReaderOptions_SampleRate" data-uid="Egami.Video.AudioReaderOptions.SampleRate">
   SampleRate
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L337"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L348"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the sample rate to resample to, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the track's.</p>
@@ -473,7 +474,7 @@ Default <a class="xref" href="Egami.Video.Audio.SampleFormat.html#Egami_Video_Au
 
   <h3 id="Egami_Video_AudioReaderOptions_TrackNumber" data-uid="Egami.Video.AudioReaderOptions.TrackNumber">
   TrackNumber
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L328"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L339"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the track to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the first audio track.</p>
@@ -505,7 +506,7 @@ Default <a class="xref" href="Egami.Video.Audio.SampleFormat.html#Egami_Video_Au
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L322" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioReader.cs/#L333" class="edit-link">Edit this page</a>
         </div>
 
 

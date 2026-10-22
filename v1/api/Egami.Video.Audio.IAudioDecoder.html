@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_Audio_IAudioDecoder" data-uid="Egami.Video.Audio.IAudioDecoder" class="text-break">
-Interface IAudioDecoder  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L117"><i class="bi bi-code-slash"></i></a>
+Interface IAudioDecoder  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L124"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -156,7 +156,7 @@ foreach (EncodedPacket packet in packets)
 
   <h3 id="Egami_Video_Audio_IAudioDecoder_Flush" data-uid="Egami.Video.Audio.IAudioDecoder.Flush">
   Flush()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L139"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Tells the decoder no more packets come, so it releases every frame it holds.</p>
@@ -183,7 +183,7 @@ foreach (EncodedPacket packet in packets)
 
   <h3 id="Egami_Video_Audio_IAudioDecoder_Reset" data-uid="Egami.Video.Audio.IAudioDecoder.Reset">
   Reset()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L140"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L147"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Drops every packet and frame in flight, for example after a seek.</p>
@@ -210,7 +210,7 @@ foreach (EncodedPacket packet in packets)
 
   <h3 id="Egami_Video_Audio_IAudioDecoder_Send_Egami_Video_EncodedPacket_" data-uid="Egami.Video.Audio.IAudioDecoder.Send(Egami.Video.EncodedPacket)">
   Send(EncodedPacket)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L129"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gives the decoder a packet. The decoder copies what it keeps, so the caller may dispose the packet afterwards.</p>
@@ -249,7 +249,7 @@ foreach (EncodedPacket packet in packets)
 
   <h3 id="Egami_Video_Audio_IAudioDecoder_SendLoss_Egami_Video_MediaTime_" data-uid="Egami.Video.Audio.IAudioDecoder.SendLoss(Egami.Video.MediaTime)">
   SendLoss(MediaTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L136"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Tells the decoder a packet of the given length was lost. Codecs with concealment (Opus) fill the gap from what came
@@ -283,7 +283,7 @@ before, or from in-band error correction in the next packet; the others put sile
 
   <h3 id="Egami_Video_Audio_IAudioDecoder_TryReceive_Egami_Video_Audio_AudioFrame__" data-uid="Egami.Video.Audio.IAudioDecoder.TryReceive(Egami.Video.Audio.AudioFrame@)">
   TryReceive(out AudioFrame?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L137"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L144"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Takes the next decoded frame, in time order.</p>
@@ -322,7 +322,7 @@ before, or from in-band error correction in the next packet; the others put sile
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L117" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L124" class="edit-link">Edit this page</a>
         </div>
 
 

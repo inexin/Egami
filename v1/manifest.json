@@ -10947,6 +10947,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.OpusCodec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.OpusCodec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.OpusCodec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.OpusCodec.yml\" sourcestartlinenumber=\"1\">Opus (RFC 6716 with the RFC 8251 updates), decode only: SILK, CELT and hybrid frames at every bandwidth, mono, stereo and\nthe multichannel mapping families 0, 1 and 255 (RFC 7845), with packet loss concealment and in-band FEC. Frames come out as\nplanar float at 48 kHz, Opus's own rate, in the canonical channel order; other rates go through a <xref href=\"Egami.Video.Audio.Resampler\" data-throw-if-not-resolved=\"false\"></xref>.\nThe decoder is translated from libopus 1.5.2. Ambisonic mappings (families 2 and 3) are not decoded.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Codecs.PcmCodec.yml",
       "output": {
         ".html": {
@@ -11563,6 +11577,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.OggFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.OggFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.OggFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.OggFormat.yml\" sourcestartlinenumber=\"1\">Ogg (.ogg, .opus, .oga), RFC 3533, with the Opus (RFC 7845), Vorbis and FLAC mappings. Pages are CRC-checked and packets\nrebuilt across them; timestamps come from granule positions, with Opus's pre-skip as the track's codec delay and the last\npage's granule position trimming the end. Seeking uses an index of granule positions built in one pass over the page headers\non open. Chained files (one stream after another, as internet radio dumps are) read as one track when the codec settings stay\nthe same, each link's TITLE a chapter; a link that changes them ends the track with an &quot;ogg-chained-stream&quot; warning. The\nwriter stores Opus, Vorbis and FLAC with tags, so a WebM's Opus track remuxes to .opus without decoding.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Containers.RawVideo.yml",
       "output": {
         ".html": {
@@ -12153,11 +12181,11 @@
       "type": "Toc",
       "source_relative_path": "api/toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "api/toc.json"
-        },
         ".html": {
           "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
         }
       },
       "version": ""
@@ -12826,11 +12854,11 @@
       "type": "Toc",
       "source_relative_path": "articles/toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "articles/toc.json"
-        },
         ".html": {
           "relative_path": "articles/toc.html"
+        },
+        ".json": {
+          "relative_path": "articles/toc.json"
         }
       },
       "version": ""
@@ -12879,11 +12907,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "toc.json"
-        },
         ".html": {
           "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
         }
       },
       "version": ""

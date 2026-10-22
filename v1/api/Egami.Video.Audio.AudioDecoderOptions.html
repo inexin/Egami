@@ -244,6 +244,40 @@ silence of its length in its place (<a class="xref" href="Egami.Video.DecodeErro
 
 
 
+  <a id="Egami_Video_Audio_AudioDecoderOptions_KeepPadding_" data-uid="Egami.Video.Audio.AudioDecoderOptions.KeepPadding*"></a>
+
+  <h3 id="Egami_Video_Audio_AudioDecoderOptions_KeepPadding" data-uid="Egami.Video.Audio.AudioDecoderOptions.KeepPadding">
+  KeepPadding
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether to keep the samples a packet decodes past the duration its container gives it (the padding at the end of an
+Opus stream, which Ogg's last granule position and Matroska's DiscardPadding mark). Off by default, so they are trimmed.
+<a class="xref" href="Egami.Video.AudioReader.html">AudioReader</a> sets this from <a class="xref" href="Egami.Video.AudioReaderOptions.html#Egami_Video_AudioReaderOptions_KeepAllSamples">KeepAllSamples</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool KeepPadding { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_Audio_AudioDecoderOptions_VerifyChecksums_" data-uid="Egami.Video.Audio.AudioDecoderOptions.VerifyChecksums*"></a>
 
   <h3 id="Egami_Video_Audio_AudioDecoderOptions_VerifyChecksums" data-uid="Egami.Video.Audio.AudioDecoderOptions.VerifyChecksums">

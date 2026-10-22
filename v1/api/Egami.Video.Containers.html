@@ -159,6 +159,16 @@ display matrix becomes <a class="xref" href="Egami.Video.VideoTrackInfo.html#Ega
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.OggFormat.html">OggFormat</a></dt>
+      <dd><p>Ogg (.ogg, .opus, .oga), RFC 3533, with the Opus (RFC 7845), Vorbis and FLAC mappings. Pages are CRC-checked and packets
+rebuilt across them; timestamps come from granule positions, with Opus's pre-skip as the track's codec delay and the last
+page's granule position trimming the end. Seeking uses an index of granule positions built in one pass over the page headers
+on open. Chained files (one stream after another, as internet radio dumps are) read as one track when the codec settings stay
+the same, each link's TITLE a chapter; a link that changes them ends the track with an &quot;ogg-chained-stream&quot; warning. The
+writer stores Opus, Vorbis and FLAC with tags, so a WebM's Opus track remuxes to .opus without decoding.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Containers.RawVideo.html">RawVideo</a></dt>
       <dd><p>Headerless raw video (&quot;rawvideo&quot;): frames of one uncompressed layout back to back, as FFmpeg's <code>-f rawvideo</code> reads and
 writes them. Nothing in the file says the size or layout, so the caller gives them as a track.</p>

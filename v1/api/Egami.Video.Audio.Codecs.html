@@ -102,6 +102,14 @@ levels 0 to 8 with the reference encoder's meaning, default 5. Read and written 
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Codecs.OpusCodec.html">OpusCodec</a></dt>
+      <dd><p>Opus (RFC 6716 with the RFC 8251 updates), decode only: SILK, CELT and hybrid frames at every bandwidth, mono, stereo and
+the multichannel mapping families 0, 1 and 255 (RFC 7845), with packet loss concealment and in-band FEC. Frames come out as
+planar float at 48 kHz, Opus's own rate, in the canonical channel order; other rates go through a <a class="xref" href="Egami.Video.Audio.Resampler.html">Resampler</a>.
+The decoder is translated from libopus 1.5.2. Ambisonic mappings (families 2 and 3) are not decoded.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Codecs.PcmCodec.html">PcmCodec</a></dt>
       <dd><p>Uncompressed PCM: integer samples of 8 (unsigned), 16, 24 or 32 bits, little-endian (<a class="xref" href="Egami.Video.Audio.Codecs.PcmCodec.html#Egami_Video_Audio_Codecs_PcmCodec_Instance">Instance</a>, WAV's) or
 big-endian (<a class="xref" href="Egami.Video.Audio.Codecs.PcmCodec.html#Egami_Video_Audio_Codecs_PcmCodec_BigEndian">BigEndian</a>, AIFF's and QuickTime's twos), and 32 or 64-bit float (<a class="xref" href="Egami.Video.Audio.Codecs.PcmCodec.html#Egami_Video_Audio_Codecs_PcmCodec_FloatingPoint">FloatingPoint</a>). Each
