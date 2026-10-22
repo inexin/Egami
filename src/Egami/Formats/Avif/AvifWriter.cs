@@ -152,7 +152,7 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
         int bitDepth = options.BitDepth ?? (!deep ? 8 : lossless ? (details is { BitDepth: > 8 } ? details.BitDepth : 12) : 10);
         ChromaFormat chroma = gray ? ChromaFormat.Yuv400
             : lossless ? ChromaFormat.Yuv444
-            : options.Chroma is ChromaFormat chosen and not ChromaFormat.Yuv400 ? chosen
+            : options.Chroma is ChromaFormat chosen and (ChromaFormat.Yuv420 or ChromaFormat.Yuv422 or ChromaFormat.Yuv444) ? chosen
             : options.Quality >= 90 ? ChromaFormat.Yuv444 : ChromaFormat.Yuv420;
         FileMetadata extras = FileMetadata.From(metadata, options);
         (int primaries, int transfer) = metadata.CodePoints is ColorCodePoints points ? (points.Primaries, points.TransferCharacteristics)

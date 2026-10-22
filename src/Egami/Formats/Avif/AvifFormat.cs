@@ -308,7 +308,8 @@ public sealed class AvifWriterOptions : WriterOptions
 
     /// <summary>
     /// Gets the chroma format of lossy color, or <see langword="null"/> (the default) to choose: 4:0:0 for gray images, 4:4:4 from
-    /// Quality 90 up, else 4:2:0. Lossless images are always 4:4:4 (or 4:0:0 when gray).
+    /// Quality 90 up, else 4:2:0. Lossless images are always 4:4:4 (or 4:0:0 when gray). AV1 has no 4:1:1 or 4:1:0, so those
+    /// choose as <see langword="null"/> does.
     /// </summary>
     public ChromaFormat? Chroma { get; init; }
 

@@ -3,6 +3,15 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami 1.2.0 (unreleased)
+
+### Planar YUV
+
+- `ChromaFormat.Yuv411` (chroma at a quarter of the luma width, as NTSC DV stores it) and `ChromaFormat.Yuv410` (a quarter of
+  the width and height). `YuvRaster` creates, wraps, crops and resizes them, and `ToRaster`, `CopyTo` and `FromRaster` convert them
+  with every siting and the existing upsampling and downsampling options, within one level of the exact reference. Saving them as
+  JPEG writes 4:2:2 or 4:2:0; saving as AVIF goes through RGB, and `AvifWriterOptions.Chroma` set to either chooses as if unset.
+
 ## Egami.Cli 1.1.0 (2026-10-22)
 
 A new package: the `egami` command-line tool, a .NET tool built on Egami's public API (Roadmap 2.0). It carries its own copy of

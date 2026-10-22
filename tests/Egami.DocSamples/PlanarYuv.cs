@@ -82,6 +82,20 @@ public class PlanarYuv
     }
 
     [Fact]
+    public void Quarter()
+    {
+        #region quarter
+        // An NTSC DV frame: 4:1:1, chroma a quarter of the luma width at full height, on the left column of each four.
+        byte[] y = new byte[720 * 480], u = new byte[180 * 480], v = new byte[180 * 480];
+        using YuvRaster<byte> dv = YuvRaster.Wrap<byte>(y, 0, u, 0, v, 0, 720, 480, ChromaFormat.Yuv411, bitDepth: 8, YuvColor.Bt601Limited);
+        using Raster<Rgb8> rgb = dv.ToRaster<Rgb8>();
+        #endregion
+
+        Assert.Equal((180, 480), (dv.U!.Width, dv.U.Height));
+        Assert.Equal(720, rgb.Width);
+    }
+
+    [Fact]
     public void Convert()
     {
         using SampleFiles files = new();

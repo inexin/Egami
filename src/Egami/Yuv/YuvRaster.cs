@@ -409,7 +409,8 @@ public sealed partial class YuvRaster<TSample> : YuvRaster
 
     /// <summary>
     /// Gets the U (Cb, blue difference) plane, or <see langword="null"/> for 4:0:0. It is half the luma width, rounded up, for
-    /// 4:2:0 and 4:2:2, and half the luma height, rounded up, for 4:2:0.
+    /// 4:2:0 and 4:2:2, and half the luma height, rounded up, for 4:2:0; a quarter of the luma width, rounded up, for 4:1:1 and
+    /// 4:1:0, and a quarter of the luma height, rounded up, for 4:1:0.
     /// </summary>
     public YuvPlane<TSample>? U { get; private set; }
 
@@ -649,6 +650,8 @@ internal static class YuvPlaneSize
         ChromaFormat.Yuv420 => ((width + 1) >> 1, (height + 1) >> 1),
         ChromaFormat.Yuv422 => ((width + 1) >> 1, height),
         ChromaFormat.Yuv444 => (width, height),
+        ChromaFormat.Yuv411 => ((width + 3) >> 2, height),
+        ChromaFormat.Yuv410 => ((width + 3) >> 2, (height + 3) >> 2),
         _ => (0, 0),
     };
 }

@@ -11,13 +11,15 @@ public class YuvOperationTests
     [InlineData(ChromaFormat.Yuv422, 2, 3, 10, 5)]
     [InlineData(ChromaFormat.Yuv444, 1, 3, 5, 5)]
     [InlineData(ChromaFormat.Yuv400, 3, 1, 4, 4)]
+    [InlineData(ChromaFormat.Yuv411, 4, 3, 9, 5)]
+    [InlineData(ChromaFormat.Yuv410, 8, 4, 7, 9)]
     public void CropCopiesEveryPlaneExactly(ChromaFormat format, int x, int y, int width, int height)
     {
         using YuvRaster<ushort> yuv = YuvRaster.Create(17, 13, format, 12, YuvColor.Bt2020Limited, alpha: true);
         YuvConversionTests.Fill(yuv, new Random(1));
         using YuvRaster<ushort> crop = yuv.Crop(new Rect(x, y, width, height));
         Assert.Equal((width, height, format, 12), (crop.Width, crop.Height, crop.ChromaFormat, crop.BitDepth));
-        int sx = format is ChromaFormat.Yuv420 or ChromaFormat.Yuv422 ? 2 : 1, sy = format == ChromaFormat.Yuv420 ? 2 : 1;
+        (int sx, int sy) = YuvReference.Factors(format);
         for (int row = 0; row < height; row++)
         {
             Assert.True(crop.Y.Row(row).SequenceEqual(yuv.Y.Row(y + row).Slice(x, width)));
@@ -42,6 +44,12 @@ public class YuvOperationTests
         using YuvRaster<byte> yuv422 = YuvRaster.Create(16, 16, ChromaFormat.Yuv422, YuvColor.Jpeg);
         using YuvRaster odd = yuv422.Crop(new Rect(2, 3, 5, 5));
         Assert.Equal(3, ((YuvRaster<byte>)odd).U!.Width);
+        using YuvRaster<byte> yuv411 = YuvRaster.Create(16, 16, ChromaFormat.Yuv411, YuvColor.Jpeg);
+        Assert.Throws<ArgumentException>(() => yuv411.Crop(new Rect(2, 0, 4, 4)));
+        using YuvRaster quarter = yuv411.Crop(new Rect(4, 3, 5, 5));
+        Assert.Equal((2, 5), (((YuvRaster<byte>)quarter).U!.Width, ((YuvRaster<byte>)quarter).U!.Height));
+        using YuvRaster<byte> yuv410 = YuvRaster.Create(16, 16, ChromaFormat.Yuv410, YuvColor.Jpeg);
+        Assert.Throws<ArgumentException>(() => yuv410.Crop(new Rect(4, 2, 4, 4)));
     }
 
     [Theory]

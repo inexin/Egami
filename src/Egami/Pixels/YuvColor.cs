@@ -17,11 +17,17 @@ public enum ChromaFormat
 
     /// <summary>Luma only, with no chroma planes: a gray picture, such as a gray JPEG or monochrome AV1.</summary>
     Yuv400,
+
+    /// <summary>Chroma at a quarter of the width and the full height of luma, as NTSC DV and some capture cards store it.</summary>
+    Yuv411,
+
+    /// <summary>Chroma at a quarter of the width and a quarter of the height of luma, as old codecs such as Indeo (YVU9) store it.</summary>
+    Yuv410,
 }
 
 /// <summary>
-/// Where each chroma sample of a <see cref="ChromaFormat.Yuv420"/> or <see cref="ChromaFormat.Yuv422"/> picture sits against the
-/// luma samples it covers. Conversions filter chroma to match, so colors line up with edges. Ignored for 4:4:4 and 4:0:0.
+/// Where each chroma sample of a subsampled picture (4:2:0, 4:2:2, 4:1:1 or 4:1:0) sits against the luma samples it covers.
+/// Conversions filter chroma to match, so colors line up with edges. Ignored for 4:4:4 and 4:0:0.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/PlanarYuv.cs" region="color"/>
@@ -32,12 +38,12 @@ public enum ChromaSiting
     Center,
 
     /// <summary>
-    /// On the left luma column of each pair and centered vertically: BT.601 and BT.709 video, MPEG-2 and later, and AV1's
-    /// "vertical" position.
+    /// On the left luma column of the columns it covers and centered vertically: BT.601 and BT.709 video, MPEG-2 and later, and
+    /// AV1's "vertical" position.
     /// </summary>
     Left,
 
-    /// <summary>On the top-left luma sample of each 2 × 2 block: BT.2020 and AV1's "colocated" position.</summary>
+    /// <summary>On the top-left luma sample of the block it covers: BT.2020 and AV1's "colocated" position.</summary>
     TopLeft,
 }
 
