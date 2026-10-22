@@ -9,8 +9,8 @@ namespace Egami.Formats.Heic;
 /// </summary>
 internal sealed class HeicFile : HeifImage
 {
-    internal static readonly uint Hvc1 = FourCC.Of("hvc1");
-    internal static readonly uint HvcC = FourCC.Of("hvcC");
+    internal static readonly uint Hvc1 = IsoTypes.Of("hvc1");
+    internal static readonly uint HvcC = IsoTypes.Of("hvcC");
 
     /// <summary>The property types the HEIC reader understands, so an essential one of them does not make an item unusable.</summary>
     internal static readonly HashSet<uint> Understood =

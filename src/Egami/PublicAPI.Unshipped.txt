@@ -11,6 +11,7 @@ abstract Egami.Operations.Light.<Clone>$() -> Egami.Operations.Light!
 abstract Egami.YuvRaster.HasAlpha.get -> bool
 const Egami.Colors.Colorant.MaxNameLength = 127 -> int
 const Egami.Colors.InkSet.MaxInks = 64 -> int
+const Egami.Formats.Iso.IsoBoxReader.MaxHeaderSize = 32 -> int
 const Egami.Metadata.XmpNamespaces.CameraRaw = "http://ns.adobe.com/camera-raw-settings/1.0/" -> string!
 const Egami.Metadata.XmpNamespaces.DublinCore = "http://purl.org/dc/elements/1.1/" -> string!
 const Egami.Metadata.XmpNamespaces.Exif = "http://ns.adobe.com/exif/1.0/" -> string!
@@ -974,6 +975,37 @@ Egami.Formats.IRowFormatReader
 Egami.Formats.IRowFormatReader.Open(Egami.Formats.EgamiInput! input, Egami.Formats.ReaderOptions! options) -> Egami.Formats.RowReader!
 Egami.Formats.IRowFormatWriter
 Egami.Formats.IRowFormatWriter.Start<TPixel>(System.IO.Stream! output, Egami.Formats.EncodeStart<TPixel>! start) -> Egami.Formats.RowEncoder<TPixel>!
+Egami.Formats.Iso.FourCC
+Egami.Formats.Iso.FourCC.Deconstruct(out uint Value) -> void
+Egami.Formats.Iso.FourCC.Equals(Egami.Formats.Iso.FourCC other) -> bool
+Egami.Formats.Iso.FourCC.FourCC() -> void
+Egami.Formats.Iso.FourCC.FourCC(uint Value) -> void
+Egami.Formats.Iso.FourCC.Value.get -> uint
+Egami.Formats.Iso.FourCC.Value.init -> void
+Egami.Formats.Iso.IsoBox
+Egami.Formats.Iso.IsoBox.ContentLength.get -> long
+Egami.Formats.Iso.IsoBox.ContentStart.get -> long
+Egami.Formats.Iso.IsoBox.ContentStart.init -> void
+Egami.Formats.Iso.IsoBox.Deconstruct(out Egami.Formats.Iso.FourCC Type, out long Start, out long ContentStart, out long End, out System.Guid? UserType) -> void
+Egami.Formats.Iso.IsoBox.End.get -> long
+Egami.Formats.Iso.IsoBox.End.init -> void
+Egami.Formats.Iso.IsoBox.Equals(Egami.Formats.Iso.IsoBox other) -> bool
+Egami.Formats.Iso.IsoBox.IsoBox() -> void
+Egami.Formats.Iso.IsoBox.IsoBox(Egami.Formats.Iso.FourCC Type, long Start, long ContentStart, long End, System.Guid? UserType = null) -> void
+Egami.Formats.Iso.IsoBox.Size.get -> long
+Egami.Formats.Iso.IsoBox.Start.get -> long
+Egami.Formats.Iso.IsoBox.Start.init -> void
+Egami.Formats.Iso.IsoBox.Type.get -> Egami.Formats.Iso.FourCC
+Egami.Formats.Iso.IsoBox.Type.init -> void
+Egami.Formats.Iso.IsoBox.UserType.get -> System.Guid?
+Egami.Formats.Iso.IsoBox.UserType.init -> void
+Egami.Formats.Iso.IsoBoxReader
+Egami.Formats.Iso.IsoBoxReader.Children(in Egami.Formats.Iso.IsoBox box, int skip = 0) -> Egami.Formats.Iso.IsoBoxReader
+Egami.Formats.Iso.IsoBoxReader.Content(in Egami.Formats.Iso.IsoBox box) -> System.ReadOnlySpan<byte>
+Egami.Formats.Iso.IsoBoxReader.IsoBoxReader() -> void
+Egami.Formats.Iso.IsoBoxReader.IsoBoxReader(System.ReadOnlySpan<byte> data, string! formatName) -> void
+Egami.Formats.Iso.IsoBoxReader.IsoBoxReader(System.ReadOnlySpan<byte> data, string! formatName, long offset) -> void
+Egami.Formats.Iso.IsoBoxReader.Next(out Egami.Formats.Iso.IsoBox box) -> bool
 Egami.Formats.Jbig2.Jbig2CombinationOperator
 Egami.Formats.Jbig2.Jbig2CombinationOperator.And = 1 -> Egami.Formats.Jbig2.Jbig2CombinationOperator
 Egami.Formats.Jbig2.Jbig2CombinationOperator.Or = 0 -> Egami.Formats.Jbig2.Jbig2CombinationOperator
@@ -2741,6 +2773,10 @@ override Egami.Formats.Ico.IcoReaderOptions.<Clone>$() -> Egami.Formats.Ico.IcoR
 override Egami.Formats.Ico.IcoReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Ico.IcoReaderOptions.GetHashCode() -> int
 override Egami.Formats.Ico.IcoReaderOptions.ToString() -> string!
+override Egami.Formats.Iso.FourCC.GetHashCode() -> int
+override Egami.Formats.Iso.FourCC.ToString() -> string!
+override Egami.Formats.Iso.IsoBox.GetHashCode() -> int
+override Egami.Formats.Iso.IsoBox.ToString() -> string!
 override Egami.Formats.Jbig2.Jbig2Details.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Jbig2.Jbig2ReaderOptions.<Clone>$() -> Egami.Formats.Jbig2.Jbig2ReaderOptions!
 override Egami.Formats.Jbig2.Jbig2ReaderOptions.Equals(object? obj) -> bool
@@ -3110,6 +3146,14 @@ static Egami.Formats.Ico.IcoReaderOptions.operator ==(Egami.Formats.Ico.IcoReade
 static Egami.Formats.Ico.IcoWriterOptions.Default.get -> Egami.Formats.Ico.IcoWriterOptions!
 static Egami.Formats.Ico.IcoWriterOptions.FaviconSizes.get -> System.Collections.Generic.IReadOnlyList<int>!
 static Egami.Formats.Ico.IcoWriterOptions.WindowsSizes.get -> System.Collections.Generic.IReadOnlyList<int>!
+static Egami.Formats.Iso.FourCC.implicit operator uint(Egami.Formats.Iso.FourCC code) -> uint
+static Egami.Formats.Iso.FourCC.operator !=(Egami.Formats.Iso.FourCC left, Egami.Formats.Iso.FourCC right) -> bool
+static Egami.Formats.Iso.FourCC.operator ==(Egami.Formats.Iso.FourCC left, Egami.Formats.Iso.FourCC right) -> bool
+static Egami.Formats.Iso.FourCC.Parse(string! text) -> Egami.Formats.Iso.FourCC
+static Egami.Formats.Iso.FourCC.TryParse(System.ReadOnlySpan<char> text, out Egami.Formats.Iso.FourCC code) -> bool
+static Egami.Formats.Iso.IsoBox.operator !=(Egami.Formats.Iso.IsoBox left, Egami.Formats.Iso.IsoBox right) -> bool
+static Egami.Formats.Iso.IsoBox.operator ==(Egami.Formats.Iso.IsoBox left, Egami.Formats.Iso.IsoBox right) -> bool
+static Egami.Formats.Iso.IsoBoxReader.ReadHeader(System.ReadOnlySpan<byte> header, long position, long end, string! formatName) -> Egami.Formats.Iso.IsoBox
 static Egami.Formats.Jbig2.Jbig2Format.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Jbig2.Jbig2Globals.Parse(System.ReadOnlySpan<byte> data, Egami.EgamiContext? context = null) -> Egami.Formats.Jbig2.Jbig2Globals!
 static Egami.Formats.Jbig2.Jbig2ReaderOptions.operator !=(Egami.Formats.Jbig2.Jbig2ReaderOptions? left, Egami.Formats.Jbig2.Jbig2ReaderOptions? right) -> bool
@@ -3537,6 +3581,8 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Colors.XyzColor.ToString() -> string
 ~override Egami.Colors.YCbCrColor.Equals(object obj) -> bool
 ~override Egami.Colors.YCbCrColor.ToString() -> string
+~override Egami.Formats.Iso.FourCC.Equals(object obj) -> bool
+~override Egami.Formats.Iso.IsoBox.Equals(object obj) -> bool
 ~override Egami.Formats.Jpeg2000.Jpeg2000Channel.Equals(object obj) -> bool
 ~override Egami.Formats.Jpeg2000.Jpeg2000Channel.ToString() -> string
 ~override Egami.Formats.Jpeg2000.Jpeg2000Component.Equals(object obj) -> bool

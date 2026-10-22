@@ -262,7 +262,7 @@ internal sealed partial class HeifImageReader(Func<FormatInfo> format, HeifDiagn
         HeifItem item = heif.Item(itemId) ?? throw new ArgumentException($"The {name} file has no item {itemId}.", nameof(itemId));
         if (item.Type != codedType && item.Type != HeifImage.Grid)
         {
-            throw new ArgumentException($"Item {itemId} is a \"{FourCC.ToString(item.Type)}\" item, not an image ({codedName} or grid).", nameof(itemId));
+            throw new ArgumentException($"Item {itemId} is a \"{IsoTypes.ToString(item.Type)}\" item, not an image ({codedName} or grid).", nameof(itemId));
         }
 
         IHeifCodec codec = createCodec(options);

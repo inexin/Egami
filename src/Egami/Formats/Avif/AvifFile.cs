@@ -9,9 +9,9 @@ namespace Egami.Formats.Avif;
 /// </summary>
 internal sealed class AvifFile : HeifImage
 {
-    internal static readonly uint Av01 = FourCC.Of("av01");
-    internal static readonly uint Avif = FourCC.Of("avif");
-    internal static readonly uint Avis = FourCC.Of("avis");
+    internal static readonly uint Av01 = IsoTypes.Of("av01");
+    internal static readonly uint Avif = IsoTypes.Of("avif");
+    internal static readonly uint Avis = IsoTypes.Of("avis");
 
     private AvifFile(HeifFile heif, HeifItem primary)
         : base(heif, primary)

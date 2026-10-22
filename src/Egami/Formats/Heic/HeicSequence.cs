@@ -1,6 +1,7 @@
 using Egami.Colors;
 using Egami.Formats.Avif;
 using Egami.Formats.Heif;
+using Egami.Formats.Iso;
 using Egami.Metadata;
 
 namespace Egami.Formats.Heic;
@@ -23,12 +24,12 @@ internal interface IHevcSampleCodec
 /// </summary>
 internal sealed class HeicSequence : IHeifSequence
 {
-    private static readonly uint Vide = FourCC.Of("vide");
-    private static readonly uint Pict = FourCC.Of("pict");
-    private static readonly uint Auxl = FourCC.Of("auxl");
-    private static readonly uint Prem = FourCC.Of("prem");
-    private static readonly uint Hevc = FourCC.Of("hevc");
-    private static readonly uint Hevx = FourCC.Of("hevx");
+    private static readonly uint Vide = IsoTypes.Of("vide");
+    private static readonly uint Pict = IsoTypes.Of("pict");
+    private static readonly uint Auxl = IsoTypes.Of("auxl");
+    private static readonly uint Prem = IsoTypes.Of("prem");
+    private static readonly uint Hevc = IsoTypes.Of("hevc");
+    private static readonly uint Hevx = IsoTypes.Of("hevx");
 
     private HeicSequence(HeifFile heif, HeifTrack color, HeifTrack? alpha)
     {
@@ -157,8 +158,8 @@ internal sealed class HeicSequence : IHeifSequence
     /// <summary>Gets the details Load reports for the sequence.</summary>
     internal HeicDetails Details(ColorCodePoints codePoints) => new()
     {
-        MajorBrand = FourCC.ToString(Heif.MajorBrand),
-        CompatibleBrands = [.. Heif.CompatibleBrands.Select(FourCC.ToString)],
+        MajorBrand = IsoTypes.ToString(Heif.MajorBrand),
+        CompatibleBrands = [.. Heif.CompatibleBrands.Select(IsoTypes.ToString)],
         Profile = Config.Profile,
         Level = Config.Level,
         Tier = Config.Tier,
@@ -175,7 +176,7 @@ internal sealed class HeicSequence : IHeifSequence
     {
         foreach (IsoBox box in track.EntryBoxes)
         {
-            if (box.Type == FourCC.Of("auxi"))
+            if (box.Type == IsoTypes.Of("auxi"))
             {
                 ReadOnlySpan<byte> c = box.Content(heif.Bytes.Span);
                 string type = c.Length > 4 ? System.Text.Encoding.UTF8.GetString(c[4..].TrimEnd((byte)0)) : string.Empty;

@@ -32,8 +32,8 @@ internal sealed partial class AvifReader
         Av1Config config = sequence.Config;
         metadata.FormatDetails = new AvifDetails
         {
-            MajorBrand = FourCC.ToString(heif.MajorBrand),
-            CompatibleBrands = [.. heif.CompatibleBrands.Select(FourCC.ToString)],
+            MajorBrand = IsoTypes.ToString(heif.MajorBrand),
+            CompatibleBrands = [.. heif.CompatibleBrands.Select(IsoTypes.ToString)],
             Profile = config.Profile,
             Level = config.Level,
             Tier = config.Tier,

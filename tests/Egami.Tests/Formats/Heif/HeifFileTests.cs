@@ -24,22 +24,22 @@ public class HeifFileTests
             Box("mdat", new byte[200]));
         HeifFile heif = HeifFile.Parse(file, "AVIF");
 
-        Assert.Equal(FourCC.Of("avif"), heif.MajorBrand);
-        Assert.True(heif.HasBrand(FourCC.Of("miaf")));
-        Assert.Equal(FourCC.Pict, heif.Handler);
+        Assert.Equal(IsoTypes.Of("avif"), heif.MajorBrand);
+        Assert.True(heif.HasBrand(IsoTypes.Of("miaf")));
+        Assert.Equal(IsoTypes.Pict, heif.Handler);
         Assert.Equal(1u, heif.PrimaryItemId);
         Assert.Equal([1u, 2u, 3u], heif.Items.Select(i => i.Id));
         Assert.True(heif.Item(2)!.Hidden);
         Assert.Equal("application/rdf+xml", heif.Item(3)!.ContentType);
-        Assert.Equal([1u], heif.Item(2)!.ReferencesOf(FourCC.Of("auxl")));
-        Assert.Equal([(FourCC.Of("ispe"), true), (FourCC.Of("abcd"), false)], heif.PropertiesOf(heif.Item(1)!).Select(p => (p.Property.Type, p.Essential)));
+        Assert.Equal([1u], heif.Item(2)!.ReferencesOf(IsoTypes.Of("auxl")));
+        Assert.Equal([(IsoTypes.Of("ispe"), true), (IsoTypes.Of("abcd"), false)], heif.PropertiesOf(heif.Item(1)!).Select(p => (p.Property.Type, p.Essential)));
         Assert.Equal(10, heif.ItemData(heif.Item(1)!).Length);
         Assert.Empty(heif.Problems);
 
-        heif.MarkUnsupportedEssential(t => t == FourCC.Of("ispe"));
+        heif.MarkUnsupportedEssential(t => t == IsoTypes.Of("ispe"));
         Assert.Equal(0u, heif.Item(1)!.UnsupportedEssential);
-        heif.MarkUnsupportedEssential(t => t == FourCC.Of("abcd"));
-        Assert.Equal(FourCC.Of("ispe"), heif.Item(1)!.UnsupportedEssential);
+        heif.MarkUnsupportedEssential(t => t == IsoTypes.Of("abcd"));
+        Assert.Equal(IsoTypes.Of("ispe"), heif.Item(1)!.UnsupportedEssential);
     }
 
     [Theory]
@@ -78,7 +78,7 @@ public class HeifFileTests
         Assert.Equal([8, 7, 6], heif.ItemData(heif.Item(1)!).ToArray());
         Assert.Equal(5, heif.Idat.Length);
         Assert.Equal(3, heif.Boxes.Count);
-        Assert.Equal(file.Length, heif.Boxes[^1].End);
+        Assert.Equal(file.Length, heif.Boxes[^1].EndIndex);
     }
 
     [Fact]
@@ -92,9 +92,9 @@ public class HeifFileTests
                 Box("iprp", Box("ipco", Box("ispe", U32(0), U32(1), U32(1))), Full("ipma", 1, 1, U32(1), U32(70001), [1], U16(0x8001)))));
         HeifFile heif = HeifFile.Parse(file, "AVIF");
         Assert.Equal(70000u, heif.PrimaryItemId);
-        Assert.Equal([70000u], heif.Item(70001)!.ReferencesOf(FourCC.Of("thmb")));
+        Assert.Equal([70000u], heif.Item(70001)!.ReferencesOf(IsoTypes.Of("thmb")));
         HeifEntityGroup group = Assert.Single(heif.Groups);
-        Assert.Equal((FourCC.Of("altr"), 5u), (group.Type, group.Id));
+        Assert.Equal((IsoTypes.Of("altr"), 5u), (group.Type, group.Id));
         Assert.Equal([70000u, 70001u], group.Entities);
         Assert.Equal(new HeifAssociation(1, true), Assert.Single(heif.Item(70001)!.Associations));
     }

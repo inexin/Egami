@@ -35,7 +35,7 @@ public class AvifWriterMetadataTests
     }
 
     private static int Transforms(HeifFile heif, uint item) =>
-        heif.PropertiesOf(heif.Item(item)!).Count(p => p.Property.Type == FourCC.Of("irot") || p.Property.Type == FourCC.Of("imir"));
+        heif.PropertiesOf(heif.Item(item)!).Count(p => p.Property.Type == IsoTypes.Of("irot") || p.Property.Type == IsoTypes.Of("imir"));
 
     [Fact]
     public void StripMetadataLeavesThemOut()
@@ -59,7 +59,7 @@ public class AvifWriterMetadataTests
         // sRGB needs no profile: the nclx box says it.
         source.Metadata.IccProfile = ColorProfile.Srgb.ToIcc();
         HeifFile heif = HeifFile.Parse(AvifWriterTests.Save(source, new AvifWriterOptions()), "AVIF");
-        Assert.DoesNotContain(heif.PropertiesOf(heif.Item(1)!), p => p.Property.Type == FourCC.Of("colr") && heif.Content(p.Property)[..4].SequenceEqual("prof"u8));
+        Assert.DoesNotContain(heif.PropertiesOf(heif.Item(1)!), p => p.Property.Type == IsoTypes.Of("colr") && heif.Content(p.Property)[..4].SequenceEqual("prof"u8));
     }
 
     [Fact]

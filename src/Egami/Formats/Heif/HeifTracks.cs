@@ -1,5 +1,7 @@
 using System.Buffers.Binary;
 
+using Egami.Formats.Iso;
+
 namespace Egami.Formats.Heif;
 
 /// <summary>One sample of a track: where its bytes are in the file, how long it shows (in the track's timescale), and whether it is a sync sample.</summary>
@@ -50,23 +52,23 @@ internal sealed class HeifTrack
 /// <summary>Reads the tracks of a moov box.</summary>
 internal static class HeifTracks
 {
-    private static readonly uint Trak = FourCC.Of("trak");
-    private static readonly uint Tkhd = FourCC.Of("tkhd");
-    private static readonly uint Tref = FourCC.Of("tref");
-    private static readonly uint Edts = FourCC.Of("edts");
-    private static readonly uint Elst = FourCC.Of("elst");
-    private static readonly uint Mdia = FourCC.Of("mdia");
-    private static readonly uint Mdhd = FourCC.Of("mdhd");
-    private static readonly uint Minf = FourCC.Of("minf");
-    private static readonly uint Stbl = FourCC.Of("stbl");
-    private static readonly uint Stsd = FourCC.Of("stsd");
-    private static readonly uint Stts = FourCC.Of("stts");
-    private static readonly uint Stss = FourCC.Of("stss");
-    private static readonly uint Stsc = FourCC.Of("stsc");
-    private static readonly uint Stsz = FourCC.Of("stsz");
-    private static readonly uint Stco = FourCC.Of("stco");
-    private static readonly uint Co64 = FourCC.Of("co64");
-    private static readonly uint HdlrType = FourCC.Of("hdlr");
+    private static readonly uint Trak = IsoTypes.Of("trak");
+    private static readonly uint Tkhd = IsoTypes.Of("tkhd");
+    private static readonly uint Tref = IsoTypes.Of("tref");
+    private static readonly uint Edts = IsoTypes.Of("edts");
+    private static readonly uint Elst = IsoTypes.Of("elst");
+    private static readonly uint Mdia = IsoTypes.Of("mdia");
+    private static readonly uint Mdhd = IsoTypes.Of("mdhd");
+    private static readonly uint Minf = IsoTypes.Of("minf");
+    private static readonly uint Stbl = IsoTypes.Of("stbl");
+    private static readonly uint Stsd = IsoTypes.Of("stsd");
+    private static readonly uint Stts = IsoTypes.Of("stts");
+    private static readonly uint Stss = IsoTypes.Of("stss");
+    private static readonly uint Stsc = IsoTypes.Of("stsc");
+    private static readonly uint Stsz = IsoTypes.Of("stsz");
+    private static readonly uint Stco = IsoTypes.Of("stco");
+    private static readonly uint Co64 = IsoTypes.Of("co64");
+    private static readonly uint HdlrType = IsoTypes.Of("hdlr");
 
     /// <summary>Reads every track of the file's moov box, or none when it has no moov box.</summary>
     internal static List<HeifTrack> Read(HeifFile file)
@@ -75,12 +77,12 @@ internal static class HeifTracks
         ReadOnlySpan<byte> bytes = file.Bytes.Span;
         foreach (IsoBox moov in file.Boxes)
         {
-            if (moov.Type != FourCC.Of("moov"))
+            if (moov.Type != IsoTypes.Of("moov"))
             {
                 continue;
             }
 
-            IsoBoxReader reader = new(bytes, moov.ContentStart, moov.End, file.FormatName);
+            IsoBoxReader reader = new(bytes, moov.ContentIndex, moov.EndIndex, file.FormatName);
             while (reader.Next(out IsoBox trak))
             {
                 if (trak.Type == Trak)
@@ -103,7 +105,7 @@ internal static class HeifTracks
         bool repeats = false;
         IsoBox? stbl = null;
         Dictionary<uint, uint[]> references = [];
-        IsoBoxReader children = new(bytes, trak.ContentStart, trak.End, file.FormatName);
+        IsoBoxReader children = new(bytes, trak.ContentIndex, trak.EndIndex, file.FormatName);
         while (children.Next(out IsoBox box))
         {
             ReadOnlySpan<byte> c = box.Content(bytes);
@@ -121,7 +123,7 @@ internal static class HeifTracks
             }
             else if (box.Type == Tref)
             {
-                IsoBoxReader types = new(bytes, box.ContentStart, box.End, file.FormatName);
+                IsoBoxReader types = new(bytes, box.ContentIndex, box.EndIndex, file.FormatName);
                 while (types.Next(out IsoBox reference))
                 {
                     ReadOnlySpan<byte> r = reference.Content(bytes);
@@ -136,7 +138,7 @@ internal static class HeifTracks
             }
             else if (box.Type == Edts)
             {
-                IsoBoxReader edits = new(bytes, box.ContentStart, box.End, file.FormatName);
+                IsoBoxReader edits = new(bytes, box.ContentIndex, box.EndIndex, file.FormatName);
                 while (edits.Next(out IsoBox elst))
                 {
                     ReadOnlySpan<byte> e = elst.Content(bytes);
@@ -146,7 +148,7 @@ internal static class HeifTracks
             }
             else if (box.Type == Mdia)
             {
-                IsoBoxReader media = new(bytes, box.ContentStart, box.End, file.FormatName);
+                IsoBoxReader media = new(bytes, box.ContentIndex, box.EndIndex, file.FormatName);
                 while (media.Next(out IsoBox m))
                 {
                     ReadOnlySpan<byte> mc = m.Content(bytes);
@@ -163,7 +165,7 @@ internal static class HeifTracks
                     }
                     else if (m.Type == Minf)
                     {
-                        IsoBoxReader info = new(bytes, m.ContentStart, m.End, file.FormatName);
+                        IsoBoxReader info = new(bytes, m.ContentIndex, m.EndIndex, file.FormatName);
                         while (info.Next(out IsoBox s))
                         {
                             stbl = s.Type == Stbl ? s : stbl;
@@ -197,7 +199,7 @@ internal static class HeifTracks
         List<(long FirstChunk, long Samples)> chunks = [];
         List<long> offsets = [];
         List<int> sizes = [];
-        IsoBoxReader children = new(bytes, stbl.ContentStart, stbl.End, file.FormatName);
+        IsoBoxReader children = new(bytes, stbl.ContentIndex, stbl.EndIndex, file.FormatName);
         while (children.Next(out IsoBox box))
         {
             ReadOnlySpan<byte> c = box.Content(bytes);
@@ -210,13 +212,13 @@ internal static class HeifTracks
                 }
 
                 // The first sample entry: a visual sample entry's 78 bytes of fields, then its boxes.
-                IsoBoxReader entries = new(bytes, box.ContentStart + 8, box.End, file.FormatName);
+                IsoBoxReader entries = new(bytes, box.ContentIndex + 8, box.EndIndex, file.FormatName);
                 if (entries.Next(out IsoBox sampleEntry))
                 {
                     entryType = sampleEntry.Type;
-                    if (sampleEntry.ContentStart + 78 <= sampleEntry.End)
+                    if (sampleEntry.ContentIndex + 78 <= sampleEntry.EndIndex)
                     {
-                        IsoBoxReader inner = new(bytes, sampleEntry.ContentStart + 78, sampleEntry.End, file.FormatName);
+                        IsoBoxReader inner = new(bytes, sampleEntry.ContentIndex + 78, sampleEntry.EndIndex, file.FormatName);
                         while (inner.Next(out IsoBox child))
                         {
                             track.EntryBoxes.Add(child);
@@ -323,7 +325,7 @@ internal static class HeifTracks
     {
         if (c.Length < length)
         {
-            throw new CorruptDataException(file.FormatName, box.Start, $"A \"{FourCC.ToString(box.Type)}\" box is cut off.");
+            throw new CorruptDataException(file.FormatName, box.StartIndex, $"A \"{IsoTypes.ToString(box.Type)}\" box is cut off.");
         }
     }
 }

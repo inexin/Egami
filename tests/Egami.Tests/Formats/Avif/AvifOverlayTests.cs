@@ -132,7 +132,7 @@ public class AvifOverlayTests
         HeifFile heif = HeifFile.Parse(source, "AVIF");
         HeifItem item = heif.PrimaryItem!;
         byte[] payload = heif.ItemData(item).ToArray();
-        List<byte[]> itemProperties = [.. heif.PropertiesOf(item).Select(p => heif.Bytes.Span[p.Property.Box.Start..p.Property.Box.End].ToArray())];
+        List<byte[]> itemProperties = [.. heif.PropertiesOf(item).Select(p => heif.Bytes.Span[p.Property.Box.StartIndex..p.Property.Box.EndIndex].ToArray())];
 
         using MemoryStream overlay = new();
         overlay.WriteByte(0);

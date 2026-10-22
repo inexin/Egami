@@ -34,6 +34,8 @@
       href: formats/heic.md
     - name: ICO and CUR
       href: formats/ico.md
+    - name: ISO BMFF boxes
+      href: formats/iso-boxes.md
     - name: JBIG2
       href: formats/jbig2.md
     - name: JPEG

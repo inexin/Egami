@@ -1,6 +1,8 @@
 using System.Buffers.Binary;
 using System.Text;
 
+using Egami.Formats.Iso;
+
 namespace Egami.Formats.Heif;
 
 /// <summary>
@@ -170,7 +172,7 @@ internal sealed class HeifFile
         }
 
         ReadOnlyMemory<byte> source = item.ConstructionMethod == 1 ? (_idat is IsoBox idat ? idat.Content(Bytes) : default) : Bytes;
-        long origin = item.ConstructionMethod == 1 && _idat is IsoBox box ? box.ContentStart : 0;
+        long origin = item.ConstructionMethod == 1 && _idat is IsoBox box ? box.ContentIndex : 0;
         long total = 0;
         foreach (HeifExtent extent in item.Extents)
         {
@@ -241,19 +243,19 @@ internal sealed class HeifFile
             Boxes.Add(box);
             if (first)
             {
-                if (box.Type != FourCC.Ftyp)
+                if (box.Type != IsoTypes.Ftyp)
                 {
-                    throw Corrupt(0, $"The file starts with a \"{FourCC.ToString(box.Type)}\" box, not ftyp.");
+                    throw Corrupt(0, $"The file starts with a \"{IsoTypes.ToString(box.Type)}\" box, not ftyp.");
                 }
 
                 ParseFileType(box);
                 first = false;
             }
-            else if (box.Type == FourCC.Meta)
+            else if (box.Type == IsoTypes.Meta)
             {
                 if (HasMeta)
                 {
-                    Problem("Heif.SecondMeta", box.Start, "A second meta box at the top level was ignored.");
+                    Problem("Heif.SecondMeta", box.StartIndex, "A second meta box at the top level was ignored.");
                     continue;
                 }
 
@@ -273,7 +275,7 @@ internal sealed class HeifFile
         ReadOnlySpan<byte> content = box.Content(Bytes.Span);
         if (content.Length < 8 || content.Length % 4 != 0)
         {
-            throw Corrupt(box.Start, $"The ftyp box's contents are {content.Length} bytes, not 8 plus a multiple of 4.");
+            throw Corrupt(box.StartIndex, $"The ftyp box's contents are {content.Length} bytes, not 8 plus a multiple of 4.");
         }
 
         MajorBrand = BinaryPrimitives.ReadUInt32BigEndian(content);
@@ -293,11 +295,11 @@ internal sealed class HeifFile
         FullBox(meta, out int metaVersion, out _);
         if (metaVersion != 0)
         {
-            throw Corrupt(meta.Start, $"The meta box's version is {metaVersion}, not 0.");
+            throw Corrupt(meta.StartIndex, $"The meta box's version is {metaVersion}, not 0.");
         }
 
         IsoBox? hdlr = null, pitm = null, iinf = null, iloc = null, iref = null, iprp = null, grpl = null;
-        IsoBoxReader children = new(bytes, meta.ContentStart + 4, meta.End, FormatName);
+        IsoBoxReader children = new(bytes, meta.ContentIndex + 4, meta.EndIndex, FormatName);
         while (true)
         {
             IsoBox box;
@@ -308,7 +310,7 @@ internal sealed class HeifFile
                     break;
                 }
             }
-            catch (CorruptDataException e) when (meta.End == bytes.Length && iinf is not null && iloc is not null)
+            catch (CorruptDataException e) when (meta.EndIndex == bytes.Length && iinf is not null && iloc is not null)
             {
                 // A meta box sized to the end of the file (size 0) takes in whatever follows it; data that does not form a box is left alone.
                 Problem("Heif.TrailingData", e.Offset, "The data after the last whole top-level box does not form a box; it was ignored.");
@@ -318,17 +320,17 @@ internal sealed class HeifFile
             ref IsoBox? slot = ref hdlr;
             switch (box.Type)
             {
-                case FourCC.Hdlr: slot = ref hdlr; break;
-                case FourCC.Pitm: slot = ref pitm; break;
-                case FourCC.Iinf: slot = ref iinf; break;
-                case FourCC.Iloc: slot = ref iloc; break;
-                case FourCC.Iref: slot = ref iref; break;
-                case FourCC.Iprp: slot = ref iprp; break;
-                case FourCC.Grpl: slot = ref grpl; break;
-                case FourCC.Idat:
+                case IsoTypes.Hdlr: slot = ref hdlr; break;
+                case IsoTypes.Pitm: slot = ref pitm; break;
+                case IsoTypes.Iinf: slot = ref iinf; break;
+                case IsoTypes.Iloc: slot = ref iloc; break;
+                case IsoTypes.Iref: slot = ref iref; break;
+                case IsoTypes.Iprp: slot = ref iprp; break;
+                case IsoTypes.Grpl: slot = ref grpl; break;
+                case IsoTypes.Idat:
                     if (_idat is not null)
                     {
-                        throw Corrupt(box.Start, "The meta box has two idat boxes.");
+                        throw Corrupt(box.StartIndex, "The meta box has two idat boxes.");
                     }
 
                     _idat = box;
@@ -339,7 +341,7 @@ internal sealed class HeifFile
 
             if (slot is not null)
             {
-                throw Corrupt(box.Start, $"The meta box has two {FourCC.ToString(box.Type)} boxes.");
+                throw Corrupt(box.StartIndex, $"The meta box has two {IsoTypes.ToString(box.Type)} boxes.");
             }
 
             slot = box;
@@ -347,7 +349,7 @@ internal sealed class HeifFile
 
         if (hdlr is not IsoBox handler)
         {
-            throw Corrupt(meta.Start, "The meta box has no hdlr box.");
+            throw Corrupt(meta.StartIndex, "The meta box has no hdlr box.");
         }
 
         ParseHandler(handler);
@@ -387,7 +389,7 @@ internal sealed class HeifFile
         ReadOnlySpan<byte> content = FullBox(box, out _, out _);
         if (content.Length < 8)
         {
-            throw Corrupt(box.Start, "The hdlr box is cut off.");
+            throw Corrupt(box.StartIndex, "The hdlr box is cut off.");
         }
 
         Handler = BinaryPrimitives.ReadUInt32BigEndian(content[4..]);
@@ -399,13 +401,13 @@ internal sealed class HeifFile
         int size = version == 0 ? 2 : 4;
         if (content.Length < size)
         {
-            throw Corrupt(box.Start, "The pitm box is cut off.");
+            throw Corrupt(box.StartIndex, "The pitm box is cut off.");
         }
 
         PrimaryItemId = Read(content, size);
         if (!_byId.ContainsKey(PrimaryItemId))
         {
-            Problem("Heif.PrimaryItemMissing", box.Start, $"The primary item, {PrimaryItemId}, has no iinf entry.");
+            Problem("Heif.PrimaryItemMissing", box.StartIndex, $"The primary item, {PrimaryItemId}, has no iinf entry.");
         }
     }
 
@@ -416,15 +418,15 @@ internal sealed class HeifFile
         int countSize = version == 0 ? 2 : 4;
         if (content.Length < countSize)
         {
-            throw Corrupt(box.Start, "The iinf box is cut off.");
+            throw Corrupt(box.StartIndex, "The iinf box is cut off.");
         }
 
         uint count = Read(content, countSize);
-        IsoBoxReader entries = new(bytes, box.ContentStart + 4 + countSize, box.End, FormatName);
+        IsoBoxReader entries = new(bytes, box.ContentIndex + 4 + countSize, box.EndIndex, FormatName);
         uint seen = 0;
         while (entries.Next(out IsoBox entry))
         {
-            if (entry.Type != FourCC.Infe)
+            if (entry.Type != IsoTypes.Infe)
             {
                 continue;
             }
@@ -435,7 +437,7 @@ internal sealed class HeifFile
 
         if (seen != count)
         {
-            Problem("Heif.ItemCount", box.Start, $"The iinf box says {count} items but holds {seen}.");
+            Problem("Heif.ItemCount", box.StartIndex, $"The iinf box says {count} items but holds {seen}.");
         }
     }
 
@@ -444,20 +446,20 @@ internal sealed class HeifFile
         ReadOnlySpan<byte> content = FullBox(box, out int version, out int flags);
         if (version < 2)
         {
-            Problem("Heif.OldItemEntry", box.Start, $"An infe box of version {version} (no item type) was skipped.");
+            Problem("Heif.OldItemEntry", box.StartIndex, $"An infe box of version {version} (no item type) was skipped.");
             return;
         }
 
         if (version > 3)
         {
-            Problem("Heif.ItemEntryVersion", box.Start, $"An infe box of unknown version {version} was skipped.");
+            Problem("Heif.ItemEntryVersion", box.StartIndex, $"An infe box of unknown version {version} was skipped.");
             return;
         }
 
         int idSize = version == 2 ? 2 : 4;
         if (content.Length < idSize + 6)
         {
-            throw Corrupt(box.Start, "An infe box is cut off.");
+            throw Corrupt(box.StartIndex, "An infe box is cut off.");
         }
 
         uint id = Read(content, idSize);
@@ -466,19 +468,19 @@ internal sealed class HeifFile
         ReadOnlySpan<byte> rest = content[(idSize + 6)..];
         string name = String(ref rest);
         string? contentType = null, encoding = null, uriType = null;
-        if (type == FourCC.Mime)
+        if (type == IsoTypes.Mime)
         {
             contentType = String(ref rest);
             encoding = rest.IsEmpty ? null : String(ref rest);
         }
-        else if (type == FourCC.Uri)
+        else if (type == IsoTypes.Uri)
         {
             uriType = String(ref rest);
         }
 
         if (_byId.ContainsKey(id))
         {
-            throw Corrupt(box.Start, $"Two infe boxes have item id {id}.");
+            throw Corrupt(box.StartIndex, $"Two infe boxes have item id {id}.");
         }
 
         HeifItem item = new(id, type)
@@ -499,7 +501,7 @@ internal sealed class HeifFile
         ReadOnlySpan<byte> content = FullBox(box, out int version, out _);
         if (version > 2)
         {
-            throw Corrupt(box.Start, $"The iloc box's version is {version}, not 0, 1 or 2.");
+            throw Corrupt(box.StartIndex, $"The iloc box's version is {version}, not 0, 1 or 2.");
         }
 
         Cursor at = new(this, box, content);
@@ -510,7 +512,7 @@ internal sealed class HeifFile
         {
             if (size is not (0 or 4 or 8))
             {
-                throw Corrupt(box.Start, $"The iloc box has a field size of {size} bytes, not 0, 4 or 8.");
+                throw Corrupt(box.StartIndex, $"The iloc box has a field size of {size} bytes, not 0, 4 or 8.");
             }
         }
 
@@ -525,7 +527,7 @@ internal sealed class HeifFile
             HeifItem? item = Item(id);
             if (item is not null && item.Located)
             {
-                throw Corrupt(box.Start, $"The iloc box locates item {id} twice.");
+                throw Corrupt(box.StartIndex, $"The iloc box locates item {id} twice.");
             }
 
             List<HeifExtent>? extents = item?.Extents;
@@ -537,7 +539,7 @@ internal sealed class HeifFile
                 ulong start = baseOffset + offset;
                 if (start < baseOffset || start > long.MaxValue || length > long.MaxValue)
                 {
-                    throw Corrupt(box.Start, $"An extent of item {id} lies beyond any file.");
+                    throw Corrupt(box.StartIndex, $"An extent of item {id} lies beyond any file.");
                 }
 
                 extents?.Add(new HeifExtent((long)start, (long)length, index));
@@ -546,7 +548,7 @@ internal sealed class HeifFile
             if (item is null)
             {
                 UnlistedItemIds.Add(id);
-                Problem("Heif.UnknownLocatedItem", box.Start, $"The iloc box locates item {id}, which has no iinf entry; it was ignored.");
+                Problem("Heif.UnknownLocatedItem", box.StartIndex, $"The iloc box locates item {id}, which has no iinf entry; it was ignored.");
                 continue;
             }
 
@@ -561,11 +563,11 @@ internal sealed class HeifFile
         FullBox(box, out int version, out _);
         if (version > 1)
         {
-            throw Corrupt(box.Start, $"The iref box's version is {version}, not 0 or 1.");
+            throw Corrupt(box.StartIndex, $"The iref box's version is {version}, not 0 or 1.");
         }
 
         int idSize = version == 0 ? 2 : 4;
-        IsoBoxReader references = new(Bytes.Span, box.ContentStart + 4, box.End, FormatName);
+        IsoBoxReader references = new(Bytes.Span, box.ContentIndex + 4, box.EndIndex, FormatName);
         while (references.Next(out IsoBox reference))
         {
             Cursor at = new(this, reference, reference.Content(Bytes.Span));
@@ -580,8 +582,8 @@ internal sealed class HeifFile
             if (Item(from) is not HeifItem item)
             {
                 UnlistedItemIds.Add(from);
-                Problem("Heif.ReferenceFromUnknownItem", reference.Start,
-                    $"A \"{FourCC.ToString(reference.Type)}\" reference from item {from}, which has no iinf entry, was ignored.");
+                Problem("Heif.ReferenceFromUnknownItem", reference.StartIndex,
+                    $"A \"{IsoTypes.ToString(reference.Type)}\" reference from item {from}, which has no iinf entry, was ignored.");
                 continue;
             }
 
@@ -592,26 +594,26 @@ internal sealed class HeifFile
     private void ParseItemProperties(IsoBox box)
     {
         ReadOnlySpan<byte> bytes = Bytes.Span;
-        IsoBoxReader children = new(bytes, box.ContentStart, box.End, FormatName);
+        IsoBoxReader children = new(bytes, box.ContentIndex, box.EndIndex, FormatName);
         List<IsoBox> associations = [];
         bool sawContainer = false;
         while (children.Next(out IsoBox child))
         {
-            if (child.Type == FourCC.Ipco)
+            if (child.Type == IsoTypes.Ipco)
             {
                 if (sawContainer)
                 {
-                    throw Corrupt(child.Start, "The iprp box has two ipco boxes.");
+                    throw Corrupt(child.StartIndex, "The iprp box has two ipco boxes.");
                 }
 
                 sawContainer = true;
-                IsoBoxReader properties = new(bytes, child.ContentStart, child.End, FormatName);
+                IsoBoxReader properties = new(bytes, child.ContentIndex, child.EndIndex, FormatName);
                 while (properties.Next(out IsoBox property))
                 {
                     Properties.Add(new HeifProperty(property.Type, property));
                 }
             }
-            else if (child.Type == FourCC.Ipma)
+            else if (child.Type == IsoTypes.Ipma)
             {
                 associations.Add(child);
             }
@@ -630,7 +632,7 @@ internal sealed class HeifFile
                 HeifItem? item = Item(id);
                 if (item is not null && !associated.Add(id))
                 {
-                    throw Corrupt(ipma.Start, $"Item {id} has two sets of property associations.");
+                    throw Corrupt(ipma.StartIndex, $"Item {id} has two sets of property associations.");
                 }
 
                 for (int a = 0; a < n; a++)
@@ -646,7 +648,7 @@ internal sealed class HeifFile
 
                     if (index > Properties.Count)
                     {
-                        throw Corrupt(ipma.Start, $"Item {id} is associated with property {index}, but the ipco box holds {Properties.Count}.");
+                        throw Corrupt(ipma.StartIndex, $"Item {id} is associated with property {index}, but the ipco box holds {Properties.Count}.");
                     }
 
                     item?.Associations.Add(new HeifAssociation(index, essential));
@@ -655,7 +657,7 @@ internal sealed class HeifFile
                 if (item is null)
                 {
                     UnlistedItemIds.Add(id);
-                    Problem("Heif.PropertiesOfUnknownItem", ipma.Start, $"Properties of item {id}, which has no iinf entry, were ignored.");
+                    Problem("Heif.PropertiesOfUnknownItem", ipma.StartIndex, $"Properties of item {id}, which has no iinf entry, were ignored.");
                 }
             }
         }
@@ -663,7 +665,7 @@ internal sealed class HeifFile
 
     private void ParseGroups(IsoBox box)
     {
-        IsoBoxReader groups = new(Bytes.Span, box.ContentStart, box.End, FormatName);
+        IsoBoxReader groups = new(Bytes.Span, box.ContentIndex, box.EndIndex, FormatName);
         while (groups.Next(out IsoBox group))
         {
             ReadOnlySpan<byte> content = FullBox(group, out _, out _);
@@ -672,7 +674,7 @@ internal sealed class HeifFile
             uint count = at.U32();
             if (count > (uint)content.Length / 4)
             {
-                throw Corrupt(group.Start, $"A \"{FourCC.ToString(group.Type)}\" group says {count} entities, more than it holds.");
+                throw Corrupt(group.StartIndex, $"A \"{IsoTypes.ToString(group.Type)}\" group says {count} entities, more than it holds.");
             }
 
             uint[] entities = new uint[count];
@@ -690,7 +692,7 @@ internal sealed class HeifFile
         ReadOnlySpan<byte> content = box.Content(Bytes.Span);
         if (content.Length < 4)
         {
-            throw Corrupt(box.Start, $"The \"{FourCC.ToString(box.Type)}\" box is too short for its version and flags.");
+            throw Corrupt(box.StartIndex, $"The \"{IsoTypes.ToString(box.Type)}\" box is too short for its version and flags.");
         }
 
         version = content[0];
@@ -732,7 +734,7 @@ internal sealed class HeifFile
         {
             if (_data.Length - _at < size)
             {
-                throw new CorruptDataException(file.FormatName, box.Start, $"The \"{FourCC.ToString(box.Type)}\" box is cut off.") { IsTruncation = true };
+                throw new CorruptDataException(file.FormatName, box.StartIndex, $"The \"{IsoTypes.ToString(box.Type)}\" box is cut off.") { IsTruncation = true };
             }
 
             ulong value = 0;

@@ -36,6 +36,7 @@ settings, safety limits and registered formats a call uses.
 - [GIF](https://inexin.github.io/Egami/v1/articles/formats/gif.html): Egami reads GIF 87a and 89a files, with every disposal method, interlaced images, transparency, the loop count, comments, XMP and ICC profiles, and writes GIF 89a.
 - [HEIC](https://inexin.github.io/Egami/v1/articles/formats/heic.html): HEIC is the format iPhones and most Android phones save photos in.
 - [ICO and CUR](https://inexin.github.io/Egami/v1/articles/formats/ico.html): Egami reads and writes Windows icons (.ico) and cursors (.cur), written from Microsoft's documentation of the icon directory.
+- [ISO BMFF boxes](https://inexin.github.io/Egami/v1/articles/formats/iso-boxes.html): MP4, QuickTime, HEIF, HEIC and AVIF files are made of boxes (ISO/IEC 14496-12).
 - [JBIG2](https://inexin.github.io/Egami/v1/articles/formats/jbig2.html): Egami reads JBIG2 (ITU-T T.88 | ISO/IEC 14492), the bi-level format of scanned documents and of the JBIG2Decode images in PDF, written from the 2018 edition of T.88 and the PDF specification.
 - [JPEG](https://inexin.github.io/Egami/v1/articles/formats/jpeg.html): JPEG files load like any other.
 - [JPEG 2000](https://inexin.github.io/Egami/v1/articles/formats/jpeg2000.html): Egami reads JPEG 2000 (ITU-T T.800 | ISO/IEC 15444-1, all of Part 1), written from the 2019 edition of T.800, T.801's JPX boxes and the PDF specification's JPXDecode filter.

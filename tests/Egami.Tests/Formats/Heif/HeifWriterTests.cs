@@ -30,9 +30,9 @@ public class HeifWriterTests
 
         HeifFile heif = HeifFile.Parse(file, "AVIF");
         Assert.Empty(heif.Problems);
-        Assert.Equal(FourCC.Of("avif"), heif.MajorBrand);
-        Assert.Equal([FourCC.Of("avif"), FourCC.Of("mif1"), FourCC.Of("miaf"), FourCC.Of("MA1B")], heif.CompatibleBrands);
-        Assert.Equal(FourCC.Pict, heif.Handler);
+        Assert.Equal(IsoTypes.Of("avif"), heif.MajorBrand);
+        Assert.Equal([IsoTypes.Of("avif"), IsoTypes.Of("mif1"), IsoTypes.Of("miaf"), IsoTypes.Of("MA1B")], heif.CompatibleBrands);
+        Assert.Equal(IsoTypes.Pict, heif.Handler);
         Assert.Equal(color, heif.PrimaryItemId);
         Assert.Equal([color, alpha, xmp, grid], heif.Items.Select(i => i.Id));
         Assert.Equal("Color", heif.Item(color)!.Name);
@@ -43,10 +43,10 @@ public class HeifWriterTests
         Assert.Equal([7, 8, 9], heif.ItemData(heif.Item(xmp)!).ToArray());
         Assert.Equal(1, heif.Item(grid)!.ConstructionMethod);
         Assert.Equal([0, 0, 0, 0, 0, 64, 0, 48], heif.ItemData(heif.Item(grid)!).ToArray());
-        Assert.Equal([color], heif.Item(alpha)!.ReferencesOf(FourCC.Of("auxl")));
-        Assert.Equal([color], heif.Item(xmp)!.ReferencesOf(FourCC.Of("cdsc")));
+        Assert.Equal([color], heif.Item(alpha)!.ReferencesOf(IsoTypes.Of("auxl")));
+        Assert.Equal([color], heif.Item(xmp)!.ReferencesOf(IsoTypes.Of("cdsc")));
         Assert.Equal(
-            [(FourCC.Of("ispe"), false), (FourCC.Of("pixi"), false), (FourCC.Of("colr"), false), (FourCC.Of("irot"), true)],
+            [(IsoTypes.Of("ispe"), false), (IsoTypes.Of("pixi"), false), (IsoTypes.Of("colr"), false), (IsoTypes.Of("irot"), true)],
             heif.PropertiesOf(heif.Item(color)!).Select(p => (p.Property.Type, p.Essential)));
 
         // The shared ispe is written once.
@@ -54,7 +54,7 @@ public class HeifWriterTests
         Assert.Equal(heif.PropertiesOf(heif.Item(color)!).First().Property, heif.PropertiesOf(heif.Item(alpha)!).First().Property);
 
         // The meta box comes before the mdat.
-        Assert.Equal([FourCC.Ftyp, FourCC.Meta, FourCC.Of("mdat")], heif.Boxes.Select(b => b.Type));
+        Assert.Equal([IsoTypes.Ftyp, IsoTypes.Meta, IsoTypes.Of("mdat")], heif.Boxes.Select(b => b.Type.Value));
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class HeifWriterTests
         Dictionary<uint, uint> ids = [];
         foreach (HeifItem item in source.Items)
         {
-            ids[item.Id] = writer.AddItem(FourCC.ToString(item.Type), source.ItemData(item).ToArray(), item.Name, item.Hidden, item.ContentType);
+            ids[item.Id] = writer.AddItem(IsoTypes.ToString(item.Type), source.ItemData(item).ToArray(), item.Name, item.Hidden, item.ContentType);
         }
 
         writer.PrimaryItemId = ids[source.PrimaryItemId];
@@ -97,13 +97,13 @@ public class HeifWriterTests
         {
             foreach ((HeifProperty property, bool essential) in source.PropertiesOf(item))
             {
-                byte[] box = original[property.Box.Start..property.Box.End];
+                byte[] box = original[property.Box.StartIndex..property.Box.EndIndex];
                 writer.AddProperty(ids[item.Id], box, essential);
             }
 
             foreach (HeifReference reference in item.References)
             {
-                writer.Reference(FourCC.ToString(reference.Type), ids[item.Id], [.. reference.To.Select(t => ids[t])]);
+                writer.Reference(IsoTypes.ToString(reference.Type), ids[item.Id], [.. reference.To.Select(t => ids[t])]);
             }
         }
 

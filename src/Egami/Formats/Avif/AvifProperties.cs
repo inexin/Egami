@@ -54,22 +54,22 @@ internal readonly record struct MasteringDisplay(ushort[] PrimariesXY, ushort Wh
 /// <summary>Reads the HEIF and AVIF properties the AVIF reader understands.</summary>
 internal static class AvifProperties
 {
-    internal static readonly uint Av1C = FourCC.Of("av1C");
-    internal static readonly uint Ispe = FourCC.Of("ispe");
-    internal static readonly uint Pixi = FourCC.Of("pixi");
-    internal static readonly uint Colr = FourCC.Of("colr");
-    internal static readonly uint AuxC = FourCC.Of("auxC");
-    internal static readonly uint Clli = FourCC.Of("clli");
-    internal static readonly uint Mdcv = FourCC.Of("mdcv");
-    internal static readonly uint Irot = FourCC.Of("irot");
-    internal static readonly uint Imir = FourCC.Of("imir");
-    internal static readonly uint Clap = FourCC.Of("clap");
-    internal static readonly uint Pasp = FourCC.Of("pasp");
-    internal static readonly uint A1op = FourCC.Of("a1op");
-    internal static readonly uint A1lx = FourCC.Of("a1lx");
-    internal static readonly uint Lsel = FourCC.Of("lsel");
-    internal static readonly uint Cclv = FourCC.Of("cclv");
-    internal static readonly uint Amve = FourCC.Of("amve");
+    internal static readonly uint Av1C = IsoTypes.Of("av1C");
+    internal static readonly uint Ispe = IsoTypes.Of("ispe");
+    internal static readonly uint Pixi = IsoTypes.Of("pixi");
+    internal static readonly uint Colr = IsoTypes.Of("colr");
+    internal static readonly uint AuxC = IsoTypes.Of("auxC");
+    internal static readonly uint Clli = IsoTypes.Of("clli");
+    internal static readonly uint Mdcv = IsoTypes.Of("mdcv");
+    internal static readonly uint Irot = IsoTypes.Of("irot");
+    internal static readonly uint Imir = IsoTypes.Of("imir");
+    internal static readonly uint Clap = IsoTypes.Of("clap");
+    internal static readonly uint Pasp = IsoTypes.Of("pasp");
+    internal static readonly uint A1op = IsoTypes.Of("a1op");
+    internal static readonly uint A1lx = IsoTypes.Of("a1lx");
+    internal static readonly uint Lsel = IsoTypes.Of("lsel");
+    internal static readonly uint Cclv = IsoTypes.Of("cclv");
+    internal static readonly uint Amve = IsoTypes.Of("amve");
 
     /// <summary>The property types the AVIF reader understands, so an essential one of them does not make an item unusable.</summary>
     internal static readonly HashSet<uint> Understood = [Av1C, Ispe, Pixi, Colr, AuxC, Clli, Mdcv, Irot, Imir, Clap, Pasp, A1op, A1lx, Lsel, Cclv, Amve];
@@ -96,7 +96,7 @@ internal static class AvifProperties
         int profile = c[1] >> 5;
         bool high = (c[2] & 0x40) != 0, twelve = (c[2] & 0x20) != 0;
         return new Av1Config(profile, c[1] & 31, c[2] >> 7, twelve ? 12 : high ? 10 : 8, (c[2] & 0x10) != 0, (c[2] >> 3) & 1, (c[2] >> 2) & 1,
-            c[2] & 3, file.Bytes.Slice(property.Box.ContentStart + 4, c.Length - 4));
+            c[2] & 3, file.Bytes.Slice(property.Box.ContentIndex + 4, c.Length - 4));
     }
 
     internal static (int Width, int Height) ReadSpatialExtents(HeifFile file, HeifProperty property)
@@ -138,7 +138,7 @@ internal static class AvifProperties
         }
 
         uint type = BinaryPrimitives.ReadUInt32BigEndian(c);
-        if (type == FourCC.Of("nclx"))
+        if (type == IsoTypes.Of("nclx"))
         {
             if (c.Length < 11)
             {
@@ -149,8 +149,8 @@ internal static class AvifProperties
                 BinaryPrimitives.ReadUInt16BigEndian(c[8..]), (c[10] & 0x80) != 0), default);
         }
 
-        return type == FourCC.Of("rICC") || type == FourCC.Of("prof")
-            ? (null, file.Bytes.Slice(property.Box.ContentStart + 4, c.Length - 4))
+        return type == IsoTypes.Of("rICC") || type == IsoTypes.Of("prof")
+            ? (null, file.Bytes.Slice(property.Box.ContentIndex + 4, c.Length - 4))
             : (null, default);
     }
 
@@ -226,5 +226,5 @@ internal static class AvifProperties
     }
 
     private static CorruptDataException Corrupt(HeifFile file, HeifProperty property, string problem) =>
-        new(file.FormatName, property.Box.Start, $"The {FourCC.ToString(property.Type)} property {problem}.");
+        new(file.FormatName, property.Box.StartIndex, $"The {IsoTypes.ToString(property.Type)} property {problem}.");
 }

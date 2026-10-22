@@ -98,7 +98,7 @@ public class Av1HeaderWriterTests
             return;
         }
 
-        foreach (HeifItem item in heif.Items.Where(i => i.Type == FourCC.Of("av01") && i.Located))
+        foreach (HeifItem item in heif.Items.Where(i => i.Type == IsoTypes.Of("av01") && i.Located))
         {
             Av1SequenceHeader? sequence;
             try

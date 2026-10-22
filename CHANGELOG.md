@@ -279,6 +279,13 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 
 ## Egami 1.1.0 (unreleased)
 
+### ISO BMFF boxes
+
+- `IsoBoxReader`, `IsoBox` and `FourCC` (in `Egami.Formats.Iso`) walk the boxes of MP4, QuickTime, HEIF and AVIF files from
+  bytes in memory, one level at a time, with every size checked; `IsoBoxReader.ReadHeader` reads box headers from a stream,
+  so a large file's media data can be skipped. This is the walker Egami's AVIF and HEIC readers use, now public for
+  Egami.Video's MP4 reader and your own tools.
+
 ### HEIC detection
 
 - HEIC files (HEIF with HEVC-coded images, as iPhones and most Android phones save photos) are recognized by their brands.
