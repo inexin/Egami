@@ -43,11 +43,19 @@ internal sealed class Av1UnitInfo
     /// Reads a temporal unit of low-overhead OBUs. <paramref name="sequence"/> is the sequence header in force when the unit has
     /// none of its own (its frame headers start differently with a reduced still picture header, frame ids or a decoder model).
     /// </summary>
+    /// <param name="unit">The temporal unit.</param>
+    /// <param name="sequence">The sequence header in force before the unit, or null.</param>
+    /// <param name="fields">Where to list the fields read, or null.</param>
+    /// <param name="frameHeaders">
+    /// Whole frame headers to list in place of the start each frame header OBU codes, in order (a decoder's reading of them), or null.
+    /// </param>
     /// <exception cref="CorruptDataException">The OBUs or a header in them are broken.</exception>
-    public static Av1UnitInfo Read(ReadOnlySpan<byte> unit, Av1SequenceInfo? sequence, List<CodecHeaderField>? fields = null)
+    public static Av1UnitInfo Read(ReadOnlySpan<byte> unit, Av1SequenceInfo? sequence, List<CodecHeaderField>? fields = null,
+        IReadOnlyList<List<CodecHeaderField>>? frameHeaders = null)
     {
         Av1UnitInfo info = new();
         bool first = true;
+        int frame = 0;
         foreach (Av1Obu obu in Av1Obus.Split(unit))
         {
             ReadOnlySpan<byte> payload = unit.Slice(obu.PayloadStart, obu.PayloadLength);
@@ -76,7 +84,14 @@ internal sealed class Av1UnitInfo
                     sequence = parsed;
                     break;
                 case Av1Obus.FrameHeader or Av1Obus.Frame:
-                    (bool showExisting, int frameType, bool show) = ReadFrameStart(payload, sequence, fields);
+                    bool whole = frameHeaders is not null && frame < frameHeaders.Count;
+                    (bool showExisting, int frameType, bool show) = ReadFrameStart(payload, sequence, whole ? null : fields);
+                    if (whole)
+                    {
+                        fields?.AddRange(frameHeaders![frame]);
+                    }
+
+                    frame++;
                     info.HasFrame = true;
                     info.ShowsFrame |= showExisting || show;
                     info.HasKeyFrame |= !showExisting && frameType == KeyFrame;

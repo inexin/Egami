@@ -132,7 +132,10 @@ V4.2: AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
   container disagrees. The sequence header comes from the track's av1C when a unit has none.
 - IVF AV1 tracks get their bit depth, chroma format and av1C from the first sequence header; the Matroska writer builds av1C
   from the first packet for a track that has none.
-- `Av1Packets`: `SplitFrames`, `MergeFrames` and `ExtractConfig` (av1C from a sequence header).
+- `Av1Packets`: `SplitFrames`, `MergeFrames` and `ExtractConfig` (av1C from a sequence header, equal to FFmpeg's on every clip).
+- `CodecHeaders.Describe` for AV1: each OBU, the sequence header, metadata (content light level, mastering display, ITU-T T.35,
+  scalability, timecode) and the start of each frame header, under the specification's names. `CodecHeaderReader` reads a
+  track's packets in order and lists each frame header whole, as the decoder read it.
 
 ### Raw AV1
 

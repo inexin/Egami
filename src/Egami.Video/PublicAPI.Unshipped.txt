@@ -320,6 +320,11 @@ virtual Egami.Video.Audio.AudioCodec.CreateEncoder(Egami.Video.Audio.AudioEncode
 ~override Egami.Video.Audio.ChannelLayout.Equals(object obj) -> bool
 Egami.Video.Codecs.Av1Codec
 Egami.Video.Codecs.Av1Packets
+Egami.Video.Codecs.CodecHeaderReader
+Egami.Video.Codecs.CodecHeaderReader.CodecHeaderReader(Egami.Video.TrackInfo! track, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Codecs.CodecHeaderReader.Describe(Egami.Video.EncodedPacket! packet) -> System.Collections.Generic.IReadOnlyList<Egami.Video.Codecs.CodecHeaderField>!
+Egami.Video.Codecs.CodecHeaderReader.Dispose() -> void
+Egami.Video.Codecs.CodecHeaderReader.Reset() -> void
 Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain.get -> bool
 Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain.init -> void
 Egami.Video.Containers.Av1AnnexBFormat
