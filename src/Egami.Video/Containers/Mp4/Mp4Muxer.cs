@@ -558,7 +558,8 @@ internal sealed class Mp4Muxer : IMuxer
                 {
                     long pts = _decodeTimes[i] + _compositions[i];
                     start = Math.Min(start, pts);
-                    end = Math.Max(end, pts + Duration(i));
+                    // A sample without a duration still shows: an edit that ended at its start would cut it.
+                    end = Math.Max(end, pts + Math.Max(Duration(i), 1));
                 }
             }
 
@@ -613,7 +614,7 @@ internal sealed class Mp4Muxer : IMuxer
                 w.U32(delay > 0 ? 2u : 1u);
                 if (delay > 0)
                 {
-                    w.U32(Movie(delay, movieTimescale));
+                    w.U32((uint)Math.Min((long)Math.Round((double)delay * movieTimescale / Timescale), uint.MaxValue));
                     w.I32(-1);
                     w.U32(0x10000);
                 }
@@ -667,7 +668,8 @@ internal sealed class Mp4Muxer : IMuxer
             w.End();
         }
 
-        private uint Movie(long ticks, uint movieTimescale) => (uint)Math.Min((long)((Int128)ticks * movieTimescale / Timescale), uint.MaxValue);
+        /// <summary>Converts ticks to the movie timescale, rounding up so an edit never ends before the last sample it shows.</summary>
+        private uint Movie(long ticks, uint movieTimescale) => (uint)Math.Min((long)(((Int128)ticks * movieTimescale + Timescale - 1) / Timescale), uint.MaxValue);
 
         private void WriteTables(BoxWriter w, long mediaData)
         {

@@ -227,6 +227,13 @@ internal static class Mp4Metadata
             at += length;
         }
 
+        // Starts beyond a century are broken; they are kept at one.
+        const long Century = 100L * 365 * 24 * 3600 * 10_000_000;
+        for (int i = 0; i < list.Count; i++)
+        {
+            list[i] = (Math.Min(list[i].Start, Century), list[i].Title);
+        }
+
         Rational hundredNs = new(1, 10_000_000);
         for (int i = 0; i < list.Count; i++)
         {

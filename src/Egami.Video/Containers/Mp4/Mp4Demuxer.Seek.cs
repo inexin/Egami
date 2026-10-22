@@ -18,10 +18,15 @@ internal sealed partial class Mp4Demuxer
             throw new NotSupportedException("The stream cannot seek.");
         }
 
+        if (_tracks.Count == 0)
+        {
+            // Nothing to read, so nothing to move.
+            return;
+        }
+
         TrackState target = trackNumber is { } n
             ? _tracks.FirstOrDefault(t => t.Info.Number == n) ?? throw new ArgumentException($"There is no track {n}.", nameof(trackNumber))
-            : _tracks.FirstOrDefault(t => t.Info.Kind == TrackKind.Video) ?? _tracks.FirstOrDefault()
-                ?? throw new InvalidOperationException("The file has no tracks.");
+            : _tracks.FirstOrDefault(t => t.Info.Kind == TrackKind.Video) ?? _tracks[0];
 
         _fragment.Clear();
         _fragmentAt = 0;
@@ -147,7 +152,13 @@ internal sealed partial class Mp4Demuxer
 
     private static long Pts(TrackState track, long index)
     {
-        Mp4Sample sample = track.Track.Table.At(index).Peek();
+        Mp4SampleTable.Cursor cursor = track.Track.Table.At(index);
+        if (cursor.AtEnd)
+        {
+            return long.MaxValue;
+        }
+
+        Mp4Sample sample = cursor.Peek();
         return sample.DecodeTime + sample.CompositionOffset + track.Shift;
     }
 

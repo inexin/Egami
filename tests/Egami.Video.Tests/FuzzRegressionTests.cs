@@ -67,6 +67,12 @@ public class FuzzRegressionTests
             return;
         }
 
+        if (input.StartsWith("mp4mux", StringComparison.Ordinal))
+        {
+            RemuxMp4(data, context);
+            return;
+        }
+
         try
         {
             using IDemuxer demuxer = MediaFile.OpenDemuxer(new MemoryStream(data), context);
@@ -116,6 +122,53 @@ public class FuzzRegressionTests
             }
 
             at += 2 + length;
+        }
+    }
+
+    /// <summary>The mp4mux harness: read up to 200 packets, write them to MP4, and read back the same packets.</summary>
+    private static void RemuxMp4(byte[] data, MediaContext context)
+    {
+        List<EncodedPacket> packets = [];
+        IReadOnlyList<TrackInfo> tracks;
+        MediaMetadata metadata;
+        try
+        {
+            using IDemuxer demuxer = Mp4Format.Instance.OpenDemuxer(new MemoryStream(data), context, leaveOpen: false);
+            (tracks, metadata) = (demuxer.Tracks, demuxer.Info.Metadata);
+            for (int i = 0; i < 200 && demuxer.ReadPacket() is { } packet; i++)
+            {
+                packets.Add(packet);
+            }
+        }
+        catch (EgamiException)
+        {
+            packets.ForEach(p => p.Dispose());
+            return;
+        }
+
+        try
+        {
+            MemoryStream output = new();
+            using (IMuxer muxer = Mp4Format.Instance.CreateMuxer(output, tracks, metadata, context, leaveOpen: true))
+            {
+                packets.ForEach(muxer.WritePacket);
+            }
+
+            using IDemuxer again = Mp4Format.Instance.OpenDemuxer(new MemoryStream(output.ToArray()), context, leaveOpen: false);
+            List<(int Track, byte[] Data)> read = [];
+            while (again.ReadPacket() is { } packet)
+            {
+                using (packet)
+                {
+                    read.Add((tracks[packet.TrackNumber - 1].Number, packet.Data.ToArray()));
+                }
+            }
+
+            Assert.Equal(packets.OrderBy(p => p.TrackNumber).Select(p => (p.TrackNumber, p.Data.ToArray())), read.OrderBy(p => p.Track));
+        }
+        finally
+        {
+            packets.ForEach(p => p.Dispose());
         }
     }
 

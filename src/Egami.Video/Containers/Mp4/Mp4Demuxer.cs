@@ -365,6 +365,11 @@ internal sealed partial class Mp4Demuxer : IDemuxer
         {
             // The most common duration, when nearly every sample has it (a writer may give the first sample another).
             List<long> durations = [.. samples.Where(s => s.Track == track).Select(s => s.Sample.Duration)];
+            if (durations.Count == 0)
+            {
+                continue;
+            }
+
             (long Duration, int Count) common = durations.GroupBy(d => d).Select(g => (g.Key, g.Count())).MaxBy(g => g.Item2);
             if (track.Info is VideoTrackInfo { FrameRate: null } video && track.Track.Table.Count == 0 && common.Duration > 0 && common.Count * 4 >= durations.Count * 3)
             {

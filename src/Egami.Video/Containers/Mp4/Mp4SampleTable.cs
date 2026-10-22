@@ -158,7 +158,9 @@ internal sealed class Mp4SampleTable
 
         int at = Array.BinarySearch(SyncSamples, (uint)Math.Min(index + 1, uint.MaxValue));
         at = at >= 0 ? at : ~at - 1;
-        return at >= 0 ? SyncSamples[at] - 1L : SyncSamples[0] - 1L;
+
+        // A sync sample past the table's end (a broken stss) is not one.
+        return Math.Clamp(at >= 0 ? SyncSamples[at] - 1L : SyncSamples[0] - 1L, 0, Math.Max(0, Count - 1));
     }
 
     /// <summary>Walks the samples in decoding order, keeping its place in each table's runs.</summary>
@@ -205,7 +207,7 @@ internal sealed class Mp4SampleTable
                 return new Mp4Sample(_index, _offset, (int)Math.Min(left * t.ConstantSize, int.MaxValue), _decodeTime, 0, left * delta, true, entry);
             }
 
-            int size = t.Sizes.Length > 0 ? t.Sizes[_index] : t.ConstantSize;
+            int size = t.Sizes.Length > 0 ? (_index < t.Sizes.Length ? t.Sizes[_index] : 0) : t.ConstantSize;
             long duration = _timeRun < t.Times.Length ? t.Times[_timeRun].Delta : 0;
             long composition = _compositionRun < t.Compositions.Length ? t.Compositions[_compositionRun].Offset : 0;
             bool sync = t.SyncSamples is null
@@ -236,7 +238,7 @@ internal sealed class Mp4SampleTable
         private void AdvanceOne()
         {
             Mp4SampleTable t = _table;
-            _offset += t.Sizes.Length > 0 ? t.Sizes[_index] : t.ConstantSize;
+            _offset += t.Sizes.Length > 0 ? (_index < t.Sizes.Length ? t.Sizes[_index] : 0) : t.ConstantSize;
             if (_timeRun < t.Times.Length)
             {
                 _decodeTime += t.Times[_timeRun].Delta;
