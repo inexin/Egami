@@ -15,6 +15,11 @@ Outputs, committed, next to each clip in tests/video/corpus/av1:
                             their size fields), with ffprobe's view of it (-f av1).
 Both raw formats are then decoded by aomdec (--annexb for Annex B) and dav1d (--demuxer section5 or annexb), and every frame must
 hash as libaom's reference does.
+  hdr10.ivf                 a 10-bit BT.2020 PQ clip written by FFmpeg's libsvtav1 (SVT-AV1 1.4.1) with mastering display and
+                            content light level metadata OBUs; its .frames.json comes from aomdec's frames.
+  hdr10plus.ivf             the same units with an ITU-T T.35 HDR10+ metadata OBU (SMPTE ST 2094-40, the payload
+                            make-vp9-corpus.py makes, changing per frame) inserted after each temporal delimiter.
+  <clip>.side_data.json     ffprobe's side data of each frame of those two (FFmpeg's libdav1d decoder): the HDR values to match.
 
 Usage, from the repo root with Docker running, after python tools/make-av1-references.py:
   python tools/video/make-av1-corpus.py
@@ -33,6 +38,10 @@ REFERENCES = ".cache/avif/reference/av1"
 
 # Clips also remuxed into Matroska (every clip goes into WebM).
 MKV = {"tools-8bit", "tools-10bit", "tools-12bit", "monochrome", "forward-keyframes", "resize", "yuv444"}
+
+# Clips this script encodes itself, whose frame references come from aomdec rather than tools/make-av1-references.py.
+HDR = ("hdr10", "hdr10plus")
+MASTERING = "G(0.265,0.690)B(0.150,0.060)R(0.680,0.320)WP(0.3127,0.3290)L(1000,0.0001)"
 
 # Clips also written as raw OBU and Annex B streams.
 RAW = {"tools-8bit", "tools-10bit", "monochrome", "forward-keyframes"}
@@ -127,11 +136,44 @@ def annexb(ivf, out):
             f.write(leb128(len(body)) + body)
 
 
+def write_ivf(source, out, units):
+    data = open(source, "rb").read()
+    header = bytearray(data[:int.from_bytes(data[6:8], "little")])
+    header[24:28] = len(units).to_bytes(4, "little")
+    at = len(header)
+    with open(out, "wb") as f:
+        f.write(header)
+        for unit in units:
+            f.write(len(unit).to_bytes(4, "little") + data[at + 4:at + 12] + unit)
+            at += 12 + int.from_bytes(data[at:at + 4], "little")
+
+
+def make_hdr():
+    run(f"ffmpeg -v error -y -f lavfi -i testsrc2=size=128x96:rate=30 -frames:v 10 -pix_fmt yuv420p10le -color_primaries bt2020 "
+        f"-color_trc smpte2084 -colorspace bt2020nc -color_range tv -c:v libsvtav1 -preset 10 -g 5 "
+        f"-svtav1-params \"mastering-display={MASTERING}:content-light=1000,400\" -f ivf {CLIPS}/hdr10.ivf")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("vp9corpus", "tools/video/make-vp9-corpus.py")
+    vp9 = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(vp9)
+    units = []
+    for n, unit in enumerate(ivf_frames(f"{CLIPS}/hdr10.ivf")):
+        payload = leb128(4) + vp9.hdr10plus_payload(n) + b"\x80"  # metadata_type ITUT_T35, the payload, trailing bits
+        assert unit[:2] == b"\x12\x00"
+        units.append(unit[:2] + bytes([5 << 3 | 2]) + leb128(len(payload)) + payload + unit[2:])
+    write_ivf(f"{CLIPS}/hdr10.ivf", f"{CLIPS}/hdr10plus.ivf", units)
+    for name in HDR:
+        frames = json.loads(run(f"ffprobe -v error -select_streams v -show_frames -of json {CLIPS}/{name}.ivf").stdout)["frames"]
+        with open(f"{CLIPS}/{name}.side_data.json", "w", encoding="utf-8", newline="\n") as f:
+            f.write('{"frames": [\n' + ",\n".join(json.dumps(fr.get("side_data_list", [])) for fr in frames) + "]}\n")
+
+
 def clips():
     return sorted(f[:-4] for f in os.listdir(CLIPS) if f.endswith(".ivf"))
 
 
 def inside():
+    make_hdr()
     for name in clips():
         run(f"ffmpeg -v error -y -i {CLIPS}/{name}.ivf -c copy -fflags +bitexact {CLIPS}/{name}.webm")
         probe(f"{CLIPS}/{name}.webm")
@@ -166,7 +208,20 @@ def frame_md5s(raw, frames):
     return out, at == len(raw)
 
 
+def hdr_references():
+    """aomdec's frames of the clips this script encodes: 128x96 10-bit 4:2:0, no film grain."""
+    for name in HDR:
+        run(f"aomdec --rawvideo -o /tmp/out.yuv {CLIPS}/{name}.ivf")
+        raw = open("/tmp/out.yuv", "rb").read()
+        size = (128 * 96 + 2 * 64 * 48) * 2
+        rows = [[128, 96, 10, 0, hashlib.md5(raw[i:i + size]).hexdigest(), hashlib.md5(raw[i:i + size]).hexdigest()] for i in range(0, len(raw), size)]
+        with open(f"{CLIPS}/{name}.frames.json", "w", encoding="utf-8", newline="\n") as f:
+            f.write('{"frames": [\n' + ",\n".join(json.dumps(r) for r in rows) + "]}\n")
+        print(f"{name}: {len(rows)} frames from aomdec")
+
+
 def check_decoders():
+    hdr_references()
     for name in sorted(RAW):
         frames = json.load(open(f"{CLIPS}/{name}.frames.json"))["frames"]
         for cmd in (f"aomdec --rawvideo -o /tmp/out.yuv {CLIPS}/{name}.obu",
@@ -182,6 +237,8 @@ def check_decoders():
 
 def copy_references():
     for name in clips():
+        if name in HDR:
+            continue
         source = os.path.join(REFERENCES, name + ".ivf.json")
         if not os.path.isfile(source):
             sys.exit(f"{source} is missing: run python tools/make-av1-references.py first.")

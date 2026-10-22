@@ -86,7 +86,8 @@ Motion JPEG.
 hidden frames give no frame, and a frame shown later with show_existing_frame comes out then. Frames come out at their own size,
 8-bit planes for 8-bit streams and 16-bit planes above, 4:0:0 for monochrome.
 
-- The color comes from the sequence header; the container's fills only what the header leaves unspecified.
+- The color comes from the sequence header; the container's fills only what the header leaves unspecified. HDR metadata OBUs
+  give the frames' `Hdr` and `Hdr10Plus` (see [HDR](#hdr)).
 - `VideoDecoderOptions.ApplyFilmGrain = false` gives the frames as coded, without the film grain the stream asks for.
 - A keyframe is a temporal unit that starts with a shown key frame. A forward key frame, hidden and shown later, is not one, as
   FFmpeg flags them too. When a container's keyframe flag disagrees, the stream wins and `Av1.KeyframeFlagMismatch` is reported.
@@ -120,7 +121,9 @@ packets in order, decoding them, and lists each frame header whole.
 
 A frame's `Color` and `Hdr` carry its color code points and static HDR metadata. `YuvVideoFrame.ToRaster` with a target
 `ColorProfile` converts through Egami's color pipeline and tone maps PQ and HLG to SDR. VP9 frames in WebM carry HDR10+
-dynamic metadata as `Hdr10PlusMetadata`, with its `Hdr10PlusPercentile` distribution and `Hdr10PlusToneCurve`.
+dynamic metadata as `Hdr10PlusMetadata`, with its `Hdr10PlusPercentile` distribution and `Hdr10PlusToneCurve`. AV1 frames take
+`Hdr` from the stream's content light level and mastering display metadata OBUs (or the track's av1C), and `Hdr10Plus` from an
+ITU-T T.35 metadata OBU.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-hdr)]
 
