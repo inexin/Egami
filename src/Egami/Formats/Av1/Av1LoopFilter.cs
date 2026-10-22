@@ -14,7 +14,8 @@ internal static class Av1LoopFilter
     private static ReadOnlySpan<byte> FilterLengthLuma => [4, 8, 14, 14, 14];
 
     /// <summary>Filters the frame's planes in place.</summary>
-    internal static void Apply(Av1Frame frame)
+    internal static void Apply<T>(Av1Frame frame)
+        where T : unmanaged
     {
         Av1FrameHeader h = frame.Header;
         if (h.LoopFilterLevel[0] == 0 && h.LoopFilterLevel[1] == 0)
@@ -35,8 +36,8 @@ internal static class Av1LoopFilter
             try
             {
                 Units(frame, plane, ssx, ssy, planeMiRows, planeMiCols, units);
-                FilterPlane(frame, plane, units, vertical: true);
-                FilterPlane(frame, plane, units, vertical: false);
+                FilterPlane<T>(frame, plane, units, vertical: true);
+                FilterPlane<T>(frame, plane, units, vertical: false);
             }
             finally
             {
@@ -82,13 +83,14 @@ internal static class Av1LoopFilter
         });
     }
 
-    private static void FilterPlane(Av1Frame frame, int plane, int[] units, bool vertical)
+    private static void FilterPlane<T>(Av1Frame frame, int plane, int[] units, bool vertical)
+        where T : unmanaged
     {
         Av1FrameHeader h = frame.Header;
         int ssx = plane > 0 ? frame.Sequence.SubsamplingX : 0, ssy = plane > 0 ? frame.Sequence.SubsamplingY : 0;
         int planeMiRows = (frame.MiRows + ssy) >> ssy, planeMiCols = (frame.MiCols + ssx) >> ssx;
         int width = (h.FrameWidth + ssx) >> ssx, height = (h.FrameHeight + ssy) >> ssy;
-        ushort[] buf = frame.Planes![plane];
+        T[] buf = frame.Plane<T>(plane);
         int stride = frame.Strides[plane];
         int bitDepth = frame.Sequence.BitDepth;
 
@@ -226,7 +228,8 @@ internal static class Av1LoopFilter
     }
 
     /// <summary>Filters four rows (or columns) across an edge: <paramref name="step"/> crosses it, <paramref name="along"/> follows it.</summary>
-    private static void FilterEdge(ushort[] s, int at, int step, int along, int length, int level, int sharpness, int bitDepth)
+    private static void FilterEdge<T>(T[] s, int at, int step, int along, int length, int level, int sharpness, int bitDepth)
+        where T : unmanaged
     {
         int shift = bitDepth - 8;
         int limit = level >> ((sharpness > 0 ? 1 : 0) + (sharpness > 4 ? 1 : 0));
@@ -248,7 +251,7 @@ internal static class Av1LoopFilter
 
         for (int i = 0; i < 4; i++, at += along)
         {
-            int p0 = s[at - step], q0 = s[at], p1 = s[at - (2 * step)], q1 = s[at + step];
+            int p0 = Av1Samples.Get(s[at - step]), q0 = Av1Samples.Get(s[at]), p1 = Av1Samples.Get(s[at - (2 * step)]), q1 = Av1Samples.Get(s[at + step]);
             bool mask;
             switch (length)
             {
@@ -262,7 +265,7 @@ internal static class Av1LoopFilter
                     break;
                 case 6:
                     {
-                        int p2 = s[at - (3 * step)], q2 = s[at + (2 * step)];
+                        int p2 = Av1Samples.Get(s[at - (3 * step)]), q2 = Av1Samples.Get(s[at + (2 * step)]);
                         mask = Math.Abs(p2 - p1) <= limit && Math.Abs(p1 - p0) <= limit && Math.Abs(q1 - q0) <= limit && Math.Abs(q2 - q1) <= limit
                             && (Math.Abs(p0 - q0) * 2) + (Math.Abs(p1 - q1) / 2) <= blimit;
                         if (!mask)
@@ -274,10 +277,10 @@ internal static class Av1LoopFilter
                             && Math.Abs(q2 - q0) <= flatThresh;
                         if (flat)
                         {
-                            s[at - (2 * step)] = (ushort)(((p2 * 3) + (p1 * 2) + (p0 * 2) + q0 + 4) >> 3);
-                            s[at - step] = (ushort)((p2 + (p1 * 2) + (p0 * 2) + (q0 * 2) + q1 + 4) >> 3);
-                            s[at] = (ushort)((p1 + (p0 * 2) + (q0 * 2) + (q1 * 2) + q2 + 4) >> 3);
-                            s[at + step] = (ushort)((p0 + (q0 * 2) + (q1 * 2) + (q2 * 3) + 4) >> 3);
+                            s[at - (2 * step)] = Av1Samples.From<T>(((p2 * 3) + (p1 * 2) + (p0 * 2) + q0 + 4) >> 3);
+                            s[at - step] = Av1Samples.From<T>((p2 + (p1 * 2) + (p0 * 2) + (q0 * 2) + q1 + 4) >> 3);
+                            s[at] = Av1Samples.From<T>((p1 + (p0 * 2) + (q0 * 2) + (q1 * 2) + q2 + 4) >> 3);
+                            s[at + step] = Av1Samples.From<T>((p0 + (q0 * 2) + (q1 * 2) + (q2 * 3) + 4) >> 3);
                         }
                         else
                         {
@@ -289,7 +292,7 @@ internal static class Av1LoopFilter
 
                 default:
                     {
-                        int p2 = s[at - (3 * step)], q2 = s[at + (2 * step)], p3 = s[at - (4 * step)], q3 = s[at + (3 * step)];
+                        int p2 = Av1Samples.Get(s[at - (3 * step)]), q2 = Av1Samples.Get(s[at + (2 * step)]), p3 = Av1Samples.Get(s[at - (4 * step)]), q3 = Av1Samples.Get(s[at + (3 * step)]);
                         mask = Math.Abs(p3 - p2) <= limit && Math.Abs(p2 - p1) <= limit && Math.Abs(p1 - p0) <= limit && Math.Abs(q1 - q0) <= limit
                             && Math.Abs(q2 - q1) <= limit && Math.Abs(q3 - q2) <= limit && (Math.Abs(p0 - q0) * 2) + (Math.Abs(p1 - q1) / 2) <= blimit;
                         if (!mask)
@@ -301,36 +304,36 @@ internal static class Av1LoopFilter
                             && Math.Abs(q2 - q0) <= flatThresh && Math.Abs(p3 - p0) <= flatThresh && Math.Abs(q3 - q0) <= flatThresh;
                         if (length == 14 && flat)
                         {
-                            int p4 = s[at - (5 * step)], p5 = s[at - (6 * step)], p6 = s[at - (7 * step)];
-                            int q4 = s[at + (4 * step)], q5 = s[at + (5 * step)], q6 = s[at + (6 * step)];
+                            int p4 = Av1Samples.Get(s[at - (5 * step)]), p5 = Av1Samples.Get(s[at - (6 * step)]), p6 = Av1Samples.Get(s[at - (7 * step)]);
+                            int q4 = Av1Samples.Get(s[at + (4 * step)]), q5 = Av1Samples.Get(s[at + (5 * step)]), q6 = Av1Samples.Get(s[at + (6 * step)]);
                             bool flat2 = Math.Abs(p4 - p0) <= flatThresh && Math.Abs(q4 - q0) <= flatThresh && Math.Abs(p5 - p0) <= flatThresh
                                 && Math.Abs(q5 - q0) <= flatThresh && Math.Abs(p6 - p0) <= flatThresh && Math.Abs(q6 - q0) <= flatThresh;
                             if (flat2)
                             {
-                                s[at - (6 * step)] = (ushort)(((p6 * 7) + (p5 * 2) + (p4 * 2) + p3 + p2 + p1 + p0 + q0 + 8) >> 4);
-                                s[at - (5 * step)] = (ushort)(((p6 * 5) + (p5 * 2) + (p4 * 2) + (p3 * 2) + p2 + p1 + p0 + q0 + q1 + 8) >> 4);
-                                s[at - (4 * step)] = (ushort)(((p6 * 4) + p5 + (p4 * 2) + (p3 * 2) + (p2 * 2) + p1 + p0 + q0 + q1 + q2 + 8) >> 4);
-                                s[at - (3 * step)] = (ushort)(((p6 * 3) + p5 + p4 + (p3 * 2) + (p2 * 2) + (p1 * 2) + p0 + q0 + q1 + q2 + q3 + 8) >> 4);
-                                s[at - (2 * step)] = (ushort)(((p6 * 2) + p5 + p4 + p3 + (p2 * 2) + (p1 * 2) + (p0 * 2) + q0 + q1 + q2 + q3 + q4 + 8) >> 4);
-                                s[at - step] = (ushort)((p6 + p5 + p4 + p3 + p2 + (p1 * 2) + (p0 * 2) + (q0 * 2) + q1 + q2 + q3 + q4 + q5 + 8) >> 4);
-                                s[at] = (ushort)((p5 + p4 + p3 + p2 + p1 + (p0 * 2) + (q0 * 2) + (q1 * 2) + q2 + q3 + q4 + q5 + q6 + 8) >> 4);
-                                s[at + step] = (ushort)((p4 + p3 + p2 + p1 + p0 + (q0 * 2) + (q1 * 2) + (q2 * 2) + q3 + q4 + q5 + (q6 * 2) + 8) >> 4);
-                                s[at + (2 * step)] = (ushort)((p3 + p2 + p1 + p0 + q0 + (q1 * 2) + (q2 * 2) + (q3 * 2) + q4 + q5 + (q6 * 3) + 8) >> 4);
-                                s[at + (3 * step)] = (ushort)((p2 + p1 + p0 + q0 + q1 + (q2 * 2) + (q3 * 2) + (q4 * 2) + q5 + (q6 * 4) + 8) >> 4);
-                                s[at + (4 * step)] = (ushort)((p1 + p0 + q0 + q1 + q2 + (q3 * 2) + (q4 * 2) + (q5 * 2) + (q6 * 5) + 8) >> 4);
-                                s[at + (5 * step)] = (ushort)((p0 + q0 + q1 + q2 + q3 + (q4 * 2) + (q5 * 2) + (q6 * 7) + 8) >> 4);
+                                s[at - (6 * step)] = Av1Samples.From<T>(((p6 * 7) + (p5 * 2) + (p4 * 2) + p3 + p2 + p1 + p0 + q0 + 8) >> 4);
+                                s[at - (5 * step)] = Av1Samples.From<T>(((p6 * 5) + (p5 * 2) + (p4 * 2) + (p3 * 2) + p2 + p1 + p0 + q0 + q1 + 8) >> 4);
+                                s[at - (4 * step)] = Av1Samples.From<T>(((p6 * 4) + p5 + (p4 * 2) + (p3 * 2) + (p2 * 2) + p1 + p0 + q0 + q1 + q2 + 8) >> 4);
+                                s[at - (3 * step)] = Av1Samples.From<T>(((p6 * 3) + p5 + p4 + (p3 * 2) + (p2 * 2) + (p1 * 2) + p0 + q0 + q1 + q2 + q3 + 8) >> 4);
+                                s[at - (2 * step)] = Av1Samples.From<T>(((p6 * 2) + p5 + p4 + p3 + (p2 * 2) + (p1 * 2) + (p0 * 2) + q0 + q1 + q2 + q3 + q4 + 8) >> 4);
+                                s[at - step] = Av1Samples.From<T>((p6 + p5 + p4 + p3 + p2 + (p1 * 2) + (p0 * 2) + (q0 * 2) + q1 + q2 + q3 + q4 + q5 + 8) >> 4);
+                                s[at] = Av1Samples.From<T>((p5 + p4 + p3 + p2 + p1 + (p0 * 2) + (q0 * 2) + (q1 * 2) + q2 + q3 + q4 + q5 + q6 + 8) >> 4);
+                                s[at + step] = Av1Samples.From<T>((p4 + p3 + p2 + p1 + p0 + (q0 * 2) + (q1 * 2) + (q2 * 2) + q3 + q4 + q5 + (q6 * 2) + 8) >> 4);
+                                s[at + (2 * step)] = Av1Samples.From<T>((p3 + p2 + p1 + p0 + q0 + (q1 * 2) + (q2 * 2) + (q3 * 2) + q4 + q5 + (q6 * 3) + 8) >> 4);
+                                s[at + (3 * step)] = Av1Samples.From<T>((p2 + p1 + p0 + q0 + q1 + (q2 * 2) + (q3 * 2) + (q4 * 2) + q5 + (q6 * 4) + 8) >> 4);
+                                s[at + (4 * step)] = Av1Samples.From<T>((p1 + p0 + q0 + q1 + q2 + (q3 * 2) + (q4 * 2) + (q5 * 2) + (q6 * 5) + 8) >> 4);
+                                s[at + (5 * step)] = Av1Samples.From<T>((p0 + q0 + q1 + q2 + q3 + (q4 * 2) + (q5 * 2) + (q6 * 7) + 8) >> 4);
                                 break;
                             }
                         }
 
                         if (flat)
                         {
-                            s[at - (3 * step)] = (ushort)((p3 + p3 + p3 + (2 * p2) + p1 + p0 + q0 + 4) >> 3);
-                            s[at - (2 * step)] = (ushort)((p3 + p3 + p2 + (2 * p1) + p0 + q0 + q1 + 4) >> 3);
-                            s[at - step] = (ushort)((p3 + p2 + p1 + (2 * p0) + q0 + q1 + q2 + 4) >> 3);
-                            s[at] = (ushort)((p2 + p1 + p0 + (2 * q0) + q1 + q2 + q3 + 4) >> 3);
-                            s[at + step] = (ushort)((p1 + p0 + q0 + (2 * q1) + q2 + q3 + q3 + 4) >> 3);
-                            s[at + (2 * step)] = (ushort)((p0 + q0 + q1 + (2 * q2) + q3 + q3 + q3 + 4) >> 3);
+                            s[at - (3 * step)] = Av1Samples.From<T>((p3 + p3 + p3 + (2 * p2) + p1 + p0 + q0 + 4) >> 3);
+                            s[at - (2 * step)] = Av1Samples.From<T>((p3 + p3 + p2 + (2 * p1) + p0 + q0 + q1 + 4) >> 3);
+                            s[at - step] = Av1Samples.From<T>((p3 + p2 + p1 + (2 * p0) + q0 + q1 + q2 + 4) >> 3);
+                            s[at] = Av1Samples.From<T>((p2 + p1 + p0 + (2 * q0) + q1 + q2 + q3 + 4) >> 3);
+                            s[at + step] = Av1Samples.From<T>((p1 + p0 + q0 + (2 * q1) + q2 + q3 + q3 + 4) >> 3);
+                            s[at + (2 * step)] = Av1Samples.From<T>((p0 + q0 + q1 + (2 * q2) + q3 + q3 + q3 + 4) >> 3);
                         }
                         else
                         {
@@ -350,9 +353,10 @@ internal static class Av1LoopFilter
     /// <see cref="FilterEdge"/> on its four rows (or columns) at once, a lane each: every filter the length allows worked out,
     /// then each lane given the one its masks choose, as the scalar filter branches. The lanes never touch each other's samples.
     /// </summary>
-    private static void FilterEdgeVector(ushort[] s, int at, int step, int along, int length, Thresholds t, int bitDepth)
+    private static void FilterEdgeVector<T>(T[] s, int at, int step, int along, int length, Thresholds t, int bitDepth)
+        where T : unmanaged
     {
-        ref ushort origin = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(s), at);
+        ref T origin = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(s), at);
         int taps = length == 14 ? 7 : length == 4 ? 2 : length == 6 ? 3 : 4;
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)(at - (taps * step)), (uint)s.Length, nameof(at));
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)(at + ((taps - 1) * step) + (3 * along)), (uint)s.Length, nameof(at));
@@ -439,23 +443,45 @@ internal static class Av1LoopFilter
 
         static Vector128<int> Select(Vector128<int> m, Vector128<int> a, Vector128<int> b) => Vector128.ConditionalSelect(m, a, b);
 
-        static Vector128<int> Load(ref ushort origin, int offset, int along) => along == 1
-            ? Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref origin, offset)))).AsUInt16()).AsInt32()
-            : Vector128.Create(Unsafe.Add(ref origin, offset), Unsafe.Add(ref origin, offset + along), Unsafe.Add(ref origin, offset + (2 * along)),
-                Unsafe.Add(ref origin, offset + (3 * along)));
-
-        static void Store(ref ushort origin, int offset, int along, Vector128<int> value)
+        static Vector128<int> Load(ref T origin, int offset, int along)
         {
+            ref T at = ref Unsafe.Add(ref origin, offset);
+            if (along != 1)
+            {
+                return Vector128.Create(Av1Samples.Get(at), Av1Samples.Get(Unsafe.Add(ref at, along)), Av1Samples.Get(Unsafe.Add(ref at, 2 * along)),
+                    Av1Samples.Get(Unsafe.Add(ref at, 3 * along)));
+            }
+
+            if (Av1Samples.IsByte<T>())
+            {
+                Vector128<byte> bytes = Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<uint>(ref Unsafe.As<T, byte>(ref at))).AsByte();
+                return Vector128.WidenLower(Vector128.WidenLower(bytes)).AsInt32();
+            }
+
+            return Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<T, byte>(ref at))).AsUInt16()).AsInt32();
+        }
+
+        static void Store(ref T origin, int offset, int along, Vector128<int> value)
+        {
+            ref T at = ref Unsafe.Add(ref origin, offset);
             if (along == 1)
             {
                 Vector128<ushort> narrow = Vector128.Narrow(value.AsUInt32(), value.AsUInt32());
-                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref origin, offset)), narrow.AsUInt64().ToScalar());
+                if (Av1Samples.IsByte<T>())
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref at), Vector128.Narrow(narrow, narrow).AsUInt32().ToScalar());
+                }
+                else
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref at), narrow.AsUInt64().ToScalar());
+                }
+
                 return;
             }
 
             for (int i = 0; i < 4; i++)
             {
-                Unsafe.Add(ref origin, offset + (i * along)) = (ushort)value.GetElement(i);
+                Unsafe.Add(ref at, i * along) = Av1Samples.From<T>(value.GetElement(i));
             }
         }
     }
@@ -506,21 +532,22 @@ internal static class Av1LoopFilter
     }
 
     /// <summary>highbd_filter4: the narrow filter, its taps limited when the edge has high variance.</summary>
-    private static void Filter4(ushort[] s, int at, int step, int thresh, int bitDepth)
+    private static void Filter4<T>(T[] s, int at, int step, int thresh, int bitDepth)
+        where T : unmanaged
     {
         int shift = bitDepth - 8;
         int offset = 0x80 << shift;
         int lo = -128 << shift, hi = (128 << shift) - 1;
-        int ps1 = s[at - (2 * step)] - offset, ps0 = s[at - step] - offset, qs0 = s[at] - offset, qs1 = s[at + step] - offset;
+        int ps1 = Av1Samples.Get(s[at - (2 * step)]) - offset, ps0 = Av1Samples.Get(s[at - step]) - offset, qs0 = Av1Samples.Get(s[at]) - offset, qs1 = Av1Samples.Get(s[at + step]) - offset;
         bool hev = Math.Abs(ps1 - ps0) > thresh || Math.Abs(qs1 - qs0) > thresh;
         int filter = hev ? Math.Clamp(ps1 - qs1, lo, hi) : 0;
         filter = Math.Clamp(filter + (3 * (qs0 - ps0)), lo, hi);
         int filter1 = Math.Clamp(filter + 4, lo, hi) >> 3;
         int filter2 = Math.Clamp(filter + 3, lo, hi) >> 3;
-        s[at] = (ushort)(Math.Clamp(qs0 - filter1, lo, hi) + offset);
-        s[at - step] = (ushort)(Math.Clamp(ps0 + filter2, lo, hi) + offset);
+        s[at] = Av1Samples.From<T>(Math.Clamp(qs0 - filter1, lo, hi) + offset);
+        s[at - step] = Av1Samples.From<T>(Math.Clamp(ps0 + filter2, lo, hi) + offset);
         filter = hev ? 0 : (filter1 + 1) >> 1;
-        s[at + step] = (ushort)(Math.Clamp(qs1 - filter, lo, hi) + offset);
-        s[at - (2 * step)] = (ushort)(Math.Clamp(ps1 + filter, lo, hi) + offset);
+        s[at + step] = Av1Samples.From<T>(Math.Clamp(qs1 - filter, lo, hi) + offset);
+        s[at - (2 * step)] = Av1Samples.From<T>(Math.Clamp(ps1 + filter, lo, hi) + offset);
     }
 }

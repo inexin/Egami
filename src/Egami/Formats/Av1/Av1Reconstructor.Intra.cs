@@ -1,7 +1,7 @@
 namespace Egami.Formats.Av1;
 
 /// <summary>Intra prediction: av1_predict_intra_block and the high bit depth predictors of reconintra.c and intrapred.c.</summary>
-internal sealed partial class Av1Reconstructor
+internal sealed partial class Av1Reconstructor<T>
 {
     private const int NeedLeft = 1, NeedAbove = 2, NeedAboveRight = 4, NeedAboveLeft = 8, NeedBottomLeft = 16;
     private const int EdgeBase = 16;
@@ -15,11 +15,11 @@ internal sealed partial class Av1Reconstructor
 
     private static ReadOnlySpan<byte> ModeToAngle => [0, 90, 180, 45, 135, 113, 157, 203, 67, 0, 0, 0, 0];
 
-    private readonly ushort[] _aboveData = new ushort[(64 * 2) + 32 + EdgeBase];
-    private readonly ushort[] _leftData = new ushort[(64 * 2) + 32 + EdgeBase];
+    private readonly T[] _aboveData = new T[(64 * 2) + 32 + EdgeBase];
+    private readonly T[] _leftData = new T[(64 * 2) + 32 + EdgeBase];
 
     private void PredictIntra(Av1TileState tile, int plane, int colOff, int rowOff, int txSize, int mode, int angleDelta, bool palette,
-        int filterMode, ushort[] buf, int offset, int stride)
+        int filterMode, T[] buf, int offset, int stride)
     {
         Av1BlockInfo b = tile.Block;
         int txw = Av1Tables.TxSizeWide[txSize], txh = Av1Tables.TxSizeHigh[txSize];
@@ -34,7 +34,7 @@ internal sealed partial class Av1Reconstructor
             {
                 for (int c = 0; c < txw; c++)
                 {
-                    buf[offset + (r * stride) + c] = b.PaletteColors[colors + map[((r + y) * wpx) + c + x]];
+                    buf[offset + (r * stride) + c] = Av1Samples.From<T>(b.PaletteColors[colors + map[((r + y) * wpx) + c + x]]);
                 }
             }
 
@@ -209,7 +209,7 @@ internal sealed partial class Av1Reconstructor
         return ((table[index / 8] >> (index % 8)) & 1) != 0;
     }
 
-    private void NonDirectional(ushort[] buf, int offset, int stride, int mode, int txw, int txh, int nTop, int nLeft)
+    private void NonDirectional(T[] buf, int offset, int stride, int mode, int txw, int txh, int nTop, int nLeft)
     {
         int baseValue = 128 << (_bitDepth - 8);
         int extend = ExtendModes[mode];
@@ -217,16 +217,16 @@ internal sealed partial class Av1Reconstructor
         int aboveRef = offset - stride, leftRef = offset - 1;
         if ((!needAbove && nLeft == 0) || (!needLeft && nTop == 0))
         {
-            int value = needLeft ? (nTop > 0 ? buf[aboveRef] : baseValue + 1) : (nLeft > 0 ? buf[leftRef] : baseValue - 1);
+            int value = needLeft ? (nTop > 0 ? Av1Samples.Get(buf[aboveRef]) : baseValue + 1) : (nLeft > 0 ? Av1Samples.Get(buf[leftRef]) : baseValue - 1);
             Fill(buf, offset, stride, txw, txh, value);
             return;
         }
 
-        ushort[] above = _aboveData, left = _leftData;
+        T[] above = _aboveData, left = _leftData;
         if (needLeft)
         {
             // These modes read the edges' first txh (or txw) samples only.
-            left.AsSpan(EdgeBase, txh).Fill((ushort)(baseValue + 1));
+            left.AsSpan(EdgeBase, txh).Fill(Av1Samples.From<T>(baseValue + 1));
             if (nLeft > 0)
             {
                 int i = 0;
@@ -248,7 +248,7 @@ internal sealed partial class Av1Reconstructor
 
         if (needAbove)
         {
-            above.AsSpan(EdgeBase, txw).Fill((ushort)(baseValue - 1));
+            above.AsSpan(EdgeBase, txw).Fill(Av1Samples.From<T>(baseValue - 1));
             if (nTop > 0)
             {
                 buf.AsSpan(aboveRef, nTop).CopyTo(above.AsSpan(EdgeBase));
@@ -265,7 +265,7 @@ internal sealed partial class Av1Reconstructor
 
         if (needAboveLeft)
         {
-            above[EdgeBase - 1] = nTop > 0 && nLeft > 0 ? buf[aboveRef - 1] : nTop > 0 ? buf[aboveRef] : nLeft > 0 ? buf[leftRef] : (ushort)baseValue;
+            above[EdgeBase - 1] = nTop > 0 && nLeft > 0 ? buf[aboveRef - 1] : nTop > 0 ? buf[aboveRef] : nLeft > 0 ? buf[leftRef] : Av1Samples.From<T>(baseValue);
             left[EdgeBase - 1] = above[EdgeBase - 1];
         }
 
@@ -289,15 +289,15 @@ internal sealed partial class Av1Reconstructor
         }
     }
 
-    private static void Fill(ushort[] buf, int offset, int stride, int width, int height, int value)
+    private static void Fill(T[] buf, int offset, int stride, int width, int height, int value)
     {
         for (int r = 0; r < height; r++)
         {
-            buf.AsSpan(offset + (r * stride), width).Fill((ushort)value);
+            buf.AsSpan(offset + (r * stride), width).Fill(Av1Samples.From<T>(value));
         }
     }
 
-    private void PredictDc(ushort[] buf, int offset, int stride, int w, int h, bool haveAbove, bool haveLeft)
+    private void PredictDc(T[] buf, int offset, int stride, int w, int h, bool haveAbove, bool haveLeft)
     {
         int value;
         if (!haveAbove && !haveLeft)
@@ -311,7 +311,7 @@ internal sealed partial class Av1Reconstructor
             {
                 for (int i = 0; i < w; i++)
                 {
-                    sum += _aboveData[EdgeBase + i];
+                    sum += Av1Samples.Get(_aboveData[EdgeBase + i]);
                 }
 
                 count += w;
@@ -321,7 +321,7 @@ internal sealed partial class Av1Reconstructor
             {
                 for (int i = 0; i < h; i++)
                 {
-                    sum += _leftData[EdgeBase + i];
+                    sum += Av1Samples.Get(_leftData[EdgeBase + i]);
                 }
 
                 count += h;
@@ -333,66 +333,66 @@ internal sealed partial class Av1Reconstructor
         Fill(buf, offset, stride, w, h, value);
     }
 
-    private void PredictSmooth(ushort[] buf, int offset, int stride, int w, int h)
+    private void PredictSmooth(T[] buf, int offset, int stride, int w, int h)
     {
-        ushort below = _leftData[EdgeBase + h - 1], right = _aboveData[EdgeBase + w - 1];
+        int below = Av1Samples.Get(_leftData[EdgeBase + h - 1]), right = Av1Samples.Get(_aboveData[EdgeBase + w - 1]);
         ReadOnlySpan<byte> weightsW = Av1Tables.SmoothWeights.AsSpan(w - 4, w), weightsH = Av1Tables.SmoothWeights.AsSpan(h - 4, h);
         for (int r = 0; r < h; r++)
         {
             for (int c = 0; c < w; c++)
             {
-                int pred = (weightsH[r] * _aboveData[EdgeBase + c]) + ((256 - weightsH[r]) * below)
-                    + (weightsW[c] * _leftData[EdgeBase + r]) + ((256 - weightsW[c]) * right);
-                buf[offset + (r * stride) + c] = (ushort)((pred + 256) >> 9);
+                int pred = (weightsH[r] * Av1Samples.Get(_aboveData[EdgeBase + c])) + ((256 - weightsH[r]) * below)
+                    + (weightsW[c] * Av1Samples.Get(_leftData[EdgeBase + r])) + ((256 - weightsW[c]) * right);
+                buf[offset + (r * stride) + c] = Av1Samples.From<T>((pred + 256) >> 9);
             }
         }
     }
 
-    private void PredictSmoothV(ushort[] buf, int offset, int stride, int w, int h)
+    private void PredictSmoothV(T[] buf, int offset, int stride, int w, int h)
     {
-        ushort below = _leftData[EdgeBase + h - 1];
+        int below = Av1Samples.Get(_leftData[EdgeBase + h - 1]);
         ReadOnlySpan<byte> weights = Av1Tables.SmoothWeights.AsSpan(h - 4, h);
         for (int r = 0; r < h; r++)
         {
             for (int c = 0; c < w; c++)
             {
-                int pred = (weights[r] * _aboveData[EdgeBase + c]) + ((256 - weights[r]) * below);
-                buf[offset + (r * stride) + c] = (ushort)((pred + 128) >> 8);
+                int pred = (weights[r] * Av1Samples.Get(_aboveData[EdgeBase + c])) + ((256 - weights[r]) * below);
+                buf[offset + (r * stride) + c] = Av1Samples.From<T>((pred + 128) >> 8);
             }
         }
     }
 
-    private void PredictSmoothH(ushort[] buf, int offset, int stride, int w, int h)
+    private void PredictSmoothH(T[] buf, int offset, int stride, int w, int h)
     {
-        ushort right = _aboveData[EdgeBase + w - 1];
+        int right = Av1Samples.Get(_aboveData[EdgeBase + w - 1]);
         ReadOnlySpan<byte> weights = Av1Tables.SmoothWeights.AsSpan(w - 4, w);
         for (int r = 0; r < h; r++)
         {
             for (int c = 0; c < w; c++)
             {
-                int pred = (weights[c] * _leftData[EdgeBase + r]) + ((256 - weights[c]) * right);
-                buf[offset + (r * stride) + c] = (ushort)((pred + 128) >> 8);
+                int pred = (weights[c] * Av1Samples.Get(_leftData[EdgeBase + r])) + ((256 - weights[c]) * right);
+                buf[offset + (r * stride) + c] = Av1Samples.From<T>((pred + 128) >> 8);
             }
         }
     }
 
-    private void PredictPaeth(ushort[] buf, int offset, int stride, int w, int h)
+    private void PredictPaeth(T[] buf, int offset, int stride, int w, int h)
     {
-        int topLeft = _aboveData[EdgeBase - 1];
+        int topLeft = Av1Samples.Get(_aboveData[EdgeBase - 1]);
         for (int r = 0; r < h; r++)
         {
-            int left = _leftData[EdgeBase + r];
+            int left = Av1Samples.Get(_leftData[EdgeBase + r]);
             for (int c = 0; c < w; c++)
             {
-                int top = _aboveData[EdgeBase + c];
+                int top = Av1Samples.Get(_aboveData[EdgeBase + c]);
                 int baseValue = top + left - topLeft;
                 int pLeft = Math.Abs(baseValue - left), pTop = Math.Abs(baseValue - top), pTopLeft = Math.Abs(baseValue - topLeft);
-                buf[offset + (r * stride) + c] = (ushort)(pLeft <= pTop && pLeft <= pTopLeft ? left : pTop <= pTopLeft ? top : topLeft);
+                buf[offset + (r * stride) + c] = Av1Samples.From<T>(pLeft <= pTop && pLeft <= pTopLeft ? left : pTop <= pTopLeft ? top : topLeft);
             }
         }
     }
 
-    private void DirectionalAndFilter(ushort[] buf, int offset, int stride, int mode, int angle, int filterMode, int txw, int txh,
+    private void DirectionalAndFilter(T[] buf, int offset, int stride, int mode, int angle, int filterMode, int txw, int txh,
         bool disableEdgeFilter, int nTop, int nTopRight, int nLeft, int nBottomLeft, int edgeFilterType)
     {
         int baseValue = 128 << (_bitDepth - 8);
@@ -401,9 +401,9 @@ internal sealed partial class Av1Reconstructor
         bool directional = Pred.IsDirectional(mode);
         bool useFilter = filterMode >= 0;
         int aboveRef = offset - stride, leftRef = offset - 1;
-        ushort[] above = _aboveData, left = _leftData;
-        left.AsSpan().Fill((ushort)(baseValue + 1));
-        above.AsSpan().Fill((ushort)(baseValue - 1));
+        T[] above = _aboveData, left = _leftData;
+        left.AsSpan().Fill(Av1Samples.From<T>(baseValue + 1));
+        above.AsSpan().Fill(Av1Samples.From<T>(baseValue - 1));
         if (directional)
         {
             needAbove = angle < 180;
@@ -418,7 +418,7 @@ internal sealed partial class Av1Reconstructor
 
         if ((!needAbove && nLeft == 0) || (!needLeft && nTop == 0))
         {
-            int value = needLeft ? (nTop > 0 ? buf[aboveRef] : baseValue + 1) : (nLeft > 0 ? buf[leftRef] : baseValue - 1);
+            int value = needLeft ? (nTop > 0 ? Av1Samples.Get(buf[aboveRef]) : baseValue + 1) : (nLeft > 0 ? Av1Samples.Get(buf[leftRef]) : baseValue - 1);
             Fill(buf, offset, stride, txw, txh, value);
             return;
         }
@@ -479,7 +479,7 @@ internal sealed partial class Av1Reconstructor
 
         if (needAboveLeft)
         {
-            above[EdgeBase - 1] = nTop > 0 && nLeft > 0 ? buf[aboveRef - 1] : nTop > 0 ? buf[aboveRef] : nLeft > 0 ? buf[leftRef] : (ushort)baseValue;
+            above[EdgeBase - 1] = nTop > 0 && nLeft > 0 ? buf[aboveRef - 1] : nTop > 0 ? buf[aboveRef] : nLeft > 0 ? buf[leftRef] : Av1Samples.From<T>(baseValue);
             left[EdgeBase - 1] = above[EdgeBase - 1];
         }
 
@@ -497,8 +497,8 @@ internal sealed partial class Av1Reconstructor
             {
                 if (needAbove && needLeft && txw + txh >= 24)
                 {
-                    int s = (left[EdgeBase] * 5) + (above[EdgeBase - 1] * 6) + (above[EdgeBase] * 5);
-                    above[EdgeBase - 1] = left[EdgeBase - 1] = (ushort)((s + 8) >> 4);
+                    int s = (Av1Samples.Get(left[EdgeBase]) * 5) + (Av1Samples.Get(above[EdgeBase - 1]) * 6) + (Av1Samples.Get(above[EdgeBase]) * 5);
+                    above[EdgeBase - 1] = left[EdgeBase - 1] = Av1Samples.From<T>((s + 8) >> 4);
                 }
 
                 if (needAbove && nTop > 0)
@@ -581,7 +581,7 @@ internal sealed partial class Av1Reconstructor
         return d != 0 && d < 40 && (type != 0 ? wh <= 8 : wh <= 16);
     }
 
-    private static void FilterEdge(ushort[] p, int start, int size, int strength)
+    private static void FilterEdge(T[] p, int start, int size, int strength)
     {
         if (strength == 0)
         {
@@ -594,7 +594,7 @@ internal sealed partial class Av1Reconstructor
             2 => [0, 5, 6, 5, 0],
             _ => [2, 4, 4, 4, 2],
         };
-        Span<ushort> edge = stackalloc ushort[129 + 32];
+        Span<T> edge = stackalloc T[129 + 32];
         p.AsSpan(start, size).CopyTo(edge);
         for (int i = 1; i < size; i++)
         {
@@ -602,36 +602,36 @@ internal sealed partial class Av1Reconstructor
             for (int j = 0; j < 5; j++)
             {
                 int k = Math.Clamp(i - 2 + j, 0, size - 1);
-                s += edge[k] * kernel[j];
+                s += Av1Samples.Get(edge[k]) * kernel[j];
             }
 
-            p[start + i] = (ushort)((s + 8) >> 4);
+            p[start + i] = Av1Samples.From<T>((s + 8) >> 4);
         }
     }
 
-    private void UpsampleEdge(ushort[] p, int size)
+    private void UpsampleEdge(T[] p, int size)
     {
         Span<int> input = stackalloc int[16 + 3];
         int max = (1 << _bitDepth) - 1;
-        input[0] = input[1] = p[EdgeBase - 1];
+        input[0] = input[1] = Av1Samples.Get(p[EdgeBase - 1]);
         for (int i = 0; i < size; i++)
         {
-            input[i + 2] = p[EdgeBase + i];
+            input[i + 2] = Av1Samples.Get(p[EdgeBase + i]);
         }
 
-        input[size + 2] = p[EdgeBase + size - 1];
-        p[EdgeBase - 2] = (ushort)input[0];
+        input[size + 2] = Av1Samples.Get(p[EdgeBase + size - 1]);
+        p[EdgeBase - 2] = Av1Samples.From<T>(input[0]);
         for (int i = 0; i < size; i++)
         {
             int s = -input[i] + (9 * input[i + 1]) + (9 * input[i + 2]) - input[i + 3];
-            p[EdgeBase + (2 * i) - 1] = (ushort)Math.Clamp((s + 8) >> 4, 0, max);
-            p[EdgeBase + (2 * i)] = (ushort)input[i + 2];
+            p[EdgeBase + (2 * i) - 1] = Av1Samples.From<T>(Math.Clamp((s + 8) >> 4, 0, max));
+            p[EdgeBase + (2 * i)] = Av1Samples.From<T>(input[i + 2]);
         }
     }
 
-    private void DirectionalZone1(ushort[] buf, int offset, int stride, int bw, int bh, int upsample, int dx)
+    private void DirectionalZone1(T[] buf, int offset, int stride, int bw, int bh, int upsample, int dx)
     {
-        ushort[] above = _aboveData;
+        T[] above = _aboveData;
         int maxBaseX = (bw + bh - 1) << upsample;
         int fracBits = 6 - upsample, baseInc = 1 << upsample;
         int x = dx;
@@ -653,15 +653,15 @@ internal sealed partial class Av1Reconstructor
             for (int c = 0; c < bw; c++, baseX += baseInc)
             {
                 buf[row + c] = baseX < maxBaseX
-                    ? (ushort)(((above[EdgeBase + baseX] * (32 - shift)) + (above[EdgeBase + baseX + 1] * shift) + 16) >> 5)
+                    ? Av1Samples.From<T>(((Av1Samples.Get(above[EdgeBase + baseX]) * (32 - shift)) + (Av1Samples.Get(above[EdgeBase + baseX + 1]) * shift) + 16) >> 5)
                     : above[EdgeBase + maxBaseX];
             }
         }
     }
 
-    private void DirectionalZone2(ushort[] buf, int offset, int stride, int bw, int bh, int upsampleAbove, int upsampleLeft, int dx, int dy)
+    private void DirectionalZone2(T[] buf, int offset, int stride, int bw, int bh, int upsampleAbove, int upsampleLeft, int dx, int dy)
     {
-        ushort[] above = _aboveData, left = _leftData;
+        T[] above = _aboveData, left = _leftData;
         int minBaseX = -(1 << upsampleAbove);
         int fracBitsX = 6 - upsampleAbove, fracBitsY = 6 - upsampleLeft;
         for (int r = 0; r < bh; r++)
@@ -675,7 +675,7 @@ internal sealed partial class Av1Reconstructor
                 if (baseX >= minBaseX)
                 {
                     int shift = ((x * (1 << upsampleAbove)) & 0x3F) >> 1;
-                    value = ((above[EdgeBase + baseX] * (32 - shift)) + (above[EdgeBase + baseX + 1] * shift) + 16) >> 5;
+                    value = ((Av1Samples.Get(above[EdgeBase + baseX]) * (32 - shift)) + (Av1Samples.Get(above[EdgeBase + baseX + 1]) * shift) + 16) >> 5;
                 }
                 else
                 {
@@ -683,17 +683,17 @@ internal sealed partial class Av1Reconstructor
                     y = (r << 6) - (x * dy);
                     int baseY = y >> fracBitsY;
                     int shift = ((y * (1 << upsampleLeft)) & 0x3F) >> 1;
-                    value = ((left[EdgeBase + baseY] * (32 - shift)) + (left[EdgeBase + baseY + 1] * shift) + 16) >> 5;
+                    value = ((Av1Samples.Get(left[EdgeBase + baseY]) * (32 - shift)) + (Av1Samples.Get(left[EdgeBase + baseY + 1]) * shift) + 16) >> 5;
                 }
 
-                buf[offset + (r * stride) + c] = (ushort)value;
+                buf[offset + (r * stride) + c] = Av1Samples.From<T>(value);
             }
         }
     }
 
-    private void DirectionalZone3(ushort[] buf, int offset, int stride, int bw, int bh, int upsample, int dy)
+    private void DirectionalZone3(T[] buf, int offset, int stride, int bw, int bh, int upsample, int dy)
     {
-        ushort[] left = _leftData;
+        T[] left = _leftData;
         int maxBaseY = (bw + bh - 1) << upsample;
         int fracBits = 6 - upsample, baseInc = 1 << upsample;
         int y = dy;
@@ -705,7 +705,7 @@ internal sealed partial class Av1Reconstructor
             {
                 if (baseY < maxBaseY)
                 {
-                    buf[offset + (r * stride) + c] = (ushort)(((left[EdgeBase + baseY] * (32 - shift)) + (left[EdgeBase + baseY + 1] * shift) + 16) >> 5);
+                    buf[offset + (r * stride) + c] = Av1Samples.From<T>(((Av1Samples.Get(left[EdgeBase + baseY]) * (32 - shift)) + (Av1Samples.Get(left[EdgeBase + baseY + 1]) * shift) + 16) >> 5);
                 }
                 else
                 {
@@ -720,9 +720,9 @@ internal sealed partial class Av1Reconstructor
         }
     }
 
-    private void FilterIntra(ushort[] buf, int offset, int stride, int bw, int bh, int mode)
+    private void FilterIntra(T[] buf, int offset, int stride, int bw, int bh, int mode)
     {
-        Span<ushort> buffer = stackalloc ushort[33 * 33];
+        Span<T> buffer = stackalloc T[33 * 33];
         int max = (1 << _bitDepth) - 1;
         for (int r = 0; r < bh; r++)
         {
@@ -735,15 +735,15 @@ internal sealed partial class Av1Reconstructor
         {
             for (int c = 1; c < bw + 1; c += 4)
             {
-                int p0 = buffer[((r - 1) * 33) + c - 1], p1 = buffer[((r - 1) * 33) + c], p2 = buffer[((r - 1) * 33) + c + 1];
-                int p3 = buffer[((r - 1) * 33) + c + 2], p4 = buffer[((r - 1) * 33) + c + 3];
-                int p5 = buffer[(r * 33) + c - 1], p6 = buffer[((r + 1) * 33) + c - 1];
+                int p0 = Av1Samples.Get(buffer[((r - 1) * 33) + c - 1]), p1 = Av1Samples.Get(buffer[((r - 1) * 33) + c]), p2 = Av1Samples.Get(buffer[((r - 1) * 33) + c + 1]);
+                int p3 = Av1Samples.Get(buffer[((r - 1) * 33) + c + 2]), p4 = Av1Samples.Get(buffer[((r - 1) * 33) + c + 3]);
+                int p5 = Av1Samples.Get(buffer[(r * 33) + c - 1]), p6 = Av1Samples.Get(buffer[((r + 1) * 33) + c - 1]);
                 for (int k = 0; k < 8; k++)
                 {
                     ReadOnlySpan<sbyte> t = taps.Slice(k * 8, 8);
                     int pr = (t[0] * p0) + (t[1] * p1) + (t[2] * p2) + (t[3] * p3) + (t[4] * p4) + (t[5] * p5) + (t[6] * p6);
                     int value = pr < 0 ? -((-pr + 8) >> 4) : (pr + 8) >> 4;
-                    buffer[((r + (k >> 2)) * 33) + c + (k & 3)] = (ushort)Math.Clamp(value, 0, max);
+                    buffer[((r + (k >> 2)) * 33) + c + (k & 3)] = Av1Samples.From<T>(Math.Clamp(value, 0, max));
                 }
             }
         }

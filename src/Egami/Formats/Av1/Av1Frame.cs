@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 
 namespace Egami.Formats.Av1;
@@ -50,7 +51,8 @@ internal sealed class Av1Frame
     /// <param name="header">The frame header.</param>
     /// <param name="formatName">The format name errors name.</param>
     /// <param name="reconstruct">Whether to reconstruct samples, or only parse.</param>
-    internal Av1Frame(Av1FrameHeader header, string formatName, bool reconstruct)
+    /// <param name="compact">Whether an 8-bit frame keeps its samples as bytes; the encoder keeps 16-bit samples.</param>
+    internal Av1Frame(Av1FrameHeader header, string formatName, bool reconstruct, bool compact = true)
     {
         Header = header;
         Sequence = header.Sequence;
@@ -103,19 +105,35 @@ internal sealed class Av1Frame
                 throw new CorruptDataException(formatName, -1, $"The AV1 frame is {header.UpscaledWidth} x {header.FrameHeight}, too large to decode.");
             }
 
-            Planes = new ushort[header.NumPlanes][];
+            Compact = compact && Sequence.BitDepth == 8;
+            Planes = Compact ? new byte[header.NumPlanes][] : new ushort[header.NumPlanes][];
             Strides = new int[header.NumPlanes];
             for (int plane = 0; plane < header.NumPlanes; plane++)
             {
                 int ssx = plane > 0 ? Sequence.SubsamplingX : 0, ssy = plane > 0 ? Sequence.SubsamplingY : 0;
                 Strides[plane] = width >> ssx;
-                Planes[plane] = new ushort[(width >> ssx) * (height >> ssy)];
+                int size = (width >> ssx) * (height >> ssy);
+                Planes[plane] = Compact ? new byte[size] : new ushort[size];
             }
         }
     }
 
-    /// <summary>Gets the reconstructed planes (Y, U, V), or null when only parsing.</summary>
-    internal ushort[][]? Planes { get; private set; }
+    /// <summary>
+    /// Gets the reconstructed planes (Y, U, V), or null when only parsing: <see cref="byte"/> arrays when <see cref="Compact"/>,
+    /// else <see cref="ushort"/> arrays.
+    /// </summary>
+    internal Array[]? Planes { get; private set; }
+
+    /// <summary>Gets whether the planes hold bytes (an 8-bit frame the decoder reconstructs).</summary>
+    internal bool Compact { get; }
+
+    /// <summary>Gets a plane as an array of the frame's sample type, <see cref="byte"/> or <see cref="ushort"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal T[] Plane<T>(int plane)
+        where T : unmanaged => Unsafe.As<T[]>(Planes![plane]);
+
+    /// <summary>Gets the planes widened to 16 bits (the planes themselves when they already are).</summary>
+    internal ushort[][] WidePlanes() => Av1Samples.Widen(Planes!);
 
     /// <summary>Gets each plane's stride.</summary>
     internal int[] Strides { get; } = [];
@@ -131,19 +149,33 @@ internal sealed class Av1Frame
             return;
         }
 
-        Av1LoopFilter.Apply(this);
+        if (Compact)
+        {
+            ApplyFilters<byte>();
+        }
+        else
+        {
+            ApplyFilters<ushort>();
+        }
+    }
+
+    private void ApplyFilters<T>()
+        where T : unmanaged
+    {
+        Array[] planes = Planes!;
+        Av1LoopFilter.Apply<T>(this);
         bool restore = Restoration.Any(r => r.Type != Av1RestorationType.None);
-        ushort[][]? deblocked = restore ? [.. Planes.Select(p => (ushort[])p.Clone())] : null;
-        Av1Cdef.Apply(this);
+        T[][]? deblocked = restore ? [.. planes.Select(p => (T[])((T[])p).Clone())] : null;
+        Av1Cdef.Apply<T>(this);
         if (Header.FrameWidth != Header.UpscaledWidth)
         {
             int[] strides = [.. Strides];
-            For(Planes.Length * (deblocked is null ? 1 : 2), i =>
+            For(planes.Length * (deblocked is null ? 1 : 2), i =>
             {
-                int plane = i % Planes.Length;
-                if (i < Planes.Length)
+                int plane = i % planes.Length;
+                if (i < planes.Length)
                 {
-                    (Planes[plane], Strides[plane]) = Av1Superres.Upscale(this, Planes[plane], strides[plane], plane);
+                    (planes[plane], Strides[plane]) = Av1Superres.Upscale(this, Plane<T>(plane), strides[plane], plane);
                 }
                 else
                 {
@@ -154,7 +186,7 @@ internal sealed class Av1Frame
 
         if (deblocked is not null)
         {
-            Av1Restoration.Apply(this, [.. Planes], deblocked, Strides);
+            Av1Restoration.Apply(this, [.. planes.Select(p => (T[])p)], deblocked, Strides);
         }
     }
 
@@ -252,10 +284,17 @@ internal sealed class Av1Frame
     internal static Av1Frame Grey(Av1SequenceHeader sequence, int orderHint, string formatName)
     {
         Av1Frame frame = new(Av1FrameHeader.Missing(sequence, orderHint), formatName, true);
-        ushort grey = (ushort)(1 << (sequence.BitDepth - 1));
-        foreach (ushort[] plane in frame.Planes!)
+        int grey = 1 << (sequence.BitDepth - 1);
+        foreach (Array plane in frame.Planes!)
         {
-            plane.AsSpan().Fill(grey);
+            if (plane is byte[] bytes)
+            {
+                bytes.AsSpan().Fill((byte)grey);
+            }
+            else
+            {
+                ((ushort[])plane).AsSpan().Fill((ushort)grey);
+            }
         }
 
         Av1MotionField.Save(frame);
@@ -385,7 +424,8 @@ internal sealed class Av1Frame
     internal void DecodeTile(int tile, byte[] data, int offset, int size)
     {
         int row = tile / Header.TileCols, col = tile % Header.TileCols;
-        Av1TileParser parser = new(this, row, col, data, offset, size, Planes is null ? null : new Av1Reconstructor(this));
+        IAv1Reconstructor? reconstructor = Planes is null ? null : Compact ? new Av1Reconstructor<byte>(this) : new Av1Reconstructor<ushort>(this);
+        Av1TileParser parser = new(this, row, col, data, offset, size, reconstructor);
         parser.Parse();
         if (tile == Header.ContextUpdateTileId && !Header.DisableFrameEndUpdateCdf)
         {

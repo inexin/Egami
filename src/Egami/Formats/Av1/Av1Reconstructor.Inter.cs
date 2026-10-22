@@ -8,7 +8,7 @@ namespace Egami.Formats.Av1;
 /// and overlapped prediction from the neighbours above and left. The warp follows libaom's warped_motion.c (BSD 2-clause, see
 /// THIRD-PARTY-NOTICES).
 /// </summary>
-internal sealed partial class Av1Reconstructor
+internal sealed partial class Av1Reconstructor<T>
 {
     private const int MaxIntermediate = ((((128 - 1) * 2048) + 1023) >> 10) + 8;
     private static byte[]?[]? s_wedgeMasks;
@@ -36,7 +36,7 @@ internal sealed partial class Av1Reconstructor
             {
                 int mode = b.InterintraMode switch { 0 => Pred.Dc, 1 => Pred.V, 2 => Pred.H, _ => Pred.Smooth };
                 int stride = frame.Strides[plane];
-                PredictIntra(tile, plane, 0, 0, Av1Tables.MaxTxSizeRectLookup[planeSz], mode, 0, false, -1, frame.Planes![plane], (baseY * stride) + baseX, stride);
+                PredictIntra(tile, plane, 0, 0, Av1Tables.MaxTxSizeRectLookup[planeSz], mode, 0, false, -1, frame.Plane<T>(plane), (baseY * stride) + baseX, stride);
             }
 
             int predW = Av1Tables.BlockSizeWide[b.Size] >> ssx, predH = Av1Tables.BlockSizeHigh[b.Size] >> ssy;
@@ -108,7 +108,7 @@ internal sealed partial class Av1Reconstructor
                 {
                     for (int j8 = 0; j8 <= (w - 1) >> 3; j8++)
                     {
-                        Av1Warp.Block(warp, alpha, beta, gamma, delta, reference.Planes![plane], reference.Strides[plane], refPlaneW, refPlaneH,
+                        Av1Warp.Block(warp, alpha, beta, gamma, delta, ReferencePlane(reference, plane), reference.Strides[plane], refPlaneW, refPlaneH,
                             x + (j8 * 8), y + (i8 * 8), ssx, ssy, round0, round1, pred, (i8 * 8 * w) + (j8 * 8), w, w - (j8 * 8), h - (i8 * 8));
                     }
                 }
@@ -121,7 +121,7 @@ internal sealed partial class Av1Reconstructor
             }
         }
 
-        ushort[] dst = _frame.Planes![plane];
+        T[] dst = _frame.Plane<T>(plane);
         int stride = _frame.Strides[plane];
         int at = (y * stride) + x;
         int max = (1 << _bitDepth) - 1;
@@ -165,7 +165,7 @@ internal sealed partial class Av1Reconstructor
     }
 
     /// <summary>Writes Clip1(Round2(w0 * a + w1 * b, shift)) of two predictions into the frame, eight samples at a time.</summary>
-    private static void Blend(int[] a, int[] b, int w0, int w1, int shift, int w, int h, ushort[] dst, int at, int stride, int max)
+    private static void Blend(int[] a, int[] b, int w0, int w1, int shift, int w, int h, T[] dst, int at, int stride, int max)
     {
         int half = shift == 0 ? 0 : 1 << (shift - 1);
         int x0 = 0;
@@ -178,7 +178,7 @@ internal sealed partial class Av1Reconstructor
                 {
                     Vector256<int> v = (wa * Vector256.LoadUnsafe(ref a[0], (nuint)((i * w) + j))) + (wb * Vector256.LoadUnsafe(ref b[0], (nuint)((i * w) + j))) + halfV;
                     v = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(v, shift), Vector256<int>.Zero), maxV);
-                    Vector128.Narrow(v.GetLower().AsUInt32(), v.GetUpper().AsUInt32()).StoreUnsafe(ref dst[0], (nuint)(at + (i * stride) + j));
+                    Av1Samples.Store8(ref dst[0], at + (i * stride) + j, Vector128.Narrow(v.GetLower().AsUInt32(), v.GetUpper().AsUInt32()));
                 }
             }
 
@@ -190,9 +190,20 @@ internal sealed partial class Av1Reconstructor
             for (int j = x0; j < w; j++)
             {
                 int v = (w0 * a[(i * w) + j]) + (w1 * b[(i * w) + j]) + half;
-                dst[at + (i * stride) + j] = (ushort)Math.Clamp(v >> shift, 0, max);
+                dst[at + (i * stride) + j] = Av1Samples.From<T>(Math.Clamp(v >> shift, 0, max));
             }
         }
+    }
+
+    /// <summary>Gets a reference frame's plane, which must hold the frame's own sample type (libaom refuses a reference of another bit depth).</summary>
+    private T[] ReferencePlane(Av1Frame reference, int plane)
+    {
+        if (reference.Planes is null || reference.Compact != Av1Samples.IsByte<T>())
+        {
+            throw new CorruptDataException(_frame.FormatName, -1, "An AV1 frame refers to a frame of another bit depth.");
+        }
+
+        return reference.Plane<T>(plane);
     }
 
     /// <summary>Gets whether a reference frame's size differs from the frame's (is_scaled).</summary>
@@ -239,7 +250,7 @@ internal sealed partial class Av1Reconstructor
         int ssx = plane > 0 ? _ssx : 0, ssy = plane > 0 ? _ssy : 0;
         int lastX = ((reference.Header.UpscaledWidth + ssx) >> ssx) - 1;
         int lastY = ((reference.Header.FrameHeight + ssy) >> ssy) - 1;
-        ushort[] src = reference.Planes![plane];
+        T[] src = ReferencePlane(reference, plane);
         int stride = reference.Strides[plane];
         short[] fx = Filters(filterX, w), fy = Filters(filterY, h);
         if (stepX == 1 << 10 && stepY == 1 << 10)
@@ -262,7 +273,7 @@ internal sealed partial class Av1Reconstructor
                 int s = 0;
                 for (int t = 0; t < 8; t++)
                 {
-                    s += fx[f + t] * src[row + Math.Clamp(col + t, 0, lastX)];
+                    s += fx[f + t] * Av1Samples.Get(src[row + Math.Clamp(col + t, 0, lastX)]);
                 }
 
                 inter[(r * w) + c] = (s + half0) >> round0;
@@ -359,7 +370,7 @@ internal sealed partial class Av1Reconstructor
     }
 
     /// <summary>The mask blend process: the two predictions, or the inter and intra ones, by the mask (subsampled for chroma).</summary>
-    private void MaskBlend(bool interintra, bool wedgeInterintra, int plane, ushort[] dst, int at, int stride, int w, int h, int postRound, int max)
+    private void MaskBlend(bool interintra, bool wedgeInterintra, int plane, T[] dst, int at, int stride, int w, int h, int postRound, int max)
     {
         int ssx = plane > 0 ? _ssx : 0, ssy = plane > 0 ? _ssy : 0;
         int ms = _maskStride;
@@ -387,13 +398,13 @@ internal sealed partial class Av1Reconstructor
                 {
                     int p0 = postRound == 0 ? _pred0[(y * w) + x] : (_pred0[(y * w) + x] + (1 << (postRound - 1))) >> postRound;
                     p0 = Math.Clamp(p0, 0, max);
-                    dst[o] = (ushort)(((m * dst[o]) + ((64 - m) * p0) + 32) >> 6);
+                    dst[o] = Av1Samples.From<T>(((m * Av1Samples.Get(dst[o])) + ((64 - m) * p0) + 32) >> 6);
                 }
                 else
                 {
                     int v = (m * _pred0[(y * w) + x]) + ((64 - m) * _pred1[(y * w) + x]);
                     int shift = 6 + postRound;
-                    dst[o] = (ushort)Math.Clamp((v + (1 << (shift - 1))) >> shift, 0, max);
+                    dst[o] = Av1Samples.From<T>(Math.Clamp((v + (1 << (shift - 1))) >> shift, 0, max));
                 }
             }
         }
@@ -407,7 +418,7 @@ internal sealed partial class Av1Reconstructor
         int ssx = plane > 0 ? _ssx : 0, ssy = plane > 0 ? _ssy : 0;
         int round0 = _bitDepth == 12 ? 5 : 3, round1 = _bitDepth == 12 ? 9 : 11;
         int max = (1 << _bitDepth) - 1;
-        ushort[] dst = frame.Planes![plane];
+        T[] dst = frame.Plane<T>(plane);
         int stride = frame.Strides[plane];
         if (tile.UpAvailable(0) && Av1Tables.PlaneBlockSize(b.Size, ssx, ssy) >= Bs.B8x8)
         {
@@ -433,7 +444,7 @@ internal sealed partial class Av1Reconstructor
                         {
                             int o = at + (i * stride) + j;
                             int p = Math.Clamp(_pred0[(i * predW) + j], 0, max);
-                            dst[o] = (ushort)(((m * dst[o]) + ((64 - m) * p) + 32) >> 6);
+                            dst[o] = Av1Samples.From<T>(((m * Av1Samples.Get(dst[o])) + ((64 - m) * p) + 32) >> 6);
                         }
                     }
                 }
@@ -466,7 +477,7 @@ internal sealed partial class Av1Reconstructor
                             int m = mask[j];
                             int o = at + (i * stride) + j;
                             int p = Math.Clamp(_pred0[(i * predW) + j], 0, max);
-                            dst[o] = (ushort)(((m * dst[o]) + ((64 - m) * p) + 32) >> 6);
+                            dst[o] = Av1Samples.From<T>(((m * Av1Samples.Get(dst[o])) + ((64 - m) * p) + 32) >> 6);
                         }
                     }
                 }

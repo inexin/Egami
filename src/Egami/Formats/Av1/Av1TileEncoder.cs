@@ -5,12 +5,12 @@ namespace Egami.Formats.Av1;
 /// block's luma and chroma modes, transform sizes and types, and each transform block's coefficients, every choice weighed as
 /// distortion (the sum of squared errors) plus lambda times its rate (<see cref="Av1Rate"/>), the rate counted by running the
 /// writer's own syntax (<see cref="Av1TileCoder"/>) against the tile's CDFs. Every transform block is predicted and reconstructed
-/// with the decoder's own <see cref="Av1Reconstructor"/> as it is tried, so later blocks predict from exactly the samples a
+/// with the decoder's own <see cref="Av1Reconstructor{T}"/> as it is tried, so later blocks predict from exactly the samples a
 /// decoder will have. A chosen superblock's symbols then adapt the CDFs, as writing them will, so the rates of the next stay true.
 /// </summary>
 internal sealed partial class Av1TileEncoder : Av1TileCoder
 {
-    private readonly Av1Reconstructor _reconstructor;
+    private readonly Av1Reconstructor<ushort> _reconstructor;
     private readonly Av1EncoderSource _source;
     private readonly Av1SearchProfile _profile;
     private long _frameRdmult;
@@ -38,7 +38,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     internal Av1TileEncoder(Av1Frame frame, int tileRow, int tileCol, Av1EncoderSource source, Av1FrameDecisions decisions, Av1EncoderSettings settings)
         : base(frame, tileRow, tileCol, decisions)
     {
-        _reconstructor = new Av1Reconstructor(frame);
+        _reconstructor = new Av1Reconstructor<ushort>(frame);
         _source = source;
         _profile = Av1SearchProfile.For(settings.Effort, frame.Header.CodedLossless);
         _frameRdmult = _rdmult = Av1Rate.RdMultiplier(Math.Max(frame.Header.BaseQIdx, 1), frame.Sequence.BitDepth);
@@ -623,7 +623,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     private long PredictionErrorWithSource(int plane, int bsize)
     {
         long error = 0;
-        ushort[] frame = _frame.Planes![plane];
+        ushort[] frame = _frame.Plane<ushort>(plane);
         ushort[] source = _source.Planes[plane];
         int stride = _frame.Strides[plane];
         (int count, int txSize) = TransformBlocks(plane, bsize);
@@ -910,7 +910,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         }
 
         int w = Av1Tables.TxSizeWide[txSize], h = Av1Tables.TxSizeHigh[txSize];
-        ushort[] frame = _frame.Planes![plane];
+        ushort[] frame = _frame.Plane<ushort>(plane);
         int stride = _frame.Strides[plane];
         ushort[] source = _source.Planes[plane];
         for (int r = 0; r < h; r++)
@@ -1035,7 +1035,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         }
         if (!keep)
         {
-            ushort[] frame = _frame.Planes![plane];
+            ushort[] frame = _frame.Plane<ushort>(plane);
             int stride = _frame.Strides[plane];
             for (int r = 0; r < h; r++)
             {
@@ -1140,7 +1140,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     {
         int w = Math.Min(Av1Tables.TxSizeWide[txSize], _source.Widths[plane] - x);
         int h = Math.Min(Av1Tables.TxSizeHigh[txSize], _source.Heights[plane] - y);
-        ushort[] frame = _frame.Planes![plane];
+        ushort[] frame = _frame.Plane<ushort>(plane);
         ushort[] source = _source.Planes[plane];
         int stride = _frame.Strides[plane];
         long error = 0;
@@ -1443,7 +1443,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             {
                 (int x, int y, int w, int h) = Area(t, plane, miRow, miCol, bw, bh);
                 _areas[plane] = (x, y, w, h);
-                ushort[] data = t._frame.Planes![plane];
+                ushort[] data = t._frame.Plane<ushort>(plane);
                 int[] levels = t._decisions.Levels[plane];
                 int stride = t._frame.Strides[plane];
                 for (int r = 0; r < h; r++)
@@ -1479,7 +1479,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
                 if (_pixelsSaved)
                 {
                     (int x, int y, int w, int h) = _areas[plane];
-                    ushort[] data = t._frame.Planes![plane];
+                    ushort[] data = t._frame.Plane<ushort>(plane);
                     int[] levels = t._decisions.Levels[plane];
                     int stride = t._frame.Strides[plane];
                     for (int r = 0; r < h; r++)

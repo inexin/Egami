@@ -5,7 +5,8 @@ namespace Egami.Formats.Av1;
 /// aom_dsp/intrapred.c), chroma from luma (cfl.c), palettes, intra block copy (the intra case of reconinter.c with
 /// convolve.c's bilinear half-sample filter), inter prediction and the residual (BSD 2-clause, see THIRD-PARTY-NOTICES).
 /// </summary>
-internal sealed partial class Av1Reconstructor : IAv1Reconstructor
+internal sealed partial class Av1Reconstructor<T> : IAv1Reconstructor
+    where T : unmanaged
 {
     private const int CflLine = 32;
 
@@ -37,7 +38,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
     internal void PredictIntraBlock(Av1TileState tile, int plane, int x, int y, int txSize)
     {
         Av1BlockInfo b = tile.Block;
-        ushort[] dst = _frame.Planes![plane];
+        T[] dst = _frame.Plane<T>(plane);
         int stride = _frame.Strides[plane];
         int offset = (y * stride) + x;
         (int col4, int row4) = tile.PlaneOrigin(plane);
@@ -57,7 +58,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
     internal void FinishIntraBlock(Av1TileState tile, int plane, int x, int y, int txSize, int txType, int eob, int[] coeffs)
     {
         Av1BlockInfo b = tile.Block;
-        ushort[] dst = _frame.Planes![plane];
+        T[] dst = _frame.Plane<T>(plane);
         int stride = _frame.Strides[plane];
         int offset = (y * stride) + x;
         if (eob > 0)
@@ -111,7 +112,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
             int width = AlignTo(tile.MaxBlockWide(bsize, 0) << 2, Av1Tables.TxSizeWideLog2[b.TxSize]);
             int height = AlignTo(tile.MaxBlockHigh(bsize, 0) << 2, Av1Tables.TxSizeHighLog2[b.TxSize]);
             int stride = _frame.Strides[0];
-            StoreCflArea(row, col, width, height, _frame.Planes![0], (tile.MiRow * 4 * stride) + (tile.MiCol * 4), stride);
+            StoreCflArea(row, col, width, height, _frame.Plane<T>(0), (tile.MiRow * 4 * stride) + (tile.MiCol * 4), stride);
         }
 
         static int AlignTo(int value, int log2) => (value + (1 << log2) - 1) & ~((1 << log2) - 1);
@@ -126,14 +127,14 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
         }
 
         int stride = _frame.Strides[plane];
-        Av1InverseTransform.Add(coeffs, txSize, txType, _frame.Header.LosslessArray[tile.Block.SegmentId], eob, _frame.Planes![plane], (y * stride) + x, stride, _bitDepth);
+        Av1InverseTransform.Add(coeffs, txSize, txType, _frame.Header.LosslessArray[tile.Block.SegmentId], eob, _frame.Plane<T>(plane), (y * stride) + x, stride, _bitDepth);
     }
 
     private bool StoreCflRequired(Av1TileState tile) =>
         !_frame.Sequence.Monochrome && (!tile.IsChromaRef || (!tile.Block.IsInter && tile.Block.UvMode == Pred.UvCfl));
 
     /// <summary>cfl_store_tx: stores a luma transform block, subsampled, for chroma from luma.</summary>
-    private void StoreCfl(Av1TileState tile, int row, int col, int txSize, ushort[] src, int offset, int stride)
+    private void StoreCfl(Av1TileState tile, int row, int col, int txSize, T[] src, int offset, int stride)
     {
         int bsize = tile.Block.Size;
         if (Av1Tables.BlockSizeHigh[bsize] == 4 || Av1Tables.BlockSizeWide[bsize] == 4)
@@ -145,7 +146,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
         StoreCflArea(row, col, Av1Tables.TxSizeWide[txSize], Av1Tables.TxSizeHigh[txSize], src, offset, stride);
     }
 
-    private void StoreCflArea(int row, int col, int width, int height, ushort[] src, int offset, int stride)
+    private void StoreCflArea(int row, int col, int width, int height, T[] src, int offset, int stride)
     {
         int storeRow = row << (2 - _ssy), storeCol = col << (2 - _ssx);
         int storeHeight = height >> _ssy, storeWidth = width >> _ssx;
@@ -169,9 +170,9 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
             {
                 int value = (_ssx, _ssy) switch
                 {
-                    (1, 1) => (src[input + i] + src[input + i + 1] + src[input + i + stride] + src[input + i + stride + 1]) << 1,
-                    (1, _) => (src[input + i] + src[input + i + 1]) << 2,
-                    _ => src[input + i] << 3,
+                    (1, 1) => (Av1Samples.Get(src[input + i]) + Av1Samples.Get(src[input + i + 1]) + Av1Samples.Get(src[input + i + stride]) + Av1Samples.Get(src[input + i + stride + 1])) << 1,
+                    (1, _) => (Av1Samples.Get(src[input + i]) + Av1Samples.Get(src[input + i + 1])) << 2,
+                    _ => Av1Samples.Get(src[input + i]) << 3,
                 };
                 _cflRecon[output + (i >> _ssx)] = (ushort)value;
             }
@@ -181,7 +182,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
     }
 
     /// <summary>av1_cfl_predict_block: adds the scaled luma AC to the DC prediction.</summary>
-    private void PredictCfl(Av1BlockInfo b, int plane, int txSize, ushort[] dst, int offset, int stride)
+    private void PredictCfl(Av1BlockInfo b, int plane, int txSize, T[] dst, int offset, int stride)
     {
         int width = Av1Tables.TxSizeWide[txSize], height = Av1Tables.TxSizeHigh[txSize];
         if (!_cflComputed)
@@ -243,7 +244,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
                 int scaled = alpha * _cflAc[(j * CflLine) + i];
                 int luma = scaled < 0 ? -((-scaled + 32) >> 6) : (scaled + 32) >> 6;
                 int at = offset + (j * stride) + i;
-                dst[at] = (ushort)Math.Clamp(luma + dst[at], 0, max);
+                dst[at] = Av1Samples.From<T>(Math.Clamp(luma + Av1Samples.Get(dst[at]), 0, max));
             }
         }
     }
@@ -269,7 +270,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
         int subX = mvCol & 15, subY = mvRow & 15;
         int srcX = posX >> 4, srcY = posY >> 4;
 
-        ushort[] planeData = _frame.Planes![plane];
+        T[] planeData = _frame.Plane<T>(plane);
         int stride = _frame.Strides[plane];
         int src = (srcY * stride) + srcX, dst = (preY * stride) + preX;
         int bd = _bitDepth, max = (1 << bd) - 1;
@@ -287,14 +288,14 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
         {
             int round0 = bd == 12 ? 5 : 3;
             int bits = 7 - round0;
-            Span<ushort> row = stackalloc ushort[128];
+            Span<T> row = stackalloc T[128];
             for (int y = 0; y < bh; y++)
             {
                 int s = src + (y * stride);
                 for (int x = 0; x < bw; x++)
                 {
-                    int res = Round(64 * (planeData[s + x] + planeData[s + x + 1]), round0);
-                    row[x] = (ushort)Math.Clamp(Round(res, bits), 0, max);
+                    int res = Round(64 * (Av1Samples.Get(planeData[s + x]) + Av1Samples.Get(planeData[s + x + 1])), round0);
+                    row[x] = Av1Samples.From<T>(Math.Clamp(Round(res, bits), 0, max));
                 }
 
                 row[..bw].CopyTo(planeData.AsSpan(dst + (y * stride)));
@@ -305,13 +306,13 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
 
         if (subX == 0)
         {
-            Span<ushort> block = stackalloc ushort[128 * 128];
+            Span<T> block = stackalloc T[128 * 128];
             for (int y = 0; y < bh; y++)
             {
                 int s = src + (y * stride);
                 for (int x = 0; x < bw; x++)
                 {
-                    block[(y * bw) + x] = (ushort)Math.Clamp(Round(planeData[s + x] + planeData[s + stride + x], 1), 0, max);
+                    block[(y * bw) + x] = Av1Samples.From<T>(Math.Clamp(Round(Av1Samples.Get(planeData[s + x]) + Av1Samples.Get(planeData[s + stride + x]), 1), 0, max));
                 }
             }
 
@@ -333,7 +334,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
                 int s = src + (y * stride);
                 for (int x = 0; x < bw; x++)
                 {
-                    im[(y * bw) + x] = (short)Round((1 << (bd + 6)) + (64 * (planeData[s + x] + planeData[s + x + 1])), round0);
+                    im[(y * bw) + x] = (short)Round((1 << (bd + 6)) + (64 * (Av1Samples.Get(planeData[s + x]) + Av1Samples.Get(planeData[s + x + 1]))), round0);
                 }
             }
 
@@ -344,7 +345,7 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
                 {
                     int sum = (1 << offsetBits) + (64 * (im[(y * bw) + x] + im[((y + 1) * bw) + x]));
                     int res = Round(sum, round1) - subtract;
-                    planeData[dst + (y * stride) + x] = (ushort)Math.Clamp(res, 0, max);
+                    planeData[dst + (y * stride) + x] = Av1Samples.From<T>(Math.Clamp(res, 0, max));
                 }
             }
         }

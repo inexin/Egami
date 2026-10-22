@@ -105,7 +105,8 @@ public class AvifInteropFiles
     {
         using MemoryStream output = new();
         int width = frame.Header.UpscaledWidth, height = frame.Header.FrameHeight;
-        for (int plane = 0; plane < frame.Planes!.Length; plane++)
+        ushort[][] wide = frame.WidePlanes();
+        for (int plane = 0; plane < wide.Length; plane++)
         {
             int ssx = plane > 0 ? frame.Sequence.SubsamplingX : 0, ssy = plane > 0 ? frame.Sequence.SubsamplingY : 0;
             int w = (width + ssx) >> ssx, h = (height + ssy) >> ssy;
@@ -113,7 +114,7 @@ public class AvifInteropFiles
             {
                 for (int x = 0; x < w; x++)
                 {
-                    ushort v = frame.Planes[plane][(y * frame.Strides[plane]) + x];
+                    ushort v = wide[plane][(y * frame.Strides[plane]) + x];
                     output.WriteByte((byte)v);
                     if (frame.Sequence.BitDepth > 8)
                     {

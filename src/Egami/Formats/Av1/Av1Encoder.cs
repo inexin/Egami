@@ -219,7 +219,7 @@ internal sealed class Av1Encoder
         Av1BitWriter bits = new();
         Av1ObuWriter.FrameHeader(bits, sequence, parameters);
         Av1FrameHeader header = Av1FrameHeader.Parse(bits.ToArray(), sequence, 0, 0, "AV1");
-        Av1Frame frame = new(header, "AV1", reconstruct: true) { Parallelism = Math.Max(1, settings.Parallelism), CancellationToken = settings.CancellationToken };
+        Av1Frame frame = new(header, "AV1", reconstruct: true, compact: false) { Parallelism = Math.Max(1, settings.Parallelism), CancellationToken = settings.CancellationToken };
         Av1EncoderSource source = new(input, frame);
         if (header.DeltaQPresent)
         {

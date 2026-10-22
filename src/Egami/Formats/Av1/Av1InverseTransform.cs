@@ -38,7 +38,8 @@ internal static partial class Av1InverseTransform
     /// <param name="offset">Where the block's top left sample is.</param>
     /// <param name="stride">The plane's stride.</param>
     /// <param name="bitDepth">The bit depth.</param>
-    internal static void Add(int[] coeffs, int txSize, int txType, bool lossless, int eob, ushort[] dst, int offset, int stride, int bitDepth)
+    internal static void Add<TSample>(int[] coeffs, int txSize, int txType, bool lossless, int eob, TSample[] dst, int offset, int stride, int bitDepth)
+        where TSample : unmanaged
     {
         if (lossless)
         {
@@ -76,11 +77,11 @@ internal static partial class Av1InverseTransform
             Types types = new(rowType, colType);
             if (bitDepth <= 10)
             {
-                AddVector<Narrow>(coeffs, w, h, codedW, codedH, rect2, rowShift, types, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
+                AddVector<Narrow, TSample>(coeffs, w, h, codedW, codedH, rect2, rowShift, types, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
             }
             else
             {
-                AddVector<Wide>(coeffs, w, h, codedW, codedH, rect2, rowShift, types, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
+                AddVector<Wide, TSample>(coeffs, w, h, codedW, codedH, rect2, rowShift, types, (rowClamp, rangeRow), (colClamp, rangeCol), dst, offset, stride, max);
             }
 
             return;
@@ -153,11 +154,11 @@ internal static partial class Av1InverseTransform
 
         for (int r = 0; r < h; r++)
         {
-            Span<ushort> line = dst.AsSpan(offset + (r * stride), w);
+            Span<TSample> line = dst.AsSpan(offset + (r * stride), w);
             ReadOnlySpan<int> residual = residuals.Slice(r * w, w);
             for (int c = 0; c < line.Length; c++)
             {
-                line[c] = (ushort)Math.Clamp(line[c] + residual[c], 0, max);
+                line[c] = Av1Samples.From<TSample>(Math.Clamp(Av1Samples.Get(line[c]) + residual[c], 0, max));
             }
         }
     }
@@ -182,9 +183,10 @@ internal static partial class Av1InverseTransform
     /// <typeparamref name="T"/> that is exact at the bit depth; flipped ADSTs read their columns right to left and write their
     /// rows bottom to top, as the scalar path does.
     /// </summary>
-    private static void AddVector<T>(int[] coeffs, int w, int h, int codedW, int codedH, bool rect2, int rowShift, Types types, (int Clamp, int Range) row,
-        (int Clamp, int Range) column, ushort[] dst, int offset, int stride, int max)
+    private static void AddVector<T, TSample>(int[] coeffs, int w, int h, int codedW, int codedH, bool rect2, int rowShift, Types types, (int Clamp, int Range) row,
+        (int Clamp, int Range) column, TSample[] dst, int offset, int stride, int max)
         where T : IButterfly
+        where TSample : unmanaged
     {
         Span<int> buf = stackalloc int[w * h];
         Span<Vector256<int>> input = stackalloc Vector256<int>[64];
@@ -242,7 +244,7 @@ internal static partial class Av1InverseTransform
         (lo, hi) = Bounds(column.Clamp);
         (rangeLo, rangeHi) = Bounds(column.Range);
         ref int b0 = ref MemoryMarshal.GetReference(buf);
-        ref ushort d0 = ref MemoryMarshal.GetArrayDataReference(dst);
+        ref TSample d0 = ref MemoryMarshal.GetArrayDataReference(dst);
         Vector256<int> round = Vector256.Create(8), top = Vector256.Create(max);
         bool lrFlip = types.Row == 2, udFlip = types.Column == 2;
         Vector256<int> reverse = Vector256.Create(7, 6, 5, 4, 3, 2, 1, 0);
@@ -259,12 +261,11 @@ internal static partial class Av1InverseTransform
             Transform<T>(types.Column, h, input[..h], output[..h], rangeLo, rangeHi);
             for (int r = 0; r < h; r++)
             {
-                nuint at = (nuint)(offset + (r * stride) + col);
-                Vector256<int> prediction = Vector256.WidenLower(Vector128.LoadUnsafe(ref d0, at).AsUInt16().ToVector256()).AsInt32();
+                int at = offset + (r * stride) + col;
+                Vector256<int> prediction = Vector256.WidenLower(Av1Samples.Load8(ref d0, at).AsUInt16().ToVector256()).AsInt32();
                 Vector256<int> sum = prediction + Vector256.ShiftRightArithmetic(output[udFlip ? h - 1 - r : r] + round, 4);
                 sum = Vector256.Min(Vector256.Max(sum, Vector256<int>.Zero), top);
-                Vector128<ushort> samples = Vector128.Narrow(sum.GetLower().AsUInt32(), sum.GetUpper().AsUInt32());
-                samples.StoreUnsafe(ref d0, at);
+                Av1Samples.Store8(ref d0, at, Vector128.Narrow(sum.GetLower().AsUInt32(), sum.GetUpper().AsUInt32()));
             }
         }
 
@@ -275,7 +276,8 @@ internal static partial class Av1InverseTransform
     /// The 8-bit blocks four samples on a side (4x4 to 16x4 and 4x16), four rows and then four columns at a time. At 8 bits
     /// every input is clamped to 16 bits and every weight is 12, so even the ADST4's sums of three products fit 32 bits.
     /// </summary>
-    private static void AddNarrow(int[] coeffs, int w, int h, bool rect2, int rowShift, Types types, ushort[] dst, int offset, int stride)
+    private static void AddNarrow<TSample>(int[] coeffs, int w, int h, bool rect2, int rowShift, Types types, TSample[] dst, int offset, int stride)
+        where TSample : unmanaged
     {
         Span<int> buf = stackalloc int[w * h];
         Span<Vector128<int>> input = stackalloc Vector128<int>[16];
@@ -312,7 +314,7 @@ internal static partial class Av1InverseTransform
 
         bool lrFlip = types.Row == 2, udFlip = types.Column == 2;
         ref int b0 = ref MemoryMarshal.GetReference(buf);
-        ref ushort d0 = ref MemoryMarshal.GetArrayDataReference(dst);
+        ref TSample d0 = ref MemoryMarshal.GetArrayDataReference(dst);
         Vector128<int> round = Vector128.Create(8), top = Vector128.Create(255);
         for (int col = 0; col < w; col += 4)
         {
@@ -327,11 +329,19 @@ internal static partial class Av1InverseTransform
             Transform(types.Column, h, input[..h], output[..h], lo, hi);
             for (int r = 0; r < h; r++)
             {
-                ref ushort at = ref Unsafe.Add(ref d0, offset + (r * stride) + col);
-                Vector128<int> prediction = Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<ushort, byte>(ref at))).AsUInt16()).AsInt32();
+                ref TSample at = ref Unsafe.Add(ref d0, offset + (r * stride) + col);
+                Vector128<int> prediction = Vector128.WidenLower(Av1Samples.Load4(ref at, 0).AsUInt16()).AsInt32();
                 Vector128<int> sum = prediction + Vector128.ShiftRightArithmetic(output[udFlip ? h - 1 - r : r] + round, 4);
                 sum = Vector128.Min(Vector128.Max(sum, Vector128<int>.Zero), top);
-                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref at), Vector128.Narrow(sum.AsUInt32(), sum.AsUInt32()).AsUInt64().ToScalar());
+                Vector128<ushort> samples = Vector128.Narrow(sum.AsUInt32(), sum.AsUInt32());
+                if (Av1Samples.IsByte<TSample>())
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.As<TSample, byte>(ref at), Vector128.Narrow(samples, samples).AsUInt32().ToScalar());
+                }
+                else
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.As<TSample, byte>(ref at), samples.AsUInt64().ToScalar());
+                }
             }
         }
     }
@@ -594,7 +604,8 @@ internal static partial class Av1InverseTransform
     private static int Clamp(int value, int bit) => Math.Clamp(value, -(1 << (bit - 1)), (1 << (bit - 1)) - 1);
 
     /// <summary>av1_highbd_iwht4x4_16_add.</summary>
-    private static void Wht4x4(int[] input, ushort[] dst, int offset, int stride, int bitDepth)
+    private static void Wht4x4<TSample>(int[] input, TSample[] dst, int offset, int stride, int bitDepth)
+        where TSample : unmanaged
     {
         Span<int> output = stackalloc int[16];
         int max = (1 << bitDepth) - 1;
@@ -625,15 +636,16 @@ internal static partial class Av1InverseTransform
             a1 -= b1;
             d1 += c1;
             int at = offset + i;
-            dst[at] = (ushort)Math.Clamp(dst[at] + a1, 0, max);
-            dst[at + stride] = (ushort)Math.Clamp(dst[at + stride] + b1, 0, max);
-            dst[at + (2 * stride)] = (ushort)Math.Clamp(dst[at + (2 * stride)] + c1, 0, max);
-            dst[at + (3 * stride)] = (ushort)Math.Clamp(dst[at + (3 * stride)] + d1, 0, max);
+            dst[at] = Av1Samples.From<TSample>(Math.Clamp(Av1Samples.Get(dst[at]) + a1, 0, max));
+            dst[at + stride] = Av1Samples.From<TSample>(Math.Clamp(Av1Samples.Get(dst[at + stride]) + b1, 0, max));
+            dst[at + (2 * stride)] = Av1Samples.From<TSample>(Math.Clamp(Av1Samples.Get(dst[at + (2 * stride)]) + c1, 0, max));
+            dst[at + (3 * stride)] = Av1Samples.From<TSample>(Math.Clamp(Av1Samples.Get(dst[at + (3 * stride)]) + d1, 0, max));
         }
     }
 
     /// <summary>av1_highbd_iwht4x4_1_add: only the DC coefficient.</summary>
-    private static void Wht4x4Dc(int[] input, ushort[] dst, int offset, int stride, int bitDepth)
+    private static void Wht4x4Dc<TSample>(int[] input, TSample[] dst, int offset, int stride, int bitDepth)
+        where TSample : unmanaged
     {
         Span<int> tmp = stackalloc int[4];
         int max = (1 << bitDepth) - 1;
@@ -647,10 +659,10 @@ internal static partial class Av1InverseTransform
             e1 = tmp[i] >> 1;
             a1 = tmp[i] - e1;
             int at = offset + i;
-            dst[at] = (ushort)Math.Clamp(dst[at] + a1, 0, max);
-            dst[at + stride] = (ushort)Math.Clamp(dst[at + stride] + e1, 0, max);
-            dst[at + (2 * stride)] = (ushort)Math.Clamp(dst[at + (2 * stride)] + e1, 0, max);
-            dst[at + (3 * stride)] = (ushort)Math.Clamp(dst[at + (3 * stride)] + e1, 0, max);
+            dst[at] = Av1Samples.From<TSample>(Math.Clamp(Av1Samples.Get(dst[at]) + a1, 0, max));
+            dst[at + stride] = Av1Samples.From<TSample>(Math.Clamp(Av1Samples.Get(dst[at + stride]) + e1, 0, max));
+            dst[at + (2 * stride)] = Av1Samples.From<TSample>(Math.Clamp(Av1Samples.Get(dst[at + (2 * stride)]) + e1, 0, max));
+            dst[at + (3 * stride)] = Av1Samples.From<TSample>(Math.Clamp(Av1Samples.Get(dst[at + (3 * stride)]) + e1, 0, max));
         }
     }
 }

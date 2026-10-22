@@ -26,7 +26,8 @@ internal static class Av1Cdef
     ];
 
     /// <summary>Filters the frame's planes in place.</summary>
-    internal static void Apply(Av1Frame frame)
+    internal static void Apply<T>(Av1Frame frame)
+        where T : unmanaged
     {
         Av1FrameHeader h = frame.Header;
         if (h.CodedLossless || h.AllowIntrabc)
@@ -43,11 +44,11 @@ internal static class Av1Cdef
 
         int planes = h.NumPlanes;
         // The deblocked frame, in pooled buffers: a frame's planes are large, and fresh memory costs more than the copy.
-        ushort[][] source = new ushort[planes][];
+        T[][] source = new T[planes][];
         for (int plane = 0; plane < planes; plane++)
         {
-            ushort[] deblocked = frame.Planes![plane];
-            source[plane] = System.Buffers.ArrayPool<ushort>.Shared.Rent(deblocked.Length);
+            T[] deblocked = frame.Plane<T>(plane);
+            source[plane] = System.Buffers.ArrayPool<T>.Shared.Rent(deblocked.Length);
             deblocked.AsSpan().CopyTo(source[plane]);
         }
 
@@ -57,14 +58,15 @@ internal static class Av1Cdef
         }
         finally
         {
-            foreach (ushort[] buffer in source)
+            foreach (T[] buffer in source)
             {
-                System.Buffers.ArrayPool<ushort>.Shared.Return(buffer);
+                System.Buffers.ArrayPool<T>.Shared.Return(buffer);
             }
         }
     }
 
-    private static void Filter(Av1Frame frame, ushort[][] source)
+    private static void Filter<T>(Av1Frame frame, T[][] source)
+        where T : unmanaged
     {
         Av1FrameHeader h = frame.Header;
         int planes = h.NumPlanes;
@@ -142,10 +144,11 @@ internal static class Av1Cdef
         return true;
     }
 
-    private static void FilterUnit(Av1Frame frame, ushort[] src, int plane, int fbr, int fbc, ReadOnlySpan<byte> list, Span<int> dirs, Span<int> vars,
+    private static void FilterUnit<T>(Av1Frame frame, T[] src, int plane, int fbr, int fbc, ReadOnlySpan<byte> list, Span<int> dirs, Span<int> vars,
         int level, int secStrength, int xdec, int ydec, int coeffShift, int ssx, int ssy)
+        where T : unmanaged
     {
-        ushort[] dst = frame.Planes![plane];
+        T[] dst = frame.Plane<T>(plane);
         int stride = frame.Strides[plane];
         int width = (frame.MiCols * 4) >> xdec, height = (frame.MiRows * 4) >> ydec;
         int priStrength = level << coeffShift;
@@ -185,7 +188,8 @@ internal static class Av1Cdef
     }
 
     /// <summary>cdef_find_dir: the direction of an 8x8 luma block, and how much more variance it has across than along.</summary>
-    private static int FindDirection(ushort[] img, int at, int stride, int coeffShift, out int variance)
+    private static int FindDirection<T>(T[] img, int at, int stride, int coeffShift, out int variance)
+        where T : unmanaged
     {
         Span<int> cost = stackalloc int[8];
         Span<int> partial = stackalloc int[8 * 15];
@@ -193,7 +197,7 @@ internal static class Av1Cdef
         {
             for (int j = 0; j < 8; j++)
             {
-                int x = (img[at + (i * stride) + j] >> coeffShift) - 128;
+                int x = (Av1Samples.Get(img[at + (i * stride) + j]) >> coeffShift) - 128;
                 partial[(0 * 15) + i + j] += x;
                 partial[(1 * 15) + i + (j / 2)] += x;
                 partial[(2 * 15) + i] += x;
@@ -259,8 +263,9 @@ internal static class Av1Cdef
 
     private static int DampingShift(int threshold, int damping) => threshold == 0 ? 0 : Math.Max(0, damping - (31 - int.LeadingZeroCount(threshold)));
 
-    private static void FilterBlock(ushort[] src, ushort[] dst, int stride, int x0, int y0, int bw, int bh, int width, int height, int priStrength,
+    private static void FilterBlock<T>(T[] src, T[] dst, int stride, int x0, int y0, int bw, int bh, int width, int height, int priStrength,
         int secStrength, int dir, int damping, int coeffShift)
+        where T : unmanaged
     {
         bool primary = priStrength != 0, secondary = secStrength != 0;
         bool clipping = primary && secondary;
@@ -272,7 +277,7 @@ internal static class Av1Cdef
         if (Vector128.IsHardwareAccelerated && (bw == 8 || (bw == 4 && (bh & 1) == 0)))
         {
             Strengths strengths = new(priStrength, secStrength, priTap0, priTap1, priShift, secShift);
-            ref ushort output = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(dst), (y0 * stride) + x0);
+            ref T output = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(dst), (y0 * stride) + x0);
             if (inside)
             {
                 FilterVector(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), (y0 * stride) + x0), stride, ref output, stride, bw, bh,
@@ -309,11 +314,11 @@ internal static class Av1Cdef
                 for (int j = 0; j < bw; j++)
                 {
                     int at = row + j;
-                    int value = src[at];
+                    int value = Av1Samples.Get(src[at]);
                     int sum = 0, max = value, min = value;
                     if (primary)
                     {
-                        int q0 = src[at + p0], q1 = src[at - p0], q2 = src[at + p1], q3 = src[at - p1];
+                        int q0 = Av1Samples.Get(src[at + p0]), q1 = Av1Samples.Get(src[at - p0]), q2 = Av1Samples.Get(src[at + p1]), q3 = Av1Samples.Get(src[at - p1]);
                         sum += priTap0 * (Constrain(q0 - value, priStrength, priShift) + Constrain(q1 - value, priStrength, priShift));
                         sum += priTap1 * (Constrain(q2 - value, priStrength, priShift) + Constrain(q3 - value, priStrength, priShift));
                         if (clipping)
@@ -325,8 +330,8 @@ internal static class Av1Cdef
 
                     if (secondary)
                     {
-                        int s0 = src[at + a0], s1 = src[at - a0], s2 = src[at + b0], s3 = src[at - b0];
-                        int s4 = src[at + a1], s5 = src[at - a1], s6 = src[at + b1], s7 = src[at - b1];
+                        int s0 = Av1Samples.Get(src[at + a0]), s1 = Av1Samples.Get(src[at - a0]), s2 = Av1Samples.Get(src[at + b0]), s3 = Av1Samples.Get(src[at - b0]);
+                        int s4 = Av1Samples.Get(src[at + a1]), s5 = Av1Samples.Get(src[at - a1]), s6 = Av1Samples.Get(src[at + b1]), s7 = Av1Samples.Get(src[at - b1]);
                         sum += 2 * (Constrain(s0 - value, secStrength, secShift) + Constrain(s1 - value, secStrength, secShift)
                             + Constrain(s2 - value, secStrength, secShift) + Constrain(s3 - value, secStrength, secShift));
                         sum += Constrain(s4 - value, secStrength, secShift) + Constrain(s5 - value, secStrength, secShift)
@@ -339,7 +344,7 @@ internal static class Av1Cdef
                     }
 
                     int result = value + ((8 + sum - (sum < 0 ? 1 : 0)) >> 4);
-                    dst[at] = (ushort)(clipping ? Math.Clamp(result, min, max) : result);
+                    dst[at] = Av1Samples.From<T>(clipping ? Math.Clamp(result, min, max) : result);
                 }
             }
 
@@ -352,7 +357,7 @@ internal static class Av1Cdef
             for (int j = 0; j < bw; j++)
             {
                 int x = x0 + j;
-                int value = src[(y * stride) + x];
+                int value = Av1Samples.Get(src[(y * stride) + x]);
                 int sum = 0, max = value, min = value;
                 for (int k = 0; k < 2; k++)
                 {
@@ -395,7 +400,7 @@ internal static class Av1Cdef
                     result = Math.Clamp(result, min, max);
                 }
 
-                dst[(y * stride) + x] = (ushort)result;
+                dst[(y * stride) + x] = Av1Samples.From<T>(result);
             }
         }
 
@@ -418,7 +423,9 @@ internal static class Av1Cdef
     /// bits and unavailable ones 0x4000, so every difference, constrained tap and sum fits 16 bits and the result is the scalar
     /// one. On the <paramref name="border"/>, unavailable samples are left out of the clipping maximum, as the scalar filter does.
     /// </summary>
-    private static void FilterVector(ref ushort s, int sourceStride, ref ushort o, int stride, int bw, int bh, Taps t, Strengths k, bool border)
+    private static void FilterVector<TSource, T>(ref TSource s, int sourceStride, ref T o, int stride, int bw, int bh, Taps t, Strengths k, bool border)
+        where TSource : unmanaged
+        where T : unmanaged
     {
         bool primary = k.Primary != 0, secondary = k.Secondary != 0, clipping = primary && secondary;
         Vector128<short> pri = Vector128.Create((short)k.Primary), sec = Vector128.Create((short)k.Secondary);
@@ -474,14 +481,27 @@ internal static class Av1Cdef
 
             Vector128<ushort> samples = result.AsUInt16();
             int to = i * stride;
-            if (bw == 8)
+            if (Av1Samples.IsByte<T>())
             {
-                samples.StoreUnsafe(ref o, (nuint)to);
+                Vector128<uint> bytes = Vector128.Narrow(samples, samples).AsUInt32();
+                if (bw == 8)
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref o, to)), bytes.AsUInt64().ToScalar());
+                }
+                else
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref o, to)), bytes.ToScalar());
+                    Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref o, to + stride)), bytes.GetElement(1));
+                }
+            }
+            else if (bw == 8)
+            {
+                samples.StoreUnsafe(ref Unsafe.As<T, ushort>(ref o), (nuint)to);
             }
             else
             {
-                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref o, to)), samples.GetLower());
-                Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref o, to + stride)), samples.GetUpper());
+                Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref o, to)), samples.GetLower());
+                Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref o, to + stride)), samples.GetUpper());
             }
         }
 
@@ -489,10 +509,23 @@ internal static class Av1Cdef
         Vector128<short> Available(Vector128<short> sample) => border ? Vector128.AndNot(sample, Vector128.Equals(sample, large)) : sample;
 
         // Eight samples at an offset from a row, or four from each of two rows.
-        static Vector128<short> Load(ref ushort s, int at, int next, int offset) => next < 0
-            ? Vector128.LoadUnsafe(ref Unsafe.Add(ref s, at + offset)).AsInt16()
-            : Vector128.Create(Unsafe.ReadUnaligned<Vector64<ushort>>(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref s, at + offset))),
-                Unsafe.ReadUnaligned<Vector64<ushort>>(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref s, next + offset)))).AsInt16();
+        static Vector128<short> Load(ref TSource s, int at, int next, int offset)
+        {
+            if (Av1Samples.IsByte<TSource>())
+            {
+                ref byte b = ref Unsafe.As<TSource, byte>(ref s);
+                ulong bytes = next < 0
+                    ? Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref b, at + offset))
+                    : Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref b, at + offset)) | ((ulong)Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref b, next + offset)) << 32);
+                return Vector128.WidenLower(Vector128.CreateScalarUnsafe(bytes).AsByte()).AsInt16();
+            }
+
+            ref ushort w = ref Unsafe.As<TSource, ushort>(ref s);
+            return next < 0
+                ? Vector128.LoadUnsafe(ref Unsafe.Add(ref w, at + offset)).AsInt16()
+                : Vector128.Create(Unsafe.ReadUnaligned<Vector64<ushort>>(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref w, at + offset))),
+                    Unsafe.ReadUnaligned<Vector64<ushort>>(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref w, next + offset)))).AsInt16();
+        }
 
         static Vector128<short> Constrain(Vector128<short> diff, Vector128<short> threshold, int shift)
         {
@@ -502,6 +535,7 @@ internal static class Av1Cdef
         }
     }
 
-    private static int Fetch(ushort[] src, int stride, int width, int height, int y, int x) =>
-        (uint)x < (uint)width && (uint)y < (uint)height ? src[(y * stride) + x] : VeryLarge;
+    private static int Fetch<T>(T[] src, int stride, int width, int height, int y, int x)
+        where T : unmanaged =>
+        (uint)x < (uint)width && (uint)y < (uint)height ? Av1Samples.Get(src[(y * stride) + x]) : VeryLarge;
 }

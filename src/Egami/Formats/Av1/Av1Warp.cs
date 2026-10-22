@@ -118,8 +118,9 @@ internal static class Av1Warp
     /// filter's output rounded by <paramref name="round1"/> (11, or 7 for compound), at <paramref name="predOffset"/> with
     /// <paramref name="predStride"/>, at most <paramref name="w"/> by <paramref name="h"/> of it.
     /// </summary>
-    internal static void Block(int[] mat, int alpha, int beta, int gamma, int delta, ushort[] reference, int stride, int width, int height,
+    internal static void Block<T>(int[] mat, int alpha, int beta, int gamma, int delta, T[] reference, int stride, int width, int height,
         int x, int y, int ssx, int ssy, int round0, int round1, int[] pred, int predOffset, int predStride, int w, int h)
+        where T : unmanaged
     {
         Span<int> tmp = stackalloc int[15 * 8];
         sbyte[] filters = Av1Tables.WarpedFilter;
@@ -152,7 +153,7 @@ internal static class Av1Warp
                 int sum = 0;
                 for (int m = 0; m < 8; m++)
                 {
-                    sum += reference[row + Math.Clamp(ix + m, 0, width - 1)] * filters[offs + m];
+                    sum += Av1Samples.Get(reference[row + Math.Clamp(ix + m, 0, width - 1)]) * filters[offs + m];
                 }
 
                 tmp[((k + 7) * 8) + l + 4] = (sum + half0) >> round0;
@@ -186,18 +187,19 @@ internal static class Av1Warp
     /// <see cref="Block"/> for a block whose source columns lie inside the reference, eight columns at a time: each output is a
     /// dot product of eight samples with its own filter row (pmaddwd, then two horizontal adds).
     /// </summary>
-    private static void BlockSsse3(ushort[] reference, int stride, int height, int ix4, int iy4, int sx4, int sy4, int alpha, int beta,
+    private static void BlockSsse3<T>(T[] reference, int stride, int height, int ix4, int iy4, int sx4, int sy4, int alpha, int beta,
         int gamma, int delta, int round0, int round1, int[] pred, int predOffset, int predStride, int h)
+        where T : unmanaged
     {
         // The horizontal output, column by column: column l's 15 rows are together, for the vertical dot products.
         Span<short> tmp = stackalloc short[8 * 16];
         Span<int> sums = stackalloc int[8];
         ref short taps = ref MemoryMarshal.GetArrayDataReference(ShortFilters);
-        ref short samples = ref Unsafe.As<ushort, short>(ref MemoryMarshal.GetArrayDataReference(reference));
+        ref T samples = ref MemoryMarshal.GetArrayDataReference(reference);
         Vector128<int> half0 = Vector128.Create(1 << (round0 - 1)), half1 = Vector128.Create(1 << (round1 - 1));
         for (int k = -7; k < 8; k++)
         {
-            ref short row = ref Unsafe.Add(ref samples, (Math.Clamp(iy4 + k, 0, height - 1) * stride) + ix4 - 7);
+            ref T row = ref Unsafe.Add(ref samples, (Math.Clamp(iy4 + k, 0, height - 1) * stride) + ix4 - 7);
             int sx = sx4 + (beta * (k + 4));
             (Vector128<int> lo, Vector128<int> hi) = Dot8(ref row, 1, ref taps, sx, alpha);
             lo = Vector128.ShiftRightArithmetic(lo + half0, round0);
@@ -224,7 +226,8 @@ internal static class Av1Warp
     /// row whose phase is <paramref name="phase"/> + l * <paramref name="phaseStep"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static (Vector128<int> Lo, Vector128<int> Hi) Dot8(ref short source, int step, ref short taps, int phase, int phaseStep)
+    private static (Vector128<int> Lo, Vector128<int> Hi) Dot8<T>(ref T source, int step, ref short taps, int phase, int phaseStep)
+        where T : unmanaged
     {
         Vector128<int> d0 = Dot(ref source, 0, ref taps, phase), d1 = Dot(ref source, step, ref taps, phase + phaseStep);
         Vector128<int> d2 = Dot(ref source, 2 * step, ref taps, phase + (2 * phaseStep)), d3 = Dot(ref source, 3 * step, ref taps, phase + (3 * phaseStep));
@@ -235,8 +238,9 @@ internal static class Av1Warp
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<int> Dot(ref short source, int at, ref short taps, int phase) =>
-        Sse2.MultiplyAddAdjacent(Vector128.LoadUnsafe(ref source, (nuint)at), Vector128.LoadUnsafe(ref taps, (nuint)((((phase + 512) >> 10) + 64) * 8)));
+    private static Vector128<int> Dot<T>(ref T source, int at, ref short taps, int phase)
+        where T : unmanaged =>
+        Sse2.MultiplyAddAdjacent(Av1Samples.Load8(ref source, at), Vector128.LoadUnsafe(ref taps, (nuint)((((phase + 512) >> 10) + 64) * 8)));
 
     private static long Round2Signed(long v, int n) => n == 0 ? v : v < 0 ? -((-v + (1L << (n - 1))) >> n) : (v + (1L << (n - 1))) >> n;
 

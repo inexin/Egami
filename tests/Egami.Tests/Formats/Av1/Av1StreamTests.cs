@@ -68,8 +68,8 @@ public class Av1StreamTests
             foreach (Av1Frame frame in stream.Decode(data, offset, length, TestContext.Current.CancellationToken))
             {
                 Assert.False(frame.TileDataDamaged, $"frame {got.Count}: tile data did not end where it should");
-                gotNoGrain.Add(Md5(frame, frame.Planes!));
-                got.Add(Md5(frame, Av1FilmGrainSynthesis.Apply(frame)));
+                gotNoGrain.Add(Md5(frame, frame.WidePlanes()));
+                got.Add(Md5(frame, Av1Samples.Widen(Av1FilmGrainSynthesis.Apply(frame))));
             }
         }
 
@@ -280,7 +280,8 @@ public class Av1StreamTests
                 at += 24;
                 Av1FrameHeader fh = frame.Header;
                 report.Add($"frame {index}: type {fh.FrameType} show {fh.ShowFrame} {w}x{h} filter {fh.InterpolationFilter} ref_mvs {fh.UseRefFrameMvs} skipmode {fh.SkipModePresent} refsel {fh.ReferenceSelect} warp {fh.AllowWarpedMotion}");
-                for (int plane = 0; plane < frame.Planes!.Length; plane++)
+                ushort[][] wide = frame.WidePlanes();
+                for (int plane = 0; plane < wide.Length; plane++)
                 {
                     int pw = plane == 0 ? w : (w + sx) >> sx, ph = plane == 0 ? h : (h + sy) >> sy;
                     bool found = false;
@@ -289,7 +290,7 @@ public class Av1StreamTests
                         for (int x = 0; x < pw && !found; x++)
                         {
                             int want = BinaryPrimitives.ReadUInt16LittleEndian(raw.AsSpan(at + (((y * pw) + x) * 2)));
-                            int got = frame.Planes[plane][(y * frame.Strides[plane]) + x];
+                            int got = wide[plane][(y * frame.Strides[plane]) + x];
                             if (want != got)
                             {
                                 found = true;

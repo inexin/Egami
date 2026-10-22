@@ -254,7 +254,7 @@ public class Av1ReconstructionTests
     /// <summary>The MD5 of a frame's planes (at the upscaled width) as dav1d writes them to y4m: Y, then U and V, 8-bit samples as bytes, else 16-bit little endian.</summary>
     internal static string PlanesMd5(Av1Frame frame, bool grain = false)
     {
-        ushort[][] planes = grain ? Av1FilmGrainSynthesis.Apply(frame) : frame.Planes!;
+        ushort[][] planes = Av1Samples.Widen(grain ? Av1FilmGrainSynthesis.Apply(frame) : frame.Planes!);
         int width = frame.Header.UpscaledWidth, height = frame.Header.FrameHeight;
         bool wide = frame.Sequence.BitDepth > 8;
         using IncrementalHash md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
