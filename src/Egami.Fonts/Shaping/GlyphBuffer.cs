@@ -54,10 +54,11 @@ public enum ClusterLevel
 /// </example>
 public sealed class GlyphBuffer
 {
-    private ushort[] _glyphs = new ushort[16];
-    private int[] _clusters = new int[16];
-    private GlyphFlags[] _flags = new GlyphFlags[16];
-    private GlyphPosition[] _positions = new GlyphPosition[16];
+    // Sized by the first run loaded: a paragraph keeps one buffer per run.
+    private ushort[] _glyphs = [];
+    private int[] _clusters = [];
+    private GlyphFlags[] _flags = [];
+    private GlyphPosition[] _positions = [];
 
     /// <summary>Gets the number of glyphs.</summary>
     public int Count { get; private set; }
@@ -98,7 +99,7 @@ public sealed class GlyphBuffer
         int n = buffer.Len;
         if (_glyphs.Length < n)
         {
-            int size = Math.Max(n, _glyphs.Length * 2);
+            int size = _glyphs.Length == 0 ? n : Math.Max(n, _glyphs.Length * 2);
             _glyphs = new ushort[size];
             _clusters = new int[size];
             _flags = new GlyphFlags[size];

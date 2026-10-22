@@ -21,12 +21,20 @@ public sealed partial class Typeface
     private Box<SbixTable?>? _sbixTable;
     private Box<CbdtTables?>? _cbdtTables;
     private FontPaletteInfo[]? _palettes;
+    private int _colorFormats = -1;
 
     /// <summary>Gets the kinds of color glyph data the face holds; <see cref="ColorGlyphFormats.None"/> for a plain outline font.</summary>
     public ColorGlyphFormats ColorFormats
     {
         get
         {
+            // Asked for every run itemized; worked out once per face.
+            int known = Volatile.Read(ref Root._colorFormats);
+            if (known >= 0)
+            {
+                return (ColorGlyphFormats)known;
+            }
+
             ColorGlyphFormats formats = ColorGlyphFormats.None;
             if (Colr is ColrTable colr)
             {
@@ -35,6 +43,7 @@ public sealed partial class Typeface
 
             formats |= (Sbix is not null ? ColorGlyphFormats.Sbix : 0) | (Cbdt is not null ? ColorGlyphFormats.Cbdt : 0);
             formats |= HasTable(s_svg) ? ColorGlyphFormats.Svg : 0;
+            Volatile.Write(ref Root._colorFormats, (int)formats);
             return formats;
         }
     }

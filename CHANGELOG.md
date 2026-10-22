@@ -351,6 +351,12 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - Every package's NuGet page now links to the documentation at [inexin.github.io/Egami](https://inexin.github.io/Egami/) as its
   project website, and its readme links to the guides there instead of the Markdown sources on GitHub.
 
+## Egami.Fonts 1.0.1 (unreleased)
+
+### Speed
+- `Paragraph.Create` allocates about a third less for short text: a face's color formats are worked out once, glyph buffers
+  are sized to their run, and the GSUB matcher keeps no unused scratch array.
+
 ## Egami.Fonts.Substitutes 1.0.0 (2026-10-18)
 
 A new opt-in package with open fonts that stand in for the fonts documents name most, so text keeps its line breaks on

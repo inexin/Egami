@@ -5,8 +5,6 @@ namespace Egami.Fonts.Shaping;
 
 internal sealed partial class LayoutApplier
 {
-    private readonly uint[] _sequence = new uint[MaxContextLength * 4];
-
     private bool ApplyGsubSubtable(int type, int t)
     {
         switch (type)
