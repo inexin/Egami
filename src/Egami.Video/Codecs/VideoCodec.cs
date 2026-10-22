@@ -83,6 +83,12 @@ public sealed record VideoDecoderOptions
     /// off to save that work when only the color is needed. Default on.
     /// </summary>
     public bool DecodeAlpha { get; init; } = true;
+
+    /// <summary>
+    /// Gets whether film grain a stream asks for is added to its frames (AV1). Turn it off to get the frames as coded, for
+    /// measuring or re-encoding them. Default on, as players show them.
+    /// </summary>
+    public bool ApplyFilmGrain { get; init; } = true;
 }
 
 /// <summary>What an encoder makes.</summary>

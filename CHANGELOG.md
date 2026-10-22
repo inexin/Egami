@@ -80,6 +80,8 @@ which needs no .NET runtime.
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing. The V5 audio steps (V5.0,
 V5.1 Opus, V5.5 Vorbis) get one API review and one release after V5.5, so these types may still change.
 
+V4.2: AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
+
 ### Frames and conversion
 
 - `AudioFrame`: samples for every channel with a timestamp, rate, `ChannelLayout` and `SampleFormat`, from the context's
@@ -118,6 +120,19 @@ V5.1 Opus, V5.5 Vorbis) get one API review and one release after V5.5, so these 
 - `VideoWriterOptions.AudioCodec` (with `AudioSampleRate`, `AudioLayout` and `AudioBitsPerSample`) and
   `VideoWriter.WriteAudio`: an audio track encoded next to the video.
 - AFL++ fuzz targets `wav` and `flac`.
+
+### AV1
+
+- `Av1Codec` (and `VideoCodecs.Av1`), registered in `MediaContext.Codecs` by default: AV1 from WebM, Matroska, MP4 and IVF, 8, 10
+  and 12 bit, 4:0:0 to 4:4:4, film grain, every frame equal to libaom's on our clips and libaom's size-changing Matroska vectors.
+  Hidden frames give no frame; frames shown with show_existing_frame come out. The sequence header's color wins over the
+  container's.
+- `VideoDecoderOptions.ApplyFilmGrain` turns film grain off.
+- Keyframes are units that start with a shown key frame (forward key frames are not); `Av1.KeyframeFlagMismatch` when a
+  container disagrees. The sequence header comes from the track's av1C when a unit has none.
+- IVF AV1 tracks get their bit depth, chroma format and av1C from the first sequence header; the Matroska writer builds av1C
+  from the first packet for a track that has none.
+- `Av1Packets`: `SplitFrames`, `MergeFrames` and `ExtractConfig` (av1C from a sequence header).
 
 ## Egami.Video 0.4.0 (unreleased)
 

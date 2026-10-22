@@ -463,4 +463,57 @@ public class Video
         Assert.Equal("MP4", MediaFile.Probe("movie.mp4").FormatName);
         Assert.Equal(2, MediaFile.Probe("metadata.mp4").Chapters.Count);
     }
+
+    [Fact]
+    public void ReadAv1()
+    {
+        using SampleFiles files = new();
+
+        #region video-av1
+        // AV1 from WebM, Matroska, MP4 or IVF reads like any other video: 10 and 12-bit streams give 16-bit planes.
+        using (VideoReader reader = VideoReader.Open("av1.webm"))
+        {
+            foreach (YuvVideoFrame frame in reader.ReadFrames())
+            {
+                using (frame)
+                {
+                    Console.WriteLine($"{frame.Timestamp}: {frame.Width}x{frame.Height}, {frame.Raster.BitDepth} bit {frame.Raster.ChromaFormat}, {frame.Color}");
+                }
+            }
+        }
+
+        // The frames as coded, without the film grain the stream asks for; broken units are skipped to the next key frame and
+        // reported as Av1.CorruptFrame or Av1.MissingReference, or repeat the last good frame with Conceal.
+        VideoReaderOptions options = new()
+        {
+            Decoder = new VideoDecoderOptions { ApplyFilmGrain = false },
+            Errors = DecodeErrorMode.Conceal,
+        };
+        using VideoReader plain = VideoReader.Open("av1.webm", options);
+        using YuvVideoFrame first = plain.ReadFrame()!;
+        #endregion
+
+        Assert.Equal(10, first.Raster.BitDepth);
+        Assert.Same(Av1Codec.Instance, VideoCodecs.Av1);
+    }
+
+    [Fact]
+    public void SplitAv1Packets()
+    {
+        using SampleFiles files = new();
+
+        #region video-av1-packets
+        // An AV1 packet is a temporal unit: split it into its frames and join them back; build the av1C an MP4 or Matroska
+        // track needs from its sequence header.
+        using IDemuxer demuxer = MediaFile.OpenDemuxer("clip-av1.ivf");
+        using EncodedPacket packet = demuxer.ReadPacket()!;
+        IReadOnlyList<ReadOnlyMemory<byte>> frames = Av1Packets.SplitFrames(packet.Data);
+        byte[] unit = Av1Packets.MergeFrames(frames);
+        byte[]? av1C = Av1Packets.ExtractConfig(packet.Data.Span);
+        Console.WriteLine($"{frames.Count} frames, av1C of {av1C?.Length} bytes");
+        #endregion
+
+        Assert.Equal(packet.Data.ToArray(), unit);
+        Assert.Equal(demuxer.Tracks[0].CodecPrivate.ToArray(), av1C);
+    }
 }

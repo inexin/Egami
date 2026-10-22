@@ -24,6 +24,9 @@ public static class VideoCodecs
     /// <summary>Gets the VP9 codec.</summary>
     public static VideoCodec Vp9 => Vp9Codec.Instance;
 
+    /// <summary>Gets the AV1 codec.</summary>
+    public static VideoCodec Av1 => Av1Codec.Instance;
+
     /// <summary>Creates a decoder for a track, which hands out frames in the codec's own planar YUV layout.</summary>
     /// <param name="track">The track.</param>
     /// <param name="options">How to decode, or <see langword="null"/> for the defaults.</param>
