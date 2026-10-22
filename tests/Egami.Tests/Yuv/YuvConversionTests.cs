@@ -30,7 +30,7 @@ public class YuvConversionTests
         {
             foreach (ChromaSiting siting in Enum.GetValues<ChromaSiting>())
             {
-                if (format is ChromaFormat.Yuv420 or ChromaFormat.Yuv422 || siting == ChromaSiting.Center)
+                if (format is not (ChromaFormat.Yuv444 or ChromaFormat.Yuv400) || siting == ChromaSiting.Center)
                 {
                     foreach (int depth in new[] { 8, 10, 12, 16 })
                     {

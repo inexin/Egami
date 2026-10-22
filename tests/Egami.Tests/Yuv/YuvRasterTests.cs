@@ -13,6 +13,9 @@ public class YuvRasterTests
     [InlineData(ChromaFormat.Yuv422, 17, 9, 9, 9)]
     [InlineData(ChromaFormat.Yuv444, 17, 9, 17, 9)]
     [InlineData(ChromaFormat.Yuv400, 17, 9, 0, 0)]
+    [InlineData(ChromaFormat.Yuv411, 17, 9, 5, 9)]
+    [InlineData(ChromaFormat.Yuv410, 17, 9, 5, 3)]
+    [InlineData(ChromaFormat.Yuv410, 1, 1, 1, 1)]
     public void PlaneSizesRoundUp(ChromaFormat format, int width, int height, int chromaWidth, int chromaHeight)
     {
         using YuvRaster<byte> yuv = YuvRaster.Create(width, height, format, YuvColor.Jpeg);

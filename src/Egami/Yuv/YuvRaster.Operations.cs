@@ -9,7 +9,8 @@ public abstract partial class YuvRaster
 {
     /// <summary>
     /// Returns a new raster holding <paramref name="rect"/> of this one. The rectangle's corner must fall on a chroma sample: even
-    /// x and y for 4:2:0, even x for 4:2:2. Chroma is copied exactly, with no filtering.
+    /// x and y for 4:2:0, even x for 4:2:2, x a multiple of 4 for 4:1:1, and x and y multiples of 4 for 4:1:0. Chroma is copied
+    /// exactly, with no filtering.
     /// </summary>
     /// <param name="rect">The area to keep, in luma pixels.</param>
     /// <returns>The new raster, with a copy of the metadata. The caller must dispose it.</returns>
@@ -188,6 +189,8 @@ public sealed partial class YuvRaster<TSample>
     {
         ChromaFormat.Yuv420 => (2, 2),
         ChromaFormat.Yuv422 => (2, 1),
+        ChromaFormat.Yuv411 => (4, 1),
+        ChromaFormat.Yuv410 => (4, 4),
         _ => (1, 1),
     };
 

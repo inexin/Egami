@@ -2372,6 +2372,8 @@ Egami.Pixels.Bgra4444.ToScaled() -> System.Numerics.Vector4
 Egami.Pixels.Bgra4444.Value -> ushort
 Egami.Pixels.ChromaFormat
 Egami.Pixels.ChromaFormat.Yuv400 = 3 -> Egami.Pixels.ChromaFormat
+Egami.Pixels.ChromaFormat.Yuv410 = 5 -> Egami.Pixels.ChromaFormat
+Egami.Pixels.ChromaFormat.Yuv411 = 4 -> Egami.Pixels.ChromaFormat
 Egami.Pixels.ChromaFormat.Yuv420 = 0 -> Egami.Pixels.ChromaFormat
 Egami.Pixels.ChromaFormat.Yuv422 = 1 -> Egami.Pixels.ChromaFormat
 Egami.Pixels.ChromaFormat.Yuv444 = 2 -> Egami.Pixels.ChromaFormat

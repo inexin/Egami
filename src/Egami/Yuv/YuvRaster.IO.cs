@@ -140,8 +140,9 @@ public abstract partial class YuvRaster
     /// <summary>
     /// Encodes the picture in <paramref name="format"/>. JPEG encodes the planes straight, with no color conversion or chroma
     /// downsampling, when they are 8-bit BT.601 at full range (4:2:0, 4:2:2 and 4:4:4 keep their sampling, 4:0:0 is gray); other
-    /// planes are converted to that first. AVIF encodes any planes of 8, 10 or 12 bits straight, their matrix, range and chroma
-    /// siting written into the file, and alpha as an alpha item. Other formats are saved from
+    /// planes are converted to that first, 4:1:1 to 4:2:2 and 4:1:0 to 4:2:0. AVIF encodes planes of 8, 10 or 12 bits straight,
+    /// their matrix, range and chroma siting written into the file, and alpha as an alpha item; AV1 has no 4:1:1 or 4:1:0, so those
+    /// are saved from RGB. Other formats are saved from
     /// <see cref="ToRaster(YuvConvertOptions?)"/>.
     /// </summary>
     /// <param name="stream">Where to write, from its current position. It is left open.</param>
@@ -161,19 +162,21 @@ public abstract partial class YuvRaster
         if (format.Writer is Formats.Jpeg.JpegWriter)
         {
             Formats.Jpeg.JpegWriterOptions jpeg = options as Formats.Jpeg.JpegWriterOptions ?? new Formats.Jpeg.JpegWriterOptions { StripMetadata = options?.StripMetadata ?? false };
-            if (this is YuvRaster<byte> planes && Color.Matrix == YuvMatrix.Bt601 && Color.Range == YuvRange.Full)
+            // JPEG files here are 4:2:0, 4:2:2, 4:4:4 or gray: 4:1:1 is written as 4:2:2 and 4:1:0 as 4:2:0.
+            ChromaFormat chroma = ChromaFormat switch { ChromaFormat.Yuv411 => ChromaFormat.Yuv422, ChromaFormat.Yuv410 => ChromaFormat.Yuv420, _ => ChromaFormat };
+            if (this is YuvRaster<byte> planes && chroma == ChromaFormat && Color.Matrix == YuvMatrix.Bt601 && Color.Range == YuvRange.Full)
             {
                 Formats.Jpeg.JpegWriter.WritePlanes(planes, stream, jpeg);
                 return;
             }
 
             using Raster rgb = BitDepth == 8 ? ToRaster<Rgb8>() : ToRaster<Rgba16>();
-            using YuvRaster<byte> converted = FromRaster(rgb, ChromaFormat, YuvColor.Jpeg);
+            using YuvRaster<byte> converted = FromRaster(rgb, chroma, YuvColor.Jpeg);
             Formats.Jpeg.JpegWriter.WritePlanes(converted, stream, jpeg);
             return;
         }
 
-        if (format.Writer is Formats.Avif.AvifWriter && BitDepth is 8 or 10 or 12)
+        if (format.Writer is Formats.Avif.AvifWriter && BitDepth is 8 or 10 or 12 && ChromaFormat is not (ChromaFormat.Yuv411 or ChromaFormat.Yuv410))
         {
             Formats.Avif.AvifWriterOptions avif = options as Formats.Avif.AvifWriterOptions ?? Formats.Avif.AvifWriterOptions.Default;
             if (this is YuvRaster<byte> bytes)

@@ -75,8 +75,9 @@ internal static class YuvReference
             return plane[y, x];
         }
 
-        (int Row, double Weight)[] rows = format == ChromaFormat.Yuv422 ? [(y, 1)] : Taps(y, ch, siting == ChromaSiting.TopLeft, mode);
-        (int Col, double Weight)[] cols = Taps(x, cw, siting != ChromaSiting.Center, mode);
+        (int sx, int sy) = Factors(format);
+        (int Row, double Weight)[] rows = sy == 1 ? [(y, 1)] : Taps(y, sy, ch, siting == ChromaSiting.TopLeft, mode);
+        (int Col, double Weight)[] cols = Taps(x, sx, cw, siting != ChromaSiting.Center, mode);
         double sum = 0;
         foreach ((int r, double wr) in rows)
         {
@@ -88,22 +89,19 @@ internal static class YuvReference
 
         return sum;
 
-        static (int, double)[] Taps(int p, int n, bool cosited, ChromaUpsampling mode)
+        static (int, double)[] Taps(int p, int factor, int n, bool cosited, ChromaUpsampling mode)
         {
-            int i = p / 2;
             if (mode == ChromaUpsampling.Nearest)
             {
-                return [(i, 1)];
+                return [(p / factor, 1)];
             }
 
-            if (cosited)
-            {
-                // Chroma sample i sits on luma 2i: even positions take it, odd ones the midpoint to the next.
-                return p % 2 == 0 ? [(i, 1)] : [(i, 0.5), (Math.Min(i + 1, n - 1), 0.5)];
-            }
-
-            // Chroma sample i sits at luma 2i + 0.5: three quarters of the nearer, one quarter of the farther.
-            return p % 2 == 0 ? [(i, 0.75), (Math.Max(i - 1, 0), 0.25)] : [(i, 0.75), (Math.Min(i + 1, n - 1), 0.25)];
+            // Chroma sample i sits on luma factor × i when co-sited, else at the middle of the luma samples it covers; linear
+            // interpolation between the two samples around p, clamped to the plane.
+            double at = cosited ? (double)p / factor : ((p + 0.5) / factor) - 0.5;
+            int i = (int)Math.Floor(at);
+            double f = at - i;
+            return [(Math.Clamp(i, 0, n - 1), 1 - f), (Math.Clamp(i + 1, 0, n - 1), f)];
         }
     }
 
@@ -160,15 +158,15 @@ internal static class YuvReference
             return (luma, null, null);
         }
 
-        int cw = format == ChromaFormat.Yuv444 ? w : (w + 1) / 2;
-        int ch = format == ChromaFormat.Yuv420 ? (h + 1) / 2 : h;
+        (int sx, int sy) = Factors(format);
+        int cw = (w + sx - 1) / sx, ch = (h + sy - 1) / sy;
         int[,] u = new int[ch, cw], v = new int[ch, cw];
         for (int j = 0; j < ch; j++)
         {
             for (int i = 0; i < cw; i++)
             {
-                (int, double)[] rows = format != ChromaFormat.Yuv420 ? [(j, 1)] : Taps(j, h, color.Siting == ChromaSiting.TopLeft, mode);
-                (int, double)[] cols = format == ChromaFormat.Yuv444 ? [(i, 1)] : Taps(i, w, color.Siting != ChromaSiting.Center, mode);
+                (int, double)[] rows = sy == 1 ? [(j, 1)] : Taps(j, sy, h, color.Siting == ChromaSiting.TopLeft, mode);
+                (int, double)[] cols = sx == 1 ? [(i, 1)] : Taps(i, sx, w, color.Siting != ChromaSiting.Center, mode);
                 double su = 0, sv = 0;
                 foreach ((int r, double wr) in rows)
                 {
@@ -186,16 +184,28 @@ internal static class YuvReference
 
         return (luma, u, v);
 
-        static (int, double)[] Taps(int i, int n, bool cosited, ChromaDownsampling mode)
+        static (int, double)[] Taps(int i, int factor, int n, bool cosited, ChromaDownsampling mode)
         {
             if (mode == ChromaDownsampling.Fast)
             {
-                return [(2 * i, 1)];
+                return [(factor * i, 1)];
             }
 
+            // Co-sited: a triangle of half-width factor on luma factor × i; centered: a box over the luma samples it covers.
+            int at = factor * i;
             return cosited
-                ? [(Math.Max((2 * i) - 1, 0), 0.25), (2 * i, 0.5), (Math.Min((2 * i) + 1, n - 1), 0.25)]
-                : [(2 * i, 0.5), (Math.Min((2 * i) + 1, n - 1), 0.5)];
+                ? [.. Enumerable.Range(1 - factor, (2 * factor) - 1).Select(k => (Math.Clamp(at + k, 0, n - 1), (factor - Math.Abs(k)) / (double)(factor * factor)))]
+                : [.. Enumerable.Range(0, factor).Select(k => (Math.Min(at + k, n - 1), 1.0 / factor))];
         }
     }
+
+    /// <summary>Returns how many luma samples one chroma sample covers across and down.</summary>
+    internal static (int X, int Y) Factors(ChromaFormat format) => format switch
+    {
+        ChromaFormat.Yuv420 => (2, 2),
+        ChromaFormat.Yuv422 => (2, 1),
+        ChromaFormat.Yuv411 => (4, 1),
+        ChromaFormat.Yuv410 => (4, 4),
+        _ => (1, 1),
+    };
 }

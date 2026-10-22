@@ -10,14 +10,19 @@ read and write JPEG and AVIF without the RGB step. Everything else is done on a 
 
 Each plane is a `YuvPlane<TSample>`. `YuvRaster<byte>` holds 8-bit samples; `YuvRaster<ushort>` holds 10-, 12- or 16-bit samples, stored low-bit aligned (a 10-bit
 sample is 0 to 1023), as libvpx, dav1d and libavif hand them out. Chroma planes are half the luma width (4:2:0 and 4:2:2) and half
-the height (4:2:0), rounded up; 4:0:0 has no chroma at all. The planes come from the context's memory source in one block, so
-pooling, `SafetyLimits` and the usage counters cover them.
+the height (4:2:0), rounded up; 4:0:0 has no chroma at all. 4:1:1 (NTSC DV) has chroma at a quarter of the width, and 4:1:0 at a
+quarter of the width and height, also rounded up. The planes come from the context's memory source in one block, so pooling,
+`SafetyLimits` and the usage counters cover them.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PlanarYuv.cs#planes)]
 
 Frames a decoder or the operating system already holds are wrapped without a copy:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PlanarYuv.cs#wrap)]
+
+4:1:1 and 4:1:0 planes wrap, crop, resize and convert like the others:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/PlanarYuv.cs#quarter)]
 
 ## What the samples mean
 
@@ -44,7 +49,8 @@ Conversion is within one level of an exact double-precision implementation of H.
 RGB. Linearizing or tone mapping is a separate step (see [color management](color-management.md)).
 
 Chroma is filtered by its siting both ways: bilinear upsampling (the 3:1 triangle filter for centered chroma, the average between
-co-sited samples otherwise), and averaging that matches the siting on the way back. The fast options repeat or pick samples instead:
+co-sited samples otherwise), and averaging that matches the siting on the way back. 4:1:1 and 4:1:0 use the same rules over four
+luma samples: bilinear weights in eighths, and a box of four (centered) or a 1-2-3-4-3-2-1 triangle (co-sited) on the way back. The fast options repeat or pick samples instead:
 
 [!code-csharp[](../../../tests/Egami.DocSamples/PlanarYuv.cs#options)]
 
@@ -68,8 +74,9 @@ to and from the planes:
 `YuvRaster.Load` gives a YCbCr JPEG's planes exactly as libjpeg-turbo's raw output does: 4:2:0, 4:2:2 or 4:4:4 at the file's own
 sampling (other samplings are replicated to 4:4:4), gray as 4:0:0, also at reduced scale. CMYK, YCCK and RGB JPEGs, and formats
 without planes, throw `NotSupportedException`: load those with `Raster.Load`. Saving 8-bit BT.601 full-range planes as JPEG
-encodes them straight, with the same bytes as libjpeg-turbo's encoder from planes. Saving planes as AVIF encodes them straight
-too, at 8, 10 or 12 bits with any matrix, range and siting (see the [AVIF guide](../formats/avif.md)).
+encodes them straight, with the same bytes as libjpeg-turbo's encoder from planes; 4:1:1 is written as 4:2:2 and 4:1:0 as 4:2:0.
+Saving planes as AVIF encodes them straight too, at 8, 10 or 12 bits with any matrix, range and siting (see the
+[AVIF guide](../formats/avif.md)); AV1 has no 4:1:1 or 4:1:0, so those are saved from RGB.
 
 Loading planes skips chroma upsampling and color conversion, so it is faster than `Raster.Load` on one thread. On several
 threads both are limited by the same Huffman decoding and take about the same time.

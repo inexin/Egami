@@ -206,7 +206,7 @@ internal static class YuvConvert
         where TPixel : unmanaged, IPixelType<TPixel>
         where TVia : unmanaged, IPixelType<TVia>
     {
-        int groupRows = target.ChromaFormat == ChromaFormat.Yuv420 ? 2 : 1;
+        int groupRows = target.ChromaFormat switch { ChromaFormat.Yuv420 => 2, ChromaFormat.Yuv410 => 4, _ => 1 };
         int groups = (target.Height + groupRows - 1) / groupRows;
         long groupBytes = (long)groupRows * target.Width * Unsafe.SizeOf<TPixel>();
         if (RowRunner.IsSequential(groups, groupBytes, target.Context.MaxParallelism))
@@ -359,6 +359,46 @@ internal static class YuvConvert
                 }
             }
         }
+
+        /// <summary>
+        /// Upsamples 4:1:1 or 4:1:0 chroma for luma row <paramref name="y"/> to <paramref name="target"/> at 64 times the sample
+        /// scale, exact, or 16 times rounded once when <paramref name="shift"/> is 2. Weights are the siting's bilinear weights in
+        /// eighths each way, or the nearest sample. <paramref name="t"/> holds one row of vertically weighted chroma.
+        /// </summary>
+        internal static void Quarter<TSample>(YuvPlane<TSample> plane, int y, Span<int> t, Span<int> target, ChromaFormat format, ChromaSiting siting, ChromaUpsampling mode, int max, int shift)
+            where TSample : unmanaged
+        {
+            int half = (1 << shift) >> 1;
+            // Vertical: the row itself for 4:1:1; for 4:1:0 co-sited on luma row 4j for TopLeft, else centered at 4j + 1.5.
+            (int r0, int w0, int r1, int w1) = format == ChromaFormat.Yuv411 ? (y, 8, y, 0)
+                : mode == ChromaUpsampling.Nearest ? (y >> 2, 8, y >> 2, 0)
+                : Taps(siting == ChromaSiting.TopLeft ? 2 * y : (2 * y) - 3, plane.Height);
+            ReadOnlySpan<TSample> a = plane.Row(r0), b = plane.Row(r1);
+            for (int i = 0; i < t.Length; i++)
+            {
+                t[i] = (w0 * Sample(a, i, max)) + (w1 * Sample(b, i, max));
+            }
+
+            for (int x = 0; x < target.Length; x++)
+            {
+                if (mode == ChromaUpsampling.Nearest)
+                {
+                    target[x] = (t[x >> 2] * 8) >> shift;
+                    continue;
+                }
+
+                // Horizontal: co-sited on luma column 4i for Left and TopLeft, centered at 4i + 1.5 for Center.
+                (int c0, int k0, int c1, int k1) = Taps(siting == ChromaSiting.Center ? (2 * x) - 3 : 2 * x, t.Length);
+                target[x] = ((k0 * t[c0]) + (k1 * t[c1]) + half) >> shift;
+            }
+
+            // Position p in eighths of a chroma sample: the two samples around it, clamped to the plane, and their weights.
+            static (int, int, int, int) Taps(int p, int n)
+            {
+                int i = p >> 3, f = p & 7;
+                return (Math.Clamp(i, 0, n - 1), 8 - f, Math.Clamp(i + 1, 0, n - 1), f);
+            }
+        }
     }
 
     /// <summary>The per-band state of a conversion to RGB: buffers and coefficients, reused for every row of the band.</summary>
@@ -377,6 +417,8 @@ internal static class YuvConvert
         private readonly short[] _cr16;
         private readonly int _chromaWidth;
         private readonly int _chromaHeight;
+        private readonly bool _quarter;
+        private readonly int[] _quarterRow;
         private readonly YuvKernels8.ToRgbCoefficients _fixed;
         private readonly YuvKernelsFloat.ToRgbCoefficients _float;
         private readonly bool _useFixed;
@@ -389,18 +431,27 @@ internal static class YuvConvert
             _outBits = outBits;
             (_chromaWidth, _chromaHeight) = YuvPlaneSize.ChromaSize(source.ChromaFormat, source.Width, source.Height);
             _useFixed = source.BitDepth == 8 && outBits == 8;
+            _quarter = source.ChromaFormat is ChromaFormat.Yuv411 or ChromaFormat.Yuv410;
+            _quarterRow = _quarter && _useFixed ? ArrayPool<int>.Shared.Rent(source.Width) : [];
             if (_useFixed)
             {
                 // 8-bit chroma at 16 times the scale fits 16-bit lanes; one spare element each side for the SIMD upsampler.
                 _fixed = YuvKernels8.ToRgbCoefficients.For(source.Color);
                 _t16 = ArrayPool<short>.Shared.Rent(_chromaWidth + 2);
+                _t = _quarter ? ArrayPool<int>.Shared.Rent(_chromaWidth) : [];
                 _cb16 = ArrayPool<short>.Shared.Rent(source.Width + 2);
                 _cr16 = ArrayPool<short>.Shared.Rent(source.Width + 2);
-                _t = _cb = _cr = [];
+                _cb = _cr = [];
             }
             else
             {
                 _float = YuvKernelsFloat.ToRgbCoefficients.For(source.Color, source.BitDepth, (1 << outBits) - 1);
+                if (_quarter)
+                {
+                    // 4:1:1 and 4:1:0 chroma comes at 64 times the sample scale, so the eighths of both ways stay exact.
+                    _float = _float with { COff = _float.COff * 4, CScale = _float.CScale / 4 };
+                }
+
                 _t = ArrayPool<int>.Shared.Rent(Math.Max(_chromaWidth, 1));
                 _cb = ArrayPool<int>.Shared.Rent(source.Width);
                 _cr = ArrayPool<int>.Shared.Rent(source.Width);
@@ -481,6 +532,11 @@ internal static class YuvConvert
                 ArrayPool<short>.Shared.Return(_t16);
                 ArrayPool<short>.Shared.Return(_cb16);
                 ArrayPool<short>.Shared.Return(_cr16);
+                if (_quarter)
+                {
+                    ArrayPool<int>.Shared.Return(_t);
+                    ArrayPool<int>.Shared.Return(_quarterRow);
+                }
             }
             else
             {
@@ -493,6 +549,18 @@ internal static class YuvConvert
         private void ChromaRow8(YuvPlane<TSample> plane, int y, Span<short> target)
         {
             YuvRaster<TSample> s = _source;
+            if (_quarter)
+            {
+                Span<int> row = _quarterRow.AsSpan(0, target.Length);
+                Upsample.Quarter(plane, y, _t.AsSpan(0, _chromaWidth), row, s.ChromaFormat, s.Color.Siting, _options.Upsampling, 255, shift: 2);
+                for (int x = 0; x < row.Length; x++)
+                {
+                    target[x] = (short)row[x];
+                }
+
+                return;
+            }
+
             (int r0, int w0, int r1, int w1) = Upsample.Vertical(s.ChromaFormat, s.Color.Siting, _options.Upsampling, y, _chromaHeight);
             Span<short> t = _t16.AsSpan(0, _chromaWidth);
             ReadOnlySpan<byte> a = MemoryMarshal.Cast<TSample, byte>(plane.Row(r0));
@@ -504,6 +572,12 @@ internal static class YuvConvert
         private void ChromaRow(YuvPlane<TSample> plane, int y, Span<int> target, int max)
         {
             YuvRaster<TSample> s = _source;
+            if (_quarter)
+            {
+                Upsample.Quarter(plane, y, _t.AsSpan(0, _chromaWidth), target, s.ChromaFormat, s.Color.Siting, _options.Upsampling, max, shift: 0);
+                return;
+            }
+
             (int r0, int w0, int r1, int w1) = Upsample.Vertical(s.ChromaFormat, s.Color.Siting, _options.Upsampling, y, _chromaHeight);
             Span<int> t = _t.AsSpan(0, _chromaWidth);
             ReadOnlySpan<TSample> a = plane.Row(r0);
@@ -519,7 +593,7 @@ internal static class YuvConvert
 
     /// <summary>
     /// The per-band state of a conversion from RGB. Group <c>g</c> is chroma row <c>g</c> with the luma rows it covers: two for
-    /// 4:2:0, one otherwise.
+    /// 4:2:0, four for 4:1:0, one otherwise.
     /// </summary>
     private sealed class FromRgbRows<TPixel, TVia, TSample> : IDisposable
         where TPixel : unmanaged, IPixelType<TPixel>
@@ -540,6 +614,7 @@ internal static class YuvConvert
         private readonly int _chromaWidth;
         private readonly int _inMax;
         private readonly bool _boxFromRgb;
+        private readonly long[] _quarterSum;
 
         internal FromRgbRows(YuvRaster<TSample> target, YuvConvertOptions options)
         {
@@ -551,6 +626,8 @@ internal static class YuvConvert
             _useFixed = target.BitDepth == 8 && !wordSource;
             (_chromaWidth, _) = YuvPlaneSize.ChromaSize(target.ChromaFormat, target.Width, target.Height);
             int width = target.Width;
+            bool quarter = target.ChromaFormat is ChromaFormat.Yuv411 or ChromaFormat.Yuv410;
+            _quarterSum = quarter && _useFixed ? ArrayPool<long>.Shared.Rent(2 * _chromaWidth) : [];
             if (typeof(TVia) != typeof(TPixel))
             {
                 _via = ArrayPool<TVia>.Shared.Rent(width);
@@ -586,6 +663,12 @@ internal static class YuvConvert
             ChromaFormat format = t.ChromaFormat;
             bool fast = _options.Downsampling == ChromaDownsampling.Fast;
             ChromaSiting siting = t.Color.Siting;
+            if (format is ChromaFormat.Yuv411 or ChromaFormat.Yuv410)
+            {
+                ConvertQuarter(source, group, format, siting, fast);
+                return;
+            }
+
             int first = format == ChromaFormat.Yuv420 ? 2 * group : group;
 
             // The source rows that feed this chroma row, with their vertical weights.
@@ -694,6 +777,136 @@ internal static class YuvConvert
             if (_floatSum.Length > 0)
             {
                 ArrayPool<float>.Shared.Return(_floatSum);
+            }
+
+            if (_quarterSum.Length > 0)
+            {
+                ArrayPool<long>.Shared.Return(_quarterSum);
+            }
+        }
+
+        /// <summary>
+        /// Converts one group of 4:1:1 (one luma row) or 4:1:0 (four luma rows). Chroma is filtered over each chroma sample's
+        /// columns (and for 4:1:0 rows): a box of four when centered, a 1-2-3-4-3-2-1 triangle when co-sited, the first sample when
+        /// fast; the source rows are added one at a time, so any number fit the one slot.
+        /// </summary>
+        private void ConvertQuarter(Raster<TPixel> source, int group, ChromaFormat format, ChromaSiting siting, bool fast)
+        {
+            YuvRaster<TSample> t = _target;
+            int height = t.Height, width = t.Width, cw = _chromaWidth;
+            bool tall = format == ChromaFormat.Yuv410;
+            int first = tall ? 4 * group : group;
+            int own = tall ? Math.Min(4, height - first) : 1;
+            bool rowTriangle = tall && !fast && siting == ChromaSiting.TopLeft;
+            int from = !tall || fast ? first : rowTriangle ? first - 3 : first;
+            int to = !tall || fast ? first : first + 3;
+            bool columnTriangle = !fast && siting != ChromaSiting.Center;
+            int weight = (fast ? 1 : columnTriangle ? 16 : 4) * (!tall || fast ? 1 : rowTriangle ? 16 : 4);
+            Span<long> fixedSum = _useFixed ? _quarterSum.AsSpan(0, 2 * cw) : default;
+            Span<float> floatSum = _useFixed ? default : _floatSum.AsSpan(0, 2 * cw);
+            fixedSum.Clear();
+            floatSum.Clear();
+            for (int r = from; r <= to; r++)
+            {
+                int y = Math.Clamp(r, 0, height - 1);
+                int rowWeight = rowTriangle ? 4 - Math.Abs(r - first) : 1;
+                ConvertRow(source, y, y >= first && y < first + own, slot: 0);
+                for (int i = 0; i < cw; i++)
+                {
+                    int x = 4 * i;
+                    if (_useFixed)
+                    {
+                        fixedSum[i] += rowWeight * Filter(_fixedRows[0].AsSpan(0, width), x, fast, columnTriangle);
+                        fixedSum[cw + i] += rowWeight * Filter(_fixedRows[1].AsSpan(0, width), x, fast, columnTriangle);
+                    }
+                    else
+                    {
+                        floatSum[i] += rowWeight * FilterFloat(_floatRows[0].AsSpan(0, width), x, fast, columnTriangle);
+                        floatSum[cw + i] += rowWeight * FilterFloat(_floatRows[1].AsSpan(0, width), x, fast, columnTriangle);
+                    }
+                }
+            }
+
+            // Fast mode reads one row: the group's other rows still need luma.
+            for (int y = Math.Max(to + 1, first); y < first + own; y++)
+            {
+                ConvertRow(source, y, owned: true, slot: -1);
+            }
+
+            int chromaRow = group;
+            Span<TSample> u = t.U!.Row(chromaRow), v = t.V!.Row(chromaRow);
+            if (_useFixed)
+            {
+                int shift = 15 + int.Log2(weight);
+                long half = 1L << (shift - 1);
+                for (int i = 0; i < cw; i++)
+                {
+                    SetSample(u, i, (int)Math.Clamp(((fixedSum[i] + half) >> shift) + _fixed.COff, 0, 255));
+                    SetSample(v, i, (int)Math.Clamp(((fixedSum[cw + i] + half) >> shift) + _fixed.COff, 0, 255));
+                }
+            }
+            else
+            {
+                float scale = 1f / weight;
+                for (int i = 0; i < cw; i++)
+                {
+                    SetSample(u, i, YuvKernelsFloat.Round((floatSum[i] * scale) + _float.COff, t.MaxSample));
+                    SetSample(v, i, YuvKernelsFloat.Round((floatSum[cw + i] * scale) + _float.COff, t.MaxSample));
+                }
+            }
+
+            static long Filter(ReadOnlySpan<int> row, int x, bool fast, bool triangle)
+            {
+                int last = row.Length - 1;
+                if (fast)
+                {
+                    return row[x];
+                }
+
+                long sum = 0;
+                if (triangle)
+                {
+                    for (int k = -3; k <= 3; k++)
+                    {
+                        sum += (4 - Math.Abs(k)) * (long)row[Math.Clamp(x + k, 0, last)];
+                    }
+                }
+                else
+                {
+                    for (int k = 0; k < 4; k++)
+                    {
+                        sum += row[Math.Min(x + k, last)];
+                    }
+                }
+
+                return sum;
+            }
+
+            static float FilterFloat(ReadOnlySpan<float> row, int x, bool fast, bool triangle)
+            {
+                int last = row.Length - 1;
+                if (fast)
+                {
+                    return row[x];
+                }
+
+                float sum = 0;
+                if (triangle)
+                {
+                    for (int k = -3; k <= 3; k++)
+                    {
+                        sum += (4 - Math.Abs(k)) * row[Math.Clamp(x + k, 0, last)];
+                    }
+                }
+                else
+                {
+                    for (int k = 0; k < 4; k++)
+                    {
+                        sum += row[Math.Min(x + k, last)];
+                    }
+                }
+
+                return sum;
             }
         }
 

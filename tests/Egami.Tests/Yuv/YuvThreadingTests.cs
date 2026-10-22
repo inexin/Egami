@@ -13,6 +13,8 @@ public class YuvThreadingTests
     [InlineData(ChromaFormat.Yuv420, ChromaSiting.Center, 10)]
     [InlineData(ChromaFormat.Yuv422, ChromaSiting.Left, 8)]
     [InlineData(ChromaFormat.Yuv444, ChromaSiting.Center, 12)]
+    [InlineData(ChromaFormat.Yuv411, ChromaSiting.Left, 8)]
+    [InlineData(ChromaFormat.Yuv410, ChromaSiting.TopLeft, 10)]
     public void OneThreadAndAllCoresGiveTheSameSamples(ChromaFormat format, ChromaSiting siting, int depth)
     {
         EgamiContext one = EgamiContext.Default with { MaxParallelism = 1 };
