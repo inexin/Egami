@@ -136,7 +136,17 @@ internal static class QrDetector
                 List<Vector2> alignments = FindAlignments(bits, topLeft.Center + (correction * (bottomRight - topLeft.Center)), module);
                 if (alignments.Count > 0)
                 {
+                    // The patterns found, then around the nearest one a quarter module at a time: on a curled symbol its
+                    // measured center can be a pixel off where the grid needs it.
                     firsts = [.. alignments.Take(6).Select(p => (Vector2?)p)];
+                    for (int k = 1; k < 25; k++)
+                    {
+                        var nudge = new Vector2((k % 5) - 2, (k / 5) - 2) * (module * 0.25f);
+                        if (nudge != Vector2.Zero)
+                        {
+                            firsts.Add(alignments[0] + nudge);
+                        }
+                    }
                 }
             }
 

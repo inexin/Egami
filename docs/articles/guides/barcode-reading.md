@@ -48,7 +48,8 @@ Data Matrix symbols are found by their L-shaped finder, square and rectangular (
 perspective, on a label lighter than its background or not; the clock tracks count the modules.
 
 PDF417 symbols are found by their start and stop patterns at any rotation and in perspective; a compact symbol, which has
-no stop pattern, is read from its start pattern on. Rows that cannot be read are filled in by error correction.
+no stop pattern, is read from its start pattern on, and one cut off before its start pattern from its stop pattern back.
+Rows and columns that cannot be read are filled in by error correction.
 
 Aztec Codes are found by their bullseye at any rotation and in perspective, compact, full-range and runes; on larger
 full-range symbols the reference grid places the modules out to the edge.
