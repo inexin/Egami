@@ -1,0 +1,15 @@
+{"format":{"format_name": "mov,mp4,m4a,3gp,3g2,mj2", "duration": "1.000000", "nb_streams": 1, "start_time": "0.000000"},
+"tags":{"major_brand": "isom", "minor_version": "1", "compatible_brands": "isom"},
+"chapters":[],
+"streams":[
+{"index": 0, "codec_type": "audio", "codec_name": "aac", "codec_tag_string": "mp4a", "r_frame_rate": "0/0", "avg_frame_rate": "0/0", "time_base": "1/8000", "start_pts": 0, "duration_ts": 8000, "sample_rate": "8000", "channels": 1, "bits_per_sample": 0, "nb_frames": "9", "extradata_size": 5, "disposition": {"default": 1}, "tags": {"language": "und", "handler_name": "SoundHandler", "vendor_id": "[0][0][0][0]"}}],
+"packets":[
+{"stream_index": 0, "pts": -1024, "dts": -1024, "duration": 1024, "size": "357", "pos": "740", "flags": "KD_", "md5": "ea7cf8506067f3ccc314cd912abfc9dd"},
+{"stream_index": 0, "pts": 0, "dts": 0, "duration": 1024, "size": "310", "pos": "1097", "flags": "K__", "md5": "be481a708cb14718eb031280cc0a760b"},
+{"stream_index": 0, "pts": 1024, "dts": 1024, "duration": 1024, "size": "251", "pos": "1407", "flags": "K__", "md5": "73954c9893cbbba2e0078dcf1da46d59"},
+{"stream_index": 0, "pts": 2048, "dts": 2048, "duration": 1024, "size": "229", "pos": "1658", "flags": "K__", "md5": "846c5ef6cc54bba9b6ec07022d21b3cf"},
+{"stream_index": 0, "pts": 3072, "dts": 3072, "duration": 1024, "size": "226", "pos": "1887", "flags": "K__", "md5": "d43e5d435c90583c029e29e3c80d27ce"},
+{"stream_index": 0, "pts": 4096, "dts": 4096, "duration": 1024, "size": "265", "pos": "2113", "flags": "K__", "md5": "80d30a30c927f51be118b6a195e98dc8"},
+{"stream_index": 0, "pts": 5120, "dts": 5120, "duration": 1024, "size": "253", "pos": "2378", "flags": "K__", "md5": "956120e62e27d565bf8e82d8349a0209"},
+{"stream_index": 0, "pts": 6144, "dts": 6144, "duration": 1024, "size": "307", "pos": "2631", "flags": "K__", "md5": "301176f0082a854e8a353b7ca6b2ba1c"},
+{"stream_index": 0, "pts": 7168, "dts": 7168, "duration": 832, "size": "261", "pos": "2938", "flags": "K__", "md5": "8dd48976f193e0ea9953cdd26ee770bd"}]}

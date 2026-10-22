@@ -86,3 +86,40 @@ The libvpx VP9 test vectors (vp90-2 to vp93-2, 314 files with their `.md5` files
 `test/test-data.sha1`) are fetched into `.cache/video/vp9/vectors` with their references in `.cache/video/vp9/reference`. Their license is
 unconfirmed, so they are never committed; tests that need them are skipped when they are missing. `--large` makes the 720p,
 1080p and 2160p clips and the timings of the speed gate.
+
+## MP4 and QuickTime (V4.1)
+
+`tests/video/corpus/mp4` is made by `python tools/video/make-mp4-corpus.py` with FFmpeg 6.1 and GPAC MP4Box 2.2 in
+`tools/video/docker-mp4` (`docker build -t egami-video-mp4:4.1 tools/video/docker-mp4`). Each `<clip>.json` is ffprobe's view of the
+clip: the format with its tags and chapters, the streams with their tags, side data (display matrix) and dispositions, and
+every packet (stream, pts, dts, duration, size, position, flags, MD5). ffprobe applies edit lists, so packets before an edit
+carry the discard flag (D) and start before zero.
+
+| Clip | What it covers |
+| --- | --- |
+| mov-mjpeg-sowt.mov, mov-mjpeg-twos.mov | QuickTime: Motion JPEG (jpeg) with little- and big-endian 16-bit PCM |
+| mov-mjpeg-lpcm24.mov | 24-bit PCM in a version 2 sound description (lpcm) |
+| mov-mjpa.mov | Motion JPEG format A (mjpa) |
+| mov-tmcd.mov | A tmcd timecode track starting at 01:00:00:00 |
+| mov-rotate90.mov, mp4-rotate270-hflip.mp4 | Display matrices: 90 degrees, and 270 degrees mirrored |
+| mp4-mjpeg.mp4 | Motion JPEG in ISO MP4 (mp4v with object type 0x6C) |
+| mp4box-vp8.mp4 | VP8 (vp08, vpcC), written by MP4Box since FFmpeg cannot |
+| mp4-vp9-opus.mp4 | VP9 (vp09, vpcC, colr) and Opus (dOps) |
+| mp4-av1.mp4 | AV1 (av01, av1C) |
+| mp4-flac.mp4 | FLAC (fLaC, dfLa) |
+| mp4-h264-aac.mp4, mp4-h264-faststart.mp4 | Pass-through H.264 with B-frames (ctts, edit list) and AAC; moov last and first |
+| mp4-hevc.mp4, m4a-aac.m4a | Pass-through HEVC (hvc1); audio-only AAC |
+| mp4-editlist-trim.mp4 | Stream copy from 0.3 s: edits that start inside the media |
+| mp4-editlist-delay.mp4 | Audio delayed by 0.2 s: an empty edit |
+| mp4-frag.mp4 | Fragmented: empty moov, a moof per keyframe |
+| mp4-cmaf.mp4 | CMAF fragments with a global sidx |
+| mp4box-frag-mfra.mp4 | MP4Box fragments with an mfra index |
+| mp4box-dash.mp4 | MP4Box DASH onDemand: one file of segments with a sidx |
+| mp4box-co64.mp4, mp4box-stz2.mp4 | 64-bit chunk offsets (co64); compact sample sizes (stz2) |
+| mp4box-chapqt.mp4 | A QuickTime chapter text track (tref chap) |
+| mp4-metadata.mp4, mov-metadata.mov | ilst tags, Nero chpl and a chapter track, cover art (covr) |
+| mp4-movtext.mp4 | mov_text (tx3g) subtitles with bold and italic style records |
+
+ipcm, sdtp, stz2 with 4- and 8-bit fields, multiple sample descriptions, HDR boxes (mdcv, clli) and broken files are built
+by the tests from the specifications, since the tools above do not write them. No phone or camera files are checked in: none
+with clear redistribution terms were available.

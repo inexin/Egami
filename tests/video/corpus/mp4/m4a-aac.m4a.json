@@ -1,0 +1,15 @@
+{"format":{"format_name": "mov,mp4,m4a,3gp,3g2,mj2", "duration": "1.000000", "nb_streams": 1, "start_time": "0.000000"},
+"tags":{"major_brand": "M4A ", "minor_version": "512", "compatible_brands": "M4A isomiso2", "encoder": "Lavf60.16.100"},
+"chapters":[],
+"streams":[
+{"index": 0, "codec_type": "audio", "codec_name": "aac", "codec_tag_string": "mp4a", "r_frame_rate": "0/0", "avg_frame_rate": "0/0", "time_base": "1/8000", "start_pts": 0, "duration_ts": 8000, "sample_rate": "8000", "channels": 1, "bits_per_sample": 0, "nb_frames": "9", "extradata_size": 5, "disposition": {"default": 1}, "tags": {"language": "und", "handler_name": "SoundHandler", "vendor_id": "[0][0][0][0]"}}],
+"packets":[
+{"stream_index": 0, "pts": -1024, "dts": -1024, "duration": 1024, "size": "522", "pos": "44", "flags": "KD_", "md5": "42837d69bea18f732b0643035e89b788"},
+{"stream_index": 0, "pts": 0, "dts": 0, "duration": 1024, "size": "357", "pos": "566", "flags": "K__", "md5": "43b84f0e0579bb477103921f3816ca7a"},
+{"stream_index": 0, "pts": 1024, "dts": 1024, "duration": 1024, "size": "303", "pos": "923", "flags": "K__", "md5": "109e84b46861e8afbadff3c805ed292d"},
+{"stream_index": 0, "pts": 2048, "dts": 2048, "duration": 1024, "size": "388", "pos": "1226", "flags": "K__", "md5": "d43698f6ce3fde64edffa8c3a0e2cd7f"},
+{"stream_index": 0, "pts": 3072, "dts": 3072, "duration": 1024, "size": "348", "pos": "1614", "flags": "K__", "md5": "80755de2797bb50865de0d690758cc0c"},
+{"stream_index": 0, "pts": 4096, "dts": 4096, "duration": 1024, "size": "426", "pos": "1962", "flags": "K__", "md5": "7e4f099664e79d8097e027f34f85ab4f"},
+{"stream_index": 0, "pts": 5120, "dts": 5120, "duration": 1024, "size": "399", "pos": "2388", "flags": "K__", "md5": "af8e67715cb965cfd8845e951c757afb"},
+{"stream_index": 0, "pts": 6144, "dts": 6144, "duration": 1024, "size": "416", "pos": "2787", "flags": "K__", "md5": "ebb4b1eaffa26eca8c3970e77199308e"},
+{"stream_index": 0, "pts": 7168, "dts": 7168, "duration": 832, "size": "470", "pos": "3203", "flags": "K__", "md5": "64b38cd77143e5295f81ee3462f873eb"}]}
