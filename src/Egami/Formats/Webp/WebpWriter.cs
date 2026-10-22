@@ -92,16 +92,7 @@ internal sealed partial class WebpWriter : IFormatWriter, IRowFormatWriter
         /// <summary>Encodes and writes a still image's file from its ARGB pixels.</summary>
         internal static void WriteStill(Stream output, RasterMetadata metadata, WebpWriterOptions options, bool lossless, Span<uint> argb, int width, int height, int parallelism)
         {
-            bool alpha = false;
-            foreach (uint p in argb)
-            {
-                if (p < 0xFF000000)
-                {
-                    alpha = true;
-                    break;
-                }
-            }
-
+            bool alpha = Vp8lEncoder.HasAlpha(argb);
             if (!lossless)
             {
                 (byte[] frame, byte[]? alphaChunk) = EncodeLossy(argb, width, height, options, alpha);

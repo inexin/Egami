@@ -61,39 +61,40 @@ internal static class Vp8lEncoder
     internal static void Encode(ReadOnlySpan<uint> argb, int width, int height, Vp8lEncoderOptions options, Vp8lBitWriter output)
     {
         int count = width * height;
-        uint[] source = ArrayPool<uint>.Shared.Rent(count);
+        uint[]? source = null;
         uint[] palette = new uint[256];
         try
         {
-            Span<uint> pixels = source.AsSpan(0, count);
-            argb.CopyTo(pixels);
-            bool alpha = false;
-            foreach (uint p in pixels)
-            {
-                if (p < 0xFF000000)
-                {
-                    alpha = true;
-                    break;
-                }
-            }
-
+            ReadOnlySpan<uint> pixels = argb[..count];
+            bool alpha = HasAlpha(pixels);
             if (!options.KeepTransparentColors && alpha)
             {
-                // Fully transparent pixels may take any color; zero joins them into runs and matches.
-                foreach (ref uint p in pixels)
+                // Fully transparent pixels may take any color; zero joins them into runs and matches. Changed in a copy: the caller's
+                // pixels stay as they are, and are read in place when nothing changes.
+                source = ArrayPool<uint>.Shared.Rent(count);
+                Span<uint> changed = source.AsSpan(0, count);
+                pixels.CopyTo(changed);
+                foreach (ref uint p in changed)
                 {
                     if (p < 0x01000000)
                     {
                         p = 0;
                     }
                 }
+
+                pixels = changed;
             }
 
             int colors = Vp8lTransforms.FindPalette(pixels, palette);
             int effort = options.Effort;
             using Vp8lBitWriter trial = new(count);
             long best = long.MaxValue;
-            foreach (Plan plan in Plans(colors, effort, count <= SmallImage, Vp8lTransforms.RankSpatialModes(pixels, width)))
+            bool small = count <= SmallImage;
+
+            // Ranking the spatial modes reads the whole image; only the plans that pick one of them need it.
+            bool ranks = !small && (colors <= 0 || (effort >= 6 && colors > 16));
+            (Vp8lTransforms.SpatialMode, Vp8lTransforms.SpatialMode) ranked = ranks ? Vp8lTransforms.RankSpatialModes(pixels, width) : default;
+            foreach (Plan plan in Plans(colors, effort, small, ranked))
             {
                 trial.Reset();
                 if (!options.Headerless)
@@ -120,9 +121,15 @@ internal static class Vp8lEncoder
         }
         finally
         {
-            ArrayPool<uint>.Shared.Return(source);
+            if (source is not null)
+            {
+                ArrayPool<uint>.Shared.Return(source);
+            }
         }
     }
+
+    /// <summary>Returns whether any pixel is less than fully opaque.</summary>
+    internal static bool HasAlpha(ReadOnlySpan<uint> argb) => argb.IndexOfAnyInRange(0u, 0xFEFFFFFFu) >= 0;
 
     /// <summary>
     /// One way to encode the image: palette indices (in sorted or nearest-neighbour order), or some of subtract green, the predictor

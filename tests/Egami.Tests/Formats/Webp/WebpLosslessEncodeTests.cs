@@ -32,6 +32,34 @@ public class WebpLosslessEncodeTests
         Assert.Empty(back.Metadata.Warnings);
     }
 
+    [Theory]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(16)]
+    [InlineData(17)]
+    public void PalettesRoundTripAtEveryWidth(int colors)
+    {
+        // 2, 4 or 8 indices share a coded pixel up to 16 colors; widths that are not a multiple leave the last one part full.
+        for (int width = 1; width <= 19; width++)
+        {
+            using Raster<Rgba8> raster = Raster.Create<Rgba8>(width, 3);
+            for (int y = 0; y < raster.Height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = ((x * 7) + (y * 3)) % colors;
+                    raster.Row(y)[x] = new Rgba8((byte)(index * 13), (byte)(255 - (index * 11)), (byte)(index * 5), (byte)(255 - index));
+                }
+            }
+
+            byte[] file = Encode(raster, new WebpWriterOptions { Lossless = true });
+            using Raster<Rgba8> back = Raster.Load<Rgba8>(file);
+            Assert.Equal(WebpTestImages.Bytes(raster), WebpTestImages.Bytes(back));
+        }
+    }
+
     [Fact]
     public void OutputDoesNotDependOnTheThreadCount()
     {
