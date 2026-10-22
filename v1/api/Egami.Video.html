@@ -100,8 +100,33 @@ Classes
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.AudioReader.html">AudioReader</a></dt>
+      <dd><p>Reads the audio of a file in a few lines, the twin of <a class="xref" href="Egami.Video.VideoReader.html">VideoReader</a>: opens the container, picks the audio track,
+decodes it and hands out <a class="xref" href="Egami.Video.Audio.AudioFrame.html">AudioFrame</a>s, converted to the sample format, rate and layout asked for (planar float
+by default). Codec delay and padding are trimmed, so the audio has exactly the samples the encoder was given; seeking is
+sample exact.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.AudioReaderOptions.html">AudioReaderOptions</a></dt>
+      <dd><p>How an <a class="xref" href="Egami.Video.AudioReader.html">AudioReader</a> reads and converts.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.AudioTrackInfo.html">AudioTrackInfo</a></dt>
       <dd><p>An audio track: a <a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a> with the sample format.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.AudioWriter.html">AudioWriter</a></dt>
+      <dd><p>Writes an audio file in a few lines, the twin of <a class="xref" href="Egami.Video.VideoWriter.html">VideoWriter</a>: encodes each frame and muxes it, picking the
+container from the file extension. Frames may have any length and sample format; the writer resamples, mixes and converts
+them to what the codec takes. The rate, layout and bit depth come from the options or the first frame.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.AudioWriterOptions.html">AudioWriterOptions</a></dt>
+      <dd><p>What an <a class="xref" href="Egami.Video.AudioWriter.html">AudioWriter</a> writes.</p>
 </dd>
     </dl>
     <dl class="jumplist">

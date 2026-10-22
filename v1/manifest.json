@@ -10751,6 +10751,300 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.AudioCodec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.AudioCodec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.AudioCodec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.AudioCodec.yml\" sourcestartlinenumber=\"1\">An audio codec: which tracks it decodes and how to create its decoder and encoder, the audio twin of\n<xref href=\"Egami.Video.Codecs.VideoCodec\" data-throw-if-not-resolved=\"false\"></xref>. Register a new one with <xref href=\"Egami.Video.MediaContext.WithCodec(Egami.Video.Audio.AudioCodec)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.AudioCodecs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.AudioCodecs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.AudioCodecs",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.AudioCodecs.yml\" sourcestartlinenumber=\"1\">Creates audio decoders from the codecs registered in a <xref href=\"Egami.Video.MediaContext\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.AudioConvertOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.AudioConvertOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.AudioConvertOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.AudioConvertOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Audio.AudioFrame.CopyTo(Egami.Video.Audio.AudioFrame%2cEgami.Video.Audio.AudioConvertOptions)\" data-throw-if-not-resolved=\"false\"></xref> converts samples and channels.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.AudioDecoderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.AudioDecoderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.AudioDecoderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.AudioDecoderOptions.yml\" sourcestartlinenumber=\"1\">How an audio decoder decodes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.AudioEncoderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.AudioEncoderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.AudioEncoderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.AudioEncoderOptions.yml\" sourcestartlinenumber=\"1\">What an audio encoder makes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.AudioFrame.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.AudioFrame.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.AudioFrame",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.AudioFrame.yml\" sourcestartlinenumber=\"1\">A block of decoded audio: <xref href=\"Egami.Video.Audio.AudioFrame.SampleCount\" data-throw-if-not-resolved=\"false\"></xref> samples for every channel of its <xref href=\"Egami.Video.Audio.AudioFrame.Layout\" data-throw-if-not-resolved=\"false\"></xref>, stored as its\n<xref href=\"Egami.Video.Audio.AudioFrame.Format\" data-throw-if-not-resolved=\"false\"></xref> says, with the time of the first sample. The audio twin of <xref href=\"Egami.Video.VideoFrame\" data-throw-if-not-resolved=\"false\"></xref>: decoders hand\nframes out, encoders take them, and the memory comes from the context's memory source, so dispose each frame.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.ChannelLayout.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.ChannelLayout.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.ChannelLayout",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.ChannelLayout.yml\" sourcestartlinenumber=\"1\">Which speaker each channel feeds: a set of <xref href=\"Egami.Video.Audio.Speakers\" data-throw-if-not-resolved=\"false\"></xref> whose channels come in the order of their bits\n(WAVE_FORMAT_EXTENSIBLE order, the one canonical order every decoder hands out), plus any channels with no position, such\nas ambisonic or unknown ones, after them. Decoders of codecs with another order (Vorbis and Opus put center second) remap\ntheir channels to this one.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.ChannelMixer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.ChannelMixer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.ChannelMixer",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.ChannelMixer.yml\" sourcestartlinenumber=\"1\">Mixes one channel layout into another with a matrix: each output channel is a weighted sum of the input channels. The\ndefault matrix follows ITU-R BS.775: a speaker both layouts have passes at full level; a missing center goes to front left\nand right at -3 dB (0.7071); missing surrounds go to the nearest speakers left (side to back and back to side, at full level when\nthat only renames the pair and at -3 dB when it folds a second pair in, else to the front at -3 dB); a mono output takes left and right at -3 dB and surrounds at -6 dB; LFE is dropped unless asked for.\nUpmixing only routes the speakers both layouts share, so no channel is made up. Channels with no position map by index.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.FlacCodec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.FlacCodec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.FlacCodec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.FlacCodec.yml\" sourcestartlinenumber=\"1\">FLAC (RFC 9639), lossless: decodes every stream the format allows (fixed and LPC prediction, every stereo mode, block sizes\nup to 65535, 4 to 32 bits per sample) into planar integer frames, checking the frame CRCs and STREAMINFO's MD5; encodes at\nlevels 0 to 8 with the reference encoder's meaning, default 5. Read and written in .flac files, Matroska and MP4.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.PcmCodec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.PcmCodec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.PcmCodec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.PcmCodec.yml\" sourcestartlinenumber=\"1\">Uncompressed PCM: integer samples of 8 (unsigned), 16, 24 or 32 bits, little-endian (<xref href=\"Egami.Video.Audio.Codecs.PcmCodec.Instance\" data-throw-if-not-resolved=\"false\"></xref>, WAV's) or\nbig-endian (<xref href=\"Egami.Video.Audio.Codecs.PcmCodec.BigEndian\" data-throw-if-not-resolved=\"false\"></xref>, AIFF's and QuickTime's twos), and 32 or 64-bit float (<xref href=\"Egami.Video.Audio.Codecs.PcmCodec.FloatingPoint\" data-throw-if-not-resolved=\"false\"></xref>). Each\ninstance decodes all three codec ids; it encodes its own. Decoded frames are interleaved, in the stored sample type: 24-bit\nsamples come as <xref href=\"Egami.Video.Audio.SampleFormat.S32\" data-throw-if-not-resolved=\"false\"></xref> with <xref href=\"Egami.Video.Audio.AudioFrame.ValidBits\" data-throw-if-not-resolved=\"false\"></xref> 24.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.IAudioDecoder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.IAudioDecoder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.IAudioDecoder",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.IAudioDecoder.yml\" sourcestartlinenumber=\"1\">Turns packets into audio frames with the same send and receive loop as <xref href=\"Egami.Video.Codecs.IVideoDecoder\" data-throw-if-not-resolved=\"false\"></xref>: after\neach <xref href=\"Egami.Video.Audio.IAudioDecoder.Send(Egami.Video.EncodedPacket)\" data-throw-if-not-resolved=\"false\"></xref> call <xref href=\"Egami.Video.Audio.IAudioDecoder.TryReceive(Egami.Video.Audio.AudioFrame%40)\" data-throw-if-not-resolved=\"false\"></xref> until it returns <a href=\"https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool\">false</a>; at the end call\n<xref href=\"Egami.Video.Audio.IAudioDecoder.Flush\" data-throw-if-not-resolved=\"false\"></xref> and receive what is left.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.IAudioEncoder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.IAudioEncoder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.IAudioEncoder",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.IAudioEncoder.yml\" sourcestartlinenumber=\"1\">Turns audio frames into packets, the mirror of <xref href=\"Egami.Video.Audio.IAudioDecoder\" data-throw-if-not-resolved=\"false\"></xref>. Frames may have any length and any sample\nformat; the encoder converts them to its own and cuts packets of <xref href=\"Egami.Video.Audio.IAudioEncoder.FrameSize\" data-throw-if-not-resolved=\"false\"></xref> samples.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Resampler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Resampler.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Resampler",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Resampler.yml\" sourcestartlinenumber=\"1\">Converts audio between any two sample rates with a polyphase windowed-sinc filter (Kaiser window). The filter's phases come\nfrom the rate ratio reduced to lowest terms; when that needs more than 1024 phases (as for unusual rates), coefficients\nbetween 1024 precomputed phases are interpolated. It works in 32-bit float and keeps time exact: the first output sample\nhas the first input sample's timestamp and every later one follows at the output rate, so a resampled track stays in\nsync. Frames of any length and format go in through <xref href=\"Egami.Video.Audio.Resampler.Send(Egami.Video.Audio.AudioFrame)\" data-throw-if-not-resolved=\"false\"></xref>; frames come out through <xref href=\"Egami.Video.Audio.Resampler.TryReceive(Egami.Video.Audio.AudioFrame%40)\" data-throw-if-not-resolved=\"false\"></xref>,\nin <xref href=\"Egami.Video.Audio.Resampler.OutputFormat\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Video.Audio.Resampler.OutputLayout\" data-throw-if-not-resolved=\"false\"></xref>, so conversion and channel mixing run in the same pass.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.ResamplerQuality.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.ResamplerQuality.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.ResamplerQuality",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.ResamplerQuality.yml\" sourcestartlinenumber=\"1\">How hard a <xref href=\"Egami.Video.Audio.Resampler\" data-throw-if-not-resolved=\"false\"></xref> works: the length and steepness of its filter.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.SampleFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.SampleFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.SampleFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.SampleFormat.yml\" sourcestartlinenumber=\"1\">How an <xref href=\"Egami.Video.Audio.AudioFrame\" data-throw-if-not-resolved=\"false\"></xref> stores its samples: the type of one sample, and whether the channels are interleaved (one\nbuffer, a sample of every channel in turn) or planar (one buffer per channel). Integer samples are signed except\n<xref href=\"Egami.Video.Audio.SampleFormat.U8\" data-throw-if-not-resolved=\"false\"></xref>, whose silence is 128; float samples run from -1 to 1.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.SampleFormatExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.SampleFormatExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.SampleFormatExtensions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.SampleFormatExtensions.yml\" sourcestartlinenumber=\"1\">Facts about a <xref href=\"Egami.Video.Audio.SampleFormat\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Speakers.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Speakers.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Speakers",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Speakers.yml\" sourcestartlinenumber=\"1\">Speaker positions, with the bit values of WAVE_FORMAT_EXTENSIBLE's channel mask. Channels in a <xref href=\"Egami.Video.Audio.ChannelLayout\" data-throw-if-not-resolved=\"false\"></xref>\ncome in the order of these bits, lowest first, which is the order WAV and FLAC store them in.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.AudioReader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.AudioReader.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.AudioReader",
+      "Summary": "<p sourcefile=\"api/Egami.Video.AudioReader.yml\" sourcestartlinenumber=\"1\">Reads the audio of a file in a few lines, the twin of <xref href=\"Egami.Video.VideoReader\" data-throw-if-not-resolved=\"false\"></xref>: opens the container, picks the audio track,\ndecodes it and hands out <xref href=\"Egami.Video.Audio.AudioFrame\" data-throw-if-not-resolved=\"false\"></xref>s, converted to the sample format, rate and layout asked for (planar float\nby default). Codec delay and padding are trimmed, so the audio has exactly the samples the encoder was given; seeking is\nsample exact.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.AudioReaderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.AudioReaderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.AudioReaderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.AudioReaderOptions.yml\" sourcestartlinenumber=\"1\">How an <xref href=\"Egami.Video.AudioReader\" data-throw-if-not-resolved=\"false\"></xref> reads and converts.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.AudioTrackInfo.yml",
       "output": {
         ".html": {
@@ -10762,6 +11056,34 @@
       "IsMRef": true,
       "Title": "Egami.Video.AudioTrackInfo",
       "Summary": "<p sourcefile=\"api/Egami.Video.AudioTrackInfo.yml\" sourcestartlinenumber=\"1\">An audio track: a <xref href=\"Egami.Video.TrackInfo\" data-throw-if-not-resolved=\"false\"></xref> with the sample format.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.AudioWriter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.AudioWriter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.AudioWriter",
+      "Summary": "<p sourcefile=\"api/Egami.Video.AudioWriter.yml\" sourcestartlinenumber=\"1\">Writes an audio file in a few lines, the twin of <xref href=\"Egami.Video.VideoWriter\" data-throw-if-not-resolved=\"false\"></xref>: encodes each frame and muxes it, picking the\ncontainer from the file extension. Frames may have any length and sample format; the writer resamples, mixes and converts\nthem to what the codec takes. The rate, layout and bit depth come from the options or the first frame.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.AudioWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.AudioWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.AudioWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.AudioWriterOptions.yml\" sourcestartlinenumber=\"1\">What an <xref href=\"Egami.Video.AudioWriter\" data-throw-if-not-resolved=\"false\"></xref> writes.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11017,6 +11339,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.FlacFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.FlacFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.FlacFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.FlacFormat.yml\" sourcestartlinenumber=\"1\">Native FLAC files (.flac): &quot;fLaC&quot;, the metadata blocks and the frames. STREAMINFO gives the track; Vorbis comments become\n<xref href=\"Egami.Video.MediaInfo.Tags\" data-throw-if-not-resolved=\"false\"></xref> (a WAVEFORMATEXTENSIBLE_CHANNEL_MASK comment the track's layout) and pictures become\nattachments, the front cover named cover.*. Frames are found by their sync code, header CRC-8 and footer CRC-16, so each\npacket is one whole frame; seeking uses the seek table, or one pass over the frames when there is none. The writer stores\nSTREAMINFO, tags, cover art and padding; on a seekable stream it fills in the frame sizes, total samples and MD5 at the end\nand turns part of the padding into a seek table with a point every 10 seconds.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Containers.IDemuxer.yml",
       "output": {
         ".html": {
@@ -11098,6 +11434,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Containers.RawVideo",
       "Summary": "<p sourcefile=\"api/Egami.Video.Containers.RawVideo.yml\" sourcestartlinenumber=\"1\">Headerless raw video (&quot;rawvideo&quot;): frames of one uncompressed layout back to back, as FFmpeg's <code>-f rawvideo</code> reads and\nwrites them. Nothing in the file says the size or layout, so the caller gives them as a track.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.WavFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.WavFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.WavFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.WavFormat.yml\" sourcestartlinenumber=\"1\">WAV (.wav): RIFF WAVE with integer or float PCM, WAVE_FORMAT_EXTENSIBLE (channel mask and valid bits) and the compressed\nformats AVI also names, plus RF64 and BW64 for files over 4 GB (<xref href=\"Egami.Video.Containers.WavFormat.Instance\" data-throw-if-not-resolved=\"false\"></xref>) and Sony Wave64 (.w64,\n<xref href=\"Egami.Video.Containers.WavFormat.Wave64\" data-throw-if-not-resolved=\"false\"></xref>). Streamed files whose sizes were never filled in (0 or 0xFFFFFFFF) are read to the end. LIST/INFO and\nid3 tags become <xref href=\"Egami.Video.MediaInfo.Tags\" data-throw-if-not-resolved=\"false\"></xref>, and cue points with their labels become chapters. The writer stores PCM and\nfloat, INFO tags and chapters as cue points, and turns a WAV file into RF64 by itself when the data passes 4 GB, as EBU Tech\n3306 says (a JUNK chunk reserved after the header becomes the ds64 chunk). Seeking is sample exact.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11978,6 +12328,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/animation.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/audio.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/audio.html"
         }
       },
       "version": ""

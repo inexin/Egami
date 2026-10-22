@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class AudioCodec | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class AudioCodec | Egami ">
+      
+      <meta name="description" content="An audio codec: which tracks it decodes and how to create its decoder and encoder, the audio twin of . Register a new one with .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Audio_AudioCodec.md&amp;value=---%0Auid%3A%20Egami.Video.Audio.AudioCodec%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Audio.AudioCodec">
+
+
+
+  <h1 id="Egami_Video_Audio_AudioCodec" data-uid="Egami.Video.Audio.AudioCodec" class="text-break">
+Class AudioCodec  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L14"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Audio.html">Audio</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>An audio codec: which tracks it decodes and how to create its decoder and encoder, the audio twin of
+<a class="xref" href="Egami.Video.Codecs.VideoCodec.html">VideoCodec</a>. Register a new one with <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_WithCodec_Egami_Video_Audio_AudioCodec_">WithCodec(AudioCodec)</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract class AudioCodec</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">AudioCodec</span></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist derived">
+    <dt>Derived</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Video.Audio.Codecs.FlacCodec.html">FlacCodec</a></div>
+      <div><a class="xref" href="Egami.Video.Audio.Codecs.PcmCodec.html">PcmCodec</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Audio_AudioCodec_examples">Examples</h2>
+  <pre><code class="lang-csharp">// The same send and receive loop as video, for the track the encoder describes (or one a demuxer read).
+using IAudioDecoder decoder = AudioCodecs.CreateDecoder(encoder.Track);
+long decoded = 0;
+foreach (EncodedPacket packet in packets)
+{
+    using (packet)
+    {
+        decoder.Send(packet);
+    }
+
+    while (decoder.TryReceive(out AudioFrame? frame))
+    {
+        using (frame)
+        {
+            decoded += frame.SampleCount;
+        }
+    }
+}
+
+// FLAC decodes to its own integers: S16Planar up to 16 bits, S32Planar above.</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Audio_AudioCodec_CanEncode_" data-uid="Egami.Video.Audio.AudioCodec.CanEncode*"></a>
+
+  <h3 id="Egami_Video_Audio_AudioCodec_CanEncode" data-uid="Egami.Video.Audio.AudioCodec.CanEncode">
+  CanEncode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L23"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Audio.AudioCodec.html#Egami_Video_Audio_AudioCodec_CreateEncoder_Egami_Video_Audio_AudioEncoderOptions_Egami_Video_MediaContext_">CreateEncoder(AudioEncoderOptions, MediaContext)</a> is supported.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public virtual bool CanEncode { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_AudioCodec_CodecId_" data-uid="Egami.Video.Audio.AudioCodec.CodecId*"></a>
+
+  <h3 id="Egami_Video_Audio_AudioCodec_CodecId" data-uid="Egami.Video.Audio.AudioCodec.CodecId">
+  CodecId
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the Matroska codec id that encoders write (<a class="xref" href="Egami.Video.CodecIds.html">CodecIds</a>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract string CodecId { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_AudioCodec_Name_" data-uid="Egami.Video.Audio.AudioCodec.Name*"></a>
+
+  <h3 id="Egami_Video_Audio_AudioCodec_Name" data-uid="Egami.Video.Audio.AudioCodec.Name">
+  Name
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L17"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the codec's name, such as &quot;FLAC&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract string Name { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Audio_AudioCodec_CanDecode_" data-uid="Egami.Video.Audio.AudioCodec.CanDecode*"></a>
+
+  <h3 id="Egami_Video_Audio_AudioCodec_CanDecode_Egami_Video_TrackInfo_" data-uid="Egami.Video.Audio.AudioCodec.CanDecode(Egami.Video.TrackInfo)">
+  CanDecode(TrackInfo)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns whether this codec decodes the track. By default, whether the track's codec id is <a class="xref" href="Egami.Video.Audio.AudioCodec.html#Egami_Video_Audio_AudioCodec_CodecId">CodecId</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public virtual bool CanDecode(TrackInfo track)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>track</code> <a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a></dt>
+    <dd><p>The track.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the codec decodes it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_AudioCodec_CreateDecoder_" data-uid="Egami.Video.Audio.AudioCodec.CreateDecoder*"></a>
+
+  <h3 id="Egami_Video_Audio_AudioCodec_CreateDecoder_Egami_Video_AudioTrackInfo_Egami_Video_Audio_AudioDecoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Audio.AudioCodec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)">
+  CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a decoder for a track.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public abstract IAudioDecoder CreateDecoder(AudioTrackInfo track, AudioDecoderOptions? options, MediaContext context)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>track</code> <a class="xref" href="Egami.Video.AudioTrackInfo.html">AudioTrackInfo</a></dt>
+    <dd><p>The track, as the demuxer describes it.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Audio.AudioDecoderOptions.html">AudioDecoderOptions</a></dt>
+    <dd><p>How to decode, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context frames are allocated from.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.IAudioDecoder.html">IAudioDecoder</a></dt>
+    <dd><p>The decoder.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Audio_AudioCodec_CreateDecoder_Egami_Video_AudioTrackInfo_Egami_Video_Audio_AudioDecoderOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// The same send and receive loop as video, for the track the encoder describes (or one a demuxer read).
+using IAudioDecoder decoder = AudioCodecs.CreateDecoder(encoder.Track);
+long decoded = 0;
+foreach (EncodedPacket packet in packets)
+{
+    using (packet)
+    {
+        decoder.Send(packet);
+    }
+
+    while (decoder.TryReceive(out AudioFrame? frame))
+    {
+        using (frame)
+        {
+            decoded += frame.SampleCount;
+        }
+    }
+}
+
+// FLAC decodes to its own integers: S16Planar up to 16 bits, S32Planar above.</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The track's setup is one the codec cannot decode.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_AudioCodec_CreateEncoder_" data-uid="Egami.Video.Audio.AudioCodec.CreateEncoder*"></a>
+
+  <h3 id="Egami_Video_Audio_AudioCodec_CreateEncoder_Egami_Video_Audio_AudioEncoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Audio.AudioCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions,Egami.Video.MediaContext)">
+  CreateEncoder(AudioEncoderOptions, MediaContext)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates an encoder.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public virtual IAudioEncoder CreateEncoder(AudioEncoderOptions options, MediaContext context)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Audio.AudioEncoderOptions.html">AudioEncoderOptions</a></dt>
+    <dd><p>The sample rate, layout, bit depth and level.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.IAudioEncoder.html">IAudioEncoder</a></dt>
+    <dd><p>The encoder.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Audio_AudioCodec_CreateEncoder_Egami_Video_Audio_AudioEncoderOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// An encoder takes frames of any length and format and cuts packets of its frame size.
+using IAudioEncoder encoder = FlacCodec.Instance.CreateEncoder(
+    new AudioEncoderOptions { SampleRate = 48000, Layout = ChannelLayout.Stereo, BitsPerSample = 16, Level = 5 },
+    MediaContext.Default);
+encoder.Send(tone);
+encoder.Flush();
+List&lt;EncodedPacket&gt; packets = [];
+while (encoder.TryReceive(out EncodedPacket? packet))
+{
+    packets.Add(packet);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The codec cannot encode, or cannot encode these settings.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_AudioCodec_ToString_" data-uid="Egami.Video.Audio.AudioCodec.ToString*"></a>
+
+  <h3 id="Egami_Video_Audio_AudioCodec_ToString" data-uid="Egami.Video.Audio.AudioCodec.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a string that represents the current object.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A string that represents the current object.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/AudioCodec.cs/#L14" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

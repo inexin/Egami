@@ -93,7 +93,8 @@ no copying. It is fully managed and ships only royalty-free codecs:</p>
 <li>Containers: WebM and Matroska, AVI (with OpenDML for files over 1 GB), IVF and YUV4MPEG2, read and written, and headerless raw
 frames.</li>
 <li>Codecs: VP9 (all four profiles, 8, 10 and 12 bit, equal to libvpx frame for frame), VP8 (with WebM alpha) and Motion JPEG
-decode; Motion JPEG and uncompressed encode. Audio and other tracks are copied through untouched.</li>
+decode; Motion JPEG and uncompressed encode. FLAC and PCM audio decode and encode (see <a href="audio.html">Audio</a>); other tracks
+are copied through untouched.</li>
 </ul>
 <h2 id="probing-a-file">Probing a file</h2>
 <p><code>MediaFile.Probe</code> reads the headers and returns a <code>MediaInfo</code>: the container's <code>FormatName</code>, the <code>Duration</code>, and the
@@ -400,7 +401,7 @@ changes its sample description), <code>mp4-fragment-track</code> and <code>mp4-t
 before the one before it) and <code>metadata-dropped</code>. A file whose moov follows its media needs a stream that can seek.</p>
 <h2 id="containers">Containers</h2>
 <p>Each container is a <code>ContainerFormat</code>: <code>MatroskaFormat</code> (WebM and Matroska), <code>Mp4Format</code> (MP4 and QuickTime), <code>AviFormat</code>,
-<code>IvfFormat</code> and <code>Y4mFormat</code>.
+<code>IvfFormat</code>, <code>Y4mFormat</code>, and for audio <code>WavFormat</code> and <code>FlacFormat</code>.
 <code>RawVideo</code> reads and writes headerless frames in a layout you give.</p>
 <pre><code class="lang-csharp">// The containers, by name or extension, and headerless raw frames in a layout you give.
 ContainerFormat? webm = MediaContext.Default.FindContainer(&quot;webm&quot;);

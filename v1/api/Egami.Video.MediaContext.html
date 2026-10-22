@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_MediaContext" data-uid="Egami.Video.MediaContext" class="text-break">
-Class MediaContext  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L21"><i class="bi bi-code-slash"></i></a>
+Class MediaContext  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L23"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -166,11 +166,43 @@ MediaInfo info = MediaFile.Probe("in.mkv", context);</code></pre>
 </h2>
 
 
+  <a id="Egami_Video_MediaContext_AudioCodecs_" data-uid="Egami.Video.MediaContext.AudioCodecs*"></a>
+
+  <h3 id="Egami_Video_MediaContext_AudioCodecs" data-uid="Egami.Video.MediaContext.AudioCodecs">
+  AudioCodecs
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the audio codecs.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;AudioCodec&gt; AudioCodecs { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.Audio.AudioCodec.html">AudioCodec</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_MediaContext_Codecs_" data-uid="Egami.Video.MediaContext.Codecs*"></a>
 
   <h3 id="Egami_Video_MediaContext_Codecs" data-uid="Egami.Video.MediaContext.Codecs">
   Codecs
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L31"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the video codecs.</p>
@@ -202,7 +234,7 @@ MediaInfo info = MediaFile.Probe("in.mkv", context);</code></pre>
 
   <h3 id="Egami_Video_MediaContext_Containers" data-uid="Egami.Video.MediaContext.Containers">
   Containers
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L28"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the containers, tried in order when detecting a file's format.</p>
@@ -234,10 +266,11 @@ MediaInfo info = MediaFile.Probe("in.mkv", context);</code></pre>
 
   <h3 id="Egami_Video_MediaContext_Default" data-uid="Egami.Video.MediaContext.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L55"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the shared default context, with AVI, Matroska, WebM, YUV4MPEG2, IVF and MP4, Motion JPEG, VP8 and uncompressed video registered.</p>
+  <div class="markdown level1 summary"><p>Gets the shared default context, with AVI, Matroska, WebM, YUV4MPEG2, IVF, MP4, WAV, Wave64 and FLAC, Motion JPEG, VP8,
+VP9 and uncompressed video, and PCM and FLAC audio registered.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -266,7 +299,7 @@ MediaInfo info = MediaFile.Probe("in.mkv", context);</code></pre>
 
   <h3 id="Egami_Video_MediaContext_Egami" data-uid="Egami.Video.MediaContext.Egami">
   Egami
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L40"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the Egami context: the memory source decoded frames come from, the parallelism limit for decoding, and the image
@@ -299,7 +332,7 @@ size limits checked on every frame.</p>
 
   <h3 id="Egami_Video_MediaContext_Limits" data-uid="Egami.Video.MediaContext.Limits">
   Limits
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L43"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the limits that reject hostile container structures.</p>
@@ -331,7 +364,7 @@ size limits checked on every frame.</p>
 
   <h3 id="Egami_Video_MediaContext_Warnings" data-uid="Egami.Video.MediaContext.Warnings">
   Warnings
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L49"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets where readers and writers report things they handled but the caller may want to know, such as an AVI writer
@@ -364,11 +397,50 @@ rounding variable frame rate timestamps to its fixed frame grid, or <a href="htt
 </h2>
 
 
+  <a id="Egami_Video_MediaContext_FindAudioCodec_" data-uid="Egami.Video.MediaContext.FindAudioCodec*"></a>
+
+  <h3 id="Egami_Video_MediaContext_FindAudioCodec_Egami_Video_TrackInfo_" data-uid="Egami.Video.MediaContext.FindAudioCodec(Egami.Video.TrackInfo)">
+  FindAudioCodec(TrackInfo)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L96"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds the audio codec that decodes a track, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AudioCodec? FindAudioCodec(TrackInfo track)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>track</code> <a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a></dt>
+    <dd><p>The track whose codec to find.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.AudioCodec.html">AudioCodec</a></dt>
+    <dd><p>The codec, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when none is registered.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="Egami_Video_MediaContext_FindCodec_" data-uid="Egami.Video.MediaContext.FindCodec*"></a>
 
   <h3 id="Egami_Video_MediaContext_FindCodec_Egami_Video_TrackInfo_" data-uid="Egami.Video.MediaContext.FindCodec(Egami.Video.TrackInfo)">
   FindCodec(TrackInfo)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L105"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Finds the codec for a codec id, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
@@ -407,7 +479,7 @@ rounding variable frame rate timestamps to its fixed frame grid, or <a href="htt
 
   <h3 id="Egami_Video_MediaContext_FindContainer_System_String_" data-uid="Egami.Video.MediaContext.FindContainer(System.String)">
   FindContainer(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L114"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Finds the container for a name or file extension (with or without the dot), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
@@ -446,7 +518,7 @@ rounding variable frame rate timestamps to its fixed frame grid, or <a href="htt
 
   <h3 id="Egami_Video_MediaContext_SetDefault_Egami_Video_MediaContext_" data-uid="Egami.Video.MediaContext.SetDefault(Egami.Video.MediaContext)">
   SetDefault(MediaContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L60"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Replaces the shared default context.</p>
@@ -483,9 +555,48 @@ rounding variable frame rate timestamps to its fixed frame grid, or <a href="htt
 
   <a id="Egami_Video_MediaContext_WithCodec_" data-uid="Egami.Video.MediaContext.WithCodec*"></a>
 
+  <h3 id="Egami_Video_MediaContext_WithCodec_Egami_Video_Audio_AudioCodec_" data-uid="Egami.Video.MediaContext.WithCodec(Egami.Video.Audio.AudioCodec)">
+  WithCodec(AudioCodec)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a copy with an audio codec added in front of the others, or replacing one with the same codec id.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaContext WithCodec(AudioCodec codec)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>codec</code> <a class="xref" href="Egami.Video.Audio.AudioCodec.html">AudioCodec</a></dt>
+    <dd><p>The codec.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The new context.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_MediaContext_WithCodec_" data-uid="Egami.Video.MediaContext.WithCodec*"></a>
+
   <h3 id="Egami_Video_MediaContext_WithCodec_Egami_Video_Codecs_VideoCodec_" data-uid="Egami.Video.MediaContext.WithCodec(Egami.Video.Codecs.VideoCodec)">
   WithCodec(VideoCodec)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L78"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a copy with a codec added in front of the others, or replacing one with the same codec id.</p>
@@ -524,7 +635,7 @@ rounding variable frame rate timestamps to its fixed frame grid, or <a href="htt
 
   <h3 id="Egami_Video_MediaContext_WithContainer_Egami_Video_Containers_ContainerFormat_" data-uid="Egami.Video.MediaContext.WithContainer(Egami.Video.Containers.ContainerFormat)">
   WithContainer(ContainerFormat)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L69"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a copy with a container added in front of the others, or replacing one of the same name.</p>
@@ -563,7 +674,7 @@ rounding variable frame rate timestamps to its fixed frame grid, or <a href="htt
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L21" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaContext.cs/#L23" class="edit-link">Edit this page</a>
         </div>
 
 

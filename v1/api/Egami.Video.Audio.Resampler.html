@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Resampler | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Resampler | Egami ">
+      
+      <meta name="description" content="Converts audio between any two sample rates with a polyphase windowed-sinc filter (Kaiser window). The filter&#39;s phases come from the rate ratio reduced to lowest terms; when that needs more than 1024 phases (as for unusual rates), coefficients between 1024 precomputed phases are interpolated. It works in 32-bit float and keeps time exact: the first output sample has the first input sample&#39;s timestamp and every later one follows at the output rate, so a resampled track stays in sync. Frames of any length and format go in through ; frames come out through , in  and , so conversion and channel mixing run in the same pass.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Audio_Resampler.md&amp;value=---%0Auid%3A%20Egami.Video.Audio.Resampler%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Audio.Resampler">
+
+
+
+  <h1 id="Egami_Video_Audio_Resampler" data-uid="Egami.Video.Audio.Resampler" class="text-break">
+Class Resampler  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Audio.html">Audio</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Converts audio between any two sample rates with a polyphase windowed-sinc filter (Kaiser window). The filter's phases come
+from the rate ratio reduced to lowest terms; when that needs more than 1024 phases (as for unusual rates), coefficients
+between 1024 precomputed phases are interpolated. It works in 32-bit float and keeps time exact: the first output sample
+has the first input sample's timestamp and every later one follows at the output rate, so a resampled track stays in
+sync. Frames of any length and format go in through <a class="xref" href="Egami.Video.Audio.Resampler.html#Egami_Video_Audio_Resampler_Send_Egami_Video_Audio_AudioFrame_">Send(AudioFrame)</a>; frames come out through <a class="xref" href="Egami.Video.Audio.Resampler.html#Egami_Video_Audio_Resampler_TryReceive_Egami_Video_Audio_AudioFrame__">TryReceive(out AudioFrame?)</a>,
+in <a class="xref" href="Egami.Video.Audio.Resampler.html#Egami_Video_Audio_Resampler_OutputFormat">OutputFormat</a> and <a class="xref" href="Egami.Video.Audio.Resampler.html#Egami_Video_Audio_Resampler_OutputLayout">OutputLayout</a>, so conversion and channel mixing run in the same pass.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Resampler : IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Resampler</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Audio_Resampler_examples">Examples</h2>
+  <pre><code class="lang-csharp">// 48 kHz to 44.1 kHz with the default quality (100 dB stopband); frames go in and come out like a codec's.
+using Resampler resampler = new(48000, 44100, ChannelLayout.Stereo, ResamplerQuality.Good);
+resampler.Send(tone);
+resampler.Flush();
+long samples = 0;
+while (resampler.TryReceive(out AudioFrame? frame))
+{
+    using (frame)
+    {
+        samples += frame.SampleCount;
+    }
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_Audio_Resampler__ctor_" data-uid="Egami.Video.Audio.Resampler.#ctor*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler__ctor_System_Int32_System_Int32_Egami_Video_Audio_ChannelLayout_Egami_Video_Audio_ResamplerQuality_Egami_Video_MediaContext_" data-uid="Egami.Video.Audio.Resampler.#ctor(System.Int32,System.Int32,Egami.Video.Audio.ChannelLayout,Egami.Video.Audio.ResamplerQuality,Egami.Video.MediaContext)">
+  Resampler(int, int, ChannelLayout, ResamplerQuality, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a resampler.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Resampler(int inputRate, int outputRate, ChannelLayout layout, ResamplerQuality quality = ResamplerQuality.Good, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inputRate</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The input sample rate in hertz.</p>
+</dd>
+    <dt><code>outputRate</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The output sample rate in hertz.</p>
+</dd>
+    <dt><code>layout</code> <a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd><p>The input channels.</p>
+</dd>
+    <dt><code>quality</code> <a class="xref" href="Egami.Video.Audio.ResamplerQuality.html">ResamplerQuality</a></dt>
+    <dd><p>The filter quality. Default <a class="xref" href="Egami.Video.Audio.ResamplerQuality.html#Egami_Video_Audio_ResamplerQuality_Good">Good</a>.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context frames are allocated from, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>A rate is not positive, or the layout has no channels.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The rates are so far apart that the filter would be over 8192 taps long (a ratio of about 40 at <a class="xref" href="Egami.Video.Audio.ResamplerQuality.html#Egami_Video_Audio_ResamplerQuality_Best">Best</a>).</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_Resampler__ctor_" data-uid="Egami.Video.Audio.Resampler.#ctor*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler__ctor_System_Int32_System_Int32_Egami_Video_Audio_ChannelLayout_Egami_Video_Audio_ResamplerQuality_System_Nullable_Egami_Video_Audio_ChannelLayout__Egami_Video_Audio_SampleFormat_Egami_Video_MediaContext_" data-uid="Egami.Video.Audio.Resampler.#ctor(System.Int32,System.Int32,Egami.Video.Audio.ChannelLayout,Egami.Video.Audio.ResamplerQuality,System.Nullable{Egami.Video.Audio.ChannelLayout},Egami.Video.Audio.SampleFormat,Egami.Video.MediaContext)">
+  Resampler(int, int, ChannelLayout, ResamplerQuality, ChannelLayout?, SampleFormat, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a resampler that also mixes to another layout and hands out another sample format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Resampler(int inputRate, int outputRate, ChannelLayout layout, ResamplerQuality quality, ChannelLayout? outputLayout, SampleFormat outputFormat, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inputRate</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The input sample rate in hertz.</p>
+</dd>
+    <dt><code>outputRate</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The output sample rate in hertz.</p>
+</dd>
+    <dt><code>layout</code> <a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd><p>The input channels.</p>
+</dd>
+    <dt><code>quality</code> <a class="xref" href="Egami.Video.Audio.ResamplerQuality.html">ResamplerQuality</a></dt>
+    <dd><p>The filter quality.</p>
+</dd>
+    <dt><code>outputLayout</code> <a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a>?</dt>
+    <dd><p>The output channels, mixed with the default <a class="xref" href="Egami.Video.Audio.ChannelMixer.html">ChannelMixer</a> matrix, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to keep the input's.</p>
+</dd>
+    <dt><code>outputFormat</code> <a class="xref" href="Egami.Video.Audio.SampleFormat.html">SampleFormat</a></dt>
+    <dd><p>The output sample format.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context frames are allocated from, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Audio_Resampler_FilterLength_" data-uid="Egami.Video.Audio.Resampler.FilterLength*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_FilterLength" data-uid="Egami.Video.Audio.Resampler.FilterLength">
+  FilterLength
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L168"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the filter's length in input samples: the delay before the last output sample of a block is final.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int FilterLength { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Resampler_InputRate_" data-uid="Egami.Video.Audio.Resampler.InputRate*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_InputRate" data-uid="Egami.Video.Audio.Resampler.InputRate">
+  InputRate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L150"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the input sample rate.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int InputRate { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Resampler_Layout_" data-uid="Egami.Video.Audio.Resampler.Layout*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_Layout" data-uid="Egami.Video.Audio.Resampler.Layout">
+  Layout
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the input channels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChannelLayout Layout { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Resampler_OutputFormat_" data-uid="Egami.Video.Audio.Resampler.OutputFormat*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_OutputFormat" data-uid="Egami.Video.Audio.Resampler.OutputFormat">
+  OutputFormat
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the output sample format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SampleFormat OutputFormat { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.SampleFormat.html">SampleFormat</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Resampler_OutputLayout_" data-uid="Egami.Video.Audio.Resampler.OutputLayout*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_OutputLayout" data-uid="Egami.Video.Audio.Resampler.OutputLayout">
+  OutputLayout
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L159"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the output channels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChannelLayout OutputLayout { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Resampler_OutputRate_" data-uid="Egami.Video.Audio.Resampler.OutputRate*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_OutputRate" data-uid="Egami.Video.Audio.Resampler.OutputRate">
+  OutputRate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L153"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the output sample rate.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int OutputRate { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Resampler_Quality_" data-uid="Egami.Video.Audio.Resampler.Quality*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_Quality" data-uid="Egami.Video.Audio.Resampler.Quality">
+  Quality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the filter quality.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ResamplerQuality Quality { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ResamplerQuality.html">ResamplerQuality</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Audio_Resampler_Dispose_" data-uid="Egami.Video.Audio.Resampler.Dispose*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_Dispose" data-uid="Egami.Video.Audio.Resampler.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L255"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Drops the frames ready.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Resampler_Flush_" data-uid="Egami.Video.Audio.Resampler.Flush*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_Flush" data-uid="Egami.Video.Audio.Resampler.Flush">
+  Flush()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L207"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Tells the resampler no more input comes, so it hands out the samples its filter still holds.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Flush()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Resampler_Reset_" data-uid="Egami.Video.Audio.Resampler.Reset*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_Reset" data-uid="Egami.Video.Audio.Resampler.Reset">
+  Reset()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L232"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Drops the input held and the frames ready, for example after a seek; the next frame starts the time line again.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Reset()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_Resampler_Send_" data-uid="Egami.Video.Audio.Resampler.Send*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_Send_Egami_Video_Audio_AudioFrame_" data-uid="Egami.Video.Audio.Resampler.Send(Egami.Video.Audio.AudioFrame)">
+  Send(AudioFrame)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L173"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gives the resampler a frame of the input rate and layout, in any sample format. The caller keeps the frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Send(AudioFrame frame)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Video.Audio.AudioFrame.html">AudioFrame</a></dt>
+    <dd><p>The frame.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The frame's rate or channel count differs from the input's.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_Resampler_TryReceive_" data-uid="Egami.Video.Audio.Resampler.TryReceive*"></a>
+
+  <h3 id="Egami_Video_Audio_Resampler_TryReceive_Egami_Video_Audio_AudioFrame__" data-uid="Egami.Video.Audio.Resampler.TryReceive(Egami.Video.Audio.AudioFrame@)">
+  TryReceive(out AudioFrame?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L229"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Takes the next resampled frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryReceive(out AudioFrame? frame)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Video.Audio.AudioFrame.html">AudioFrame</a></dt>
+    <dd><p>The frame, which the caller must dispose.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether a frame was ready.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Resampler.cs/#L34" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

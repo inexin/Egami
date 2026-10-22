@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_AudioTrackInfo" data-uid="Egami.Video.AudioTrackInfo" class="text-break">
-Class AudioTrackInfo  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L139"><i class="bi bi-code-slash"></i></a>
+Class AudioTrackInfo  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L140"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -221,7 +221,7 @@ foreach (AttachmentInfo attachment in metadata.Attachments)
 
   <h3 id="Egami_Video_AudioTrackInfo_BitsPerSample" data-uid="Egami.Video.AudioTrackInfo.BitsPerSample">
   BitsPerSample
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L148"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L149"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the bits per sample, or 0 for compressed formats that have none.</p>
@@ -253,7 +253,7 @@ foreach (AttachmentInfo attachment in metadata.Attachments)
 
   <h3 id="Egami_Video_AudioTrackInfo_Channels" data-uid="Egami.Video.AudioTrackInfo.Channels">
   Channels
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L146"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the number of channels.</p>
@@ -281,11 +281,45 @@ foreach (AttachmentInfo attachment in metadata.Attachments)
 
 
 
+  <a id="Egami_Video_AudioTrackInfo_Layout_" data-uid="Egami.Video.AudioTrackInfo.Layout*"></a>
+
+  <h3 id="Egami_Video_AudioTrackInfo_Layout" data-uid="Egami.Video.AudioTrackInfo.Layout">
+  Layout
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the speaker of each channel when the container names them (a WAVE_FORMAT_EXTENSIBLE channel mask, an MP4 chnl box,
+FLAC's WAVEFORMATEXTENSIBLE_CHANNEL_MASK tag), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when it does not; decoders then assume
+<a class="xref" href="Egami.Video.Audio.ChannelLayout.html#Egami_Video_Audio_ChannelLayout_ForChannelCount_System_Int32_">ForChannelCount(int)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChannelLayout? Layout { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_AudioTrackInfo_SampleRate_" data-uid="Egami.Video.AudioTrackInfo.SampleRate*"></a>
 
   <h3 id="Egami_Video_AudioTrackInfo_SampleRate" data-uid="Egami.Video.AudioTrackInfo.SampleRate">
   SampleRate
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L143"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the sample rate in hertz.</p>
@@ -313,11 +347,44 @@ foreach (AttachmentInfo attachment in metadata.Attachments)
 
 
 
+  <a id="Egami_Video_AudioTrackInfo_SeekPreRoll_" data-uid="Egami.Video.AudioTrackInfo.SeekPreRoll*"></a>
+
+  <h3 id="Egami_Video_AudioTrackInfo_SeekPreRoll" data-uid="Egami.Video.AudioTrackInfo.SeekPreRoll">
+  SeekPreRoll
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how much audio before a seek target must be decoded for the output to be right from the target on (Matroska
+SeekPreRoll: 80 ms for Opus), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none, as for PCM and FLAC.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime? SeekPreRoll { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L139" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L140" class="edit-link">Edit this page</a>
         </div>
 
 

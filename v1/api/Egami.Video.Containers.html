@@ -107,6 +107,16 @@ writes Motion JPEG video with audio and other tracks copied through.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.FlacFormat.html">FlacFormat</a></dt>
+      <dd><p>Native FLAC files (.flac): &quot;fLaC&quot;, the metadata blocks and the frames. STREAMINFO gives the track; Vorbis comments become
+<a class="xref" href="Egami.Video.MediaInfo.html#Egami_Video_MediaInfo_Tags">Tags</a> (a WAVEFORMATEXTENSIBLE_CHANNEL_MASK comment the track's layout) and pictures become
+attachments, the front cover named cover.*. Frames are found by their sync code, header CRC-8 and footer CRC-16, so each
+packet is one whole frame; seeking uses the seek table, or one pass over the frames when there is none. The writer stores
+STREAMINFO, tags, cover art and padding; on a seekable stream it fills in the frame sizes, total samples and MD5 at the end
+and turns part of the padding into a seek table with a point every 10 seconds.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Containers.IvfFormat.html">IvfFormat</a></dt>
       <dd><p>IVF (.ivf): the bare frame container libvpx's tools and the VP8, VP9 and AV1 test vectors use. A 32-byte file header (FourCC,
 size, time base, frame count) and a 12-byte header per frame (size, timestamp), with no index. Reads and writes VP8
@@ -132,6 +142,16 @@ display matrix becomes <a class="xref" href="Egami.Video.VideoTrackInfo.html#Ega
       <dt><a class="xref" href="Egami.Video.Containers.RawVideo.html">RawVideo</a></dt>
       <dd><p>Headerless raw video (&quot;rawvideo&quot;): frames of one uncompressed layout back to back, as FFmpeg's <code>-f rawvideo</code> reads and
 writes them. Nothing in the file says the size or layout, so the caller gives them as a track.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.WavFormat.html">WavFormat</a></dt>
+      <dd><p>WAV (.wav): RIFF WAVE with integer or float PCM, WAVE_FORMAT_EXTENSIBLE (channel mask and valid bits) and the compressed
+formats AVI also names, plus RF64 and BW64 for files over 4 GB (<a class="xref" href="Egami.Video.Containers.WavFormat.html#Egami_Video_Containers_WavFormat_Instance">Instance</a>) and Sony Wave64 (.w64,
+<a class="xref" href="Egami.Video.Containers.WavFormat.html#Egami_Video_Containers_WavFormat_Wave64">Wave64</a>). Streamed files whose sizes were never filled in (0 or 0xFFFFFFFF) are read to the end. LIST/INFO and
+id3 tags become <a class="xref" href="Egami.Video.MediaInfo.html#Egami_Video_MediaInfo_Tags">Tags</a>, and cue points with their labels become chapters. The writer stores PCM and
+float, INFO tags and chapters as cue points, and turns a WAV file into RF64 by itself when the data passes 4 GB, as EBU Tech
+3306 says (a JUNK chunk reserved after the header becomes the ds64 chunk). Seeking is sample exact.</p>
 </dd>
     </dl>
     <dl class="jumplist">

@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct ChannelLayout | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct ChannelLayout | Egami ">
+      
+      <meta name="description" content="Which speaker each channel feeds: a set of  whose channels come in the order of their bits (WAVE_FORMAT_EXTENSIBLE order, the one canonical order every decoder hands out), plus any channels with no position, such as ambisonic or unknown ones, after them. Decoders of codecs with another order (Vorbis and Opus put center second) remap their channels to this one.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Audio_ChannelLayout.md&amp;value=---%0Auid%3A%20Egami.Video.Audio.ChannelLayout%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Audio.ChannelLayout">
+
+
+
+  <h1 id="Egami_Video_Audio_ChannelLayout" data-uid="Egami.Video.Audio.ChannelLayout" class="text-break">
+Struct ChannelLayout  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L15"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Audio.html">Audio</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Which speaker each channel feeds: a set of <a class="xref" href="Egami.Video.Audio.Speakers.html">Speakers</a> whose channels come in the order of their bits
+(WAVE_FORMAT_EXTENSIBLE order, the one canonical order every decoder hands out), plus any channels with no position, such
+as ambisonic or unknown ones, after them. Decoders of codecs with another order (Vorbis and Opus put center second) remap
+their channels to this one.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct ChannelLayout : IEquatable&lt;ChannelLayout&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Audio_ChannelLayout_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Channels come in WAVE_FORMAT_EXTENSIBLE order whatever the codec stored: 5.1 is FL, FR, FC, LFE, BL, BR.
+ChannelLayout layout = ChannelLayout.Surround51;
+int lfe = layout.IndexOf(Speakers.LowFrequency);
+Speakers fourth = layout.GetSpeaker(3);
+ChannelLayout custom = new(Speakers.FrontLeft | Speakers.FrontRight | Speakers.TopFrontLeft | Speakers.TopFrontRight);
+ChannelLayout ambisonic = ChannelLayout.Unpositioned(4);</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_Audio_ChannelLayout__ctor_" data-uid="Egami.Video.Audio.ChannelLayout.#ctor*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout__ctor_Egami_Video_Audio_Speakers_" data-uid="Egami.Video.Audio.ChannelLayout.#ctor(Egami.Video.Audio.Speakers)">
+  ChannelLayout(Speakers)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a layout of the given speakers, one channel each.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChannelLayout(Speakers speakers)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>speakers</code> <a class="xref" href="Egami.Video.Audio.Speakers.html">Speakers</a></dt>
+    <dd><p>The speakers.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout__ctor_" data-uid="Egami.Video.Audio.ChannelLayout.#ctor*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout__ctor_Egami_Video_Audio_Speakers_System_Int32_" data-uid="Egami.Video.Audio.ChannelLayout.#ctor(Egami.Video.Audio.Speakers,System.Int32)">
+  ChannelLayout(Speakers, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a layout of the given speakers followed by channels with no position.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChannelLayout(Speakers speakers, int channelCount)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>speakers</code> <a class="xref" href="Egami.Video.Audio.Speakers.html">Speakers</a></dt>
+    <dd><p>The speakers.</p>
+</dd>
+    <dt><code>channelCount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of channels, at least one per speaker.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">channelCount</code> is smaller than the number of speakers or above 255.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="fields">Fields
+</h2>
+
+
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_MaxChannels" data-uid="Egami.Video.Audio.ChannelLayout.MaxChannels">
+  MaxChannels
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the most channels a layout holds: 255.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const int MaxChannels = 255</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_ChannelCount_" data-uid="Egami.Video.Audio.ChannelLayout.ChannelCount*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_ChannelCount" data-uid="Egami.Video.Audio.ChannelLayout.ChannelCount">
+  ChannelCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of channels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int ChannelCount { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_IsPositioned_" data-uid="Egami.Video.Audio.ChannelLayout.IsPositioned*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_IsPositioned" data-uid="Egami.Video.Audio.ChannelLayout.IsPositioned">
+  IsPositioned
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether every channel has a speaker position.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsPositioned { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Mono_" data-uid="Egami.Video.Audio.ChannelLayout.Mono*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Mono" data-uid="Egami.Video.Audio.ChannelLayout.Mono">
+  Mono
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a single front center channel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Mono { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Quad_" data-uid="Egami.Video.Audio.ChannelLayout.Quad*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Quad" data-uid="Egami.Video.Audio.ChannelLayout.Quad">
+  Quad
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets quad: front left and right, back left and right.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Quad { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Speakers_" data-uid="Egami.Video.Audio.ChannelLayout.Speakers*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Speakers" data-uid="Egami.Video.Audio.ChannelLayout.Speakers">
+  Speakers
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the speakers with a channel, in channel order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Speakers Speakers { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.Speakers.html">Speakers</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Stereo_" data-uid="Egami.Video.Audio.ChannelLayout.Stereo*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Stereo" data-uid="Egami.Video.Audio.ChannelLayout.Stereo">
+  Stereo
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets front left and right.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Stereo { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Surround21_" data-uid="Egami.Video.Audio.ChannelLayout.Surround21*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Surround21" data-uid="Egami.Video.Audio.ChannelLayout.Surround21">
+  Surround21
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets 2.1: front left and right, and LFE.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Surround21 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Surround30_" data-uid="Egami.Video.Audio.ChannelLayout.Surround30*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Surround30" data-uid="Egami.Video.Audio.ChannelLayout.Surround30">
+  Surround30
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets 3.0: front left, right and center.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Surround30 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Surround50_" data-uid="Egami.Video.Audio.ChannelLayout.Surround50*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Surround50" data-uid="Egami.Video.Audio.ChannelLayout.Surround50">
+  Surround50
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets 5.0: front left, right and center, back left and right.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Surround50 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Surround51_" data-uid="Egami.Video.Audio.ChannelLayout.Surround51*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Surround51" data-uid="Egami.Video.Audio.ChannelLayout.Surround51">
+  Surround51
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets 5.1: front left, right and center, LFE, back left and right (WAV's and FLAC's 6-channel order).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Surround51 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Surround51Side_" data-uid="Egami.Video.Audio.ChannelLayout.Surround51Side*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Surround51Side" data-uid="Egami.Video.Audio.ChannelLayout.Surround51Side">
+  Surround51Side
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets 5.1 with side instead of back surrounds.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Surround51Side { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Surround61_" data-uid="Egami.Video.Audio.ChannelLayout.Surround61*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Surround61" data-uid="Egami.Video.Audio.ChannelLayout.Surround61">
+  Surround61
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets 6.1: front left, right and center, LFE, back center, side left and right (FLAC's 7-channel order).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Surround61 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Surround71_" data-uid="Egami.Video.Audio.ChannelLayout.Surround71*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Surround71" data-uid="Egami.Video.Audio.ChannelLayout.Surround71">
+  Surround71
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets 7.1: front left, right and center, LFE, back left and right, side left and right.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Surround71 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Surround714_" data-uid="Egami.Video.Audio.ChannelLayout.Surround714*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Surround714" data-uid="Egami.Video.Audio.ChannelLayout.Surround714">
+  Surround714
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets 7.1.4: 7.1 with top front left and right and top back left and right.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Surround714 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_ForChannelCount_" data-uid="Egami.Video.Audio.ChannelLayout.ForChannelCount*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_ForChannelCount_System_Int32_" data-uid="Egami.Video.Audio.ChannelLayout.ForChannelCount(System.Int32)">
+  ForChannelCount(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L96"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layout WAV and FLAC assume for a channel count when the file names none: mono, stereo, 3.0, quad, 5.0, 5.1,
+6.1 and 7.1 for 1 to 8 channels (RFC 9639's defaults), and unpositioned channels above that.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout ForChannelCount(int channelCount)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelCount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of channels, 1 to 255.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd><p>The layout.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_GetSpeaker_" data-uid="Egami.Video.Audio.ChannelLayout.GetSpeaker*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_GetSpeaker_System_Int32_" data-uid="Egami.Video.Audio.ChannelLayout.GetSpeaker(System.Int32)">
+  GetSpeaker(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L113"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the speaker a channel feeds, or <a class="xref" href="Egami.Video.Audio.Speakers.html#Egami_Video_Audio_Speakers_None">None</a> for a channel with no position.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Speakers GetSpeaker(int channel)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The channel index.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.Speakers.html">Speakers</a></dt>
+    <dd><p>The speaker.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">channel</code> is not a channel of the layout.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_IndexOf_" data-uid="Egami.Video.Audio.ChannelLayout.IndexOf*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_IndexOf_Egami_Video_Audio_Speakers_" data-uid="Egami.Video.Audio.ChannelLayout.IndexOf(Egami.Video.Audio.Speakers)">
+  IndexOf(Speakers)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the channel that feeds a speaker, or -1 when the layout has none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int IndexOf(Speakers speaker)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>speaker</code> <a class="xref" href="Egami.Video.Audio.Speakers.html">Speakers</a></dt>
+    <dd><p>One speaker.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The channel index, or -1.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_ToString_" data-uid="Egami.Video.Audio.ChannelLayout.ToString*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_ToString" data-uid="Egami.Video.Audio.ChannelLayout.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the layout's name, such as &quot;stereo&quot;, &quot;5.1&quot; or &quot;4 channels&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The name.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Audio_ChannelLayout_Unpositioned_" data-uid="Egami.Video.Audio.ChannelLayout.Unpositioned*"></a>
+
+  <h3 id="Egami_Video_Audio_ChannelLayout_Unpositioned_System_Int32_" data-uid="Egami.Video.Audio.ChannelLayout.Unpositioned(System.Int32)">
+  Unpositioned(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a layout of channels with no speaker positions.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ChannelLayout Unpositioned(int channelCount)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelCount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of channels, 1 to 255.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+    <dd><p>The layout.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/ChannelLayout.cs/#L15" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

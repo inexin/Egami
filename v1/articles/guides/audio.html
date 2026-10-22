@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Audio | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Audio | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/audio.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="audio">Audio</h1>
+
+<p>Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:</p>
+<ul>
+<li>Codecs: FLAC (RFC 9639) decode and encode, and integer and float PCM.</li>
+<li>Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64 and native FLAC, read and written; FLAC and PCM in
+Matroska, WebM and MP4 too.</li>
+<li>A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.</li>
+</ul>
+<p>Opus, Vorbis and other audio tracks are copied through untouched.</p>
+<h2 id="frames">Frames</h2>
+<p>An <code>AudioFrame</code> holds <code>SampleCount</code> samples for every channel of its <code>Layout</code>, its <code>SampleRate</code>, its <code>Format</code> (a
+<code>SampleFormat</code>) and the <code>Timestamp</code> of its first sample. Frame memory comes from the context's memory source; dispose each
+frame. <code>AsSpan&lt;T&gt;(channel)</code> reads a channel of a planar frame, or every channel of an interleaved one; <code>GetSpan&lt;T&gt;</code> writes.</p>
+<pre><code class="lang-csharp">// A frame holds samples for every channel, a sample rate, a layout, a sample format and the time of its first sample.
+using AudioFrame frame = new(SampleFormat.F32Planar, ChannelLayout.Stereo, 48000, 480, MediaTime.Zero);
+Span&lt;float&gt; left = frame.GetSpan&lt;float&gt;(channel: 0);
+for (int i = 0; i &lt; left.Length; i++)
+{
+    left[i] = MathF.Sin(2 * MathF.PI * 1000 * i / 48000);
+}
+
+Console.WriteLine($&quot;{frame.SampleCount} samples, {frame.Duration.ToTimeSpan().TotalMilliseconds} ms, {frame.Layout}&quot;);
+</code></pre>
+<p><code>SampleFormat</code> has unsigned 8-bit, signed 16, 32 and 64-bit, and 32 and 64-bit float samples, each interleaved or planar.
+Integer frames say how many low bits they use in <code>ValidBits</code>: 24-bit audio is <code>S32</code> with 24 valid bits, so WAV and FLAC
+round trip exactly. <code>Convert</code> and <code>CopyTo</code> change the format, with triangular dither when <code>AudioConvertOptions.Dither</code> is
+set; <code>SampleFormatExtensions</code> gives the size and kind of each format.</p>
+<pre><code class="lang-csharp">// Integer samples carry their valid bits: 24-bit audio is S32 with ValidBits 24, from -2^23 to 2^23 - 1.
+using AudioFrame pcm24 = tone.Convert(SampleFormat.S32Planar);
+Console.WriteLine($&quot;{pcm24.Format}, {pcm24.Format.BytesPerSample()} bytes, planar: {pcm24.Format.IsPlanar()}&quot;);
+
+// Down to interleaved 16-bit with triangular dither.
+using AudioFrame cd = tone.Convert(SampleFormat.S16, options: new AudioConvertOptions { Dither = true });
+ReadOnlySpan&lt;short&gt; interleaved = cd.AsSpan&lt;short&gt;();
+</code></pre><h2 id="reading-audio">Reading audio</h2>
+<p><code>AudioReader</code> opens a file and decodes its first audio track (or the one <code>AudioReaderOptions.TrackNumber</code> names). Frames come
+as planar float by default; <code>AudioReaderOptions</code> asks for another <code>SampleFormat</code> (or <code>null</code> for the codec's own), another
+<code>SampleRate</code> (resampled, with a <code>ResamplerQuality</code>) and another <code>Layout</code> (mixed). Codec delay and the packets an MP4 edit list
+leaves out are trimmed, so the audio has exactly the samples the encoder was given; <code>KeepAllSamples</code> keeps them. <code>Seek</code> is
+sample exact.</p>
+<pre><code class="lang-csharp">// The first audio track of any file, as planar float by default; seeking is sample exact.
+using AudioReader reader = AudioReader.Open(&quot;tone.flac&quot;);
+Console.WriteLine($&quot;{reader.Track.CodecId} {reader.SampleRate} Hz {reader.Layout}&quot;);
+reader.Seek(MediaTime.FromSeconds(0.5));
+double peak = 0;
+while (reader.TryRead(out AudioFrame? frame))
+{
+    using (frame)
+    {
+        foreach (float sample in frame.AsSpan&lt;float&gt;(channel: 0))
+        {
+            peak = Math.Max(peak, Math.Abs(sample));
+        }
+    }
+}
+
+// Or ask for one format, rate and layout, and let the reader convert.
+AudioReaderOptions options = new() { SampleFormat = SampleFormat.S16, SampleRate = 22050, Layout = ChannelLayout.Mono };
+using AudioReader mono = AudioReader.Open(&quot;tone.wav&quot;, options);
+</code></pre><h2 id="writing-audio">Writing audio</h2>
+<p><code>AudioWriter</code> encodes frames into a file or stream; the container comes from the extension. <code>AudioWriterOptions</code> sets the
+<code>Codec</code> (FLAC for .flac, PCM elsewhere by default), the <code>SampleRate</code> and <code>Layout</code> to write (converted when the frames differ),
+the <code>BitsPerSample</code> and the compression <code>Level</code>. Frames may have any length and format.</p>
+<pre><code class="lang-csharp">// FLAC for .flac files, PCM for .wav, .w64, .mka and .mp4 unless the options name a codec; FLAC levels run 0 to 8.
+using (AudioWriter writer = AudioWriter.Create(&quot;tone.flac&quot;, new AudioWriterOptions { Level = 8, BitsPerSample = 24 }))
+{
+    writer.Write(tone);
+}
+
+// 16-bit WAV at 44.1 kHz: the writer resamples and converts.
+using (AudioWriter writer = AudioWriter.Create(&quot;tone.wav&quot;, new AudioWriterOptions { SampleRate = 44100, BitsPerSample = 16 }))
+{
+    writer.Write(tone);
+}
+</code></pre>
+<p><code>VideoWriterOptions.AudioCodec</code>, with <code>AudioSampleRate</code> and <code>AudioLayout</code>, adds an audio track to a <code>VideoWriter</code>, which
+<code>WriteAudio</code> fills.</p>
+<pre><code class="lang-csharp">// A video writer can encode an audio track next to the video.
+VideoWriterOptions options = new() { AudioCodec = FlacCodec.Instance, AudioSampleRate = 48000, AudioLayout = ChannelLayout.Stereo };
+using (VideoWriter writer = VideoWriter.Create(&quot;clip.mkv&quot;, options))
+{
+    for (int i = 0; i &lt; 30; i++)
+    {
+        writer.WriteFrame(picture);
+    }
+
+    writer.WriteAudio(tone);
+}
+</code></pre>
+<p><code>MediaFile.Transcode</code> copies a file like <code>MediaFile.Remux</code> but decodes its audio and encodes it again with another codec,
+keeping video and the other tracks as they are.</p>
+<pre><code class="lang-csharp">// Keep every other track as it is and turn the audio into FLAC.
+MediaFile.Transcode(&quot;talk.mka&quot;, &quot;talk-flac.mkv&quot;, audio: FlacCodec.Instance, audioLevel: 8);
+</code></pre><h2 id="channel-layouts-and-mixing">Channel layouts and mixing</h2>
+<p>A <code>ChannelLayout</code> lists the <code>Speakers</code> its channels feed, in WAVE_FORMAT_EXTENSIBLE order, which every decoder hands out
+whatever order its codec stores. Presets run from <code>Mono</code> to <code>Surround714</code>; <code>Unpositioned</code> is for ambisonic or unknown channels,
+and <code>ForChannelCount</code> gives the layout WAV and FLAC assume when a file names none.</p>
+<pre><code class="lang-csharp">// Channels come in WAVE_FORMAT_EXTENSIBLE order whatever the codec stored: 5.1 is FL, FR, FC, LFE, BL, BR.
+ChannelLayout layout = ChannelLayout.Surround51;
+int lfe = layout.IndexOf(Speakers.LowFrequency);
+Speakers fourth = layout.GetSpeaker(3);
+ChannelLayout custom = new(Speakers.FrontLeft | Speakers.FrontRight | Speakers.TopFrontLeft | Speakers.TopFrontRight);
+ChannelLayout ambisonic = ChannelLayout.Unpositioned(4);
+</code></pre>
+<p><code>ChannelMixer</code> mixes one layout into another with a matrix. The default one follows ITU-R BS.775: center and surrounds at
+-3 dB, LFE dropped unless given a level, and upmixing only routes the speakers both layouts share. A matrix of your own works
+too.</p>
+<pre><code class="lang-csharp">// ITU-R BS.775 downmix: center and surrounds at -3 dB, LFE dropped unless given a level.
+ChannelMixer downmix = new(ChannelLayout.Surround51, ChannelLayout.Stereo);
+using AudioFrame stereo = downmix.Mix(surround);
+float centerInLeft = downmix[0, 2];
+
+// Or a matrix of one's own, indexed [output, input].
+ChannelMixer swap = new(ChannelLayout.Stereo, ChannelLayout.Stereo, new float[,] { { 0, 1 }, { 1, 0 } });
+</code></pre><h2 id="resampling">Resampling</h2>
+<p><code>Resampler</code> converts between any two rates with a polyphase windowed-sinc filter. <code>ResamplerQuality.Good</code>, the default, is
+flat within 0.1 dB to 0.9 of the lower Nyquist frequency and 100 dB down above it; <code>Fast</code> and <code>Best</code> (140 dB) trade speed
+for steepness. Time stays exact: the first output sample has the first input sample's time, and the output has the input's
+length at the new rate.</p>
+<pre><code class="lang-csharp">// 48 kHz to 44.1 kHz with the default quality (100 dB stopband); frames go in and come out like a codec's.
+using Resampler resampler = new(48000, 44100, ChannelLayout.Stereo, ResamplerQuality.Good);
+resampler.Send(tone);
+resampler.Flush();
+long samples = 0;
+while (resampler.TryReceive(out AudioFrame? frame))
+{
+    using (frame)
+    {
+        samples += frame.SampleCount;
+    }
+}
+</code></pre><h2 id="codecs-by-hand">Codecs by hand</h2>
+<p>An <code>AudioCodec</code> creates an <code>IAudioDecoder</code> for a track and an <code>IAudioEncoder</code> from <code>AudioEncoderOptions</code>; <code>AudioCodecs</code>
+finds them in a <code>MediaContext</code>. <code>PcmCodec</code> has little-endian, big-endian and float instances; <code>FlacCodec</code> encodes at levels 0
+to 8 with the reference encoder's meaning, default 5, and sizes within 1 % of libFLAC's. Decoders take
+<code>AudioDecoderOptions</code>: <code>Errors</code> as a <code>DecodeErrorMode</code>, and <code>VerifyChecksums</code> for FLAC's frame CRCs and STREAMINFO MD5
+(reported as <code>Flac.BadCrc</code> and <code>Flac.Md5Mismatch</code>). <code>IAudioDecoder.SendLoss</code> reports a lost packet.</p>
+<pre><code class="lang-csharp">// An encoder takes frames of any length and format and cuts packets of its frame size.
+using IAudioEncoder encoder = FlacCodec.Instance.CreateEncoder(
+    new AudioEncoderOptions { SampleRate = 48000, Layout = ChannelLayout.Stereo, BitsPerSample = 16, Level = 5 },
+    MediaContext.Default);
+encoder.Send(tone);
+encoder.Flush();
+List&lt;EncodedPacket&gt; packets = [];
+while (encoder.TryReceive(out EncodedPacket? packet))
+{
+    packets.Add(packet);
+}
+</code></pre><pre><code class="lang-csharp">// The same send and receive loop as video, for the track the encoder describes (or one a demuxer read).
+using IAudioDecoder decoder = AudioCodecs.CreateDecoder(encoder.Track);
+long decoded = 0;
+foreach (EncodedPacket packet in packets)
+{
+    using (packet)
+    {
+        decoder.Send(packet);
+    }
+
+    while (decoder.TryReceive(out AudioFrame? frame))
+    {
+        using (frame)
+        {
+            decoded += frame.SampleCount;
+        }
+    }
+}
+
+// FLAC decodes to its own integers: S16Planar up to 16 bits, S32Planar above.
+</code></pre><h2 id="containers">Containers</h2>
+<p><code>WavFormat.Instance</code> reads WAV, RF64 and BW64 (PCM, float, WAVE_FORMAT_EXTENSIBLE with its channel mask, and streamed files
+whose sizes were never filled in), and writes WAV that turns into RF64 by itself past 4 GB. <code>WavFormat.Wave64</code> is Sony
+Wave64. LIST/INFO and id3 tags become <code>MediaInfo.Tags</code>, and cue points become chapters. <code>FlacFormat</code> reads and writes native
+FLAC: Vorbis comments as tags, pictures as attachments (cover.* for the front cover), and a seek table every 10 seconds.</p>
+<pre><code class="lang-csharp">// WAV, Wave64 and FLAC are containers like the others: remux PCM from WAV into Wave64 without decoding.
+MediaFile.Remux(&quot;tone.wav&quot;, &quot;tone.w64&quot;);
+MediaInfo info = MediaFile.Probe(&quot;tone.w64&quot;);
+AudioTrackInfo track = (AudioTrackInfo)info.Tracks[0];
+Console.WriteLine($&quot;{info.FormatName}: {track.CodecId}, {track.SampleRate} Hz, {track.BitsPerSample} bits, {track.Layout}&quot;);
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/audio.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

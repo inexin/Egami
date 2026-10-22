@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Video.Audio | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Video.Audio | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Audio">
+
+  <h1 id="Egami_Video_Audio" data-uid="Egami.Video.Audio" class="text-break">Namespace Egami.Video.Audio</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.AudioCodec.html">AudioCodec</a></dt>
+      <dd><p>An audio codec: which tracks it decodes and how to create its decoder and encoder, the audio twin of
+<a class="xref" href="Egami.Video.Codecs.VideoCodec.html">VideoCodec</a>. Register a new one with <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_WithCodec_Egami_Video_Audio_AudioCodec_">WithCodec(AudioCodec)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.AudioCodecs.html">AudioCodecs</a></dt>
+      <dd><p>Creates audio decoders from the codecs registered in a <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.AudioConvertOptions.html">AudioConvertOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Video.Audio.AudioFrame.html#Egami_Video_Audio_AudioFrame_CopyTo_Egami_Video_Audio_AudioFrame_Egami_Video_Audio_AudioConvertOptions_">CopyTo(AudioFrame, AudioConvertOptions?)</a> converts samples and channels.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.AudioDecoderOptions.html">AudioDecoderOptions</a></dt>
+      <dd><p>How an audio decoder decodes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.AudioEncoderOptions.html">AudioEncoderOptions</a></dt>
+      <dd><p>What an audio encoder makes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.AudioFrame.html">AudioFrame</a></dt>
+      <dd><p>A block of decoded audio: <a class="xref" href="Egami.Video.Audio.AudioFrame.html#Egami_Video_Audio_AudioFrame_SampleCount">SampleCount</a> samples for every channel of its <a class="xref" href="Egami.Video.Audio.AudioFrame.html#Egami_Video_Audio_AudioFrame_Layout">Layout</a>, stored as its
+<a class="xref" href="Egami.Video.Audio.AudioFrame.html#Egami_Video_Audio_AudioFrame_Format">Format</a> says, with the time of the first sample. The audio twin of <a class="xref" href="Egami.Video.VideoFrame.html">VideoFrame</a>: decoders hand
+frames out, encoders take them, and the memory comes from the context's memory source, so dispose each frame.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.ChannelMixer.html">ChannelMixer</a></dt>
+      <dd><p>Mixes one channel layout into another with a matrix: each output channel is a weighted sum of the input channels. The
+default matrix follows ITU-R BS.775: a speaker both layouts have passes at full level; a missing center goes to front left
+and right at -3 dB (0.7071); missing surrounds go to the nearest speakers left (side to back and back to side, at full level when
+that only renames the pair and at -3 dB when it folds a second pair in, else to the front at -3 dB); a mono output takes left and right at -3 dB and surrounds at -6 dB; LFE is dropped unless asked for.
+Upmixing only routes the speakers both layouts share, so no channel is made up. Channels with no position map by index.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Resampler.html">Resampler</a></dt>
+      <dd><p>Converts audio between any two sample rates with a polyphase windowed-sinc filter (Kaiser window). The filter's phases come
+from the rate ratio reduced to lowest terms; when that needs more than 1024 phases (as for unusual rates), coefficients
+between 1024 precomputed phases are interpolated. It works in 32-bit float and keeps time exact: the first output sample
+has the first input sample's timestamp and every later one follows at the output rate, so a resampled track stays in
+sync. Frames of any length and format go in through <a class="xref" href="Egami.Video.Audio.Resampler.html#Egami_Video_Audio_Resampler_Send_Egami_Video_Audio_AudioFrame_">Send(AudioFrame)</a>; frames come out through <a class="xref" href="Egami.Video.Audio.Resampler.html#Egami_Video_Audio_Resampler_TryReceive_Egami_Video_Audio_AudioFrame__">TryReceive(out AudioFrame?)</a>,
+in <a class="xref" href="Egami.Video.Audio.Resampler.html#Egami_Video_Audio_Resampler_OutputFormat">OutputFormat</a> and <a class="xref" href="Egami.Video.Audio.Resampler.html#Egami_Video_Audio_Resampler_OutputLayout">OutputLayout</a>, so conversion and channel mixing run in the same pass.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.SampleFormatExtensions.html">SampleFormatExtensions</a></dt>
+      <dd><p>Facts about a <a class="xref" href="Egami.Video.Audio.SampleFormat.html">SampleFormat</a>.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a></dt>
+      <dd><p>Which speaker each channel feeds: a set of <a class="xref" href="Egami.Video.Audio.Speakers.html">Speakers</a> whose channels come in the order of their bits
+(WAVE_FORMAT_EXTENSIBLE order, the one canonical order every decoder hands out), plus any channels with no position, such
+as ambisonic or unknown ones, after them. Decoders of codecs with another order (Vorbis and Opus put center second) remap
+their channels to this one.</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.IAudioDecoder.html">IAudioDecoder</a></dt>
+      <dd><p>Turns packets into audio frames with the same send and receive loop as <a class="xref" href="Egami.Video.Codecs.IVideoDecoder.html">IVideoDecoder</a>: after
+each <a class="xref" href="Egami.Video.Audio.IAudioDecoder.html#Egami_Video_Audio_IAudioDecoder_Send_Egami_Video_EncodedPacket_">Send(EncodedPacket)</a> call <a class="xref" href="Egami.Video.Audio.IAudioDecoder.html#Egami_Video_Audio_IAudioDecoder_TryReceive_Egami_Video_Audio_AudioFrame__">TryReceive(out AudioFrame?)</a> until it returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>; at the end call
+<a class="xref" href="Egami.Video.Audio.IAudioDecoder.html#Egami_Video_Audio_IAudioDecoder_Flush">Flush()</a> and receive what is left.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.IAudioEncoder.html">IAudioEncoder</a></dt>
+      <dd><p>Turns audio frames into packets, the mirror of <a class="xref" href="Egami.Video.Audio.IAudioDecoder.html">IAudioDecoder</a>. Frames may have any length and any sample
+format; the encoder converts them to its own and cuts packets of <a class="xref" href="Egami.Video.Audio.IAudioEncoder.html#Egami_Video_Audio_IAudioEncoder_FrameSize">FrameSize</a> samples.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.ResamplerQuality.html">ResamplerQuality</a></dt>
+      <dd><p>How hard a <a class="xref" href="Egami.Video.Audio.Resampler.html">Resampler</a> works: the length and steepness of its filter.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.SampleFormat.html">SampleFormat</a></dt>
+      <dd><p>How an <a class="xref" href="Egami.Video.Audio.AudioFrame.html">AudioFrame</a> stores its samples: the type of one sample, and whether the channels are interleaved (one
+buffer, a sample of every channel in turn) or planar (one buffer per channel). Integer samples are signed except
+<a class="xref" href="Egami.Video.Audio.SampleFormat.html#Egami_Video_Audio_SampleFormat_U8">U8</a>, whose silence is 128; float samples run from -1 to 1.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Speakers.html">Speakers</a></dt>
+      <dd><p>Speaker positions, with the bit values of WAVE_FORMAT_EXTENSIBLE's channel mask. Channels in a <a class="xref" href="Egami.Video.Audio.ChannelLayout.html">ChannelLayout</a>
+come in the order of these bits, lowest first, which is the order WAV and FLAC store them in.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
