@@ -41,8 +41,17 @@ internal sealed partial class Mp4Demuxer
                 }
 
                 MoveTo(_nextBox);
-                if (!NextBoxHeader(out box))
+                try
                 {
+                    if (!NextBoxHeader(out box))
+                    {
+                        _endOfBoxes = true;
+                        return false;
+                    }
+                }
+                catch (CorruptDataException e)
+                {
+                    Warn("mp4-truncated", $"The boxes after the last fragment read are broken or cut off; the fragments end there: {e.Message}");
                     _endOfBoxes = true;
                     return false;
                 }
@@ -55,8 +64,24 @@ internal sealed partial class Mp4Demuxer
                 continue;
             }
 
+            if (_input.CanSeek && box.End > _input.Length)
+            {
+                Warn("mp4-truncated", "The file was cut off inside a fragment's moof; the fragments end there.");
+                _endOfBoxes = true;
+                return false;
+            }
+
             byte[] content = ReadContent(box, _context.Limits.MaxHeaderBytes, "MaxHeaderBytes");
-            ParseMoof(content, box, _fragment, decodeTimes: null);
+            try
+            {
+                ParseMoof(content, box, _fragment, decodeTimes: null);
+            }
+            catch (CorruptDataException e)
+            {
+                Warn("mp4-bad-fragment", $"A fragment's boxes are broken, so its samples were skipped: {e.Message}");
+                _fragment.Clear();
+            }
+
             _fragment.Sort((a, b) => a.Sample.Offset.CompareTo(b.Sample.Offset));
 
             // Read the next box's header now: on a stream that cannot seek, the mdat after a moof is passed while reading samples.

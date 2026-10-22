@@ -288,4 +288,64 @@ public class Mp4ReaderTests
             }
         }
     }
+
+    [Fact]
+    public void OpeningALongFragmentedFileReadsOnlyItsStart()
+    {
+        // The corpus file with its fragments repeated 200 times: about 9 MB.
+        byte[] clip = File.ReadAllBytes(PathOf("mp4-frag.mp4"));
+        int firstMoof = clip.AsSpan().IndexOf("moof"u8) - 4;
+        MemoryStream big = new();
+        big.Write(clip);
+        for (int i = 0; i < 200; i++)
+        {
+            big.Write(clip.AsSpan(firstMoof));
+        }
+
+        CountingStream counting = new(big.ToArray());
+        using IDemuxer demuxer = MediaFile.OpenDemuxer(counting);
+        Assert.True(counting.BytesRead < 256 << 10, $"opening read {counting.BytesRead} bytes of {counting.Length}");
+        Assert.NotNull(demuxer.ReadPacket());
+    }
+
+    [Fact]
+    public void OpeningAFlatFileSkipsItsMediaData()
+    {
+        // moov after 9 MB of media: the media is skipped by seeking.
+        MemoryStream file = new();
+        VideoTrackInfo video = new() { Number = 1, Kind = TrackKind.Video, CodecId = CodecIds.MotionJpeg, TimeBase = new Rational(1, 25), Width = 16, Height = 16 };
+        using (IMuxer muxer = new Mp4Format { MoovAtEnd = true }.CreateMuxer(file, [video], MediaContext.Default, leaveOpen: true))
+        {
+            byte[] frame = new byte[3000];
+            for (int i = 0; i < 3000; i++)
+            {
+                using EncodedPacket packet = new(1, frame, new MediaTime(i, video.TimeBase)) { IsKeyframe = true };
+                muxer.WritePacket(packet);
+            }
+        }
+
+        CountingStream counting = new(file.ToArray());
+        using IDemuxer demuxer = MediaFile.OpenDemuxer(counting);
+        Assert.True(counting.BytesRead < 256 << 10, $"opening read {counting.BytesRead} bytes of {counting.Length}");
+        Assert.Equal(3000, demuxer.Info.Duration!.Value.Rescale(video.TimeBase).Ticks);
+    }
+
+    private sealed class CountingStream(byte[] data) : MemoryStream(data)
+    {
+        public long BytesRead { get; private set; }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            int n = base.Read(buffer, offset, count);
+            BytesRead += n;
+            return n;
+        }
+
+        public override int Read(Span<byte> buffer)
+        {
+            int n = base.Read(buffer);
+            BytesRead += n;
+            return n;
+        }
+    }
 }

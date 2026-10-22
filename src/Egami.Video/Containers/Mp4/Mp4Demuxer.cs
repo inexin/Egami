@@ -81,12 +81,17 @@ internal sealed partial class Mp4Demuxer : IDemuxer
             if (_fragmentAt < _fragment.Count)
             {
                 (TrackState fragmentTrack, Mp4Sample sample) = _fragment[_fragmentAt++];
-                if (fragmentTrack.Skip(sample, fragment: true))
+                if (fragmentTrack.Ended || fragmentTrack.Skip(sample, fragment: true))
                 {
                     continue;
                 }
 
-                return Emit(fragmentTrack, sample, fragment: true);
+                if (Emit(fragmentTrack, sample, fragment: true) is { } fromFragment)
+                {
+                    return fromFragment;
+                }
+
+                continue;
             }
 
             // Flat samples: the track whose next sample comes first in the file.
@@ -113,7 +118,12 @@ internal sealed partial class Mp4Demuxer : IDemuxer
                     continue;
                 }
 
-                return Emit(next, sample);
+                if (Emit(next, sample) is { } packet)
+                {
+                    return packet;
+                }
+
+                continue;
             }
 
             if (!_hasMvex || !NextFragment())
@@ -125,11 +135,18 @@ internal sealed partial class Mp4Demuxer : IDemuxer
 
     public void Dispose() => _input.Dispose();
 
-    private EncodedPacket Emit(TrackState track, Mp4Sample sample, bool fragment = false)
+    /// <summary>Reads a sample's bytes into a packet; returns <see langword="null"/>, with an mp4-truncated warning, when the file ends first.</summary>
+    private EncodedPacket? Emit(TrackState track, Mp4Sample sample, bool fragment = false)
     {
         if (sample.Size > _context.Limits.MaxPacketBytes)
         {
             throw new LimitExceededException("MaxPacketBytes", _context.Limits.MaxPacketBytes, sample.Size);
+        }
+
+        if ((_input.CanSeek && sample.Offset + sample.Size > _input.Length) || (!_input.CanSeek && sample.Offset < _input.Position))
+        {
+            Truncated(track, sample);
+            return null;
         }
 
         MoveTo(sample.Offset);
@@ -138,7 +155,9 @@ internal sealed partial class Mp4Demuxer : IDemuxer
         {
             if (_input.Read(packet.GetWritableData().Span) != sample.Size)
             {
-                throw _input.Corrupt(sample.Offset, $"Sample {sample.Index + 1} of track {track.Info.Number} ({sample.Size} bytes) runs past the end of the file.");
+                packet.Dispose();
+                Truncated(track, sample);
+                return null;
             }
 
             track.Describe(packet, sample, this, fragment);
@@ -149,6 +168,14 @@ internal sealed partial class Mp4Demuxer : IDemuxer
             packet.Dispose();
             throw;
         }
+    }
+
+    /// <summary>Reports a sample past the end of the file and ends its track: the file was cut off while it was written or copied.</summary>
+    private void Truncated(TrackState track, Mp4Sample sample)
+    {
+        Warn("mp4-truncated", $"Sample {sample.Index + 1} of track {track.Info.Number} lies past the end of the file, which was cut off; the track ends there.", track.Info.Number);
+        track.Cursor = track.Track.Table.At(track.Track.Table.Count);
+        track.Ended = true;
     }
 
     /// <summary>Moves the input to <paramref name="position"/>: by seeking, or on a stream that cannot seek by reading forward.</summary>
@@ -363,8 +390,7 @@ internal sealed partial class Mp4Demuxer : IDemuxer
     {
         IsoBoxReader moov = new(content, _input.FormatName, offset);
         List<Mp4Track> tracks = [];
-        List<(IsoBox Box, bool Meta)> metadata = [];
-        while (moov.Next(out IsoBox box))
+        while (NextInMoov(ref moov, tracks.Count, out IsoBox box))
         {
             switch (box.Type.ToString())
             {
@@ -382,7 +408,15 @@ internal sealed partial class Mp4Demuxer : IDemuxer
                         throw new LimitExceededException("MaxTracks", _context.Limits.MaxTracks, tracks.Count + 1);
                     }
 
-                    tracks.Add(Mp4Track.Read(moov, box, _quickTime, _context.Limits));
+                    try
+                    {
+                        tracks.Add(Mp4Track.Read(moov, box, _quickTime, _context.Limits));
+                    }
+                    catch (CorruptDataException e)
+                    {
+                        Warn("mp4-bad-track", $"A track's boxes are broken, so it was skipped: {e.Message}");
+                    }
+
                     break;
                 case "mvex":
                     _hasMvex = true;
@@ -425,6 +459,21 @@ internal sealed partial class Mp4Demuxer : IDemuxer
             {
                 _tracks.Add(state);
             }
+        }
+    }
+
+    /// <summary>Reads moov's next box; a broken size after some tracks were read ends moov with an mp4-bad-box warning instead.</summary>
+    private bool NextInMoov(ref IsoBoxReader moov, int tracks, out IsoBox box)
+    {
+        try
+        {
+            return moov.Next(out box);
+        }
+        catch (CorruptDataException e) when (tracks > 0)
+        {
+            Warn("mp4-bad-box", $"moov's boxes are broken after {tracks} tracks; the rest of moov was skipped: {e.Message}");
+            box = default;
+            return false;
         }
     }
 
@@ -554,6 +603,13 @@ internal sealed partial class Mp4Demuxer : IDemuxer
             _quickTime = demuxer._quickTime;
             Cursor = track.Table.Start();
             int number = (int)track.Id;
+            long held = track.Table.ChunkSampleCount();
+            if (track.Table.Count > held)
+            {
+                demuxer.Warn("mp4-sample-table", $"Track {number}'s tables describe {track.Table.Count} samples, but its chunks hold {held}; the rest were left out.", number);
+                track.Table.Count = held;
+            }
+
             ApplyEdits(demuxer);
             long durationTicks = End is { } end ? end - Start : track.MediaDuration;
             MediaTime? duration = durationTicks > 0 && track.Timescale > 0 ? new MediaTime(durationTicks, new Rational(1, track.Timescale)) : null;
@@ -580,6 +636,9 @@ internal sealed partial class Mp4Demuxer : IDemuxer
 
         /// <summary>Gets whether keyframes come from the VP8 frame tag, which some writers' sync sample tables get wrong.</summary>
         public bool IsVp8 { get; private set; }
+
+        /// <summary>Gets or sets whether the file was cut off inside the track's data, which ends it.</summary>
+        public bool Ended { get; set; }
 
         /// <summary>Gets or sets whether a VP8 track's sync samples were read from its frames.</summary>
         public bool SyncChecked { get; set; }
