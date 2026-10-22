@@ -101,8 +101,8 @@ Every user-visible change updates the docs in the same pull request:
 - Code shown in the docs lives in `tests/Egami.DocSamples/` as `#region` blocks, so it is compiled and run with the tests.
   Guides include it with `[!code-csharp[](../../../tests/Egami.DocSamples/File.cs#region)]`, and XML `<example>` tags point at
   the same regions. Don't paste code into a guide that the tests don't run.
-- An entry in `CHANGELOG.md` under the package's next version (for example `## Egami.Fonts 1.1.0 (unreleased)`; add the
-  heading if it is not there yet), grouped by feature.
+- An entry in `CHANGELOG.md` under the package's next version (for example `## Egami.Fonts 1.1.0 (unreleased)`, at the shared
+  version for the release train; add the heading if it is not there yet), grouped by feature.
 - A new package also goes into `docs/docfx.json` (API reference) and `docs/articles/packages.md`.
 - `python tools/check-docs.py <package folder>` must pass for every package you touched.
 
@@ -118,12 +118,14 @@ branch, add the new version at the top of `docs/versions.json` and build each fo
 
 ## Releases
 
-A tag `v<version>` (the version of `src/Egami`) runs `.github/workflows/release.yml`: it tests, packs Egami, Egami.Drawing,
-Egami.Fonts, Egami.Svg and Egami.Css at the versions in their project files, and pushes them to nuget.org with trusted
-publishing, after a maintainer approves the `nuget` environment. The repository holds no NuGet API key: a trusted publishing
-policy on nuget.org names this repository, `release.yml` and the `nuget` environment, and the secret `NUGET_USER` holds the
-nuget.org account name. A tag `<package>-v<version>`, for example `Egami.Metafiles-v0.1.1`, runs the same workflow for that one
-package at that version, so a package can release on its own. Only maintainers tag releases.
+Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic and Egami.Cli form one release train: they share one
+version, `EgamiVersion` in `Directory.Build.props`, and release together, so never set a version in their project files. A
+tag `v<version>` (that version) runs `.github/workflows/release.yml`: it tests, packs the seven packages and pushes them to
+nuget.org with trusted publishing, after a maintainer approves the `nuget` environment. The repository holds no NuGet API
+key: a trusted publishing policy on nuget.org names this repository, `release.yml` and the `nuget` environment, and the secret `NUGET_USER` holds the
+nuget.org account name. Egami.Barcodes, Egami.Metafiles, Egami.Fonts.Substitutes and Egami.Video keep their own version in
+their project file: a tag `<package>-v<version>`, for example `Egami.Barcodes-v1.0.1`, runs the same workflow for that one
+package at that version, so it releases on its own. Only maintainers tag releases.
 
 ## Pull requests
 
