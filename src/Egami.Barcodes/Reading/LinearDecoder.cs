@@ -115,7 +115,7 @@ internal static class LinearDecoder
         var patterns = new int[107][];
         for (int v = 0; v < 107; v++)
         {
-            List<int> runs = [.. Linear.Code128Encoder.Runs([v])];
+            List<int> runs = [.. Linear.Code128Encoder.Runs((ReadOnlySpan<int>)[v])];
             patterns[v] = v == 106 ? stop : [.. runs.Take(6)];
         }
 

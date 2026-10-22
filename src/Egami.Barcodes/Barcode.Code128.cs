@@ -23,7 +23,7 @@ public sealed partial class Barcode
     {
         ArgumentNullException.ThrowIfNull(text);
         CheckLength(text.Length, nameof(text));
-        int[] input = new int[text.Length];
+        Span<int> input = text.Length <= 256 ? stackalloc int[text.Length] : new int[text.Length];
         for (int i = 0; i < text.Length; i++)
         {
             input[i] = text[i] <= 255 ? text[i] : throw new ArgumentException($"Code 128 holds characters 0 to 255; '{text[i]}' at {i} is not one.", nameof(text));
@@ -78,11 +78,13 @@ public sealed partial class Barcode
     /// </example>
     public static Barcode Gs1Code128(string elements, Code128Options? options = null) => Gs1Code128(Gs1.Parse(elements), options);
 
-    private static Barcode FromCode128(int[] input, string readable, Code128Options? options)
+    private static Barcode FromCode128(ReadOnlySpan<int> input, string readable, Code128Options? options)
     {
-        int[] runs = Code128Encoder.Runs(Code128Encoder.Encode(input));
+        int max = Code128Encoder.MaxValues(input.Length);
+        Span<int> values = max <= 1024 ? stackalloc int[max] : new int[max];
+        int[] runs = Code128Encoder.Runs(values[..Code128Encoder.Encode(input, values)]);
         int height = (options ?? Code128Options.Default).Height ?? 50;
-        return new Barcode(BarcodeFormat.Code128, BarcodeModules.CreateLinear(runs, height), 10, readable);
+        return new Barcode(BarcodeFormat.Code128, BarcodeModules.WrapLinear(runs, height), 10, readable);
     }
 
     private static void CheckLength(int length, string name)
