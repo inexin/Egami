@@ -38,7 +38,7 @@ public class Av1StreamTests
     {
         string cache = Cache() ?? throw LocalCorpus.Skip("av1");
         Av1Stream stream = new("AV1") { Reconstruct = false };
-        byte[] data = File.ReadAllBytes(Path.Combine(cache, "aom-test-data", vector));
+        byte[] data = File.ReadAllBytes(VectorPath(cache, vector));
         int index = 0;
         foreach ((int offset, int length) in IvfFrames(data))
         {
@@ -55,7 +55,7 @@ public class Av1StreamTests
     public void FramesEqualLibaoms(string vector)
     {
         string cache = Cache() ?? throw LocalCorpus.Skip("av1");
-        string path = Path.Combine(cache, "aom-test-data", vector);
+        string path = VectorPath(cache, vector);
         JsonElement[] expected = [.. JsonDocument.Parse(File.ReadAllBytes(Path.Combine(cache, "reference", "av1", vector + ".json")))
             .RootElement.GetProperty("frames").EnumerateArray()];
         List<string> got = [];
@@ -81,6 +81,110 @@ public class Av1StreamTests
     }
 
     /// <summary>
+    /// Every inter tool appears in at least one stream the exact gate checks. Translation-only global motion is left out: libaom's
+    /// encoder never chooses it (the Argon streams cover it, locally).
+    /// </summary>
+    [Fact]
+    public void StreamsCoverEveryInterTool()
+    {
+        string cache = Cache() ?? throw LocalCorpus.Skip("av1");
+        Dictionary<string, int> uses = [];
+        foreach (string vector in Vectors().Select(row => (string)row.Data))
+        {
+            Av1Stream stream = new("AV1") { Reconstruct = false };
+            byte[] data = File.ReadAllBytes(VectorPath(cache, vector));
+            foreach ((int offset, int length) in IvfFrames(data))
+            {
+                foreach (Av1Frame frame in stream.Decode(data, offset, length, TestContext.Current.CancellationToken))
+                {
+                    Count(frame);
+                }
+            }
+        }
+
+        string[] tools =
+        [
+            "obmc", "local warp", "global warp", "average compound", "distance compound", "wedge compound",
+            "difference compound", "inter-intra", "wedge inter-intra", "skip mode", "scaled reference", "switch frame", "intra in inter frame",
+            "dual filter", "near mode", "new mode", "compound new", "temporal vectors", "segmentation map from reference",
+        ];
+        Assert.True(tools.All(uses.ContainsKey), "unused: " + string.Join(", ", tools.Where(t => !uses.ContainsKey(t))));
+
+        void Add(string tool) => uses[tool] = uses.GetValueOrDefault(tool) + 1;
+
+        void Count(Av1Frame frame)
+        {
+            Av1FrameHeader h = frame.Header;
+            if (h.FrameType == Av1FrameType.Switch)
+            {
+                Add("switch frame");
+            }
+
+            if (h.UseRefFrameMvs)
+            {
+                Add("temporal vectors");
+            }
+
+            if (h.SegmentationEnabled && !h.SegmentationUpdateMap)
+            {
+                Add("segmentation map from reference");
+            }
+
+            for (int rf = Ref.Last; rf <= Ref.Alt && !h.FrameIsIntra; rf++)
+            {
+                if (h.RefFrames[rf]!.Header.UpscaledWidth != h.FrameWidth || h.RefFrames[rf]!.Header.FrameHeight != h.FrameHeight)
+                {
+                    Add("scaled reference");
+                }
+
+                if (h.GmType[rf] == GlobalMotion.Translation)
+                {
+                    Add("global translation");
+                }
+            }
+
+            foreach (Av1BlockInfo? b in frame.Grid.Distinct())
+            {
+                if (b is null || h.FrameIsIntra)
+                {
+                    continue;
+                }
+
+                if (!b.IsInter)
+                {
+                    Add("intra in inter frame");
+                    continue;
+                }
+
+                Add(b.MotionMode == 1 ? "obmc" : b.MotionMode == 2 ? "local warp" : "translation");
+                if (b.YMode is InterMode.Global or InterMode.GlobalGlobal && h.GmType[b.RefFrame0] > GlobalMotion.Translation)
+                {
+                    Add("global warp");
+                }
+
+                if (b.HasSecondRef)
+                {
+                    Add(b.CompoundType switch
+                    {
+                        Compound.Average => "average compound",
+                        Compound.Distance => "distance compound",
+                        Compound.Wedge => "wedge compound",
+                        _ => "difference compound",
+                    });
+                }
+
+                if (b.RefFrame1 == Ref.Intra)
+                {
+                    Add(b.UseWedgeInterintra ? "wedge inter-intra" : "inter-intra");
+                }
+
+                Add(b.SkipMode ? "skip mode" : b.FilterX != b.FilterY ? "dual filter" : "single filter");
+                Add(b.YMode is InterMode.Near ? "near mode" : b.YMode is InterMode.New ? "new mode" : InterMode.HasNew(b.YMode) ? "compound new" : "other mode");
+            }
+        }
+    }
+
+    /// <summary>
     /// For debugging: with AV1_DEBUG naming a vector whose raw libaom frames (av1frames.c --no-grain) are in
     /// .cache/avif/reference/av1raw, reports each frame's first differing sample and the block there.
     /// </summary>
@@ -95,7 +199,7 @@ public class Av1StreamTests
         }
 
         byte[] raw = File.ReadAllBytes(Path.Combine(cache, "reference", "av1raw", vector + ".bin"));
-        byte[] data = File.ReadAllBytes(Path.Combine(cache, "aom-test-data", vector + ".ivf"));
+        byte[] data = File.ReadAllBytes(VectorPath(cache, vector + ".ivf"));
         Av1Stream stream = new("AV1");
         List<string> report = [];
         int at = 0, index = 0;
@@ -137,6 +241,13 @@ public class Av1StreamTests
         }
 
         Assert.Fail(string.Join(Environment.NewLine, report));
+    }
+
+    /// <summary>Gets a stream's path: libaom's test vectors in .cache, our own clips in tests/video/corpus/av1.</summary>
+    private static string VectorPath(string cache, string vector)
+    {
+        string aom = Path.Combine(cache, "aom-test-data", vector);
+        return File.Exists(aom) ? aom : Path.Combine(cache, "..", "..", "tests", "video", "corpus", "av1", vector);
     }
 
     /// <summary>Gets the fetched .cache/avif folder with the AV1 references, or null.</summary>
