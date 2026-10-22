@@ -69,6 +69,52 @@ internal static class Seeds
         }
     }
 
+    /// <summary>
+    /// AV1 seeds from the corpus (tests/video/corpus/av1): the first units of a few clips in IVF and WebM and as raw units, and the
+    /// small OBU and Annex B files whole.
+    /// </summary>
+    public static void WriteAv1(string directory)
+    {
+        string av1 = Directory.CreateDirectory(Path.Combine(directory, "av1")).FullName;
+        string raw = Directory.CreateDirectory(Path.Combine(directory, "av1raw")).FullName;
+        string obu = Directory.CreateDirectory(Path.Combine(directory, "obu")).FullName;
+        string corpus = Path.Combine("tests", "video", "corpus", "av1");
+        foreach ((string clip, string format, int packets) in (ReadOnlySpan<(string, string, int)>)[
+            ("tools-8bit.ivf", "ivf", 4), ("tools-10bit.ivf", "webm", 3), ("compound-masks.ivf", "ivf", 3), ("switch-frames.ivf", "ivf", 3),
+            ("resize.ivf", "webm", 3), ("hdr10plus.ivf", "ivf", 2), ("yuv444.ivf", "ivf", 2), ("tiles.ivf", "ivf", 2)])
+        {
+            using IDemuxer demuxer = MediaFile.OpenDemuxer(Path.Combine(corpus, clip));
+            MemoryStream output = new();
+            MemoryStream rawOutput = new();
+            byte[] codecPrivate = demuxer.Tracks[0].CodecPrivate.ToArray();
+            rawOutput.WriteByte((byte)codecPrivate.Length);
+            rawOutput.Write(codecPrivate);
+            using (IMuxer muxer = MediaFile.CreateMuxer(output, format, demuxer.Tracks, leaveOpen: true))
+            {
+                for (int i = 0; i < packets && demuxer.ReadPacket() is { } packet; i++)
+                {
+                    using (packet)
+                    {
+                        muxer.WritePacket(packet);
+                        rawOutput.WriteByte((byte)packet.Data.Length);
+                        rawOutput.WriteByte((byte)(packet.Data.Length >> 8));
+                        rawOutput.Write(packet.Data.Span);
+                    }
+                }
+            }
+
+            string name = $"{Path.GetFileNameWithoutExtension(clip)}-{packets}";
+            File.WriteAllBytes(Path.Combine(av1, $"{name}.{format}"), output.ToArray());
+            File.WriteAllBytes(Path.Combine(raw, $"{name}.bin"), rawOutput.ToArray());
+        }
+
+        foreach (string file in (ReadOnlySpan<string>)["tools-8bit.obu", "tools-8bit.annexb.obu", "monochrome.obu", "monochrome.annexb.obu"])
+        {
+            File.Copy(Path.Combine(corpus, file), Path.Combine(obu, file), overwrite: true);
+            File.Copy(Path.Combine(corpus, file), Path.Combine(av1, file), overwrite: true);
+        }
+    }
+
     public static void Write(string directory)
     {
         string avi = Directory.CreateDirectory(Path.Combine(directory, "avi")).FullName;
@@ -77,6 +123,7 @@ internal static class Seeds
         string y4m = Directory.CreateDirectory(Path.Combine(directory, "y4m")).FullName;
         WriteVp8(directory);
         WriteVp9(directory);
+        WriteAv1(directory);
         WriteMp4(directory);
         File.WriteAllBytes(Path.Combine(y4m, "420.y4m"), [.. "YUV4MPEG2 W4 H2 F25:1 Ip A1:1 C420jpeg XCOLORRANGE=FULL\n"u8, .. "FRAME\n"u8, .. new byte[12], .. "FRAME\n"u8, .. new byte[12]]);
         File.WriteAllBytes(Path.Combine(y4m, "444p10.y4m"), [.. "YUV4MPEG2 W2 H2 F30000:1001 It A4:3 C444p10\n"u8, .. "FRAME\n"u8, .. new byte[24]]);

@@ -14,6 +14,9 @@ reports hangs. Limits are lowered so a valid but huge file cannot exhaust memory
 | `vp8` | A VP8 IVF or WebM file read through VideoReader with Skip, Conceal and Throw: broken frames must never throw in Skip or Conceal; then an exact seek. Instruments Egami.dll too, where the VP8 decoder is | `tests/video/fuzz-seeds/vp8/*` |
 | `vp9` | A VP9 IVF, WebM or Matroska file read through VideoReader with Skip, Conceal and Throw, the first frame converted to RGB; then an exact seek | `tests/video/fuzz-seeds/vp9/*` |
 | `vp9raw` | VP9 packets without a container (a CodecPrivate, then length-prefixed packets): each described, split and joined as a superframe, then decoded on one thread and on two | `tests/video/fuzz-seeds/vp9raw/*` |
+| `obu` | The container path, seeded with AV1 low-overhead OBU and Annex B files | `tests/video/fuzz-seeds/obu/*` |
+| `av1` | An AV1 IVF, WebM, Matroska, OBU or Annex B file read through VideoReader with Skip, Conceal and Throw, as for VP9. Instruments Egami.dll too, where the AV1 decoder is | `tests/video/fuzz-seeds/av1/*` |
+| `av1raw` | AV1 temporal units without a container (an av1C, then length-prefixed units): each described with and without the references, split into frames and merged back, its av1C extracted, then decoded on one thread and on two | `tests/video/fuzz-seeds/av1raw/*` |
 | `mjpeg` | One Motion JPEG packet: decoded at full and 1/4 scale (DHT splicing, AVI1 field weaving, junk trimming), converted to RGB, encoded back | `tests/video/fuzz-seeds/mjpeg/*` |
 
 The seeds are written by `dotnet run --project tests/Egami.Video.Fuzz -- seeds tests/video/fuzz-seeds`.

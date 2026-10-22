@@ -259,7 +259,7 @@ internal sealed class Av1ObuDemuxer : IDemuxer
             {
                 (ulong obuLength, int n) = Leb128(data, at, start);
                 at += n;
-                if (obuLength == 0 || obuLength > (ulong)(frameEnd - at))
+                if (obuLength == 0 || at > frameEnd || obuLength > (ulong)(frameEnd - at))
                 {
                     throw _input.Corrupt(start, "An Annex B OBU runs past its frame unit.");
                 }
