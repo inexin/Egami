@@ -123,3 +123,13 @@ carry the discard flag (D) and start before zero.
 ipcm, sdtp, stz2 with 4- and 8-bit fields, multiple sample descriptions, HDR boxes (mdcv, clli) and broken files are built
 by the tests from the specifications, since the tools above do not write them. No phone or camera files are checked in: none
 with clear redistribution terms were available.
+
+## AV1 (V4.2)
+
+`tests/video/corpus/av1` holds our own AV1 clips, encoded by libaom 3.15.2's aomenc (`tools/avifref/av1corpus.py`, through
+`python tools/make-av1-references.py clips`), one per inter tool or format. `python tools/video/make-av1-corpus.py` remuxes each
+with FFmpeg (`-c copy`) into WebM, and some into Matroska, with ffprobe's view of each (`<file>.json`), and copies libaom's frame
+hashes into `<clip>.frames.json`: per output frame its size, bit depth, whether it is monochrome, and the MD5 of its planes as
+16-bit little-endian samples, with and without film grain (from `tools/make-av1-references.py`). libaom's own AV1 test vectors
+(including the size-changing Matroska ones) are fetched into `.cache/avif/aom-test-data` and never committed; tests that need them
+are skipped when they are missing.

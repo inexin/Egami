@@ -78,6 +78,10 @@ internal sealed class IvfDemuxer : IDemuxer
                 ChromaFormat = codecId == CodecIds.Vp9 ? vp9Chroma : ChromaFormat.Yuv420,
                 BitDepth = codecId == CodecIds.Vp8 ? 8 : vp9Depth,
             };
+            if (codecId == CodecIds.Av1)
+            {
+                _track = SniffAv1(_track);
+            }
             Tracks = [_track];
             Info = new MediaInfo { FormatName = IvfFormat.Instance.Name, Tracks = Tracks };
             FrameCount = BinaryPrimitives.ReadUInt32LittleEndian(header[24..]);
@@ -227,6 +231,30 @@ internal sealed class IvfDemuxer : IDemuxer
         }
     }
 
+    /// <summary>
+    /// Fills an AV1 track's bit depth, chroma format and av1C (<see cref="TrackInfo.CodecPrivate"/>, as MP4 and Matroska store
+    /// it) from the sequence header in the first frame, when there is one.
+    /// </summary>
+    private VideoTrackInfo SniffAv1(VideoTrackInfo track)
+    {
+        if (!_input.CanSeek)
+        {
+            return track;
+        }
+
+        long start = _input.Position;
+        byte[] first = new byte[FrameHeaderSize + 4096];
+        int got = _input.Read(first);
+        _input.Seek(start);
+        if (got <= FrameHeaderSize)
+        {
+            return track;
+        }
+
+        got = (int)Math.Min(got, FrameHeaderSize + (long)BinaryPrimitives.ReadUInt32LittleEndian(first));
+        return Av1Packets.FillTrack(track, first.AsSpan(FrameHeaderSize, got - FrameHeaderSize));
+    }
+
     private string? SniffVp8(string fourCC)
     {
         if (!_input.CanSeek)
@@ -257,7 +285,7 @@ internal sealed class IvfDemuxer : IDemuxer
         long position = _index.Count == 0 ? _firstFrame : _index[^1].Position;
         bool skipFirst = _index.Count > 0;
         Span<byte> header = stackalloc byte[FrameHeaderSize];
-        Span<byte> start = stackalloc byte[4];
+        Span<byte> start = new byte[FrameKind.BytesNeeded(_track.CodecId)];
         while (true)
         {
             _input.Seek(position);
@@ -279,8 +307,8 @@ internal sealed class IvfDemuxer : IDemuxer
                     throw new LimitExceededException("MaxIndexEntries", _context.Limits.MaxIndexEntries, _index.Count + 1);
                 }
 
-                // Only the first bytes of each frame are read: enough for its keyframe bit.
-                int got = _input.Read(start[..(int)Math.Min(size, 4)]);
+                // Only the first bytes of each frame are read: enough to tell a keyframe.
+                int got = _input.Read(start[..(int)Math.Min(size, start.Length)]);
                 bool key = FrameKind.IsKeyframe(_track.CodecId, start[..got]) ?? position == _firstFrame;
                 _index.Add(new IndexEntry(position, BinaryPrimitives.ReadInt64LittleEndian(header[4..]), key));
             }

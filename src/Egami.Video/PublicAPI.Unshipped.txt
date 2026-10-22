@@ -1,1 +1,13 @@
 #nullable enable
+Egami.Video.Codecs.Av1Codec
+Egami.Video.Codecs.Av1Packets
+Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain.get -> bool
+Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain.init -> void
+override Egami.Video.Codecs.Av1Codec.CodecId.get -> string!
+override Egami.Video.Codecs.Av1Codec.CreateDecoder(Egami.Video.VideoTrackInfo! track, Egami.Video.Codecs.VideoDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Codecs.IVideoDecoder!
+override Egami.Video.Codecs.Av1Codec.Name.get -> string!
+static Egami.Video.Codecs.Av1Codec.Instance.get -> Egami.Video.Codecs.Av1Codec!
+static Egami.Video.Codecs.Av1Packets.ExtractConfig(System.ReadOnlySpan<byte> obus) -> byte[]?
+static Egami.Video.Codecs.Av1Packets.MergeFrames(System.Collections.Generic.IEnumerable<System.ReadOnlyMemory<byte>>! frames) -> byte[]!
+static Egami.Video.Codecs.Av1Packets.SplitFrames(System.ReadOnlyMemory<byte> temporalUnit) -> System.Collections.Generic.IReadOnlyList<System.ReadOnlyMemory<byte>>!
+static Egami.Video.Codecs.VideoCodecs.Av1.get -> Egami.Video.Codecs.VideoCodec!

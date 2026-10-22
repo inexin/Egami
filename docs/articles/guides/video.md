@@ -5,8 +5,8 @@ no copying. It is fully managed and ships only royalty-free codecs:
 
 - Containers: WebM and Matroska, AVI (with OpenDML for files over 1 GB), IVF and YUV4MPEG2, read and written, and headerless raw
   frames.
-- Codecs: VP9 (all four profiles, 8, 10 and 12 bit, equal to libvpx frame for frame), VP8 (with WebM alpha) and Motion JPEG
-  decode; Motion JPEG and uncompressed encode. Audio and other tracks are copied through untouched.
+- Codecs: AV1 (8, 10 and 12 bit, 4:0:0 to 4:4:4, film grain, equal to libaom frame for frame), VP9 (all four profiles, 8, 10
+  and 12 bit, equal to libvpx frame for frame), VP8 (with WebM alpha) and Motion JPEG decode; Motion JPEG and uncompressed encode. Audio and other tracks are copied through untouched.
 
 ## Probing a file
 
@@ -66,7 +66,7 @@ gives an `IVideoDecoder<TPixel>` that hands out RGB frames.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-decode)]
 
-Each codec is a `VideoCodec`: `Vp9Codec`, `Vp8Codec`, `MotionJpegCodec` and `RawVideoCodec`.
+Each codec is a `VideoCodec`: `Av1Codec`, `Vp9Codec`, `Vp8Codec`, `MotionJpegCodec` and `RawVideoCodec`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-codecs)]
 
@@ -78,6 +78,29 @@ An `IVideoEncoder` takes frames and gives packets, with `VideoEncoderOptions` fo
 Motion JPEG.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-headers)]
+
+## AV1
+
+`Av1Codec` decodes AV1 from WebM, Matroska, MP4 and IVF with Egami's AV1 decoder: every profile, 8, 10 and 12 bit, 4:0:0, 4:2:0,
+4:2:2 and 4:4:4, film grain, scaled references and scalable streams. Every frame equals libaom's. A packet is a temporal unit;
+hidden frames give no frame, and a frame shown later with show_existing_frame comes out then. Frames come out at their own size,
+8-bit planes for 8-bit streams and 16-bit planes above, 4:0:0 for monochrome.
+
+- The color comes from the sequence header; the container's fills only what the header leaves unspecified.
+- `VideoDecoderOptions.ApplyFilmGrain = false` gives the frames as coded, without the film grain the stream asks for.
+- A keyframe is a temporal unit that starts with a shown key frame. A forward key frame, hidden and shown later, is not one, as
+  FFmpeg flags them too. When a container's keyframe flag disagrees, the stream wins and `Av1.KeyframeFlagMismatch` is reported.
+- A track's av1C (its `CodecPrivate`) gives the sequence header when the first unit has none. The IVF reader builds av1C from the
+  first sequence header, and so does the Matroska writer for a track that has none, so IVF files remux to WebM, Matroska and MP4.
+- Broken data follows `VideoReaderOptions.Errors`: `Skip` (the default) reports `Av1.CorruptFrame`, or `Av1.MissingReference` for
+  a unit that needs frames from before the first key frame, and resumes at the next shown key frame; `Conceal` repeats the last
+  good frame in between.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1)]
+
+`Av1Packets` splits a temporal unit into its frames and merges them back, and builds the av1C record from a sequence header.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1-packets)]
 
 ## HDR
 

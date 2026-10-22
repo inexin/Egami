@@ -73,6 +73,23 @@ command review freezes the names and options at 1.0.
   stack, and the symbol characters and bars are built without lists or copies. Code 128 and Code 39 no longer copy
   text without control characters for the human-readable text.
 
+## Egami.Video 0.5.0 (unreleased)
+
+V4.2: AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
+
+### AV1
+
+- `Av1Codec` (and `VideoCodecs.Av1`), registered in `MediaContext.Codecs` by default: AV1 from WebM, Matroska, MP4 and IVF, 8, 10
+  and 12 bit, 4:0:0 to 4:4:4, film grain, every frame equal to libaom's on our clips and libaom's size-changing Matroska vectors.
+  Hidden frames give no frame; frames shown with show_existing_frame come out. The sequence header's color wins over the
+  container's.
+- `VideoDecoderOptions.ApplyFilmGrain` turns film grain off.
+- Keyframes are units that start with a shown key frame (forward key frames are not); `Av1.KeyframeFlagMismatch` when a
+  container disagrees. The sequence header comes from the track's av1C when a unit has none.
+- IVF AV1 tracks get their bit depth, chroma format and av1C from the first sequence header; the Matroska writer builds av1C
+  from the first packet for a track that has none.
+- `Av1Packets`: `SplitFrames`, `MergeFrames` and `ExtractConfig` (av1C from a sequence header).
+
 ## Egami.Video 0.4.0 (unreleased)
 
 V4.1, API reviewed and accepted 2026-10-22 (all as recommended): MP4 and QuickTime. Built on Egami's public ISO BMFF box

@@ -26,7 +26,7 @@ public sealed record MediaContext
     public IReadOnlyList<ContainerFormat> Containers { get; init; } = [AviFormat.Instance, MatroskaFormat.Instance, MatroskaFormat.WebM, Y4mFormat.Instance, IvfFormat.Instance, Mp4Format.Instance];
 
     /// <summary>Gets the video codecs.</summary>
-    public IReadOnlyList<VideoCodec> Codecs { get; init; } = [MotionJpegCodec.Instance, Vp8Codec.Instance, Vp9Codec.Instance, RawVideoCodec.Instance];
+    public IReadOnlyList<VideoCodec> Codecs { get; init; } = [MotionJpegCodec.Instance, Vp8Codec.Instance, Vp9Codec.Instance, Av1Codec.Instance, RawVideoCodec.Instance];
 
     /// <summary>
     /// Gets the Egami context: the memory source decoded frames come from, the parallelism limit for decoding, and the image
@@ -43,7 +43,7 @@ public sealed record MediaContext
     /// </summary>
     public Action<MediaWarning>? Warnings { get; init; }
 
-    /// <summary>Gets the shared default context, with AVI, Matroska, WebM, YUV4MPEG2, IVF and MP4, Motion JPEG, VP8 and uncompressed video registered.</summary>
+    /// <summary>Gets the shared default context, with AVI, Matroska, WebM, YUV4MPEG2, IVF and MP4, Motion JPEG, VP8, VP9, AV1 and uncompressed video registered.</summary>
     public static MediaContext Default => s_default ??= new MediaContext();
 
     /// <summary>Replaces the shared default context.</summary>
