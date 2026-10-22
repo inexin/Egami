@@ -34,6 +34,9 @@ internal sealed class Av1Stream
     /// <summary>Gets the active sequence header, or null before the first.</summary>
     internal Av1SequenceHeader? Sequence { get; private set; }
 
+    /// <summary>Gets the fields of the sequence and frame headers of the last temporal unit, in order.</summary>
+    internal List<KeyValuePair<string, long>> LastHeaders { get; } = [];
+
     /// <summary>Gets the reference slots.</summary>
     internal Av1Frame?[] Slots { get; } = new Av1Frame?[8];
 
@@ -49,9 +52,16 @@ internal sealed class Av1Stream
     /// Decodes a temporal unit of low-overhead OBUs (section 5) and returns the frames it shows, in order: the last one only, unless
     /// <see cref="OutputAllLayers"/>.
     /// </summary>
-    internal List<Av1Frame> Decode(byte[] data, int offset, int length, CancellationToken cancellationToken = default)
+    internal List<Av1Frame> Decode(byte[] data, int offset, int length, CancellationToken cancellationToken = default) =>
+        [.. DecodeUnit(data, offset, length, cancellationToken).Select(o => o.Frame)];
+
+    /// <summary>
+    /// Decodes a temporal unit like <see cref="Decode"/>, saying of each frame whether show_existing_frame showed it again.
+    /// </summary>
+    internal List<(Av1Frame Frame, bool Existing)> DecodeUnit(byte[] data, int offset, int length, CancellationToken cancellationToken = default)
     {
-        List<Av1Frame> shown = [];
+        List<(Av1Frame Frame, bool Existing)> shown = [];
+        LastHeaders.Clear();
         Av1Frame? frame = null;
         int tilesLeft = 0;
         List<(int Tile, int Offset, int Size)> tiles = [];
@@ -79,6 +89,8 @@ internal sealed class Av1Stream
                         Array.Clear(Slots);
                     }
 
+                    Describe(Sequence.Describe());
+
                     break;
                 case Av1ObuType.FrameHeader or Av1ObuType.Frame when frame is null:
                     if (Sequence is null)
@@ -87,6 +99,7 @@ internal sealed class Av1Stream
                     }
 
                     Av1FrameHeader header = Av1FrameHeader.Parse(payload, Sequence, obu.TemporalId, obu.SpatialId, _formatName, Slots);
+                    Describe(header.Describe());
                     if (header.ShowExistingFrame)
                     {
                         ShowExisting(header, shown, obu.PayloadStart);
@@ -99,6 +112,8 @@ internal sealed class Av1Stream
                         Parallelism = Math.Max(1, Parallelism),
                         CancellationToken = cancellationToken,
                         Showable = header.ShowableFrame,
+                        TemporalId = obu.TemporalId,
+                        SpatialId = obu.SpatialId,
                     };
                     if (header.UseRefFrameMvs)
                     {
@@ -139,7 +154,15 @@ internal sealed class Av1Stream
         return shown;
     }
 
-    private void ShowExisting(Av1FrameHeader header, List<Av1Frame> shown, int at)
+    private void Describe(List<(string Name, long Value)> fields)
+    {
+        foreach ((string name, long value) in fields)
+        {
+            LastHeaders.Add(new(name, value));
+        }
+    }
+
+    private void ShowExisting(Av1FrameHeader header, List<(Av1Frame Frame, bool Existing)> shown, int at)
     {
         Av1Frame existing = Slots[header.FrameToShowMapIdx]
             ?? throw new CorruptDataException(_formatName, at, "An AV1 frame shows an empty reference slot.") { IsMissingReference = true };
@@ -148,7 +171,7 @@ internal sealed class Av1Stream
             throw new CorruptDataException(_formatName, at, "An AV1 frame shows a frame that is not showable.");
         }
 
-        shown.Add(existing);
+        shown.Add((existing, true));
         if (existing.Header.FrameType == Av1FrameType.Key)
         {
             // The reference frame loading process, then an update of every slot; a key frame shows this way only once.
@@ -157,7 +180,7 @@ internal sealed class Av1Stream
         }
     }
 
-    private void Finish(Av1Frame frame, byte[] data, List<(int Tile, int Offset, int Size)> tiles, List<Av1Frame> shown)
+    private void Finish(Av1Frame frame, byte[] data, List<(int Tile, int Offset, int Size)> tiles, List<(Av1Frame Frame, bool Existing)> shown)
     {
         frame.DecodeTiles(data, tiles);
         if (Filter)
@@ -176,7 +199,7 @@ internal sealed class Av1Stream
 
         if (frame.Header.ShowFrame)
         {
-            shown.Add(frame);
+            shown.Add((frame, false));
         }
     }
 

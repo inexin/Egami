@@ -31,6 +31,7 @@ settings, safety limits and registered formats a call uses.
 
 - [Overview](https://inexin.github.io/Egami/v1/articles/formats/index.html): Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and …
 - [AVIF](https://inexin.github.io/Egami/v1/articles/formats/avif.html): Egami reads and writes AVIF still images, written from the AV1 and HEIF specifications with no native code.
+- [AV1 video frames](https://inexin.github.io/Egami/v1/articles/formats/av1.html): `Av1StreamDecoder` decodes AV1 video a temporal unit at a time.
 - [BMP](https://inexin.github.io/Egami/v1/articles/formats/bmp.html): Egami reads Windows bitmaps with core, info, V2 to V5 and OS/2 2.x headers at 1 to 32 bits, RLE4, RLE8 and RLE24, bit fields, embedded PNG and JPEG and V5 ICC profiles.
 - [CCITT fax](https://inexin.github.io/Egami/v1/articles/formats/ccitt.html): Egami decodes raw CCITT fax data.
 - [GIF](https://inexin.github.io/Egami/v1/articles/formats/gif.html): Egami reads GIF 87a and 89a files, with every disposal method, interlaced images, transparency, the loop count, comments, XMP and ICC profiles, and writes GIF 89a.
@@ -116,6 +117,7 @@ settings, safety limits and registered formats a call uses.
 - [The egami command](https://inexin.github.io/Egami/v1/articles/cli/index.html): `egami` converts, inspects, resizes and edits images from a shell or a build script, with no C# to write.
 - [Command reference](https://inexin.github.io/Egami/v1/articles/cli/commands.html): Every egami command with its arguments and options, as `egami <command> --help` prints them.
 - [Steps for run](https://inexin.github.io/Egami/v1/articles/cli/steps.html): The steps `egami run` chains and workflow files list.
+- [egami for AI assistants](https://inexin.github.io/Egami/v1/articles/cli/assistants.html): `egami mcp` serves egami's commands to an AI assistant, such as Claude, GitHub Copilot or Cursor, over the Model Context Protocol.
 
 ## Optional
 

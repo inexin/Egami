@@ -24,6 +24,8 @@
       href: formats/index.md
     - name: AVIF
       href: formats/avif.md
+    - name: AV1 video frames
+      href: formats/av1.md
     - name: BMP
       href: formats/bmp.md
     - name: CCITT fax
