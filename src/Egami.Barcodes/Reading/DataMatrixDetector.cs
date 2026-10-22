@@ -10,14 +10,19 @@ namespace Egami.Barcodes.Reading;
 /// </summary>
 internal static class DataMatrixDetector
 {
-    public static List<Found> Detect(BitImage bits, List<Component> components, Vector2 offset)
+    /// <summary>
+    /// Finds the symbols among the components, largest first. A component centered inside a symbol already found, in this
+    /// search or in <paramref name="found"/> (image coordinates; the first pass's symbols in the inverted pass), is part of that
+    /// symbol and not looked at.
+    /// </summary>
+    public static List<Found> Detect(BitImage bits, List<Component> components, Vector2 offset, IEnumerable<Vector2[]>? found = null)
     {
         var results = new List<Found>();
-        var claimed = new List<Vector2[]>();
+        var claimed = found is null ? [] : found.Select(q => q.Select(p => p - offset).ToArray()).ToList();
         foreach (Component component in components.Take(200))
         {
             // Bars of linear and stacked symbols are far thinner than any Data Matrix shape (DMRE is 1 : 6 at most).
-            if (component.Count < 40 || component.Boundary.Count < 16 || Math.Min(component.Width, component.Height) < Math.Max(component.Width, component.Height) * 0.12f)
+            if (component.Count < 40 || Math.Min(component.Width, component.Height) < Math.Max(component.Width, component.Height) * 0.12f)
             {
                 continue;
             }
@@ -28,10 +33,10 @@ internal static class DataMatrixDetector
                 continue;
             }
 
-            if (DetectOne(bits, component) is Found found)
+            if (DetectOne(bits, component) is Found symbol)
             {
-                claimed.Add(found.Corners);
-                results.Add(found with { Corners = [.. found.Corners.Select(p => p + offset)] });
+                claimed.Add(symbol.Corners);
+                results.Add(symbol with { Corners = [.. symbol.Corners.Select(p => p + offset)] });
             }
         }
 
@@ -40,7 +45,7 @@ internal static class DataMatrixDetector
 
     private static Found? DetectOne(BitImage bits, Component component)
     {
-        Vector2[] rectangle = Shapes.MinimumRectangle(Shapes.Hull(component.Boundary));
+        Vector2[] rectangle = Shapes.MinimumRectangle(Shapes.Hull(component.Ends));
         if (rectangle.Length != 4)
         {
             return null;
@@ -104,15 +109,20 @@ internal static class DataMatrixDetector
         // top-left and bottom-right where their dark ends; the fourth corner is searched for the most regular clock tracks.
         Vector2 bottomLeft = cornerL;
         Vector2 topLeft = ArmEnd(bits, cornerL, next, opposite) ?? next, bottomRight = ArmEnd(bits, cornerL, previous, opposite) ?? previous;
-        Vector2? searched = BestFourth(bits, topLeft, bottomRight, bottomLeft, topLeft + bottomRight - bottomLeft);
-        var candidates = new List<(Vector2 TopLeft, Vector2 TopRight, Vector2 BottomRight)> { (next, opposite, previous) };
-        if (searched is Vector2 topRight)
+        // The rectangle's corners first; the searched fourth corner only when they do not read.
+        for (int candidate = 0; candidate < 2; candidate++)
         {
-            candidates.Add((topLeft, topRight, bottomRight));
-        }
+            Vector2 upperLeft = next, upperRight = opposite, lowerRight = previous;
+            if (candidate == 1)
+            {
+                if (BestFourth(bits, topLeft, bottomRight, bottomLeft, topLeft + bottomRight - bottomLeft) is not Vector2 topRight)
+                {
+                    break;
+                }
 
-        foreach ((Vector2 upperLeft, Vector2 upperRight, Vector2 lowerRight) in candidates)
-        {
+                (upperLeft, upperRight, lowerRight) = (topLeft, topRight, bottomRight);
+            }
+
             foreach (bool mirrored in (ReadOnlySpan<bool>)[false, true])
             {
                 Vector2 tl = mirrored ? lowerRight : upperLeft, br = mirrored ? upperLeft : lowerRight;
@@ -132,6 +142,11 @@ internal static class DataMatrixDetector
                     }
 
                     var transform = Perspective.QuadToQuad([new(0, 0), new(c, 0), new(c, r), new(0, r)], [tl, upperRight, br, bottomLeft]);
+                    if (!FinderLooksRight(bits, transform, c, r))
+                    {
+                        continue;
+                    }
+
                     BarcodeModules? sampled = transform.Sample(bits, c, r);
                     if (sampled is BarcodeModules grid && DataMatrixDecoder.Decode(grid) is DecodedData data)
                     {
@@ -142,6 +157,33 @@ internal static class DataMatrixDetector
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Whether the border is mostly right under a transform: the L (left column and bottom row) dark, the clock tracks (top row
+    /// and right column) alternating. A grid placed off the symbol, or with the wrong module count, gets far more of them wrong
+    /// than a readable one, and sampling and decoding it would only fail later.
+    /// </summary>
+    private static bool FinderLooksRight(BitImage bits, Perspective transform, int columns, int rows)
+    {
+        int wrong = 0;
+        bool Dark(float x, float y)
+        {
+            Vector2 p = transform.Map(x, y);
+            return bits.IsDark((int)MathF.Floor(p.X), (int)MathF.Floor(p.Y));
+        }
+
+        for (int x = 0; x < columns; x++)
+        {
+            wrong += (Dark(x + 0.5f, rows - 0.5f) ? 0 : 1) + (Dark(x + 0.5f, 0.5f) != ((x & 1) == 0) ? 1 : 0);
+        }
+
+        for (int y = 0; y < rows; y++)
+        {
+            wrong += (Dark(0.5f, y + 0.5f) ? 0 : 1) + (Dark(columns - 0.5f, y + 0.5f) != ((y & 1) == 1) ? 1 : 0);
+        }
+
+        return wrong * 3 <= (columns + rows) * 2;
     }
 
     private static bool Clockwise(Vector2[] q)
@@ -180,6 +222,11 @@ internal static class DataMatrixDetector
         var hits = new List<(Vector2 Point, float Depth)>();
         for (int i = 1; i < samples; i++)
         {
+            if (hits.Count + (samples - i) < samples / 3)
+            {
+                return null;
+            }
+
             // A hit is the first dark pixel after a light one: a ray that starts on a dark background outside the label has
             // no edge to find there.
             Vector2 start = a + (along * ((float)i / samples)) - (inward * 2);
@@ -207,7 +254,9 @@ internal static class DataMatrixDetector
         // The edge line by consensus: of lines through a hit near each end, the one most hits lie on (the outer one on a clock
         // track, where half the hits go a module deeper), refitted to its inliers.
         int third = Math.Max(1, hits.Count / 3);
-        List<Vector2> near = [];
+        (Vector2 Point, Vector2 Normal)? consensus = null;
+        int nearCount = 0;
+        float nearDepth = float.MaxValue;
         for (int i = 0; i < third; i += Math.Max(1, third / 8))
         {
             for (int j = hits.Count - third; j < hits.Count; j += Math.Max(1, third / 8))
@@ -218,11 +267,35 @@ internal static class DataMatrixDetector
                     continue;
                 }
 
+                // The inliers' count and mean depth; on a tie in count, the shallower line wins.
                 Vector2 d = Vector2.Normalize(q - p), n = new(-d.Y, d.X);
-                List<Vector2> inliers = [.. hits.Where(h => MathF.Abs(Vector2.Dot(h.Point - p, n)) <= 1.5f).Select(h => h.Point)];
-                if (inliers.Count > near.Count || (inliers.Count == near.Count && inliers.Count > 0 && Depth(inliers, hits) < Depth(near, hits)))
+                int count = 0;
+                double depth = 0;
+                foreach ((Vector2 point, float hitDepth) in hits)
                 {
-                    near = inliers;
+                    if (MathF.Abs(Vector2.Dot(point - p, n)) <= 1.5f)
+                    {
+                        count++;
+                        depth += hitDepth;
+                    }
+                }
+
+                float mean = count == 0 ? float.MaxValue : (float)(depth / count);
+                if (count > nearCount || (count == nearCount && count > 0 && mean < nearDepth))
+                {
+                    (consensus, nearCount, nearDepth) = ((p, n), count, mean);
+                }
+            }
+        }
+
+        List<Vector2> near = [];
+        if (consensus is (Vector2 origin0, Vector2 normal0))
+        {
+            foreach ((Vector2 point, _) in hits)
+            {
+                if (MathF.Abs(Vector2.Dot(point - origin0, normal0)) <= 1.5f)
+                {
+                    near.Add(point);
                 }
             }
         }
@@ -306,18 +379,36 @@ internal static class DataMatrixDetector
             return null;
         }
 
+        // Every second position of a 13 x 13 grid a third of a module apart, then the eight around the best of those.
         Vector2? best = null;
-        int bestScore = -1;
-        for (int dy = -6; dy <= 6; dy++)
+        int bestScore = -1, bestX = 0, bestY = 0;
+        void Try(int dx, int dy)
         {
-            for (int dx = -6; dx <= 6; dx++)
+            Vector2 candidate = estimate + (new Vector2(dx, dy) * (module / 3));
+            int score = Regular(bits, topLeft, candidate, Vector2.Normalize(bottomLeft - topLeft) * (module / 2))
+                + Regular(bits, candidate, bottomRight, Vector2.Normalize(topLeft - candidate) * (module / 2));
+            if (score > bestScore)
             {
-                Vector2 candidate = estimate + (new Vector2(dx, dy) * (module / 3));
-                int score = Regular(bits, topLeft, candidate, Vector2.Normalize(bottomLeft - topLeft) * (module / 2))
-                    + Regular(bits, candidate, bottomRight, Vector2.Normalize(topLeft - candidate) * (module / 2));
-                if (score > bestScore)
+                (best, bestScore, bestX, bestY) = (candidate, score, dx, dy);
+            }
+        }
+
+        for (int dy = -6; dy <= 6; dy += 2)
+        {
+            for (int dx = -6; dx <= 6; dx += 2)
+            {
+                Try(dx, dy);
+            }
+        }
+
+        int cx = bestX, cy = bestY;
+        for (int dy = cy - 1; dy <= cy + 1; dy++)
+        {
+            for (int dx = cx - 1; dx <= cx + 1; dx++)
+            {
+                if ((dx != cx || dy != cy) && Math.Abs(dx) <= 6 && Math.Abs(dy) <= 6)
                 {
-                    (best, bestScore) = (candidate, score);
+                    Try(dx, dy);
                 }
             }
         }
@@ -328,51 +419,70 @@ internal static class DataMatrixDetector
     /// <summary>The mean length of the first four runs along a line shifted inward by 1.5 pixels: about one module.</summary>
     private static float FirstRuns(BitImage bits, Vector2 from, Vector2 to, Vector2 inward)
     {
-        var runs = Runs(bits, from + (inward * 1.5f), to + (inward * 1.5f));
-        return runs.Count < 6 ? 0 : (runs[1] + runs[2] + runs[3] + runs[4]) / 4f;
+        Span<int> runs = stackalloc int[6];
+        int count = Runs(bits, from + (inward * 1.5f), to + (inward * 1.5f), runs);
+        return count < 6 ? 0 : (runs[1] + runs[2] + runs[3] + runs[4]) / 4f;
     }
 
     /// <summary>The number of runs along a line within 40 % of the median run length.</summary>
     private static int Regular(BitImage bits, Vector2 from, Vector2 to, Vector2 shift)
     {
-        List<int> runs = Runs(bits, from + shift, to + shift);
-        if (runs.Count < 4)
+        int steps = (int)Vector2.Distance(from + shift, to + shift);
+        Span<int> runs = steps < 1024 ? stackalloc int[steps + 1] : new int[steps + 1];
+        int count = Runs(bits, from + shift, to + shift, runs);
+        if (count < 4)
         {
             return 0;
         }
 
-        int median = runs.Order().ElementAt(runs.Count / 2);
-        return runs.Count(r => MathF.Abs(r - median) <= median * 0.4f);
+        runs = runs[..count];
+        Span<int> sorted = count <= 1024 ? stackalloc int[count] : new int[count];
+        runs.CopyTo(sorted);
+        sorted.Sort();
+        int median = sorted[count / 2], regular = 0;
+        foreach (int r in runs)
+        {
+            regular += MathF.Abs(r - median) <= median * 0.4f ? 1 : 0;
+        }
+
+        return regular;
     }
 
-    /// <summary>The run lengths in pixel steps along a line.</summary>
-    private static List<int> Runs(BitImage bits, Vector2 from, Vector2 to)
+    /// <summary>
+    /// The run lengths of dark and light along a line, one sample a pixel; fills <paramref name="runs"/> as far as it reaches and
+    /// returns the number of runs, which may be more.
+    /// </summary>
+    private static int Runs(BitImage bits, Vector2 from, Vector2 to, Span<int> runs)
     {
-        var runs = new List<int>();
-        int steps = (int)Vector2.Distance(from, to);
-        bool? previous = null;
+        int steps = (int)Vector2.Distance(from, to), count = 0;
+        bool previous = false;
         for (int i = 0; i <= steps; i++)
         {
             Vector2 p = Vector2.Lerp(from, to, (float)i / Math.Max(steps, 1));
             bool dark = bits.IsDark((int)p.X, (int)p.Y);
-            if (dark == previous)
+            if (count > 0 && dark == previous)
             {
-                runs[^1]++;
+                if (count <= runs.Length)
+                {
+                    runs[count - 1]++;
+                }
             }
             else
             {
-                runs.Add(1);
+                if (count < runs.Length)
+                {
+                    runs[count] = 1;
+                }
+
+                count++;
                 previous = dark;
             }
         }
 
-        return runs;
+        return count;
     }
 
     /// <summary>The mean depth of the hits among the points: lower is nearer the outside.</summary>
-    private static float Depth(List<Vector2> points, List<(Vector2 Point, float Depth)> hits) =>
-        points.Count == 0 ? float.MaxValue : hits.Where(h => points.Contains(h.Point)).Average(h => h.Depth);
-
     /// <summary>
     /// Counts the dark modules of the clock track along the top (or right) side: lines just inside the edge, at several insets,
     /// each give a count; a count is believed only from insets inside its own first module, and the most common one wins.
@@ -382,17 +492,33 @@ internal static class DataMatrixDetector
         Vector2 from = top ? topLeft : topRight, to = top ? topRight : bottomRight;
         Vector2 inward = Vector2.Normalize(top ? bottomLeft - topLeft : topLeft - topRight);
         float side = Vector2.Distance(from, to);
-        var votes = new Dictionary<int, int>();
+        Span<int> counts = stackalloc int[10], votes = stackalloc int[10];
+        int distinct = 0;
         foreach (float inset in (ReadOnlySpan<float>)[1, 1.5f, 2, 2.5f, 3, 4, 5, 6, 8, 10])
         {
             int runs = DarkRuns(bits, from + (inward * inset), to + (inward * inset));
             if (runs >= 4 && inset < 0.6f * side / (2 * runs))
             {
-                votes[runs] = votes.GetValueOrDefault(runs) + 1;
+                int at = counts[..distinct].IndexOf(runs);
+                if (at < 0)
+                {
+                    (at, counts[distinct], votes[distinct]) = (distinct, runs, 0);
+                    distinct++;
+                }
+
+                votes[at]++;
             }
         }
 
-        int count = votes.Count == 0 ? 0 : votes.OrderByDescending(v => v.Value).ThenByDescending(v => v.Key).First().Key;
+        int count = 0, most = 0;
+        for (int i = 0; i < distinct; i++)
+        {
+            if (votes[i] > most || (votes[i] == most && counts[i] > count))
+            {
+                (count, most) = (counts[i], votes[i]);
+            }
+        }
+
         return count;
     }
 
@@ -404,7 +530,8 @@ internal static class DataMatrixDetector
     private static int DarkRuns(BitImage bits, Vector2 from, Vector2 to)
     {
         int steps = (int)(Vector2.Distance(from, to) * 2) + 1;
-        var starts = new List<int>();
+        Span<int> buffer = steps < 2048 ? stackalloc int[(steps / 2) + 2] : new int[(steps / 2) + 2];
+        int found = 0;
         int runStart = -1, lightRun = 0;
         for (int i = 0; i <= steps; i++)
         {
@@ -423,7 +550,7 @@ internal static class DataMatrixDetector
                 // A dark run of at least two samples (a pixel) counts.
                 if (i - lightRun - runStart + 1 >= 2)
                 {
-                    starts.Add(runStart);
+                    buffer[found++] = runStart;
                 }
 
                 runStart = -1;
@@ -432,29 +559,42 @@ internal static class DataMatrixDetector
 
         if (runStart >= 0 && steps - runStart + 1 >= 2)
         {
-            starts.Add(runStart);
+            buffer[found++] = runStart;
         }
 
-        if (starts.Count < 4)
+        if (found < 4)
         {
-            return starts.Count;
+            return found;
         }
 
-        var periods = new List<int>(starts.Count - 1);
-        for (int i = 1; i < starts.Count; i++)
+        ReadOnlySpan<int> starts = buffer[..found];
+        Span<int> periods = found <= 1024 ? stackalloc int[found - 1] : new int[found - 1];
+        for (int i = 1; i < found; i++)
         {
-            periods.Add(starts[i] - starts[i - 1]);
+            periods[i - 1] = starts[i] - starts[i - 1];
         }
 
-        int median = periods.Order().ElementAt(periods.Count / 2);
-        var regular = periods.Where(d => d >= median * 0.6f && d <= median * 1.4f).ToList();
-        if (regular.Count < periods.Count * 0.6f)
+        Span<int> sorted = found <= 1024 ? stackalloc int[found - 1] : new int[found - 1];
+        periods.CopyTo(sorted);
+        sorted.Sort();
+        int median = sorted[periods.Length / 2], regular = 0;
+        long sum = 0;
+        foreach (int d in periods)
         {
-            return starts.Count;
+            if (d >= median * 0.6f && d <= median * 1.4f)
+            {
+                regular++;
+                sum += d;
+            }
+        }
+
+        if (regular < periods.Length * 0.6f)
+        {
+            return found;
         }
 
         // The first run starts at the line's start; the count is the span to the last regular start over the period, plus one.
-        float period = (float)regular.Average();
+        float period = (float)((double)sum / regular);
         return (int)MathF.Round((starts[^1] - starts[0]) / period) + 1;
     }
 }

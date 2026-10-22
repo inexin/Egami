@@ -70,6 +70,46 @@ internal static class QrDecoder
         return bestDistance <= 3 ? best : version;
     }
 
+    private static readonly int[]?[] s_placements = new int[]?[41];
+
+    /// <summary>The data modules of a version (y · 256 + x) in placement order: the zigzag of column pairs from the right.</summary>
+    private static int[] Placement(int version)
+    {
+        int[]? placement = Volatile.Read(ref s_placements[version]);
+        if (placement is not null)
+        {
+            return placement;
+        }
+
+        int size = 17 + (4 * version), total = QrTables.TotalCodewords[version - 1] * 8;
+        bool[] function = QrMatrix.FunctionMask(version);
+        placement = new int[total];
+        int bit = 0;
+        for (int right = size - 1; right >= 1 && bit < total; right -= 2)
+        {
+            if (right == 6)
+            {
+                right = 5;
+            }
+
+            for (int vertical = 0; vertical < size; vertical++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    int x = right - j;
+                    int y = ((right + 1) & 2) == 0 ? size - 1 - vertical : vertical;
+                    if (!function[(y * size) + x] && bit < total)
+                    {
+                        placement[bit++] = (y << 8) | x;
+                    }
+                }
+            }
+        }
+
+        Interlocked.CompareExchange(ref s_placements[version], placement, null);
+        return s_placements[version]!;
+    }
+
     private static DecodedData? DecodeOnce(BarcodeModules grid)
     {
         int size = grid.Width;
@@ -91,35 +131,15 @@ internal static class QrDecoder
         }
 
         // The data modules in placement order, unmasked.
-        bool[] function = QrMatrix.FunctionMask(version);
         int total = QrTables.TotalCodewords[version - 1];
         byte[] codewords = new byte[total];
-        int bit = 0;
-        for (int right = size - 1; right >= 1; right -= 2)
+        int[] placement = Placement(version);
+        for (int bit = 0; bit < placement.Length; bit++)
         {
-            if (right == 6)
+            int x = placement[bit] & 0xFF, y = placement[bit] >> 8;
+            if (grid[x, y] != QrMatrix.Masked(mask, x, y))
             {
-                right = 5;
-            }
-
-            for (int vertical = 0; vertical < size; vertical++)
-            {
-                for (int j = 0; j < 2; j++)
-                {
-                    int x = right - j;
-                    int y = ((right + 1) & 2) == 0 ? size - 1 - vertical : vertical;
-                    if (function[(y * size) + x] || bit >= total * 8)
-                    {
-                        continue;
-                    }
-
-                    if (grid[x, y] != QrMatrix.Masked(mask, x, y))
-                    {
-                        codewords[bit >> 3] |= (byte)(0x80 >> (bit & 7));
-                    }
-
-                    bit++;
-                }
+                codewords[bit >> 3] |= (byte)(0x80 >> (bit & 7));
             }
         }
 

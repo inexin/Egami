@@ -3,8 +3,8 @@
   <PropertyGroup>
     <RootNamespace>Egami.Barcodes</RootNamespace>
     <PackageId>Egami.Barcodes</PackageId>
-    <!-- First released as 1.0.0 with its whole API (2.11 design, question 17). -->
-    <Version>1.0.0</Version>
+    <!-- First released as 1.0.0 with its whole API (2.11 design, question 17); 1.0.1 reads faster (2.11.1). -->
+    <Version>1.0.1</Version>
     <Description>Barcodes for Egami: writes and reads 1D and 2D barcodes, drawn onto Egami.Drawing's canvas or read from rasters, in managed code.</Description>
     <PackageTags>$(EgamiPackageTags);barcode;qr-code;data-matrix</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

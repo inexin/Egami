@@ -1,3 +1,6 @@
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+
 namespace Egami.Barcodes.ErrorCorrection;
 
 /// <summary>
@@ -9,6 +12,14 @@ internal sealed class GaloisField
 {
     private readonly int[] _exp;
     private readonly int[] _log;
+    private readonly int[] _productExp;
+    private readonly int[] _productLog;
+
+    /// <summary>Gets the exponent table for branch-free products: a · b = ProductExp[ProductLog[a] + ProductLog[b]], 0 included.</summary>
+    internal int[] ProductExp => _productExp;
+
+    /// <summary>Gets the logarithm table for branch-free products, with log 0 past every real sum.</summary>
+    internal int[] ProductLog => _productLog;
     private readonly int[]?[] _generators;
 
     private GaloisField(string name, int size, int polynomial, int primitive, int generatorBase, bool isPrime)
@@ -43,6 +54,13 @@ internal sealed class GaloisField
         {
             _exp[i] = _exp[i - (size - 1)];
         }
+
+        // For products without a branch on zero: log 0 is taken as 2 (size - 1), past every sum of two real logarithms, and
+        // exponents from there on are 0.
+        _productExp = new int[4 * size];
+        _exp.AsSpan(0, 2 * (size - 1)).CopyTo(_productExp);
+        _productLog = (int[])_log.Clone();
+        _productLog[0] = 2 * (size - 1);
 
         _generators = new int[]?[size];
     }
@@ -99,7 +117,7 @@ internal sealed class GaloisField
 
     public int Negate(int a) => IsPrime ? (Size - a) % Size : a;
 
-    public int Multiply(int a, int b) => a == 0 || b == 0 ? 0 : _exp[_log[a] + _log[b]];
+    public int Multiply(int a, int b) => _productExp[_productLog[a] + _productLog[b]];
 
     public int Divide(int a, int b)
     {
@@ -111,6 +129,88 @@ internal sealed class GaloisField
     {
         System.Diagnostics.Debug.Assert(a != 0);
         return _exp[(Size - 1) - _log[a]];
+    }
+
+    /// <summary>
+    /// Evaluates a polynomial, highest power first, at α^(<paramref name="firstPower"/> + j) for each j of
+    /// <paramref name="values"/>: each nonzero coefficient c of power p adds c α^((first + j) p), whose exponent grows by p from
+    /// one j to the next, so each term costs one table lookup and the terms do not wait on each other.
+    /// </summary>
+    public void EvaluateAtPowers(ReadOnlySpan<int> coefficients, int firstPower, Span<int> values)
+    {
+        values.Clear();
+        int order = Size - 1, n = coefficients.Length;
+        int[] exp = _exp, log = _log;
+        for (int i = 0; i < n; i++)
+        {
+            int c = coefficients[i];
+            if (c == 0)
+            {
+                continue;
+            }
+
+            int power = (n - 1 - i) % order;
+            int e = (int)((log[c] + ((long)firstPower * power)) % order);
+            if (IsPrime)
+            {
+                for (int j = 0; j < values.Length; j++)
+                {
+                    int sum = values[j] + exp[e];
+                    values[j] = sum >= Size ? sum - Size : sum;
+                    e += power;
+                    e = e >= order ? e - order : e;
+                }
+            }
+            else
+            {
+                int j = 0;
+                if (Avx2.IsSupported && values.Length >= 8)
+                {
+                    j = AddTermsGathered(exp, values, e, power, order);
+                    e = (int)((e + ((long)j * power)) % order);
+                }
+
+                for (; j < values.Length; j++)
+                {
+                    values[j] ^= exp[e];
+                    e += power;
+                    e = e >= order ? e - order : e;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Adds a coefficient's terms α^e, α^(e + p), α^(e + 2p), ... into eight values at a time, the powers looked up by
+    /// gathering; returns how many values it did (a multiple of eight).
+    /// </summary>
+    private static unsafe int AddTermsGathered(int[] exp, Span<int> values, int e, int power, int order)
+    {
+        int count = values.Length & ~7;
+        Vector256<int> exponents = Vector256.Create(0, 1, 2, 3, 4, 5, 6, 7) * Vector256.Create(power % order);
+        exponents += Vector256.Create(e);
+
+        // Lanes may pass the order once or more: bring them back below it (each lane is below 8 times the order).
+        Vector256<int> orders = Vector256.Create(order);
+        for (int k = 0; k < 8; k++)
+        {
+            exponents -= orders & Vector256.GreaterThanOrEqual(exponents, orders);
+        }
+
+        Vector256<int> step = Vector256.Create((int)(8L * power % order));
+        fixed (int* table = exp)
+        fixed (int* target = values)
+        {
+            for (int j = 0; j < count; j += 8)
+            {
+                Vector256<int> terms = Avx2.GatherVector256(table, exponents, 4);
+                Vector256.Store(Vector256.Load(target + j) ^ terms, target + j);
+                exponents += step;
+                exponents -= orders & Vector256.GreaterThanOrEqual(exponents, orders);
+            }
+        }
+
+        return count;
     }
 
     /// <summary>Returns <paramref name="a"/> added to itself <paramref name="n"/> times, as formal derivatives need.</summary>

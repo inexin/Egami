@@ -11,9 +11,13 @@ internal sealed record class Found(DecodedData Data, Vector2[] Corners);
 /// </summary>
 internal static class PureReader
 {
-    public static Found? Read(LuminanceImage image, BarcodeFormat formats)
+    /// <summary>
+    /// Reads the image from its globally thresholded bits. The luminance is only sampled for PDF417, from the inverted image
+    /// when the bits are swapped. Within a full search (<paramref name="searching"/>) an Aztec symbol that is not the whole
+    /// image is left to the search's own Aztec detector.
+    /// </summary>
+    public static Found? Read(LuminanceImage image, BitImage bits, BarcodeFormat formats, bool inverted, bool searching = false)
     {
-        BitImage bits = Binarizer.Global(image);
         if (Bounds(bits) is not (int left, int top, int right, int bottom))
         {
             return null;
@@ -46,13 +50,13 @@ internal static class PureReader
                 return new Found(whole, [new(image.Left, image.Top), new(image.Left + bits.Width, image.Top), new(image.Left + bits.Width, image.Top + bits.Height), new(image.Left, image.Top + bits.Height)]);
             }
 
-            if (AztecDetector.Detect(bits, 5, new Vector2(image.Left, image.Top)) is [Found found, ..])
+            if (!searching && AztecDetector.Detect(bits, 5, new Vector2(image.Left, image.Top)) is [Found found, ..])
             {
                 return found;
             }
         }
 
-        if ((formats & BarcodeFormat.Pdf417) != 0 && Pdf417(bits, image, left, top, width, height) is Found pdf)
+        if ((formats & BarcodeFormat.Pdf417) != 0 && Pdf417(bits, inverted ? image.Inverted() : image, left, top, width, height) is Found pdf)
         {
             return pdf;
         }
@@ -193,7 +197,7 @@ internal static class PureReader
             size += (width / module) > size ? 1 : -1;
         }
 
-        return size < 11 ? null : AztecDecoder.Decode(Sample(bits, left, top, width, height, size, size));
+        return !AztecDecoder.IsSymbolSize(size) ? null : AztecDecoder.Decode(Sample(bits, left, top, width, height, size, size));
     }
 
     private static Found? Pdf417(BitImage bits, LuminanceImage image, int left, int top, int width, int height)

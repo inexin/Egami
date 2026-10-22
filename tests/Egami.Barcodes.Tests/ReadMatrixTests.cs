@@ -138,6 +138,19 @@ public class ReadMatrixTests
         Assert.Contains(photo.ReadBarcodes(), r => r.Format == BarcodeFormat.Pdf417 && r.Text == text);
     }
 
+    [Fact]
+    public void ReadsPdf417CutOffBeforeItsStartPattern()
+    {
+        // The left quiet zone, start pattern and left row indicator cut away: the rows are read leftward from the stop pattern,
+        // the right row indicators give the layout, and error correction fills in what is missing.
+        string text = "PDF417 cut off on the left";
+        Barcode barcode = Barcode.Pdf417(text, new Pdf417Options { ErrorLevel = 4 });
+        using Raster<Gray8> whole = barcode.ToRaster(3);
+        int cut = (barcode.QuietZone + 17 + 17) * 3;
+        using Raster<Gray8> cropped = whole.Derive(ops => ops.Crop(new Rect(cut, 0, whole.Width - cut, whole.Height)), TestContext.Current.CancellationToken);
+        Assert.Contains(cropped.ReadBarcodes(), r => r.Format == BarcodeFormat.Pdf417 && r.Text == text);
+    }
+
     public static TheoryData<string, float, float> AztecCases => new()
     {
         { "compact", 0, 0 },

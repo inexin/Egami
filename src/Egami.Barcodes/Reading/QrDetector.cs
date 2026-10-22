@@ -24,6 +24,12 @@ internal static class QrDetector
         List<Finder> finders = FindFinders(bits, effort);
         if (finders.Count < 3)
         {
+            // Fewer than three: once more allowing each run 0.6 of a module off instead of half (glare can thin a finder's
+            // outer ring on one side and widen its light ring).
+            finders = FindFinders(bits, effort, 0.6f);
+        }
+        if (finders.Count < 3)
+        {
             return results;
         }
 
@@ -125,20 +131,47 @@ internal static class QrDetector
                 continue;
             }
 
-            // The parallelogram (or alignment) estimate first, then nearby positions of the fourth point for perspective.
-            for (int attempt = 0; attempt < 25; attempt++)
+            // The alignment patterns near where the bottom-right one should be, nearest first (under strong perspective the
+            // nearest can be another symbol module ring), or the parallelogram estimate; then nearby positions of the fourth
+            // point for perspective.
+            List<Vector2?> firsts = [null];
+            if (dimension >= 25)
             {
-                var shift = new Vector2((attempt % 5) - 2, (attempt / 5) - 2) * (module * 0.75f);
+                Vector2 bottomRight = topRight.Center - topLeft.Center + bottomLeft.Center;
+                float correction = 1 - (3f / (dimension - 7));
+                List<Vector2> alignments = FindAlignments(bits, topLeft.Center + (correction * (bottomRight - topLeft.Center)), module);
+                if (alignments.Count > 0)
+                {
+                    // The patterns found, then around the nearest one a quarter module at a time: on a curled symbol its
+                    // measured center can be a pixel off where the grid needs it.
+                    firsts = [.. alignments.Take(6).Select(p => (Vector2?)p)];
+                    for (int k = 1; k < 25; k++)
+                    {
+                        var nudge = new Vector2((k % 5) - 2, (k / 5) - 2) * (module * 0.25f);
+                        if (nudge != Vector2.Zero)
+                        {
+                            firsts.Add(alignments[0] + nudge);
+                        }
+                    }
+                }
+            }
+
+            for (int attempt = 0; attempt < Shifts.Length; attempt++)
+            {
+                Vector2 shift = Shifts[attempt] * (module * 0.75f);
                 if (attempt > 0 && shift == Vector2.Zero)
                 {
                     continue;
                 }
 
-                if (Sample(bits, topLeft, topRight, bottomLeft, dimension, module, attempt == 0 ? null : shift) is (BarcodeModules grid, Perspective transform)
-                    && QrDecoder.Decode(grid) is DecodedData data)
+                foreach (Vector2? alignment in attempt == 0 ? firsts : [null])
                 {
-                    Vector2[] corners = [transform.Map(0, 0), transform.Map(dimension, 0), transform.Map(dimension, dimension), transform.Map(0, dimension)];
-                    return new Found(data, corners);
+                    if (Sample(bits, topLeft, topRight, bottomLeft, dimension, attempt == 0 ? null : shift, alignment) is (BarcodeModules grid, Perspective transform)
+                        && QrDecoder.Decode(grid) is DecodedData data)
+                    {
+                        Vector2[] corners = [transform.Map(0, 0), transform.Map(dimension, 0), transform.Map(dimension, dimension), transform.Map(0, dimension)];
+                        return new Found(data, corners);
+                    }
                 }
 
                 if (attempt == 0 && dimension >= 25 && delta != 0)
@@ -151,6 +184,27 @@ internal static class QrDetector
         return null;
     }
 
+    /// <summary>
+    /// Whether the timing patterns (row and column 6, alternating dark and light between the finders) are mostly right under a
+    /// transform: one placed off the symbol gets about half of them wrong, and sampling and decoding its grid would only fail
+    /// later. The mirrored grid has the same timing modules.
+    /// </summary>
+    private static bool TimingLooksRight(BitImage bits, Perspective transform, int size)
+    {
+        int wrong = 0;
+        for (int i = 8; i < size - 8; i++)
+        {
+            bool dark = (i & 1) == 0;
+            Vector2 p = transform.Map(i + 0.5f, 6.5f), q = transform.Map(6.5f, i + 0.5f);
+            wrong += (bits.IsDark((int)MathF.Floor(p.X), (int)MathF.Floor(p.Y)) != dark ? 1 : 0) + (bits.IsDark((int)MathF.Floor(q.X), (int)MathF.Floor(q.Y)) != dark ? 1 : 0);
+        }
+
+        return wrong * 3 <= (size - 16) * 2;
+    }
+
+    /// <summary>The shifts of the fourth point tried, in steps of three quarters of a module: the 5 x 5 around the estimate.</summary>
+    private static readonly Vector2[] Shifts = [.. Enumerable.Range(0, 25).Select(a => new Vector2((a % 5) - 2, (a / 5) - 2))];
+
     /// <summary>Rounds to the nearest QR size: 17 plus a multiple of 4.</summary>
     private static int Dimension(int estimate) => (estimate & 3) switch
     {
@@ -160,41 +214,33 @@ internal static class QrDetector
         _ => estimate,
     };
 
-    /// <summary>Samples the grid through the finders and, from version 2, the bottom-right alignment pattern when found.</summary>
-    private static (BarcodeModules, Perspective)? Sample(BitImage bits, Finder topLeft, Finder topRight, Finder bottomLeft, int dimension, float module, Vector2? shift)
+    /// <summary>
+    /// Samples the grid through the finders and a fourth point: the bottom-right alignment pattern when given (from version 2),
+    /// else the parallelogram's corner, shifted when asked.
+    /// </summary>
+    private static (BarcodeModules, Perspective)? Sample(BitImage bits, Finder topLeft, Finder topRight, Finder bottomLeft, int dimension, Vector2? shift, Vector2? alignment)
     {
         Vector2 tl = topLeft.Center, tr = topRight.Center, bl = bottomLeft.Center;
-        Vector2 bottomRight = tr - tl + bl;
-        Vector2 fourth = bottomRight + (shift ?? Vector2.Zero);
-        float target = dimension - 3.5f;
-        if (dimension >= 25 && shift is null)
-        {
-            // The alignment pattern centered 3 modules in from the bottom-right corner's finder position.
-            float correction = 1 - (3f / (dimension - 7));
-            var estimate = tl + (correction * (bottomRight - tl));
-            if (FindAlignment(bits, estimate, module) is Vector2 alignment)
-            {
-                fourth = alignment;
-                target = dimension - 6.5f;
-            }
-        }
-
+        Vector2 fourth = alignment ?? (tr - tl + bl + (shift ?? Vector2.Zero));
+        float target = alignment is null ? dimension - 3.5f : dimension - 6.5f;
         var transform = Perspective.QuadToQuad(
             [new(3.5f, 3.5f), new(dimension - 3.5f, 3.5f), new(target, target), new(3.5f, dimension - 3.5f)],
             [tl, tr, fourth, bl]);
-        return transform.Sample(bits, dimension, dimension) is BarcodeModules grid ? (grid, transform) : null;
+        return TimingLooksRight(bits, transform, dimension) && transform.Sample(bits, dimension, dimension) is BarcodeModules grid ? (grid, transform) : null;
     }
 
-    /// <summary>Searches around an estimate for an alignment pattern: a dark module in a light ring in a dark ring (1:1:1 runs).</summary>
-    private static Vector2? FindAlignment(BitImage bits, Vector2 estimate, float module)
+    /// <summary>
+    /// Searches around an estimate for alignment patterns: a dark module in a light ring in a dark ring (1:1:1 runs). Returns
+    /// those of the smallest search square that has any, nearest first, one per pattern.
+    /// </summary>
+    private static List<Vector2> FindAlignments(BitImage bits, Vector2 estimate, float module)
     {
-        for (int radius = 4; radius <= 16; radius *= 2)
+        var found = new List<Vector2>();
+        for (int radius = 4; radius <= 16 && found.Count == 0; radius *= 2)
         {
             int allowance = (int)(radius * module);
             int left = Math.Max(0, (int)(estimate.X - allowance)), right = Math.Min(bits.Width - 1, (int)(estimate.X + allowance));
             int top = Math.Max(0, (int)(estimate.Y - allowance)), bottom = Math.Min(bits.Height - 1, (int)(estimate.Y + allowance));
-            Vector2? best = null;
-            float bestDistance = float.MaxValue;
             for (int y = top; y <= bottom; y++)
             {
                 int x = left;
@@ -215,12 +261,7 @@ internal static class QrDetector
                             float cx = (start + x) / 2f;
                             if (CrossCheckAlignment(bits, cx, y, module) is float cy)
                             {
-                                var p = new Vector2(cx, cy);
-                                float d = Vector2.DistanceSquared(p, estimate);
-                                if (d < bestDistance)
-                                {
-                                    (best, bestDistance) = (p, d);
-                                }
+                                found.Add(new Vector2(cx, cy));
                             }
                         }
                     }
@@ -230,14 +271,21 @@ internal static class QrDetector
                     }
                 }
             }
+        }
 
-            if (best is not null)
+        // Nearest first (ties in the order found, as before), then one per pattern: the rows through one pattern find it
+        // several times.
+        var ordered = found.Select((p, i) => (p, i)).OrderBy(t => Vector2.DistanceSquared(t.p, estimate)).ThenBy(t => t.i).Select(t => t.p).ToList();
+        var distinct = new List<Vector2>();
+        foreach (Vector2 p in ordered)
+        {
+            if (!distinct.Any(q => Vector2.Distance(p, q) < module))
             {
-                return best;
+                distinct.Add(p);
             }
         }
 
-        return null;
+        return distinct;
     }
 
     private static bool LightAround(BitImage bits, int start, int end, int y, float module)
@@ -319,28 +367,25 @@ internal static class QrDetector
 
     // ---- Finder patterns ----
 
-    internal static List<Finder> FindFinders(BitImage bits, int effort)
+    internal static List<Finder> FindFinders(BitImage bits, int effort, float slack = 0.5f)
     {
         var finders = new List<Finder>();
         int step = effort >= 7 ? 1 : Math.Max(1, Math.Min(3, bits.Height / 200));
-        var runs = new List<float>();
-        var offsets = new List<float>();
-        Span<int> counts = stackalloc int[5];
+        int[] runs = new int[bits.Width + 2];
         for (int y = step - 1; y < bits.Height; y += step)
         {
             // Runs start light; windows of five runs from each dark run.
-            Binarizer.BitRuns(bits.Row(y), runs, offsets);
-            for (int i = 1; i + 4 < runs.Count; i += 2)
+            int count = Binarizer.IntRuns(bits.Row(y), runs);
+            int at = runs[0];
+            for (int i = 1; i + 4 < count; i += 2)
             {
-                for (int k = 0; k < 5; k++)
+                ReadOnlySpan<int> counts = runs.AsSpan(i, 5);
+                if (Ratio(counts, slack))
                 {
-                    counts[k] = (int)runs[i + k];
+                    Confirm(bits, counts, at + counts[0] + counts[1] + counts[2] + counts[3] + counts[4], y, finders, slack);
                 }
 
-                if (Ratio(counts))
-                {
-                    Confirm(bits, counts, (int)offsets[i + 5], y, finders);
-                }
+                at += runs[i] + runs[i + 1];
             }
         }
 
@@ -354,8 +399,10 @@ internal static class QrDetector
         return [.. confirmed.OrderByDescending(f => f.Count)];
     }
 
-    /// <summary>Whether five runs are 1:1:3:1:1, each within half a module (the center within a module and a half).</summary>
-    private static bool Ratio(ReadOnlySpan<int> counts)
+    /// <summary>
+    /// Whether five runs are 1:1:3:1:1, each within <paramref name="slack"/> of a module (the center within three times that).
+    /// </summary>
+    private static bool Ratio(ReadOnlySpan<int> counts, float slack)
     {
         int total = 0;
         foreach (int c in counts)
@@ -373,22 +420,22 @@ internal static class QrDetector
             return false;
         }
 
-        float module = total / 7f, tolerance = module * 0.5f;
+        float module = total / 7f, tolerance = module * slack;
         return MathF.Abs(module - counts[0]) < tolerance && MathF.Abs(module - counts[1]) < tolerance
             && MathF.Abs((3 * module) - counts[2]) < 3 * tolerance
             && MathF.Abs(module - counts[3]) < tolerance && MathF.Abs(module - counts[4]) < tolerance;
     }
 
-    private static bool Confirm(BitImage bits, ReadOnlySpan<int> counts, int end, int y, List<Finder> finders)
+    private static bool Confirm(BitImage bits, ReadOnlySpan<int> counts, int end, int y, List<Finder> finders, float slack)
     {
         int total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
         float cx = end - counts[4] - counts[3] - (counts[2] / 2f);
-        if (CrossCheck(bits, (int)cx, y, total, vertical: true) is not float cy)
+        if (CrossCheck(bits, (int)cx, y, total, vertical: true, slack) is not float cy)
         {
             return false;
         }
 
-        if (CrossCheck(bits, (int)cy, (int)cx, total, vertical: false) is not float refinedX)
+        if (CrossCheck(bits, (int)cy, (int)cx, total, vertical: false, slack) is not float refinedX)
         {
             return false;
         }
@@ -411,7 +458,7 @@ internal static class QrDetector
     }
 
     /// <summary>Checks the 1:1:3:1:1 pattern across a line through a point and returns the refined center along it.</summary>
-    private static float? CrossCheck(BitImage bits, int across, int along, int expected, bool vertical)
+    private static float? CrossCheck(BitImage bits, int across, int along, int expected, bool vertical, float slack)
     {
         bool Dark(int i) => vertical ? bits.IsDark(across, i) : bits.IsDark(i, across);
         Span<int> counts = stackalloc int[5];
@@ -460,7 +507,7 @@ internal static class QrDetector
         }
 
         int total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
-        if (MathF.Abs(total - expected) > expected * 0.4f || !Ratio(counts))
+        if (MathF.Abs(total - expected) > expected * 0.4f || !Ratio(counts, slack))
         {
             return null;
         }

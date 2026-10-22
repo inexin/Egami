@@ -17,13 +17,20 @@ internal static class AztecDecoder
     public static DecodedData? Decode(BarcodeModules grid)
     {
         int size = grid.Width;
-        if (size != grid.Height || size % 2 == 0)
+        if (size != grid.Height || !IsSymbolSize(size))
         {
             return null;
         }
 
         for (int orientation = 0; orientation < 8; orientation++)
         {
+            // An orientation decodes only if its mode message corrects, compact or (from 19 modules) full-range; that is read
+            // through the orientation before the grid is turned.
+            if (size != 11 && !ModeCorrects(grid, orientation, compact: true) && (size < 19 || !ModeCorrects(grid, orientation, compact: false)))
+            {
+                continue;
+            }
+
             BarcodeModules oriented = Orient(grid, orientation);
             DecodedData? data = size == 11 ? Rune(oriented) : DecodeUpright(oriented);
             if (data is not null)
@@ -33,6 +40,28 @@ internal static class AztecDecoder
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Whether a size is a rune's or that of a compact or full-range symbol of some layer count: no other grid can decode, as the
+    /// mode message's layers must give the grid's size.
+    /// </summary>
+    internal static bool IsSymbolSize(int size)
+    {
+        if (size == 11)
+        {
+            return true;
+        }
+
+        for (int layers = 1; layers <= 32; layers++)
+        {
+            if ((layers <= 4 && AztecEncoder.Size(layers, true) == size) || AztecEncoder.Size(layers, false) == size)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -61,6 +90,55 @@ internal static class AztecDecoder
     }
 
     /// <summary>Rotates the grid by quarter turns (0 to 3), then mirrors it for 4 to 7.</summary>
+    private static readonly (int X, int Y)[]?[] s_data = new (int, int)[]?[2 * 33], s_mode = new (int, int)[]?[2 * 152];
+
+    /// <summary>The data modules' positions for a layer count, made once (the encoder's order).</summary>
+    private static (int X, int Y)[] DataPositions(int layers, bool compact)
+    {
+        ref (int, int)[]? slot = ref s_data[(compact ? 33 : 0) + layers];
+        return Volatile.Read(ref slot) ?? Interlocked.CompareExchange(ref slot, AztecEncoder.DataPositions(layers, compact), null) ?? slot!;
+    }
+
+    /// <summary>The mode message's positions for a symbol size, made once.</summary>
+    private static (int X, int Y)[] ModePositions(int size, bool compact)
+    {
+        if (size >= 152)
+        {
+            return AztecEncoder.ModePositions(size, compact);
+        }
+
+        ref (int, int)[]? slot = ref s_mode[(compact ? 152 : 0) + size];
+        return Volatile.Read(ref slot) ?? Interlocked.CompareExchange(ref slot, AztecEncoder.ModePositions(size, compact), null) ?? slot!;
+    }
+
+    /// <summary>Whether the mode message corrects in the grid as <see cref="Orient"/> would turn it, without turning it.</summary>
+    private static bool ModeCorrects(BarcodeModules grid, int orientation, bool compact)
+    {
+        int n = grid.Width;
+        (int X, int Y)[] positions = ModePositions(n, compact);
+        int count = positions.Length / 4;
+        Span<int> words = stackalloc int[count];
+        for (int w = 0; w < count; w++)
+        {
+            int word = 0;
+            for (int b = 0; b < 4; b++)
+            {
+                (int x, int y) = positions[(w * 4) + b];
+                int sx = orientation >= 4 ? n - 1 - x : x, sy = y;
+                for (int r = 0; r < orientation % 4; r++)
+                {
+                    (sx, sy) = (sy, n - 1 - sx);
+                }
+
+                word = (word << 1) | (grid[sx, sy] ? 1 : 0);
+            }
+
+            words[w] = word;
+        }
+
+        return ReedSolomon.Decode(GaloisField.Aztec4, words, count - (compact ? 2 : 4)) >= 0;
+    }
+
     private static BarcodeModules Orient(BarcodeModules grid, int orientation)
     {
         if (orientation == 0)
@@ -144,7 +222,7 @@ internal static class AztecDecoder
             return null;
         }
 
-        (int X, int Y)[] positions = AztecEncoder.DataPositions(layers, !full);
+        (int X, int Y)[] positions = DataPositions(layers, !full);
         int[] words = new int[totalWords];
         for (int w = 0; w < totalWords; w++)
         {
@@ -191,7 +269,7 @@ internal static class AztecDecoder
     /// <summary>Reads and corrects the mode message; returns its data words, or null when it does not correct (or, when exact, needs correcting).</summary>
     private static int[]? ReadMode(BarcodeModules grid, int size, bool compact, bool rune, bool exact = false)
     {
-        (int X, int Y)[] positions = AztecEncoder.ModePositions(size, compact);
+        (int X, int Y)[] positions = ModePositions(size, compact);
         int count = positions.Length / 4;
         int[] words = new int[count];
         for (int w = 0; w < count; w++)

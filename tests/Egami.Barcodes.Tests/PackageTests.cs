@@ -9,6 +9,6 @@ public class PackageTests
     public void AssemblyLoads()
     {
         Assembly assembly = Assembly.Load("Egami.Barcodes");
-        Assert.Equal(new Version(1, 0, 0, 0), assembly.GetName().Version);
+        Assert.Equal(new Version(1, 0, 1, 0), assembly.GetName().Version);
     }
 }

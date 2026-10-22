@@ -26,7 +26,11 @@ internal static class Pdf417Decoder
     });
 
     /// <summary>The codewords read from one scan line: its cluster index (0 to 2) and the codewords after the start pattern.</summary>
-    internal readonly record struct Line(int Cluster, int[] Codewords, float Y, float Left, float Right);
+    /// <remarks>
+    /// <see cref="FromStop"/> marks a line read leftward from the stop pattern, where the start pattern was missing (a symbol cut
+    /// off on the left): its codewords end with the right row indicator and line up with the columns from the right.
+    /// </remarks>
+    internal readonly record struct Line(int Cluster, int[] Codewords, float Y, float Left, float Right, bool FromStop = false);
 
     /// <summary>Reads the codewords on one line of dark and light runs (bar first after a light run), left to right.</summary>
     internal static Line? ReadLine(ReadOnlySpan<int> runs, int firstDark, float y, ReadOnlySpan<int> positions)
@@ -70,6 +74,44 @@ internal static class Pdf417Decoder
             if (codewords.Count >= 2)
             {
                 return new Line(cluster, [.. codewords], y, positions[s], positions[Math.Min(at, positions.Length - 1)]);
+            }
+        }
+
+        return ReadLineFromStop(runs, firstDark, y, positions);
+    }
+
+    /// <summary>Reads the codewords leftward from the first stop pattern, for a line whose start pattern is missing.</summary>
+    private static Line? ReadLineFromStop(ReadOnlySpan<int> runs, int firstDark, float y, ReadOnlySpan<int> positions)
+    {
+        for (int s = firstDark; s + 9 <= runs.Length; s += 2)
+        {
+            if (!IsStop(runs.Slice(s, 9)))
+            {
+                continue;
+            }
+
+            int at = s, cluster = -1;
+            var codewords = new List<int>();
+            while (at - 8 >= 0 && Codeword(runs.Slice(at - 8, 8)) is int value)
+            {
+                int c = value >> 10;
+                if (cluster < 0)
+                {
+                    cluster = c;
+                }
+                else if (c != cluster)
+                {
+                    break;
+                }
+
+                codewords.Add(value & 0x3FF);
+                at -= 8;
+            }
+
+            if (codewords.Count >= 2)
+            {
+                codewords.Reverse();
+                return new Line(cluster, [.. codewords], y, positions[at], positions[s], FromStop: true);
             }
         }
 
@@ -176,13 +218,34 @@ internal static class Pdf417Decoder
             return null;
         }
 
-        // Row count, columns and error level from the left row indicators: votes per field.
+        // Row count, columns and error level from the row indicators (left, or right on lines read from the stop): votes
+        // per field.
         var rowsVotes = new Dictionary<int, int>();
         var columnVotes = new Dictionary<int, int>();
         var levelVotes = new Dictionary<int, int>();
         foreach (Line line in lines)
         {
-            int ri = line.Codewords[0], low = ri % 30;
+            int ri = line.FromStop ? line.Codewords[^1] : line.Codewords[0], low = ri % 30;
+            if (line.FromStop)
+            {
+                // The right row indicator: columns in cluster 0, rows / 3 in cluster 3, level and rows % 3 in cluster 6.
+                switch (line.Cluster)
+                {
+                    case 0:
+                        Vote(columnVotes, low + 1, 0);
+                        break;
+                    case 1:
+                        Vote(rowsVotes, (low * 3) + 1, 0);
+                        break;
+                    default:
+                        Vote(levelVotes, low / 3, 0);
+                        Vote(rowsVotes, low % 3, 1);
+                        break;
+                }
+
+                continue;
+            }
+
             switch (line.Cluster)
             {
                 case 0:
@@ -215,15 +278,22 @@ internal static class Pdf417Decoder
         float top = float.MaxValue, bottom = float.MinValue, left = float.MaxValue, right = float.MinValue;
         foreach (Line line in lines)
         {
-            int row = (3 * (line.Codewords[0] / 30)) + line.Cluster;
+            int row = (3 * ((line.FromStop ? line.Codewords[^1] : line.Codewords[0]) / 30)) + line.Cluster;
             if (row >= rows)
             {
                 continue;
             }
 
-            for (int c = 0; c < columns && c + 1 < line.Codewords.Length; c++)
+            for (int c = 0; c < columns; c++)
             {
-                (cells[(row * columns) + c] ??= [])[line.Codewords[c + 1]] = cells[(row * columns) + c].GetValueOrDefault(line.Codewords[c + 1]) + 1;
+                // From the start pattern the data follow the left indicator; from the stop pattern they end before the right one.
+                int at = line.FromStop ? line.Codewords.Length - 1 - columns + c : c + 1;
+                if (at < 0 || (line.FromStop ? at >= line.Codewords.Length - 1 : at >= line.Codewords.Length))
+                {
+                    continue;
+                }
+
+                (cells[(row * columns) + c] ??= [])[line.Codewords[at]] = cells[(row * columns) + c].GetValueOrDefault(line.Codewords[at]) + 1;
             }
 
             top = MathF.Min(top, line.Y);
