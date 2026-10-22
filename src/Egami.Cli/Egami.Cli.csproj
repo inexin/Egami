@@ -7,7 +7,7 @@
     <AssemblyName>Egami.Cli</AssemblyName>
     <PackageId>Egami.Cli</PackageId>
     <!-- Its own version line (CLI design Q1, Q16). 1.0 froze the command names and options after the command review. -->
-    <Version>1.0.0</Version>
+    <Version>$(EgamiVersion)</Version>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>egami</ToolCommandName>
     <!-- Also listed as an MCP server on NuGet, with .mcp/server.json (MCP design Q8). -->
