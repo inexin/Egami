@@ -67,6 +67,33 @@ command review freezes the names and options at 1.0.
   stack, and the symbol characters and bars are built without lists or copies. Code 128 and Code 39 no longer copy
   text without control characters for the human-readable text.
 
+## Egami.Video 0.4.0 (unreleased)
+
+V4.1: MP4 and QuickTime. Built on Egami's public ISO BMFF box walker (Egami 1.1.0).
+
+### MP4 and QuickTime
+
+- `Mp4Format` (registered by default) reads .mp4, .m4v, .m4a and .mov files: moov before or after the media, 64-bit sizes and
+  chunk offsets, compact sample sizes, composition offsets, several sample descriptions, and fragmented files (moof, traf,
+  tfhd, tfdt, trun) read one fragment at a time. Packets, times, flags and bytes equal ffprobe's on the test files.
+- Codecs: AV1 (av1C), VP9 and VP8 (vpcC), Motion JPEG (jpeg, mjpa, mp4v 0x6C), Opus (dOps), FLAC (dfLa), PCM (sowt, twos,
+  lpcm, ipcm, fpcm), and mov_text map to their codec ids; H.264 and HEVC (`CodecIds.Avc`, `CodecIds.Hevc`), MPEG-4 Part 2, AAC
+  and MP3 pass through with the setup Matroska stores; any other sample description passes through whole
+  (`CodecIds.QuickTimeVideo`, `QuickTimeAudio`, `QuickTimeOther`).
+- Edit lists are applied as FFmpeg shows them; `EncodedPacket.IsDiscardable` marks packets before the shown part, and readers
+  drop their frames. `Mp4Format.IgnoreEditLists` turns this off.
+- `VideoTrackInfo.Orientation` from the display matrix, and `VideoReaderOptions.AutoOrient` to turn frames upright.
+- `MediaInfo.Timecode` from a timecode track; colr, pasp, fiel, clli, mdcv, SmDm and CoLL into the track info.
+- Tags (iTunes items, QuickTime keys and udta text), cover art as attachments, and chapters from Nero chpl or a QuickTime chapter
+  track.
+- `MovTextSample`, `MovTextStyle` and `MovTextFace`: mov_text subtitles read and written with their style runs.
+- Writing ISO MP4: half-second chunks interleaved by time, moov first by default (or last with `Mp4Format.MoovAtEnd`), edit
+  lists, the display matrix, color and HDR boxes, each codec's config box, tags, cover art, and chapters both as Nero chpl
+  and as a QuickTime chapter track. FFmpeg and MP4Box read the files without a warning they do not give for the originals.
+- Seeking by sync samples in flat and fragmented files; exact seeks match decoding from the start.
+- Broken files are read up to the damage, with `mp4-*` warnings; sample tables count against `MediaLimits.MaxIndexEntries`.
+- AFL++ fuzz targets `mp4` (demux, seek, non-seekable) and `mp4mux` (read, write three ways, read back).
+
 ## Egami.Video 0.3.0 (unreleased)
 
 Egami.Video now lives in the Egami repository (it was inexin/Egami.Video), built and tested with the other packages; its

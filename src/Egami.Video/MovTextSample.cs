@@ -139,9 +139,29 @@ public sealed record MovTextSample(string Text)
 /// <param name="FontSize">The font size in pixels.</param>
 /// <param name="Color">The text color.</param>
 /// <param name="FontId">The font, an id from the sample entry's font table (usually 1).</param>
+/// <example>
+/// <code language="csharp">
+/// // "Hello" in bold red, then " world" plain, at 18 pixels.
+/// MovTextSample sample = new("Hello world")
+/// {
+///     Styles = [new MovTextStyle(0, 5, MovTextFace.Bold, 18, new Rgba8(255, 0, 0, 255))],
+/// };
+/// byte[] packet = sample.ToBytes();
+/// </code>
+/// </example>
 public readonly record struct MovTextStyle(int Start, int End, MovTextFace Face, int FontSize, Rgba8 Color, int FontId = 1);
 
 /// <summary>How the characters of a <see cref="MovTextStyle"/> are drawn.</summary>
+/// <example>
+/// <code language="csharp">
+/// // "Hello" in bold red, then " world" plain, at 18 pixels.
+/// MovTextSample sample = new("Hello world")
+/// {
+///     Styles = [new MovTextStyle(0, 5, MovTextFace.Bold, 18, new Rgba8(255, 0, 0, 255))],
+/// };
+/// byte[] packet = sample.ToBytes();
+/// </code>
+/// </example>
 [Flags]
 public enum MovTextFace
 {

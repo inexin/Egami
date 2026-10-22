@@ -101,9 +101,35 @@ recovered from. VP9 decodes tile columns and loop filter rows on up to `MaxParal
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-limits)]
 
+## MP4 and QuickTime
+
+`Mp4Format` reads .mp4, .m4v, .m4a and .mov files, flat or fragmented (CMAF and DASH segments, phone recordings), and writes
+ISO MP4. Every track is read: AV1, VP9, VP8, Motion JPEG, Opus, FLAC, PCM and mov_text with their settings, and H.264, HEVC,
+AAC or any other codec passed through, so a remux keeps them byte for byte. Opening a long file reads only its index.
+
+- Edit lists are applied, as FFmpeg shows them: a delayed track starts later, and packets before the start are marked
+  `EncodedPacket.IsDiscardable` (the reader decodes them and drops their frames). `new Mp4Format { IgnoreEditLists = true }`
+  gives the media's own times.
+- The display matrix is `VideoTrackInfo.Orientation`. Frames come out as coded; `VideoReaderOptions.AutoOrient` turns them.
+- A timecode track gives `MediaInfo.Timecode`. Tags, cover art (as an attachment named cover.jpg or cover.png) and chapters
+  (Nero chpl or a QuickTime chapter track) are read, and written back.
+- `MovTextSample` reads and writes mov_text subtitles with their style runs (`MovTextStyle`: the characters each covers, `MovTextFace` bold, italic or underline, size and color).
+- Writing puts moov before the media, so the file plays while it downloads. On a stream that can seek and read the media is
+  moved forward at the end; otherwise it waits in a temporary file. `new Mp4Format { MoovAtEnd = true }` writes moov last,
+  straight to a seekable stream. A QuickTime file is written as MP4.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-mp4)]
+
+Broken files are read up to the damage, with a warning through `MediaContext.Warnings`: `mp4-truncated` (the file was cut
+off), `mp4-bad-track`, `mp4-bad-box` and `mp4-bad-fragment` (broken boxes, skipped), `mp4-sample-table` (tables that disagree),
+`mp4-edit-list` (an edit list with several media edits or another rate, not applied), `mp4-sample-descriptions` (a track that
+changes its sample description), `mp4-fragment-track` and `mp4-track-id`. Writers report `mp4-timestamps` (a packet decoding
+before the one before it) and `metadata-dropped`. A file whose moov follows its media needs a stream that can seek.
+
 ## Containers
 
-Each container is a `ContainerFormat`: `MatroskaFormat` (WebM and Matroska), `AviFormat`, `IvfFormat` and `Y4mFormat`.
+Each container is a `ContainerFormat`: `MatroskaFormat` (WebM and Matroska), `Mp4Format` (MP4 and QuickTime), `AviFormat`,
+`IvfFormat` and `Y4mFormat`.
 `RawVideo` reads and writes headerless frames in a layout you give.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-containers)]

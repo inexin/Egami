@@ -420,4 +420,47 @@ public class Video
         Assert.True(known);
         Assert.NotNull(raw.ReadPacket());
     }
+
+    [Fact]
+    public void Mp4()
+    {
+        using SampleFiles files = new();
+
+        #region video-mp4
+        // MP4 and QuickTime files read like any other: rotation from the display matrix, the start timecode, edit lists applied.
+        MediaInfo phone = MediaFile.Probe("phone.mov");
+        Console.WriteLine($"{phone.FormatName}: turn {phone.VideoTrack!.Orientation} to show upright");
+        Console.WriteLine($"starts at timecode {MediaFile.Probe("camera.mov").Timecode}");
+
+        // Frames come out as coded; AutoOrient turns each one upright.
+        using (VideoReader reader = VideoReader.Open("phone.mov", new VideoReaderOptions { AutoOrient = true }))
+        {
+            using VideoFrame<Rgb8> upright = reader.ReadFrames<Rgb8>().First();
+            Console.WriteLine($"{reader.Track.Width}x{reader.Track.Height} coded, {upright.Raster.Width}x{upright.Raster.Height} shown");
+        }
+
+        // Writing MP4: moov before the media (the file plays while it downloads), tags, chapters and cover art kept.
+        MediaFile.Remux("movie.webm", "movie.mp4");
+        MediaFile.Remux("metadata.mkv", "metadata.mp4");
+
+        // mov_text subtitles: each packet's text and style runs.
+        using IDemuxer demuxer = MediaFile.OpenDemuxer("subtitled.mp4");
+        TrackInfo subtitles = demuxer.Tracks.First(t => t.CodecId == CodecIds.MovText);
+        while (demuxer.ReadPacket() is { } packet)
+        {
+            using (packet)
+            {
+                if (packet.TrackNumber == subtitles.Number)
+                {
+                    MovTextSample text = MovTextSample.Parse(packet.Data.Span);
+                    Console.WriteLine($"{packet.Timestamp.ToTimeSpan()}: {text.Text} ({text.Styles.Count} styles)");
+                }
+            }
+        }
+        #endregion
+
+        Assert.Equal(Egami.Metadata.ImageOrientation.Rotate270, phone.VideoTrack.Orientation);
+        Assert.Equal("MP4", MediaFile.Probe("movie.mp4").FormatName);
+        Assert.Equal(2, MediaFile.Probe("metadata.mp4").Chapters.Count);
+    }
 }

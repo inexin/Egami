@@ -101,7 +101,7 @@ public class Mp4BrokenFileTests
     {
         byte[] file = Clip("mp4-mjpeg.mp4");
         Assert.True(Find(file, "mdat") < Find(file, "moov"));
-        Assert.Throws<NotSupportedException>(() => MediaFile.OpenDemuxer(new NonSeekableStream(file)));
+        Assert.Throws<UnsupportedFormatException>(() => MediaFile.OpenDemuxer(new NonSeekableStream(file)));
     }
 
     [Fact]

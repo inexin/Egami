@@ -58,6 +58,9 @@
     <None Include="../images/icc/compact/DisplayP3-v4.icc" Link="images/DisplayP3.icc" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/avi-mjpeg-420-pcm.avi" Link="images/camera.avi" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/mkv-metadata.mkv" Link="images/metadata.mkv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/mp4/mov-rotate90.mov" Link="images/phone.mov" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/mp4/mp4-movtext.mp4" Link="images/subtitled.mp4" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/mp4/mov-tmcd.mov" Link="images/camera.mov" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/vp9/p0-altref.webm" Link="images/movie.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/vp9/alpha-ramp.webm" Link="images/alpha.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/vp9/hdr10.mkv" Link="images/hdr10.mkv" CopyToOutputDirectory="PreserveNewest" />

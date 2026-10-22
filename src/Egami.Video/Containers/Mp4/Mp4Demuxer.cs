@@ -194,7 +194,7 @@ internal sealed partial class Mp4Demuxer : IDemuxer
 
         if (position < _input.Position || !_input.Skip(position - _input.Position))
         {
-            throw new NotSupportedException($"The MP4 file's data at {position} lies before the stream's position ({_input.Position}); reading it needs a stream that can seek.");
+            throw new UnsupportedFormatException($"The MP4 file's data at {position} lies before the stream's position ({_input.Position}); reading it needs a stream that can seek.");
         }
     }
 
@@ -293,7 +293,7 @@ internal sealed partial class Mp4Demuxer : IDemuxer
                     mediaFirst = true;
                     if (!_input.CanSeek)
                     {
-                        throw new NotSupportedException("The MP4 file's moov box comes after its media data; reading it needs a stream that can seek.");
+                        throw new UnsupportedFormatException("The MP4 file's moov box comes after its media data; reading it needs a stream that can seek.");
                     }
 
                     break;

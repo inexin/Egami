@@ -77,6 +77,7 @@ internal static class Seeds
         string y4m = Directory.CreateDirectory(Path.Combine(directory, "y4m")).FullName;
         WriteVp8(directory);
         WriteVp9(directory);
+        WriteMp4(directory);
         File.WriteAllBytes(Path.Combine(y4m, "420.y4m"), [.. "YUV4MPEG2 W4 H2 F25:1 Ip A1:1 C420jpeg XCOLORRANGE=FULL\n"u8, .. "FRAME\n"u8, .. new byte[12], .. "FRAME\n"u8, .. new byte[12]]);
         File.WriteAllBytes(Path.Combine(y4m, "444p10.y4m"), [.. "YUV4MPEG2 W2 H2 F30000:1001 It A4:3 C444p10\n"u8, .. "FRAME\n"u8, .. new byte[24]]);
 
@@ -101,6 +102,49 @@ internal static class Seeds
             Chapters = [new ChapterInfo(MediaTime.Zero, new MediaTime(1, new Rational(1, 25)), "c")],
             Attachments = [new AttachmentInfo("cover.jpg", "image/jpeg", frame)],
         }));
+    }
+
+    /// <summary>
+    /// MP4 seeds (V4.1): the first packets of corpus clips written by Egami's MP4 writer, two small corpus files whole, and the
+    /// moov and first fragment of FFmpeg's and MP4Box's fragmented files.
+    /// </summary>
+    public static void WriteMp4(string directory)
+    {
+        string mp4 = Directory.CreateDirectory(Path.Combine(directory, "mp4")).FullName;
+        string corpus = Path.Combine("tests", "video", "corpus", "mp4");
+        foreach ((string clip, int packets) in (ReadOnlySpan<(string, int)>)[("mp4-vp9-opus.mp4", 4), ("mp4-metadata.mp4", 3), ("mp4-movtext.mp4", 4), ("mov-tmcd.mov", 2),
+            ("mp4-editlist-trim.mp4", 6), ("mp4-av1.mp4", 3), ("mp4-hevc.mp4", 2)])
+        {
+            using IDemuxer demuxer = MediaFile.OpenDemuxer(Path.Combine(corpus, clip));
+            MemoryStream output = new();
+            using (IMuxer muxer = Mp4Format.Instance.CreateMuxer(output, demuxer.Tracks, demuxer.Info.Metadata, MediaContext.Default, leaveOpen: true))
+            {
+                for (int i = 0; i < packets * demuxer.Tracks.Count && demuxer.ReadPacket() is { } packet; i++)
+                {
+                    using (packet)
+                    {
+                        muxer.WritePacket(packet);
+                    }
+                }
+            }
+
+            File.WriteAllBytes(Path.Combine(mp4, $"{Path.GetFileNameWithoutExtension(clip)}-{packets}.mp4"), output.ToArray());
+        }
+
+        foreach (string whole in (ReadOnlySpan<string>)["m4a-aac.m4a", "mp4box-stz2.mp4"])
+        {
+            File.Copy(Path.Combine(corpus, whole), Path.Combine(mp4, whole), overwrite: true);
+        }
+
+        foreach (string fragmented in (ReadOnlySpan<string>)["mp4-frag.mp4", "mp4box-frag-mfra.mp4", "mp4-cmaf.mp4"])
+        {
+            // ftyp, moov and the first moof with its mdat.
+            byte[] file = File.ReadAllBytes(Path.Combine(corpus, fragmented));
+            int moof = file.AsSpan().IndexOf("moof"u8) - 4;
+            int mdat = file.AsSpan(moof).IndexOf("mdat"u8) + moof - 4;
+            int end = mdat + System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(file.AsSpan(mdat));
+            File.WriteAllBytes(Path.Combine(mp4, $"{Path.GetFileNameWithoutExtension(fragmented)}-1.mp4"), file[..end]);
+        }
     }
 
     private static byte[] Mux(string format, IReadOnlyList<TrackInfo> tracks, byte[] frame, int count, bool seekable = true, MediaMetadata? metadata = null)
@@ -160,7 +204,7 @@ internal static class Seeds
         return [.. output];
     }
 
-    private sealed class UnseekableWriter(Stream inner) : Stream
+    internal sealed class UnseekableWriter(Stream inner) : Stream
     {
         public override bool CanRead => false;
 

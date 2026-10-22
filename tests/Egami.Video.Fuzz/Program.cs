@@ -68,12 +68,13 @@ Fuzzer.OutOfProcess.Run(run);
 
 static Action<Stream> Target(string name) => name switch
 {
-    "avi" or "mkv" or "y4m" or "ivf" or "webm" => Demux,
+    "avi" or "mkv" or "y4m" or "ivf" or "webm" or "mp4" => Demux,
+    "mp4mux" => RemuxMp4,
     "mjpeg" => DecodeMotionJpeg,
     "vp8" => ReadVp8,
     "vp9" => ReadVp9,
     "vp9raw" => DecodeVp9Packets,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mjpeg, vp8, vp9, vp9raw."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, mp4mux, mjpeg, vp8, vp9, vp9raw."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -112,6 +113,87 @@ static void Demux(Stream stream)
     }
     catch (EgamiException)
     {
+    }
+}
+
+// An MP4 file (V4.1): read up to 200 packets, write them to MP4 three ways (moov first in place and from a temporary file,
+// moov at the end), and read each back: it must open and give the same number of packets, each with the same bytes.
+static void RemuxMp4(Stream stream)
+{
+    MediaContext context = Context();
+    byte[] data = ReadAll(stream);
+    List<EncodedPacket> packets = [];
+    IReadOnlyList<TrackInfo> tracks;
+    MediaMetadata metadata;
+    try
+    {
+        using IDemuxer demuxer = Mp4Format.Instance.OpenDemuxer(new MemoryStream(data), context, leaveOpen: false);
+        tracks = demuxer.Tracks;
+        metadata = demuxer.Info.Metadata;
+        for (int i = 0; i < 200 && demuxer.ReadPacket() is { } packet; i++)
+        {
+            packets.Add(packet);
+        }
+    }
+    catch (EgamiException)
+    {
+        packets.ForEach(p => p.Dispose());
+        return;
+    }
+
+    try
+    {
+        foreach (Mp4Format format in new[] { Mp4Format.Instance, new Mp4Format { MoovAtEnd = true } })
+        {
+            foreach (bool seekable in new[] { true, false })
+            {
+                if (format.MoovAtEnd && !seekable)
+                {
+                    continue;
+                }
+
+                MemoryStream output = new();
+                try
+                {
+                    using IMuxer muxer = format.CreateMuxer(seekable ? output : new Seeds.UnseekableWriter(output), tracks, metadata, context, leaveOpen: true);
+                    foreach (EncodedPacket packet in packets)
+                    {
+                        muxer.WritePacket(packet);
+                    }
+                }
+                catch (NotSupportedException)
+                {
+                    // A track MP4 cannot hold, such as one read without its sample description.
+                    return;
+                }
+
+                using IDemuxer again = Mp4Format.Instance.OpenDemuxer(new MemoryStream(output.ToArray()), context, leaveOpen: false);
+                int count = 0;
+                Dictionary<int, Queue<EncodedPacket>> byTrack = packets.GroupBy(p => p.TrackNumber).ToDictionary(g => g.Key, g => new Queue<EncodedPacket>(g));
+                Dictionary<int, int> numbers = tracks.Select((t, i) => (i + 1, t.Number)).ToDictionary();
+                while (again.ReadPacket() is { } read)
+                {
+                    using (read)
+                    {
+                        count++;
+                        EncodedPacket written = byTrack[numbers[read.TrackNumber]].Dequeue();
+                        if (!read.Data.Span.SequenceEqual(written.Data.Span))
+                        {
+                            throw new InvalidOperationException($"Packet {count} came back with other bytes.");
+                        }
+                    }
+                }
+
+                if (count != packets.Count)
+                {
+                    throw new InvalidOperationException($"{packets.Count} packets were written, {count} read back.");
+                }
+            }
+        }
+    }
+    finally
+    {
+        packets.ForEach(p => p.Dispose());
     }
 }
 

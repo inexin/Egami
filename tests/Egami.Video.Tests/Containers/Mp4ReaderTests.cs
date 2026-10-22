@@ -133,7 +133,7 @@ public class Mp4ReaderTests
             moovFirst = true;
             Assert.Equal(Corpus.ReadAll(seekable), Corpus.ReadAll(streaming));
         }
-        catch (NotSupportedException)
+        catch (UnsupportedFormatException)
         {
             // moov after mdat, or samples out of file order, cannot be read from the start without seeking.
             moovFirst = false;
