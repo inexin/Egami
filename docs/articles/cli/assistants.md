@@ -19,7 +19,8 @@ Every command is a tool with the command's name, words joined by `_`: `info`, `c
 `rotate`, `flip`, `auto_orient`, `run`, `compare`, `stats`, `frames_split`, `frames_join`, `metadata_show`, `metadata_strip`,
 `metadata_copy`, `color`, `text`, `overlay`, `montage` and `formats`. Their arguments are the command's arguments and options
 in snake case (`--bit-depth` is `bit_depth`), with the same descriptions as `egami <command> --help`, so the
-[command reference](commands.md) covers them too.
+[command reference](commands.md) covers them too. `--jobs` and `--fail-fast` are left out: a call works on one
+file per processor and keeps going past a file that fails, reporting each one.
 
 - `run` takes its steps as a workflow object, the same JSON as a [workflow file](index.md#workflow-files), and
   `list_steps` lists the steps and their options.

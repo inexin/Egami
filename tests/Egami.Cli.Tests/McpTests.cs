@@ -312,7 +312,7 @@ public sealed class McpTests : IAsyncDisposable
 
             return ValueTask.CompletedTask;
         });
-        CallToolResult result = await roomy.CallToolAsync("convert", new Dictionary<string, object?> { ["inputs"] = Files("in/*.png"), ["output"] = "out/{name}.qoi", ["jobs"] = 1 }, new Progress<ProgressNotificationValue>(), cancellationToken: Token);
+        CallToolResult result = await roomy.CallToolAsync("convert", new Dictionary<string, object?> { ["inputs"] = Files("in/*.png"), ["output"] = "out/{name}.qoi" }, new Progress<ProgressNotificationValue>(), cancellationToken: Token);
         Assert.False(result.IsError, Text(result));
         Assert.Equal(4, Written(result).Count);
         for (int wait = 0; wait < 100 && heard.Count < 4; wait++)

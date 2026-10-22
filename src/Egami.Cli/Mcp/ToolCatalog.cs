@@ -53,10 +53,13 @@ internal sealed record ToolInfo(string Name, string[] Words, string Description,
 /// </summary>
 internal static class ToolCatalog
 {
-    /// <summary>Options that belong to the server, or that a call always sets, so no tool takes them.</summary>
+    /// <summary>
+    /// Options that belong to the server, that a call always sets, or that an assistant has no basis to choose (tool review R1):
+    /// calls use one job per processor and keep going past a failed file, reporting each.
+    /// </summary>
     private static readonly HashSet<string> Excluded = new(StringComparer.Ordinal)
     {
-        "--help", "--version", "--verbose", "--debug", "--quiet", "--limit", "--json", "--workflow", "--list",
+        "--help", "--version", "--verbose", "--debug", "--quiet", "--limit", "--json", "--workflow", "--list", "--jobs", "--fail-fast",
     };
 
     /// <summary>Commands that are not tools: the server itself.</summary>
