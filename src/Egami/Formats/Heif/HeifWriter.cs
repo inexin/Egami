@@ -24,8 +24,8 @@ internal sealed class HeifWriter
     /// <param name="compatibleBrands">The compatible brands, such as avif, mif1, miaf and MA1B.</param>
     internal HeifWriter(string majorBrand, params string[] compatibleBrands)
     {
-        _majorBrand = FourCC.Of(majorBrand);
-        _compatibleBrands = [.. compatibleBrands.Select(b => FourCC.Of(b))];
+        _majorBrand = IsoTypes.Of(majorBrand);
+        _compatibleBrands = [.. compatibleBrands.Select(b => IsoTypes.Of(b))];
     }
 
     /// <summary>Gets or sets the primary item's id; 0 writes no pitm box.</summary>
@@ -44,7 +44,7 @@ internal sealed class HeifWriter
     internal uint AddItem(string type, ReadOnlyMemory<byte> data, string name = "", bool hidden = false, string? contentType = null, bool inIdat = false)
     {
         uint id = (uint)_items.Count + 1;
-        _items.Add(new Entry(id, FourCC.Of(type), data, name, hidden, contentType, inIdat));
+        _items.Add(new Entry(id, IsoTypes.Of(type), data, name, hidden, contentType, inIdat));
         return id;
     }
 
@@ -78,13 +78,13 @@ internal sealed class HeifWriter
     internal void AddProperty(uint item, byte[] box, bool essential = false) => Associate(item, AddProperty(box), essential);
 
     /// <summary>Adds an item reference of a type (such as dimg, auxl, cdsc or prem) from one item to others, in order.</summary>
-    internal void Reference(string type, uint from, params uint[] to) => _references.Add((FourCC.Of(type), from, to));
+    internal void Reference(string type, uint from, params uint[] to) => _references.Add((IsoTypes.Of(type), from, to));
 
     /// <summary>
     /// Adds an entity group of a type (such as altr, alternatives in order of preference) to the grpl box, with an id numbered
     /// after the items'.
     /// </summary>
-    internal void Group(string type, params uint[] entities) => _groups.Add((FourCC.Of(type), entities));
+    internal void Group(string type, params uint[] entities) => _groups.Add((IsoTypes.Of(type), entities));
 
     /// <summary>Writes the file.</summary>
     internal void Write(Stream output)
@@ -112,14 +112,14 @@ internal sealed class HeifWriter
         if (mdatHeader == 16)
         {
             BinaryPrimitives.WriteUInt32BigEndian(header, 1);
-            BinaryPrimitives.WriteUInt32BigEndian(header[4..], FourCC.Of("mdat"));
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], IsoTypes.Of("mdat"));
             BinaryPrimitives.WriteUInt64BigEndian(header[8..], (ulong)(mdatData + 16));
             output.Write(header);
         }
         else
         {
             BinaryPrimitives.WriteUInt32BigEndian(header, (uint)(mdatData + 8));
-            BinaryPrimitives.WriteUInt32BigEndian(header[4..], FourCC.Of("mdat"));
+            BinaryPrimitives.WriteUInt32BigEndian(header[4..], IsoTypes.Of("mdat"));
             output.Write(header[..8]);
         }
 
@@ -151,7 +151,7 @@ internal sealed class HeifWriter
 
         byte[] box = new byte[length];
         BinaryPrimitives.WriteUInt32BigEndian(box, (uint)length);
-        BinaryPrimitives.WriteUInt32BigEndian(box.AsSpan(4), FourCC.Of(type));
+        BinaryPrimitives.WriteUInt32BigEndian(box.AsSpan(4), IsoTypes.Of(type));
         int at = 8;
         foreach (byte[] part in parts)
         {
@@ -178,10 +178,10 @@ internal sealed class HeifWriter
 
     /// <summary>An nclx colr property: CICP code points (ITU-T H.273) and the range flag.</summary>
     internal static byte[] ColorNclx(int primaries, int transfer, int matrix, bool fullRange) =>
-        Box("colr", U32(FourCC.Of("nclx")), U16(primaries), U16(transfer), U16(matrix), [(byte)(fullRange ? 0x80 : 0)]);
+        Box("colr", U32(IsoTypes.Of("nclx")), U16(primaries), U16(transfer), U16(matrix), [(byte)(fullRange ? 0x80 : 0)]);
 
     /// <summary>An ICC colr property (prof).</summary>
-    internal static byte[] ColorIcc(ReadOnlySpan<byte> profile) => Box("colr", U32(FourCC.Of("prof")), profile.ToArray());
+    internal static byte[] ColorIcc(ReadOnlySpan<byte> profile) => Box("colr", U32(IsoTypes.Of("prof")), profile.ToArray());
 
     /// <summary>The auxC property: an auxiliary image's type URN, such as the alpha URN.</summary>
     internal static byte[] AuxiliaryType(string urn) => FullBox("auxC", 0, 0, [.. Encoding.UTF8.GetBytes(urn), 0]);
@@ -230,7 +230,7 @@ internal sealed class HeifWriter
     private byte[] Meta(long mdatStart, bool wide)
     {
         bool longIds = _items.Count > ushort.MaxValue;
-        List<byte[]> children = [FullBox("hdlr", 0, 0, U32(0), U32(FourCC.Pict), new byte[12], [0])];
+        List<byte[]> children = [FullBox("hdlr", 0, 0, U32(0), U32(IsoTypes.Pict), new byte[12], [0])];
         if (PrimaryItemId != 0)
         {
             children.Add(FullBox("pitm", longIds ? 1 : 0, 0, Id(PrimaryItemId, longIds)));
@@ -245,7 +245,7 @@ internal sealed class HeifWriter
             {
                 List<byte[]> fields = [Id(from, longIds), U16(to.Length)];
                 fields.AddRange(to.Select(t => Id(t, longIds)));
-                references.Add(Box(FourCC.ToString(type), [.. fields]));
+                references.Add(Box(IsoTypes.ToString(type), [.. fields]));
             }
 
             children.Add(FullBox("iref", longIds ? 1 : 0, 0, [.. references]));
@@ -263,7 +263,7 @@ internal sealed class HeifWriter
             uint groupId = (uint)_items.Count;
             foreach ((uint type, uint[] entities) in _groups)
             {
-                groups.Add(FullBox(FourCC.ToString(type), 0, 0, [U32(++groupId), U32((uint)entities.Length), .. entities.Select(e => U32(e))]));
+                groups.Add(FullBox(IsoTypes.ToString(type), 0, 0, [U32(++groupId), U32((uint)entities.Length), .. entities.Select(e => U32(e))]));
             }
 
             children.Add(Box("grpl", [.. groups]));

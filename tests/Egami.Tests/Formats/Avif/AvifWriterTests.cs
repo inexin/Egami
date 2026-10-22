@@ -145,8 +145,8 @@ public class AvifWriterTests
         using Raster<Rgba8> loaded = Raster.Load<Rgba8>(file);
         AssertEqual(source, loaded);
         HeifFile heif = HeifFile.Parse(file, "AVIF");
-        Assert.Equal(FourCC.Of("grid"), heif.PrimaryItem!.Type);
-        Assert.Equal(6, heif.PrimaryItem.ReferencesOf(FourCC.Of("dimg")).Length);
+        Assert.Equal(IsoTypes.Of("grid"), heif.PrimaryItem!.Type);
+        Assert.Equal(6, heif.PrimaryItem.ReferencesOf(IsoTypes.Of("dimg")).Length);
     }
 
     [Fact]
@@ -157,7 +157,7 @@ public class AvifWriterTests
         Assert.Equal((6668, 3750), AvifWriter.GridCells(20000, 15000, ChromaFormat.Yuv420, null));
         using Raster<Rgb8> wide = Pattern<Rgb8>(8250, 16, (x, y) => new Rgb8((byte)x, (byte)(x >> 8), (byte)y));
         byte[] file = Save(wide, new AvifWriterOptions { Effort = 0 });
-        Assert.Equal(FourCC.Of("grid"), HeifFile.Parse(file, "AVIF").PrimaryItem!.Type);
+        Assert.Equal(IsoTypes.Of("grid"), HeifFile.Parse(file, "AVIF").PrimaryItem!.Type);
         using Raster loaded = Raster.Load(file);
         Assert.Equal((8250, 16), (loaded.Width, loaded.Height));
     }
@@ -195,7 +195,7 @@ public class AvifWriterTests
         HeifFile heif = HeifFile.Parse(file, "AVIF");
         Assert.Equal(2, heif.Items.Count);
         Assert.True(heif.Item(2)!.Hidden);
-        Assert.Equal([1u], heif.Item(2)!.ReferencesOf(FourCC.Of("auxl")));
+        Assert.Equal([1u], heif.Item(2)!.ReferencesOf(IsoTypes.Of("auxl")));
 
         static ushort Wide(int value, int max) => (ushort)((value % (max + 1)) * 65535 / max);
 
@@ -220,8 +220,8 @@ public class AvifWriterTests
         using Raster<Rgb8> loaded = Raster.Load<Rgb8>(file);
         Assert.True(Psnr(source, loaded) >= minimumPsnr, $"PSNR {Psnr(source, loaded):F1} dB at quality {quality}.");
         HeifFile heif = HeifFile.Parse(file, "AVIF");
-        Assert.True(heif.HasBrand(FourCC.Of("avif")));
-        Assert.Equal(quality >= 90, !heif.HasBrand(FourCC.Of("MA1B")) && heif.HasBrand(FourCC.Of("MA1A")));
+        Assert.True(heif.HasBrand(IsoTypes.Of("avif")));
+        Assert.Equal(quality >= 90, !heif.HasBrand(IsoTypes.Of("MA1B")) && heif.HasBrand(IsoTypes.Of("MA1A")));
     }
 
     [Fact]

@@ -17,7 +17,7 @@ namespace Egami.Formats.Heic;
 internal static class HeicSupport
 {
     /// <summary>The brands of HEVC-coded HEIF images and sequences (ISO/IEC 23008-12, Annex B).</summary>
-    private static readonly uint[] HevcBrands = [.. new[] { "heic", "heix", "heim", "heis", "hevc", "hevx", "hevm", "hevs" }.Select(b => FourCC.Of(b))];
+    private static readonly uint[] HevcBrands = [.. new[] { "heic", "heix", "heim", "heis", "hevc", "hevx", "hevm", "hevs" }.Select(b => IsoTypes.Of(b))];
 
     /// <summary>Gets the message Load gives when the Egami.Heic package is not registered.</summary>
     internal const string PackageNeeded = "The data is HEIC, HEIF with HEVC-coded images. HEVC is covered by patents, so core Egami does not decode it: "
@@ -50,7 +50,7 @@ internal static class HeicSupport
     /// </summary>
     internal static bool Matches(ReadOnlySpan<byte> header)
     {
-        if (header.Length < 12 || BinaryPrimitives.ReadUInt32BigEndian(header[4..]) != FourCC.Ftyp)
+        if (header.Length < 12 || BinaryPrimitives.ReadUInt32BigEndian(header[4..]) != IsoTypes.Ftyp)
         {
             return false;
         }

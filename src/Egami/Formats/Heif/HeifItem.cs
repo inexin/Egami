@@ -1,3 +1,5 @@
+using Egami.Formats.Iso;
+
 namespace Egami.Formats.Heif;
 
 /// <summary>One extent of an item's data, from the iloc box.</summary>
@@ -105,5 +107,5 @@ internal sealed class HeifItem
     }
 
     /// <inheritdoc/>
-    public override string ToString() => $"item {Id} ({FourCC.ToString(Type)})";
+    public override string ToString() => $"item {Id} ({IsoTypes.ToString(Type)})";
 }

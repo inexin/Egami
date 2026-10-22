@@ -1,6 +1,7 @@
 using Egami.Colors;
 using Egami.Formats.Av1;
 using Egami.Formats.Heif;
+using Egami.Formats.Iso;
 using Egami.Metadata;
 
 namespace Egami.Formats.Avif;
@@ -13,10 +14,10 @@ namespace Egami.Formats.Avif;
 /// </summary>
 internal sealed class AvifSequence : IHeifSequence
 {
-    private static readonly uint Vide = FourCC.Of("vide");
-    private static readonly uint Pict = FourCC.Of("pict");
-    private static readonly uint Auxl = FourCC.Of("auxl");
-    private static readonly uint Prem = FourCC.Of("prem");
+    private static readonly uint Vide = IsoTypes.Of("vide");
+    private static readonly uint Pict = IsoTypes.Of("pict");
+    private static readonly uint Auxl = IsoTypes.Of("auxl");
+    private static readonly uint Prem = IsoTypes.Of("prem");
 
     private AvifSequence(HeifFile heif, HeifTrack color, HeifTrack? alpha)
     {
@@ -126,7 +127,7 @@ internal sealed class AvifSequence : IHeifSequence
     {
         foreach (IsoBox box in track.EntryBoxes)
         {
-            if (box.Type == FourCC.Of("auxi"))
+            if (box.Type == IsoTypes.Of("auxi"))
             {
                 // A FullBox, then the type as a null-terminated string.
                 ReadOnlySpan<byte> c = box.Content(heif.Bytes.Span);

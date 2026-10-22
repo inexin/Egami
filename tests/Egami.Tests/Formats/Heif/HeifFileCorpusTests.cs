@@ -14,7 +14,7 @@ public class HeifFileCorpusTests
 {
     /// <summary>The properties libavif 1.4.2 understands; an essential property of any other type makes an item unusable.</summary>
     private static readonly HashSet<uint> LibavifProperties =
-        [.. new[] { "ispe", "auxC", "colr", "av1C", "pasp", "clap", "irot", "imir", "pixi", "a1op", "lsel", "a1lx", "clli" }.Select(t => FourCC.Of(t))];
+        [.. new[] { "ispe", "auxC", "colr", "av1C", "pasp", "clap", "irot", "imir", "pixi", "a1op", "lsel", "a1lx", "clli" }.Select(t => IsoTypes.Of(t))];
 
     private static readonly string Corpus = Path.Combine(AppContext.BaseDirectory, "images", "avif");
     private static readonly Lazy<JsonElement> Manifest = new(() =>
@@ -70,8 +70,8 @@ public class HeifFileCorpusTests
         }
 
         HeifFile heif = HeifFile.Parse(bytes, "AVIF");
-        Assert.Equal(libavif.GetProperty("major_brand").GetString(), FourCC.ToString(heif.MajorBrand));
-        Assert.Equal(libavif.GetProperty("compatible_brands").EnumerateArray().Select(b => b.GetString()), heif.CompatibleBrands.Select(FourCC.ToString));
+        Assert.Equal(libavif.GetProperty("major_brand").GetString(), IsoTypes.ToString(heif.MajorBrand));
+        Assert.Equal(libavif.GetProperty("compatible_brands").EnumerateArray().Select(b => b.GetString()), heif.CompatibleBrands.Select(IsoTypes.ToString));
         Assert.Equal(libavif.GetProperty("primary_item").GetUInt32(), heif.PrimaryItemId);
         Assert.Equal(libavif.GetProperty("idat_size").GetInt32(), heif.Idat.Length);
         heif.MarkUnsupportedEssential(LibavifProperties.Contains);
@@ -91,7 +91,7 @@ public class HeifFileCorpusTests
             }
 
             string at = $"{file} item {id}";
-            Assert.True(expected.GetProperty("type").GetString() == FourCC.ToString(item.Type), at);
+            Assert.True(expected.GetProperty("type").GetString() == IsoTypes.ToString(item.Type), at);
             Assert.True(expected.GetProperty("idat").GetBoolean() == (item.ConstructionMethod == 1), at);
             long[][] extents = [.. expected.GetProperty("extents").EnumerateArray().Select(e => new[] { e[0].GetInt64(), e[1].GetInt64() })];
             Assert.Equal(extents, item.Extents.Select(e => new[] { e.Offset, e.Length }));
@@ -101,9 +101,9 @@ public class HeifFileCorpusTests
                 Assert.True(heif.ItemData(item).Length == item.Extents.Sum(e => e.Length), at);
             }
 
-            List<string> properties = [.. heif.PropertiesOf(item).Select(p => FourCC.ToString(p.Property.Type))];
+            List<string> properties = [.. heif.PropertiesOf(item).Select(p => IsoTypes.ToString(p.Property.Type))];
             string[] theirProperties = [.. expected.GetProperty("properties").EnumerateArray().Select(p => p.GetString()!)];
-            if (item.Type == FourCC.Of("grid") && !properties.Contains("av1C") && theirProperties.Contains("av1C"))
+            if (item.Type == IsoTypes.Of("grid") && !properties.Contains("av1C") && theirProperties.Contains("av1C"))
             {
                 // libavif gives a color or alpha grid its first cell's av1C.
                 properties.Add("av1C");
@@ -115,7 +115,7 @@ public class HeifFileCorpusTests
             Assert.True(expected.GetProperty("aux_for").GetUInt32() == First(item, "auxl"), at);
             Assert.True(expected.GetProperty("desc_for").GetUInt32() == First(item, "cdsc"), at);
             Assert.True(expected.GetProperty("prem_by").GetUInt32() == First(item, "prem"), at);
-            Assert.True(expected.GetProperty("has_dimg_from").GetBoolean() == (item.ReferencesOf(FourCC.Of("dimg")).Length > 0), at);
+            Assert.True(expected.GetProperty("has_dimg_from").GetBoolean() == (item.ReferencesOf(IsoTypes.Of("dimg")).Length > 0), at);
             (uint derived, int index) = DerivedFrom(heif, id);
             if (!synthetic.Contains(expected.GetProperty("dimg_for").GetUInt32()))
             {
@@ -130,13 +130,13 @@ public class HeifFileCorpusTests
         Assert.Equal(groups.Length, heif.Groups.Count);
         for (int g = 0; g < groups.Length; g++)
         {
-            Assert.Equal(groups[g].GetProperty("type").GetString(), FourCC.ToString(heif.Groups[g].Type));
+            Assert.Equal(groups[g].GetProperty("type").GetString(), IsoTypes.ToString(heif.Groups[g].Type));
             Assert.Equal(groups[g].GetProperty("id").GetUInt32(), heif.Groups[g].Id);
             Assert.Equal(groups[g].GetProperty("entities").EnumerateArray().Select(e => e.GetUInt32()), heif.Groups[g].Entities);
         }
     }
 
-    private static uint First(HeifItem item, string type) => item.ReferencesOf(FourCC.Of(type)) is [uint to, ..] ? to : 0;
+    private static uint First(HeifItem item, string type) => item.ReferencesOf(IsoTypes.Of(type)) is [uint to, ..] ? to : 0;
 
     /// <summary>The last item whose dimg references name <paramref name="id"/>, and where, as libavif keeps it.</summary>
     private static (uint Item, int Index) DerivedFrom(HeifFile heif, uint id)
@@ -144,7 +144,7 @@ public class HeifFileCorpusTests
         (uint, int) found = (0, 0);
         foreach (HeifItem item in heif.Items)
         {
-            int index = Array.IndexOf(item.ReferencesOf(FourCC.Of("dimg")), id);
+            int index = Array.IndexOf(item.ReferencesOf(IsoTypes.Of("dimg")), id);
             if (index >= 0)
             {
                 found = (item.Id, index);

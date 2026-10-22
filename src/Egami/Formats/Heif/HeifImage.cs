@@ -27,15 +27,15 @@ internal abstract class HeifImage
         Other,
     }
 
-    internal static readonly uint Grid = FourCC.Of("grid");
-    internal static readonly uint Iovl = FourCC.Of("iovl");
-    internal static readonly uint Tmap = FourCC.Of("tmap");
-    internal static readonly uint Altr = FourCC.Of("altr");
-    internal static readonly uint Exif = FourCC.Of("Exif");
-    internal static readonly uint Auxl = FourCC.Of("auxl");
-    internal static readonly uint Dimg = FourCC.Of("dimg");
-    internal static readonly uint Cdsc = FourCC.Of("cdsc");
-    internal static readonly uint Prem = FourCC.Of("prem");
+    internal static readonly uint Grid = IsoTypes.Of("grid");
+    internal static readonly uint Iovl = IsoTypes.Of("iovl");
+    internal static readonly uint Tmap = IsoTypes.Of("tmap");
+    internal static readonly uint Altr = IsoTypes.Of("altr");
+    internal static readonly uint Exif = IsoTypes.Of("Exif");
+    internal static readonly uint Auxl = IsoTypes.Of("auxl");
+    internal static readonly uint Dimg = IsoTypes.Of("dimg");
+    internal static readonly uint Cdsc = IsoTypes.Of("cdsc");
+    internal static readonly uint Prem = IsoTypes.Of("prem");
 
     private protected HeifImage(HeifFile heif, HeifItem primary)
     {
@@ -218,7 +218,7 @@ internal abstract class HeifImage
 
         if (Array.IndexOf(types, primary.Type) < 0)
         {
-            throw new UnsupportedFormatException($"The {name} file's primary item is a \"{FourCC.ToString(primary.Type)}\" item; Egami reads {string.Join(", ", types[..^1].Select(FourCC.ToString))} and {FourCC.ToString(types[^1])} items.");
+            throw new UnsupportedFormatException($"The {name} file's primary item is a \"{IsoTypes.ToString(primary.Type)}\" item; Egami reads {string.Join(", ", types[..^1].Select(IsoTypes.ToString))} and {IsoTypes.ToString(types[^1])} items.");
         }
 
         return primary;
@@ -230,7 +230,7 @@ internal abstract class HeifImage
         HeifFile heif = Heif;
         if (Primary.UnsupportedEssential != 0)
         {
-            throw new UnsupportedFormatException($"The {heif.FormatName} file's primary item has an essential \"{FourCC.ToString(Primary.UnsupportedEssential)}\" property Egami does not understand.");
+            throw new UnsupportedFormatException($"The {heif.FormatName} file's primary item has an essential \"{IsoTypes.ToString(Primary.UnsupportedEssential)}\" property Egami does not understand.");
         }
 
         if (Primary.Type == Grid)
@@ -317,7 +317,7 @@ internal abstract class HeifImage
             {
                 ExifItems.Add(item);
             }
-            else if (item.Type == FourCC.Mime && item.ContentType == "application/rdf+xml")
+            else if (item.Type == IsoTypes.Mime && item.ContentType == "application/rdf+xml")
             {
                 XmpItems.Add(item);
             }
@@ -482,7 +482,7 @@ internal abstract class HeifImage
             }
 
             AppleGainMap = item;
-            AppleGainMapXmp = heif.Items.FirstOrDefault(x => x.Type == FourCC.Mime && x.ContentType == "application/rdf+xml"
+            AppleGainMapXmp = heif.Items.FirstOrDefault(x => x.Type == IsoTypes.Mime && x.ContentType == "application/rdf+xml"
                 && Array.IndexOf(x.ReferencesOf(Cdsc), item.Id) >= 0);
             return;
         }
@@ -504,7 +504,7 @@ internal abstract class HeifImage
         HashSet<uint> derived = [.. heif.Items.SelectMany(i => i.ReferencesOf(Dimg)), .. heif.Items.Where(i => i.Type == Tmap).Select(i => i.Id)];
         derived.Remove(Primary.Id);
         uint gainMap = ToneMap is HeifItem tmap ? tmap.ReferencesOf(Dimg)[1] : AppleGainMap?.Id ?? 0;
-        uint thmb = FourCC.Of("thmb");
+        uint thmb = IsoTypes.Of("thmb");
         List<(HeifItem, HeifItemRole, Size, string?)> roles = [];
         foreach (HeifItem item in heif.Items)
         {
@@ -531,7 +531,7 @@ internal abstract class HeifImage
                 : auxl.Length > 0 && auxType is "urn:mpeg:mpegB:cicp:systems:auxiliary:depth" or "urn:mpeg:hevc:2015:auxid:2" ? HeifItemRole.Depth
                 : auxl.Length > 0 ? HeifItemRole.Auxiliary
                 : derived.Contains(item.Id) ? HeifItemRole.Derived
-                : item.Type == Exif || item.Type == FourCC.Mime ? HeifItemRole.Metadata
+                : item.Type == Exif || item.Type == IsoTypes.Mime ? HeifItemRole.Metadata
                 : HeifItemRole.Other;
             roles.Add((item, role, size, auxType));
         }
@@ -683,12 +683,12 @@ internal abstract class HeifImage
             HeifItem cell = heif.Item(id) ?? throw Corrupt(heif, $"A {role}, item {id}, has no iinf entry.");
             if (cell.Type != CodedType)
             {
-                throw new UnsupportedFormatException($"A {role} is a \"{FourCC.ToString(cell.Type)}\" item; Egami reads {FourCC.ToString(CodedType)} ones.");
+                throw new UnsupportedFormatException($"A {role} is a \"{IsoTypes.ToString(cell.Type)}\" item; Egami reads {IsoTypes.ToString(CodedType)} ones.");
             }
 
             if (cell.UnsupportedEssential != 0)
             {
-                throw new UnsupportedFormatException($"A {role} has an essential \"{FourCC.ToString(cell.UnsupportedEssential)}\" property Egami does not understand.");
+                throw new UnsupportedFormatException($"A {role} has an essential \"{IsoTypes.ToString(cell.UnsupportedEssential)}\" property Egami does not understand.");
             }
 
             cells.Add(cell);

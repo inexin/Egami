@@ -1,0 +1,16 @@
+{"format":{"format_name": "mov,mp4,m4a,3gp,3g2,mj2", "duration": "1.000000", "nb_streams": 1, "start_time": "0.000000"},
+"tags":{"major_brand": "isom", "minor_version": "512", "compatible_brands": "isomiso2mp41", "encoder": "Lavf60.16.100"},
+"chapters":[],
+"streams":[
+{"index": 0, "codec_type": "audio", "codec_name": "flac", "codec_tag_string": "fLaC", "r_frame_rate": "0/0", "avg_frame_rate": "0/0", "time_base": "1/44100", "start_pts": 0, "duration_ts": 44100, "sample_rate": "44100", "channels": 1, "bits_per_sample": 0, "nb_frames": "10", "extradata_size": 34, "disposition": {"default": 1}, "tags": {"language": "und", "handler_name": "SoundHandler", "vendor_id": "[0][0][0][0]"}}],
+"packets":[
+{"stream_index": 0, "pts": 0, "dts": 0, "duration": 4608, "size": "1242", "pos": "44", "flags": "K__", "md5": "7cc8bd0a02909a52b70f654991f07bb6"},
+{"stream_index": 0, "pts": 4608, "dts": 4608, "duration": 4608, "size": "1246", "pos": "1286", "flags": "K__", "md5": "3945b379e95bc47ecb025c917ebd9c17"},
+{"stream_index": 0, "pts": 9216, "dts": 9216, "duration": 4608, "size": "1242", "pos": "2532", "flags": "K__", "md5": "595507bc8d798b73757201aab2d44072"},
+{"stream_index": 0, "pts": 13824, "dts": 13824, "duration": 4608, "size": "1258", "pos": "3774", "flags": "K__", "md5": "e72fde6f1456a21b95884f939c2723c8"},
+{"stream_index": 0, "pts": 18432, "dts": 18432, "duration": 4608, "size": "1251", "pos": "5032", "flags": "K__", "md5": "c1a4bbe27cca952c6a0b5fc1efb7cce9"},
+{"stream_index": 0, "pts": 23040, "dts": 23040, "duration": 4608, "size": "1264", "pos": "6283", "flags": "K__", "md5": "99a20e6f0891bb68b91771122ac92979"},
+{"stream_index": 0, "pts": 27648, "dts": 27648, "duration": 4608, "size": "1264", "pos": "7547", "flags": "K__", "md5": "41f86d28e780d9ff0018d95d46420434"},
+{"stream_index": 0, "pts": 32256, "dts": 32256, "duration": 4608, "size": "1267", "pos": "8811", "flags": "K__", "md5": "821fa85339c3d0c3508e823d101cbd77"},
+{"stream_index": 0, "pts": 36864, "dts": 36864, "duration": 4608, "size": "1260", "pos": "10078", "flags": "K__", "md5": "98e0d5f3c1c492ae6c2a4643201728c1"},
+{"stream_index": 0, "pts": 41472, "dts": 41472, "duration": 2628, "size": "753", "pos": "11338", "flags": "K__", "md5": "f788a9ca24a367825774c79bf9d03335"}]}

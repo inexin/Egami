@@ -113,7 +113,7 @@ public static class AvifImage
     internal static List<AvifItem> Items(AvifFile file) => [.. file.ItemRoles().Select(r => new AvifItem
     {
         Id = r.Item.Id,
-        Type = FourCC.ToString(r.Item.Type),
+        Type = IsoTypes.ToString(r.Item.Type),
         Role = (AvifItemRole)r.Role,
         Size = r.Size,
         AuxiliaryType = r.AuxiliaryType,

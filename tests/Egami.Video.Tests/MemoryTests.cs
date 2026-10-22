@@ -54,6 +54,50 @@ public class MemoryTests
         Assert.Equal(0, pool.Usage.LiveBytes);
     }
 
+    [Fact]
+    public void Mp4SampleTablesOfATenHourFileStaySmall()
+    {
+        // Ten hours of 30 fps video and 48 kHz audio in 1024-sample packets: 2.8 million samples of one or two bytes each.
+        string path = AviWriterTests.TempFile("ten-hours.mp4");
+        VideoTrackInfo video = new() { Number = 1, Kind = TrackKind.Video, CodecId = CodecIds.MotionJpeg, TimeBase = new Rational(1, 30), Width = 16, Height = 16 };
+        AudioTrackInfo audio = new() { Number = 2, Kind = TrackKind.Audio, CodecId = CodecIds.PcmLittleEndian, TimeBase = new Rational(1, 48000), SampleRate = 48000, Channels = 1, BitsPerSample = 16 };
+        const int Seconds = 10 * 3600;
+        byte[][] data = [[1], [1, 2]];
+        using (IMuxer muxer = new Mp4Format { MoovAtEnd = true }.CreateMuxer(File.Create(path), [video, audio], MediaContext.Default, leaveOpen: false))
+        {
+            long audioTicks = 0;
+            for (int frame = 0; frame < Seconds * 30; frame++)
+            {
+                using EncodedPacket v = new(1, data[frame & 1], new MediaTime(frame, video.TimeBase)) { IsKeyframe = true, Duration = new MediaTime(1, video.TimeBase) };
+                muxer.WritePacket(v);
+                while (audioTicks * 30 < (frame + 1) * 48000L)
+                {
+                    using EncodedPacket a = new(2, data[(int)(audioTicks / 1024) & 1], new MediaTime(audioTicks, audio.TimeBase)) { IsKeyframe = true, Duration = new MediaTime(1024, audio.TimeBase) };
+                    muxer.WritePacket(a);
+                    audioTicks += 1024;
+                }
+            }
+        }
+
+        try
+        {
+            long before = GC.GetTotalMemory(forceFullCollection: true);
+            using IDemuxer demuxer = MediaFile.OpenDemuxer(path);
+            long retained = GC.GetTotalMemory(forceFullCollection: true) - before;
+
+            // Four bytes a sample for the sizes, runs for the rest: about 11 MB, well inside the default limits.
+            Assert.True(retained < 24L << 20, $"the open file holds {retained} bytes");
+            Assert.Equal(MediaTime.FromSeconds(Seconds).ToTimeSpan(), demuxer.Info.Duration!.Value.ToTimeSpan());
+            demuxer.Seek(MediaTime.FromSeconds(Seconds - 1));
+            using EncodedPacket last = demuxer.ReadPacket()!;
+            Assert.Equal(TimeSpan.FromSeconds(Seconds - 1), last.Timestamp.ToTimeSpan());
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
     [Theory]
     [InlineData("v0-keyframes.ivf", false)]
     [InlineData("alpha-odd-75x45.webm", true)]

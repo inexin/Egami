@@ -95,6 +95,12 @@ public sealed class EncodedPacket : IDisposable
     public bool IsKeyframe { get; set; }
 
     /// <summary>
+    /// Gets whether the packet is needed only to decode the packets after it: its frame or audio falls outside the part of the
+    /// track the file shows, as an MP4 edit list says. Readers decode it and drop what it gives; muxers keep it.
+    /// </summary>
+    public bool IsDiscardable { get; set; }
+
+    /// <summary>
     /// Gets the extra data stored with the packet (Matroska BlockAdditions), such as the alpha frame of a WebM VP8 or VP9 track
     /// with alpha (id 1). Empty for most packets; muxers that cannot store additions drop them.
     /// </summary>
@@ -126,6 +132,7 @@ public sealed class EncodedPacket : IDisposable
         copy.DecodeTimestamp = DecodeTimestamp;
         copy.Duration = Duration;
         copy.IsKeyframe = IsKeyframe;
+        copy.IsDiscardable = IsDiscardable;
         copy.Additions = [.. Additions.Select(a => a with { Data = a.Data.ToArray() })];
         return copy;
     }

@@ -70,7 +70,7 @@ public partial class AvifProbeTests
         Assert.Equal(AvifFormat.Info, probe.Format);
 
         Assert.Equal(info["Resolution"], $"{avif.Width}x{avif.Height}");
-        if (avif.Heif.Groups.Any(g => FourCC.ToString(g.Type) == "altr") && avif.Heif.Items.Any(i => FourCC.ToString(i.Type) == "sato"))
+        if (avif.Heif.Groups.Any(g => IsoTypes.ToString(g.Type) == "altr") && avif.Heif.Items.Any(i => IsoTypes.ToString(i.Type) == "sato"))
         {
             // AVIF 1.2's sample transforms (design question 16) are not read: Egami gives the base image, libavif the 16-bit one.
             return;

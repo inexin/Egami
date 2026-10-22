@@ -76,7 +76,7 @@ internal sealed record HevcConfig
         }
 
         List<ReadOnlyMemory<byte>> nals = [];
-        ReadOnlyMemory<byte> memory = file.Bytes.Slice(property.Box.ContentStart, data.Length);
+        ReadOnlyMemory<byte> memory = file.Bytes.Slice(property.Box.ContentIndex, data.Length);
         int at = 23;
         for (int array = 0; array < data[22]; array++)
         {

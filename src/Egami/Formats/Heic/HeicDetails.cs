@@ -148,8 +148,8 @@ public sealed class HeicDetails : FormatDetails
     {
         return new HeicDetails
         {
-            MajorBrand = FourCC.ToString(file.Heif.MajorBrand),
-            CompatibleBrands = [.. file.Heif.CompatibleBrands.Select(FourCC.ToString)],
+            MajorBrand = IsoTypes.ToString(file.Heif.MajorBrand),
+            CompatibleBrands = [.. file.Heif.CompatibleBrands.Select(IsoTypes.ToString)],
             Profile = file.Config.Profile,
             Level = file.Config.Level,
             Tier = file.Config.Tier,
@@ -160,11 +160,11 @@ public sealed class HeicDetails : FormatDetails
             AlphaPremultiplied = file.AlphaPremultiplied,
             GridRows = file.GridSize.Rows,
             GridColumns = file.GridSize.Columns,
-            IsSequence = file.Heif.HasBrand(FourCC.Of("msf1")),
+            IsSequence = file.Heif.HasBrand(IsoTypes.Of("msf1")),
             Items = [.. file.ItemRoles().Select(r => new HeicItem
             {
                 Id = r.Item.Id,
-                Type = FourCC.ToString(r.Item.Type),
+                Type = IsoTypes.ToString(r.Item.Type),
                 Role = (HeicItemRole)r.Role,
                 Size = r.Size,
                 AuxiliaryType = r.AuxiliaryType,

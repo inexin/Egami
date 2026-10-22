@@ -1,3 +1,4 @@
+using Egami.Metadata;
 using Egami.Pixels;
 using Egami.Video.Codecs;
 using Egami.Video.Containers;
@@ -33,6 +34,7 @@ public sealed class VideoReader : IDisposable
     private DiagnosticReporter? _diagnostics;
     private MediaTime? _seekTarget;
     private YuvVideoFrame? _ahead;
+    private readonly HashSet<MediaTime> _discard = [];
 
     private VideoReader(IDemuxer demuxer, VideoReaderOptions? options, MediaContext context)
     {
@@ -195,6 +197,13 @@ public sealed class VideoReader : IDisposable
             {
                 if (_decoder.TryReceive(out YuvVideoFrame? frame))
                 {
+                    // A frame outside the part the file shows (an MP4 edit list) was decoded only for the frames after it.
+                    if (_discard.Count > 0 && _discard.Remove(frame.Timestamp))
+                    {
+                        frame.Dispose();
+                        continue;
+                    }
+
                     return frame;
                 }
             }
@@ -227,6 +236,11 @@ public sealed class VideoReader : IDisposable
             {
                 if (packet.TrackNumber == Track.Number)
                 {
+                    if (packet.IsDiscardable)
+                    {
+                        _discard.Add(packet.Timestamp);
+                    }
+
                     _decoder.Send(packet);
                 }
             }
@@ -256,7 +270,16 @@ public sealed class VideoReader : IDisposable
         {
             using (frame)
             {
-                yield return new VideoFrame<TPixel>(frame.ToRaster<TPixel>(_context.Egami), frame.Timestamp, frame.Duration, frame.Color) { Hdr = frame.Hdr, Hdr10Plus = frame.Hdr10Plus, RenderSize = frame.RenderSize };
+                Raster<TPixel> raster = frame.ToRaster<TPixel>(_context.Egami);
+                if (_options.AutoOrient && Track.Orientation is not (ImageOrientation.Normal or ImageOrientation.Unknown))
+                {
+                    // Egami's own AutoOrient turns the picture by its EXIF orientation, set here from the track's display matrix.
+                    raster.Metadata.Exif ??= new ExifData();
+                    raster.Metadata.Exif.Orientation = Track.Orientation;
+                    raster.Apply(x => x.AutoOrient());
+                }
+
+                yield return new VideoFrame<TPixel>(raster, frame.Timestamp, frame.Duration, frame.Color) { Hdr = frame.Hdr, Hdr10Plus = frame.Hdr10Plus, RenderSize = frame.RenderSize };
             }
         }
     }
@@ -282,6 +305,7 @@ public sealed class VideoReader : IDisposable
     {
         _demuxer.Seek(time, Track.Number);
         _decoder.Reset();
+        _discard.Clear();
         _endOfStream = false;
         _ahead?.Dispose();
         _ahead = null;
@@ -333,6 +357,13 @@ public sealed record VideoReaderOptions
     /// <see cref="DecodeErrorMode.Throw"/> throws <see cref="CorruptDataException"/>. Overrides the decoder options' own setting.
     /// </summary>
     public DecodeErrorMode Errors { get; init; } = DecodeErrorMode.Skip;
+
+    /// <summary>
+    /// Gets whether <see cref="VideoReader.ReadFrames{TPixel}"/> turns and mirrors each frame upright by the track's
+    /// <see cref="VideoTrackInfo.Orientation"/> (an MP4 or QuickTime display matrix). Off by default: frames come out as coded,
+    /// as Egami loads photos without applying their EXIF orientation.
+    /// </summary>
+    public bool AutoOrient { get; init; }
 }
 
 /// <summary>How exact <see cref="VideoReader.Seek(MediaTime, SeekMode)"/> is.</summary>

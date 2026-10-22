@@ -31,7 +31,7 @@ public static class AvifFormat
     /// </summary>
     internal static bool Matches(ReadOnlySpan<byte> header)
     {
-        if (header.Length < 12 || BinaryPrimitives.ReadUInt32BigEndian(header[4..]) != FourCC.Ftyp)
+        if (header.Length < 12 || BinaryPrimitives.ReadUInt32BigEndian(header[4..]) != IsoTypes.Ftyp)
         {
             return false;
         }
@@ -162,8 +162,8 @@ public sealed class AvifDetails : FormatDetails
     {
         return new AvifDetails
         {
-            MajorBrand = FourCC.ToString(file.Heif.MajorBrand),
-            CompatibleBrands = [.. file.Heif.CompatibleBrands.Select(FourCC.ToString)],
+            MajorBrand = IsoTypes.ToString(file.Heif.MajorBrand),
+            CompatibleBrands = [.. file.Heif.CompatibleBrands.Select(IsoTypes.ToString)],
             Profile = file.Config.Profile,
             Level = file.Config.Level,
             Tier = file.Config.Tier,

@@ -30,7 +30,7 @@ public class AvifInteropFiles
                 string stem = Path.Combine(directory, name);
                 File.WriteAllBytes(stem + ".avif", file);
                 HeifFile heif = HeifFile.Parse(file, "AVIF");
-                HeifItem first = heif.PrimaryItem!.Type == FourCC.Of("grid") ? heif.Item(heif.PrimaryItem.ReferencesOf(FourCC.Of("dimg"))[0])! : heif.PrimaryItem;
+                HeifItem first = heif.PrimaryItem!.Type == IsoTypes.Of("grid") ? heif.Item(heif.PrimaryItem.ReferencesOf(IsoTypes.Of("dimg"))[0])! : heif.PrimaryItem;
                 byte[] stream = heif.ItemData(first).ToArray();
                 File.WriteAllBytes(stem + ".obu", stream);
                 Av1Frame frame = Av1Decoder.DecodeFirstFrame(stream, "AVIF", cancellationToken: TestContext.Current.CancellationToken);

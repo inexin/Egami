@@ -1,4 +1,5 @@
 using Egami.Colors;
+using Egami.Metadata;
 using Egami.Pixels;
 
 namespace Egami.Video;
@@ -123,6 +124,12 @@ public sealed record VideoTrackInfo : TrackInfo
 
     /// <summary>Gets the HDR mastering display and content light levels (Matroska Colour), or <see langword="null"/>.</summary>
     public HdrMetadata? Hdr { get; init; }
+
+    /// <summary>
+    /// Gets how the coded frames must be turned or mirrored to show upright, from an MP4 or QuickTime display matrix, as EXIF
+    /// orientation says it for photos. Frames come out as coded; <see cref="VideoReaderOptions.AutoOrient"/> applies it.
+    /// </summary>
+    public ImageOrientation Orientation { get; init; } = ImageOrientation.Normal;
 }
 
 /// <summary>An audio track: a <see cref="TrackInfo"/> with the sample format.</summary>
