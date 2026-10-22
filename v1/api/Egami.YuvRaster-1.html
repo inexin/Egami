@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_YuvRaster_1" data-uid="Egami.YuvRaster`1" class="text-break">
-Class YuvRaster&lt;TSample&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L82"><i class="bi bi-code-slash"></i></a>
+Class YuvRaster&lt;TSample&gt;  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L83"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -269,7 +269,7 @@ PixelPlane&lt;Gray8&gt; luma = yuv.Y.AsGray8();</code></pre>
 
   <h3 id="Egami_YuvRaster_1_A" data-uid="Egami.YuvRaster`1.A">
   A
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L420"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L421"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the alpha plane, full size, straight and always full range, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> without alpha.</p>
@@ -301,7 +301,7 @@ PixelPlane&lt;Gray8&gt; luma = yuv.Y.AsGray8();</code></pre>
 
   <h3 id="Egami_YuvRaster_1_HasAlpha" data-uid="Egami.YuvRaster`1.HasAlpha">
   HasAlpha
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L423"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L424"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets a value indicating whether the raster has an alpha plane.</p>
@@ -333,11 +333,12 @@ PixelPlane&lt;Gray8&gt; luma = yuv.Y.AsGray8();</code></pre>
 
   <h3 id="Egami_YuvRaster_1_U" data-uid="Egami.YuvRaster`1.U">
   U
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L414"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L415"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the U (Cb, blue difference) plane, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for 4:0:0. It is half the luma width, rounded up, for
-4:2:0 and 4:2:2, and half the luma height, rounded up, for 4:2:0.</p>
+4:2:0 and 4:2:2, and half the luma height, rounded up, for 4:2:0; a quarter of the luma width, rounded up, for 4:1:1 and
+4:1:0, and a quarter of the luma height, rounded up, for 4:1:0.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -366,7 +367,7 @@ PixelPlane&lt;Gray8&gt; luma = yuv.Y.AsGray8();</code></pre>
 
   <h3 id="Egami_YuvRaster_1_V" data-uid="Egami.YuvRaster`1.V">
   V
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L417"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.cs/#L418"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the V (Cr, red difference) plane, the same size as <a class="xref" href="Egami.YuvRaster-1.html#Egami_YuvRaster_1_U">U</a>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for 4:0:0.</p>
@@ -434,7 +435,7 @@ PixelPlane&lt;Gray8&gt; luma = yuv.Y.AsGray8();</code></pre>
 
   <h3 id="Egami_YuvRaster_1_Crop_Egami_Rect_" data-uid="Egami.YuvRaster`1.Crop(Egami.Rect)">
   Crop(Rect)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L91"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new raster holding <code class="paramref">rect</code> of this one. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Crop_Egami_Rect_">Crop(Rect)</a>.</p>
@@ -485,7 +486,7 @@ PixelPlane&lt;Gray8&gt; luma = yuv.Y.AsGray8();</code></pre>
 
   <h3 id="Egami_YuvRaster_1_Resize_System_Int32_System_Int32_Egami_Operations_ResampleFilter_" data-uid="Egami.YuvRaster`1.Resize(System.Int32,System.Int32,Egami.Operations.ResampleFilter)">
   Resize(int, int, ResampleFilter)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L130"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new raster with every plane resized. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Resize_System_Int32_System_Int32_Egami_Operations_ResampleFilter_">Resize(int, int, ResampleFilter)</a>.</p>
@@ -542,7 +543,7 @@ PixelPlane&lt;Gray8&gt; luma = yuv.Y.AsGray8();</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L82" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L83" class="edit-link">Edit this page</a>
         </div>
 
 

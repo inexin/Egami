@@ -60688,6 +60688,18 @@ references:
   commentId: F:Egami.Pixels.ChromaFormat.Yuv400
   fullName: Egami.Pixels.ChromaFormat.Yuv400
   nameWithType: ChromaFormat.Yuv400
+- uid: Egami.Pixels.ChromaFormat.Yuv410
+  name: Yuv410
+  href: api/Egami.Pixels.ChromaFormat.html#Egami_Pixels_ChromaFormat_Yuv410
+  commentId: F:Egami.Pixels.ChromaFormat.Yuv410
+  fullName: Egami.Pixels.ChromaFormat.Yuv410
+  nameWithType: ChromaFormat.Yuv410
+- uid: Egami.Pixels.ChromaFormat.Yuv411
+  name: Yuv411
+  href: api/Egami.Pixels.ChromaFormat.html#Egami_Pixels_ChromaFormat_Yuv411
+  commentId: F:Egami.Pixels.ChromaFormat.Yuv411
+  fullName: Egami.Pixels.ChromaFormat.Yuv411
+  nameWithType: ChromaFormat.Yuv411
 - uid: Egami.Pixels.ChromaFormat.Yuv420
   name: Yuv420
   href: api/Egami.Pixels.ChromaFormat.html#Egami_Pixels_ChromaFormat_Yuv420

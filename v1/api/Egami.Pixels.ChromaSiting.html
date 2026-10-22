@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Enum ChromaSiting | Egami ">
       
-      <meta name="description" content="Where each chroma sample of a  or  picture sits against the luma samples it covers. Conversions filter chroma to match, so colors line up with edges. Ignored for 4:4:4 and 4:0:0.">
+      <meta name="description" content="Where each chroma sample of a subsampled picture (4:2:0, 4:2:2, 4:1:1 or 4:1:0) sits against the luma samples it covers. Conversions filter chroma to match, so colors line up with edges. Ignored for 4:4:4 and 4:0:0.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -90,7 +90,7 @@
 
 
   <h1 id="Egami_Pixels_ChromaSiting" data-uid="Egami.Pixels.ChromaSiting" class="text-break">
-Enum ChromaSiting  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/YuvColor.cs/#L29"><i class="bi bi-code-slash"></i></a>
+Enum ChromaSiting  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/YuvColor.cs/#L35"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -98,8 +98,8 @@ Enum ChromaSiting  <a class="header-action link-secondary" title="View source" h
   <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>Where each chroma sample of a <a class="xref" href="Egami.Pixels.ChromaFormat.html#Egami_Pixels_ChromaFormat_Yuv420">Yuv420</a> or <a class="xref" href="Egami.Pixels.ChromaFormat.html#Egami_Pixels_ChromaFormat_Yuv422">Yuv422</a> picture sits against the
-luma samples it covers. Conversions filter chroma to match, so colors line up with edges. Ignored for 4:4:4 and 4:0:0.</p>
+  <div class="markdown summary"><p>Where each chroma sample of a subsampled picture (4:2:0, 4:2:2, 4:1:1 or 4:1:0) sits against the luma samples it covers.
+Conversions filter chroma to match, so colors line up with edges. Ignored for 4:4:4 and 4:0:0.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -124,12 +124,12 @@ luma samples it covers. Conversions filter chroma to match, so colors line up wi
 </dd>
     <dt id="Egami_Pixels_ChromaSiting_Left"><code>Left = 1</code></dt>
   
-  <dd><p>On the left luma column of each pair and centered vertically: BT.601 and BT.709 video, MPEG-2 and later, and AV1's
-&quot;vertical&quot; position.</p>
+  <dd><p>On the left luma column of the columns it covers and centered vertically: BT.601 and BT.709 video, MPEG-2 and later, and
+AV1's &quot;vertical&quot; position.</p>
 </dd>
     <dt id="Egami_Pixels_ChromaSiting_TopLeft"><code>TopLeft = 2</code></dt>
   
-  <dd><p>On the top-left luma sample of each 2 × 2 block: BT.2020 and AV1's &quot;colocated&quot; position.</p>
+  <dd><p>On the top-left luma sample of the block it covers: BT.2020 and AV1's &quot;colocated&quot; position.</p>
 </dd>
   </dl>
 
@@ -151,7 +151,7 @@ hdr10.TryGetYuvColor(ChromaSiting.TopLeft, out YuvColor fromBox);</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/YuvColor.cs/#L29" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Pixels/YuvColor.cs/#L35" class="edit-link">Edit this page</a>
         </div>
 
 

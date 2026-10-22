@@ -9627,7 +9627,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Pixels.ChromaSiting",
-      "Summary": "<p sourcefile=\"api/Egami.Pixels.ChromaSiting.yml\" sourcestartlinenumber=\"1\">Where each chroma sample of a <xref href=\"Egami.Pixels.ChromaFormat.Yuv420\" data-throw-if-not-resolved=\"false\"></xref> or <xref href=\"Egami.Pixels.ChromaFormat.Yuv422\" data-throw-if-not-resolved=\"false\"></xref> picture sits against the\nluma samples it covers. Conversions filter chroma to match, so colors line up with edges. Ignored for 4:4:4 and 4:0:0.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Pixels.ChromaSiting.yml\" sourcestartlinenumber=\"1\">Where each chroma sample of a subsampled picture (4:2:0, 4:2:2, 4:1:1 or 4:1:0) sits against the luma samples it covers.\nConversions filter chroma to match, so colors line up with edges. Ignored for 4:4:4 and 4:0:0.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -12181,11 +12181,11 @@
       "type": "Toc",
       "source_relative_path": "api/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "api/toc.html"
-        },
         ".json": {
           "relative_path": "api/toc.json"
+        },
+        ".html": {
+          "relative_path": "api/toc.html"
         }
       },
       "version": ""
@@ -12854,11 +12854,11 @@
       "type": "Toc",
       "source_relative_path": "articles/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "articles/toc.html"
-        },
         ".json": {
           "relative_path": "articles/toc.json"
+        },
+        ".html": {
+          "relative_path": "articles/toc.html"
         }
       },
       "version": ""
@@ -12907,11 +12907,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "toc.html"
-        },
         ".json": {
           "relative_path": "toc.json"
+        },
+        ".html": {
+          "relative_path": "toc.html"
         }
       },
       "version": ""

@@ -821,11 +821,12 @@ frame.CopyFrom(screen);</code></pre>
 
   <h3 id="Egami_YuvRaster_Crop_Egami_Rect_" data-uid="Egami.YuvRaster.Crop(Egami.Rect)">
   Crop(Rect)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L23"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new raster holding <code class="paramref">rect</code> of this one. The rectangle's corner must fall on a chroma sample: even
-x and y for 4:2:0, even x for 4:2:2. Chroma is copied exactly, with no filtering.</p>
+x and y for 4:2:0, even x for 4:2:2, x a multiple of 4 for 4:1:1, and x and y multiples of 4 for 4:1:0. Chroma is copied
+exactly, with no filtering.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -1471,7 +1472,7 @@ planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
 
   <h3 id="Egami_YuvRaster_Resize_System_Int32_System_Int32_Egami_Operations_ResampleFilter_" data-uid="Egami.YuvRaster.Resize(System.Int32,System.Int32,Egami.Operations.ResampleFilter)">
   Resize(int, int, ResampleFilter)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L40"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new raster with every plane resized by <code class="paramref">filter</code>, as a <a class="xref" href="Egami.Pixels.Gray8.html">Gray8</a> or <a class="xref" href="Egami.Pixels.Gray16.html">Gray16</a>
@@ -1545,7 +1546,7 @@ rgb.Apply(ops =&gt; ops.Rotate(90));</code></pre>
 
   <h3 id="Egami_YuvRaster_ResizeTo_Egami_YuvRaster_Egami_Operations_ResampleFilter_" data-uid="Egami.YuvRaster.ResizeTo(Egami.YuvRaster,Egami.Operations.ResampleFilter)">
   ResizeTo(YuvRaster, ResampleFilter)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.Operations.cs/#L56"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Resizes every plane into an existing raster of the size wanted, as <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Resize_System_Int32_System_Int32_Egami_Operations_ResampleFilter_">Resize(int, int, ResampleFilter)</a> does, so a
@@ -1611,13 +1612,14 @@ rgb.Apply(ops =&gt; ops.Rotate(90));</code></pre>
 
   <h3 id="Egami_YuvRaster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_" data-uid="Egami.YuvRaster.Save(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions)">
   Save(Stream, FormatInfo, WriterOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L157"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Encodes the picture in <code class="paramref">format</code>. JPEG encodes the planes straight, with no color conversion or chroma
 downsampling, when they are 8-bit BT.601 at full range (4:2:0, 4:2:2 and 4:4:4 keep their sampling, 4:0:0 is gray); other
-planes are converted to that first. AVIF encodes any planes of 8, 10 or 12 bits straight, their matrix, range and chroma
-siting written into the file, and alpha as an alpha item. Other formats are saved from
+planes are converted to that first, 4:1:1 to 4:2:2 and 4:1:0 to 4:2:0. AVIF encodes planes of 8, 10 or 12 bits straight,
+their matrix, range and chroma siting written into the file, and alpha as an alpha item; AV1 has no 4:1:1 or 4:1:0, so those
+are saved from RGB. Other formats are saved from
 <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_ToRaster_Egami_YuvConvertOptions_">ToRaster(YuvConvertOptions?)</a>.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -1675,7 +1677,7 @@ planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
 
   <h3 id="Egami_YuvRaster_Save_System_IO_Stream_System_String_Egami_Formats_WriterOptions_" data-uid="Egami.YuvRaster.Save(System.IO.Stream,System.String,Egami.Formats.WriterOptions)">
   Save(Stream, string, WriterOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L205"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L208"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Encodes the picture in the registered format with this name or file extension. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">Save(Stream, FormatInfo, WriterOptions?)</a>.</p>
@@ -1732,7 +1734,7 @@ planes.Save("copy.jpg", new JpegWriterOptions { Quality = 90 });</code></pre>
 
   <h3 id="Egami_YuvRaster_Save_System_String_Egami_Formats_WriterOptions_" data-uid="Egami.YuvRaster.Save(System.String,Egami.Formats.WriterOptions)">
   Save(string, WriterOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L223"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Yuv/YuvRaster.IO.cs/#L226"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Encodes the picture to a file, choosing the format from the extension. An existing file is replaced; if encoding fails,
