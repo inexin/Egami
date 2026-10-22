@@ -320,6 +320,8 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
   references, superres and scalable streams (operating point and layer options). Every frame equals libaom's on libaom's test
   vectors and on clips for each tool. `Av1DecoderOptions`, `Av1FrameInfo` and `Av1FrameKind` go with it. Egami.Video uses it for
   AV1 in WebM, Matroska, MP4 and IVF.
+- Animated AVIF: `Raster.Load` gives every frame of an image sequence, inter frames included, with each frame's duration, the
+  loop count and the alpha track; `Avif.SequenceFirstFrame` is no longer reported. Every frame equals avifdec's.
 
 ### ISO BMFF boxes
 

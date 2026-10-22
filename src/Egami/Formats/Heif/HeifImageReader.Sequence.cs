@@ -6,8 +6,8 @@ namespace Egami.Formats.Heif;
 
 /// <summary>
 /// A HEIF image sequence read from its tracks (AVIF's avis, HEIC's hevc and hevx brands): a color track, maybe an alpha track,
-/// and the color its sample entry gives. Until inter frames are decoded, every frame loads when every sample is a sync sample,
-/// and otherwise the first frame alone.
+/// and the color its sample entry gives. A sequence whose codec decodes inter frames (AVIF) loads every frame; otherwise every
+/// frame loads when every sample is a sync sample, and the first frame alone when not.
 /// </summary>
 internal interface IHeifSequence
 {
@@ -44,8 +44,11 @@ internal interface IHeifSequence
     /// <summary>Gets whether every sample is a sync sample, so every frame decodes without inter prediction.</summary>
     bool AllKeyFrames { get; }
 
-    /// <summary>Gets how many frames Load gives: all of them when every sample is a key frame, else the first.</summary>
-    int FrameCount => AllKeyFrames ? SampleCount : Math.Min(1, SampleCount);
+    /// <summary>Gets whether every frame decodes: the codec decodes inter frames, or every sample is a key frame.</summary>
+    bool DecodesAllFrames => AllKeyFrames;
+
+    /// <summary>Gets how many frames Load gives: all of them when every frame decodes, else the first.</summary>
+    int FrameCount => DecodesAllFrames ? SampleCount : Math.Min(1, SampleCount);
 
     /// <summary>Gets the container's problems, given as warnings.</summary>
     IEnumerable<HeifProblem> Problems { get; }
@@ -170,7 +173,7 @@ internal sealed partial class HeifImageReader
 
             RasterMetadata gathered = metadata(codec);
             gathered.CodePoints = RasterCodePoints(gathered.CodePoints, gathered.IccProfile);
-            if (!sequence.AllKeyFrames && sequence.SampleCount > 1)
+            if (!sequence.DecodesAllFrames && sequence.SampleCount > 1)
             {
                 gathered.WarningList.Add(ids.SequenceFirstFrame!, $"The {format().Name} sequence's {sequence.SampleCount} frames are not all key frames, and {ids.InterFrames}; only the first frame was loaded.");
             }

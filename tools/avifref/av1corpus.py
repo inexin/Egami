@@ -1,6 +1,6 @@
 """Writes AV1 clips and per-frame references for Phase 2.9.5, inside the egami-avifref image (tools/make-av1-references.py).
 
-"clips" encodes our own short clips with aomenc 3.15.2 into /w/tests/video/corpus/av1, one per inter tool or format: a
+"sequences" writes avifdec's frames of the corpus's AVIF sequences (tests/reference/avif/sequences.json). "clips" encodes our own short clips with aomenc 3.15.2 into /w/tests/video/corpus/av1, one per inter tool or format: a
 synthetic texture under a slow zoom and rotation with a second texture sliding across it, so global motion, warps, OBMC and
 compound prediction all have something to do. Every other argument names streams whose references are made again.
 
@@ -134,10 +134,38 @@ def clips():
         print(f"{name}.ivf: {os.path.getsize(f'{out}/{name}.ivf')} bytes")
 
 
+def sequences():
+    """avifdec 1.4.2's every frame (--index all, as y4m) of the AVIF sequences in the corpus: /w/tests/reference/avif/sequences.json
+    gives each file's y4m colorspace and each frame's MD5 over its y4m payload (the planes, 16-bit little-endian above 8 bits)."""
+    import glob
+    out = {}
+    for path in sorted(glob.glob("/w/tests/images/avif/*sequence*.avif") + glob.glob("/w/tests/images/avif/libavif/colors-animated-*.avif")):
+        name = os.path.relpath(path, "/w/tests/images/avif").replace(os.sep, "/")
+        work = "/tmp/seq"
+        subprocess.run(["rm", "-rf", work], check=True)
+        os.makedirs(work)
+        subprocess.run(["avifdec", "--index", "all", path, f"{work}/f.y4m"], check=True, capture_output=True)
+        frames, colorspace = [], None
+        for frame in sorted(glob.glob(f"{work}/f-*.y4m")):
+            data = open(frame, "rb").read()
+            head, _, rest = data.partition(b"\n")
+            colorspace = next((t[1:].decode() for t in head.split() if t.startswith(b"C")), "420jpeg")
+            payload = rest.partition(b"\n")[2]
+            frames.append(hashlib.md5(payload).hexdigest())
+        out[name] = {"colorspace": colorspace, "frames": frames}
+        print(f"{name}: {len(frames)} frames, {colorspace}")
+    with open("/w/tests/reference/avif/sequences.json", "w") as f:
+        json.dump(out, f, indent=1)
+
+
 def main():
     subprocess.run(["gcc", "-O2", "-o", "/tmp/av1frames", "/t/av1frames.c", "-laom"], check=True)
     if sys.argv[1:] == ["clips"]:
         clips()
+        return
+
+    if sys.argv[1:] == ["sequences"]:
+        sequences()
         return
     os.makedirs(OUT, exist_ok=True)
     streams = sorted(glob.glob("/w/.cache/avif/aom-test-data/av1-1-b*.ivf")) + sorted(glob.glob("/w/tests/video/corpus/av1/*.ivf"))
