@@ -117,6 +117,14 @@ instance decodes all three codec ids; it encodes its own. Decoded frames are int
 samples come as <a class="xref" href="Egami.Video.Audio.SampleFormat.html#Egami_Video_Audio_SampleFormat_S32">S32</a> with <a class="xref" href="Egami.Video.Audio.AudioFrame.html#Egami_Video_Audio_AudioFrame_ValidBits">ValidBits</a> 24.</p>
 </dd>
     </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Codecs.VorbisCodec.html">VorbisCodec</a></dt>
+      <dd><p>Vorbis I, decode only: every stream the specification allows (floors 0 and 1, residues 0 to 2, channel coupling, all block
+sizes), written from the Vorbis I specification and within 2^-22 of libvorbis on the test files. Frames come out as planar
+float in the canonical channel order (Vorbis puts center second); the first block's overlap and the end padding are trimmed.
+Read from Ogg, WebM, Matroska and MP4, where the track's codec private data holds the three header packets, Xiph-laced.</p>
+</dd>
+    </dl>
 
 
 </article>

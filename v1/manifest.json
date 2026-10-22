@@ -10975,6 +10975,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.VorbisCodec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.VorbisCodec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.VorbisCodec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.VorbisCodec.yml\" sourcestartlinenumber=\"1\">Vorbis I, decode only: every stream the specification allows (floors 0 and 1, residues 0 to 2, channel coupling, all block\nsizes), written from the Vorbis I specification and within 2^-22 of libvorbis on the test files. Frames come out as planar\nfloat in the canonical channel order (Vorbis puts center second); the first block's overlap and the end padding are trimmed.\nRead from Ogg, WebM, Matroska and MP4, where the track's codec private data holds the three header packets, Xiph-laced.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Codecs.yml",
       "output": {
         ".html": {
@@ -12181,11 +12195,11 @@
       "type": "Toc",
       "source_relative_path": "api/toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "api/toc.json"
-        },
         ".html": {
           "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
         }
       },
       "version": ""
@@ -12854,11 +12868,11 @@
       "type": "Toc",
       "source_relative_path": "articles/toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "articles/toc.json"
-        },
         ".html": {
           "relative_path": "articles/toc.html"
+        },
+        ".json": {
+          "relative_path": "articles/toc.json"
         }
       },
       "version": ""
@@ -12907,11 +12921,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "toc.json"
-        },
         ".html": {
           "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
         }
       },
       "version": ""

@@ -71859,6 +71859,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.AudioCodecs.Pcm
   nameWithType: AudioCodecs.Pcm
+- uid: Egami.Video.Audio.AudioCodecs.Vorbis
+  name: Vorbis
+  href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Vorbis
+  commentId: P:Egami.Video.Audio.AudioCodecs.Vorbis
+  fullName: Egami.Video.Audio.AudioCodecs.Vorbis
+  nameWithType: AudioCodecs.Vorbis
+- uid: Egami.Video.Audio.AudioCodecs.Vorbis*
+  name: Vorbis
+  href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Vorbis_
+  commentId: Overload:Egami.Video.Audio.AudioCodecs.Vorbis
+  isSpec: "True"
+  fullName: Egami.Video.Audio.AudioCodecs.Vorbis
+  nameWithType: AudioCodecs.Vorbis
 - uid: Egami.Video.Audio.AudioConvertOptions
   name: AudioConvertOptions
   href: api/Egami.Video.Audio.AudioConvertOptions.html
@@ -72993,6 +73006,67 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Codecs.PcmCodec.Name
   nameWithType: PcmCodec.Name
+- uid: Egami.Video.Audio.Codecs.VorbisCodec
+  name: VorbisCodec
+  href: api/Egami.Video.Audio.Codecs.VorbisCodec.html
+  commentId: T:Egami.Video.Audio.Codecs.VorbisCodec
+  fullName: Egami.Video.Audio.Codecs.VorbisCodec
+  nameWithType: VorbisCodec
+- uid: Egami.Video.Audio.Codecs.VorbisCodec.CodecId
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.VorbisCodec.html#Egami_Video_Audio_Codecs_VorbisCodec_CodecId
+  commentId: P:Egami.Video.Audio.Codecs.VorbisCodec.CodecId
+  fullName: Egami.Video.Audio.Codecs.VorbisCodec.CodecId
+  nameWithType: VorbisCodec.CodecId
+- uid: Egami.Video.Audio.Codecs.VorbisCodec.CodecId*
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.VorbisCodec.html#Egami_Video_Audio_Codecs_VorbisCodec_CodecId_
+  commentId: Overload:Egami.Video.Audio.Codecs.VorbisCodec.CodecId
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.VorbisCodec.CodecId
+  nameWithType: VorbisCodec.CodecId
+- uid: Egami.Video.Audio.Codecs.VorbisCodec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name: CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  href: api/Egami.Video.Audio.Codecs.VorbisCodec.html#Egami_Video_Audio_Codecs_VorbisCodec_CreateDecoder_Egami_Video_AudioTrackInfo_Egami_Video_Audio_AudioDecoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Audio.Codecs.VorbisCodec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name.vb: CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+  fullName: Egami.Video.Audio.Codecs.VorbisCodec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions?, Egami.Video.MediaContext)
+  fullName.vb: Egami.Video.Audio.Codecs.VorbisCodec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions, Egami.Video.MediaContext)
+  nameWithType: VorbisCodec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  nameWithType.vb: VorbisCodec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+- uid: Egami.Video.Audio.Codecs.VorbisCodec.CreateDecoder*
+  name: CreateDecoder
+  href: api/Egami.Video.Audio.Codecs.VorbisCodec.html#Egami_Video_Audio_Codecs_VorbisCodec_CreateDecoder_
+  commentId: Overload:Egami.Video.Audio.Codecs.VorbisCodec.CreateDecoder
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.VorbisCodec.CreateDecoder
+  nameWithType: VorbisCodec.CreateDecoder
+- uid: Egami.Video.Audio.Codecs.VorbisCodec.Instance
+  name: Instance
+  href: api/Egami.Video.Audio.Codecs.VorbisCodec.html#Egami_Video_Audio_Codecs_VorbisCodec_Instance
+  commentId: P:Egami.Video.Audio.Codecs.VorbisCodec.Instance
+  fullName: Egami.Video.Audio.Codecs.VorbisCodec.Instance
+  nameWithType: VorbisCodec.Instance
+- uid: Egami.Video.Audio.Codecs.VorbisCodec.Instance*
+  name: Instance
+  href: api/Egami.Video.Audio.Codecs.VorbisCodec.html#Egami_Video_Audio_Codecs_VorbisCodec_Instance_
+  commentId: Overload:Egami.Video.Audio.Codecs.VorbisCodec.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.VorbisCodec.Instance
+  nameWithType: VorbisCodec.Instance
+- uid: Egami.Video.Audio.Codecs.VorbisCodec.Name
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.VorbisCodec.html#Egami_Video_Audio_Codecs_VorbisCodec_Name
+  commentId: P:Egami.Video.Audio.Codecs.VorbisCodec.Name
+  fullName: Egami.Video.Audio.Codecs.VorbisCodec.Name
+  nameWithType: VorbisCodec.Name
+- uid: Egami.Video.Audio.Codecs.VorbisCodec.Name*
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.VorbisCodec.html#Egami_Video_Audio_Codecs_VorbisCodec_Name_
+  commentId: Overload:Egami.Video.Audio.Codecs.VorbisCodec.Name
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.VorbisCodec.Name
+  nameWithType: VorbisCodec.Name
 - uid: Egami.Video.Audio.IAudioDecoder
   name: IAudioDecoder
   href: api/Egami.Video.Audio.IAudioDecoder.html

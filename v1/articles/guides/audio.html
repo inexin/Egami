@@ -89,12 +89,12 @@
 
 <p>Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:</p>
 <ul>
-<li>Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, and Opus (RFC 6716) decode.</li>
-<li>Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC and Ogg, read and written; FLAC, PCM
-and Opus in Matroska, WebM and MP4 too.</li>
+<li>Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and Vorbis I decode.</li>
+<li>Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC and Ogg, read and written; FLAC, PCM,
+Opus and Vorbis in Matroska, WebM and MP4 too.</li>
 <li>A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.</li>
 </ul>
-<p>Vorbis and other audio tracks are copied through untouched.</p>
+<p>Other audio tracks, such as AAC and MP3, are copied through untouched.</p>
 <h2 id="frames">Frames</h2>
 <p>An <code>AudioFrame</code> holds <code>SampleCount</code> samples for every channel of its <code>Layout</code>, its <code>SampleRate</code>, its <code>Format</code> (a
 <code>SampleFormat</code>) and the <code>Timestamp</code> of its first sample. Frame memory comes from the context's memory source; dispose each
@@ -272,6 +272,19 @@ while (reader.TryRead(out AudioFrame? frame))
         samples += frame.SampleCount;
     }
 }
+</code></pre><h2 id="vorbis">Vorbis</h2>
+<p><code>VorbisCodec</code> decodes Vorbis I streams from Ogg, WebM, Matroska and MP4: mono to 255 channels, every rate, both floor types
+and all three residue types (floor 0, which no current encoder writes, is untested). Frames come out as planar float at the stream's rate, with 3 to 8 channels remapped from Vorbis
+order to the canonical order. The end is trimmed to Ogg's last granule position, or to Matroska's DiscardPadding, and output
+matches libvorbis to within 2^-16 of full scale. A packet that cannot be decoded is reported as <code>Vorbis.CorruptPacket</code> and,
+with <code>DecodeErrorMode.Conceal</code>, left as silence; the decoder starts its overlap again at the next packet.</p>
+<pre><code class="lang-csharp">// Vorbis decodes to planar float at the stream's rate, trimmed to the last granule position; here it becomes FLAC.
+using (AudioReader reader = AudioReader.Open(&quot;song.ogg&quot;))
+{
+    Console.WriteLine($&quot;{reader.Track.CodecId}, {reader.SampleRate} Hz, {reader.Layout.ChannelCount} channels&quot;);
+}
+
+MediaFile.Transcode(&quot;song.ogg&quot;, &quot;song.flac&quot;, audio: FlacCodec.Instance);
 </code></pre><h2 id="containers">Containers</h2>
 <p><code>WavFormat.Instance</code> reads WAV, RF64 and BW64 (PCM, float, WAVE_FORMAT_EXTENSIBLE with its channel mask, and streamed files
 whose sizes were never filled in), and writes WAV that turns into RF64 by itself past 4 GB. <code>WavFormat.Wave64</code> is Sony
