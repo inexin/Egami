@@ -1,0 +1,65 @@
+# Builds the egami command as a native program (Native AOT, no .NET runtime needed) for win-x64, linux-x64 and osx-arm64,
+# checks that each one runs, and keeps them as the run's artifacts. It publishes nothing: no release, no tag, no NuGet.
+name: CLI native builds
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - '.github/workflows/cli-native.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - '.github/workflows/cli-native.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cli-native-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  native:
+    name: egami (${{ matrix.rid }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+            exe: egami.exe
+          - rid: linux-x64
+            os: ubuntu-latest
+            exe: egami
+          - rid: osx-arm64
+            os: macos-latest
+            exe: egami
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      # Warnings are errors, so any trim or AOT warning fails the publish.
+      - name: Publish
+        run: dotnet publish src/Egami.Cli -c Release -r ${{ matrix.rid }} -p:EgamiNativeAot=true -o artifacts/egami-${{ matrix.rid }}
+      - name: Check it runs
+        shell: bash
+        run: |
+          tool=artifacts/egami-${{ matrix.rid }}/${{ matrix.exe }}
+          "$tool" --version
+          "$tool" info tests/images/jpeg/duck-420.jpg
+          "$tool" thumbnail tests/images/jpeg/duck-420.jpg -o artifacts/thumb.webp --size 64
+          "$tool" info artifacts/thumb.webp
+      - uses: actions/upload-artifact@v7
+        with:
+          name: egami-${{ matrix.rid }}
+          path: artifacts/egami-${{ matrix.rid }}/${{ matrix.exe }}
+          if-no-files-found: error
