@@ -80,7 +80,7 @@ which needs no .NET runtime.
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing. The V5 audio steps (V5.0,
 V5.1 Opus, V5.5 Vorbis) get one API review and one release after V5.5, so these types may still change.
 
-V4.2: AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
+V4.2, API reviewed and accepted 2026-10-22 (all as recommended): AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
 
 ### Frames and conversion
 
@@ -392,6 +392,8 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 ## Egami 1.1.0 (unreleased)
 
 ### AV1 video
+
+API reviewed and accepted 2026-10-22 (all as recommended). Decoding runs at about 3.7 times dav1d's time on one thread.
 
 - `Av1StreamDecoder` (in `Egami.Formats.Av1`) decodes AV1 video a temporal unit at a time: key, inter, intra-only and switch
   frames with every inter tool of the Main, High and Professional profiles, 8 to 12 bits, 4:0:0 to 4:4:4, film grain, scaled
