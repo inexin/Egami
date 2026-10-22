@@ -68,7 +68,8 @@ internal static class Av1Decoder
                     }
 
                     limits?.CheckFrameSize(header.UpscaledWidth, header.FrameHeight);
-                    frame = new Av1Frame(header, formatName, reconstruct) { Parallelism = Math.Max(1, parallelism), CancellationToken = cancellationToken };
+                    // 16-bit planes, as the AVIF reader takes them: a still has no reference frames to read faster as bytes.
+                    frame = new Av1Frame(header, formatName, reconstruct, compact: false) { Parallelism = Math.Max(1, parallelism), CancellationToken = cancellationToken };
                     tilesLeft = header.TileCols * header.TileRows;
                     if (obu.Type == Av1ObuType.Frame)
                     {

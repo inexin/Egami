@@ -49,6 +49,14 @@ which needs no .NET runtime.
   replace an input without `in_place`. The package is also listed as an MCP server on NuGet, with its `server.json`.
 - `egami <name>` runs an `egami-<name>` program from the PATH, so other families' tools join in; `egami formats` names
   `egami-heic` for HEIC, which the tool leaves out.
+## Egami 1.1.1 (unreleased)
+
+### AV1 video
+
+- 8-bit AV1 decodes about 9 % faster on one thread: 8-bit frames keep their samples as bytes, and the motion filter, the
+  loop filter's vertical edges and the warp read them with byte kernels. On 1080p and 720p clips decoding takes about 3.2
+  and 3.4 times dav1d's time, from 3.5 and 3.7. Output is unchanged: every frame still equals libaom's.
+
 ## Egami.Barcodes 1.0.1 (unreleased)
 
 ### Package icon

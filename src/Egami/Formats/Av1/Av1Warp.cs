@@ -201,7 +201,7 @@ internal static class Av1Warp
         {
             ref T row = ref Unsafe.Add(ref samples, (Math.Clamp(iy4 + k, 0, height - 1) * stride) + ix4 - 7);
             int sx = sx4 + (beta * (k + 4));
-            (Vector128<int> lo, Vector128<int> hi) = Dot8(ref row, 1, ref taps, sx, alpha);
+            (Vector128<int> lo, Vector128<int> hi) = DotRow(ref row, ref taps, sx, alpha);
             lo = Vector128.ShiftRightArithmetic(lo + half0, round0);
             hi = Vector128.ShiftRightArithmetic(hi + half0, round0);
             for (int l = 0; l < 4; l++)
@@ -235,6 +235,27 @@ internal static class Av1Warp
         Vector128<int> d6 = Dot(ref source, 6 * step, ref taps, phase + (6 * phaseStep)), d7 = Dot(ref source, 7 * step, ref taps, phase + (7 * phaseStep));
         return (Ssse3.HorizontalAdd(Ssse3.HorizontalAdd(d0, d1), Ssse3.HorizontalAdd(d2, d3)),
             Ssse3.HorizontalAdd(Ssse3.HorizontalAdd(d4, d5), Ssse3.HorizontalAdd(d6, d7)));
+    }
+
+    /// <summary>
+    /// <see cref="Dot8"/> along a row: its fifteen samples loaded once, each output's eight taken out with palignr.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static (Vector128<int> Lo, Vector128<int> Hi) DotRow<T>(ref T row, ref short taps, int phase, int phaseStep)
+        where T : unmanaged
+    {
+        // Samples 0 to 7, and 8 to 14 (loaded from 7, so nothing past the fifteenth is read).
+        Vector128<sbyte> a = Av1Samples.Load8(ref row, 0).AsSByte();
+        Vector128<sbyte> b = Sse2.ShiftRightLogical128BitLane(Av1Samples.Load8(ref row, 7).AsSByte(), 2);
+        Vector128<int> d0 = Dot(a, ref taps, phase), d1 = Dot(Ssse3.AlignRight(b, a, 2), ref taps, phase + phaseStep);
+        Vector128<int> d2 = Dot(Ssse3.AlignRight(b, a, 4), ref taps, phase + (2 * phaseStep)), d3 = Dot(Ssse3.AlignRight(b, a, 6), ref taps, phase + (3 * phaseStep));
+        Vector128<int> d4 = Dot(Ssse3.AlignRight(b, a, 8), ref taps, phase + (4 * phaseStep)), d5 = Dot(Ssse3.AlignRight(b, a, 10), ref taps, phase + (5 * phaseStep));
+        Vector128<int> d6 = Dot(Ssse3.AlignRight(b, a, 12), ref taps, phase + (6 * phaseStep)), d7 = Dot(Ssse3.AlignRight(b, a, 14), ref taps, phase + (7 * phaseStep));
+        return (Ssse3.HorizontalAdd(Ssse3.HorizontalAdd(d0, d1), Ssse3.HorizontalAdd(d2, d3)),
+            Ssse3.HorizontalAdd(Ssse3.HorizontalAdd(d4, d5), Ssse3.HorizontalAdd(d6, d7)));
+
+        static Vector128<int> Dot(Vector128<sbyte> samples, ref short taps, int phase) =>
+            Sse2.MultiplyAddAdjacent(samples.AsInt16(), Vector128.LoadUnsafe(ref taps, (nuint)((((phase + 512) >> 10) + 64) * 8)));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

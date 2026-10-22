@@ -101,6 +101,7 @@ internal static class AvifFuzzTarget
             IntraBlockCopy = screen && copies,
         });
         Av1Frame decoded = Av1Decoder.DecodeFirstFrame(encoded.Stream, "AV1");
+        ushort[][] decodedPlanes = decoded.WidePlanes(), reconstructed = encoded.Reconstruction.WidePlanes();
         for (int plane = 0; plane < planes; plane++)
         {
             int w = plane > 0 ? (width + ssx) >> ssx : width, h = plane > 0 ? (height + ssy) >> ssy : height;
@@ -108,8 +109,8 @@ internal static class AvifFuzzTarget
             {
                 for (int x = 0; x < w; x++)
                 {
-                    int got = decoded.Planes![plane][(y * decoded.Strides[plane]) + x];
-                    int want = encoded.Reconstruction.Planes![plane][(y * encoded.Reconstruction.Strides[plane]) + x];
+                    int got = decodedPlanes[plane][(y * decoded.Strides[plane]) + x];
+                    int want = reconstructed[plane][(y * encoded.Reconstruction.Strides[plane]) + x];
                     if (got != want || (lossless && got != samples[plane][(y * w) + x]))
                     {
                         throw new InvalidOperationException($"The {(lossless ? "lossless" : "lossy")} AV1 round trip differs in plane {plane} at {x}, {y}: decoded {got}, reconstructed {want}, source {samples[plane][(y * w) + x]} ({width} x {height}, {bitDepth} bits, {chroma}, q {qindex}, e {effort}, screen {screen}, copies {copies}).");

@@ -115,7 +115,7 @@ internal sealed partial class Av1Reconstructor<T>
         ReadOnlySpan<short> f = filters.AsSpan(frac * 8, 8);
         int half = 1 << (round0 - 1);
         int c0 = 0;
-        if (Av1Samples.IsByte<T>() && Avx2.IsSupported && w >= 8)
+        if (Av1Samples.IsByte<T>() && Avx2.IsSupported && w >= 4)
         {
             HorizontalBytes(ref Unsafe.As<T, byte>(ref MemoryMarshal.GetArrayDataReference(src)), at, stride, f, w, rows, round0, inter);
             return;
@@ -209,6 +209,28 @@ internal sealed partial class Av1Reconstructor<T>
         Vector256<short> halfV = Vector256.Create((short)(1 << (round0 - 2)));
         int shift = round0 - 1;
         ref short d0 = ref MemoryMarshal.GetArrayDataReference(inter);
+        if (w == 4)
+        {
+            // Two rows at a time, a lane each, of which the first four outputs are kept.
+            for (int r = 0; r < rows; r += 2)
+            {
+                ref byte row = ref Unsafe.Add(ref src, at + (r * stride));
+                Vector128<byte> next = r + 1 < rows ? Vector128.LoadUnsafe(ref row, (nuint)stride) : Vector128<byte>.Zero;
+                Vector256<byte> window = Vector256.Create(Vector128.LoadUnsafe(ref row), next);
+                Vector256<short> sum = Avx2.Add(
+                    Avx2.Add(Avx2.MultiplyAddAdjacent(Avx2.Shuffle(window, s01), c01), Avx2.MultiplyAddAdjacent(Avx2.Shuffle(window, s23), c23)),
+                    Avx2.Add(Avx2.MultiplyAddAdjacent(Avx2.Shuffle(window, s45), c45), Avx2.MultiplyAddAdjacent(Avx2.Shuffle(window, s67), c67)));
+                Vector256<ulong> outputs = Vector256.ShiftRightArithmetic(sum + halfV, shift).AsUInt64();
+                Unsafe.WriteUnaligned(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref d0, r * 4)), outputs.GetElement(0));
+                if (r + 1 < rows)
+                {
+                    Unsafe.WriteUnaligned(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref d0, (r + 1) * 4)), outputs.GetElement(2));
+                }
+            }
+
+            return;
+        }
+
         for (int r = 0; r < rows; r++)
         {
             ref byte row = ref Unsafe.Add(ref src, at + (r * stride));
