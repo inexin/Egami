@@ -1,8 +1,10 @@
 name: Claude review
 
 # Claude reviews each pull request when it is opened, updated, reopened or marked ready, and posts its findings as inline
-# comments. It reads CLAUDE.md, which includes AGENTS.md, so it checks the clean-room and managed-only rules too. Findings are
-# advice: the job never fails a pull request. Pull requests from forks are skipped, because GitHub withholds the secret there.
+# comments. It reads CLAUDE.md, which includes AGENTS.md, so it checks the clean-room and managed-only rules too. Each push
+# reviews the pull request again: Claude resolves its own threads that the new code fixes and doesn't repeat open ones.
+# Findings are advice: the job never fails a pull request. Pull requests from forks are skipped, because GitHub withholds the
+# secret there.
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
@@ -34,5 +36,28 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: https://github.com/anthropics/claude-code.git
           plugins: code-review@claude-code-plugins
-          prompt: /code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+          prompt: |
+            /code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+
+            This workflow runs again on every push to the pull request, so this may be a re-review. Change the steps above
+            as follows:
+            - In step 1, ignore the condition that Claude has already commented. Still stop for a closed or draft pull request.
+            - Before step 4, list the review threads with:
+              gh api graphql -f query='query($owner:String!,$repo:String!,$pr:Int!){repository(owner:$owner,name:$repo){pullRequest(number:$pr){reviewThreads(first:100){nodes{id isResolved comments(first:1){nodes{author{login} path line body}}}}}}}' -f owner=${{ github.repository_owner }} -f repo=${{ github.event.repository.name }} -F pr=${{ github.event.pull_request.number }}
+              For each unresolved thread whose first comment is by claude, read the current code. If the issue is fixed,
+              resolve the thread with:
+              gh api graphql -f query='mutation($id:ID!){resolveReviewThread(input:{threadId:$id}){thread{isResolved}}}' -f id=THREAD_ID
+              Leave a thread open when the issue is still there.
+            - Don't post a new comment for an issue that an unresolved thread already covers.
+            - If no new issues are found and the pull request already has a "No issues found" comment from Claude, post
+              nothing.
           claude_args: --allowedTools "mcp__github_inline_comment__create_inline_comment"
+          settings: |
+            {
+              "permissions": {
+                "allow": [
+                  "Bash(gh api graphql -f query='query($owner:String!,$repo:String!,$pr:Int!){repository(:*)",
+                  "Bash(gh api graphql -f query='mutation($id:ID!){resolveReviewThread(:*)"
+                ]
+              }
+            }
