@@ -194,6 +194,9 @@ public static class AudioCodecs
     /// <summary>Gets the Opus codec (decode only).</summary>
     public static AudioCodec Opus => OpusCodec.Instance;
 
+    /// <summary>Gets the Vorbis codec (decode only).</summary>
+    public static AudioCodec Vorbis => VorbisCodec.Instance;
+
     /// <summary>Creates a decoder for a track.</summary>
     /// <param name="track">The track.</param>
     /// <param name="options">How to decode, or <see langword="null"/> for the defaults.</param>

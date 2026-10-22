@@ -96,6 +96,11 @@ internal sealed class MatroskaDemuxer : IDemuxer
                 ?? throw new InvalidOperationException("The file has no tracks.");
 
         ClearPending();
+        foreach (TrackState t in _trackOrder)
+        {
+            t.Vorbis?.Reset();
+        }
+
         EnsureIndex(target);
 
         // Index times are block times; packet times have the track's CodecDelay subtracted, so work in block times.
@@ -878,6 +883,18 @@ internal sealed class MatroskaDemuxer : IDemuxer
                 }
             }
 
+            else if (track.Track?.CodecId == CodecIds.Vorbis && frames == 1)
+            {
+                // Vorbis packets add half of two blocks; DiscardPadding cuts the end as Ogg's last granule position does.
+                track.Vorbis ??= Audio.Codecs.Vorbis.VorbisPacketClock.Create(track.Track.CodecPrivate.Span);
+                if (track.Vorbis?.Next(payload) is { } samples)
+                {
+                    Rational sample = new(1, ((AudioTrackInfo)track.Track).SampleRate);
+                    long cut = discardPadding > 0 ? new MediaTime(discardPadding, Rational.Nanosecond).Rescale(sample).Ticks : 0;
+                    packet.Duration = new MediaTime(Math.Max(0, samples - cut), sample);
+                }
+            }
+
             _pending.Enqueue(packet);
         }
     }
@@ -1247,6 +1264,9 @@ internal sealed class MatroskaDemuxer : IDemuxer
         public TrackInfo Track { get; private set; } = null!;
 
         public List<(long Time, long Cluster)> Keyframes { get; } = [];
+
+        /// <summary>Gets or sets a Vorbis track's packet clock, made at its first packet.</summary>
+        public Audio.Codecs.Vorbis.VorbisPacketClock? Vorbis { get; set; }
 
         private int _type;
         private string _codecId = "";

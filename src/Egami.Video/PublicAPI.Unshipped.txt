@@ -81,6 +81,7 @@ Egami.Video.Audio.ChannelMixer.this[int output, int input].get -> float
 Egami.Video.Audio.Codecs.FlacCodec
 Egami.Video.Audio.Codecs.OpusCodec
 Egami.Video.Audio.Codecs.PcmCodec
+Egami.Video.Audio.Codecs.VorbisCodec
 Egami.Video.Audio.IAudioDecoder
 Egami.Video.Audio.IAudioDecoder.Flush() -> void
 Egami.Video.Audio.IAudioDecoder.Reset() -> void
@@ -268,6 +269,9 @@ override Egami.Video.Audio.Codecs.PcmCodec.CodecId.get -> string!
 override Egami.Video.Audio.Codecs.PcmCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
 override Egami.Video.Audio.Codecs.PcmCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
 override Egami.Video.Audio.Codecs.PcmCodec.Name.get -> string!
+override Egami.Video.Audio.Codecs.VorbisCodec.CodecId.get -> string!
+override Egami.Video.Audio.Codecs.VorbisCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
+override Egami.Video.Audio.Codecs.VorbisCodec.Name.get -> string!
 override Egami.Video.AudioReaderOptions.Equals(object? obj) -> bool
 override Egami.Video.AudioReaderOptions.GetHashCode() -> int
 override Egami.Video.AudioReaderOptions.ToString() -> string!
@@ -317,6 +321,7 @@ static Egami.Video.Audio.AudioCodecs.Flac.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Get(string! codecId, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Opus.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Pcm.get -> Egami.Video.Audio.AudioCodec!
+static Egami.Video.Audio.AudioCodecs.Vorbis.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioConvertOptions.Default.get -> Egami.Video.Audio.AudioConvertOptions!
 static Egami.Video.Audio.AudioConvertOptions.operator !=(Egami.Video.Audio.AudioConvertOptions? left, Egami.Video.Audio.AudioConvertOptions? right) -> bool
 static Egami.Video.Audio.AudioConvertOptions.operator ==(Egami.Video.Audio.AudioConvertOptions? left, Egami.Video.Audio.AudioConvertOptions? right) -> bool
@@ -345,6 +350,7 @@ static Egami.Video.Audio.Codecs.OpusCodec.Instance.get -> Egami.Video.Audio.Code
 static Egami.Video.Audio.Codecs.PcmCodec.BigEndian.get -> Egami.Video.Audio.Codecs.PcmCodec!
 static Egami.Video.Audio.Codecs.PcmCodec.FloatingPoint.get -> Egami.Video.Audio.Codecs.PcmCodec!
 static Egami.Video.Audio.Codecs.PcmCodec.Instance.get -> Egami.Video.Audio.Codecs.PcmCodec!
+static Egami.Video.Audio.Codecs.VorbisCodec.Instance.get -> Egami.Video.Audio.Codecs.VorbisCodec!
 static Egami.Video.Audio.SampleFormatExtensions.BitsPerSample(this Egami.Video.Audio.SampleFormat format) -> int
 static Egami.Video.Audio.SampleFormatExtensions.BytesPerSample(this Egami.Video.Audio.SampleFormat format) -> int
 static Egami.Video.Audio.SampleFormatExtensions.IsFloat(this Egami.Video.Audio.SampleFormat format) -> bool

@@ -25,7 +25,7 @@ internal static class Mp4SampleEntries
     {
         CodecIds.Av1 when track.CodecPrivate.IsEmpty => "an AV1 track needs its av1C configuration in CodecPrivate",
         CodecIds.Av1 or CodecIds.Vp9 or CodecIds.Vp8 or CodecIds.MotionJpeg or CodecIds.Avc or CodecIds.Hevc or CodecIds.Mpeg4Visual => null,
-        CodecIds.Opus or CodecIds.Flac or CodecIds.Aac or CodecIds.Mp3 => null,
+        CodecIds.Opus or CodecIds.Flac or CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis => null,
         CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian or CodecIds.PcmFloat => null,
         CodecIds.MovText => null,
         CodecIds.QuickTimeVideo or CodecIds.QuickTimeAudio or CodecIds.QuickTimeOther when track.CodecPrivate.Length >= 8 => null,
@@ -107,7 +107,7 @@ internal static class Mp4SampleEntries
         {
             CodecIds.Opus => "Opus",
             CodecIds.Flac => "fLaC",
-            CodecIds.Aac or CodecIds.Mp3 => "mp4a",
+            CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis => "mp4a",
             CodecIds.PcmFloat => "fpcm",
             _ => "ipcm",
         };
@@ -139,6 +139,10 @@ internal static class Mp4SampleEntries
                 break;
             case CodecIds.Mp3:
                 Esds(w, 0x6B, 0x05, []);
+                break;
+            case CodecIds.Vorbis:
+                // Object type 0xDD, as FFmpeg writes Vorbis in MP4: the three headers, Xiph-laced, as the decoder specific info.
+                Esds(w, 0xDD, 0x05, priv);
                 break;
             default:
                 // ISO/IEC 23003-5 pcmC: bit 0 of the format flags is little-endian.

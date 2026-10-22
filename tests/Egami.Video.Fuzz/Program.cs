@@ -76,9 +76,10 @@ static Action<Stream> Target(string name) => name switch
     "vp9raw" => DecodeVp9Packets,
     "wav" or "flac" or "ogg" => ReadAudio,
     "opusraw" => DecodeOpusPackets,
+    "vorbisraw" => DecodeVorbisPackets,
     "av1" => ReadAv1,
     "av1raw" => DecodeAv1Packets,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, av1, av1raw, wav, flac, ogg, opusraw."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, av1, av1raw, wav, flac, ogg, opusraw, vorbisraw."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -192,6 +193,58 @@ static void DecodeOpusPackets(Stream stream)
         }
 
         decoder.Decode(packet, pcm, 5760, false, false, out _);
+    }
+}
+
+// Vorbis packets, each after a 16-bit big-endian length: the first three are the headers, the rest audio packets decoded in
+// turn (V5.5); a corrupt packet must leave the decoder able to take the next.
+static void DecodeVorbisPackets(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    List<byte[]> packets = [];
+    int p = 0;
+    while (p + 2 <= data.Length && packets.Count < 200)
+    {
+        int length = Math.Min((data[p] << 8) | data[p + 1], data.Length - p - 2);
+        packets.Add(data.AsSpan(p + 2, length).ToArray());
+        p += 2 + length;
+    }
+
+    if (packets.Count < 3)
+    {
+        return;
+    }
+
+    Egami.Video.Audio.Codecs.Vorbis.VorbisDecoder decoder;
+    try
+    {
+        decoder = new(packets[..3]);
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    int previous = 0;
+    for (int i = 3; i < packets.Count; i++)
+    {
+        decoder.PacketSamples(packets[i], ref previous);
+        try
+        {
+            int count = decoder.Decode(packets[i]);
+            for (int c = 0; c < decoder.Channels; c++)
+            {
+                _ = decoder.GetSamples(c)[..count];
+            }
+        }
+        catch (CorruptDataException)
+        {
+        }
+
+        if (i % 50 == 0)
+        {
+            decoder.Reset();
+        }
     }
 }
 

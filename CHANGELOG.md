@@ -140,12 +140,26 @@ V4.2, API reviewed and accepted 2026-10-22 (all as recommended): AV1 decode, thr
   next packet's in-band FEC. Ambisonic mappings (families 2 and 3) are reported as `Opus.UnsupportedMapping`.
 - `AudioDecoderOptions.KeepPadding`: end padding past a packet's stated duration is trimmed by default (Ogg's last granule
   position, Matroska's DiscardPadding); `AudioReaderOptions.KeepAllSamples` keeps it.
-- `OggFormat`: Ogg (.ogg, .opus, .oga) read and written with Opus, Vorbis (remux only) and FLAC; CRC-checked pages,
+- `OggFormat`: Ogg (.ogg, .opus, .oga) read and written with Opus, Vorbis and FLAC; CRC-checked pages,
   timestamps from granule positions, seeking from a one-pass index, and chained files joined into one track with each
   link's title as a chapter (`ogg-chained-stream` when a link changes the settings).
 - Opus in Matroska and WebM gains SeekPreRoll and DiscardPadding, read and written; Opus in MP4 gets its 80 ms pre-roll.
 - Decoding the twelve test vectors in stereo takes 0.72 s on one thread, against 0.89 s for libopus's opus_demo.
 - AFL++ fuzz targets `ogg` and `opusraw`.
+
+### Vorbis (V5.5)
+
+- `VorbisCodec` (and `AudioCodecs.Vorbis`, decode only), registered by default, written from the Vorbis I specification:
+  1 to 255 channels, floors 0 and 1, residues 0, 1 and 2 (floor 0 untested: no current encoder writes it). On eleven oggenc clips (8 to 48 kHz, mono to 7.1, q-1 to q10) every
+  sample is within 2^-22 of libvorbisfile's float output, with the same sample count. Output is planar float in the
+  canonical channel order (3 to 8 channels remapped from Vorbis order, as for Opus).
+- Packet durations from the setup header's modes, in Ogg, Matroska and WebM, and MP4 (esds object type 0xDD, as FFmpeg
+  writes it). The end is trimmed to Ogg's last granule position, Matroska's DiscardPadding (now read and written for Vorbis
+  too) or a shorter last MP4 sample; Ogg's granule positions are written in samples when remuxing from Matroska.
+- A corrupt packet is reported as `Vorbis.CorruptPacket`; with `DecodeErrorMode.Conceal` it becomes silence.
+- Decoding 60 s of stereo 44.1 kHz takes 75 ms on one thread, against 227 ms for a libvorbisfile run (vorbisref, which also
+  starts a process and writes its output).
+- AFL++ fuzz target `vorbisraw`.
 
 ### AV1
 

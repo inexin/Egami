@@ -1,0 +1,57 @@
+{
+  "q-1-mono-8k.ogg": {
+    "channels": 1,
+    "rate": 8000,
+    "samples": 4000
+  },
+  "q0-stereo-22k.ogg": {
+    "channels": 2,
+    "rate": 22050,
+    "samples": 4410
+  },
+  "q3-stereo-44k-bursts.ogg": {
+    "channels": 2,
+    "rate": 44100,
+    "samples": 5292
+  },
+  "q6-stereo-48k.ogg": {
+    "channels": 2,
+    "rate": 48000,
+    "samples": 4800
+  },
+  "q10-stereo-44k-noise.ogg": {
+    "channels": 2,
+    "rate": 44100,
+    "samples": 3528
+  },
+  "q3-51-16k.ogg": {
+    "channels": 6,
+    "rate": 16000,
+    "samples": 1600
+  },
+  "q5-3ch-11k.ogg": {
+    "channels": 3,
+    "rate": 11025,
+    "samples": 2756
+  },
+  "q4-mono-96k.ogg": {
+    "channels": 1,
+    "rate": 96000,
+    "samples": 9600
+  },
+  "q2-stereo-32k-silent.ogg": {
+    "channels": 2,
+    "rate": 32000,
+    "samples": 4800
+  },
+  "managed-stereo-44k.ogg": {
+    "channels": 2,
+    "rate": 44100,
+    "samples": 5292
+  },
+  "ffmpeg-stereo-44k.ogg": {
+    "channels": 2,
+    "rate": 44100,
+    "samples": 4410
+  }
+}

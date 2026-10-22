@@ -24,6 +24,11 @@ internal sealed partial class Mp4Demuxer
             return;
         }
 
+        foreach (TrackState track in _tracks)
+        {
+            track.Vorbis?.Reset();
+        }
+
         TrackState target = trackNumber is { } n
             ? _tracks.FirstOrDefault(t => t.Info.Number == n) ?? throw new ArgumentException($"There is no track {n}.", nameof(trackNumber))
             : _tracks.FirstOrDefault(t => t.Info.Kind == TrackKind.Video) ?? _tracks[0];

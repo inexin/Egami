@@ -45,7 +45,9 @@ internal sealed class OggMuxer : IMuxer
 
             (OggCodec codec, List<byte[]> headers) = OggCodecs.Headers(track, tags);
             long preSkip = codec == OggCodec.Opus && Audio.Codecs.Opus.OpusHead.Read(headers[0]) is { } head ? head.PreSkip : 0;
-            Writer writer = new(0x45474D00u + (uint)i, codec, track.TimeBase, preSkip);
+            // Audio granule positions count samples (Opus's at 48 kHz), whatever the packets' time base.
+            Rational timeBase = codec == OggCodec.Opus ? new Rational(1, 48000) : track is AudioTrackInfo { SampleRate: > 0 } audio ? new Rational(1, audio.SampleRate) : track.TimeBase;
+            Writer writer = new(0x45474D00u + (uint)i, codec, timeBase, preSkip);
             _writers[track.Number] = writer;
             numbered.Add(track with { Number = i + 1 });
             starts.Add((writer, headers));
@@ -89,8 +91,16 @@ internal sealed class OggMuxer : IMuxer
             throw new ArgumentException($"Track {packet.TrackNumber} was not given to the muxer.", nameof(packet));
         }
 
-        MediaTime end = packet.Duration is { } d ? packet.Timestamp + d : packet.Timestamp;
-        long granule = end.Rescale(writer.TimeBase).Ticks + writer.PreSkip;
+        long start = packet.Timestamp.Rescale(writer.TimeBase).Ticks;
+        if (writer.Next is { } next && writer.TimeBase.Denominator >= 8000 && Math.Abs(start - next) <= writer.TimeBase.Denominator / (1000 * writer.TimeBase.Numerator))
+        {
+            // Millisecond timestamps (Matroska's) are rounded: a packet within a millisecond of the last one's end follows it.
+            start = next;
+        }
+
+        long end = start + (packet.Duration is { } d ? d.Rescale(writer.TimeBase).Ticks : 0);
+        writer.Next = end;
+        long granule = end + writer.PreSkip;
         if (writer.Pending is { } held)
         {
             // Each packet waits for the next, so the last one can go on the end-of-stream page.
@@ -159,6 +169,9 @@ internal sealed class OggMuxer : IMuxer
         public long PreSkip { get; } = preSkip;
 
         public long Granule;
+
+        /// <summary>The end of the last packet in granule ticks, without pre-skip.</summary>
+        public long? Next;
 
         public (byte[] Data, long Granule)? Pending;
 

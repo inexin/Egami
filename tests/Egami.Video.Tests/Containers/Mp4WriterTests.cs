@@ -169,8 +169,8 @@ public class Mp4WriterTests
     [Fact]
     public void UnsupportedCodecsAreRefused()
     {
-        TrackInfo vorbis = new AudioTrackInfo { Number = 1, Kind = TrackKind.Audio, CodecId = CodecIds.Vorbis, TimeBase = new Rational(1, 1000), SampleRate = 8000, Channels = 1 };
-        Assert.Throws<NotSupportedException>(() => Mp4Format.Instance.CreateMuxer(new MemoryStream(), [vorbis], MediaContext.Default, leaveOpen: false));
+        TrackInfo ac3 = new AudioTrackInfo { Number = 1, Kind = TrackKind.Audio, CodecId = CodecIds.Ac3, TimeBase = new Rational(1, 1000), SampleRate = 8000, Channels = 1 };
+        Assert.Throws<NotSupportedException>(() => Mp4Format.Instance.CreateMuxer(new MemoryStream(), [ac3], MediaContext.Default, leaveOpen: false));
         TrackInfo video = new VideoTrackInfo { Number = 1, Kind = TrackKind.Video, CodecId = CodecIds.MotionJpeg, TimeBase = new Rational(1, 1000), Width = 16, Height = 16 };
         Assert.Throws<NotSupportedException>(() => new Mp4Format { MoovAtEnd = true }.CreateMuxer(new NonSeekableWriteStream(new MemoryStream()), [video], MediaContext.Default, leaveOpen: false));
     }

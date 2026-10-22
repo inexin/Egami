@@ -157,6 +157,7 @@ internal sealed class OggDemuxer : IDemuxer
                 s.Partial.ResetWrittenCount();
                 s.Position = null;
                 s.SkipContinued = true;
+                s.PreviousBlock = 0;
                 s.Pending.Clear();
                 _streams[s.Serial] = s;
             }
@@ -302,9 +303,24 @@ internal sealed class OggDemuxer : IDemuxer
 
         int count = s.Pending.Count;
         Span<long> durations = count <= 256 ? stackalloc long[count] : new long[count];
+        if (s.Codec == OggCodec.Vorbis && s.Vorbis is null && !s.VorbisFailed)
+        {
+            // Vorbis packet lengths depend on the modes in the setup header and on the block before.
+            try
+            {
+                s.Vorbis = new Audio.Codecs.Vorbis.VorbisDecoder(s.Headers);
+            }
+            catch (EgamiException)
+            {
+                s.VorbisFailed = true;
+            }
+        }
+
         for (int i = 0; i < count; i++)
         {
-            durations[i] = OggCodecs.Duration(s.Codec, s.Pending[i], s.Flac);
+            durations[i] = s.Vorbis is { } vorbis
+                ? vorbis.PacketSamples(s.Pending[i], ref s.PreviousBlock)
+                : OggCodecs.Duration(s.Codec, s.Pending[i], s.Flac);
         }
 
         long start;
@@ -352,7 +368,7 @@ internal sealed class OggDemuxer : IDemuxer
         EncodedPacket packet = new(track.Number, data, new MediaTime(ticks, track.TimeBase))
         {
             IsKeyframe = true,
-            Duration = duration > 0 || s.Codec is OggCodec.Opus or OggCodec.Flac ? new MediaTime(Math.Max(0, duration), track.TimeBase) : null,
+            Duration = duration > 0 || s.Codec is OggCodec.Opus or OggCodec.Flac || s.Vorbis is not null ? new MediaTime(Math.Max(0, duration), track.TimeBase) : null,
         };
         _ready.Enqueue(packet);
         s.End = Math.Max(s.End, ticks + Math.Max(0, duration));
@@ -554,6 +570,9 @@ internal sealed class OggDemuxer : IDemuxer
         public Dictionary<string, string> Tags = [];
         public TrackInfo? Track;
         public FlacStreamInfo? Flac;
+        public Audio.Codecs.Vorbis.VorbisDecoder? Vorbis;
+        public bool VorbisFailed;
+        public int PreviousBlock;
         public long PreSkip;
         public readonly ArrayBufferWriter<byte> Partial = new();
         public readonly List<byte[]> Pending = [];
