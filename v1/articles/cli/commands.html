@@ -122,6 +122,7 @@ Commands:
   overlay &lt;inputs&gt;                  Lay an image (a logo, a watermark, an SVG) on images, placed by anchor, with opacity and a blend mode.
   montage &lt;inputs&gt;                  Lay images out on a contact sheet: a grid of tiles, optionally labeled with their file names.
   formats &lt;format&gt;                  List the formats egami reads and writes, or one format's writer settings for --set.
+  mcp                               Serve egami's commands as tools to an AI assistant over the Model Context Protocol, on standard input and output. Tools read and write only inside the folders the assistant opened and those given with --allow, and never replace an input unless asked.
 </code></pre>
 <h2 id="info">info</h2>
 <pre><code class="lang-text">Description:
@@ -673,6 +674,17 @@ Arguments:
 
 Options:
   --json                    Write JSON instead of text.
+</code></pre>
+<h2 id="mcp">mcp</h2>
+<pre><code class="lang-text">Description:
+  Serve egami's commands as tools to an AI assistant over the Model Context Protocol, on standard input and output. Tools read and write only inside the folders the assistant opened and those given with --allow, and never replace an input unless asked.
+
+Usage:
+  egami mcp [options]
+
+Options:
+  --allow &lt;folder&gt;          A folder the tools may read and write, besides the folders the assistant opened; give it once per folder. With neither, the working folder.
+  --max-inputs &lt;count&gt;      The most files one tool call may take; 1000 by default. [default: 1000]
 </code></pre>
 
 </article>

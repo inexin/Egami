@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>egami for AI assistants | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="egami for AI assistants | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/cli/assistants.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="egami-for-ai-assistants">egami for AI assistants</h1>
+
+<p><code>egami mcp</code> serves egami's commands to an AI assistant, such as Claude, GitHub Copilot or Cursor, over the
+<a href="https://modelcontextprotocol.io">Model Context Protocol</a>. The assistant can then look at, convert, resize and edit images on
+your computer when you ask it to, with the same commands, options and results as the shell. It needs nothing besides the
+egami tool: no network, no service and no key.</p>
+<pre><code class="lang-sh">dotnet tool install --global Egami.Cli
+egami mcp --allow ~/Pictures
+</code></pre>
+<p>You don't run <code>egami mcp</code> yourself: the assistant starts it and talks to it on standard input and output. The sections below
+show where each assistant takes the command.</p>
+<h2 id="the-tools">The tools</h2>
+<p>Every command is a tool with the command's name, words joined by <code>_</code>: <code>info</code>, <code>convert</code>, <code>resize</code>, <code>thumbnail</code>, <code>crop</code>,
+<code>rotate</code>, <code>flip</code>, <code>auto_orient</code>, <code>run</code>, <code>compare</code>, <code>stats</code>, <code>frames_split</code>, <code>frames_join</code>, <code>metadata_show</code>, <code>metadata_strip</code>,
+<code>metadata_copy</code>, <code>color</code>, <code>text</code>, <code>overlay</code>, <code>montage</code> and <code>formats</code>. Their arguments are the command's arguments and options
+in snake case (<code>--bit-depth</code> is <code>bit_depth</code>), with the same descriptions as <code>egami &lt;command&gt; --help</code>, so the
+<a href="commands.html">command reference</a> covers them too. <code>--jobs</code> and <code>--fail-fast</code> are left out: a call works on one
+file per processor and keeps going past a file that fails, reporting each one.</p>
+<ul>
+<li><code>run</code> takes its steps as a workflow object, the same JSON as a <a href="index.html#workflow-files">workflow file</a>, and
+<code>list_steps</code> lists the steps and their options.</li>
+<li>Tools that write take <code>preview</code>: when it is true, the result also holds the first file written as a PNG picture, at most
+1024 pixels on its long side, so the assistant can look at what it made.</li>
+<li>Every result is a JSON object with <code>exitCode</code> (<a href="index.html#exit-codes-messages-and-limits">as in the shell</a>), <code>written</code> (the
+files written), <code>output</code> (the command's JSON, for commands with <code>--json</code>, or its text) and <code>messages</code> (warnings and errors).
+A usage mistake, a failed file or a safety limit marks the call as failed, so the assistant sees it and can try again;
+<code>compare</code> finding a difference is a result, not a failure.</li>
+</ul>
+<h2 id="the-folders-egami-may-use">The folders egami may use</h2>
+<p>A tool reads and writes only inside the folders egami may use, and refuses any other path, including one reached through a
+symbolic link or <code>..</code>:</p>
+<ul>
+<li>the folders given with <code>--allow</code>, once per folder, and the folders the assistant has open (for example the project
+open in VS Code), when the assistant tells the server about them;</li>
+<li>when there are neither, the folder egami was started in. egami refuses to start in the root of a disk without <code>--allow</code>,
+because some assistants start servers there.</li>
+</ul>
+<p>Outputs never replace an input unless the call sets <code>in_place</code>. Inputs and outputs must be files: standard input and output
+carry the protocol, so <code>-</code> is refused. One call takes at most 1,000 files; <code>--max-inputs</code> changes that. The safety limits of
+<code>--limit</code> and <code>EGAMI_LIMITS</code> apply to every call, as in the shell.</p>
+<h2 id="claude-desktop">Claude Desktop</h2>
+<p>Add egami to <code>claude_desktop_config.json</code> (Settings, Developer, Edit Config) and restart Claude:</p>
+<pre><code class="lang-json">{
+  &quot;mcpServers&quot;: {
+    &quot;egami&quot;: {
+      &quot;command&quot;: &quot;egami&quot;,
+      &quot;args&quot;: [&quot;mcp&quot;, &quot;--allow&quot;, &quot;/Users/me/Pictures&quot;]
+    }
+  }
+}
+</code></pre>
+<p>On Windows, write the folder as <code>C:\\Users\\me\\Pictures</code>. Claude Desktop starts servers outside your folders, so give each
+folder egami may use with <code>--allow</code>.</p>
+<h2 id="claude-code">Claude Code</h2>
+<pre><code class="lang-sh">claude mcp add egami -- egami mcp
+</code></pre>
+<p>Claude Code starts egami in the project's folder, which egami then uses. Add <code>--allow &lt;folder&gt;</code> for others.</p>
+<h2 id="vs-code">VS Code</h2>
+<p>Add egami to <code>.vscode/mcp.json</code> in your project. <code>dnx</code> runs the tool straight from NuGet, so it needs no install:</p>
+<pre><code class="lang-json">{
+  &quot;servers&quot;: {
+    &quot;egami&quot;: {
+      &quot;type&quot;: &quot;stdio&quot;,
+      &quot;command&quot;: &quot;dnx&quot;,
+      &quot;args&quot;: [&quot;Egami.Cli&quot;, &quot;--yes&quot;, &quot;--&quot;, &quot;mcp&quot;]
+    }
+  }
+}
+</code></pre>
+<p>VS Code tells egami about the folders of the workspace. Other assistants take the same command and arguments in their own
+settings.</p>
+<h2 id="logging">Logging</h2>
+<p><code>-v</code> and <code>-vv</code> write what the server does (the folders it uses, each call) to standard error, which most assistants show in
+their server log. Standard output carries only the protocol.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/cli/assistants.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

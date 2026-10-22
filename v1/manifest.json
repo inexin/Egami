@@ -11674,6 +11674,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/cli/assistants.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/cli/assistants.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/cli/commands.md",
       "output": {
         ".html": {
