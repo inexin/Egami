@@ -356,6 +356,14 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
   of 35 ms, as fast as libwebp at its defaults, with a 27% smaller file. Higher efforts, and photos at effort 0, gain up to 20%.
   Files are byte for byte the same as before at every effort.
 
+### Faster lossy WebP encoding
+
+- Lossy WebP encodes about 1.5 times faster at the default effort: a 1920 × 1080 screenshot in 190 ms instead of 289 ms on
+  one thread, and photos gain as much. Efforts 0 to 5 are 15% to 40% faster, effort 6 about 15%. The 4 × 4 mode search tries
+  two modes at once with AVX2, the rate of a mode is only worked out when its distortion leaves it a chance, and the token
+  costs and bits are computed with fewer branches. Files are byte for byte the same as before at every effort, with or
+  without AVX2.
+
 ### Package links
 
 - Every package's NuGet page now links to the documentation at [inexin.github.io/Egami](https://inexin.github.io/Egami/) as its

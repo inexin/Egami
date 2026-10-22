@@ -93,6 +93,195 @@ public class Vp8EncoderTests
     }
 
     [Fact]
+    public void ModeSearchKernelsMatchTheSteps()
+    {
+        Random random = new(11);
+        byte[] ctx = new byte[17 * S], src = new byte[16 * S], predictions = new byte[8 * S], stepwise = new byte[17 * S];
+        Vp8Matrix m = new();
+        for (int round = 0; round < 2000; round++)
+        {
+            random.NextBytes(ctx);
+            random.NextBytes(src);
+            int at = S + 1 + ((round & 3) * 4) + ((round >> 2 & 3) * 4 * S);
+
+            // All ten 4 × 4 predictions at once, as the decoder's predictor makes them one by one.
+            Vp8EncDsp.PredictSubblocks(ctx, at, predictions);
+            for (int mode = 0; mode < 10; mode++)
+            {
+                ctx.CopyTo(stepwise, 0);
+                Vp8Dsp.PredictSubblock(mode, stepwise, at);
+                int p = ((mode & 7) * 4) + ((mode >> 3) * 4 * S);
+                for (int y = 0; y < 4; y++)
+                {
+                    Assert.True(stepwise.AsSpan(at + (y * S), 4).SequenceEqual(predictions.AsSpan(p + (y * S), 4)), $"mode {mode} row {y}");
+                }
+            }
+
+            // One mode trial in registers, as the transform, quantization, reconstruction and measures one after the other.
+            if (Vp8TransformSimd.IsSupported)
+            {
+                int q = random.Next(0, 128);
+                m.Set(Vp8Tables.DcTable[q], Vp8Tables.AcTable[q], 0);
+                int mode = round % 10, p = ((mode & 7) * 4) + ((mode >> 3) * 4 * S), s = ((round & 3) * 4) + ((round >> 2 & 3) * 4 * S);
+                short[] coefficients = new short[16], levels = new short[16], fusedLevels = new short[16];
+                byte[] expected = new byte[4 * S], actual = new byte[4 * S];
+                Vp8EncDsp.ForwardTransformScalar(src, s, predictions, p, coefficients);
+                bool any = Vp8EncDsp.QuantizeScalar(coefficients, levels, m);
+                Vp8EncDsp.Copy(predictions, p, expected, 0, 4, 4);
+                Vp8Dsp.InverseTransformAddScalar(coefficients, expected, 0);
+                int mask = Vp8TransformSimd.ReconstructBlock(src, s, predictions, p, m, fusedLevels, actual, 0, out int sse, out int spectrum);
+                Assert.Equal(levels, fusedLevels);
+                Assert.Equal(expected, actual);
+                Assert.Equal(any, mask != 0);
+                Assert.Equal(levels.Count(l => l != 0), System.Numerics.BitOperations.PopCount((uint)mask));
+                Assert.Equal(BlockSse(src, s, expected, 0), sse);
+                Assert.Equal(Vp8EncDsp.HadamardWeightedScalar(expected, 0), spectrum);
+            }
+
+            // The AVX2 kernels, two blocks at once, as the SSE4.1 ones one block at a time.
+            if (Vp8PairSimd.IsSupported)
+            {
+                int q = random.Next(0, 128);
+                m.Set(Vp8Tables.DcTable[q], Vp8Tables.AcTable[q], round % 2 == 0 ? 0 : 2);
+                int s = ((round & 1) * 8) + ((round >> 1 & 3) * 4 * S);
+                int modeA = round % 10, modeB = (round / 10) % 10;
+                int pa = ((modeA & 7) * 4) + ((modeA >> 3) * 4 * S), pb = ((modeB & 7) * 4) + ((modeB >> 3) * 4 * S);
+                short[] pairLevels = new short[32], levelsA = new short[16], levelsB = new short[16];
+                byte[] pairOut = new byte[4 * S], outA = new byte[4 * S], outB = new byte[4 * S];
+                int pairMask = Vp8PairSimd.ReconstructTrials(src, s, predictions, pa, pb, m, pairLevels, pairOut, 0, out int sseA, out int sseB, out int spectrumA, out int spectrumB);
+                int maskA = Vp8TransformSimd.ReconstructBlock(src, s, predictions, pa, m, levelsA, outA, 0, out int sse1, out int spectrum1);
+                int maskB = Vp8TransformSimd.ReconstructBlock(src, s, predictions, pb, m, levelsB, outB, 4, out int sse2, out int spectrum2);
+                Assert.Equal(maskA | (maskB << 16), pairMask);
+                Assert.Equal([.. levelsA, .. levelsB], pairLevels);
+                Assert.Equal((sse1, sse2, spectrum1, spectrum2), (sseA, sseB, spectrumA, spectrumB));
+                Vp8EncDsp.Copy(outA, 0, outB, 0, 4, 4);
+                Assert.Equal(outB, pairOut);
+
+                // Two blocks side by side: the forward transform, then the reconstruction from coefficients, with and without a given DC.
+                short[] pairCoefficients = new short[32], single = new short[32];
+                Vp8PairSimd.ForwardTransform(src, s, ctx, s, pairCoefficients);
+                Vp8EncDsp.ForwardTransformScalar(src, s, ctx, s, single.AsSpan(0, 16));
+                Vp8EncDsp.ForwardTransformScalar(src, s + 4, ctx, s + 4, single.AsSpan(16, 16));
+                Assert.Equal(single, pairCoefficients);
+                bool dcGiven = round % 3 == 0;
+                pairCoefficients[0] = (short)random.Next(-2048, 2048);
+                pairCoefficients[16] = (short)random.Next(-2048, 2048);
+                pairCoefficients.CopyTo(single, 0);
+                pairMask = Vp8PairSimd.ReconstructCoefficients(pairCoefficients, dcGiven, src, s, ctx, s, m, pairLevels, pairOut, 0, out sseA, out sseB, out spectrumA, out spectrumB);
+                maskA = dcGiven
+                    ? Vp8TransformSimd.ReconstructAcBlock(single.AsSpan(0, 16), src, s, ctx, s, m, levelsA, outA, 0, out sse1, out spectrum1)
+                    : ReconstructFrom(single.AsSpan(0, 16), src, s, ctx, s, m, levelsA, outA, out sse1, out spectrum1);
+                maskB = dcGiven
+                    ? Vp8TransformSimd.ReconstructAcBlock(single.AsSpan(16, 16), src, s + 4, ctx, s + 4, m, levelsB, outA, 4, out sse2, out spectrum2)
+                    : ReconstructFrom(single.AsSpan(16, 16), src, s + 4, ctx, s + 4, m, levelsB, outB, out sse2, out spectrum2);
+                if (!dcGiven)
+                {
+                    Vp8EncDsp.Copy(outB, 0, outA, 4, 4, 4);
+                }
+
+                Assert.Equal(maskA | (maskB << 16), pairMask);
+                Assert.Equal([.. levelsA, .. levelsB], pairLevels);
+                Assert.Equal((sse1, sse2, spectrum1, spectrum2), (sseA, sseB, spectrumA, spectrumB));
+                Assert.Equal(outA.AsSpan(0, (3 * S) + 8).ToArray(), pairOut.AsSpan(0, (3 * S) + 8).ToArray());
+            }
+        }
+    }
+
+    [Fact]
+    public void ResidualCostsMatchTheTokenTree()
+    {
+        Random random = new(5);
+        byte[] probabilities = new byte[Vp8Costs.ProbabilityCount];
+        Vp8LevelCosts costs = new();
+        short[] levels = new short[16];
+        for (int round = 0; round < 3000; round++)
+        {
+            if (round % 100 == 0)
+            {
+                random.NextBytes(probabilities);
+                costs.Update(probabilities);
+            }
+
+            int kind = random.Next(4);
+            for (int i = 0; i < 16; i++)
+            {
+                levels[i] = (short)(random.Next(3) == 0 ? 0 : kind switch { 0 => random.Next(-2, 3), 1 => random.Next(-80, 81), 2 => random.Next(-2047, 2048), _ => 0 });
+            }
+
+            if (kind == 3 && random.Next(2) == 0)
+            {
+                levels[random.Next(16)] = 1;
+            }
+
+            int type = random.Next(4), first = type == 0 ? 1 : 0, ctx0 = random.Next(3);
+            int last = Array.FindLastIndex(levels, l => l != 0);
+            Assert.Equal(last < first ? -1 : last, Vp8LevelCosts.LastNonZero(levels, first));
+            Assert.Equal(ReferenceResidual(costs, type, first, ctx0, levels), costs.Residual(type, first, ctx0, levels));
+        }
+
+        // The cost by the token tree, one level at a time.
+        static int ReferenceResidual(Vp8LevelCosts costs, int type, int first, int ctx0, short[] levels)
+        {
+            int last = Array.FindLastIndex(levels, l => l != 0);
+            int p0 = costs.Probabilities[((type * 8) + Vp8Decoder.Bands[first]) * 33 + (ctx0 * 11)];
+            if (last < first)
+            {
+                return Vp8Costs.Bit(0, p0);
+            }
+
+            int cost = ctx0 == 0 ? Vp8Costs.Bit(1, p0) : 0;
+            int ctx = ctx0;
+            for (int n = first; n <= last; n++)
+            {
+                int v = Math.Abs((int)levels[n]);
+                cost += Vp8Costs.Level(costs.Table, Vp8LevelCosts.At(type, n, ctx), v);
+                ctx = Math.Min(v, 2);
+            }
+
+            if (last < 15)
+            {
+                cost += Vp8Costs.Bit(0, costs.Probabilities[((type * 8) + Vp8Decoder.Bands[last + 1]) * 33 + (ctx * 11)]);
+            }
+
+            return cost;
+        }
+    }
+
+    /// <summary>Quantizes the coefficients (DC included) and reconstructs them on the prediction, with the scalar kernels.</summary>
+    private static int ReconstructFrom(Span<short> coefficients, byte[] src, int s, byte[] pred, int p, Vp8Matrix m, short[] levels, byte[] output, out int sse, out int spectrum)
+    {
+        short[] c = coefficients.ToArray();
+        Vp8EncDsp.QuantizeScalar(c, levels, m);
+        Array.Clear(output);
+        Vp8EncDsp.Copy(pred, p, output, 0, 4, 4);
+        Vp8Dsp.InverseTransformAddScalar(c, output, 0);
+        sse = BlockSse(src, s, output, 0);
+        spectrum = Vp8EncDsp.HadamardWeightedScalar(output, 0);
+        int mask = 0;
+        for (int n = 0; n < 16; n++)
+        {
+            mask |= levels[n] != 0 ? 1 << Vp8Decoder.Zigzag[n] : 0;
+        }
+
+        return mask;
+    }
+
+    private static int BlockSse(byte[] a, int ao, byte[] b, int bo)
+    {
+        int sum = 0;
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                int d = a[ao + (y * S) + x] - b[bo + (y * S) + x];
+                sum += d * d;
+            }
+        }
+
+        return sum;
+    }
+
+    [Fact]
     public void ModeCostsMatchLibwebp()
     {
         // Spot checks against libwebp's tables (cost_enc.c), in 1/256 bit: our costs come from the RFC probabilities. (libwebp's

@@ -8,7 +8,8 @@ namespace Egami.Formats.Webp;
 /// </summary>
 internal sealed partial class Vp8Encoder
 {
-    private const int FixedProbability = 1 << 14;
+    // A token is its bit (bit 15) and its probability slot; slots from here on are the fixed probabilities 0 to 255.
+    private const int FixedProbability = Vp8Costs.ProbabilityCount;
 
     private ushort[] _tokens = [];
     private int _tokenCount;
@@ -84,16 +85,7 @@ internal sealed partial class Vp8Encoder
     /// <summary>Records one block's tokens as the decoder will read them; returns 1 if it has a non-zero level.</summary>
     private byte RecordBlock(int ctx, int type, int first, ReadOnlySpan<short> levels)
     {
-        int last = -1;
-        for (int i = 15; i >= first; i--)
-        {
-            if (levels[i] != 0)
-            {
-                last = i;
-                break;
-            }
-        }
-
+        int last = Vp8LevelCosts.LastNonZero(levels, first);
         ReadOnlySpan<byte> bands = Vp8Decoder.Bands;
         int n = first;
         int p = Slot(type, bands[n], ctx);
@@ -205,7 +197,7 @@ internal sealed partial class Vp8Encoder
         return bit;
     }
 
-    private void Fixed(bool bit, int probability) => Append((ushort)((bit ? 0x8000 : 0) | FixedProbability | probability));
+    private void Fixed(bool bit, int probability) => Append((ushort)((bit ? 0x8000 : 0) | (FixedProbability + probability)));
 
     private void Append(ushort token)
     {
@@ -306,24 +298,28 @@ internal sealed partial class Vp8Encoder
             partitions[i] = new Vp8BoolEncoder(Math.Max(4096, _tokenCount / (4 * count)));
         }
 
-        byte[] probs = _finalProbs;
-        ushort[] tokens = _tokens;
+        Span<byte> probs = stackalloc byte[FixedProbability + 256];
+        _finalProbs.CopyTo(probs);
+        for (int p = 0; p < 256; p++)
+        {
+            probs[FixedProbability + p] = (byte)p;
+        }
+
+        ReadOnlySpan<ushort> tokens = _tokens;
         for (int mby = 0; mby < _mbh; mby++)
         {
             Vp8BoolEncoder bw = partitions[mby & (count - 1)];
             for (int mb = mby * _mbw, rowEnd = mb + _mbw; mb < rowEnd; mb++)
             {
-                if (_useSkip && _zero[mb])
+                // Runs of coded macroblocks go out together.
+                int end = mb;
+                while (end < rowEnd && !(_useSkip && _zero[end]))
                 {
-                    continue;
+                    end++;
                 }
 
-                for (int i = _tokenStart[mb], end = _tokenStart[mb + 1]; i < end; i++)
-                {
-                    int t = tokens[i];
-                    int probability = (t & FixedProbability) != 0 ? t & 0xFF : probs[t & 0x3FFF];
-                    bw.PutBit(t >> 15, probability);
-                }
+                bw.PutBits(tokens[_tokenStart[mb].._tokenStart[end]], probs);
+                mb = end;
             }
         }
 

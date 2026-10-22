@@ -56,6 +56,34 @@ internal sealed class Vp8BoolEncoder : IDisposable
         return bit;
     }
 
+    /// <summary>
+    /// Codes a run of bits: bit 15 of each token is the bit, the low 15 bits index <paramref name="probabilities"/>. The same as
+    /// <see cref="PutBit"/> for each, with the coder's state kept in registers and no branch on the bit.
+    /// </summary>
+    internal void PutBits(ReadOnlySpan<ushort> tokens, ReadOnlySpan<byte> probabilities)
+    {
+        int range = _range, value = _value, bits = _bits;
+        foreach (ushort token in tokens)
+        {
+            int split = (range * probabilities[token & 0x7FFF]) >> 8;
+            int one = -(token >> 15);
+            value += (split + 1) & one;
+            range = split + ((range - (2 * split) - 1) & one);
+            int shift = 7 ^ BitOperations.Log2((uint)range + 1);
+            range = ((range + 1) << shift) - 1;
+            value <<= shift;
+            bits += shift;
+            if (bits > 0)
+            {
+                (_value, _bits) = (value, bits);
+                Flush();
+                (value, bits) = (_value, _bits);
+            }
+        }
+
+        (_range, _value, _bits) = (range, value, bits);
+    }
+
     /// <summary>Codes a bit at probability 1/2.</summary>
     internal int PutBitUniform(int bit) => PutBit(bit, 0x80);
 
