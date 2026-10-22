@@ -297,6 +297,24 @@ public class Audio
     }
 
     [Fact]
+    public void Vorbis()
+    {
+        using SampleFiles files = new();
+
+        #region audio-vorbis
+        // Vorbis decodes to planar float at the stream's rate, trimmed to the last granule position; here it becomes FLAC.
+        using (AudioReader reader = AudioReader.Open("song.ogg"))
+        {
+            Console.WriteLine($"{reader.Track.CodecId}, {reader.SampleRate} Hz, {reader.Layout.ChannelCount} channels");
+        }
+
+        MediaFile.Transcode("song.ogg", "song.flac", audio: FlacCodec.Instance);
+        #endregion
+
+        Assert.Equal(4800, ((AudioTrackInfo)MediaFile.Probe("song.flac").Tracks[0]).Duration?.Rescale(new Rational(1, 48000)).Ticks);
+    }
+
+    [Fact]
     public void Ogg()
     {
         using SampleFiles files = new();

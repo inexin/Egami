@@ -188,26 +188,8 @@ internal sealed class OpusDecoder : IAudioDecoder
             return (ChannelLayout.Unpositioned(n), [.. Enumerable.Range(0, n)]);
         }
 
-        // Vorbis channel order (Vorbis I specification section 4.3.9), which mapping family 1 uses.
-        Speakers[] order = n switch
-        {
-            1 => [Speakers.FrontCenter],
-            2 => [Speakers.FrontLeft, Speakers.FrontRight],
-            3 => [Speakers.FrontLeft, Speakers.FrontCenter, Speakers.FrontRight],
-            4 => [Speakers.FrontLeft, Speakers.FrontRight, Speakers.BackLeft, Speakers.BackRight],
-            5 => [Speakers.FrontLeft, Speakers.FrontCenter, Speakers.FrontRight, Speakers.BackLeft, Speakers.BackRight],
-            6 => [Speakers.FrontLeft, Speakers.FrontCenter, Speakers.FrontRight, Speakers.BackLeft, Speakers.BackRight, Speakers.LowFrequency],
-            7 => [Speakers.FrontLeft, Speakers.FrontCenter, Speakers.FrontRight, Speakers.SideLeft, Speakers.SideRight, Speakers.BackCenter, Speakers.LowFrequency],
-            _ => [Speakers.FrontLeft, Speakers.FrontCenter, Speakers.FrontRight, Speakers.SideLeft, Speakers.SideRight, Speakers.BackLeft, Speakers.BackRight, Speakers.LowFrequency],
-        };
-        Speakers all = Speakers.None;
-        foreach (Speakers s in order)
-        {
-            all |= s;
-        }
-
-        ChannelLayout layout = new(all);
-        return (layout, [.. order.Select(layout.IndexOf)]);
+        // Mapping family 1 uses the Vorbis channel order.
+        return VorbisChannelOrder.Layout(n);
     }
 
     /// <summary>Fills a loss: concealment for most of it, and the next packet's FEC for its last frame when it has some.</summary>

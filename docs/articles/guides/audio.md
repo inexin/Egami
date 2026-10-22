@@ -2,12 +2,12 @@
 
 Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:
 
-- Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, and Opus (RFC 6716) decode.
-- Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC and Ogg, read and written; FLAC, PCM
-  and Opus in Matroska, WebM and MP4 too.
+- Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and Vorbis I decode.
+- Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC and Ogg, read and written; FLAC, PCM,
+  Opus and Vorbis in Matroska, WebM and MP4 too.
 - A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.
 
-Vorbis and other audio tracks are copied through untouched.
+Other audio tracks, such as AAC and MP3, are copied through untouched.
 
 ## Frames
 
@@ -97,6 +97,16 @@ timestamps, is concealed, or recovered from the next packet's in-band FEC when i
 8251 test vectors.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-opus)]
+
+## Vorbis
+
+`VorbisCodec` decodes Vorbis I streams from Ogg, WebM, Matroska and MP4: mono to 255 channels, every rate, both floor types
+and all three residue types (floor 0, which no current encoder writes, is untested). Frames come out as planar float at the stream's rate, with 3 to 8 channels remapped from Vorbis
+order to the canonical order. The end is trimmed to Ogg's last granule position, or to Matroska's DiscardPadding, and output
+matches libvorbis to within 2^-16 of full scale. A packet that cannot be decoded is reported as `Vorbis.CorruptPacket` and,
+with `DecodeErrorMode.Conceal`, left as silence; the decoder starts its overlap again at the next packet.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-vorbis)]
 
 ## Containers
 

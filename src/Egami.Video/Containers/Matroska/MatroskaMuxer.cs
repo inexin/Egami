@@ -266,16 +266,31 @@ internal sealed class MatroskaMuxer : IMuxer
         _endTime = Math.Max(_endTime, end - track.DelayMilliseconds);
     }
 
-    /// <summary>The nanoseconds an Opus packet decodes past its stated duration, written as DiscardPadding; 0 for others.</summary>
+    /// <summary>The nanoseconds an Opus or Vorbis packet decodes past its stated duration, written as DiscardPadding; 0 for others.</summary>
     private static long DiscardPadding(TrackWriter track, EncodedPacket packet, ReadOnlySpan<byte> data)
     {
-        if (track.Input.CodecId != CodecIds.Opus || packet.Duration is not { } duration || data.IsEmpty)
+        int samples, rate;
+        if (track.Input.CodecId == CodecIds.Opus && !data.IsEmpty)
+        {
+            (samples, rate) = (Audio.Codecs.Opus.OpusPacket.SampleCount(data, 48000), 48000);
+        }
+        else if (track.Input is AudioTrackInfo { CodecId: CodecIds.Vorbis } audio && !data.IsEmpty)
+        {
+            // Every packet goes through the clock, so each one's length follows from the one before.
+            track.Vorbis ??= Audio.Codecs.Vorbis.VorbisPacketClock.Create(audio.CodecPrivate.Span);
+            (samples, rate) = (track.Vorbis?.Next(data) ?? 0, audio.SampleRate);
+        }
+        else
         {
             return 0;
         }
 
-        int samples = Audio.Codecs.Opus.OpusPacket.SampleCount(data, 48000);
-        long padding = new MediaTime(samples, new Rational(1, 48000)).Rescale(Rational.Nanosecond).Ticks - duration.Rescale(Rational.Nanosecond).Ticks;
+        if (packet.Duration is not { } duration)
+        {
+            return 0;
+        }
+
+        long padding = new MediaTime(samples, new Rational(1, rate)).Rescale(Rational.Nanosecond).Ticks - duration.Rescale(Rational.Nanosecond).Ticks;
         return samples > 0 && padding > 0 ? padding : 0;
     }
 
@@ -623,6 +638,9 @@ internal sealed class MatroskaMuxer : IMuxer
 
         /// <summary>Gets or sets whether an AV1 track without av1C had its first packet looked at for a sequence header.</summary>
         public bool Av1ConfigLooked { get; set; }
+
+        /// <summary>Gets or sets a Vorbis track's packet clock, made at its first packet.</summary>
+        public Audio.Codecs.Vorbis.VorbisPacketClock? Vorbis { get; set; }
 
         public TrackInfo Output { get; }
 

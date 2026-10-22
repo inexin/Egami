@@ -31,7 +31,7 @@ public sealed record MediaContext
     public IReadOnlyList<VideoCodec> Codecs { get; init; } = [MotionJpegCodec.Instance, Vp8Codec.Instance, Vp9Codec.Instance, Av1Codec.Instance, RawVideoCodec.Instance];
 
     /// <summary>Gets the audio codecs.</summary>
-    public IReadOnlyList<AudioCodec> AudioCodecs { get; init; } = [PcmCodec.Instance, PcmCodec.BigEndian, PcmCodec.FloatingPoint, FlacCodec.Instance, OpusCodec.Instance];
+    public IReadOnlyList<AudioCodec> AudioCodecs { get; init; } = [PcmCodec.Instance, PcmCodec.BigEndian, PcmCodec.FloatingPoint, FlacCodec.Instance, OpusCodec.Instance, VorbisCodec.Instance];
 
     /// <summary>
     /// Gets the Egami context: the memory source decoded frames come from, the parallelism limit for decoding, and the image
@@ -50,7 +50,7 @@ public sealed record MediaContext
 
     /// <summary>
     /// Gets the shared default context, with AVI, Matroska, WebM, YUV4MPEG2, IVF, MP4, raw AV1 (OBU and Annex B), WAV, Wave64,
-    /// FLAC and Ogg, Motion JPEG, VP8, VP9, AV1 and uncompressed video, and PCM, FLAC and Opus audio registered.
+    /// FLAC and Ogg, Motion JPEG, VP8, VP9, AV1 and uncompressed video, and PCM, FLAC, Opus and Vorbis audio registered.
     /// </summary>
     public static MediaContext Default => s_default ??= new MediaContext();
 

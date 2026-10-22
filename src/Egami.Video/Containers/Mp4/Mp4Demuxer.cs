@@ -642,6 +642,9 @@ internal sealed partial class Mp4Demuxer : IDemuxer
         /// <summary>Gets whether keyframes come from the VP8 frame tag, which some writers' sync sample tables get wrong.</summary>
         public bool IsVp8 { get; private set; }
 
+        /// <summary>Gets or sets a Vorbis track's packet clock, made at its first packet.</summary>
+        public Audio.Codecs.Vorbis.VorbisPacketClock? Vorbis { get; set; }
+
         /// <summary>Gets or sets whether the file was cut off inside the track's data, which ends it.</summary>
         public bool Ended { get; set; }
 
@@ -685,6 +688,19 @@ internal sealed partial class Mp4Demuxer : IDemuxer
             // In fragments an edit list only shifts the times, as FFmpeg reads them: fragments come after moov's edit was written.
             bool trims = EditsApplied && !fragment;
             long duration = sample.Duration;
+            if (Info is AudioTrackInfo { CodecId: CodecIds.Vorbis } vorbis)
+            {
+                // Writers disagree on Vorbis sample durations (FFmpeg's are one packet late), so count them from the packets. A
+                // shorter last one ends the stream early, as Ogg's last granule position does.
+                Vorbis ??= Audio.Codecs.Vorbis.VorbisPacketClock.Create(vorbis.CodecPrivate.Span);
+                if (Vorbis is not null)
+                {
+                    long counted = new MediaTime(Vorbis.Next(packet.Data.Span), new Rational(1, vorbis.SampleRate)).Rescale(timeBase).Ticks;
+                    bool last = !fragment && sample.Index == Track.Table.Count - 1;
+                    duration = last && duration > 0 ? Math.Min(duration, counted) : counted;
+                }
+            }
+
             if (trims && End is { } stop && pts < stop && pts + duration > stop)
             {
                 // The last packet shows only up to the edit's end.

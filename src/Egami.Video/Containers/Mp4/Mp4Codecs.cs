@@ -257,6 +257,7 @@ internal static class Mp4Codecs
                     {
                         0x40 or 0x66 or 0x67 or 0x68 => (CodecIds.Aac, specific),
                         0x69 or 0x6B => (CodecIds.Mp3, ReadOnlyMemory<byte>.Empty),
+                        0xDD => (CodecIds.Vorbis, specific),
                         _ => (codecId, codecPrivate),
                     };
                     break;
@@ -293,7 +294,7 @@ internal static class Mp4Codecs
                 break;
         }
 
-        bool compressed = codecId is CodecIds.Opus or CodecIds.Aac or CodecIds.Mp3 or CodecIds.QuickTimeAudio;
+        bool compressed = codecId is CodecIds.Opus or CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis or CodecIds.QuickTimeAudio;
         return new AudioTrackInfo
         {
             Number = number,

@@ -12,6 +12,7 @@ The Docker image egami-vorbisref:v5.5 holds FFmpeg, vorbis-tools and /usr/local/
 ov_read_float's output, channels interleaved in Vorbis order, as little-endian 32-bit floats and prints "channels rate samples".
 
 Each clip <name>.ogg has <name>.f32.gz beside it: that output, gzip'd. manifest.json maps each clip to {channels, rate, samples}.
+q6-stereo-48k is also copied by FFmpeg, without re-encoding, into .mka, .webm and .mp4 (FFmpeg's own Vorbis-in-MP4 mapping).
 No encoder at hand writes floor 0 (libvorbis 1.x encodes floor 1 only), so floor 0 has no clip here.
 """
 import json
@@ -77,6 +78,8 @@ def make_corpus():
         manifest[name] = {"channels": ch, "rate": r, "samples": samples}
         size = os.path.getsize(os.path.join(OUT, name)) + os.path.getsize(os.path.join(OUT, stem + ".f32.gz"))
         print(name, ch, r, samples, f"{size} bytes")
+    docker(" && ".join(f"ffmpeg -y -v error -i /work/q6-stereo-48k.ogg -c copy {extra}/work/q6-stereo-48k.{ext}"
+                       for ext, extra in (("mka", ""), ("webm", ""), ("mp4", "-strict -2 "))), OUT)
     with open(os.path.join(OUT, "manifest.json"), "w", newline="\n") as f:
         json.dump(manifest, f, indent=2)
         f.write("\n")
