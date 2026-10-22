@@ -34,6 +34,10 @@ command review freezes the names and options at 1.0.
   `egami-heic` for HEIC, which the tool leaves out.
 ## Egami.Barcodes 1.0.1 (unreleased)
 
+### Package icon
+
+- The package has its own icon on NuGet: a graphite tile with barcode bars, in `branding/` with the other package icons.
+
 ### Faster reading
 
 - Reading takes about 0.9 times zxing-cpp 3.1.1's time on one thread over the 817 ZXing test images, each read for its own symbology (3.1 times before), with
