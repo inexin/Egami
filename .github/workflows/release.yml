@@ -7,7 +7,8 @@ name: Release
 # as Egami.Barcodes-v1.0.0 did. The push uses nuget.org trusted publishing: NuGet/login trades the job's OIDC token for a
 # short-lived API key, so the repository keeps no NuGet key. The trusted publishing policy on nuget.org names this repository,
 # this workflow file and the nuget environment, and the nuget environment requires Lars's approval before the job starts.
-# The secret NUGET_USER is the nuget.org account name.
+# The secret NUGET_USER is the nuget.org account name. After the NuGet push, a v* tag also builds the egami command as a
+# native program for win-x64, linux-x64 and osx-arm64 and attaches the three to a GitHub release named after the tag.
 
 on:
   push:
@@ -71,3 +72,68 @@ jobs:
         run: dotnet nuget push "artifacts/nuget/*.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+
+  # A release-train tag (v*) also gets a GitHub release with the egami command as a native program for Windows, Linux and
+  # macOS, which needs no .NET runtime. It runs only after the NuGet job, so Lars's approval of that job covers it too.
+  native:
+    name: egami native (${{ matrix.rid }})
+    needs: publish
+    if: startsWith(github.ref_name, 'v')
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+            exe: egami.exe
+          - rid: linux-x64
+            os: ubuntu-latest
+            exe: egami
+          - rid: osx-arm64
+            os: macos-latest
+            exe: egami
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Publish
+        run: dotnet publish src/Egami.Cli -c Release -r ${{ matrix.rid }} -p:EgamiNativeAot=true -o artifacts/native
+      - name: Check it runs and pack it
+        shell: bash
+        run: |
+          tool=artifacts/native/${{ matrix.exe }}
+          "$tool" --version
+          "$tool" info tests/images/jpeg/duck-420.jpg
+          mkdir -p artifacts/release
+          name="egami-${GITHUB_REF_NAME#v}-${{ matrix.rid }}"
+          if [ "${{ matrix.rid }}" = "win-x64" ]; then
+            (cd artifacts/native && 7z a "../release/$name.zip" egami.exe)
+          else
+            tar -czf "artifacts/release/$name.tar.gz" -C artifacts/native egami
+          fi
+      - uses: actions/upload-artifact@v7
+        with:
+          name: egami-${{ matrix.rid }}
+          path: artifacts/release/*
+          if-no-files-found: error
+
+  github-release:
+    name: GitHub release
+    needs: native
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: egami-*
+          path: release
+          merge-multiple: true
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" release/* --repo "$GITHUB_REPOSITORY" --title "Egami ${GITHUB_REF_NAME#v}" \
+            --notes "Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic and Egami.Cli ${GITHUB_REF_NAME#v} are on NuGet. The files here are the egami command as a native program that needs no .NET runtime: unpack it and run egami --help. CHANGELOG.md lists what changed."
