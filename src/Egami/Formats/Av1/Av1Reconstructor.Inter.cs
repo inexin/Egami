@@ -41,7 +41,10 @@ internal sealed partial class Av1Reconstructor
 
             int predW = Av1Tables.BlockSizeWide[b.Size] >> ssx, predH = Av1Tables.BlockSizeHigh[b.Size] >> ssy;
             bool someUseIntra = false;
-            for (int r = 0; r < n4h << ssy && candRow + r < frame.MiRows; r++)
+
+            // Only small chroma blocks take their neighbours' vectors; a block covering its chroma area uses its own.
+            bool own = (n4w << ssx) <= tile.BlockWidth4 && (n4h << ssy) <= tile.BlockHeight4;
+            for (int r = 0; !own && r < n4h << ssy && candRow + r < frame.MiRows; r++)
             {
                 for (int c = 0; c < n4w << ssx && candCol + c < frame.MiCols; c++)
                 {
