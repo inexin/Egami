@@ -121,7 +121,7 @@ public sealed class McpTests : IAsyncDisposable
             cancellationToken: Token);
         Assert.False(result.IsError, Text(result));
         string written = Assert.Single(Written(result));
-        Assert.Equal(_tool.PathOf("mcp/duck-420.png"), written);
+        Assert.Equal(Path.GetFullPath(_tool.PathOf("mcp/duck-420.png")), written);
         Assert.Equal(0, _tool.Run("resize", jpeg, "--size", "100x", "-o", "cli/{name}.png", "--strip").Code);
         Assert.Equal(File.ReadAllBytes(_tool.PathOf("cli/duck-420.png")), File.ReadAllBytes(written));
     }
@@ -405,7 +405,7 @@ public sealed class McpTests : IAsyncDisposable
     [Fact]
     public void ThePathPolicyFollowsLinksAndKeepsToWholeNames()
     {
-        PathPolicy policy = new([_tool.Folder], "/");
+        PathPolicy policy = new([_tool.Folder], Path.GetPathRoot(_tool.Folder)!);
         Assert.True(policy.Allows(_tool.PathOf("a/b/c.png")));
         Assert.True(policy.Allows(_tool.Folder));
         Assert.False(policy.Allows(_tool.Folder + "-sibling"));
