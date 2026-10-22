@@ -1,3 +1,8 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+
 namespace Egami.Formats.Av1;
 
 /// <summary>
@@ -128,6 +133,14 @@ internal static class Av1Warp
         sy4 += (gamma * -4) + (delta * -4);
         sx4 &= ~((1 << ReduceBits) - 1);
         sy4 &= ~((1 << ReduceBits) - 1);
+        bool inside = ix4 - 7 >= 0 && ix4 + 7 < width;
+        int half0 = 1 << (round0 - 1);
+        if (Ssse3.IsSupported && inside && w >= 8)
+        {
+            BlockSsse3(reference, stride, height, ix4, iy4, sx4, sy4, alpha, beta, gamma, delta, round0, round1, pred, predOffset, predStride, h);
+            return;
+        }
+
         for (int k = -7; k < 8; k++)
         {
             int row = Math.Clamp(iy4 + k, 0, height - 1) * stride;
@@ -142,11 +155,12 @@ internal static class Av1Warp
                     sum += reference[row + Math.Clamp(ix + m, 0, width - 1)] * filters[offs + m];
                 }
 
-                tmp[((k + 7) * 8) + l + 4] = (sum + (1 << (round0 - 1))) >> round0;
+                tmp[((k + 7) * 8) + l + 4] = (sum + half0) >> round0;
                 sx += alpha;
             }
         }
 
+        int half1 = 1 << (round1 - 1);
         for (int k = -4; k < Math.Min(4, h - 4); k++)
         {
             int sy = sy4 + (delta * (k + 4));
@@ -159,11 +173,70 @@ internal static class Av1Warp
                     sum += tmp[((k + m + 4) * 8) + l + 4] * filters[offs + m];
                 }
 
-                pred[predOffset + ((k + 4) * predStride) + l + 4] = (sum + (1 << (round1 - 1))) >> round1;
+                pred[predOffset + ((k + 4) * predStride) + l + 4] = (sum + half1) >> round1;
                 sy += gamma;
             }
         }
     }
+
+    /// <summary>The warp filters as 16-bit taps, a row of eight per phase, for vpmaddwd.</summary>
+    private static readonly short[] ShortFilters = [.. Av1Tables.WarpedFilter.Select(f => (short)f)];
+
+    /// <summary>
+    /// <see cref="Block"/> for a block whose source columns lie inside the reference, eight columns at a time: each output is a
+    /// dot product of eight samples with its own filter row (pmaddwd, then two horizontal adds).
+    /// </summary>
+    private static void BlockSsse3(ushort[] reference, int stride, int height, int ix4, int iy4, int sx4, int sy4, int alpha, int beta,
+        int gamma, int delta, int round0, int round1, int[] pred, int predOffset, int predStride, int h)
+    {
+        // The horizontal output, column by column: column l's 15 rows are together, for the vertical dot products.
+        Span<short> tmp = stackalloc short[8 * 16];
+        Span<int> sums = stackalloc int[8];
+        ref short taps = ref MemoryMarshal.GetArrayDataReference(ShortFilters);
+        ref short samples = ref Unsafe.As<ushort, short>(ref MemoryMarshal.GetArrayDataReference(reference));
+        Vector128<int> half0 = Vector128.Create(1 << (round0 - 1)), half1 = Vector128.Create(1 << (round1 - 1));
+        for (int k = -7; k < 8; k++)
+        {
+            ref short row = ref Unsafe.Add(ref samples, (Math.Clamp(iy4 + k, 0, height - 1) * stride) + ix4 - 7);
+            int sx = sx4 + (beta * (k + 4));
+            (Vector128<int> lo, Vector128<int> hi) = Dot8(ref row, 1, ref taps, sx, alpha);
+            lo = Vector128.ShiftRightArithmetic(lo + half0, round0);
+            hi = Vector128.ShiftRightArithmetic(hi + half0, round0);
+            for (int l = 0; l < 4; l++)
+            {
+                tmp[(l * 16) + k + 7] = (short)lo.GetElement(l);
+                tmp[((l + 4) * 16) + k + 7] = (short)hi.GetElement(l);
+            }
+        }
+
+        ref short columns = ref MemoryMarshal.GetReference(tmp);
+        for (int k = -4; k < Math.Min(4, h - 4); k++)
+        {
+            int sy = sy4 + (delta * (k + 4));
+            (Vector128<int> lo, Vector128<int> hi) = Dot8(ref Unsafe.Add(ref columns, k + 4), 16, ref taps, sy, gamma);
+            Vector128.ShiftRightArithmetic(lo + half1, round1).CopyTo(pred.AsSpan(predOffset + ((k + 4) * predStride)));
+            Vector128.ShiftRightArithmetic(hi + half1, round1).CopyTo(pred.AsSpan(predOffset + ((k + 4) * predStride) + 4));
+        }
+    }
+
+    /// <summary>
+    /// Eight dot products: output l of eight samples from <paramref name="source"/> + l * <paramref name="step"/> with the filter
+    /// row whose phase is <paramref name="phase"/> + l * <paramref name="phaseStep"/>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static (Vector128<int> Lo, Vector128<int> Hi) Dot8(ref short source, int step, ref short taps, int phase, int phaseStep)
+    {
+        Vector128<int> d0 = Dot(ref source, 0, ref taps, phase), d1 = Dot(ref source, step, ref taps, phase + phaseStep);
+        Vector128<int> d2 = Dot(ref source, 2 * step, ref taps, phase + (2 * phaseStep)), d3 = Dot(ref source, 3 * step, ref taps, phase + (3 * phaseStep));
+        Vector128<int> d4 = Dot(ref source, 4 * step, ref taps, phase + (4 * phaseStep)), d5 = Dot(ref source, 5 * step, ref taps, phase + (5 * phaseStep));
+        Vector128<int> d6 = Dot(ref source, 6 * step, ref taps, phase + (6 * phaseStep)), d7 = Dot(ref source, 7 * step, ref taps, phase + (7 * phaseStep));
+        return (Ssse3.HorizontalAdd(Ssse3.HorizontalAdd(d0, d1), Ssse3.HorizontalAdd(d2, d3)),
+            Ssse3.HorizontalAdd(Ssse3.HorizontalAdd(d4, d5), Ssse3.HorizontalAdd(d6, d7)));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<int> Dot(ref short source, int at, ref short taps, int phase) =>
+        Sse2.MultiplyAddAdjacent(Vector128.LoadUnsafe(ref source, (nuint)at), Vector128.LoadUnsafe(ref taps, (nuint)((((phase + 512) >> 10) + 64) * 8)));
 
     private static long Round2Signed(long v, int n) => n == 0 ? v : v < 0 ? -((-v + (1L << (n - 1))) >> n) : (v + (1L << (n - 1))) >> n;
 

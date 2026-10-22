@@ -120,7 +120,7 @@ internal static partial class Vp8Timing
     /// Returns the cycles this thread has run (Windows' QueryThreadCycleTime), which time spent waiting for the CPU leaves out:
     /// steadier than wall time on a busy machine. 0 elsewhere.
     /// </summary>
-    private static long ThreadCycles() => OperatingSystem.IsWindows() && QueryThreadCycleTime(GetCurrentThread(), out ulong cycles) ? (long)cycles : 0;
+    internal static long ThreadCycles() => OperatingSystem.IsWindows() && QueryThreadCycleTime(GetCurrentThread(), out ulong cycles) ? (long)cycles : 0;
 
     [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -139,7 +139,7 @@ internal static partial class Vp8Timing
         screenshot.Save(Path.Combine(directory, "screenshot.png"));
     }
 
-    private static List<byte[]> ReadIvf(string path)
+    internal static List<byte[]> ReadIvf(string path)
     {
         byte[] file = File.ReadAllBytes(path);
         int at = BitConverter.ToUInt16(file, 6);
