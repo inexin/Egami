@@ -3,7 +3,7 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami.Cli 1.1.0 (unreleased)
+## Egami.Cli 1.1.0 (2026-10-22)
 
 A new package: the `egami` command-line tool, a .NET tool built on Egami's public API (Roadmap 2.0). It carries its own copy of
 Egami, so it shares the Egami release train's version and releases with it. The command review froze its names and options
@@ -326,7 +326,7 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - `BarcodeDrawOptions` turns the quiet zone off, sets a bar width reduction for ink spread, and gives the font for the
   human-readable text, which is drawn only when a font is given.
 
-## Egami.Heic 1.1.0 (unreleased)
+## Egami.Heic 1.1.0 (2026-10-22)
 
 ### HEIC package
 
@@ -357,7 +357,7 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
   filters run on several threads, with the same output at any thread count.
 - Ships at Egami's version and depends on exactly that version of Egami.
 
-## Egami 1.1.0 (unreleased)
+## Egami 1.1.0 (2026-10-22)
 
 ### ISO BMFF boxes
 
@@ -414,13 +414,13 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - Every package's NuGet page now links to the documentation at [inexin.github.io/Egami](https://inexin.github.io/Egami/) as its
   project website, and its readme links to the guides there instead of the Markdown sources on GitHub.
 
-## Egami.Fonts 1.1.0 (unreleased)
+## Egami.Fonts 1.1.0 (2026-10-22)
 
 ### Speed
 - `Paragraph.Create` allocates about a third less for short text: a face's color formats are worked out once, glyph buffers
   are sized to their run, and the GSUB matcher keeps no unused scratch array.
 
-## Egami.Drawing, Egami.Svg and Egami.Css 1.1.0 (unreleased)
+## Egami.Drawing, Egami.Svg and Egami.Css 1.1.0 (2026-10-22)
 
 - No changes of their own. From 1.1.0, Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic and Egami.Cli share
   one version and release together, so these three move to 1.1.0 with Egami.
