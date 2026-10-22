@@ -48,6 +48,9 @@ internal sealed class Av1VideoDecoder : IVideoDecoder
                         break;
                     }
                 }
+
+                // configOBUs may also hold metadata OBUs for the whole track, such as HDR's (FFmpeg copies them there).
+                UpdateHdr(Av1UnitInfo.Read(config.ConfigObus.Span, _sequence));
             }
             catch (CorruptDataException)
             {
@@ -115,21 +118,7 @@ internal sealed class Av1VideoDecoder : IVideoDecoder
         _needSequence = false;
         _decodedKey |= unit.HasKeyFrame;
         _waitingForKeyframe = false;
-        if (unit.ContentLightLevel is { } cll || unit.MasteringDisplay is not null)
-        {
-            HdrMetadata hdr = _streamHdr ?? new HdrMetadata();
-            if (unit.MasteringDisplay is { } mdcv)
-            {
-                hdr = hdr with { MasteringPrimaries = mdcv.MasteringPrimaries, MasteringMaxLuminance = mdcv.MasteringMaxLuminance, MasteringMinLuminance = mdcv.MasteringMinLuminance };
-            }
-
-            if (unit.ContentLightLevel is { } light)
-            {
-                hdr = hdr with { MaxContentLightLevel = light.MaxCll, MaxFrameAverageLightLevel = light.MaxFall };
-            }
-
-            _streamHdr = hdr;
-        }
+        UpdateHdr(unit);
 
         while (_decoder.NextFrame is { } next)
         {
@@ -187,6 +176,28 @@ internal sealed class Av1VideoDecoder : IVideoDecoder
         stream.TransferCharacteristics != 2 ? stream.TransferCharacteristics : container?.TransferCharacteristics ?? 2,
         stream.MatrixCoefficients != 2 ? stream.MatrixCoefficients : container?.MatrixCoefficients ?? 2,
         stream.FullRange);
+
+    /// <summary>Takes a unit's content light level and mastering display metadata; each holds until the stream sends a new one.</summary>
+    private void UpdateHdr(Av1UnitInfo unit)
+    {
+        if (unit.ContentLightLevel is null && unit.MasteringDisplay is null)
+        {
+            return;
+        }
+
+        HdrMetadata hdr = _streamHdr ?? _track.Hdr ?? new HdrMetadata();
+        if (unit.MasteringDisplay is { } mdcv)
+        {
+            hdr = hdr with { MasteringPrimaries = mdcv.MasteringPrimaries, MasteringMaxLuminance = mdcv.MasteringMaxLuminance, MasteringMinLuminance = mdcv.MasteringMinLuminance };
+        }
+
+        if (unit.ContentLightLevel is { } light)
+        {
+            hdr = hdr with { MaxContentLightLevel = light.MaxCll, MaxFrameAverageLightLevel = light.MaxFall };
+        }
+
+        _streamHdr = hdr;
+    }
 
     private YuvVideoFrame Receive(Av1FrameInfo next, EncodedPacket packet, Av1UnitInfo unit)
     {

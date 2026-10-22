@@ -128,6 +128,8 @@ V4.2: AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
   Hidden frames give no frame; frames shown with show_existing_frame come out. The sequence header's color wins over the
   container's.
 - `VideoDecoderOptions.ApplyFilmGrain` turns film grain off.
+- HDR: content light level and mastering display metadata OBUs (in the units, or in av1C's configOBUs) give `VideoFrame.Hdr`,
+  equal to ffprobe's side data on an SVT-AV1 HDR10 clip; an ITU-T T.35 metadata OBU with HDR10+ gives `VideoFrame.Hdr10Plus`.
 - Keyframes are units that start with a shown key frame (forward key frames are not); `Av1.KeyframeFlagMismatch` when a
   container disagrees. The sequence header comes from the track's av1C when a unit has none.
 - IVF AV1 tracks get their bit depth, chroma format and av1C from the first sequence header; the Matroska writer builds av1C

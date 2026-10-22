@@ -75,7 +75,12 @@ public class Av1PacketsTests
         using IDemuxer webm = MediaFile.OpenDemuxer(Av1Corpus.PathOf(clip + ".webm"));
         using IDemuxer ivf = MediaFile.OpenDemuxer(Av1Corpus.PathOf(clip + ".ivf"));
         using EncodedPacket first = ivf.ReadPacket()!;
-        Assert.Equal(webm.Tracks[0].CodecPrivate.ToArray(), Av1Packets.ExtractConfig(first.Data.Span));
+        byte[] ours = Av1Packets.ExtractConfig(first.Data.Span)!;
+        byte[] ffmpeg = webm.Tracks[0].CodecPrivate.ToArray();
+
+        // FFmpeg also copies the first unit's metadata OBUs (HDR) into configOBUs; ours holds the sequence header only.
+        Assert.Equal(ffmpeg[..ours.Length], ours);
+        Assert.All(Av1Obus.Split(ffmpeg.AsSpan(ours.Length)), o => Assert.Equal(Av1Obus.Metadata, o.Type));
         Assert.Null(Av1Packets.ExtractConfig(new byte[] { 0x12, 0x00 }));
     }
 
