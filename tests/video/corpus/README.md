@@ -123,3 +123,27 @@ carry the discard flag (D) and start before zero.
 ipcm, sdtp, stz2 with 4- and 8-bit fields, multiple sample descriptions, HDR boxes (mdcv, clli) and broken files are built
 by the tests from the specifications, since the tools above do not write them. No phone or camera files are checked in: none
 with clear redistribution terms were available.
+
+## Audio (V5.0)
+
+`tests/video/corpus/audio` is made by `python tools/video/make-audio-corpus.py` with FFmpeg and the flac tool (libFLAC 1.4.2) in
+`tools/video/audioref` (`docker build -t egami-audioref:v5.0 tools/video/audioref`), from half a second of sine tones per channel.
+`manifest.json` holds, for each clip, the MD5 of its samples as libFLAC's `flac -d` (FLAC files) or FFmpeg (the others) decodes
+them: interleaved, little-endian, signed, in whole bytes of the stream's depth, as FLAC's STREAMINFO MD5 is defined.
+
+| Clip | What it covers |
+| --- | --- |
+| wav-s16-stereo, wav-u8-mono, wav-s32-stereo, wav-f32-stereo | WAV PCM at 16, 8 (unsigned) and 32 bits, and 32-bit float |
+| wav-s24-51 | WAVE_FORMAT_EXTENSIBLE: 24-bit 5.1 with a channel mask |
+| wav-tags | LIST/INFO tags |
+| w64-s16-stereo.w64, rf64-s16-stereo.wav | Sony Wave64, and RF64 with a ds64 chunk |
+| flac-l0-stereo, flac-l5-stereo, flac-l8-stereo | flac -0, -5 and -8 |
+| flac-24-51, flac-8-mono, flac-32-stereo | 24-bit 5.1, 8-bit and 32-bit FLAC |
+| flac-odd-block | A block size of 1000 (coded in the frame header) |
+| flac-tags-picture | Vorbis comments and a PNG front cover |
+| mka-flac-stereo.mka, mp4-flac-stereo.mp4 | FFmpeg's FLAC in Matroska and in MP4 (dfLa) |
+
+`--ietf` fetches the IETF FLAC test files into `.cache/audio/flac-test-files` and writes libFLAC's MD5 of each into its
+`reference.json`; `AudioCorpusTests` decodes every file libFLAC decodes and is skipped when they are missing. After the
+`EGAMI_AUDIO_GATES=1` tests have written Egami.Video's own encodings of them, `--gates` runs `flac -t` on those and compares
+their size with `flac -0` to `-8`.

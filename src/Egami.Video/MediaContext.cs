@@ -1,3 +1,5 @@
+using Egami.Video.Audio;
+using Egami.Video.Audio.Codecs;
 using Egami.Video.Codecs;
 using Egami.Video.Containers;
 
@@ -6,7 +8,7 @@ namespace Egami.Video;
 /// <summary>
 /// The registered containers and codecs, the safety limits for reading, and the Egami context frames are allocated from.
 /// Every entry point takes one, or uses <see cref="Default"/>. Immutable: derive a new one with <c>with</c> or
-/// <see cref="WithContainer"/> and <see cref="WithCodec"/>.
+/// <see cref="WithContainer"/> and <see cref="WithCodec(VideoCodec)"/>.
 /// </summary>
 /// <example>
 /// <code language="csharp">
@@ -23,10 +25,13 @@ public sealed record MediaContext
     private static MediaContext? s_default;
 
     /// <summary>Gets the containers, tried in order when detecting a file's format.</summary>
-    public IReadOnlyList<ContainerFormat> Containers { get; init; } = [AviFormat.Instance, MatroskaFormat.Instance, MatroskaFormat.WebM, Y4mFormat.Instance, IvfFormat.Instance, Mp4Format.Instance];
+    public IReadOnlyList<ContainerFormat> Containers { get; init; } = [AviFormat.Instance, MatroskaFormat.Instance, MatroskaFormat.WebM, Y4mFormat.Instance, IvfFormat.Instance, Mp4Format.Instance, WavFormat.Instance, WavFormat.Wave64, FlacFormat.Instance];
 
     /// <summary>Gets the video codecs.</summary>
     public IReadOnlyList<VideoCodec> Codecs { get; init; } = [MotionJpegCodec.Instance, Vp8Codec.Instance, Vp9Codec.Instance, RawVideoCodec.Instance];
+
+    /// <summary>Gets the audio codecs.</summary>
+    public IReadOnlyList<AudioCodec> AudioCodecs { get; init; } = [PcmCodec.Instance, PcmCodec.BigEndian, PcmCodec.FloatingPoint, FlacCodec.Instance];
 
     /// <summary>
     /// Gets the Egami context: the memory source decoded frames come from, the parallelism limit for decoding, and the image
@@ -43,7 +48,10 @@ public sealed record MediaContext
     /// </summary>
     public Action<MediaWarning>? Warnings { get; init; }
 
-    /// <summary>Gets the shared default context, with AVI, Matroska, WebM, YUV4MPEG2, IVF and MP4, Motion JPEG, VP8 and uncompressed video registered.</summary>
+    /// <summary>
+    /// Gets the shared default context, with AVI, Matroska, WebM, YUV4MPEG2, IVF, MP4, WAV, Wave64 and FLAC, Motion JPEG, VP8,
+    /// VP9 and uncompressed video, and PCM and FLAC audio registered.
+    /// </summary>
     public static MediaContext Default => s_default ??= new MediaContext();
 
     /// <summary>Replaces the shared default context.</summary>
@@ -71,6 +79,24 @@ public sealed record MediaContext
     {
         ArgumentNullException.ThrowIfNull(codec);
         return this with { Codecs = [codec, .. Codecs.Where(c => !string.Equals(c.CodecId, codec.CodecId, StringComparison.Ordinal))] };
+    }
+
+    /// <summary>Returns a copy with an audio codec added in front of the others, or replacing one with the same codec id.</summary>
+    /// <param name="codec">The codec.</param>
+    /// <returns>The new context.</returns>
+    public MediaContext WithCodec(AudioCodec codec)
+    {
+        ArgumentNullException.ThrowIfNull(codec);
+        return this with { AudioCodecs = [codec, .. AudioCodecs.Where(c => !string.Equals(c.CodecId, codec.CodecId, StringComparison.Ordinal))] };
+    }
+
+    /// <summary>Finds the audio codec that decodes a track, or <see langword="null"/>.</summary>
+    /// <param name="track">The track whose codec to find.</param>
+    /// <returns>The codec, or <see langword="null"/> when none is registered.</returns>
+    public AudioCodec? FindAudioCodec(TrackInfo track)
+    {
+        ArgumentNullException.ThrowIfNull(track);
+        return AudioCodecs.FirstOrDefault(c => c.CanDecode(track));
     }
 
     /// <summary>Finds the codec for a codec id, or <see langword="null"/>.</summary>

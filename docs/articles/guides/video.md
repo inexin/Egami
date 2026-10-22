@@ -6,7 +6,8 @@ no copying. It is fully managed and ships only royalty-free codecs:
 - Containers: WebM and Matroska, AVI (with OpenDML for files over 1 GB), IVF and YUV4MPEG2, read and written, and headerless raw
   frames.
 - Codecs: VP9 (all four profiles, 8, 10 and 12 bit, equal to libvpx frame for frame), VP8 (with WebM alpha) and Motion JPEG
-  decode; Motion JPEG and uncompressed encode. Audio and other tracks are copied through untouched.
+  decode; Motion JPEG and uncompressed encode. FLAC and PCM audio decode and encode (see [Audio](audio.md)); other tracks
+  are copied through untouched.
 
 ## Probing a file
 
@@ -129,7 +130,7 @@ before the one before it) and `metadata-dropped`. A file whose moov follows its 
 ## Containers
 
 Each container is a `ContainerFormat`: `MatroskaFormat` (WebM and Matroska), `Mp4Format` (MP4 and QuickTime), `AviFormat`,
-`IvfFormat` and `Y4mFormat`.
+`IvfFormat`, `Y4mFormat`, and for audio `WavFormat` and `FlacFormat`.
 `RawVideo` reads and writes headerless frames in a layout you give.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-containers)]

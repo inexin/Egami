@@ -136,6 +136,8 @@
   items:
     - name: Video
       href: guides/video.md
+    - name: Audio
+      href: guides/audio.md
 - name: Egami.Barcodes
   items:
     - name: Barcodes

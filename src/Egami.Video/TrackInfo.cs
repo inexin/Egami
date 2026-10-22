@@ -1,6 +1,7 @@
 using Egami.Colors;
 using Egami.Metadata;
 using Egami.Pixels;
+using Egami.Video.Audio;
 
 namespace Egami.Video;
 
@@ -146,6 +147,24 @@ public sealed record AudioTrackInfo : TrackInfo
 
     /// <summary>Gets the bits per sample, or 0 for compressed formats that have none.</summary>
     public int BitsPerSample { get; init; }
+
+    /// <summary>
+    /// Gets the speaker of each channel when the container names them (a WAVE_FORMAT_EXTENSIBLE channel mask, an MP4 chnl box,
+    /// FLAC's WAVEFORMATEXTENSIBLE_CHANNEL_MASK tag), or <see langword="null"/> when it does not; decoders then assume
+    /// <see cref="ChannelLayout.ForChannelCount"/>.
+    /// </summary>
+    public ChannelLayout? Layout { get; init; }
+
+    /// <summary>
+    /// Gets how much audio before a seek target must be decoded for the output to be right from the target on (Matroska
+    /// SeekPreRoll: 80 ms for Opus), or <see langword="null"/> for none, as for PCM and FLAC.
+    /// </summary>
+    public MediaTime? SeekPreRoll { get; init; }
+
+    /// <summary>Gets the layout: <see cref="Layout"/> when known, otherwise the default for the channel count.</summary>
+    internal ChannelLayout EffectiveLayout => Layout is { ChannelCount: > 0 } layout && layout.ChannelCount == Channels
+        ? layout
+        : ChannelLayout.ForChannelCount(Math.Clamp(Channels, 1, ChannelLayout.MaxChannels));
 }
 
 /// <summary>How a video track's frames are interlaced.</summary>

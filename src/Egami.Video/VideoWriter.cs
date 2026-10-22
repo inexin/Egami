@@ -1,4 +1,5 @@
 using Egami.Pixels;
+using Egami.Video.Audio;
 using Egami.Video.Codecs;
 using Egami.Video.Containers;
 
@@ -23,6 +24,8 @@ public sealed class VideoWriter : IDisposable
     private readonly VideoWriterOptions _options;
     private readonly MediaContext _context;
     private readonly int _videoNumber;
+    private readonly IAudioEncoder? _audio;
+    private readonly Queue<EncodedPacket> _audioWaiting = new();
     private IVideoEncoder? _encoder;
     private IMuxer? _muxer;
     private long _frames;
@@ -40,7 +43,19 @@ public sealed class VideoWriter : IDisposable
         _options = options;
         _context = context;
         _videoNumber = options.OtherTracks.Count == 0 ? 1 : options.OtherTracks.Max(t => t.Number) + 1;
+        if (options.AudioCodec is { } audio)
+        {
+            if (options.AudioSampleRate < 1 || options.AudioLayout is not { ChannelCount: > 0 } layout)
+            {
+                throw new ArgumentException("An audio codec needs AudioSampleRate and AudioLayout.", nameof(options));
+            }
+
+            _audio = audio.CreateEncoder(new AudioEncoderOptions { SampleRate = options.AudioSampleRate, Layout = layout, BitsPerSample = options.AudioBitsPerSample }, context);
+        }
     }
+
+    /// <summary>Gets the audio track that <see cref="WriteAudio"/> encodes, numbered after the video, or <see langword="null"/> without <see cref="VideoWriterOptions.AudioCodec"/>.</summary>
+    public AudioTrackInfo? AudioTrack => _audio is null ? null : _audio.Track with { Number = _videoNumber + 1 };
 
     /// <summary>Gets the video track, once the first frame has been written.</summary>
     public VideoTrackInfo? Track => _encoder is null ? null : _encoder.Track with { Number = _videoNumber };
@@ -140,6 +155,28 @@ public sealed class VideoWriter : IDisposable
         _muxer.WritePacket(packet);
     }
 
+    /// <summary>
+    /// Encodes audio into the track <see cref="VideoWriterOptions.AudioCodec"/> sets up. Its samples follow the ones before; keep
+    /// audio roughly in time with the frames. Audio written before the first frame waits until the file starts.
+    /// </summary>
+    /// <param name="frame">The audio, in any sample format, at the options' rate and layout. The writer does not keep it.</param>
+    /// <exception cref="InvalidOperationException">The options name no audio codec.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Audio.cs" region="audio-video"/>
+    /// </example>
+    public void WriteAudio(AudioFrame frame)
+    {
+        ArgumentNullException.ThrowIfNull(frame);
+        ObjectDisposedException.ThrowIf(_finished, this);
+        if (_audio is null)
+        {
+            throw new InvalidOperationException("Set VideoWriterOptions.AudioCodec to write audio.");
+        }
+
+        _audio.Send(frame);
+        DrainAudio();
+    }
+
     /// <summary>Flushes the encoder and finishes the file. Called by <see cref="Dispose"/>.</summary>
     public void Finish()
     {
@@ -153,6 +190,12 @@ public sealed class VideoWriter : IDisposable
         {
             _encoder.Flush();
             Drain();
+            if (_audio is not null)
+            {
+                _audio.Flush();
+                DrainAudio();
+            }
+
             _muxer.Finish();
         }
     }
@@ -167,6 +210,12 @@ public sealed class VideoWriter : IDisposable
         finally
         {
             _encoder?.Dispose();
+            _audio?.Dispose();
+            while (_audioWaiting.TryDequeue(out EncodedPacket? packet))
+            {
+                packet.Dispose();
+            }
+
             _muxer?.Dispose();
         }
     }
@@ -191,7 +240,9 @@ public sealed class VideoWriter : IDisposable
             _encoder.Send(frame);
 
             // Some encoders (uncompressed video) learn their layout from the first frame.
-            _muxer = _createMuxer([.. _options.OtherTracks, _encoder.Track with { Number = _videoNumber }]);
+            _muxer = _createMuxer(AudioTrack is { } audioTrack
+                ? [.. _options.OtherTracks, _encoder.Track with { Number = _videoNumber }, audioTrack]
+                : [.. _options.OtherTracks, _encoder.Track with { Number = _videoNumber }]);
         }
         else
         {
@@ -200,6 +251,23 @@ public sealed class VideoWriter : IDisposable
 
         _frames++;
         Drain();
+    }
+
+    private void DrainAudio()
+    {
+        while (_audio!.TryReceive(out EncodedPacket? packet))
+        {
+            packet.TrackNumber = _videoNumber + 1;
+            _audioWaiting.Enqueue(packet);
+        }
+
+        while (_muxer is not null && _audioWaiting.TryDequeue(out EncodedPacket? waiting))
+        {
+            using (waiting)
+            {
+                _muxer.WritePacket(waiting);
+            }
+        }
     }
 
     private void Drain()
@@ -211,6 +279,11 @@ public sealed class VideoWriter : IDisposable
                 packet.TrackNumber = _videoNumber;
                 _muxer!.WritePacket(packet);
             }
+        }
+
+        if (_audio is not null && _audioWaiting.Count > 0)
+        {
+            DrainAudio();
         }
     }
 
@@ -257,4 +330,19 @@ public sealed record VideoWriterOptions
 
     /// <summary>Gets the tags, chapters and attachments to write, where the container can hold them.</summary>
     public MediaMetadata Metadata { get; init; } = MediaMetadata.Empty;
+
+    /// <summary>
+    /// Gets the codec of an audio track that <see cref="VideoWriter.WriteAudio"/> encodes, numbered after the video, or
+    /// <see langword="null"/> for none. Needs <see cref="AudioSampleRate"/> and <see cref="AudioLayout"/>.
+    /// </summary>
+    public AudioCodec? AudioCodec { get; init; }
+
+    /// <summary>Gets the audio track's sample rate in hertz.</summary>
+    public int AudioSampleRate { get; init; }
+
+    /// <summary>Gets the audio track's channels.</summary>
+    public ChannelLayout? AudioLayout { get; init; }
+
+    /// <summary>Gets the audio track's bits per sample, or 0 for the codec's default.</summary>
+    public int AudioBitsPerSample { get; init; }
 }

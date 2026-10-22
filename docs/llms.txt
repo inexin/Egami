@@ -105,6 +105,7 @@ settings, safety limits and registered formats a call uses.
 ## Egami.Video
 
 - [Video](https://inexin.github.io/Egami/v1/articles/guides/video.html): Egami.Video reads and writes video with Egami rasters as frames, so resizing, color and drawing from Egami work on video with no copying.
+- [Audio](https://inexin.github.io/Egami/v1/articles/guides/audio.html): Egami.Video decodes and encodes audio with the same send and receive loop as video.
 
 ## Egami.Barcodes
 
@@ -116,6 +117,7 @@ settings, safety limits and registered formats a call uses.
 - [The egami command](https://inexin.github.io/Egami/v1/articles/cli/index.html): `egami` converts, inspects, resizes and edits images from a shell or a build script, with no C# to write.
 - [Command reference](https://inexin.github.io/Egami/v1/articles/cli/commands.html): Every egami command with its arguments and options, as `egami <command> --help` prints them.
 - [Steps for run](https://inexin.github.io/Egami/v1/articles/cli/steps.html): The steps `egami run` chains and workflow files list.
+- [egami for AI assistants](https://inexin.github.io/Egami/v1/articles/cli/assistants.html): `egami mcp` serves egami's commands to an AI assistant, such as Claude, GitHub Copilot or Cursor, over the Model Context Protocol.
 
 ## Optional
 

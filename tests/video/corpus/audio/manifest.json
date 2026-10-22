@@ -1,0 +1,146 @@
+{
+  "wav-s16-stereo.wav": {
+    "samples": 22050,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cd8fc5507a42f099e9a03822bb25b96b"
+  },
+  "wav-u8-mono.wav": {
+    "samples": 4000,
+    "rate": 8000,
+    "channels": 1,
+    "bits": 8,
+    "float": false,
+    "md5": "9ca2a5eea33b2dc446ef1b44823cc5d9"
+  },
+  "wav-s24-51.wav": {
+    "samples": 8000,
+    "rate": 16000,
+    "channels": 6,
+    "bits": 24,
+    "float": false,
+    "md5": "85365aad778d5b6ebd84aff0ff039ed7"
+  },
+  "wav-s32-stereo.wav": {
+    "samples": 11025,
+    "rate": 22050,
+    "channels": 2,
+    "bits": 32,
+    "float": false,
+    "md5": "5d18b016d3ed78996c818d2196b25e4c"
+  },
+  "wav-f32-stereo.wav": {
+    "samples": 11025,
+    "rate": 22050,
+    "channels": 2,
+    "bits": 32,
+    "float": true,
+    "md5": "b402a263dbeb699cf7b11855eae169fe"
+  },
+  "wav-tags.wav": {
+    "samples": 11025,
+    "rate": 22050,
+    "channels": 1,
+    "bits": 16,
+    "float": false,
+    "md5": "075e405b81f6243752434ef5a2554a2f"
+  },
+  "w64-s16-stereo.w64": {
+    "samples": 22050,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cd8fc5507a42f099e9a03822bb25b96b"
+  },
+  "rf64-s16-stereo.wav": {
+    "samples": 22050,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cd8fc5507a42f099e9a03822bb25b96b"
+  },
+  "flac-l0-stereo.flac": {
+    "samples": 22050,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cd8fc5507a42f099e9a03822bb25b96b"
+  },
+  "flac-l5-stereo.flac": {
+    "samples": 22050,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cd8fc5507a42f099e9a03822bb25b96b"
+  },
+  "flac-l8-stereo.flac": {
+    "samples": 22050,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cd8fc5507a42f099e9a03822bb25b96b"
+  },
+  "flac-24-51.flac": {
+    "samples": 8000,
+    "rate": 16000,
+    "channels": 6,
+    "bits": 24,
+    "float": false,
+    "md5": "85365aad778d5b6ebd84aff0ff039ed7"
+  },
+  "flac-8-mono.flac": {
+    "samples": 4000,
+    "rate": 8000,
+    "channels": 1,
+    "bits": 8,
+    "float": false,
+    "md5": "9ca2a5eea33b2dc446ef1b44823cc5d9"
+  },
+  "flac-32-stereo.flac": {
+    "samples": 11025,
+    "rate": 22050,
+    "channels": 2,
+    "bits": 32,
+    "float": false,
+    "md5": "5d18b016d3ed78996c818d2196b25e4c"
+  },
+  "flac-odd-block.flac": {
+    "samples": 22050,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cd8fc5507a42f099e9a03822bb25b96b"
+  },
+  "flac-tags-picture.flac": {
+    "samples": 22050,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cd8fc5507a42f099e9a03822bb25b96b"
+  },
+  "mka-flac-stereo.mka": {
+    "samples": 22050,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cd8fc5507a42f099e9a03822bb25b96b"
+  },
+  "mp4-flac-stereo.mp4": {
+    "samples": 22050,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cd8fc5507a42f099e9a03822bb25b96b"
+  }
+}

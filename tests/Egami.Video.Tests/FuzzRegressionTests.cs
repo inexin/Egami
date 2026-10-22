@@ -67,6 +67,32 @@ public class FuzzRegressionTests
             return;
         }
 
+        if (input.StartsWith("wav", StringComparison.Ordinal) || input.StartsWith("flac", StringComparison.Ordinal))
+        {
+            // As the fuzz target: decode converting to 16-bit stereo at 22.05 kHz, then seek.
+            try
+            {
+                using AudioReader reader = AudioReader.Open(new MemoryStream(data), new AudioReaderOptions
+                {
+                    SampleFormat = Video.Audio.SampleFormat.S16,
+                    SampleRate = 22050,
+                    Layout = Video.Audio.ChannelLayout.Stereo,
+                    Quality = Video.Audio.ResamplerQuality.Fast,
+                }, context);
+                for (int i = 0; i < 100 && reader.TryRead(out Video.Audio.AudioFrame? frame); i++)
+                {
+                    frame.Dispose();
+                }
+
+                reader.Seek(MediaTime.FromSeconds(0.25));
+            }
+            catch (EgamiException)
+            {
+            }
+
+            return;
+        }
+
         if (input.StartsWith("mp4mux", StringComparison.Ordinal))
         {
             RemuxMp4(data, context);

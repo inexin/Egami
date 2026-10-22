@@ -1,4 +1,6 @@
+using Egami.Video.Audio;
 using Egami.Video.Containers;
+using Egami.Video.Containers.Flac;
 
 namespace Egami.Video;
 
@@ -214,6 +216,140 @@ public static class MediaFile
 
         muxer.Finish();
         return count;
+    }
+
+    /// <summary>
+    /// Copies a file into another container like <see cref="Remux"/>, but decodes its audio tracks and encodes them again with
+    /// <paramref name="audio"/>, at the same rate, layout and bit depth: for example keeping a WebM's video and turning its audio
+    /// into FLAC in Matroska. Audio no registered codec decodes is copied as it is. The output container comes from the extension.
+    /// </summary>
+    /// <param name="inputPath">The source file.</param>
+    /// <param name="outputPath">The file to write; an existing file is replaced.</param>
+    /// <param name="audio">The audio codec to encode with, or <see langword="null"/> to copy audio too.</param>
+    /// <param name="audioLevel">The audio codec's compression level, or <see langword="null"/> for its default.</param>
+    /// <param name="tracks">Which tracks to keep, or <see langword="null"/> for all.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
+    /// <returns>How many packets were written.</returns>
+    /// <exception cref="UnsupportedFormatException">The input is not a registered container, or no container writes the output's extension.</exception>
+    /// <exception cref="NotSupportedException">The output container cannot hold one of the tracks, or the codec cannot encode.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Audio.cs" region="audio-transcode"/>
+    /// </example>
+    public static long Transcode(string inputPath, string outputPath, AudioCodec? audio = null, int? audioLevel = null, Func<TrackInfo, bool>? tracks = null, MediaContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(inputPath);
+        ArgumentNullException.ThrowIfNull(outputPath);
+        context ??= MediaContext.Default;
+        if (audio is { CanEncode: false })
+        {
+            throw new NotSupportedException($"{audio.Name} cannot encode.");
+        }
+
+        using IDemuxer demuxer = OpenDemuxer(inputPath, context);
+        TrackInfo[] kept = [.. demuxer.Tracks.Where(t => tracks?.Invoke(t) ?? true)];
+        Dictionary<int, (IAudioDecoder Decoder, IAudioEncoder Encoder)> recoded = [];
+        try
+        {
+            for (int i = 0; i < kept.Length; i++)
+            {
+                if (audio is null || kept[i] is not AudioTrackInfo track || track.CodecId == audio.CodecId || context.FindAudioCodec(track) is not { } codec)
+                {
+                    continue;
+                }
+
+                IAudioDecoder decoder = codec.CreateDecoder(track, new AudioDecoderOptions { Errors = DecodeErrorMode.Conceal }, context);
+                IAudioEncoder encoder;
+                try
+                {
+                    encoder = audio.CreateEncoder(
+                        new AudioEncoderOptions
+                        {
+                            SampleRate = track.SampleRate,
+                            Layout = track.EffectiveLayout,
+                            BitsPerSample = audio.CodecId == CodecIds.PcmFloat ? 32 : track.BitsPerSample is > 0 and <= 32 && track.CodecId != CodecIds.PcmFloat ? track.BitsPerSample : audio.CodecId == CodecIds.Flac ? 24 : 16,
+                            Level = audioLevel,
+                        },
+                        context);
+                }
+                catch
+                {
+                    decoder.Dispose();
+                    throw;
+                }
+
+                recoded[track.Number] = (decoder, encoder);
+                kept[i] = encoder.Track with { Number = track.Number, Language = track.Language, Name = track.Name, IsDefault = track.IsDefault, Tags = track.Tags };
+            }
+
+            HashSet<int> numbers = [.. kept.Select(t => t.Number)];
+            using IMuxer muxer = CreateMuxer(outputPath, kept, context, demuxer.Info.Metadata);
+            long count = 0;
+            void Drain(int number, IAudioDecoder decoder, IAudioEncoder encoder)
+            {
+                while (decoder.TryReceive(out AudioFrame? frame))
+                {
+                    using (frame)
+                    {
+                        encoder.Send(frame);
+                    }
+                }
+
+                while (encoder.TryReceive(out EncodedPacket? packet))
+                {
+                    using (packet)
+                    {
+                        packet.TrackNumber = number;
+                        muxer.WritePacket(packet);
+                        count++;
+                    }
+                }
+            }
+
+            while (demuxer.ReadPacket() is { } packet)
+            {
+                using (packet)
+                {
+                    if (!numbers.Contains(packet.TrackNumber))
+                    {
+                        continue;
+                    }
+
+                    if (recoded.TryGetValue(packet.TrackNumber, out var pair))
+                    {
+                        pair.Decoder.Send(packet);
+                        Drain(packet.TrackNumber, pair.Decoder, pair.Encoder);
+                    }
+                    else
+                    {
+                        muxer.WritePacket(packet);
+                        count++;
+                    }
+                }
+            }
+
+            foreach ((int number, (IAudioDecoder decoder, IAudioEncoder encoder)) in recoded)
+            {
+                decoder.Flush();
+                Drain(number, decoder, encoder);
+                encoder.Flush();
+                Drain(number, decoder, encoder);
+                if (muxer is ITrackUpdatable updatable)
+                {
+                    updatable.UpdateTrack(encoder.Track);
+                }
+            }
+
+            muxer.Finish();
+            return count;
+        }
+        finally
+        {
+            foreach ((IAudioDecoder decoder, IAudioEncoder encoder) in recoded.Values)
+            {
+                decoder.Dispose();
+                encoder.Dispose();
+            }
+        }
     }
 
     internal static ContainerFormat FormatForPath(string path, MediaContext context)
