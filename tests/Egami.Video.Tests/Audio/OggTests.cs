@@ -105,7 +105,7 @@ public class OggTests
     public void RemuxesToOggAndBack(string name)
     {
         string path = AudioRoundTripTests.OutputPath($"remux-{Path.GetFileNameWithoutExtension(name)}.ogg");
-        MediaFile.Remux(PathOf(name), path);
+        MediaFile.Remux(PathOf(name), path, cancellationToken: TestContext.Current.CancellationToken);
         static List<(long Ticks, byte[] Data)> Packets(string file)
         {
             using IDemuxer demuxer = MediaFile.OpenDemuxer(file);

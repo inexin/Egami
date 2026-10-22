@@ -227,7 +227,7 @@ public class AudioRoundTripTests
     public void TranscodesAudioAndCopiesVideo()
     {
         string path = OutputPath("transcoded.mkv");
-        MediaFile.Transcode(Corpus.PathOf("mkv-mjpeg-pcm.mkv"), path, audio: FlacCodec.Instance);
+        MediaFile.Transcode(Corpus.PathOf("mkv-mjpeg-pcm.mkv"), path, audio: FlacCodec.Instance, cancellationToken: TestContext.Current.CancellationToken);
         MediaInfo info = MediaFile.Probe(path);
         Assert.Contains(info.Tracks, t => t.CodecId == CodecIds.MotionJpeg);
         Assert.Contains(info.Tracks, t => t.CodecId == CodecIds.Flac);

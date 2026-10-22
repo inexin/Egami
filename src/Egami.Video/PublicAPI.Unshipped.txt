@@ -1,4 +1,5 @@
 #nullable enable
+*REMOVED*static Egami.Video.MediaFile.Remux(string! inputPath, string! outputPath, System.Func<Egami.Video.TrackInfo!, bool>? tracks = null, Egami.Video.MediaContext? context = null) -> long
 abstract Egami.Video.Audio.AudioCodec.CodecId.get -> string!
 abstract Egami.Video.Audio.AudioCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
 abstract Egami.Video.Audio.AudioCodec.Name.get -> string!
@@ -232,6 +233,29 @@ Egami.Video.MediaContext.AudioCodecs.get -> System.Collections.Generic.IReadOnly
 Egami.Video.MediaContext.AudioCodecs.init -> void
 Egami.Video.MediaContext.FindAudioCodec(Egami.Video.TrackInfo! track) -> Egami.Video.Audio.AudioCodec?
 Egami.Video.MediaContext.WithCodec(Egami.Video.Audio.AudioCodec! codec) -> Egami.Video.MediaContext!
+Egami.Video.MediaProgress
+Egami.Video.MediaProgress.BytesRead.get -> long
+Egami.Video.MediaProgress.BytesRead.init -> void
+Egami.Video.MediaProgress.BytesWritten.get -> long
+Egami.Video.MediaProgress.BytesWritten.init -> void
+Egami.Video.MediaProgress.Duration.get -> Egami.Video.MediaTime?
+Egami.Video.MediaProgress.Duration.init -> void
+Egami.Video.MediaProgress.Elapsed.get -> System.TimeSpan
+Egami.Video.MediaProgress.Elapsed.init -> void
+Egami.Video.MediaProgress.Equals(Egami.Video.MediaProgress other) -> bool
+Egami.Video.MediaProgress.Fraction.get -> double?
+Egami.Video.MediaProgress.Fraction.init -> void
+Egami.Video.MediaProgress.Frames.get -> long
+Egami.Video.MediaProgress.Frames.init -> void
+Egami.Video.MediaProgress.IsFinal.get -> bool
+Egami.Video.MediaProgress.IsFinal.init -> void
+Egami.Video.MediaProgress.MediaProgress() -> void
+Egami.Video.MediaProgress.Packets.get -> long
+Egami.Video.MediaProgress.Packets.init -> void
+Egami.Video.MediaProgress.Position.get -> Egami.Video.MediaTime
+Egami.Video.MediaProgress.Position.init -> void
+Egami.Video.MediaProgress.Speed.get -> double?
+Egami.Video.MediaProgress.Speed.init -> void
 Egami.Video.VideoWriter.AudioTrack.get -> Egami.Video.AudioTrackInfo?
 Egami.Video.VideoWriter.WriteAudio(Egami.Video.Audio.AudioFrame! frame) -> void
 Egami.Video.VideoWriterOptions.AudioBitsPerSample.get -> int
@@ -316,6 +340,7 @@ override Egami.Video.Containers.WavFormat.IsMatch(System.ReadOnlySpan<byte> head
 override Egami.Video.Containers.WavFormat.Name.get -> string!
 override Egami.Video.Containers.WavFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
 override Egami.Video.Containers.WavFormat.SignatureLength.get -> int
+override Egami.Video.MediaProgress.GetHashCode() -> int
 static Egami.Video.Audio.AudioCodecs.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.IAudioDecoder!
 static Egami.Video.Audio.AudioCodecs.Flac.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Get(string! codecId, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.AudioCodec!
@@ -377,8 +402,15 @@ static Egami.Video.Containers.FlacFormat.Instance.get -> Egami.Video.Containers.
 static Egami.Video.Containers.OggFormat.Instance.get -> Egami.Video.Containers.OggFormat!
 static Egami.Video.Containers.WavFormat.Instance.get -> Egami.Video.Containers.WavFormat!
 static Egami.Video.Containers.WavFormat.Wave64.get -> Egami.Video.Containers.WavFormat!
-static Egami.Video.MediaFile.Transcode(string! inputPath, string! outputPath, Egami.Video.Audio.AudioCodec? audio = null, int? audioLevel = null, System.Func<Egami.Video.TrackInfo!, bool>? tracks = null, Egami.Video.MediaContext? context = null) -> long
+static Egami.Video.MediaFile.Remux(string! inputPath, string! outputPath, System.Func<Egami.Video.TrackInfo!, bool>? tracks = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> long
+static Egami.Video.MediaFile.Remux(System.IO.Stream! input, System.IO.Stream! output, string! outputFormat, System.Func<Egami.Video.TrackInfo!, bool>? tracks = null, Egami.Video.MediaContext? context = null, bool leaveOpen = false, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> long
+static Egami.Video.MediaFile.Transcode(string! inputPath, string! outputPath, Egami.Video.Audio.AudioCodec? audio = null, int? audioLevel = null, System.Func<Egami.Video.TrackInfo!, bool>? tracks = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> long
+static Egami.Video.MediaFile.Transcode(System.IO.Stream! input, System.IO.Stream! output, string! outputFormat, Egami.Video.Audio.AudioCodec? audio = null, int? audioLevel = null, System.Func<Egami.Video.TrackInfo!, bool>? tracks = null, Egami.Video.MediaContext? context = null, bool leaveOpen = false, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> long
+static Egami.Video.MediaProgress.operator !=(Egami.Video.MediaProgress left, Egami.Video.MediaProgress right) -> bool
+static Egami.Video.MediaProgress.operator ==(Egami.Video.MediaProgress left, Egami.Video.MediaProgress right) -> bool
 virtual Egami.Video.Audio.AudioCodec.CanDecode(Egami.Video.TrackInfo! track) -> bool
 virtual Egami.Video.Audio.AudioCodec.CanEncode.get -> bool
 virtual Egami.Video.Audio.AudioCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
 ~override Egami.Video.Audio.ChannelLayout.Equals(object obj) -> bool
+~override Egami.Video.MediaProgress.Equals(object obj) -> bool
+~override Egami.Video.MediaProgress.ToString() -> string

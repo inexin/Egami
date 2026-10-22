@@ -27,7 +27,7 @@ public class RawVideoTests
     public void Y4mRoundTripIsByteIdentical(string clip)
     {
         string output = AviWriterTests.TempFile("roundtrip-" + clip);
-        MediaFile.Remux(Corpus.PathOf(clip), output);
+        MediaFile.Remux(Corpus.PathOf(clip), output, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(File.ReadAllBytes(Corpus.PathOf(clip)), File.ReadAllBytes(output));
     }
 

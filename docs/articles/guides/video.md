@@ -61,6 +61,31 @@ VP9's hidden and show-existing frames too. `SeekMode.Keyframe` stops at the keyf
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-remux)]
 
+## Progress, cancellation and streams
+
+`MediaFile.Remux` and `MediaFile.Transcode` take an `IProgress<MediaProgress>` and a `CancellationToken` as their last
+parameters. A `MediaProgress` report carries the position, the duration, a 0 to 1 `Fraction`, frames, packets, bytes read and
+written, the elapsed time and the speed (media seconds per second, like FFmpeg's `speed=`). Reports come once the output is
+open, then at most every 250 ms, then once more with `IsFinal` set and `Fraction` 1. The fraction comes from the time when the
+input has a duration, else from the bytes read over the input's length, else it is `null`; it never goes backwards. The
+handler runs on the job's thread; `Progress<T>` moves it to the UI thread. If the handler throws, the job stops with that
+exception. Without a handler, nothing is built or timed.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-progress)]
+
+The token is checked before each packet. A cancelled job throws `OperationCanceledException` and does not finish the
+output: a file the job created is deleted, and a stream you passed in keeps what was written so far.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-cancel)]
+
+Both jobs also take a `Stream` in and a `Stream` out, with the output container named, so they can read from and write to
+cloud storage without a local copy. The input may be non-seekable; only MP4 files with moov after the media need a seekable
+one. Matroska, WebM, IVF and YUV4MPEG2 write to a non-seekable stream as they go, MP4 keeps its media in a temporary file and
+writes moov first, and AVI needs a seekable stream (`NotSupportedException` otherwise). `leaveOpen` keeps both streams open.
+The jobs are synchronous and block a thread while the network is slow; run them with `Task.Run` to keep a UI responsive.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-streams)]
+
 ## Codecs by hand
 
 `VideoCodecs` finds the codec for a track and creates an `IVideoDecoder`: send packets, receive frames. `VideoCodecs.CreateDecoder<TPixel>`

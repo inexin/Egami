@@ -197,6 +197,70 @@ public class Video
     }
 
     [Fact]
+    public void Progress()
+    {
+        using SampleFiles files = new();
+
+        #region video-progress
+        // Reports arrive once the output is open, then at most every 250 ms, then once more with IsFinal set.
+        // Progress<T> runs the handler on the caller's synchronization context: the UI thread in WinForms, WPF or MAUI.
+        IProgress<MediaProgress> progress = new Progress<MediaProgress>(p =>
+            Console.Write($"\r{p.Position.ToTimeSpan():c} {p.Fraction ?? 0:P0} {p.Frames} frames {p.Speed:0.0}x"));
+        long packets = MediaFile.Remux("camera.avi", "camera.mkv", progress: progress);
+        #endregion
+
+        Assert.True(packets > 0);
+    }
+
+    [Fact]
+    public void Cancel()
+    {
+        using SampleFiles files = new();
+
+        #region video-cancel
+        // Ctrl+C stops the job between two packets; the half-written camera.mkv is deleted.
+        using CancellationTokenSource cts = new();
+        ConsoleCancelEventHandler onCtrlC = (_, e) =>
+        {
+            e.Cancel = true;
+            cts.Cancel();
+        };
+        Console.CancelKeyPress += onCtrlC;
+        try
+        {
+            MediaFile.Remux("camera.avi", "camera.mkv", cancellationToken: cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Cancelled.");
+        }
+        finally
+        {
+            Console.CancelKeyPress -= onCtrlC;
+        }
+        #endregion
+
+        Assert.True(File.Exists("camera.mkv"));
+    }
+
+    [Fact]
+    public void Streams()
+    {
+        using SampleFiles files = new();
+        using CancellationTokenSource cts = new();
+
+        #region video-streams
+        // Any Stream works, seekable or not: a cloud blob's read and upload streams, an HTTP response body, a pipe.
+        // Files stand in for them here.
+        using Stream source = File.OpenRead("movie.webm");
+        using Stream upload = File.Create("movie.mkv");
+        long packets = MediaFile.Remux(source, upload, "mkv", leaveOpen: true, cancellationToken: cts.Token);
+        #endregion
+
+        Assert.True(packets > 0);
+    }
+
+    [Fact]
     public void Decode()
     {
         using SampleFiles files = new();

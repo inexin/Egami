@@ -48,7 +48,7 @@ public class SeekTests
         string mp4 = Path.Combine(Path.GetTempPath(), $"egami-seek-{Guid.NewGuid():N}.mp4");
         try
         {
-            MediaFile.Remux(Corpus.PathOf(clip), mp4);
+            MediaFile.Remux(Corpus.PathOf(clip), mp4, cancellationToken: TestContext.Current.CancellationToken);
             AssertExactSeeks(mp4, clip.Length);
         }
         finally
