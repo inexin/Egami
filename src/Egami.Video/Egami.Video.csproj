@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>Egami.Video</RootNamespace>
     <PackageId>Egami.Video</PackageId>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
     <Description>A fully managed, MIT-licensed video library for .NET built on Egami: frames, packets, AVI, Matroska/WebM, IVF and YUV4MPEG2 containers, Motion JPEG, VP8 and VP9 (WebM alpha and HDR10+ included).</Description>
     <PackageTags>$(EgamiPackageTags);video;webm;matroska;vp8;vp9;mjpeg</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

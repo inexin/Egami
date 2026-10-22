@@ -701,3 +701,77 @@ virtual Egami.Video.VideoFrame.Planes.get -> Egami.YuvRaster?
 ~override Egami.Video.Codecs.CodecHeaderField.ToString() -> string
 ~override Egami.Video.Hdr10PlusPercentile.Equals(object obj) -> bool
 ~override Egami.Video.Hdr10PlusPercentile.ToString() -> string
+const Egami.Video.CodecIds.Avc = "V_MPEG4/ISO/AVC" -> string!
+const Egami.Video.CodecIds.Hevc = "V_MPEGH/ISO/HEVC" -> string!
+const Egami.Video.CodecIds.MovText = "S_TX3G" -> string!
+const Egami.Video.CodecIds.Mpeg4Visual = "V_MPEG4/ISO/ASP" -> string!
+const Egami.Video.CodecIds.QuickTimeAudio = "A_QUICKTIME" -> string!
+const Egami.Video.CodecIds.QuickTimeOther = "D_QUICKTIME" -> string!
+const Egami.Video.CodecIds.QuickTimeVideo = "V_QUICKTIME" -> string!
+Egami.Video.Containers.Mp4Format
+Egami.Video.Containers.Mp4Format.IgnoreEditLists.get -> bool
+Egami.Video.Containers.Mp4Format.IgnoreEditLists.init -> void
+Egami.Video.Containers.Mp4Format.MoovAtEnd.get -> bool
+Egami.Video.Containers.Mp4Format.MoovAtEnd.init -> void
+Egami.Video.Containers.Mp4Format.Mp4Format() -> void
+Egami.Video.EncodedPacket.IsDiscardable.get -> bool
+Egami.Video.EncodedPacket.IsDiscardable.set -> void
+Egami.Video.MediaInfo.Timecode.get -> string?
+Egami.Video.MediaInfo.Timecode.init -> void
+Egami.Video.MovTextFace
+Egami.Video.MovTextFace.Bold = 1 -> Egami.Video.MovTextFace
+Egami.Video.MovTextFace.Italic = 2 -> Egami.Video.MovTextFace
+Egami.Video.MovTextFace.None = 0 -> Egami.Video.MovTextFace
+Egami.Video.MovTextFace.Underline = 4 -> Egami.Video.MovTextFace
+Egami.Video.MovTextSample
+Egami.Video.MovTextSample.<Clone>$() -> Egami.Video.MovTextSample!
+Egami.Video.MovTextSample.Deconstruct(out string! Text) -> void
+Egami.Video.MovTextSample.Equals(Egami.Video.MovTextSample? other) -> bool
+Egami.Video.MovTextSample.MovTextSample(string! Text) -> void
+Egami.Video.MovTextSample.OtherBoxes.get -> System.ReadOnlyMemory<byte>
+Egami.Video.MovTextSample.OtherBoxes.init -> void
+Egami.Video.MovTextSample.Styles.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.MovTextStyle>!
+Egami.Video.MovTextSample.Styles.init -> void
+Egami.Video.MovTextSample.Text.get -> string!
+Egami.Video.MovTextSample.Text.init -> void
+Egami.Video.MovTextSample.ToBytes() -> byte[]!
+Egami.Video.MovTextStyle
+Egami.Video.MovTextStyle.Color.get -> Egami.Pixels.Rgba8
+Egami.Video.MovTextStyle.Color.init -> void
+Egami.Video.MovTextStyle.Deconstruct(out int Start, out int End, out Egami.Video.MovTextFace Face, out int FontSize, out Egami.Pixels.Rgba8 Color, out int FontId) -> void
+Egami.Video.MovTextStyle.End.get -> int
+Egami.Video.MovTextStyle.End.init -> void
+Egami.Video.MovTextStyle.Equals(Egami.Video.MovTextStyle other) -> bool
+Egami.Video.MovTextStyle.Face.get -> Egami.Video.MovTextFace
+Egami.Video.MovTextStyle.Face.init -> void
+Egami.Video.MovTextStyle.FontId.get -> int
+Egami.Video.MovTextStyle.FontId.init -> void
+Egami.Video.MovTextStyle.FontSize.get -> int
+Egami.Video.MovTextStyle.FontSize.init -> void
+Egami.Video.MovTextStyle.MovTextStyle() -> void
+Egami.Video.MovTextStyle.MovTextStyle(int Start, int End, Egami.Video.MovTextFace Face, int FontSize, Egami.Pixels.Rgba8 Color, int FontId = 1) -> void
+Egami.Video.MovTextStyle.Start.get -> int
+Egami.Video.MovTextStyle.Start.init -> void
+Egami.Video.VideoReaderOptions.AutoOrient.get -> bool
+Egami.Video.VideoReaderOptions.AutoOrient.init -> void
+Egami.Video.VideoTrackInfo.Orientation.get -> Egami.Metadata.ImageOrientation
+Egami.Video.VideoTrackInfo.Orientation.init -> void
+override Egami.Video.Containers.Mp4Format.CanMux.get -> bool
+override Egami.Video.Containers.Mp4Format.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+override Egami.Video.Containers.Mp4Format.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.Mp4Format.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.Mp4Format.Name.get -> string!
+override Egami.Video.Containers.Mp4Format.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.Mp4Format.SignatureLength.get -> int
+override Egami.Video.MovTextSample.Equals(object? obj) -> bool
+override Egami.Video.MovTextSample.GetHashCode() -> int
+override Egami.Video.MovTextSample.ToString() -> string!
+override Egami.Video.MovTextStyle.GetHashCode() -> int
+static Egami.Video.Containers.Mp4Format.Instance.get -> Egami.Video.Containers.Mp4Format!
+static Egami.Video.MovTextSample.operator !=(Egami.Video.MovTextSample? left, Egami.Video.MovTextSample? right) -> bool
+static Egami.Video.MovTextSample.operator ==(Egami.Video.MovTextSample? left, Egami.Video.MovTextSample? right) -> bool
+static Egami.Video.MovTextSample.Parse(System.ReadOnlySpan<byte> sample) -> Egami.Video.MovTextSample!
+static Egami.Video.MovTextStyle.operator !=(Egami.Video.MovTextStyle left, Egami.Video.MovTextStyle right) -> bool
+static Egami.Video.MovTextStyle.operator ==(Egami.Video.MovTextStyle left, Egami.Video.MovTextStyle right) -> bool
+~override Egami.Video.MovTextStyle.Equals(object obj) -> bool
+~override Egami.Video.MovTextStyle.ToString() -> string

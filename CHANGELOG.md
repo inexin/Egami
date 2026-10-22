@@ -69,7 +69,8 @@ command review freezes the names and options at 1.0.
 
 ## Egami.Video 0.4.0 (unreleased)
 
-V4.1: MP4 and QuickTime. Built on Egami's public ISO BMFF box walker (Egami 1.1.0).
+V4.1, API reviewed and accepted 2026-10-22 (all as recommended): MP4 and QuickTime. Built on Egami's public ISO BMFF box
+walker (Egami 1.1.0).
 
 ### MP4 and QuickTime
 
@@ -311,7 +312,7 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - `IsoBoxReader`, `IsoBox` and `FourCC` (in `Egami.Formats.Iso`) walk the boxes of MP4, QuickTime, HEIF and AVIF files from
   bytes in memory, one level at a time, with every size checked; `IsoBoxReader.ReadHeader` reads box headers from a stream,
   so a large file's media data can be skipped. This is the walker Egami's AVIF and HEIC readers use, now public for
-  Egami.Video's MP4 reader and your own tools.
+  Egami.Video's MP4 reader and your own tools. API reviewed and accepted 2026-10-22 (all as recommended).
 
 ### HEIC detection
 
