@@ -23,11 +23,6 @@ internal sealed partial class Mp4Demuxer
             : _tracks.FirstOrDefault(t => t.Info.Kind == TrackKind.Video) ?? _tracks.FirstOrDefault()
                 ?? throw new InvalidOperationException("The file has no tracks.");
 
-        if (_firstFragment < 0 && _nextBox >= 0)
-        {
-            _firstFragment = _nextBox;
-        }
-
         _fragment.Clear();
         _fragmentAt = 0;
         _seekSync = null;
@@ -42,6 +37,11 @@ internal sealed partial class Mp4Demuxer
         bool inFlat = table.Count > 0 && (!_hasMvex || _firstFragment < 0 || ticks < FlatEnd(target));
         if (inFlat)
         {
+            if (target.IsVp8 && !target.SyncChecked)
+            {
+                VerifyVp8Sync(target);
+            }
+
             long index = table.IndexAtDecodeTime(ticks - target.Shift);
             long sync = table.SyncAtOrBefore(index);
             while (sync > 0 && Pts(target, sync) > ticks)
@@ -115,6 +115,34 @@ internal sealed partial class Mp4Demuxer
         }
 
         _seekSync = (target, chosen.Pts);
+    }
+
+    /// <summary>
+    /// Builds a VP8 track's sync samples from each frame's tag (bit 0 clear for a keyframe), the first time it is sought: some
+    /// writers' stss lists other frames.
+    /// </summary>
+    private void VerifyVp8Sync(TrackState track)
+    {
+        track.SyncChecked = true;
+        Mp4SampleTable table = track.Track.Table;
+        long resume = _input.Position;
+        List<uint> sync = [];
+        Span<byte> tag = stackalloc byte[1];
+        for (Mp4SampleTable.Cursor cursor = table.Start(); !cursor.AtEnd; cursor.Advance())
+        {
+            Mp4Sample sample = cursor.Peek();
+            if (sample.Size > 0 && sample.Offset < _input.Length)
+            {
+                _input.Seek(sample.Offset);
+                if (_input.Read(tag) == 1 && (tag[0] & 1) == 0)
+                {
+                    sync.Add((uint)(sample.Index + 1));
+                }
+            }
+        }
+
+        table.SyncSamples = [.. sync];
+        _input.Seek(Math.Min(resume, _input.Length));
     }
 
     private static long Pts(TrackState track, long index)

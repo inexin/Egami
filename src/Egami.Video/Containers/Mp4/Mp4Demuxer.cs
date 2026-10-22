@@ -299,6 +299,7 @@ internal sealed partial class Mp4Demuxer : IDemuxer
             _nextBox = _input.Position;
         }
 
+        _firstFragment = _nextBox;
         FindTimecode();
         ReadChapterTrack();
         FragmentFrameRates();
@@ -579,6 +580,9 @@ internal sealed partial class Mp4Demuxer : IDemuxer
 
         /// <summary>Gets whether keyframes come from the VP8 frame tag, which some writers' sync sample tables get wrong.</summary>
         public bool IsVp8 { get; private set; }
+
+        /// <summary>Gets or sets whether a VP8 track's sync samples were read from its frames.</summary>
+        public bool SyncChecked { get; set; }
 
         public Mp4SampleTable.Cursor Cursor;
 

@@ -17,6 +17,9 @@ public class SeekTests
     [InlineData("vp9/p0-resilient.ivf")]
     [InlineData("vp9/p2-10bit.mkv")]
     [InlineData("vp9/alpha-ramp.webm")]
+    [InlineData("mp4/mp4-mjpeg.mp4")]
+    [InlineData("mp4/mov-mjpeg-sowt.mov")]
+    [InlineData("mp4/mp4box-vp8.mp4")]
     public void ExactSeeksGiveTheSameFramesAsDecodingFromTheStart(string clip)
     {
         AssertExactSeeks(Corpus.PathOf(clip), clip.Length);
@@ -31,6 +34,26 @@ public class SeekTests
         foreach (string vector in vectors)
         {
             AssertExactSeeks(vector, vector.Length);
+        }
+    }
+
+    [Theory]
+    [InlineData("vp8/v0-keyframes.webm")]
+    [InlineData("vp8/v0-altref.webm")]
+    [InlineData("vp9/p0-keyframes.webm")]
+    [InlineData("vp9/p0-altref.webm")]
+    [InlineData("mkv-mjpeg-pcm.mkv")]
+    public void ExactSeeksInMp4WrittenByUsGiveTheSameFrames(string clip)
+    {
+        string mp4 = Path.Combine(Path.GetTempPath(), $"egami-seek-{Guid.NewGuid():N}.mp4");
+        try
+        {
+            MediaFile.Remux(Corpus.PathOf(clip), mp4);
+            AssertExactSeeks(mp4, clip.Length);
+        }
+        finally
+        {
+            File.Delete(mp4);
         }
     }
 

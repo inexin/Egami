@@ -237,4 +237,55 @@ public class Mp4ReaderTests
         Assert.Throws<CorruptDataException>(() => MovTextSample.Parse([0, 5, (byte)'a']));
         Assert.Throws<CorruptDataException>(() => MovTextSample.Parse([0, 1, (byte)'a', 0, 0, 0, 20, (byte)'s', (byte)'t', (byte)'y', (byte)'l']));
     }
+
+    [Theory]
+    [InlineData("mp4-frag.mp4")]
+    [InlineData("mp4-cmaf.mp4")]
+    [InlineData("mp4box-frag-mfra.mp4")]
+    [InlineData("mp4box-dash.mp4")]
+    [InlineData("mp4-h264-aac.mp4")]
+    [InlineData("mp4-editlist-trim.mp4")]
+    [InlineData("mp4box-co64.mp4")]
+    public void SeekLandsOnTheLastKeyframeAtOrBeforeTheTime(string clip)
+    {
+        using IDemuxer demuxer = MediaFile.OpenDemuxer(PathOf(clip));
+        TrackInfo video = demuxer.Tracks.First(t => t.Kind == TrackKind.Video);
+        List<(long Pts, bool Key)> all = [];
+        while (demuxer.ReadPacket() is { } packet)
+        {
+            using (packet)
+            {
+                if (packet.TrackNumber == video.Number)
+                {
+                    all.Add((packet.Timestamp.Ticks, packet.IsKeyframe));
+                }
+            }
+        }
+
+        List<long> keys = [.. all.Where(p => p.Key).Select(p => p.Pts)];
+        foreach (double seconds in new[] { -1, 0, 0.1, 0.45, 0.5, 0.52, 0.9, 5 })
+        {
+            MediaTime time = MediaTime.FromSeconds(seconds);
+            demuxer.Seek(time);
+            long ticks = time.Rescale(video.TimeBase).Ticks;
+            long expected = keys.Where(k => k <= ticks).DefaultIfEmpty(keys.Min()).Max();
+            EncodedPacket? first = null;
+            while (demuxer.ReadPacket() is { } packet)
+            {
+                if (packet.TrackNumber == video.Number)
+                {
+                    first = packet;
+                    break;
+                }
+
+                packet.Dispose();
+            }
+
+            using (first)
+            {
+                Assert.True(first is { IsKeyframe: true }, $"{clip} seek to {seconds}: the first packet is not a keyframe");
+                Assert.True(expected == first.Timestamp.Ticks, $"{clip} seek to {seconds}: keyframe at {first.Timestamp.Ticks}, expected {expected}");
+            }
+        }
+    }
 }
