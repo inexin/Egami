@@ -1,0 +1,258 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+
+namespace Egami.Formats.Av1;
+
+/// <summary>
+/// The block inter prediction process for an unscaled reference, eight outputs at a time: the filter phase is the same across the
+/// block, a source window inside the reference needs no clamping (others are copied with their edges first), and a whole-sample
+/// direction skips its filter, whose only tap is 128.
+/// </summary>
+internal sealed partial class Av1Reconstructor
+{
+    private readonly ushort[] _edge = new ushort[(128 + 7) * (128 + 7)];
+
+    /// <summary>
+    /// Predicts a block from an unscaled reference at (<paramref name="x"/>, <paramref name="y"/>) in 1/1024 samples, as
+    /// <see cref="BlockInterPrediction"/> does with steps of 1024.
+    /// </summary>
+    private void UnscaledPrediction(ushort[] src, int stride, int lastX, int lastY, int x, int y, int w, int h, short[] fx, short[] fy,
+        int round0, int round1, int[] pred)
+    {
+        int fracX = (x >> 6) & 15, fracY = (y >> 6) & 15;
+        int x0 = (x >> 10) - 3, y0 = (y >> 10) - 3;
+        int windowW = w + 7, windowH = h + 7;
+        int at;
+        if (x0 >= 0 && y0 >= 0 && x0 + windowW - 1 <= lastX && y0 + windowH - 1 <= lastY)
+        {
+            at = (y0 * stride) + x0;
+        }
+        else
+        {
+            // Copy the window with the reference's edges repeated past them.
+            ushort[] edge = _edge;
+            int left = Math.Clamp(-x0, 0, windowW), right = Math.Clamp(x0 + windowW - 1 - lastX, 0, windowW - left);
+            int middle = windowW - left - right;
+            for (int r = 0; r < windowH; r++)
+            {
+                int row = Math.Clamp(y0 + r, 0, lastY) * stride, to = r * windowW;
+                edge.AsSpan(to, left).Fill(src[row]);
+                if (middle > 0)
+                {
+                    src.AsSpan(row + x0 + left, middle).CopyTo(edge.AsSpan(to + left));
+                }
+
+                edge.AsSpan(to + left + middle, right).Fill(src[row + lastX]);
+            }
+
+            src = edge;
+            stride = windowW;
+            at = 0;
+        }
+
+        int[] inter = _intermediate;
+        if (fracY == 0)
+        {
+            // Only the rows the vertical filter's middle tap reads, and that tap is 128.
+            Horizontal(src, at + (3 * stride), stride, fracX, fx, w, h, round0, inter);
+            int half = 1 << (round1 - 1);
+            for (int i = 0; i < w * h; i++)
+            {
+                pred[i] = ((inter[i] * 128) + half) >> round1;
+            }
+
+            return;
+        }
+
+        Horizontal(src, at, stride, fracX, fx, w, windowH, round0, inter);
+        Vertical(inter, fracY, fy, w, h, round1, pred);
+    }
+
+    /// <summary>The horizontal pass over <paramref name="rows"/> rows of the window: 8-tap, or a copy shifted to the filter's scale.</summary>
+    private static void Horizontal(ushort[] src, int at, int stride, int frac, short[] filters, int w, int rows, int round0, int[] inter)
+    {
+        if (frac == 0)
+        {
+            int shift = 7 - round0;
+            for (int r = 0; r < rows; r++)
+            {
+                int s = at + (r * stride) + 3, d = r * w;
+                for (int c = 0; c < w; c++)
+                {
+                    inter[d + c] = src[s + c] << shift;
+                }
+            }
+
+            return;
+        }
+
+        ReadOnlySpan<short> f = filters.AsSpan(frac * 8, 8);
+        int half = 1 << (round0 - 1);
+        int c0 = 0;
+        if (Avx2.IsSupported && w >= 8)
+        {
+            // Samples fit 16 bits: vpmaddwd sums tap pairs (m, m + 1) of eight outputs at once.
+            Vector256<short> c01 = Pair(f[0], f[1]), c23 = Pair(f[2], f[3]), c45 = Pair(f[4], f[5]), c67 = Pair(f[6], f[7]);
+            Vector256<int> halfV = Vector256.Create(half);
+            ref short s0 = ref Unsafe.As<ushort, short>(ref MemoryMarshal.GetArrayDataReference(src));
+            ref int d0 = ref MemoryMarshal.GetArrayDataReference(inter);
+            for (int r = 0; r < rows; r++)
+            {
+                int s = at + (r * stride), d = r * w;
+                for (int c = 0; c + 8 <= w; c += 8)
+                {
+                    ref short p = ref Unsafe.Add(ref s0, s + c);
+                    Vector256<int> acc = Avx2.Add(Avx2.Add(Avx2.MultiplyAddAdjacent(Interleave(ref p, 0), c01), Avx2.MultiplyAddAdjacent(Interleave(ref p, 2), c23)),
+                        Avx2.Add(Avx2.MultiplyAddAdjacent(Interleave(ref p, 4), c45), Avx2.MultiplyAddAdjacent(Interleave(ref p, 6), c67)));
+                    Vector256.ShiftRightArithmetic(acc + halfV, round0).StoreUnsafe(ref Unsafe.Add(ref d0, d + c));
+                }
+            }
+
+            c0 = w & ~7;
+        }
+        else if (Vector256.IsHardwareAccelerated && w >= 8)
+        {
+            Vector256<int> f0 = Vector256.Create((int)f[0]), f1 = Vector256.Create((int)f[1]), f2 = Vector256.Create((int)f[2]), f3 = Vector256.Create((int)f[3]);
+            Vector256<int> f4 = Vector256.Create((int)f[4]), f5 = Vector256.Create((int)f[5]), f6 = Vector256.Create((int)f[6]), f7 = Vector256.Create((int)f[7]);
+            Vector256<int> halfV = Vector256.Create(half);
+            ref ushort s0 = ref MemoryMarshal.GetArrayDataReference(src);
+            ref int d0 = ref MemoryMarshal.GetArrayDataReference(inter);
+            for (int r = 0; r < rows; r++)
+            {
+                int s = at + (r * stride), d = r * w;
+                for (int c = 0; c + 8 <= w; c += 8)
+                {
+                    ref ushort p = ref Unsafe.Add(ref s0, s + c);
+                    Vector256<int> acc = halfV + (f0 * Load8(ref p, 0)) + (f1 * Load8(ref p, 1)) + (f2 * Load8(ref p, 2)) + (f3 * Load8(ref p, 3))
+                        + (f4 * Load8(ref p, 4)) + (f5 * Load8(ref p, 5)) + (f6 * Load8(ref p, 6)) + (f7 * Load8(ref p, 7));
+                    Vector256.ShiftRightArithmetic(acc, round0).StoreUnsafe(ref Unsafe.Add(ref d0, d + c));
+                }
+            }
+
+            c0 = w & ~7;
+        }
+
+        if (Sse2.IsSupported && w - c0 >= 4)
+        {
+            // Four outputs at a time (4-wide chroma, and an 8-wide block's last four when there is no AVX2).
+            Vector128<short> c01 = Pair(f[0], f[1]).GetLower(), c23 = Pair(f[2], f[3]).GetLower();
+            Vector128<short> c45 = Pair(f[4], f[5]).GetLower(), c67 = Pair(f[6], f[7]).GetLower();
+            Vector128<int> halfV = Vector128.Create(half);
+            ref short s0 = ref Unsafe.As<ushort, short>(ref MemoryMarshal.GetArrayDataReference(src));
+            ref int d0 = ref MemoryMarshal.GetArrayDataReference(inter);
+            for (int r = 0; r < rows; r++)
+            {
+                int s = at + (r * stride), d = r * w;
+                for (int c = c0; c + 4 <= w; c += 4)
+                {
+                    ref short p = ref Unsafe.Add(ref s0, s + c);
+                    Vector128<int> acc = Sse2.Add(Sse2.Add(Sse2.MultiplyAddAdjacent(Interleave4(ref p, 0), c01), Sse2.MultiplyAddAdjacent(Interleave4(ref p, 2), c23)),
+                        Sse2.Add(Sse2.MultiplyAddAdjacent(Interleave4(ref p, 4), c45), Sse2.MultiplyAddAdjacent(Interleave4(ref p, 6), c67)));
+                    Vector128.ShiftRightArithmetic(acc + halfV, round0).StoreUnsafe(ref Unsafe.Add(ref d0, d + c));
+                }
+            }
+
+            c0 = w & ~3;
+        }
+
+        for (int r = 0; r < rows; r++)
+        {
+            int s = at + (r * stride), d = r * w;
+            for (int c = c0; c < w; c++)
+            {
+                int p = s + c;
+                int sum = (f[0] * src[p]) + (f[1] * src[p + 1]) + (f[2] * src[p + 2]) + (f[3] * src[p + 3])
+                    + (f[4] * src[p + 4]) + (f[5] * src[p + 5]) + (f[6] * src[p + 6]) + (f[7] * src[p + 7]);
+                inter[d + c] = (sum + half) >> round0;
+            }
+        }
+    }
+
+    /// <summary>The vertical 8-tap pass over the intermediate rows.</summary>
+    private static void Vertical(int[] inter, int frac, short[] filters, int w, int h, int round1, int[] pred)
+    {
+        ReadOnlySpan<short> f = filters.AsSpan(frac * 8, 8);
+        int half = 1 << (round1 - 1);
+        int c0 = 0;
+        if (Vector256.IsHardwareAccelerated && w >= 8)
+        {
+            Vector256<int> f0 = Vector256.Create((int)f[0]), f1 = Vector256.Create((int)f[1]), f2 = Vector256.Create((int)f[2]), f3 = Vector256.Create((int)f[3]);
+            Vector256<int> f4 = Vector256.Create((int)f[4]), f5 = Vector256.Create((int)f[5]), f6 = Vector256.Create((int)f[6]), f7 = Vector256.Create((int)f[7]);
+            Vector256<int> halfV = Vector256.Create(half);
+            ref int i0 = ref MemoryMarshal.GetArrayDataReference(inter);
+            ref int p0 = ref MemoryMarshal.GetArrayDataReference(pred);
+            for (int r = 0; r < h; r++)
+            {
+                for (int c = 0; c + 8 <= w; c += 8)
+                {
+                    ref int p = ref Unsafe.Add(ref i0, (r * w) + c);
+                    Vector256<int> acc = halfV + (f0 * Vector256.LoadUnsafe(ref p)) + (f1 * Vector256.LoadUnsafe(ref p, (nuint)w))
+                        + (f2 * Vector256.LoadUnsafe(ref p, (nuint)(2 * w))) + (f3 * Vector256.LoadUnsafe(ref p, (nuint)(3 * w)))
+                        + (f4 * Vector256.LoadUnsafe(ref p, (nuint)(4 * w))) + (f5 * Vector256.LoadUnsafe(ref p, (nuint)(5 * w)))
+                        + (f6 * Vector256.LoadUnsafe(ref p, (nuint)(6 * w))) + (f7 * Vector256.LoadUnsafe(ref p, (nuint)(7 * w)));
+                    Vector256.ShiftRightArithmetic(acc, round1).StoreUnsafe(ref Unsafe.Add(ref p0, (r * w) + c));
+                }
+            }
+
+            c0 = w & ~7;
+        }
+
+        if (Vector128.IsHardwareAccelerated && w - c0 >= 4)
+        {
+            Vector128<int> f0 = Vector128.Create((int)f[0]), f1 = Vector128.Create((int)f[1]), f2 = Vector128.Create((int)f[2]), f3 = Vector128.Create((int)f[3]);
+            Vector128<int> f4 = Vector128.Create((int)f[4]), f5 = Vector128.Create((int)f[5]), f6 = Vector128.Create((int)f[6]), f7 = Vector128.Create((int)f[7]);
+            Vector128<int> halfV = Vector128.Create(half);
+            ref int i0 = ref MemoryMarshal.GetArrayDataReference(inter);
+            ref int p0 = ref MemoryMarshal.GetArrayDataReference(pred);
+            for (int r = 0; r < h; r++)
+            {
+                for (int c = c0; c + 4 <= w; c += 4)
+                {
+                    ref int p = ref Unsafe.Add(ref i0, (r * w) + c);
+                    Vector128<int> acc = halfV + (f0 * Vector128.LoadUnsafe(ref p)) + (f1 * Vector128.LoadUnsafe(ref p, (nuint)w))
+                        + (f2 * Vector128.LoadUnsafe(ref p, (nuint)(2 * w))) + (f3 * Vector128.LoadUnsafe(ref p, (nuint)(3 * w)))
+                        + (f4 * Vector128.LoadUnsafe(ref p, (nuint)(4 * w))) + (f5 * Vector128.LoadUnsafe(ref p, (nuint)(5 * w)))
+                        + (f6 * Vector128.LoadUnsafe(ref p, (nuint)(6 * w))) + (f7 * Vector128.LoadUnsafe(ref p, (nuint)(7 * w)));
+                    Vector128.ShiftRightArithmetic(acc, round1).StoreUnsafe(ref Unsafe.Add(ref p0, (r * w) + c));
+                }
+            }
+
+            c0 = w & ~3;
+        }
+
+        for (int r = 0; r < h; r++)
+        {
+            for (int c = c0; c < w; c++)
+            {
+                int p = (r * w) + c;
+                int sum = (f[0] * inter[p]) + (f[1] * inter[p + w]) + (f[2] * inter[p + (2 * w)]) + (f[3] * inter[p + (3 * w)])
+                    + (f[4] * inter[p + (4 * w)]) + (f[5] * inter[p + (5 * w)]) + (f[6] * inter[p + (6 * w)]) + (f[7] * inter[p + (7 * w)]);
+                pred[p] = (sum + half) >> round1;
+            }
+        }
+    }
+
+    /// <summary>Two taps repeated for vpmaddwd: the first in the low half of each 32-bit lane.</summary>
+    private static Vector256<short> Pair(short first, short second) => Vector256.Create((int)(ushort)first | (second << 16)).AsInt16();
+
+    /// <summary>Samples m and m + 1 of eight outputs, interleaved: [p[m], p[m + 1], p[m + 1], p[m + 2], ...].</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Interleave(ref short p, int m)
+    {
+        Vector128<short> a = Vector128.LoadUnsafe(ref p, (nuint)m), b = Vector128.LoadUnsafe(ref p, (nuint)(m + 1));
+        return Vector256.Create(Sse2.UnpackLow(a, b), Sse2.UnpackHigh(a, b));
+    }
+
+    /// <summary>Samples m and m + 1 of four outputs, interleaved, reading no further than the fourth output's taps.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Interleave4(ref short p, int m) => Sse2.UnpackLow(
+        Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref p, m)))).AsInt16(),
+        Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref p, m + 1)))).AsInt16());
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector256<int> Load8(ref ushort p, int offset) => Avx2.IsSupported
+        ? Avx2.ConvertToVector256Int32(Vector128.LoadUnsafe(ref p, (nuint)offset))
+        : Vector256.WidenLower(Vector256.Create(Vector128.LoadUnsafe(ref p, (nuint)offset), Vector128<ushort>.Zero)).AsInt32();
+}

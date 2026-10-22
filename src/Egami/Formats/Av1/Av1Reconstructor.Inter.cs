@@ -1,3 +1,5 @@
+using System.Runtime.Intrinsics;
+
 namespace Egami.Formats.Av1;
 
 /// <summary>
@@ -123,38 +125,16 @@ internal sealed partial class Av1Reconstructor
         bool interintra = b.RefFrame1 == Ref.Intra;
         if (!compound && !interintra)
         {
-            for (int i = 0; i < h; i++)
-            {
-                for (int j = 0; j < w; j++)
-                {
-                    dst[at + (i * stride) + j] = (ushort)Math.Clamp(_pred0[(i * w) + j], 0, max);
-                }
-            }
+            Blend(_pred0, _pred0, 1, 0, 0, w, h, dst, at, stride, max);
         }
         else if (compound && b.CompoundType == Compound.Average)
         {
-            int shift = 1 + postRound;
-            for (int i = 0; i < h; i++)
-            {
-                for (int j = 0; j < w; j++)
-                {
-                    int v = _pred0[(i * w) + j] + _pred1[(i * w) + j];
-                    dst[at + (i * stride) + j] = (ushort)Math.Clamp((v + (1 << (shift - 1))) >> shift, 0, max);
-                }
-            }
+            Blend(_pred0, _pred1, 1, 1, 1 + postRound, w, h, dst, at, stride, max);
         }
         else if (compound && b.CompoundType == Compound.Distance)
         {
             (int fwd, int bck) = DistanceWeights(cand);
-            int shift = 4 + postRound;
-            for (int i = 0; i < h; i++)
-            {
-                for (int j = 0; j < w; j++)
-                {
-                    int v = (fwd * _pred0[(i * w) + j]) + (bck * _pred1[(i * w) + j]);
-                    dst[at + (i * stride) + j] = (ushort)Math.Clamp((v + (1 << (shift - 1))) >> shift, 0, max);
-                }
-            }
+            Blend(_pred0, _pred1, fwd, bck, 4 + postRound, w, h, dst, at, stride, max);
         }
         else
         {
@@ -178,6 +158,37 @@ internal sealed partial class Av1Reconstructor
         if (b.MotionMode == 1)
         {
             Overlap(tile, plane, w, h);
+        }
+    }
+
+    /// <summary>Writes Clip1(Round2(w0 * a + w1 * b, shift)) of two predictions into the frame, eight samples at a time.</summary>
+    private static void Blend(int[] a, int[] b, int w0, int w1, int shift, int w, int h, ushort[] dst, int at, int stride, int max)
+    {
+        int half = shift == 0 ? 0 : 1 << (shift - 1);
+        int x0 = 0;
+        if (Vector256.IsHardwareAccelerated && w >= 8)
+        {
+            Vector256<int> wa = Vector256.Create(w0), wb = Vector256.Create(w1), halfV = Vector256.Create(half), maxV = Vector256.Create(max);
+            for (int i = 0; i < h; i++)
+            {
+                for (int j = 0; j + 8 <= w; j += 8)
+                {
+                    Vector256<int> v = (wa * Vector256.LoadUnsafe(ref a[0], (nuint)((i * w) + j))) + (wb * Vector256.LoadUnsafe(ref b[0], (nuint)((i * w) + j))) + halfV;
+                    v = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(v, shift), Vector256<int>.Zero), maxV);
+                    Vector128.Narrow(v.GetLower().AsUInt32(), v.GetUpper().AsUInt32()).StoreUnsafe(ref dst[0], (nuint)(at + (i * stride) + j));
+                }
+            }
+
+            x0 = w & ~7;
+        }
+
+        for (int i = 0; i < h; i++)
+        {
+            for (int j = x0; j < w; j++)
+            {
+                int v = (w0 * a[(i * w) + j]) + (w1 * b[(i * w) + j]) + half;
+                dst[at + (i * stride) + j] = (ushort)Math.Clamp(v >> shift, 0, max);
+            }
         }
     }
 
@@ -227,9 +238,15 @@ internal sealed partial class Av1Reconstructor
         int lastY = ((reference.Header.FrameHeight + ssy) >> ssy) - 1;
         ushort[] src = reference.Planes![plane];
         int stride = reference.Strides[plane];
+        short[] fx = Filters(filterX, w), fy = Filters(filterY, h);
+        if (stepX == 1 << 10 && stepY == 1 << 10)
+        {
+            UnscaledPrediction(src, stride, lastX, lastY, x, y, w, h, fx, fy, round0, round1, pred);
+            return;
+        }
+
         int interH = ((((h - 1) * stepY) + (1 << 10) - 1) >> 10) + 8;
         int[] inter = _intermediate;
-        short[] fx = Filters(filterX, w), fy = Filters(filterY, h);
         int half0 = 1 << (round0 - 1), half1 = 1 << (round1 - 1);
         for (int r = 0; r < interH; r++)
         {
