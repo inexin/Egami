@@ -112,13 +112,14 @@ internal static class Pdf417Detector
         }
 
         var results = new List<Found>();
-        if (starts.Count < 3)
+        if (starts.Count < 3 && stops.Count < 3)
         {
             return results;
         }
 
         List<(Vector2 Top, Vector2 Bottom, float Unit)> startEdges = Edges(bits, Group(starts, spacing), u, spacing, 4);
         List<(Vector2 Top, Vector2 Bottom, float Unit)> stopEdges = Edges(bits, Group(stops, spacing), u, spacing, -14.5f);
+        var paired = new bool[stopEdges.Count];
         foreach ((Vector2 top, Vector2 bottom, float unit) in startEdges)
         {
             // The stop edge: about parallel, overlapping along the edge, at least a minimal symbol's width ahead; the nearest.
@@ -132,16 +133,23 @@ internal static class Pdf417Detector
             float length = Vector2.Distance(top, bottom);
             (Vector2 Top, Vector2 Bottom)? stop = null;
             float nearest = float.MaxValue;
-            foreach ((Vector2 stopTop, Vector2 stopBottom, float _) in stopEdges)
+            int pair = -1;
+            for (int k = 0; k < stopEdges.Count; k++)
             {
+                (Vector2 stopTop, Vector2 stopBottom, float _) = stopEdges[k];
                 float ahead = Vector2.Dot(((stopTop + stopBottom) / 2) - middle, forward);
                 float a0 = Vector2.Dot(stopTop - top, d), a1 = Vector2.Dot(stopBottom - top, d);
                 float overlap = MathF.Min(MathF.Max(a0, a1), length) - MathF.Max(MathF.Min(a0, a1), 0);
                 if (ahead > unit * 60 && ahead < nearest && MathF.Abs(Vector2.Dot(Vector2.Normalize(stopBottom - stopTop), d)) > 0.9f
                     && overlap > 0.5f * MathF.Min(length, Vector2.Distance(stopTop, stopBottom)))
                 {
-                    (stop, nearest) = ((stopTop, stopBottom), ahead);
+                    (stop, nearest, pair) = ((stopTop, stopBottom), ahead, k);
                 }
+            }
+
+            if (pair >= 0)
+            {
+                paired[pair] = true;
             }
 
             // Without a stop pattern (a compact symbol, or one cut off), the rows are read on to the image's edge.
@@ -152,6 +160,29 @@ internal static class Pdf417Detector
             }
 
             if (Read(bits, image, top, bottom, stop.Value.Top, stop.Value.Bottom, unit) is Found found)
+            {
+                results.Add(found);
+            }
+        }
+
+        // A stop pattern without a start pattern before it (a symbol cut off on the left): the rows are read from the image's
+        // edge, and from the stop pattern leftward.
+        for (int k = 0; k < stopEdges.Count; k++)
+        {
+            (Vector2 top, Vector2 bottom, float unit) = stopEdges[k];
+            if (paired[k])
+            {
+                continue;
+            }
+
+            Vector2 d = Vector2.Normalize(bottom - top), back = new(d.Y, -d.X);
+            if (Vector2.Dot(back, u) > 0)
+            {
+                back = -back;
+            }
+
+            float reach = MathF.Min(Reach(bits, top, back), Reach(bits, bottom, back));
+            if (reach > unit * 20 && Read(bits, image, top + (back * reach), bottom + (back * reach), top, bottom, unit) is Found found)
             {
                 results.Add(found);
             }
