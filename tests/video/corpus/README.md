@@ -130,6 +130,8 @@ with clear redistribution terms were available.
 `python tools/make-av1-references.py clips`), one per inter tool or format. `python tools/video/make-av1-corpus.py` remuxes each
 with FFmpeg (`-c copy`) into WebM, and some into Matroska, with ffprobe's view of each (`<file>.json`), and copies libaom's frame
 hashes into `<clip>.frames.json`: per output frame its size, bit depth, whether it is monochrome, and the MD5 of its planes as
-16-bit little-endian samples, with and without film grain (from `tools/make-av1-references.py`). libaom's own AV1 test vectors
+16-bit little-endian samples, with and without film grain (from `tools/make-av1-references.py`). Four clips are also raw AV1:
+`<clip>.obu` written by FFmpeg's obu muxer and `<clip>.annexb.obu` (Annex B) written by the script itself; aomdec and dav1d decode
+both to libaom's frames, checked by the script in Docker. libaom's own AV1 test vectors
 (including the size-changing Matroska ones) are fetched into `.cache/avif/aom-test-data` and never committed; tests that need them
 are skipped when they are missing.

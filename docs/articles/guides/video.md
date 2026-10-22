@@ -98,6 +98,14 @@ hidden frames give no frame, and a frame shown later with show_existing_frame co
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1)]
 
+Raw AV1 streams are containers of their own: `Av1ObuFormat` reads and writes low-overhead OBU files (.obu, as aomenc `--obu`
+writes and aomdec and dav1d read), and `Av1AnnexBFormat` the length-delimited files of the specification's Annex B (as the
+conformance streams and aomenc `--annexb=1` write). Both are detected from their first bytes; neither has timestamps, so frames are
+timed at the format's `FrameRate`, 30 a second unless you register one with another rate. Reading a file and writing it back gives
+the same bytes, and IVF, WebM, Matroska and MP4 tracks write to them.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1-raw)]
+
 `Av1Packets` splits a temporal unit into its frames and merges them back, and builds the av1C record from a sequence header.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1-packets)]
@@ -152,7 +160,7 @@ before the one before it) and `metadata-dropped`. A file whose moov follows its 
 ## Containers
 
 Each container is a `ContainerFormat`: `MatroskaFormat` (WebM and Matroska), `Mp4Format` (MP4 and QuickTime), `AviFormat`,
-`IvfFormat` and `Y4mFormat`.
+`IvfFormat`, `Y4mFormat`, and `Av1ObuFormat` and `Av1AnnexBFormat` for raw AV1.
 `RawVideo` reads and writes headerless frames in a layout you give.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-containers)]

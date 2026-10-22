@@ -24,44 +24,8 @@ public static class Av1Packets
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/Video.cs" region="video-av1-packets"/>
     /// </example>
-    public static IReadOnlyList<ReadOnlyMemory<byte>> SplitFrames(ReadOnlyMemory<byte> temporalUnit)
-    {
-        List<ReadOnlyMemory<byte>> frames = [];
-        int frameStart = -1, prefixStart = 0;
-        bool prefix = false;
-        foreach (Av1Obu obu in Av1Obus.Split(temporalUnit.Span))
-        {
-            if (obu.StartsFrame)
-            {
-                if (frameStart < 0)
-                {
-                    // Everything before the first frame goes with it.
-                    frameStart = 0;
-                }
-                else
-                {
-                    int end = prefix ? prefixStart : obu.Start;
-                    frames.Add(temporalUnit[frameStart..end]);
-                    frameStart = end;
-                }
-
-                prefix = false;
-            }
-            else if (obu.Type is Av1Obus.TileGroup or Av1Obus.RedundantFrameHeader or Av1Obus.TileList)
-            {
-                // A tile group belongs to its frame, with anything before it.
-                prefix = false;
-            }
-            else if (!prefix)
-            {
-                prefix = true;
-                prefixStart = obu.Start;
-            }
-        }
-
-        frames.Add(temporalUnit[Math.Max(0, frameStart)..]);
-        return frames;
-    }
+    public static IReadOnlyList<ReadOnlyMemory<byte>> SplitFrames(ReadOnlyMemory<byte> temporalUnit) =>
+        [.. FrameRanges(temporalUnit.Span).Select(r => temporalUnit[r.Start..r.End])];
 
     /// <summary>Joins frames into one temporal unit: the inverse of <see cref="SplitFrames"/>.</summary>
     /// <param name="frames">The frames, in decoding order.</param>
@@ -95,6 +59,56 @@ public static class Av1Packets
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/Video.cs" region="video-av1-packets"/>
     /// </example>
     public static byte[]? ExtractConfig(ReadOnlySpan<byte> obus) => Av1Config.FromObus(obus);
+
+    /// <summary>The byte ranges of a temporal unit's frames, as <see cref="SplitFrames"/> gives them, with the OBUs of each.</summary>
+    internal static List<(int Start, int End, List<Av1Obu> Obus)> FrameRanges(ReadOnlySpan<byte> unit)
+    {
+        List<(int Start, int End, List<Av1Obu> Obus)> frames = [];
+        List<Av1Obu> current = [], prefix = [];
+        int frameStart = -1, prefixStart = 0;
+        foreach (Av1Obu obu in Av1Obus.Split(unit))
+        {
+            if (obu.StartsFrame)
+            {
+                if (frameStart < 0)
+                {
+                    // Everything before the first frame goes with it.
+                    frameStart = 0;
+                }
+                else
+                {
+                    int end = prefix.Count > 0 ? prefixStart : obu.Start;
+                    frames.Add((frameStart, end, current));
+                    current = [];
+                    frameStart = end;
+                }
+
+                current.AddRange(prefix);
+                prefix.Clear();
+                current.Add(obu);
+            }
+            else if (obu.Type is Av1Obus.TileGroup or Av1Obus.RedundantFrameHeader or Av1Obus.TileList)
+            {
+                // A tile group belongs to its frame, with anything before it.
+                current.AddRange(prefix);
+                prefix.Clear();
+                current.Add(obu);
+            }
+            else
+            {
+                if (prefix.Count == 0)
+                {
+                    prefixStart = obu.Start;
+                }
+
+                prefix.Add(obu);
+            }
+        }
+
+        current.AddRange(prefix);
+        frames.Add((Math.Max(0, frameStart), unit.Length, current));
+        return frames;
+    }
 
     /// <summary>
     /// Fills an AV1 track's bit depth, chroma format, chroma siting and av1C from the first sequence header in the start of a

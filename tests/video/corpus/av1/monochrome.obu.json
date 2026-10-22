@@ -1,0 +1,12 @@
+{"format":{"format_name": "obu", "duration": null, "nb_streams": 1},
+"streams":[
+{"index": 0, "codec_type": "video", "codec_name": "av1", "codec_tag_string": "[0][0][0][0]", "profile": "Main", "width": 80, "height": 48, "pix_fmt": "gray", "color_range": "tv", "r_frame_rate": "25/1", "avg_frame_rate": "25/1", "time_base": "1/1200000"}],
+"packets":[
+{"stream_index": 0, "pts": 0, "dts": 0, "duration": 48000, "size": "140", "pos": "0", "flags": "K_"},
+{"stream_index": 0, "pts": 48000, "dts": 48000, "duration": 48000, "size": "390", "pos": "140", "flags": "__"},
+{"stream_index": 0, "pts": 96000, "dts": 96000, "duration": 48000, "size": "106", "pos": "530", "flags": "__"},
+{"stream_index": 0, "pts": 144000, "dts": 144000, "duration": 48000, "size": "5", "pos": "636", "flags": "__"},
+{"stream_index": 0, "pts": 192000, "dts": 192000, "duration": 48000, "size": "171", "pos": "641", "flags": "__"},
+{"stream_index": 0, "pts": 240000, "dts": 240000, "duration": 48000, "size": "5", "pos": "812", "flags": "__"},
+{"stream_index": 0, "pts": 288000, "dts": 288000, "duration": 48000, "size": "72", "pos": "817", "flags": "__"},
+{"stream_index": 0, "pts": 336000, "dts": 336000, "duration": 48000, "size": "5", "pos": "889", "flags": "__"}]}
