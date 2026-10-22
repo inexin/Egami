@@ -75,15 +75,19 @@ internal sealed record Av1FilmGrain
 }
 
 /// <summary>
-/// The uncompressed header of a key or intra-only frame (AV1 specification sections 5.9 and 7.20 to 7.21), with the variables
-/// it derives: frame and superres size, tiles, quantizer, segmentation, delta q and loop filter, lossless state, loop filter,
-/// CDEF, loop restoration, transform mode and film grain. Inter and switch frames need the reference state of the inter
-/// decoder (sub-step 2.9.5); reading one throws <see cref="UnsupportedFormatException"/>.
+/// The uncompressed header of a frame (AV1 specification sections 5.9 and 7.20 to 7.21, as libaom's decodeframe.c reads it), with
+/// the variables it derives: frame and superres size, the reference frames and their order hints, tiles, quantizer,
+/// segmentation, delta q and loop filter, lossless state, loop filter, CDEF, loop restoration, transform mode, reference mode,
+/// skip mode, global motion and film grain. Inter and switch frames read the reference slots' saved state; without slots
+/// (an AVIF still), reading one throws <see cref="UnsupportedFormatException"/>.
 /// </summary>
 internal sealed class Av1FrameHeader
 {
     /// <summary>The value of primary_ref_frame that means none.</summary>
     internal const int PrimaryRefNone = 7;
+
+    /// <summary>The fractional bits of warp and global motion parameters (WARPEDMODEL_PREC_BITS).</summary>
+    internal const int WarpPrecBits = 16;
 
     private static readonly int[] FeatureBits = [8, 6, 6, 6, 6, 3, 0, 0];
     private static readonly bool[] FeatureSigned = [true, true, true, true, true, false, false, false];
@@ -271,6 +275,76 @@ internal sealed class Av1FrameHeader
 
     internal Av1FilmGrain FilmGrain { get; private set; } = new();
 
+    /// <summary>Gets the reference slot each of LAST_FRAME to ALTREF_FRAME uses (ref_frame_idx).</summary>
+    internal int[] RefFrameIdx { get; } = new int[7];
+
+    /// <summary>Gets each reference frame's frame, indexed by reference frame (1 to 7); null for an intra frame.</summary>
+    internal Av1Frame?[] RefFrames { get; } = new Av1Frame?[8];
+
+    /// <summary>Gets each reference frame's order hint, indexed by reference frame (OrderHints).</summary>
+    internal int[] OrderHints { get; } = new int[8];
+
+    /// <summary>Gets whether each reference frame comes later in display order (RefFrameSignBias).</summary>
+    internal bool[] RefFrameSignBias { get; } = new bool[8];
+
+    internal bool AllowHighPrecisionMv { get; private set; }
+
+    /// <summary>Gets the frame's interpolation filter (<see cref="Interp"/>); <see cref="Interp.Switchable"/> codes it per block.</summary>
+    internal int InterpolationFilter { get; private set; }
+
+    internal bool IsMotionModeSwitchable { get; private set; }
+
+    internal bool UseRefFrameMvs { get; private set; }
+
+    /// <summary>Gets the two reference frames skip mode predicts from (SkipModeFrame).</summary>
+    internal int[] SkipModeFrame { get; } = new int[2];
+
+    /// <summary>Gets each reference frame's global motion type (GmType).</summary>
+    internal int[] GmType { get; } = new int[8];
+
+    /// <summary>Gets each reference frame's global motion parameters (gm_params), six per frame.</summary>
+    internal int[][] GmParams { get; } = [.. Enumerable.Range(0, 8).Select(_ => DefaultWarpParams())];
+
+    /// <summary>Gets the frame the CDFs, segmentation, loop filter deltas and global motion are loaded from, or null.</summary>
+    internal Av1Frame? PrimaryRef { get; private set; }
+
+    /// <summary>Gets the identity warp's parameters.</summary>
+    internal static int[] DefaultWarpParams() => [0, 0, 1 << WarpPrecBits, 0, 0, 1 << WarpPrecBits];
+
+    /// <summary>The header of the grey frame that stands in for a missing reference: the sequence's largest frame, a key frame.</summary>
+    internal static Av1FrameHeader Missing(Av1SequenceHeader sequence, int orderHint)
+    {
+        Av1FrameHeader h = new()
+        {
+            Sequence = sequence,
+            FrameType = Av1FrameType.Key,
+            OrderHint = orderHint,
+            FrameWidth = sequence.MaxFrameWidth,
+            UpscaledWidth = sequence.MaxFrameWidth,
+            FrameHeight = sequence.MaxFrameHeight,
+            RenderWidth = sequence.MaxFrameWidth,
+            RenderHeight = sequence.MaxFrameHeight,
+            MiCols = 2 * ((sequence.MaxFrameWidth + 7) >> 3),
+            MiRows = 2 * ((sequence.MaxFrameHeight + 7) >> 3),
+            MiColStarts = [0, 2 * ((sequence.MaxFrameWidth + 7) >> 3)],
+            MiRowStarts = [0, 2 * ((sequence.MaxFrameHeight + 7) >> 3)],
+        };
+        return h;
+    }
+
+    /// <summary>Gets the signed distance between two order hints (get_relative_dist).</summary>
+    internal int RelativeDist(int a, int b)
+    {
+        if (!Sequence.EnableOrderHint)
+        {
+            return 0;
+        }
+
+        int diff = a - b;
+        int m = 1 << (Sequence.OrderHintBits - 1);
+        return (diff & (m - 1)) - (diff & m);
+    }
+
     /// <summary>Gets how many bits of the OBU payload the header took (before byte alignment).</summary>
     internal int BitLength { get; private set; }
 
@@ -283,16 +357,18 @@ internal sealed class Av1FrameHeader
     /// <param name="temporalId">The OBU's temporal_id.</param>
     /// <param name="spatialId">The OBU's spatial_id.</param>
     /// <param name="formatName">The format named in errors.</param>
-    internal static Av1FrameHeader Parse(ReadOnlySpan<byte> payload, Av1SequenceHeader sequence, int temporalId, int spatialId, string formatName)
+    /// <param name="slots">The eight reference slots, for a stream; null for a still, which then decodes intra frames only.</param>
+    internal static Av1FrameHeader Parse(ReadOnlySpan<byte> payload, Av1SequenceHeader sequence, int temporalId, int spatialId, string formatName,
+        Av1Frame?[]? slots = null)
     {
         Av1FrameHeader header = new() { Sequence = sequence };
         Av1BitReader r = new(payload, formatName);
-        header.Read(ref r, temporalId, spatialId, formatName);
+        header.Read(ref r, temporalId, spatialId, formatName, slots);
         header.BitLength = r.Position;
         return header;
     }
 
-    private void Read(ref Av1BitReader r, int temporalId, int spatialId, string formatName)
+    private void Read(ref Av1BitReader r, int temporalId, int spatialId, string formatName, Av1Frame?[]? slots)
     {
         Av1SequenceHeader s = Sequence;
         int idLen = s.FrameIdNumbersPresent ? s.AdditionalFrameIdLength + s.DeltaFrameIdLength : 0;
@@ -332,9 +408,9 @@ internal sealed class Av1FrameHeader
             ErrorResilientMode = FrameType == Av1FrameType.Switch || (FrameType == Av1FrameType.Key && ShowFrame) || r.Flag();
         }
 
-        if (!FrameIsIntra)
+        if (!FrameIsIntra && slots is null)
         {
-            throw new UnsupportedFormatException($"The AV1 stream has an {(FrameType == Av1FrameType.Inter ? "inter" : "switch")} frame; Egami decodes intra frames only so far.");
+            throw new UnsupportedFormatException($"The AV1 stream has an {(FrameType == Av1FrameType.Inter ? "inter" : "switch")} frame; an AVIF still decodes intra frames only.");
         }
 
         DisableCdfUpdate = r.Flag();
@@ -371,19 +447,31 @@ internal sealed class Av1FrameHeader
             throw new CorruptDataException(formatName, -1, "An AV1 intra-only frame refreshes every reference frame, which the specification forbids.");
         }
 
-        if (RefreshFrameFlags != 0xFF && ErrorResilientMode && s.EnableOrderHint)
+        if ((!FrameIsIntra || RefreshFrameFlags != 0xFF) && ErrorResilientMode && s.EnableOrderHint)
         {
             for (int i = 0; i < 8; i++)
             {
-                r.Bits(s.OrderHintBits); // ref_order_hint[i]
+                int hint = (int)r.Bits(s.OrderHintBits); // ref_order_hint[i]
+                if (slots is not null && (slots[i] is null || slots[i]!.Header.OrderHint != hint))
+                {
+                    // libaom puts a neutral grey frame in place of a missing reference rather than failing.
+                    slots[i] = Av1Frame.Grey(s, hint, formatName);
+                }
             }
         }
 
-        FrameSize(ref r);
-        RenderSize(ref r);
-        if (AllowScreenContentTools && UpscaledWidth == FrameWidth)
+        if (FrameIsIntra)
         {
-            AllowIntrabc = r.Flag();
+            FrameSize(ref r);
+            RenderSize(ref r);
+            if (AllowScreenContentTools && UpscaledWidth == FrameWidth)
+            {
+                AllowIntrabc = r.Flag();
+            }
+        }
+        else
+        {
+            ReadReferences(ref r, slots!, formatName);
         }
 
         DisableFrameEndUpdateCdf = s.ReducedStillPictureHeader || DisableCdfUpdate || r.Flag();
@@ -396,10 +484,365 @@ internal sealed class Av1FrameHeader
         CdefParams(ref r);
         LrParams(ref r);
         TxMode = CodedLossless ? Av1TxMode.Only4x4 : r.Flag() ? Av1TxMode.Select : Av1TxMode.Largest;
-
-        // frame_reference_mode, skip_mode_params, allow_warped_motion and global_motion_params read nothing in intra frames.
+        ReferenceSelect = !FrameIsIntra && r.Flag();
+        SkipModePresent = SkipModeAllowed() && r.Flag();
+        AllowWarpedMotion = !FrameIsIntra && !ErrorResilientMode && s.EnableWarpedMotion && r.Flag();
         ReducedTxSet = r.Flag();
+        if (!FrameIsIntra)
+        {
+            GlobalMotionParams(ref r);
+        }
+
         FilmGrainParams(ref r, formatName);
+    }
+
+    /// <summary>
+    /// Reads an inter or switch frame's references (frame_refs_short_signaling, ref_frame_idx, frame_size_with_refs and the
+    /// motion fields that follow) and sets up their order hints and sign bias.
+    /// </summary>
+    private void ReadReferences(ref Av1BitReader r, Av1Frame?[] slots, string formatName)
+    {
+        Av1SequenceHeader s = Sequence;
+        bool shortSignaling = s.EnableOrderHint && r.Flag();
+        if (shortSignaling)
+        {
+            int last = (int)r.Bits(3), gold = (int)r.Bits(3);
+            if (slots[last] is null || slots[gold] is null)
+            {
+                throw MissingReference(formatName);
+            }
+
+            SetFrameRefs(slots, last, gold, formatName);
+        }
+
+        for (int i = 0; i < 7; i++)
+        {
+            if (!shortSignaling)
+            {
+                RefFrameIdx[i] = (int)r.Bits(3);
+            }
+
+            if (s.FrameIdNumbersPresent)
+            {
+                r.Bits(s.DeltaFrameIdLength); // delta_frame_id_minus_1
+            }
+
+            Av1Frame reference = slots[RefFrameIdx[i]] ?? throw MissingReference(formatName);
+            if (reference.Sequence.BitDepth != s.BitDepth || reference.Sequence.SubsamplingX != s.SubsamplingX
+                || reference.Sequence.SubsamplingY != s.SubsamplingY || reference.Sequence.Monochrome != s.Monochrome)
+            {
+                throw new CorruptDataException(formatName, -1, "An AV1 inter frame refers to a frame of another bit depth or chroma format.");
+            }
+
+            RefFrames[Ref.Last + i] = reference;
+        }
+
+        if (FrameSizeOverrideFlag && !ErrorResilientMode)
+        {
+            // frame_size_with_refs
+            bool found = false;
+            for (int i = 0; i < 7 && !found; i++)
+            {
+                if (r.Flag())
+                {
+                    Av1FrameHeader reference = RefFrames[Ref.Last + i]!.Header;
+                    UpscaledWidth = reference.UpscaledWidth;
+                    FrameWidth = UpscaledWidth;
+                    FrameHeight = reference.FrameHeight;
+                    RenderWidth = reference.RenderWidth;
+                    RenderHeight = reference.RenderHeight;
+                    found = true;
+                }
+            }
+
+            if (found)
+            {
+                SuperresParams(ref r);
+            }
+            else
+            {
+                FrameSize(ref r);
+                RenderSize(ref r);
+            }
+        }
+        else
+        {
+            FrameSize(ref r);
+            RenderSize(ref r);
+        }
+
+        for (int i = Ref.Last; i <= Ref.Alt; i++)
+        {
+            Av1FrameHeader reference = RefFrames[i]!.Header;
+            if (2 * FrameWidth < reference.UpscaledWidth || 2 * FrameHeight < reference.FrameHeight
+                || FrameWidth > 16 * reference.UpscaledWidth || FrameHeight > 16 * reference.FrameHeight)
+            {
+                throw new CorruptDataException(formatName, -1, "An AV1 reference frame is more than twice or under a sixteenth the frame's size.");
+            }
+        }
+
+        AllowHighPrecisionMv = !ForceIntegerMv && r.Flag();
+        InterpolationFilter = r.Flag() ? Interp.Switchable : (int)r.Bits(2);
+        IsMotionModeSwitchable = r.Flag();
+        UseRefFrameMvs = !ErrorResilientMode && s.EnableRefFrameMvs && r.Flag();
+        for (int i = Ref.Last; i <= Ref.Alt; i++)
+        {
+            int hint = RefFrames[i]!.Header.OrderHint;
+            OrderHints[i] = hint;
+            RefFrameSignBias[i] = s.EnableOrderHint && RelativeDist(hint, OrderHint) > 0;
+        }
+
+        if (PrimaryRefFrame != PrimaryRefNone)
+        {
+            PrimaryRef = RefFrames[Ref.Last + PrimaryRefFrame];
+        }
+    }
+
+    private static CorruptDataException MissingReference(string formatName) =>
+        new(formatName, -1, "An AV1 inter frame refers to an empty reference slot.") { IsMissingReference = true };
+
+    /// <summary>Chooses the references of short signaling from the LAST and GOLDEN slots and the order hints (av1_set_frame_refs).</summary>
+    private void SetFrameRefs(Av1Frame?[] slots, int lastIdx, int goldIdx, string formatName)
+    {
+        int curSortIdx = 1 << (Sequence.OrderHintBits - 1);
+        (int MapIdx, int SortIdx)[] info = new (int, int)[8];
+        int lastSortIdx = -1, goldSortIdx = -1;
+        for (int i = 0; i < 8; i++)
+        {
+            int sortIdx = slots[i] is null ? -1 : curSortIdx + RelativeDist(slots[i]!.Header.OrderHint, OrderHint);
+            info[i] = (i, sortIdx);
+            lastSortIdx = i == lastIdx ? sortIdx : lastSortIdx;
+            goldSortIdx = i == goldIdx ? sortIdx : goldSortIdx;
+        }
+
+        if (lastSortIdx == -1 || lastSortIdx >= curSortIdx || goldSortIdx == -1 || goldSortIdx >= curSortIdx)
+        {
+            throw new CorruptDataException(formatName, -1, "An AV1 inter frame names a later frame as LAST or GOLDEN.");
+        }
+
+        // A stable sort by sort index, then slot.
+        Array.Sort(info, (a, b) => a.SortIdx != b.SortIdx ? a.SortIdx.CompareTo(b.SortIdx) : a.MapIdx.CompareTo(b.MapIdx));
+        int fwdStart = 0, fwdEnd = 7;
+        for (int i = 0; i < 8; i++)
+        {
+            if (info[i].SortIdx == -1)
+            {
+                fwdStart++;
+                continue;
+            }
+
+            if (info[i].SortIdx >= curSortIdx)
+            {
+                fwdEnd = i - 1;
+                break;
+            }
+        }
+
+        int bwdStart = fwdEnd + 1, bwdEnd = 7;
+        Span<bool> set = stackalloc bool[7];
+        if (bwdStart <= bwdEnd)
+        {
+            RefFrameIdx[Ref.Alt - Ref.Last] = info[bwdEnd--].MapIdx;
+            set[Ref.Alt - Ref.Last] = true;
+        }
+
+        if (bwdStart <= bwdEnd)
+        {
+            RefFrameIdx[Ref.Bwd - Ref.Last] = info[bwdStart++].MapIdx;
+            set[Ref.Bwd - Ref.Last] = true;
+        }
+
+        if (bwdStart <= bwdEnd)
+        {
+            RefFrameIdx[Ref.Alt2 - Ref.Last] = info[bwdStart].MapIdx;
+            set[Ref.Alt2 - Ref.Last] = true;
+        }
+
+        for (int i = fwdStart; i <= fwdEnd; i++)
+        {
+            if (info[i].MapIdx == lastIdx)
+            {
+                RefFrameIdx[0] = info[i].MapIdx;
+                set[0] = true;
+            }
+
+            if (info[i].MapIdx == goldIdx)
+            {
+                RefFrameIdx[Ref.Golden - Ref.Last] = info[i].MapIdx;
+                set[Ref.Golden - Ref.Last] = true;
+            }
+        }
+
+        ReadOnlySpan<int> order = [Ref.Last2, Ref.Last3, Ref.Bwd, Ref.Alt2, Ref.Alt];
+        int k = 0;
+        for (; k < order.Length; k++)
+        {
+            int frame = order[k] - Ref.Last;
+            if (set[frame])
+            {
+                continue;
+            }
+
+            while (fwdStart <= fwdEnd && (info[fwdEnd].MapIdx == lastIdx || info[fwdEnd].MapIdx == goldIdx))
+            {
+                fwdEnd--;
+            }
+
+            if (fwdStart > fwdEnd)
+            {
+                break;
+            }
+
+            RefFrameIdx[frame] = info[fwdEnd--].MapIdx;
+            set[frame] = true;
+        }
+
+        for (; k < order.Length; k++)
+        {
+            int frame = order[k] - Ref.Last;
+            if (!set[frame])
+            {
+                RefFrameIdx[frame] = info[fwdStart].MapIdx;
+            }
+        }
+    }
+
+    /// <summary>Gets whether skip mode may be coded, and sets <see cref="SkipModeFrame"/> (av1_setup_skip_mode_allowed).</summary>
+    private bool SkipModeAllowed()
+    {
+        if (!Sequence.EnableOrderHint || FrameIsIntra || !ReferenceSelect)
+        {
+            return false;
+        }
+
+        int forwardHint = -1, backwardHint = int.MaxValue, forwardIdx = -1, backwardIdx = -1;
+        for (int i = 0; i < 7; i++)
+        {
+            int hint = OrderHints[Ref.Last + i];
+            if (RelativeDist(hint, OrderHint) < 0)
+            {
+                if (forwardHint == -1 || RelativeDist(hint, forwardHint) > 0)
+                {
+                    forwardHint = hint;
+                    forwardIdx = i;
+                }
+            }
+            else if (RelativeDist(hint, OrderHint) > 0 && (backwardHint == int.MaxValue || RelativeDist(hint, backwardHint) < 0))
+            {
+                backwardHint = hint;
+                backwardIdx = i;
+            }
+        }
+
+        if (forwardIdx < 0)
+        {
+            return false;
+        }
+
+        if (backwardIdx < 0)
+        {
+            // Forward prediction only: the second nearest forward reference.
+            int secondHint = -1;
+            for (int i = 0; i < 7; i++)
+            {
+                int hint = OrderHints[Ref.Last + i];
+                if (RelativeDist(hint, forwardHint) < 0 && (secondHint == -1 || RelativeDist(hint, secondHint) > 0))
+                {
+                    secondHint = hint;
+                    backwardIdx = i;
+                }
+            }
+
+            if (secondHint == -1)
+            {
+                return false;
+            }
+        }
+
+        SkipModeFrame[0] = Ref.Last + Math.Min(forwardIdx, backwardIdx);
+        SkipModeFrame[1] = Ref.Last + Math.Max(forwardIdx, backwardIdx);
+        return true;
+    }
+
+    /// <summary>Reads global_motion_params, each frame's against the primary reference frame's (read_global_motion_params).</summary>
+    private void GlobalMotionParams(ref Av1BitReader r)
+    {
+        const int alphaMax = 1 << 12, alphaPrecDiff = WarpPrecBits - 15, alphaDecodeFactor = 1 << alphaPrecDiff;
+        for (int frame = Ref.Last; frame <= Ref.Alt; frame++)
+        {
+            int[] prev = PrimaryRef?.Header.GmParams[frame] ?? DefaultWarpParams();
+            int type = GlobalMotion.Identity;
+            if (r.Flag())
+            {
+                type = r.Flag() ? GlobalMotion.RotZoom : r.Flag() ? GlobalMotion.Translation : GlobalMotion.Affine;
+            }
+
+            int[] p = DefaultWarpParams();
+            GmType[frame] = type;
+            if (type >= GlobalMotion.RotZoom)
+            {
+                p[2] = (SignedRefSubexpFin(ref r, alphaMax + 1, (prev[2] >> alphaPrecDiff) - (1 << 15)) * alphaDecodeFactor) + (1 << WarpPrecBits);
+                p[3] = SignedRefSubexpFin(ref r, alphaMax + 1, prev[3] >> alphaPrecDiff) * alphaDecodeFactor;
+            }
+
+            if (type >= GlobalMotion.Affine)
+            {
+                p[4] = SignedRefSubexpFin(ref r, alphaMax + 1, prev[4] >> alphaPrecDiff) * alphaDecodeFactor;
+                p[5] = (SignedRefSubexpFin(ref r, alphaMax + 1, (prev[5] >> alphaPrecDiff) - (1 << 15)) * alphaDecodeFactor) + (1 << WarpPrecBits);
+            }
+            else
+            {
+                p[4] = -p[3];
+                p[5] = p[2];
+            }
+
+            if (type >= GlobalMotion.Translation)
+            {
+                int hp = AllowHighPrecisionMv ? 0 : 1;
+                int transBits = type == GlobalMotion.Translation ? 9 - hp : 12;
+                int precDiff = type == GlobalMotion.Translation ? WarpPrecBits - 3 + hp : WarpPrecBits - 6;
+                p[0] = SignedRefSubexpFin(ref r, (1 << transBits) + 1, prev[0] >> precDiff) * (1 << precDiff);
+                p[1] = SignedRefSubexpFin(ref r, (1 << transBits) + 1, prev[1] >> precDiff) * (1 << precDiff);
+            }
+
+            GmParams[frame] = p;
+        }
+    }
+
+    /// <summary>aom_rb_read_signed_primitive_refsubexpfin with k = 3: a value in [-(n - 1), n - 1] coded against a reference.</summary>
+    private static int SignedRefSubexpFin(ref Av1BitReader r, int n, int reference)
+    {
+        reference += n - 1;
+        int scaledN = (2 * n) - 1;
+        int value = (reference << 1) <= scaledN
+            ? InverseRecenter(reference, SubexpFin(ref r, scaledN))
+            : scaledN - 1 - InverseRecenter(scaledN - 1 - reference, SubexpFin(ref r, scaledN));
+        return value - (n - 1);
+
+        static int InverseRecenter(int r, int v) => v > 2 * r ? v : (v & 1) != 0 ? r - ((v + 1) >> 1) : r + (v >> 1);
+
+        static int SubexpFin(ref Av1BitReader r, int n)
+        {
+            const int k = 3;
+            int i = 0, mk = 0;
+            while (true)
+            {
+                int b = i != 0 ? k + i - 1 : k;
+                int a = 1 << b;
+                if (n <= mk + (3 * a))
+                {
+                    return (int)r.NonSymmetric((uint)(n - mk)) + mk;
+                }
+
+                if (!r.Flag())
+                {
+                    return (int)r.Bits(b) + mk;
+                }
+
+                i++;
+                mk += a;
+            }
+        }
     }
 
     private void FrameSize(ref Av1BitReader r)
@@ -416,10 +859,16 @@ internal sealed class Av1FrameHeader
             FrameHeight = s.MaxFrameHeight;
         }
 
-        // superres_params
+        UpscaledWidth = FrameWidth;
+        SuperresParams(ref r);
+    }
+
+    /// <summary>Reads superres_params and computes the downscaled width and the mode info size (compute_image_size).</summary>
+    private void SuperresParams(ref Av1BitReader r)
+    {
+        Av1SequenceHeader s = Sequence;
         UseSuperres = s.EnableSuperres && r.Flag();
         SuperresDenom = UseSuperres ? (int)r.Bits(3) + 9 : 8;
-        UpscaledWidth = FrameWidth;
         // libaom and dav1d keep a downscaled frame at least 16 wide (or the whole width when it is narrower).
         FrameWidth = Math.Max(((UpscaledWidth * 8) + (SuperresDenom / 2)) / SuperresDenom, Math.Min(16, UpscaledWidth));
 
@@ -560,11 +1009,27 @@ internal sealed class Av1FrameHeader
     private void SegmentationParams(ref Av1BitReader r)
     {
         SegmentationEnabled = r.Flag();
-        if (SegmentationEnabled)
+        if (SegmentationEnabled && PrimaryRef is not null)
         {
-            // An intra frame's primary_ref_frame is none: the map and data are always sent.
+            SegmentationUpdateMap = r.Flag();
+            SegmentationTemporalUpdate = SegmentationUpdateMap && r.Flag();
+            SegmentationUpdateData = r.Flag();
+            if (!SegmentationUpdateData)
+            {
+                // load_previous: the primary reference frame's features.
+                Array.Copy(PrimaryRef.Header.FeatureEnabled, FeatureEnabled, 64);
+                Array.Copy(PrimaryRef.Header.FeatureData, FeatureData, 64);
+            }
+        }
+        else if (SegmentationEnabled)
+        {
+            // Without a primary reference frame the map and data are always sent.
             SegmentationUpdateMap = true;
             SegmentationUpdateData = true;
+        }
+
+        if (SegmentationEnabled && SegmentationUpdateData)
+        {
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)
@@ -640,6 +1105,13 @@ internal sealed class Av1FrameHeader
         if (CodedLossless || AllowIntrabc)
         {
             return;
+        }
+
+        if (PrimaryRef is not null)
+        {
+            // load_previous: the deltas carry over from the primary reference frame.
+            PrimaryRef.Header.LoopFilterRefDeltas.CopyTo(LoopFilterRefDeltas, 0);
+            PrimaryRef.Header.LoopFilterModeDeltas.CopyTo(LoopFilterModeDeltas, 0);
         }
 
         LoopFilterLevel[0] = (int)r.Bits(6);
@@ -745,8 +1217,19 @@ internal sealed class Av1FrameHeader
         }
 
         int seed = (int)r.Bits(16);
+        if (FrameType == Av1FrameType.Inter && !r.Flag())
+        {
+            // update_grain is 0: the parameters of a reference frame, with this frame's seed (load_grain_params).
+            int refIdx = (int)r.Bits(3);
+            if (Array.IndexOf(RefFrameIdx, refIdx) < 0)
+            {
+                throw new CorruptDataException(formatName, -1, "An AV1 frame takes film grain from a slot that is not one of its references.");
+            }
 
-        // update_grain is read in inter frames only.
+            FilmGrain = RefFrames[Ref.Last + Array.IndexOf(RefFrameIdx, refIdx)]!.Header.FilmGrain with { GrainSeed = seed };
+            return;
+        }
+
         (int, int)[] pointsY = Points(ref r, 14, formatName);
         bool fromLuma = !s.Monochrome && r.Flag();
         (int, int)[] pointsCb = [], pointsCr = [];

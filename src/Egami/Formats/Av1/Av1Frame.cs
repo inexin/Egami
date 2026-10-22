@@ -86,7 +86,13 @@ internal sealed class Av1Frame
             };
         }
 
-        Context = Av1FrameContext.CreateDefault(header.BaseQIdx);
+        // The primary reference frame's saved CDFs (load_cdfs), else the defaults for the frame's quantizer.
+        Context = header.PrimaryRef?.FinalContext.Clone() ?? Av1FrameContext.CreateDefault(header.BaseQIdx);
+        if (header.SegmentationEnabled && header.PrimaryRef is { } previous && previous.MiRows == MiRows && previous.MiCols == MiCols)
+        {
+            PreviousSegmentMap = previous.SegmentMap;
+        }
+
         if (reconstruct)
         {
             // Superblock-aligned planes: transform blocks reach past the frame's edge as far as their superblock.
@@ -205,6 +211,50 @@ internal sealed class Av1Frame
 
     /// <summary>Gets or sets the CDFs the frame saves (the context_update_tile_id tile's, at its end).</summary>
     internal Av1FrameContext? SavedContext { get; set; }
+
+    /// <summary>Gets the CDFs later frames load from this one: the saved ones, or the starting ones when the frame saves none.</summary>
+    internal Av1FrameContext FinalContext => SavedContext ?? Context;
+
+    /// <summary>Gets the segment map of the primary reference frame, which segments not coded in this frame take; null for none.</summary>
+    internal byte[]? PreviousSegmentMap { get; }
+
+    /// <summary>Gets or sets the stride of the projected motion field, in 8x8 blocks.</summary>
+    internal int MotionFieldStride { get; set; }
+
+    /// <summary>Gets or sets the projected motion field's vector rows, one per 8x8 block (the projection's input vectors).</summary>
+    internal short[]? MotionFieldRows { get; set; }
+
+    /// <summary>Gets or sets the projected motion field's vector columns.</summary>
+    internal short[]? MotionFieldCols { get; set; }
+
+    /// <summary>Gets or sets the projected motion field's frame distances; 0 marks a block with no projected vector.</summary>
+    internal sbyte[]? MotionFieldOffsets { get; set; }
+
+    /// <summary>Gets or sets the reference frame of each 8x8 block's saved vector (MfRefFrames), or -1.</summary>
+    internal sbyte[]? SavedRefFrames { get; set; }
+
+    /// <summary>Gets or sets the rows of each 8x8 block's saved vector.</summary>
+    internal int[]? SavedMvRows { get; set; }
+
+    /// <summary>Gets or sets the columns of each 8x8 block's saved vector.</summary>
+    internal int[]? SavedMvCols { get; set; }
+
+    /// <summary>Gets or sets whether show_existing_frame may still show this frame (a key frame is shown that way once).</summary>
+    internal bool Showable { get; set; }
+
+    /// <summary>Makes the neutral grey frame libaom puts in a reference slot whose frame is missing.</summary>
+    internal static Av1Frame Grey(Av1SequenceHeader sequence, int orderHint, string formatName)
+    {
+        Av1Frame frame = new(Av1FrameHeader.Missing(sequence, orderHint), formatName, true);
+        ushort grey = (ushort)(1 << (sequence.BitDepth - 1));
+        foreach (ushort[] plane in frame.Planes!)
+        {
+            plane.AsSpan().Fill(grey);
+        }
+
+        Av1MotionField.Save(frame);
+        return frame;
+    }
 
     /// <summary>Gets or sets whether a tile's data ended badly (overflow or wrong trailing bits); decoding goes on, as dav1d's does.</summary>
     internal bool TileDataDamaged { get; set; }

@@ -1,7 +1,7 @@
 namespace Egami.Formats.Av1;
 
 /// <summary>
-/// Parses one tile of an intra frame: the partition tree, each block's mode info, palette color maps and coefficients, as libaom's
+/// Parses one tile of a frame: the partition tree, each block's mode info, palette color maps and coefficients, as libaom's
 /// decodeframe.c, decodemv.c and decodetxb.c read them (BSD 2-clause, see THIRD-PARTY-NOTICES). Blocks go to an
 /// <see cref="IAv1Reconstructor"/> as they are read.
 /// </summary>
@@ -184,7 +184,14 @@ internal sealed partial class Av1TileParser : Av1TileState
 
         _b = b;
         SetBlockPosition(miRow, miCol, bw, bh);
-        ReadIntraFrameModeInfo(xMis, yMis);
+        if (_header.FrameIsIntra)
+        {
+            ReadIntraFrameModeInfo(xMis, yMis);
+        }
+        else
+        {
+            ReadInterFrameModeInfo(xMis, yMis);
+        }
         if (bsize >= Bs.B8x8 && (_ssx != 0 || _ssy != 0) && Av1Tables.PlaneBlockSize(bsize, _ssx, _ssy) == Bs.Invalid)
         {
             throw Corrupt("An AV1 block size is invalid with the chroma subsampling.");

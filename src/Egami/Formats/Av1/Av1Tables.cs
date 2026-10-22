@@ -42,6 +42,66 @@ internal static class Pred
     internal static bool IsDirectional(int mode) => mode is >= V and <= D67;
 }
 
+/// <summary>The inter prediction modes, after the intra ones (libaom's PREDICTION_MODE).</summary>
+internal static class InterMode
+{
+    internal const int Nearest = 13, Near = 14, Global = 15, New = 16, NearestNearest = 17, NearNear = 18, NearestNew = 19,
+        NewNearest = 20, NearNew = 21, NewNear = 22, GlobalGlobal = 23, NewNew = 24;
+
+    /// <summary>Gets whether a mode predicts from two references.</summary>
+    internal static bool IsCompound(int mode) => mode >= NearestNearest;
+
+    /// <summary>Gets whether a mode codes a new vector (have_newmv_in_inter_mode).</summary>
+    internal static bool HasNew(int mode) => mode is New or NewNew or NearestNew or NewNearest or NearNew or NewNear;
+
+    /// <summary>Gets whether a mode takes a near vector (have_nearmv_in_inter_mode).</summary>
+    internal static bool HasNear(int mode) => mode is Near or NearNear or NearNew or NewNear;
+
+    /// <summary>Gets the single-reference mode of a compound mode's first vector (compound_ref0_mode).</summary>
+    internal static int First(int mode) => mode switch
+    {
+        NearestNearest or NearestNew => Nearest,
+        NearNear or NearNew => Near,
+        GlobalGlobal => Global,
+        NewNearest or NewNear or NewNew => New,
+        _ => mode,
+    };
+
+    /// <summary>Gets the single-reference mode of a compound mode's second vector (compound_ref1_mode).</summary>
+    internal static int Second(int mode) => mode switch
+    {
+        NearestNearest or NewNearest => Nearest,
+        NearNear or NewNear => Near,
+        GlobalGlobal => Global,
+        NearestNew or NearNew or NewNew => New,
+        _ => mode,
+    };
+}
+
+/// <summary>Reference frames (libaom's MV_REFERENCE_FRAME).</summary>
+internal static class Ref
+{
+    internal const int None = -1, Intra = 0, Last = 1, Last2 = 2, Last3 = 3, Golden = 4, Bwd = 5, Alt2 = 6, Alt = 7;
+}
+
+/// <summary>Interpolation filters (libaom's InterpFilter).</summary>
+internal static class Interp
+{
+    internal const int Regular = 0, Smooth = 1, Sharp = 2, Bilinear = 3, Switchable = 4;
+}
+
+/// <summary>Compound prediction types (libaom's COMPOUND_TYPE).</summary>
+internal static class Compound
+{
+    internal const int Average = 0, Distance = 1, Wedge = 2, DiffWeighted = 3;
+}
+
+/// <summary>Global motion types (libaom's TransformationType).</summary>
+internal static class GlobalMotion
+{
+    internal const int Identity = 0, Translation = 1, RotZoom = 2, Affine = 3;
+}
+
 /// <summary>Partition types.</summary>
 internal static class Partition
 {

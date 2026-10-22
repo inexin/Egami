@@ -91,6 +91,24 @@ NUMERIC = [
     ("XByXPlus1", "av1/common/restoration.c", "av1_x_by_xplus1", "short"),
     ("OneByX", "av1/common/restoration.c", "av1_one_by_x", "short"),
     ("GaussianSequence", "av1/decoder/grain_synthesis.c", "gaussian_sequence", "short"),
+    ("SubpelFilters8", "av1/common/filter.h", "av1_sub_pel_filters_8", "short"),
+    ("SubpelFilters8Smooth", "av1/common/filter.h", "av1_sub_pel_filters_8smooth", "short"),
+    ("SubpelFilters8Sharp", "av1/common/filter.h", "av1_sub_pel_filters_8sharp", "short"),
+    ("SubpelFiltersBilinear", "av1/common/filter.h", "av1_bilinear_filters", "short"),
+    ("SubpelFilters4", "av1/common/filter.h", "av1_sub_pel_filters_4", "short"),
+    ("SubpelFilters4Smooth", "av1/common/filter.h", "av1_sub_pel_filters_4smooth", "short"),
+    ("WarpedFilter", "av1/common/warped_motion.c", "av1_warped_filter", "sbyte"),
+    ("DivLut", "av1/common/warped_motion.c", "div_lut", "short"),
+    ("WedgeSignflipLookup", "av1/common/reconinter.c", "wedge_signflip_lookup", "byte"),
+    ("WedgeCodebook16Hgtw", "av1/common/reconinter.c", "wedge_codebook_16_hgtw", "byte"),
+    ("WedgeCodebook16Hltw", "av1/common/reconinter.c", "wedge_codebook_16_hltw", "byte"),
+    ("WedgeCodebook16Heqw", "av1/common/reconinter.c", "wedge_codebook_16_heqw", "byte"),
+    ("IiWeights1d", "av1/common/reconinter.c", "ii_weights1d", "byte"),
+    ("IiSizeScales", "av1/common/reconinter.c", "ii_size_scales", "byte"),
+    ("QuantDistWeight", CD, "quant_dist_weight", "byte"),
+    ("QuantDistLookupTable", CD, "quant_dist_lookup_table", "byte"),
+] + [
+    (f"ObmcMask{n}", "av1/common/reconinter.c", f"obmc_mask_{n}", "byte") for n in (1, 2, 4, 8, 16, 32, 64)
 ] + [
     (pascal(f"has_{kind}_{size}"), "av1/common/reconintra.c", f"has_{kind}_{size}", "byte")
     for kind in ("tr", "bl")
@@ -152,8 +170,8 @@ ENUMS = {}
 
 
 def load_enums():
-    """Reads the enum constants of libaom's enums.h and txfm_common.h (BLOCK_SIZE, TX_SIZE, TX_TYPE and the rest)."""
-    for file in ("av1/common/enums.h", "aom_dsp/txfm_common.h"):
+    """Reads the enum constants of libaom's enums.h, txfm_common.h and reconinter.h (BLOCK_SIZE, TX_SIZE, TX_TYPE, WEDGE_DIRECTION and the rest)."""
+    for file in ("av1/common/enums.h", "aom_dsp/txfm_common.h", "av1/common/reconinter.h"):
         text = strip_comments(open(os.path.join(AOM, file)).read())
         for body in re.findall(r"enum[^{;]*\{([^}]*)\}", text):
             value = -1
@@ -171,6 +189,8 @@ def load_enums():
                 else:
                     value += 1
                 ENUMS[name] = value
+    # Defines the tables use.
+    ENUMS["MAX_FRAME_DISTANCE"] = 31
 
 
 def numeric(file, name):
