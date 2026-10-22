@@ -134,14 +134,16 @@ BarcodeResult? code = BarcodeReader.ReadBarcode(yPlane, width, height, stride);
 <p>The Y plane is read where it is, so a frame from a camera API needs no conversion or copy.</p>
 <h2 id="how-each-symbology-is-found">How each symbology is found</h2>
 <p>Linear barcodes are found along scan lines: rows, columns from effort 3 and diagonals from effort 7, each read in both
-directions with its edges placed between pixels, so low-resolution and blurred photos read. A linear barcode counts once two
-scan lines agree on it. ITF, whose check is weakest, is read from 4 digits on.</p>
+directions with its edges placed between pixels, so low-resolution and blurred photos read. From effort 5 rows are also read
+through the local threshold, which keeps bars under glare apart. A linear barcode counts once two scan lines agree on it.
+ITF, whose check is weakest, is read from 4 digits on.</p>
 <p>QR Codes are found by their three finder patterns, at any rotation and in perspective; from version 2 the alignment pattern
-corrects the perspective, and a mirrored symbol reads too.</p>
+corrects the perspective (each one near the expected place is tried, nearest first), and a mirrored symbol reads too.</p>
 <p>Data Matrix symbols are found by their L-shaped finder, square and rectangular (DMRE too), at any rotation and in
 perspective, on a label lighter than its background or not; the clock tracks count the modules.</p>
 <p>PDF417 symbols are found by their start and stop patterns at any rotation and in perspective; a compact symbol, which has
-no stop pattern, is read from its start pattern on. Rows that cannot be read are filled in by error correction.</p>
+no stop pattern, is read from its start pattern on, and one cut off before its start pattern from its stop pattern back.
+Rows and columns that cannot be read are filled in by error correction.</p>
 <p>Aztec Codes are found by their bullseye at any rotation and in perspective, compact, full-range and runes; on larger
 full-range symbols the reference grid places the modules out to the edge.</p>
 <h2 id="many-symbols-inverted-and-mirrored">Many symbols, inverted and mirrored</h2>
@@ -177,7 +179,8 @@ pixels.</li>
 2D symbols.</li>
 </ul>
 <h2 id="speed">Speed</h2>
-<p>The reader allocates per call only and can run on many threads at once. These settle how long a call takes:</p>
+<p>The reader allocates per call only and can run on many threads at once. On one thread it reads the ZXing test images in
+about the time zxing-cpp takes (0.9 times over 817 images, each read for its own symbology). These settle how long a call takes:</p>
 <ul>
 <li><code>Formats</code>: only the symbologies you expect. Each detector skipped saves its time.</li>
 <li><code>Effort</code>: 5 is the default. Lower efforts try fewer scan lines and rotations and no inverted image; higher ones try more.</li>
