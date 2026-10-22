@@ -23,6 +23,9 @@ internal sealed partial class Vp8Encoder
     private bool _recordingZero;
 
     private readonly byte[] _finalProbs = new byte[Vp8Costs.ProbabilityCount];
+
+    // The probabilities the frame starts from: the defaults for a key frame, the stream's for an inter frame.
+    private readonly byte[] _baseProbs = new byte[Vp8Costs.ProbabilityCount];
     private bool _useSkip;
     private int _skipProb;
 
@@ -216,17 +219,16 @@ internal sealed partial class Vp8Encoder
     private void RunningProbabilities()
     {
         Span<byte> probs = stackalloc byte[Vp8Costs.ProbabilityCount];
-        ChooseProbabilities(_totals, _ones, null, probs);
+        ChooseProbabilities(_totals, _ones, null, _baseProbs, probs);
         _costs.Update(probs);
     }
 
     /// <summary>
-    /// Chooses each probability (updated where that saves bits) for the given statistics; returns the bits spent on the tokens
-    /// and the updates, in 1/256 bit.
+    /// Chooses each probability (updated from <paramref name="current"/> where that saves bits) for the given statistics; returns
+    /// the bits spent on the tokens and the updates, in 1/256 bit.
     /// </summary>
-    private static long ChooseProbabilities(int[] totals, int[] ones, (int[] Totals, int[] Ones)? minus, Span<byte> probs)
+    private static long ChooseProbabilities(int[] totals, int[] ones, (int[] Totals, int[] Ones)? minus, ReadOnlySpan<byte> current, Span<byte> probs)
     {
-        ReadOnlySpan<byte> defaults = Vp8Tables.DefaultCoeffProbs;
         ReadOnlySpan<byte> update = Vp8Tables.CoeffUpdateProbs;
         long size = 0;
         for (int i = 0; i < Vp8Costs.ProbabilityCount; i++)
@@ -238,7 +240,7 @@ internal sealed partial class Vp8Encoder
                 nb -= m.Ones[i];
             }
 
-            int oldP = defaults[i];
+            int oldP = current[i];
             int newP = nb != 0 ? 255 - (int)((long)nb * 255 / total) : 255;
             long oldCost = Branch(nb, total, oldP) + Vp8Costs.Bit(0, update[i]);
             long newCost = Branch(nb, total, newP) + Vp8Costs.Bit(1, update[i]) + (8 * 256);
@@ -270,12 +272,12 @@ internal sealed partial class Vp8Encoder
         }
 
         Span<byte> withSkip = stackalloc byte[Vp8Costs.ProbabilityCount];
-        long costWithout = ChooseProbabilities(_totals, _ones, null, _finalProbs);
+        long costWithout = ChooseProbabilities(_totals, _ones, null, _baseProbs, _finalProbs);
         _useSkip = false;
         if (zero > 0)
         {
             int skipProb = Math.Max(1, (int)((long)(count - zero) * 255 / count));
-            long costWith = ChooseProbabilities(_totals, _ones, (_zeroTotals, _zeroOnes), withSkip)
+            long costWith = ChooseProbabilities(_totals, _ones, (_zeroTotals, _zeroOnes), _baseProbs, withSkip)
                 + (8 * 256)
                 + ((long)zero * Vp8Costs.Bit(1, skipProb))
                 + ((long)(count - zero) * Vp8Costs.Bit(0, skipProb));

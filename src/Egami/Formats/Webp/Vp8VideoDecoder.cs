@@ -61,6 +61,9 @@ internal sealed class Vp8VideoDecoder : IDisposable
     /// <summary>Gets the decoder of the frame decoded last, for its header fields.</summary>
     internal Vp8Decoder? LastFrame { get; private set; }
 
+    /// <summary>Gets the frame the last <see cref="Decode"/> decoded, shown or hidden.</summary>
+    internal Vp8FrameBuffer? Decoded { get; private set; }
+
     /// <summary>Gets the frame to show after the last <see cref="Decode"/>, or null when it was a hidden frame.</summary>
     internal Vp8FrameBuffer? Shown { get; private set; }
 
@@ -458,6 +461,53 @@ internal sealed class Vp8VideoDecoder : IDisposable
         }
 
         _counts[_new]--;
+        Decoded = shown;
         Shown = frame.Header.Show ? shown : null;
+    }
+
+    /// <summary>
+    /// Decodes a frame of the stream's size without keeping it: the references and the state stay as they were (the state is
+    /// put back from <paramref name="saved"/>, which this overwrites). Returns the decoded frame, without its borders, valid until
+    /// the next decode. The encoder tries loop filter levels with it.
+    /// </summary>
+    internal Vp8FrameBuffer DecodeTrial(byte[] data, int offset, int length, Vp8StreamState saved)
+    {
+        saved.CopyFrom(State);
+        Vp8FrameHeader header = Vp8Decoder.ReadVideoHeader(data.AsSpan(offset, length), _lastKey);
+        if (header.KeyFrame)
+        {
+            if (header.Width != Width || header.Height != Height || _buffers[0] is null)
+            {
+                Allocate(header.Width, header.Height);
+            }
+
+            State.ResetForKeyFrame();
+        }
+
+        int target = FreeBuffer();
+        _new = target;
+        try
+        {
+            Vp8Decoder decoder;
+            if (_decoder is not null)
+            {
+                _decoder.Restart(data, offset, length, header);
+                decoder = _decoder;
+            }
+            else
+            {
+                decoder = Vp8Decoder.CreateVideo(data, offset, length, header, this);
+                _decoder = Threads == 1 ? decoder : null;
+            }
+
+            decoder.DecodeFrame();
+        }
+        finally
+        {
+            _counts[target]--;
+            State.CopyFrom(saved);
+        }
+
+        return _buffers[target]!;
     }
 }

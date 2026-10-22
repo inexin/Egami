@@ -90,7 +90,7 @@ LGPL code is never read.
 | Library | License |
 | --- | --- |
 | mkvalidator (Matroska foundation-source) | BSD-3 |
-| libwebp, dav1d, libaom | BSD |
+| libwebp, libvpx (the VP8 encoder: mode decision, loop filter deltas), dav1d, libaom | BSD |
 
 ### Translated code (notice in THIRD-PARTY-NOTICES.md)
 
@@ -104,7 +104,7 @@ LGPL code is never read.
 | Tool | License | Use |
 | --- | --- | --- |
 | FFmpeg, ffprobe | LGPL/GPL | Make test clips, decode and probe for comparison, in Docker |
-| libvpx vpxenc and vpxdec | BSD-3 | Make VP9 clips and give the expected frames, in Docker (`tools/video/vp9ref`) |
+| libvpx vpxenc and vpxdec | BSD-3 | Make VP8 and VP9 clips and give the expected frames, and decode the VP8 encoder's streams, in Docker (`tools/vp8ref`, `tools/video/vp9ref`) |
 | MKVToolNix (mkvinfo) | GPL-2.0 | Check our Matroska files, in Docker |
 | libopus opus_demo and opus_compare, opus-tools | BSD-3 | Decode the Opus test vectors and make Ogg Opus clips, in Docker (`tools/video/opusref`) |
 | flac, SoX | GPL-2.0 | Make FLAC clips, check our FLAC files with flac -t, time resampling, in Docker (`tools/video/audioref`) |
