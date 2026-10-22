@@ -1072,7 +1072,12 @@ static void LoadWebp(Stream stream)
             {
                 using MemoryStream lossless = new();
                 raster.Save(lossless, Egami.Formats.Webp.WebpFormat.Info, new Egami.Formats.Webp.WebpWriterOptions { Lossless = true, Effort = data.Length % 3 });
-                raster.Save(Stream.Null, Egami.Formats.Webp.WebpFormat.Info, new Egami.Formats.Webp.WebpWriterOptions { Lossless = false, Effort = (data.Length / 7) % 7, Quality = data.Length % 101 });
+                if (raster.Width <= 16383 && raster.Height <= 16383)
+                {
+                    // Lossy WebP is one pixel narrower than lossless at most.
+                    raster.Save(Stream.Null, Egami.Formats.Webp.WebpFormat.Info, new Egami.Formats.Webp.WebpWriterOptions { Lossless = false, Effort = (data.Length / 7) % 7, Quality = data.Length % 101 });
+                }
+
                 using Raster<Rgba8> again = Raster.Load<Rgba8>(lossless.ToArray(), context);
                 using Raster<Rgba8> expected = raster.As<Rgba8>();
                 for (int f = 0; f < expected.FrameCount; f++)

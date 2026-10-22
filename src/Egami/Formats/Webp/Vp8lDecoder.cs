@@ -48,7 +48,6 @@ internal sealed class Vp8lDecoder : IDisposable
     private int _windowRows;
 
     // Rows out.
-    private uint[]? _scratch;
     private uint[]? _previous;
     private int _nextRow;
     private bool _headerRead;
@@ -105,12 +104,12 @@ internal sealed class Vp8lDecoder : IDisposable
 
     /// <summary>
     /// Returns the most bytes the decoder holds for an image of this size: the window of coded pixels, three rows, and the transform
-    /// and entropy images at their largest (tiles of 4 × 4 pixels) with the palette.
+    /// and entropy images at their largest (tiles of 4 × 4 pixels), and the palette with what each byte of bundled indices expands to.
     /// </summary>
     internal static long WorkingBytes(int width, int height)
     {
         long subImages = 3L * SubSampleSize(width, 2) * SubSampleSize(height, 2) * 4;
-        return ((long)Math.Min(height, WindowRows(width)) * width * 4) + ((long)width * 12) + subImages + 1024;
+        return ((long)Math.Min(height, WindowRows(width)) * width * 4) + ((long)width * 12) + subImages + ((256 + 2048) * 4);
     }
 
     /// <summary>
@@ -175,7 +174,6 @@ internal sealed class Vp8lDecoder : IDisposable
             _total = (long)_xsize * Height;
             _windowRows = (int)Math.Min(Height, WindowRows(_xsize));
             _windowMemory = Rent((long)_windowRows * _xsize);
-            _scratch = ArrayPool<uint>.Shared.Rent(Width);
             _previous = ArrayPool<uint>.Shared.Rent(Width);
             _headerRead = true;
         }
@@ -243,15 +241,11 @@ internal sealed class Vp8lDecoder : IDisposable
 
         _disposed = true;
         ReleaseHeader();
-        foreach (uint[]? array in (ReadOnlySpan<uint[]?>)[_scratch, _previous])
+        if (_previous is not null)
         {
-            if (array is not null)
-            {
-                ArrayPool<uint>.Shared.Return(array);
-            }
+            ArrayPool<uint>.Shared.Return(_previous);
+            _previous = null;
         }
-
-        _scratch = _previous = null;
     }
 
     private void ReleaseHeader()
@@ -362,13 +356,28 @@ internal sealed class Vp8lDecoder : IDisposable
                 int colors = (int)_reader.Read(8) + 1;
                 t.Bits = colors > 16 ? 0 : colors > 4 ? 1 : colors > 2 ? 2 : 3;
                 t.Colors = colors;
-                t.Data = Rent(256);
+                // The palette, and when indices are bundled, what each byte of them expands to: 2, 4 or 8 colors.
+                t.Data = Rent(256 + (t.Bits == 0 ? 0 : 256 << t.Bits));
                 Span<uint> palette = MemoryMarshal.Cast<byte, uint>(t.Data.Span)[..256];
                 palette.Clear();
                 DecodeImage(colors, 1, palette[..colors]);
                 for (int i = 1; i < colors; i++)
                 {
                     palette[i] = AddPixels(palette[i], palette[i - 1]);
+                }
+
+                if (t.Bits > 0)
+                {
+                    Span<uint> expanded = MemoryMarshal.Cast<byte, uint>(t.Data.Span)[256..];
+                    int bitsPerPixel = 8 >> t.Bits;
+                    int perByte = 1 << t.Bits;
+                    for (int value = 0; value < 256; value++)
+                    {
+                        for (int k = 0; k < perByte; k++)
+                        {
+                            expanded[(value << t.Bits) + k] = palette[(value >> (k * bitsPerPixel)) & ((1 << bitsPerPixel) - 1)];
+                        }
+                    }
                 }
 
                 return SubSampleSize(xsize, t.Bits);
@@ -610,156 +619,144 @@ internal sealed class Vp8lDecoder : IDisposable
         Span<uint> pixels, long baseIndex, long from, long to, long total, int width, CodeGroups groups, uint[]? cache, int cacheBits,
         ReadOnlySpan<uint> meta, int metaBits, int metaWidth, long capacity)
     {
-        ReadOnlySpan<uint> tables = groups.Tables;
-        ref uint table0 = ref MemoryMarshal.GetReference(tables);
-        ReadOnlySpan<int> offsets = groups.Offsets;
-        ReadOnlySpan<int> singles = groups.Single;
+        ref uint table0 = ref MemoryMarshal.GetArrayDataReference(groups.Tables);
+        Vp8lBitReader reader = _reader;
         int mask = metaBits == 0 ? -1 : (1 << metaBits) - 1;
         int cacheShift = 32 - cacheBits;
-        long pos = from;
-        int x = (int)(pos % width);
-        int y = (int)(pos / width);
-        int group = 0;
-        if (metaBits > 0)
-        {
-            group = (int)meta[((y >> metaBits) * metaWidth) + (x >> metaBits)] * 5;
-        }
+        int at = (int)(from - baseIndex);
+        int stop = (int)(to - baseIndex);
+        int x = (int)(from % width);
+        int y = (int)(from / width);
+        GroupCodes codes = groups.Codes(metaBits > 0 ? (int)meta[((y >> metaBits) * metaWidth) + (x >> metaBits)] : 0);
 
-        (ulong bits, int count) = _reader.Save();
-        try
+        // No try/finally and no field writes per pixel: the bits stay in registers, and are put back on the way out. A throw leaves
+        // the reader as it was at the last copy or refill, which a failed or rewound decode never reads.
+        (ulong bits, int count) = reader.Save();
+        while (at < stop)
         {
-            while (pos < to)
+            if ((x & mask) == 0 && metaBits > 0)
             {
-                if ((x & mask) == 0 && metaBits > 0)
+                codes = groups.Codes((int)meta[((y >> metaBits) * metaWidth) + (x >> metaBits)]);
+            }
+
+            reader.Fill(ref bits, ref count);
+            int green = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, codes.Green), ref bits, ref count);
+            if (green < 256)
+            {
+                int red = codes.RedSingle;
+                int blue = codes.BlueSingle;
+                int alpha = codes.AlphaSingle;
+                if ((red | blue | alpha) < 0)
                 {
-                    group = (int)meta[((y >> metaBits) * metaWidth) + (x >> metaBits)] * 5;
+                    reader.Fill(ref bits, ref count);
+                    if (red < 0)
+                    {
+                        red = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, codes.Red), ref bits, ref count);
+                    }
+
+                    if (blue < 0)
+                    {
+                        blue = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, codes.Blue), ref bits, ref count);
+                    }
+
+                    reader.Fill(ref bits, ref count);
+                    if (alpha < 0)
+                    {
+                        alpha = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, codes.Alpha), ref bits, ref count);
+                    }
                 }
 
-                _reader.Fill(ref bits, ref count);
-                int green = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, offsets[group]), ref bits, ref count);
-                if (green < 256)
+                uint argb = ((uint)alpha << 24) | ((uint)red << 16) | ((uint)green << 8) | (uint)blue;
+                pixels[at++] = argb;
+                if (cache is not null)
                 {
-                    int red = singles[group + 1];
-                    int blue = singles[group + 2];
-                    int alpha = singles[group + 3];
-                    if (red < 0 || blue < 0 || alpha < 0)
-                    {
-                        _reader.Fill(ref bits, ref count);
-                        if (red < 0)
-                        {
-                            red = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, offsets[group + 1]), ref bits, ref count);
-                        }
-
-                        if (blue < 0)
-                        {
-                            blue = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, offsets[group + 2]), ref bits, ref count);
-                        }
-
-                        _reader.Fill(ref bits, ref count);
-                        if (alpha < 0)
-                        {
-                            alpha = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, offsets[group + 3]), ref bits, ref count);
-                        }
-                    }
-
-                    uint argb = ((uint)alpha << 24) | ((uint)red << 16) | ((uint)green << 8) | (uint)blue;
-                    pixels[(int)(pos - baseIndex)] = argb;
-                    if (cache is not null)
-                    {
-                        cache[(int)((argb * 0x1E35A7BDu) >> cacheShift)] = argb;
-                    }
-
-                    pos++;
-                    if (++x == width)
-                    {
-                        x = 0;
-                        y++;
-                    }
-
-                    continue;
+                    cache[(int)((argb * 0x1E35A7BDu) >> cacheShift)] = argb;
                 }
 
-                if (green < 256 + LengthCodes)
-                {
-                    _reader.Restore(bits, count);
-                    int length = CopyValue(green - 256);
-                    _reader.Fill();
-                    (bits, count) = _reader.Save();
-                    int distanceSymbol = Vp8lHuffman.Decode(tables[offsets[group + 4]..], ref bits, ref count);
-                    _reader.Restore(bits, count);
-                    int distance = PlaneToDistance(width, CopyValue(distanceSymbol));
-                    (bits, count) = _reader.Save();
-                    if (distance > pos)
-                    {
-                        throw Corrupt("A backward reference reaches before the first pixel.");
-                    }
-
-                    if (pos + length > total)
-                    {
-                        throw Corrupt("A backward reference runs past the last pixel.");
-                    }
-
-                    if (pos + length - baseIndex > capacity || pos - distance < baseIndex)
-                    {
-                        throw Corrupt("A backward reference reaches outside the decoding window.");
-                    }
-
-                    int at = (int)(pos - baseIndex);
-                    Span<uint> target = pixels.Slice(at, length);
-                    if (distance >= length)
-                    {
-                        pixels.Slice(at - distance, length).CopyTo(target);
-                    }
-                    else
-                    {
-                        // Overlapping: the run repeats the last `distance` pixels.
-                        for (int i = 0; i < length; i++)
-                        {
-                            pixels[at + i] = pixels[at + i - distance];
-                        }
-                    }
-
-                    if (cache is not null)
-                    {
-                        foreach (uint argb in target)
-                        {
-                            cache[(int)((argb * 0x1E35A7BDu) >> cacheShift)] = argb;
-                        }
-                    }
-
-                    pos += length;
-                    x += length;
-                    while (x >= width)
-                    {
-                        x -= width;
-                        y++;
-                    }
-
-                    if (metaBits > 0 && pos < total)
-                    {
-                        group = (int)meta[((y >> metaBits) * metaWidth) + (x >> metaBits)] * 5;
-                    }
-
-                    continue;
-                }
-
-                // A color cache index: the alphabet only has as many symbols as the cache has slots.
-                uint cached = cache![green - 256 - LengthCodes];
-                pixels[(int)(pos - baseIndex)] = cached;
-                pos++;
                 if (++x == width)
                 {
                     x = 0;
                     y++;
                 }
+
+                continue;
+            }
+
+            if (green < 256 + LengthCodes)
+            {
+                reader.Restore(bits, count);
+                int length = CopyValue(green - 256);
+                reader.Fill();
+                (bits, count) = reader.Save();
+                int distanceSymbol = Vp8lHuffman.Decode(ref Unsafe.Add(ref table0, codes.Distance), ref bits, ref count);
+                reader.Restore(bits, count);
+                int distance = PlaneToDistance(width, CopyValue(distanceSymbol));
+                (bits, count) = reader.Save();
+                long pos = baseIndex + at;
+                if (distance > pos)
+                {
+                    throw Corrupt("A backward reference reaches before the first pixel.");
+                }
+
+                if (pos + length > total)
+                {
+                    throw Corrupt("A backward reference runs past the last pixel.");
+                }
+
+                if (at + (long)length > capacity || at < distance)
+                {
+                    throw Corrupt("A backward reference reaches outside the decoding window.");
+                }
+
+                Span<uint> target = pixels.Slice(at, length);
+                if (distance >= length)
+                {
+                    pixels.Slice(at - distance, length).CopyTo(target);
+                }
+                else
+                {
+                    // Overlapping: the run repeats the last `distance` pixels.
+                    for (int i = 0; i < length; i++)
+                    {
+                        pixels[at + i] = pixels[at + i - distance];
+                    }
+                }
+
+                if (cache is not null)
+                {
+                    foreach (uint argb in target)
+                    {
+                        cache[(int)((argb * 0x1E35A7BDu) >> cacheShift)] = argb;
+                    }
+                }
+
+                at += length;
+                x += length;
+                while (x >= width)
+                {
+                    x -= width;
+                    y++;
+                }
+
+                if (metaBits > 0 && baseIndex + at < total)
+                {
+                    codes = groups.Codes((int)meta[((y >> metaBits) * metaWidth) + (x >> metaBits)]);
+                }
+
+                continue;
+            }
+
+            // A color cache index: the alphabet only has as many symbols as the cache has slots.
+            pixels[at++] = cache![green - 256 - LengthCodes];
+            if (++x == width)
+            {
+                x = 0;
+                y++;
             }
         }
-        finally
-        {
-            _reader.Restore(bits, count);
-        }
 
-        return pos;
+        reader.Restore(bits, count);
+        return baseIndex + at;
     }
 
     /// <summary>Returns a length or distance from its prefix symbol and extra bits (section 5.2.2).</summary>
@@ -931,34 +928,57 @@ internal sealed class Vp8lDecoder : IDisposable
         }
     }
 
-    private void UndoColorIndexing(Span<uint> row, ref Transform t)
+    private static void UndoColorIndexing(Span<uint> row, ref Transform t)
     {
-        ReadOnlySpan<uint> palette = MemoryMarshal.Cast<byte, uint>(t.Data.Span)[..256];
-        int colors = t.Colors;
+        // The palette has 256 entries, zero past the colors read, so an index past the palette needs no test: it gives transparent black.
+        ref uint palette = ref MemoryMarshal.GetReference(MemoryMarshal.Cast<byte, uint>(t.Data.Span));
+        ref uint r = ref MemoryMarshal.GetReference(row);
         int width = t.XSize;
         if (t.Bits == 0)
         {
             for (int x = 0; x < width; x++)
             {
-                int index = (int)((row[x] >> 8) & 0xFF);
-                row[x] = index < colors ? palette[index] : 0;
+                Unsafe.Add(ref r, x) = Unsafe.Add(ref palette, (nint)((Unsafe.Add(ref r, x) >> 8) & 0xFF));
             }
 
             return;
         }
 
-        // Bundled: the packed row is shorter, so expand from the end backwards in place... through the scratch row to be safe.
-        int packedWidth = SubSampleSize(width, t.Bits);
-        Span<uint> packed = _scratch.AsSpan(0, packedWidth);
-        row[..packedWidth].CopyTo(packed);
-        int bitsPerPixel = 8 >> t.Bits;
-        int perByte = 1 << t.Bits;
-        int indexMask = (1 << bitsPerPixel) - 1;
-        for (int x = 0; x < width; x++)
+        // Bundled: each coded pixel's green holds 2, 4 or 8 indices, expanded through the table of what each byte gives. In place
+        // from the end backwards: coded pixel j is read before the pixels from j << bits on are written, and every pixel written
+        // later lies before those.
+        int bits = t.Bits;
+        ref uint expanded = ref Unsafe.Add(ref palette, 256);
+        int j = SubSampleSize(width, bits) - 1;
+        if ((width & ((1 << bits) - 1)) != 0)
         {
-            int value = (int)((packed[x >> t.Bits] >> 8) & 0xFF);
-            int index = (value >> ((x & (perByte - 1)) * bitsPerPixel)) & indexMask;
-            row[x] = index < colors ? palette[index] : 0;
+            // The last coded pixel holds fewer indices than it has room for.
+            ref uint from = ref Unsafe.Add(ref expanded, (int)((Unsafe.Add(ref r, j) >> 8) & 0xFF) << bits);
+            for (int x = j << bits, k = 0; x < width; x++, k++)
+            {
+                Unsafe.Add(ref r, x) = Unsafe.Add(ref from, k);
+            }
+
+            j--;
+        }
+
+        for (; j >= 0; j--)
+        {
+            ref byte from = ref Unsafe.As<uint, byte>(ref Unsafe.Add(ref expanded, (int)((Unsafe.Add(ref r, j) >> 8) & 0xFF) << bits));
+            ref byte to = ref Unsafe.As<uint, byte>(ref Unsafe.Add(ref r, j << bits));
+            switch (bits)
+            {
+                case 1:
+                    Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<ulong>(ref from));
+                    break;
+                case 2:
+                    Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<Vector128<byte>>(ref from));
+                    break;
+                default:
+                    Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<Vector128<byte>>(ref from));
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, 16), Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref from, 16)));
+                    break;
+            }
         }
     }
 
@@ -1006,7 +1026,19 @@ internal sealed class Vp8lDecoder : IDisposable
         public int[] Single { get; } = new int[count * 5];
 
         public uint[] Tables { get; set; } = [];
+
+        /// <summary>Returns group <paramref name="group"/>'s table offsets and single symbols, for the decode loop to keep in locals.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GroupCodes Codes(int group)
+        {
+            ReadOnlySpan<int> offsets = Offsets.AsSpan(group * 5, 5);
+            ReadOnlySpan<int> single = Single.AsSpan(group * 5, 5);
+            return new GroupCodes(offsets[0], offsets[1], offsets[2], offsets[3], offsets[4], single[1], single[2], single[3]);
+        }
     }
+
+    /// <summary>One group's codes: where each table starts, and the red, blue and alpha symbol when that code has only one (else −1).</summary>
+    private readonly record struct GroupCodes(int Green, int Red, int Blue, int Alpha, int Distance, int RedSingle, int BlueSingle, int AlphaSingle);
 }
 
 /// <summary>Undoing the predictor transform for a run of pixels that share a mode.</summary>
@@ -1074,100 +1106,191 @@ internal static class Vp8lPredict
 
                 break;
             default:
+                UndoSerialRun(mode, ref r, ref a, x, end, last);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Undoes a run of a mode that reads the pixel just undone (5, 6, 7, 10 to 13), one pixel at a time with the mode chosen once
+    /// for the run. Pixels whose top-right lies past the row above take the current row's first pixel instead.
+    /// </summary>
+    private static void UndoSerialRun(int mode, ref uint r, ref uint a, int x, int end, int last)
+    {
+        if (Sse2.IsSupported && mode is >= 5 and <= 13)
+        {
+            UndoSerialRunSse2(mode, ref r, ref a, x, end, last);
+            return;
+        }
+
+        uint left = Unsafe.Add(ref r, x - 1);
+        int inner = Math.Min(end, last);
+        switch (mode)
+        {
+            case 5:
+                for (; x < end; x++)
                 {
-                    uint left = Unsafe.Add(ref r, x - 1);
-                    for (; x < end; x++)
-                    {
-                        uint t = Unsafe.Add(ref a, x), tl = Unsafe.Add(ref a, x - 1);
-                        uint prediction;
-                        switch (mode)
-                        {
-                            case 5:
-                                prediction = Vp8lPredictors.Average(Vp8lPredictors.Average(left, x < last ? Unsafe.Add(ref a, x + 1) : r), t);
-                                break;
-                            case 6:
-                                prediction = Vp8lPredictors.Average(left, tl);
-                                break;
-                            case 7:
-                                prediction = Vp8lPredictors.Average(left, t);
-                                break;
-                            case 10:
-                                prediction = Vp8lPredictors.Average(Vp8lPredictors.Average(left, tl), Vp8lPredictors.Average(t, x < last ? Unsafe.Add(ref a, x + 1) : r));
-                                break;
-                            case 11:
-                                prediction = Select(left, t, tl);
-                                break;
-                            case 12:
-                                prediction = ClampAddSubtractFull(left, t, tl);
-                                break;
-                            case 13:
-                                prediction = ClampAddSubtractHalf(Vp8lPredictors.Average(left, t), tl);
-                                break;
-                            default:
-                                prediction = 0xFF000000;
-                                break;
-                        }
-
-                        left = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), prediction);
-                        Unsafe.Add(ref r, x) = left;
-                    }
-
-                    break;
+                    uint tr = x < inner ? Unsafe.Add(ref a, x + 1) : r;
+                    left = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), Vp8lPredictors.Average(Vp8lPredictors.Average(left, tr), Unsafe.Add(ref a, x)));
+                    Unsafe.Add(ref r, x) = left;
                 }
+
+                break;
+            case 6:
+                for (; x < end; x++)
+                {
+                    left = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), Vp8lPredictors.Average(left, Unsafe.Add(ref a, x - 1)));
+                    Unsafe.Add(ref r, x) = left;
+                }
+
+                break;
+            case 7:
+                for (; x < end; x++)
+                {
+                    left = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), Vp8lPredictors.Average(left, Unsafe.Add(ref a, x)));
+                    Unsafe.Add(ref r, x) = left;
+                }
+
+                break;
+            case 10:
+                for (; x < end; x++)
+                {
+                    uint tr = x < inner ? Unsafe.Add(ref a, x + 1) : r;
+                    uint prediction = Vp8lPredictors.Average(Vp8lPredictors.Average(left, Unsafe.Add(ref a, x - 1)), Vp8lPredictors.Average(Unsafe.Add(ref a, x), tr));
+                    left = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), prediction);
+                    Unsafe.Add(ref r, x) = left;
+                }
+
+                break;
+            case 11:
+                for (; x < end; x++)
+                {
+                    left = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), Vp8lPredictors.Select(left, Unsafe.Add(ref a, x), Unsafe.Add(ref a, x - 1)));
+                    Unsafe.Add(ref r, x) = left;
+                }
+
+                break;
+            case 12:
+                for (; x < end; x++)
+                {
+                    left = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), Vp8lPredictors.ClampAddSubtractFull(left, Unsafe.Add(ref a, x), Unsafe.Add(ref a, x - 1)));
+                    Unsafe.Add(ref r, x) = left;
+                }
+
+                break;
+            case 13:
+                for (; x < end; x++)
+                {
+                    left = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), Vp8lPredictors.ClampAddSubtractHalf(Vp8lPredictors.Average(left, Unsafe.Add(ref a, x)), Unsafe.Add(ref a, x - 1)));
+                    Unsafe.Add(ref r, x) = left;
+                }
+
+                break;
+            default:
+                // Modes 14 and 15 are not defined; they predict opaque black, as mode 0 does.
+                for (; x < end; x++)
+                {
+                    Unsafe.Add(ref r, x) = Vp8lDecoder.AddPixels(Unsafe.Add(ref r, x), 0xFF000000);
+                }
+
+                break;
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<uint> Average(Vector128<uint> a, Vector128<uint> b) => (((a ^ b) & Vector128.Create(0xFEFEFEFEu)) >>> 1) + (a & b);
 
-    /// <summary><see cref="Vp8lPredictors.Select"/> with the four channels side by side.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint Select(uint l, uint t, uint tl)
+    /// <summary>
+    /// <see cref="UndoSerialRun"/> with the left pixel kept in a vector register, so the chain from one pixel to the next is a few
+    /// vector instructions with no moves to and from general registers. The channels sit in the low four bytes; the rest stay zero.
+    /// </summary>
+    private static void UndoSerialRunSse2(int mode, ref uint r, ref uint a, int x, int end, int last)
     {
-        if (!Sse41.IsSupported)
+        Vector128<byte> left = Load(ref r, x - 1);
+        int inner = Math.Min(end, last);
+        switch (mode)
         {
-            return Vp8lPredictors.Select(l, t, tl);
+            case 5:
+                for (; x < end; x++)
+                {
+                    Vector128<byte> tr = x < inner ? Load(ref a, x + 1) : Load(ref r, 0);
+                    left = Load(ref r, x) + Average(Average(left, tr), Load(ref a, x));
+                    Unsafe.Add(ref r, x) = left.AsUInt32().ToScalar();
+                }
+
+                break;
+            case 6:
+                for (; x < end; x++)
+                {
+                    left = Load(ref r, x) + Average(left, Load(ref a, x - 1));
+                    Unsafe.Add(ref r, x) = left.AsUInt32().ToScalar();
+                }
+
+                break;
+            case 7:
+                for (; x < end; x++)
+                {
+                    left = Load(ref r, x) + Average(left, Load(ref a, x));
+                    Unsafe.Add(ref r, x) = left.AsUInt32().ToScalar();
+                }
+
+                break;
+            case 10:
+                for (; x < end; x++)
+                {
+                    Vector128<byte> tr = x < inner ? Load(ref a, x + 1) : Load(ref r, 0);
+                    Vector128<byte> right = Average(Load(ref a, x), tr);
+                    left = Load(ref r, x) + Average(Average(left, Load(ref a, x - 1)), right);
+                    Unsafe.Add(ref r, x) = left.AsUInt32().ToScalar();
+                }
+
+                break;
+            case 11:
+                for (; x < end; x++)
+                {
+                    // Select: the left pixel when the top-left is closer to the left than to the top, as sums over the channels.
+                    Vector128<byte> t = Load(ref a, x), tl = Load(ref a, x - 1);
+                    Vector128<int> pl = Sse2.SumAbsoluteDifferences(t, tl).AsInt32();
+                    Vector128<int> pt = Sse2.SumAbsoluteDifferences(left, tl).AsInt32();
+                    Vector128<byte> useLeft = Vector128.LessThan(pl, pt).AsByte();
+                    left = Load(ref r, x) + Vector128.ConditionalSelect(useLeft, left, t);
+                    Unsafe.Add(ref r, x) = left.AsUInt32().ToScalar();
+                }
+
+                break;
+            case 12:
+                for (; x < end; x++)
+                {
+                    Vector128<short> topMinusTopLeft = Widen16(Load(ref a, x)) - Widen16(Load(ref a, x - 1));
+                    Vector128<short> sum = Widen16(left) + topMinusTopLeft;
+                    left = Load(ref r, x) + Sse2.PackUnsignedSaturate(sum, sum);
+                    Unsafe.Add(ref r, x) = left.AsUInt32().ToScalar();
+                }
+
+                break;
+            default:
+                for (; x < end; x++)
+                {
+                    Vector128<short> average = Widen16(Average(left, Load(ref a, x)));
+                    Vector128<short> d = average - Widen16(Load(ref a, x - 1));
+                    Vector128<short> half = average + ((d - (d >> 15)) >> 1);
+                    left = Load(ref r, x) + Sse2.PackUnsignedSaturate(half, half);
+                    Unsafe.Add(ref r, x) = left.AsUInt32().ToScalar();
+                }
+
+                break;
         }
-
-        Vector128<int> vl = Widen(l), vt = Widen(t), vtl = Widen(tl);
-        int pl = Vector128.Sum(Vector128.Abs(vt - vtl));
-        int pt = Vector128.Sum(Vector128.Abs(vl - vtl));
-        return pl < pt ? l : t;
     }
 
-    /// <summary><see cref="Vp8lPredictors.ClampAddSubtractFull"/> with the four channels side by side.</summary>
+    /// <summary>Loads one pixel into the low four bytes of a vector, the rest zero.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint ClampAddSubtractFull(uint a, uint b, uint c)
-    {
-        if (!Sse41.IsSupported)
-        {
-            return Vp8lPredictors.ClampAddSubtractFull(a, b, c);
-        }
+    private static Vector128<byte> Load(ref uint p, int x) => Vector128.CreateScalar(Unsafe.Add(ref p, x)).AsByte();
 
-        return Narrow(Widen(a) + Widen(b) - Widen(c));
-    }
-
-    /// <summary><see cref="Vp8lPredictors.ClampAddSubtractHalf"/> with the four channels side by side; the halving truncates toward zero.</summary>
+    /// <summary>Returns the per-byte floor average, as <see cref="Vp8lPredictors.Average"/> takes it.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint ClampAddSubtractHalf(uint a, uint b)
-    {
-        if (!Sse41.IsSupported)
-        {
-            return Vp8lPredictors.ClampAddSubtractHalf(a, b);
-        }
+    private static Vector128<byte> Average(Vector128<byte> p, Vector128<byte> q) => Average(p.AsUInt32(), q.AsUInt32()).AsByte();
 
-        Vector128<int> va = Widen(a);
-        Vector128<int> d = va - Widen(b);
-        return Narrow(va + Vector128.ShiftRightArithmetic(d - Vector128.ShiftRightArithmetic(d, 31), 1));
-    }
-
+    /// <summary>Widens the low eight bytes to 16-bit lanes.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<int> Widen(uint p) => Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(p).AsByte());
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint Narrow(Vector128<int> v)
-    {
-        Vector128<short> s = Sse2.PackSignedSaturate(v, v);
-        return Sse2.PackUnsignedSaturate(s, s).AsUInt32().ToScalar();
-    }
+    private static Vector128<short> Widen16(Vector128<byte> p) => Sse2.UnpackLow(p, Vector128<byte>.Zero).AsInt16();
 }

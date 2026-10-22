@@ -346,6 +346,15 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 - Images larger than 8192 x 4352 are written as grids of equal cells (`AvifWriterOptions.GridTileSize` sets the cells); tiles
   and cells are coded in parallel, with the same file at any thread count.
 
+### Faster lossless WebP
+
+- Lossless WebP decodes about 2.4 times faster: a 2048 × 1536 photo in 41 ms instead of 100 ms, against libwebp's 53 ms
+  through SkiaSharp, and a 1920 × 1080 screenshot in 2.2 ms instead of 7.2 ms (libwebp 4.8 ms), on one thread. Alpha in
+  lossy files, which is coded the same way, gains too.
+- The fastest lossless encode (`Effort = 0`) is about 2.3 times faster on screen content: the screenshot in 15 ms instead
+  of 35 ms, as fast as libwebp at its defaults, with a 27% smaller file. Higher efforts, and photos at effort 0, gain up to 20%.
+  Files are byte for byte the same as before at every effort.
+
 ### Package links
 
 - Every package's NuGet page now links to the documentation at [inexin.github.io/Egami](https://inexin.github.io/Egami/) as its

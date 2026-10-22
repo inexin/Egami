@@ -1,5 +1,7 @@
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Egami.Formats.Webp;
 
@@ -185,18 +187,18 @@ internal static class Vp8lBackwardRefs
             int bestLength = 0;
             int bestDistance = 0;
             int nearLength = 0;
-            if (pos >= width)
-            {
-                bestLength = pixels.Slice(pos - width, limit).CommonPrefixLength(pixels.Slice(pos, limit));
-                bestDistance = width;
-            }
-
+            // The left pixel wins a tie with the one above, so the one above is compared only when the left match stops short.
             if (pos >= 1)
             {
-                int left = pixels.Slice(pos - 1, limit).CommonPrefixLength(pixels.Slice(pos, limit));
-                if (left >= bestLength)
+                (bestLength, bestDistance) = (pixels.Slice(pos - 1, limit).CommonPrefixLength(pixels.Slice(pos, limit)), 1);
+            }
+
+            if (pos >= width && bestLength < limit)
+            {
+                int above = pixels.Slice(pos - width, limit).CommonPrefixLength(pixels.Slice(pos, limit));
+                if (above > bestLength)
                 {
-                    (bestLength, bestDistance) = (left, 1);
+                    (bestLength, bestDistance) = (above, width);
                 }
             }
 
@@ -236,36 +238,52 @@ internal static class Vp8lBackwardRefs
                 continue;
             }
 
-            // Extend to the left while the pixels before keep matching at this distance.
+            // Extend to the left while the pixels before keep matching at this distance: each step left is one pixel longer (up to
+            // the longest copy), and the nearby match grows with it while it also keeps matching.
             int nearDistance = nearLength > 0 ? 1 : width;
             int nearRun = Math.Abs(nearLength);
-            while (true)
+            int steps = MatchesBefore(pixels, pos, bestDistance, Math.Min(pos - start, pos - bestDistance));
+            int nearSteps = nearRun > 0 ? MatchesBefore(pixels, pos, nearDistance, Math.Min(steps, Math.Min(pos - nearDistance, MaxLength - nearRun))) : 0;
+            distances.Slice(pos - steps, steps + 1).Fill(bestDistance);
+            for (int i = 0; i <= steps; i++)
             {
-                lengths[pos] = bestLength;
-                distances[pos] = bestDistance;
-                near[pos] = nearRun >= MinLength ? (nearDistance == 1 ? nearRun : -nearRun) : 0;
-                if (pos == start || pos - 1 < bestDistance || pixels[pos - 1 - bestDistance] != pixels[pos - 1])
+                lengths[pos - i] = Math.Min(bestLength + i, MaxLength);
+                int run = i <= nearSteps ? nearRun + i : 0;
+                near[pos - i] = run >= MinLength ? (nearDistance == 1 ? run : -run) : 0;
+            }
+
+            pos -= steps + 1;
+        }
+    }
+
+    /// <summary>
+    /// Returns how many of the pixels before <paramref name="pos"/>, at most <paramref name="max"/>, match the pixels
+    /// <paramref name="distance"/> before them without a break, comparing backwards a vector at a time.
+    /// </summary>
+    private static int MatchesBefore(ReadOnlySpan<uint> pixels, int pos, int distance, int max)
+    {
+        ref uint p0 = ref MemoryMarshal.GetReference(pixels);
+        int k = 0;
+        if (Vector128.IsHardwareAccelerated)
+        {
+            while (k + 4 <= max)
+            {
+                int at = pos - k - 4;
+                if (Vector128.LoadUnsafe(ref p0, (nuint)at) != Vector128.LoadUnsafe(ref p0, (nuint)(at - distance)))
                 {
-                    pos--;
                     break;
                 }
 
-                pos--;
-                if (bestLength < MaxLength)
-                {
-                    bestLength++;
-                }
-
-                if (nearRun > 0 && pos >= nearDistance && pixels[pos - nearDistance] == pixels[pos] && nearRun < MaxLength)
-                {
-                    nearRun++;
-                }
-                else
-                {
-                    nearRun = 0;
-                }
+                k += 4;
             }
         }
+
+        while (k < max && Unsafe.Add(ref p0, pos - k - 1) == Unsafe.Add(ref p0, pos - k - 1 - distance))
+        {
+            k++;
+        }
+
+        return k;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -305,13 +323,29 @@ internal static class Vp8lBackwardRefs
     /// <summary>Returns the estimated bits of a pixel coded as a literal, from the spread of each channel over the whole image.</summary>
     private static float LiteralBits(ReadOnlySpan<uint> pixels)
     {
-        uint[] counts = new uint[4 * 256];
-        foreach (uint p in pixels)
+        // Counted a run at a time, into two sets of counts in turn: a channel that keeps one value would otherwise make each
+        // count wait on the one before.
+        uint[] counts = new uint[2 * 4 * 256];
+        int bank = 0;
+        for (int i = 0; i < pixels.Length;)
         {
-            counts[p >> 24]++;
-            counts[256 + ((p >> 16) & 0xFF)]++;
-            counts[512 + ((p >> 8) & 0xFF)]++;
-            counts[768 + (p & 0xFF)]++;
+            uint p = pixels[i];
+            int start = i;
+            while (++i < pixels.Length && pixels[i] == p)
+            {
+            }
+
+            uint run = (uint)(i - start);
+            counts[bank + (int)(p >> 24)] += run;
+            counts[bank + 256 + (int)((p >> 16) & 0xFF)] += run;
+            counts[bank + 512 + (int)((p >> 8) & 0xFF)] += run;
+            counts[bank + 768 + (int)(p & 0xFF)] += run;
+            bank ^= 1024;
+        }
+
+        for (int k = 0; k < 1024; k++)
+        {
+            counts[k] += counts[1024 + k];
         }
 
         double bits = 0;

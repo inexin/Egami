@@ -17,31 +17,64 @@ internal static class Vp8lCache
         }
 
         Vp8lHistogram[] histograms = new Vp8lHistogram[maxBits + 1];
-        uint[][] caches = new uint[maxBits + 1][];
         for (int b = 0; b <= maxBits; b++)
         {
             histograms[b] = new Vp8lHistogram(b);
-            caches[b] = b > 0 ? new uint[1 << b] : [];
         }
 
+        // Every cache size side by side: size b's slots are [1 << b, 2 << b). After each pixel every cache holds it, so a pixel
+        // equal to the one before changes none of them; runs of one color in a copy cost nothing. When literals are few next to
+        // the copied pixels, only the largest cache is kept, with when each slot was written: a smaller cache's slot holds the
+        // newest of the larger slots it covers, worked out when a literal asks.
+        long literals = 0;
+        long copied = 0;
+        foreach (ulong token in tokens)
+        {
+            Vp8lEncoder.Token.Read(token, out int kind, out _, out int length);
+            (literals, copied) = kind == Vp8lEncoder.Token.Backward ? (literals, copied + length) : (literals + 1, copied);
+        }
+
+        bool newestOnly = (literals << maxBits) < copied * maxBits;
+        uint[] slots = new uint[2 << maxBits];
+        int[] written = newestOnly ? new int[1 << maxBits] : [];
+        written.AsSpan().Fill(-1);
+        int shift = 32 - maxBits;
+        uint last = 0;
         int pos = 0;
         foreach (ulong token in tokens)
         {
             Vp8lEncoder.Token.Read(token, out int kind, out uint value, out int length);
             if (kind == Vp8lEncoder.Token.Backward)
             {
+                int lengthPrefix = 256 + Vp8lEncoder.PrefixOf(length, out _, out _);
+                int distancePrefix = Vp8lEncoder.PrefixOf((int)value, out _, out _);
                 for (int b = 0; b <= maxBits; b++)
                 {
-                    histograms[b].Literal[256 + Vp8lEncoder.PrefixOf(length, out _, out _)]++;
-                    histograms[b].Distance[Vp8lEncoder.PrefixOf((int)value, out _, out _)]++;
+                    histograms[b].Literal[lengthPrefix]++;
+                    histograms[b].Distance[distancePrefix]++;
                 }
 
-                for (int i = 0; i < length; i++)
+                for (int i = pos; i < pos + length; i++)
                 {
-                    uint key = pixels[pos + i] * 0x1E35A7BDu;
+                    uint q = pixels[i];
+                    if (q == last)
+                    {
+                        continue;
+                    }
+
+                    last = q;
+                    uint key = q * 0x1E35A7BDu;
+                    if (newestOnly)
+                    {
+                        int slot = (int)(key >> shift);
+                        slots[(1 << maxBits) + slot] = q;
+                        written[slot] = i;
+                        continue;
+                    }
+
                     for (int b = 1; b <= maxBits; b++)
                     {
-                        caches[b][key >> (32 - b)] = pixels[pos + i];
+                        slots[(1 << b) + (int)(key >> (32 - b))] = q;
                     }
                 }
 
@@ -49,7 +82,7 @@ internal static class Vp8lCache
                 continue;
             }
 
-            uint p = pixels[pos++];
+            uint p = pixels[pos];
             uint hash = p * 0x1E35A7BDu;
             histograms[0].Literal[(p >> 8) & 0xFF]++;
             histograms[0].Red[(p >> 16) & 0xFF]++;
@@ -57,11 +90,12 @@ internal static class Vp8lCache
             histograms[0].Alpha[p >> 24]++;
             for (int b = 1; b <= maxBits; b++)
             {
-                uint slot = hash >> (32 - b);
+                int slot = (int)(hash >> (32 - b));
                 Vp8lHistogram h = histograms[b];
-                if (caches[b][slot] == p)
+                uint held = newestOnly ? Newest(slots.AsSpan(1 << maxBits), written, slot << (maxBits - b), 1 << (maxBits - b)) : slots[(1 << b) + slot];
+                if (held == p)
                 {
-                    h.Literal[256 + Vp8lEncoder.LengthCodes + (int)slot]++;
+                    h.Literal[256 + Vp8lEncoder.LengthCodes + slot]++;
                 }
                 else
                 {
@@ -69,9 +103,21 @@ internal static class Vp8lCache
                     h.Red[(p >> 16) & 0xFF]++;
                     h.Blue[p & 0xFF]++;
                     h.Alpha[p >> 24]++;
-                    caches[b][slot] = p;
+                    if (!newestOnly)
+                    {
+                        slots[(1 << b) + slot] = p;
+                    }
                 }
             }
+
+            if (newestOnly)
+            {
+                slots[(1 << maxBits) + (int)(hash >> shift)] = p;
+                written[(int)(hash >> shift)] = pos;
+            }
+
+            last = p;
+            pos++;
         }
 
         int best = 0;
@@ -88,10 +134,26 @@ internal static class Vp8lCache
         return best;
     }
 
+    /// <summary>Returns what the slots from <paramref name="first"/> on, <paramref name="count"/> of them, last held: the newest written, or zero.</summary>
+    private static uint Newest(ReadOnlySpan<uint> slots, ReadOnlySpan<int> written, int first, int count)
+    {
+        int newest = first;
+        for (int i = first + 1; i < first + count; i++)
+        {
+            if (written[i] > written[newest])
+            {
+                newest = i;
+            }
+        }
+
+        return written[newest] < 0 ? 0 : slots[newest];
+    }
+
     /// <summary>Turns literals that the decoder's cache will hold into cache hits, updating the cache as the decoder does.</summary>
     internal static void Apply(Span<ulong> tokens, ReadOnlySpan<uint> pixels, int bits)
     {
         uint[] cache = new uint[1 << bits];
+        uint last = 0;
         int pos = 0;
         for (int t = 0; t < tokens.Length; t++)
         {
@@ -99,9 +161,14 @@ internal static class Vp8lCache
             Vp8lEncoder.Token.Read(token, out int kind, out _, out int length);
             if (kind == Vp8lEncoder.Token.Backward)
             {
-                for (int i = 0; i < length; i++)
+                // The cache already holds the pixel before, so a repeat of it changes nothing.
+                foreach (uint q in pixels.Slice(pos, length))
                 {
-                    cache[Vp8lEncoder.CacheKey(pixels[pos + i], bits)] = pixels[pos + i];
+                    if (q != last)
+                    {
+                        cache[Vp8lEncoder.CacheKey(q, bits)] = q;
+                        last = q;
+                    }
                 }
 
                 pos += length;
@@ -118,6 +185,8 @@ internal static class Vp8lCache
             {
                 cache[slot] = p;
             }
+
+            last = p;
         }
     }
 }
