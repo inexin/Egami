@@ -3,6 +3,7 @@
     <Project Path="benchmarks/Egami.Benchmarks/Egami.Benchmarks.csproj" />
     <Project Path="benchmarks/Egami.Drawing.Benchmarks/Egami.Drawing.Benchmarks.csproj" />
     <Project Path="benchmarks/Egami.Fonts.Benchmarks/Egami.Fonts.Benchmarks.csproj" />
+    <Project Path="benchmarks/Egami.Video.Benchmarks/Egami.Video.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/Animation/Animation.csproj" />
@@ -30,6 +31,7 @@
     <Project Path="src/Egami.Heic/Egami.Heic.csproj" />
     <Project Path="src/Egami.Metafiles/Egami.Metafiles.csproj" />
     <Project Path="src/Egami.Svg/Egami.Svg.csproj" />
+    <Project Path="src/Egami.Video/Egami.Video.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Egami.AotSmoke/Egami.AotSmoke.csproj" />
@@ -45,5 +47,7 @@
     <Project Path="tests/Egami.OutsideTests/Egami.OutsideTests.csproj" />
     <Project Path="tests/Egami.Svg.Tests/Egami.Svg.Tests.csproj" />
     <Project Path="tests/Egami.Tests/Egami.Tests.csproj" />
+    <Project Path="tests/Egami.Video.Fuzz/Egami.Video.Fuzz.csproj" />
+    <Project Path="tests/Egami.Video.Tests/Egami.Video.Tests.csproj" />
   </Folder>
 </Solution>

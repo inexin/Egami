@@ -1,0 +1,9 @@
+{"format":{"format_name": "yuv4mpegpipe", "duration": "0.200000", "nb_streams": 1},
+"streams":[
+{"index": 0, "codec_type": "video", "codec_name": "rawvideo", "codec_tag_string": "Y4[0][8]", "width": 48, "height": 32, "pix_fmt": "yuva444p", "r_frame_rate": "25/1", "avg_frame_rate": "25/1", "time_base": "1/25", "duration_ts": 5}],
+"packets":[
+{"stream_index": 0, "pts": 0, "dts": 0, "duration": 1, "size": "6144", "pos": "79", "flags": "K_"},
+{"stream_index": 0, "pts": 1, "dts": 1, "duration": 1, "size": "6144", "pos": "6229", "flags": "K_"},
+{"stream_index": 0, "pts": 2, "dts": 2, "duration": 1, "size": "6144", "pos": "12379", "flags": "K_"},
+{"stream_index": 0, "pts": 3, "dts": 3, "duration": 1, "size": "6144", "pos": "18529", "flags": "K_"},
+{"stream_index": 0, "pts": 4, "dts": 4, "duration": 1, "size": "6144", "pos": "24679", "flags": "K_"}]}

@@ -1,0 +1,12 @@
+{"format":{"format_name": "matroska,webm", "duration": null, "nb_streams": 1},
+"streams":[
+{"index": 0, "codec_type": "video", "codec_name": "vp9", "codec_tag_string": "[0][0][0][0]", "profile": "Profile 2", "width": 160, "height": 96, "pix_fmt": "yuv420p10le", "color_range": "tv", "color_space": "bt2020nc", "color_transfer": "smpte2084", "color_primaries": "bt2020", "r_frame_rate": "30/1", "avg_frame_rate": "30/1", "time_base": "1/1000", "side_data_list": [{"side_data_type": "Content light level metadata", "max_content": 1000, "max_average": 400}]}],
+"packets":[
+{"stream_index": 0, "pts": 0, "dts": 0, "size": "2944", "pos": "187", "flags": "K__"},
+{"stream_index": 0, "pts": 33, "dts": 33, "size": "17", "pos": "3213", "flags": "___"},
+{"stream_index": 0, "pts": 67, "dts": 67, "size": "48", "pos": "3317", "flags": "___"},
+{"stream_index": 0, "pts": 100, "dts": 100, "size": "371", "pos": "3453", "flags": "___"},
+{"stream_index": 0, "pts": 133, "dts": 133, "size": "517", "pos": "3912", "flags": "___"},
+{"stream_index": 0, "pts": 167, "dts": 167, "size": "617", "pos": "4517", "flags": "___"},
+{"stream_index": 0, "pts": 200, "dts": 200, "size": "792", "pos": "5222", "flags": "___"},
+{"stream_index": 0, "pts": 233, "dts": 233, "size": "852", "pos": "6102", "flags": "___"}]}

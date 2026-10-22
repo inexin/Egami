@@ -130,6 +130,10 @@
   items:
     - name: Windows metafiles
       href: guides/metafiles.md
+- name: Egami.Video
+  items:
+    - name: Video
+      href: guides/video.md
 - name: Egami.Barcodes
   items:
     - name: Barcodes

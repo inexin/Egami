@@ -1,0 +1,131 @@
+{
+ "tools": "libvpx 1.14.1 vpxenc and vpxdec (generic C build), FFmpeg 6.1.1",
+ "clips": {
+  "v0-altref": {
+   "source": "testsrc2",
+   "filter": "null",
+   "frames": 40,
+   "vpxenc": "--good --passes=2 --auto-alt-ref=1 --lag-in-frames=16 --arnr-maxframes=5 --target-bitrate=250",
+   "size": "176x144",
+   "packets": 42,
+   "shown": 40,
+   "ffmpeg_agrees": true,
+   "segmentation": false,
+   "golden": true,
+   "hidden": true,
+   "no_entropy_carry": false
+  },
+  "v0-partitions-8": {
+   "source": "mandelbrot",
+   "filter": "null",
+   "frames": 15,
+   "vpxenc": "--good --token-parts=3 --target-bitrate=300",
+   "size": "176x144",
+   "packets": 15,
+   "shown": 15,
+   "ffmpeg_agrees": true,
+   "segmentation": false,
+   "golden": true,
+   "hidden": false,
+   "no_entropy_carry": false
+  },
+  "v0-keyframes": {
+   "source": "testsrc2",
+   "filter": "null",
+   "frames": 30,
+   "vpxenc": "--good --kf-max-dist=7 --kf-min-dist=7 --target-bitrate=200",
+   "size": "128x96",
+   "packets": 30,
+   "shown": 30,
+   "ffmpeg_agrees": true,
+   "segmentation": false,
+   "golden": true,
+   "hidden": false,
+   "no_entropy_carry": false
+  },
+  "v0-resilient": {
+   "source": "mandelbrot",
+   "filter": "null",
+   "frames": 30,
+   "vpxenc": "--rt --cpu-used=-6 --error-resilient=1 --target-bitrate=150",
+   "size": "144x96",
+   "packets": 30,
+   "shown": 30,
+   "ffmpeg_agrees": true,
+   "segmentation": true,
+   "golden": true,
+   "hidden": false,
+   "no_entropy_carry": true
+  },
+  "v1-pan": {
+   "source": "mandelbrot",
+   "filter": "null",
+   "frames": 20,
+   "vpxenc": "--good --profile=1 --target-bitrate=200",
+   "size": "160x96",
+   "packets": 20,
+   "shown": 20,
+   "ffmpeg_agrees": true,
+   "segmentation": false,
+   "golden": true,
+   "hidden": false,
+   "no_entropy_carry": false
+  },
+  "v2-pan": {
+   "source": "testsrc2",
+   "filter": "null",
+   "frames": 20,
+   "vpxenc": "--good --profile=2 --target-bitrate=200",
+   "size": "160x96",
+   "packets": 20,
+   "shown": 20,
+   "ffmpeg_agrees": true,
+   "segmentation": false,
+   "golden": true,
+   "hidden": false,
+   "no_entropy_carry": false
+  },
+  "v3-pan": {
+   "source": "mandelbrot",
+   "filter": "null",
+   "frames": 20,
+   "vpxenc": "--good --profile=3 --target-bitrate=200",
+   "size": "160x96",
+   "packets": 20,
+   "shown": 20,
+   "ffmpeg_agrees": true,
+   "segmentation": false,
+   "golden": true,
+   "hidden": false,
+   "no_entropy_carry": false
+  },
+  "v0-odd-97x61": {
+   "source": "testsrc2",
+   "filter": "scale=97:61",
+   "frames": 20,
+   "vpxenc": "--good --passes=2 --auto-alt-ref=1 --lag-in-frames=8 --target-bitrate=120",
+   "size": "97x61",
+   "packets": 22,
+   "shown": 20,
+   "ffmpeg_agrees": true,
+   "segmentation": false,
+   "golden": true,
+   "hidden": true,
+   "no_entropy_carry": false
+  },
+  "alpha-ramp": {
+   "source": "testsrc2=size=160x96:rate=25",
+   "filter": "format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='mod(X+Y+N*6,256)'",
+   "frames": 25,
+   "ffmpeg": "-b:v 300k",
+   "size": "160x96"
+  },
+  "alpha-odd-75x45": {
+   "source": "testsrc2=size=76x46:rate=25",
+   "filter": "scale=75:45,format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='if(lt(hypot(X-37,Y-22),10+N),255,40)'",
+   "frames": 20,
+   "ffmpeg": "-b:v 150k -g 8",
+   "size": "75x45"
+  }
+ }
+}

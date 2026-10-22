@@ -56,6 +56,12 @@
     <None Include="../images/vp8/v0-altref.ivf" Link="images/clip.ivf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/metafiles/synthetic/gdi-shapes-basic.emf" Link="images/chart.emf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/icc/compact/DisplayP3-v4.icc" Link="images/DisplayP3.icc" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/avi-mjpeg-420-pcm.avi" Link="images/camera.avi" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/mkv-metadata.mkv" Link="images/metadata.mkv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/vp9/p0-altref.webm" Link="images/movie.webm" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/vp9/alpha-ramp.webm" Link="images/alpha.webm" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/vp9/hdr10.mkv" Link="images/hdr10.mkv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/vp9/hdr10plus.webm" Link="images/hdr10plus.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/NotoSans-Regular.ttf" Link="fonts/NotoSans-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/SourceSans3-Regular.otf" Link="fonts/SourceSans3-Regular.otf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/shaping/NotoSansHebrew-Regular.ttf" Link="fonts/NotoSansHebrew-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
@@ -77,6 +83,7 @@
     <ProjectReference Include="..\..\src\Egami.Svg\Egami.Svg.csproj" />
     <ProjectReference Include="..\..\src\Egami.Metafiles\Egami.Metafiles.csproj" />
     <ProjectReference Include="..\..\src\Egami.Heic\Egami.Heic.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Video\Egami.Video.csproj" />
     <ProjectReference Include="..\..\samples\Animation\Animation.csproj" />
     <ProjectReference Include="..\..\samples\Color\Color.csproj" />
     <ProjectReference Include="..\..\samples\Compositing\Compositing.csproj" />

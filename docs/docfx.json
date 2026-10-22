@@ -38,6 +38,10 @@
         {
           "src": "../src/Egami.Heic",
           "files": [ "Egami.Heic.csproj" ]
+        },
+        {
+          "src": "../src/Egami.Video",
+          "files": [ "Egami.Video.csproj" ]
         }
       ],
       "dest": "api",

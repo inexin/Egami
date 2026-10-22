@@ -1,0 +1,6 @@
+Every file in this folder was generated for Egami.Video by tools/video/make-corpus.py (FFmpeg and MKVToolNix run in Docker on
+synthetic lavfi sources: testsrc2 video and a sine tone). They contain no third-party content and are covered by this
+repository's MIT license.
+
+The files in vp9/ were generated the same way by tools/video/make-vp9-corpus.py: libvpx's vpxenc, FFmpeg and mkvmerge run in
+Docker (tools/video/vp9ref) on synthetic lavfi sources (testsrc2 and mandelbrot). They too contain no third-party content.

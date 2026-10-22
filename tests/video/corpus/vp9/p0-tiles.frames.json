@@ -1,0 +1,24 @@
+{
+ "width": 1024,
+ "height": 256,
+ "bit_depth": 8,
+ "packets": 6,
+ "shown": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5
+ ],
+ "errors": [],
+ "ffmpeg": true,
+ "md5": [
+  "69956d48472be0dd1da514dcdb8ef08f",
+  "3fde170b4cfa2abe0028496adc39ac52",
+  "e16291cd6ff9c0a7258d8d9e4fc910dd",
+  "83e03049bfca50bbfdfa753ed23b1305",
+  "ec613ef16a0939a037c8dd98d54c0008",
+  "b8023fd9478fe75d99cbf21058c7fbd7"
+ ]
+}

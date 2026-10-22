@@ -57,6 +57,87 @@ command review freezes the names and options at 1.0.
 - PDF417 cut off before its start pattern reads from the stop pattern, using the right row indicators (ZXing pdf417-3 19 of
   19, 16 before).
 
+## Egami.Video 0.3.0 (unreleased)
+
+Egami.Video now lives in the Egami repository (it was inexin/Egami.Video), built and tested with the other packages; its
+version and NuGet package are its own.
+
+V3, API reviewed and accepted 2026-10-22: VP9 decode in all four profiles, equal to libvpx 1.14.1 on the test vectors (the
+decoder is translated closely from libvpx, notice in THIRD-PARTY-NOTICES.md); WebM alpha; HDR10 and HDR10+ metadata
+(`Hdr10PlusMetadata`, `VideoFrame.Hdr10Plus`); `VideoFrame.RenderSize`; color-managed `YuvVideoFrame.ToRaster`; SIMD kernels
+and threads within 1.5x libvpx's decode time.
+
+### VP9 decoding
+
+- `Vp9Codec` (and `VideoCodecs.Vp9`), registered in `MediaContext.Codecs` by default: VP9 from WebM, Matroska and IVF in all four
+  profiles, 8, 10 and 12 bit, 4:2:0, 4:2:2, 4:4:4 and RGB, with superframes, hidden frames, show-existing frames, intra-only
+  frames, tiles, lossless coding, compound prediction and references of another size. Every frame of libvpx's VP9 test vectors
+  equals libvpx 1.14.1's. Frames come out as `YuvRaster<byte>` at 8 bits and `YuvRaster<ushort>` above, at their own coded size.
+  4:4:0 streams are reported (`Vp9.UnsupportedSubsampling`) and not decoded.
+- WebM VP9 with alpha (AlphaMode 1): the second VP9 stream in each packet's addition 1 decodes into the frame's alpha plane, as
+  for VP8, unless `VideoDecoderOptions.DecodeAlpha` is off.
+- `CodecHeaders.Describe` lists VP9 header fields: the superframe index, each frame's uncompressed header and the compressed
+  header's modes with probability updates as counts.
+- Streams that change size come out frame by frame at each frame's coded size; `VideoFrame.RenderSize` reports VP9's
+  render_size without scaling to it, as libvpx and FFmpeg do. Exact seeks land on the same frames as decoding from the start,
+  over hidden and show-existing frames.
+- Broken VP9 data follows `VideoReaderOptions.Errors`: `Throw` throws, `Skip` drops frames up to the next keyframe, and
+  `Conceal` repeats the last good frame (mid-gray before the first). Diagnostics: `Vp9.CorruptFrame` (a broken frame or alpha
+  frame), `Vp9.MissingReference` (an inter frame with no keyframe before it), `Vp9.UnsupportedSubsampling`,
+  `Vp9.KeyframeFlagMismatch` (the container's keyframe flag disagrees with the frame; the frame wins) and
+  `Vp9.CodecPrivateMismatch` (the track's CodecPrivate disagrees with the stream; the stream wins).
+
+### Safety
+
+- VP9 frame sizes are checked against `EgamiContext.Limits` (width, height, pixels, and the memory of the nine frame buffers a
+  stream can hold) before anything is allocated. A stream holds at most nine frame buffers, eighteen with alpha.
+- AFL++ fuzz targets `vp9` (files through VideoReader in each error mode) and `vp9raw` (packets, superframes and CodecPrivate
+  straight into the decoder).
+
+### Speed
+
+- VP9 decoding uses SSE2, SSSE3 and AVX2 vectors for the sub-pixel filters, the inverse transforms and the loop filter, at 8 bits
+  and above, with the same output. One thread decodes 8-bit 720p, 1080p and 2160p within 1.5 times libvpx 1.14.1's time.
+- VP9 frames decode their tile columns in parallel and loop filter their superblock rows as a wavefront, on up to
+  `EgamiContext.MaxParallelism` threads, with the same output at any thread count.
+
+### Color and HDR
+
+- VP9 frames carry their color code points (the bitstream's color space and range, or the container's Colour element when it
+  says more) and the track's mastering display and light level metadata, on the frame and in the raster's metadata.
+- `YuvVideoFrame.ToRaster<TPixel>(ColorProfile, ColorTransformOptions?)` converts a frame to another encoding through Egami's
+  color pipeline, tone mapping PQ and HLG to SDR from the static HDR metadata.
+- `Hdr10PlusMetadata` and `VideoFrame.Hdr10Plus`: HDR10+ dynamic metadata (SMPTE ST 2094-40) from WebM's BlockAdditional 4,
+  read per frame and kept unchanged when remuxing.
+
+### Containers
+
+- WebM and Matroska VP9 tracks take their bit depth and subsampling from the CodecPrivate feature records; IVF VP9 tracks from
+  the first keyframe.
+- Writing Matroska or WebM joins VP9 hidden frames that arrive as packets of their own into a superframe with the next shown
+  frame, as WebM players expect.
+
+## Egami.Video 0.2.1 (unreleased)
+
+Built on the Egami with faster VP8 decoding; no API changes, and every frame is the same as before. Single-thread VP8 decode
+through Egami.Video now takes 1.40 times libvpx 1.14.1's time on the 720p grain clip and 1.52 times on the 1080p one, down from
+1.60–1.67; all-core decode takes 1.23–1.27 times. Egami's own decoder takes 1.43 times on both; Egami.Video's per-frame copy into
+its frames adds the rest.
+
+## Egami.Video 0.2.0 (unreleased)
+
+V2, API reviewed and accepted 2026-10-15: VP8 decode through Egami's Vp8StreamDecoder, equal to libvpx on the test vectors;
+WebM alpha (packet additions, DecodeAlpha); IVF read and write; exact seek by default with SeekMode.Keyframe; CodecHeaders.Describe
+for VP8 header fields; DecodeErrorMode (Throw, Skip, Conceal) with Skip the reader's default, replacing
+VideoReaderOptions.SkipCorruptFrames. Single-thread VP8 decode is 1.6x libvpx's (accepted; an Egami step to speed it up follows).
+
+## Egami.Video 0.1.0 (unreleased)
+
+First release (V1), API reviewed and accepted 2026-10-11: frame and packet model with bit depths to 12, alpha, packed
+layouts, HDR and color carried end to end; AVI (with OpenDML), Matroska/WebM and YUV4MPEG2 read and write, and headerless raw
+video; Motion JPEG and uncompressed video decode and encode; audio passthrough, keyframe seeking, tags, chapters and
+attachments; PSNR, SSIM and framemd5-style hashes.
+
 ## Egami.Barcodes 1.0.0 (2026-10-19)
 
 A new package that writes and reads barcodes, drawn through Egami.Drawing.

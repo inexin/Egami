@@ -1,0 +1,14 @@
+{"format":{"format_name": "ivf", "duration": "0.333333", "nb_streams": 1},
+"streams":[
+{"index": 0, "codec_type": "video", "codec_name": "vp9", "codec_tag_string": "VP90", "profile": "Profile 3", "width": 128, "height": 96, "pix_fmt": "yuv422p10le", "color_range": "tv", "r_frame_rate": "30/1", "avg_frame_rate": "0/0", "time_base": "1/30", "nb_frames": "10", "duration_ts": 10}],
+"packets":[
+{"stream_index": 0, "pts": 0, "dts": 0, "duration": 1, "size": "3403", "pos": "32", "flags": "K__"},
+{"stream_index": 0, "pts": 1, "dts": 1, "duration": 1, "size": "2509", "pos": "3447", "flags": "___"},
+{"stream_index": 0, "pts": 2, "dts": 2, "duration": 1, "size": "618", "pos": "5968", "flags": "___"},
+{"stream_index": 0, "pts": 3, "dts": 3, "duration": 1, "size": "502", "pos": "6598", "flags": "___"},
+{"stream_index": 0, "pts": 4, "dts": 4, "duration": 1, "size": "726", "pos": "7112", "flags": "___"},
+{"stream_index": 0, "pts": 5, "dts": 5, "duration": 1, "size": "647", "pos": "7850", "flags": "___"},
+{"stream_index": 0, "pts": 6, "dts": 6, "duration": 1, "size": "430", "pos": "8509", "flags": "___"},
+{"stream_index": 0, "pts": 7, "dts": 7, "duration": 1, "size": "693", "pos": "8951", "flags": "___"},
+{"stream_index": 0, "pts": 8, "dts": 8, "duration": 1, "size": "516", "pos": "9656", "flags": "___"},
+{"stream_index": 0, "pts": 9, "dts": 9, "duration": 1, "size": "19", "pos": "10184", "flags": "___"}]}

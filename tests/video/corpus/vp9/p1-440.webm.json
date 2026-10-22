@@ -1,0 +1,8 @@
+{"format":{"format_name": "matroska,webm", "duration": "0.134000", "nb_streams": 1},
+"streams":[
+{"index": 0, "codec_type": "video", "codec_name": "vp9", "codec_tag_string": "[0][0][0][0]", "profile": "Profile 1", "width": 96, "height": 64, "pix_fmt": "yuv440p", "color_range": "tv", "r_frame_rate": "179/6", "avg_frame_rate": "179/6", "time_base": "1/1000"}],
+"packets":[
+{"stream_index": 0, "pts": 0, "dts": 0, "duration": 33, "size": "2103", "pos": "443", "flags": "K__"},
+{"stream_index": 0, "pts": 33, "dts": 33, "duration": 33, "size": "642", "pos": "2553", "flags": "___"},
+{"stream_index": 0, "pts": 66, "dts": 66, "duration": 33, "size": "140", "pos": "3202", "flags": "___"},
+{"stream_index": 0, "pts": 100, "dts": 100, "duration": 33, "size": "16", "pos": "3348", "flags": "___"}]}

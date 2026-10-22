@@ -1,0 +1,458 @@
+[
+ [
+  {
+   "side_data_type": "Content light level metadata",
+   "max_content": 1000,
+   "max_average": 400
+  },
+  {
+   "side_data_type": "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)",
+   "application version": 1,
+   "num_windows": 1,
+   "targeted_system_display_maximum_luminance": "400/1",
+   "maxscl": [
+    "9000/100000",
+    "9500/100000",
+    "10000/100000"
+   ],
+   "average_maxrgb": "1200/100000",
+   "num_distribution_maxrgb_percentiles": 9,
+   "distribution_maxrgb_percentage": [
+    1,
+    5,
+    10,
+    25,
+    50,
+    75,
+    90,
+    95,
+    99
+   ],
+   "distribution_maxrgb_percentile": [
+    "100/100000",
+    "200/100000",
+    "300/100000",
+    "400/100000",
+    "500/100000",
+    "600/100000",
+    "700/100000",
+    "800/100000",
+    "900/100000"
+   ],
+   "fraction_bright_pixels": "100/1000",
+   "knee_point_x": "1000/4095",
+   "knee_point_y": "1500/4095",
+   "num_bezier_curve_anchors": 9,
+   "bezier_curve_anchors": [
+    "100/1023",
+    "200/1023",
+    "300/1023",
+    "400/1023",
+    "500/1023",
+    "600/1023",
+    "700/1023",
+    "800/1023",
+    "900/1023"
+   ]
+  }
+ ],
+ [
+  {
+   "side_data_type": "Content light level metadata",
+   "max_content": 1000,
+   "max_average": 400
+  },
+  {
+   "side_data_type": "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)",
+   "application version": 1,
+   "num_windows": 1,
+   "targeted_system_display_maximum_luminance": "400/1",
+   "maxscl": [
+    "9037/100000",
+    "9537/100000",
+    "10037/100000"
+   ],
+   "average_maxrgb": "1211/100000",
+   "num_distribution_maxrgb_percentiles": 9,
+   "distribution_maxrgb_percentage": [
+    1,
+    5,
+    10,
+    25,
+    50,
+    75,
+    90,
+    95,
+    99
+   ],
+   "distribution_maxrgb_percentile": [
+    "101/100000",
+    "201/100000",
+    "301/100000",
+    "401/100000",
+    "501/100000",
+    "601/100000",
+    "701/100000",
+    "801/100000",
+    "901/100000"
+   ],
+   "fraction_bright_pixels": "101/1000",
+   "knee_point_x": "1001/4095",
+   "knee_point_y": "1501/4095",
+   "num_bezier_curve_anchors": 9,
+   "bezier_curve_anchors": [
+    "101/1023",
+    "201/1023",
+    "301/1023",
+    "401/1023",
+    "501/1023",
+    "601/1023",
+    "701/1023",
+    "801/1023",
+    "901/1023"
+   ]
+  }
+ ],
+ [
+  {
+   "side_data_type": "Content light level metadata",
+   "max_content": 1000,
+   "max_average": 400
+  },
+  {
+   "side_data_type": "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)",
+   "application version": 1,
+   "num_windows": 1,
+   "targeted_system_display_maximum_luminance": "400/1",
+   "maxscl": [
+    "9074/100000",
+    "9574/100000",
+    "10074/100000"
+   ],
+   "average_maxrgb": "1222/100000",
+   "num_distribution_maxrgb_percentiles": 9,
+   "distribution_maxrgb_percentage": [
+    1,
+    5,
+    10,
+    25,
+    50,
+    75,
+    90,
+    95,
+    99
+   ],
+   "distribution_maxrgb_percentile": [
+    "102/100000",
+    "202/100000",
+    "302/100000",
+    "402/100000",
+    "502/100000",
+    "602/100000",
+    "702/100000",
+    "802/100000",
+    "902/100000"
+   ],
+   "fraction_bright_pixels": "102/1000",
+   "knee_point_x": "1002/4095",
+   "knee_point_y": "1502/4095",
+   "num_bezier_curve_anchors": 9,
+   "bezier_curve_anchors": [
+    "102/1023",
+    "202/1023",
+    "302/1023",
+    "402/1023",
+    "502/1023",
+    "602/1023",
+    "702/1023",
+    "802/1023",
+    "902/1023"
+   ]
+  }
+ ],
+ [
+  {
+   "side_data_type": "Content light level metadata",
+   "max_content": 1000,
+   "max_average": 400
+  },
+  {
+   "side_data_type": "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)",
+   "application version": 1,
+   "num_windows": 1,
+   "targeted_system_display_maximum_luminance": "400/1",
+   "maxscl": [
+    "9111/100000",
+    "9611/100000",
+    "10111/100000"
+   ],
+   "average_maxrgb": "1233/100000",
+   "num_distribution_maxrgb_percentiles": 9,
+   "distribution_maxrgb_percentage": [
+    1,
+    5,
+    10,
+    25,
+    50,
+    75,
+    90,
+    95,
+    99
+   ],
+   "distribution_maxrgb_percentile": [
+    "103/100000",
+    "203/100000",
+    "303/100000",
+    "403/100000",
+    "503/100000",
+    "603/100000",
+    "703/100000",
+    "803/100000",
+    "903/100000"
+   ],
+   "fraction_bright_pixels": "103/1000",
+   "knee_point_x": "1003/4095",
+   "knee_point_y": "1503/4095",
+   "num_bezier_curve_anchors": 9,
+   "bezier_curve_anchors": [
+    "103/1023",
+    "203/1023",
+    "303/1023",
+    "403/1023",
+    "503/1023",
+    "603/1023",
+    "703/1023",
+    "803/1023",
+    "903/1023"
+   ]
+  }
+ ],
+ [
+  {
+   "side_data_type": "Content light level metadata",
+   "max_content": 1000,
+   "max_average": 400
+  },
+  {
+   "side_data_type": "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)",
+   "application version": 1,
+   "num_windows": 1,
+   "targeted_system_display_maximum_luminance": "400/1",
+   "maxscl": [
+    "9148/100000",
+    "9648/100000",
+    "10148/100000"
+   ],
+   "average_maxrgb": "1244/100000",
+   "num_distribution_maxrgb_percentiles": 9,
+   "distribution_maxrgb_percentage": [
+    1,
+    5,
+    10,
+    25,
+    50,
+    75,
+    90,
+    95,
+    99
+   ],
+   "distribution_maxrgb_percentile": [
+    "104/100000",
+    "204/100000",
+    "304/100000",
+    "404/100000",
+    "504/100000",
+    "604/100000",
+    "704/100000",
+    "804/100000",
+    "904/100000"
+   ],
+   "fraction_bright_pixels": "104/1000",
+   "knee_point_x": "1004/4095",
+   "knee_point_y": "1504/4095",
+   "num_bezier_curve_anchors": 9,
+   "bezier_curve_anchors": [
+    "104/1023",
+    "204/1023",
+    "304/1023",
+    "404/1023",
+    "504/1023",
+    "604/1023",
+    "704/1023",
+    "804/1023",
+    "904/1023"
+   ]
+  }
+ ],
+ [
+  {
+   "side_data_type": "Content light level metadata",
+   "max_content": 1000,
+   "max_average": 400
+  },
+  {
+   "side_data_type": "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)",
+   "application version": 1,
+   "num_windows": 1,
+   "targeted_system_display_maximum_luminance": "400/1",
+   "maxscl": [
+    "9185/100000",
+    "9685/100000",
+    "10185/100000"
+   ],
+   "average_maxrgb": "1255/100000",
+   "num_distribution_maxrgb_percentiles": 9,
+   "distribution_maxrgb_percentage": [
+    1,
+    5,
+    10,
+    25,
+    50,
+    75,
+    90,
+    95,
+    99
+   ],
+   "distribution_maxrgb_percentile": [
+    "105/100000",
+    "205/100000",
+    "305/100000",
+    "405/100000",
+    "505/100000",
+    "605/100000",
+    "705/100000",
+    "805/100000",
+    "905/100000"
+   ],
+   "fraction_bright_pixels": "105/1000",
+   "knee_point_x": "1005/4095",
+   "knee_point_y": "1505/4095",
+   "num_bezier_curve_anchors": 9,
+   "bezier_curve_anchors": [
+    "105/1023",
+    "205/1023",
+    "305/1023",
+    "405/1023",
+    "505/1023",
+    "605/1023",
+    "705/1023",
+    "805/1023",
+    "905/1023"
+   ]
+  }
+ ],
+ [
+  {
+   "side_data_type": "Content light level metadata",
+   "max_content": 1000,
+   "max_average": 400
+  },
+  {
+   "side_data_type": "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)",
+   "application version": 1,
+   "num_windows": 1,
+   "targeted_system_display_maximum_luminance": "400/1",
+   "maxscl": [
+    "9222/100000",
+    "9722/100000",
+    "10222/100000"
+   ],
+   "average_maxrgb": "1266/100000",
+   "num_distribution_maxrgb_percentiles": 9,
+   "distribution_maxrgb_percentage": [
+    1,
+    5,
+    10,
+    25,
+    50,
+    75,
+    90,
+    95,
+    99
+   ],
+   "distribution_maxrgb_percentile": [
+    "106/100000",
+    "206/100000",
+    "306/100000",
+    "406/100000",
+    "506/100000",
+    "606/100000",
+    "706/100000",
+    "806/100000",
+    "906/100000"
+   ],
+   "fraction_bright_pixels": "106/1000",
+   "knee_point_x": "1006/4095",
+   "knee_point_y": "1506/4095",
+   "num_bezier_curve_anchors": 9,
+   "bezier_curve_anchors": [
+    "106/1023",
+    "206/1023",
+    "306/1023",
+    "406/1023",
+    "506/1023",
+    "606/1023",
+    "706/1023",
+    "806/1023",
+    "906/1023"
+   ]
+  }
+ ],
+ [
+  {
+   "side_data_type": "Content light level metadata",
+   "max_content": 1000,
+   "max_average": 400
+  },
+  {
+   "side_data_type": "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)",
+   "application version": 1,
+   "num_windows": 1,
+   "targeted_system_display_maximum_luminance": "400/1",
+   "maxscl": [
+    "9259/100000",
+    "9759/100000",
+    "10259/100000"
+   ],
+   "average_maxrgb": "1277/100000",
+   "num_distribution_maxrgb_percentiles": 9,
+   "distribution_maxrgb_percentage": [
+    1,
+    5,
+    10,
+    25,
+    50,
+    75,
+    90,
+    95,
+    99
+   ],
+   "distribution_maxrgb_percentile": [
+    "107/100000",
+    "207/100000",
+    "307/100000",
+    "407/100000",
+    "507/100000",
+    "607/100000",
+    "707/100000",
+    "807/100000",
+    "907/100000"
+   ],
+   "fraction_bright_pixels": "107/1000",
+   "knee_point_x": "1007/4095",
+   "knee_point_y": "1507/4095",
+   "num_bezier_curve_anchors": 9,
+   "bezier_curve_anchors": [
+    "107/1023",
+    "207/1023",
+    "307/1023",
+    "407/1023",
+    "507/1023",
+    "607/1023",
+    "707/1023",
+    "807/1023",
+    "907/1023"
+   ]
+  }
+ ]
+]

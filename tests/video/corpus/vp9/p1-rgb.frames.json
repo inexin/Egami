@@ -1,0 +1,32 @@
+{
+ "width": 128,
+ "height": 96,
+ "bit_depth": 8,
+ "packets": 10,
+ "shown": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9
+ ],
+ "errors": [],
+ "ffmpeg": true,
+ "md5": [
+  "098ef3beba931fcc3addda006f78dcb9",
+  "9f4d3dd67faf57ab4ede02fb1929044d",
+  "7091e9b0e9a6c0cc218895630391d052",
+  "73aba3930a667001573a22d3caac2c21",
+  "b06c498759562f7358e6e8df289b31c2",
+  "f20cda8343be88a9cc0622a2bc8dcba0",
+  "554a6bf2cfc73c3958b4c16d7b980e24",
+  "a3cc9051ac8e3e9ca1fec0e64fe8caa6",
+  "d30b79f3b5ef7f1dc9ebeddd31170921",
+  "f21c304c1d02af61b59c17a9e6ae6d8a"
+ ]
+}

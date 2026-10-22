@@ -1,0 +1,20 @@
+{
+ "width": 96,
+ "height": 64,
+ "bit_depth": 8,
+ "packets": 4,
+ "shown": [
+  0,
+  1,
+  2,
+  3
+ ],
+ "errors": [],
+ "ffmpeg": true,
+ "md5": [
+  "2e5769889e8595ab4e9f50b7c1a9f38b",
+  "60bbedafb605f8de69fcdd104acd518f",
+  "58a90ab8fd9e57548b39d98c8947d999",
+  "2b9cee13b635eb0dac9a3d542a79cd8f"
+ ]
+}
