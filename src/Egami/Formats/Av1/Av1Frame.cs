@@ -113,7 +113,7 @@ internal sealed class Av1Frame
                 int ssx = plane > 0 ? Sequence.SubsamplingX : 0, ssy = plane > 0 ? Sequence.SubsamplingY : 0;
                 Strides[plane] = width >> ssx;
                 int size = (width >> ssx) * (height >> ssy);
-                Planes[plane] = Compact ? new byte[size] : new ushort[size];
+                Planes[plane] = Compact ? new byte[size + Av1Samples.Padding] : new ushort[size];
             }
         }
     }

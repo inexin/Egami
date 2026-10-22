@@ -13,7 +13,7 @@ namespace Egami.Formats.Av1;
 /// </summary>
 internal sealed partial class Av1Reconstructor<T>
 {
-    private readonly T[] _edge = new T[(128 + 7) * (128 + 7)];
+    private readonly T[] _edge = new T[((128 + 7) * (128 + 7)) + Av1Samples.Padding];
     private readonly short[] _inter16 = new short[(128 + 7) * 128];
 
     /// <summary>
@@ -115,6 +115,12 @@ internal sealed partial class Av1Reconstructor<T>
         ReadOnlySpan<short> f = filters.AsSpan(frac * 8, 8);
         int half = 1 << (round0 - 1);
         int c0 = 0;
+        if (Av1Samples.IsByte<T>() && Avx2.IsSupported && w >= 8)
+        {
+            HorizontalBytes(ref Unsafe.As<T, byte>(ref MemoryMarshal.GetArrayDataReference(src)), at, stride, f, w, rows, round0, inter);
+            return;
+        }
+
         if (Avx2.IsSupported && w >= 8)
         {
             // Samples fit 16 bits: vpmaddwd sums tap pairs (m, m + 1) of eight outputs at once.
@@ -187,6 +193,59 @@ internal sealed partial class Av1Reconstructor<T>
                     + (f[4] * Av1Samples.Get(src[p + 4])) + (f[5] * Av1Samples.Get(src[p + 5])) + (f[6] * Av1Samples.Get(src[p + 6])) + (f[7] * Av1Samples.Get(src[p + 7]));
                 inter[d + c] = (short)((sum + half) >> round0);
             }
+        }
+    }
+
+    /// <summary>
+    /// The horizontal pass of 8-bit samples, 16 outputs at a time with vpmaddubsw: every AV1 filter tap is even, so the halved taps
+    /// fit a signed byte, a sum of eight of them times 8-bit samples fits 16 bits, and Round2(sum, round0) is Round2(sum / 2,
+    /// round0 - 1). Each 128-bit lane shuffles its eight outputs' sample pairs out of sixteen bytes; the sixteenth is read but
+    /// never used, which the planes' padding (<see cref="Av1Samples.Padding"/>) allows.
+    /// </summary>
+    private static void HorizontalBytes(ref byte src, int at, int stride, ReadOnlySpan<short> f, int w, int rows, int round0, short[] inter)
+    {
+        Vector256<sbyte> c01 = BytePair(f[0], f[1]), c23 = BytePair(f[2], f[3]), c45 = BytePair(f[4], f[5]), c67 = BytePair(f[6], f[7]);
+        Vector256<byte> s01 = PairShuffle(0), s23 = PairShuffle(2), s45 = PairShuffle(4), s67 = PairShuffle(6);
+        Vector256<short> halfV = Vector256.Create((short)(1 << (round0 - 2)));
+        int shift = round0 - 1;
+        ref short d0 = ref MemoryMarshal.GetArrayDataReference(inter);
+        for (int r = 0; r < rows; r++)
+        {
+            ref byte row = ref Unsafe.Add(ref src, at + (r * stride));
+            ref short d = ref Unsafe.Add(ref d0, r * w);
+            int c = 0;
+            for (; c + 16 <= w; c += 16)
+            {
+                // Lane 0 holds samples c to c + 15 for outputs c to c + 7, lane 1 samples c + 8 to c + 23 for the next eight.
+                Vector256<byte> window = Vector256.Create(Vector128.LoadUnsafe(ref row, (nuint)c), Vector128.LoadUnsafe(ref row, (nuint)(c + 8)));
+                Vector256<short> sum = Avx2.Add(
+                    Avx2.Add(Avx2.MultiplyAddAdjacent(Avx2.Shuffle(window, s01), c01), Avx2.MultiplyAddAdjacent(Avx2.Shuffle(window, s23), c23)),
+                    Avx2.Add(Avx2.MultiplyAddAdjacent(Avx2.Shuffle(window, s45), c45), Avx2.MultiplyAddAdjacent(Avx2.Shuffle(window, s67), c67)));
+                Vector256.ShiftRightArithmetic(sum + halfV, shift).StoreUnsafe(ref d, (nuint)c);
+            }
+
+            if (c < w)
+            {
+                // The last eight outputs of a block 8 samples wide.
+                Vector128<byte> window = Vector128.LoadUnsafe(ref row, (nuint)c);
+                Vector128<short> sum = Sse2.Add(
+                    Sse2.Add(Ssse3.MultiplyAddAdjacent(Ssse3.Shuffle(window, s01.GetLower()), c01.GetLower()),
+                        Ssse3.MultiplyAddAdjacent(Ssse3.Shuffle(window, s23.GetLower()), c23.GetLower())),
+                    Sse2.Add(Ssse3.MultiplyAddAdjacent(Ssse3.Shuffle(window, s45.GetLower()), c45.GetLower()),
+                        Ssse3.MultiplyAddAdjacent(Ssse3.Shuffle(window, s67.GetLower()), c67.GetLower())));
+                Vector128.ShiftRightArithmetic(sum + halfV.GetLower(), shift).StoreUnsafe(ref d, (nuint)c);
+            }
+        }
+
+        static Vector256<sbyte> BytePair(short first, short second) =>
+            Vector256.Create((short)((byte)(sbyte)(first >> 1) | ((sbyte)(second >> 1) << 8))).AsSByte();
+
+        // Bytes (m, m + 1), (m + 1, m + 2) ... (m + 7, m + 8) of a lane: taps m and m + 1 of its eight outputs.
+        static Vector256<byte> PairShuffle(int m)
+        {
+            Vector128<byte> lane = Vector128.Create((byte)m, (byte)(m + 1), (byte)(m + 1), (byte)(m + 2), (byte)(m + 2), (byte)(m + 3), (byte)(m + 3),
+                (byte)(m + 4), (byte)(m + 4), (byte)(m + 5), (byte)(m + 5), (byte)(m + 6), (byte)(m + 6), (byte)(m + 7), (byte)(m + 7), (byte)(m + 8));
+            return Vector256.Create(lane, lane);
         }
     }
 

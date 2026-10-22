@@ -10,6 +10,12 @@ namespace Egami.Formats.Av1;
 /// </summary>
 internal static class Av1Samples
 {
+    /// <summary>
+    /// The bytes past the end of an 8-bit plane, and of the sample buffers inter prediction reads, that vector loads may read
+    /// without using.
+    /// </summary>
+    internal const int Padding = 32;
+
     /// <summary>Gets a sample's value.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int Get<T>(T sample)

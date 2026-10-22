@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Formats.Av1;
 
@@ -362,9 +363,21 @@ internal static class Av1LoopFilter
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)(at + ((taps - 1) * step) + (3 * along)), (uint)s.Length, nameof(at));
 
         Span<Vector128<int>> v = stackalloc Vector128<int>[14];
-        for (int k = -taps; k < taps; k++)
+        Span<Vector128<int>> columns = stackalloc Vector128<int>[16];
+        int first = taps == 7 ? -8 : -4;
+        bool transpose = Av1Samples.IsByte<T>() && along != 1 && Ssse3.IsSupported;
+        if (transpose)
         {
-            v[7 + k] = Load(ref origin, k * step, along);
+            // A vertical edge: four rows of bytes across it, turned into a vector per column.
+            LoadColumns(ref Unsafe.As<T, byte>(ref origin), first, along, columns);
+            columns.Slice(-taps - first, 2 * taps).CopyTo(v[(7 - taps)..]);
+        }
+        else
+        {
+            for (int k = -taps; k < taps; k++)
+            {
+                v[7 + k] = Load(ref origin, k * step, along);
+            }
         }
 
         // v[7 + k]: q_k for k >= 0, p_(-1-k) for k < 0.
@@ -434,6 +447,13 @@ internal static class Av1LoopFilter
             }
         }
 
+        if (transpose)
+        {
+            o.Slice(7 - taps, 2 * taps).CopyTo(columns[(-taps - first)..]);
+            StoreColumns(ref Unsafe.As<T, byte>(ref origin), first, along, columns);
+            return;
+        }
+
         for (int k = -taps; k < taps; k++)
         {
             Store(ref origin, k * step, along, o[7 + k]);
@@ -443,6 +463,7 @@ internal static class Av1LoopFilter
 
         static Vector128<int> Select(Vector128<int> m, Vector128<int> a, Vector128<int> b) => Vector128.ConditionalSelect(m, a, b);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static Vector128<int> Load(ref T origin, int offset, int along)
         {
             ref T at = ref Unsafe.Add(ref origin, offset);
@@ -461,6 +482,7 @@ internal static class Av1LoopFilter
             return Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<T, byte>(ref at))).AsUInt16()).AsInt32();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Store(ref T origin, int offset, int along, Vector128<int> value)
         {
             ref T at = ref Unsafe.Add(ref origin, offset);
@@ -483,6 +505,76 @@ internal static class Av1LoopFilter
             {
                 Unsafe.Add(ref at, i * along) = Av1Samples.From<T>(value.GetElement(i));
             }
+        }
+    }
+
+    /// <summary>
+    /// Loads the bytes of four rows, <paramref name="stride"/> apart, from <paramref name="first"/> (-4 or -8) to -1 -
+    /// <paramref name="first"/> around <paramref name="origin"/>: a vector of four lanes, one per row, for each column.
+    /// </summary>
+    private static void LoadColumns(ref byte origin, int first, int stride, Span<Vector128<int>> columns)
+    {
+        ref byte at = ref Unsafe.Add(ref origin, first);
+        if (first == -4)
+        {
+            Vector128<byte> t0 = Sse2.UnpackLow(Row8(ref at, 0), Row8(ref at, stride)), t1 = Sse2.UnpackLow(Row8(ref at, 2 * stride), Row8(ref at, 3 * stride));
+            Split(Sse2.UnpackLow(t0.AsInt16(), t1.AsInt16()).AsByte(), columns);
+            Split(Sse2.UnpackHigh(t0.AsInt16(), t1.AsInt16()).AsByte(), columns[4..]);
+            return;
+        }
+
+        Vector128<byte> r0 = Vector128.LoadUnsafe(ref at), r1 = Vector128.LoadUnsafe(ref at, (nuint)stride);
+        Vector128<byte> r2 = Vector128.LoadUnsafe(ref at, (nuint)(2 * stride)), r3 = Vector128.LoadUnsafe(ref at, (nuint)(3 * stride));
+        Vector128<short> lo0 = Sse2.UnpackLow(r0, r1).AsInt16(), lo1 = Sse2.UnpackLow(r2, r3).AsInt16();
+        Vector128<short> hi0 = Sse2.UnpackHigh(r0, r1).AsInt16(), hi1 = Sse2.UnpackHigh(r2, r3).AsInt16();
+        Split(Sse2.UnpackLow(lo0, lo1).AsByte(), columns);
+        Split(Sse2.UnpackHigh(lo0, lo1).AsByte(), columns[4..]);
+        Split(Sse2.UnpackLow(hi0, hi1).AsByte(), columns[8..]);
+        Split(Sse2.UnpackHigh(hi0, hi1).AsByte(), columns[12..]);
+
+        static Vector128<byte> Row8(ref byte at, int offset) => Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref at, offset))).AsByte();
+
+        // Four columns of four rows each, a column's bytes adjacent, widened to a vector each.
+        static void Split(Vector128<byte> group, Span<Vector128<int>> to)
+        {
+            to[0] = Widen(group);
+            to[1] = Widen(Sse2.ShiftRightLogical128BitLane(group, 4));
+            to[2] = Widen(Sse2.ShiftRightLogical128BitLane(group, 8));
+            to[3] = Widen(Sse2.ShiftRightLogical128BitLane(group, 12));
+        }
+
+        static Vector128<int> Widen(Vector128<byte> b) => Vector128.WidenLower(Vector128.WidenLower(b)).AsInt32();
+    }
+
+    /// <summary>Stores the columns <see cref="LoadColumns"/> loads, back into their four rows.</summary>
+    private static void StoreColumns(ref byte origin, int first, int stride, ReadOnlySpan<Vector128<int>> columns)
+    {
+        // Byte j * 4 + r of a group (column j, row r) goes to byte r * 4 + j: each row's four columns together.
+        Vector128<byte> rows = Vector128.Create((byte)0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15);
+        ref byte at = ref Unsafe.Add(ref origin, first);
+        Vector128<int> a = Group(columns, rows), b = Group(columns[4..], rows);
+        if (first == -4)
+        {
+            Vector128<ulong> lo = Sse2.UnpackLow(a, b).AsUInt64(), hi = Sse2.UnpackHigh(a, b).AsUInt64();
+            Unsafe.WriteUnaligned(ref at, lo.GetElement(0));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref at, stride), lo.GetElement(1));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref at, 2 * stride), hi.GetElement(0));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref at, 3 * stride), hi.GetElement(1));
+            return;
+        }
+
+        Vector128<int> c = Group(columns[8..], rows), d = Group(columns[12..], rows);
+        Vector128<long> ab = Sse2.UnpackLow(a, b).AsInt64(), cd = Sse2.UnpackLow(c, d).AsInt64();
+        Vector128<long> ab2 = Sse2.UnpackHigh(a, b).AsInt64(), cd2 = Sse2.UnpackHigh(c, d).AsInt64();
+        Sse2.UnpackLow(ab, cd).AsByte().StoreUnsafe(ref at);
+        Sse2.UnpackHigh(ab, cd).AsByte().StoreUnsafe(ref at, (nuint)stride);
+        Sse2.UnpackLow(ab2, cd2).AsByte().StoreUnsafe(ref at, (nuint)(2 * stride));
+        Sse2.UnpackHigh(ab2, cd2).AsByte().StoreUnsafe(ref at, (nuint)(3 * stride));
+
+        static Vector128<int> Group(ReadOnlySpan<Vector128<int>> c, Vector128<byte> rows)
+        {
+            Vector128<ushort> c01 = Vector128.Narrow(c[0].AsUInt32(), c[1].AsUInt32()), c23 = Vector128.Narrow(c[2].AsUInt32(), c[3].AsUInt32());
+            return Ssse3.Shuffle(Vector128.Narrow(c01, c23), rows).AsInt32();
         }
     }
 

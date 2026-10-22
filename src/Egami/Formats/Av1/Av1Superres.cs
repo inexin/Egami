@@ -20,7 +20,7 @@ internal static class Av1Superres
         int rows = (h.FrameHeight + ssy) >> ssy;
         int stride = (upscaledWidth + 63) & ~63;
         int allocatedRows = src.Length / srcStride;
-        T[] dst = new T[stride * allocatedRows];
+        T[] dst = new T[(stride * allocatedRows) + Av1Samples.Padding];
         int max = (1 << frame.Sequence.BitDepth) - 1;
         int step = ((downscaledWidth << ScaleSubpelBits) + (upscaledWidth / 2)) / upscaledWidth;
         int err = (upscaledWidth * step) - (downscaledWidth << ScaleSubpelBits);
