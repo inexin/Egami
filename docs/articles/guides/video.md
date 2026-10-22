@@ -93,6 +93,7 @@ hidden frames give no frame, and a frame shown later with show_existing_frame co
   FFmpeg flags them too. When a container's keyframe flag disagrees, the stream wins and `Av1.KeyframeFlagMismatch` is reported.
 - A track's av1C (its `CodecPrivate`) gives the sequence header when the first unit has none. The IVF reader builds av1C from the
   first sequence header, and so does the Matroska writer for a track that has none, so IVF files remux to WebM, Matroska and MP4.
+- Seeking decodes from the shown key frame at or before the time, so exact seeks give the frame decoding from the start gives.
 - Broken data follows `VideoReaderOptions.Errors`: `Skip` (the default) reports `Av1.CorruptFrame`, or `Av1.MissingReference` for
   a unit that needs frames from before the first key frame, and resumes at the next shown key frame; `Conceal` repeats the last
   good frame in between.

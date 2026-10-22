@@ -83,6 +83,11 @@ V4.2: AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
   and 12 bit, 4:0:0 to 4:4:4, film grain, every frame equal to libaom's on our clips and libaom's size-changing Matroska vectors.
   Hidden frames give no frame; frames shown with show_existing_frame come out. The sequence header's color wins over the
   container's.
+- Exact and keyframe seeks in IVF, WebM, Matroska and raw AV1 land on shown key frames; 100 random exact seeks per container
+  match decoding from the start.
+- Broken data: `Skip` (the default) reports `Av1.CorruptFrame`, or `Av1.MissingReference` for a unit that needs frames from
+  before the first key frame, and resumes at the next shown key frame; `Conceal` repeats the last good frame in between (mid-gray
+  before the first); `Throw` throws.
 - `VideoDecoderOptions.ApplyFilmGrain` turns film grain off.
 - HDR: content light level and mastering display metadata OBUs (in the units, or in av1C's configOBUs) give `VideoFrame.Hdr`,
   equal to ffprobe's side data on an SVT-AV1 HDR10 clip; an ITU-T T.35 metadata OBU with HDR10+ gives `VideoFrame.Hdr10Plus`.
