@@ -55,10 +55,20 @@ internal sealed partial class Av1Reconstructor
         int[] inter = _intermediate;
         if (fracY == 0)
         {
-            // Only the rows the vertical filter's middle tap reads, and that tap is 128.
+            // Only the rows the vertical filter's middle tap reads, and that tap is 128: Round2(v * 128, round1).
             Horizontal(src, at + (3 * stride), stride, fracX, fx, w, h, round0, inter);
             int half = 1 << (round1 - 1);
-            for (int i = 0; i < w * h; i++)
+            int i = 0;
+            if (Vector256.IsHardwareAccelerated)
+            {
+                Vector256<int> halfV = Vector256.Create(half);
+                for (; i + 8 <= w * h; i += 8)
+                {
+                    Vector256.ShiftRightArithmetic(Vector256.ShiftLeft(Vector256.LoadUnsafe(ref inter[0], (nuint)i), 7) + halfV, round1).StoreUnsafe(ref pred[0], (nuint)i);
+                }
+            }
+
+            for (; i < w * h; i++)
             {
                 pred[i] = ((inter[i] * 128) + half) >> round1;
             }
@@ -79,7 +89,17 @@ internal sealed partial class Av1Reconstructor
             for (int r = 0; r < rows; r++)
             {
                 int s = at + (r * stride) + 3, d = r * w;
-                for (int c = 0; c < w; c++)
+                int c = 0;
+                if (Vector256.IsHardwareAccelerated)
+                {
+                    ref ushort row = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), s);
+                    for (; c + 8 <= w; c += 8)
+                    {
+                        Vector256.ShiftLeft(Load8(ref row, c), shift).StoreUnsafe(ref inter[0], (nuint)(d + c));
+                    }
+                }
+
+                for (; c < w; c++)
                 {
                     inter[d + c] = src[s + c] << shift;
                 }
@@ -101,7 +121,23 @@ internal sealed partial class Av1Reconstructor
             for (int r = 0; r < rows; r++)
             {
                 int s = at + (r * stride), d = r * w;
-                for (int c = 0; c + 8 <= w; c += 8)
+                int c = 0;
+                for (; c + 16 <= w; c += 16)
+                {
+                    // Sixteen outputs: in-lane unpacks give outputs 0-3 and 8-11 in one madd, 4-7 and 12-15 in the other.
+                    ref short p = ref Unsafe.Add(ref s0, s + c);
+                    Vector256<int> lo = halfV, hi = halfV;
+                    Interleave16(ref p, 0, c01, ref lo, ref hi);
+                    Interleave16(ref p, 2, c23, ref lo, ref hi);
+                    Interleave16(ref p, 4, c45, ref lo, ref hi);
+                    Interleave16(ref p, 6, c67, ref lo, ref hi);
+                    lo = Vector256.ShiftRightArithmetic(lo, round0);
+                    hi = Vector256.ShiftRightArithmetic(hi, round0);
+                    Avx2.Permute2x128(lo, hi, 0x20).StoreUnsafe(ref Unsafe.Add(ref d0, d + c));
+                    Avx2.Permute2x128(lo, hi, 0x31).StoreUnsafe(ref Unsafe.Add(ref d0, d + c + 8));
+                }
+
+                for (; c + 8 <= w; c += 8)
                 {
                     ref short p = ref Unsafe.Add(ref s0, s + c);
                     Vector256<int> acc = Avx2.Add(Avx2.Add(Avx2.MultiplyAddAdjacent(Interleave(ref p, 0), c01), Avx2.MultiplyAddAdjacent(Interleave(ref p, 2), c23)),
@@ -243,6 +279,15 @@ internal sealed partial class Av1Reconstructor
     {
         Vector128<short> a = Vector128.LoadUnsafe(ref p, (nuint)m), b = Vector128.LoadUnsafe(ref p, (nuint)(m + 1));
         return Vector256.Create(Sse2.UnpackLow(a, b), Sse2.UnpackHigh(a, b));
+    }
+
+    /// <summary>Adds taps m and m + 1 of sixteen outputs: outputs 0-3 and 8-11 to <paramref name="lo"/>, 4-7 and 12-15 to <paramref name="hi"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Interleave16(ref short p, int m, Vector256<short> taps, ref Vector256<int> lo, ref Vector256<int> hi)
+    {
+        Vector256<short> a = Vector256.LoadUnsafe(ref p, (nuint)m), b = Vector256.LoadUnsafe(ref p, (nuint)(m + 1));
+        lo = Avx2.Add(lo, Avx2.MultiplyAddAdjacent(Avx2.UnpackLow(a, b), taps));
+        hi = Avx2.Add(hi, Avx2.MultiplyAddAdjacent(Avx2.UnpackHigh(a, b), taps));
     }
 
     /// <summary>Samples m and m + 1 of four outputs, interleaved, reading no further than the fourth output's taps.</summary>

@@ -56,6 +56,8 @@ internal static class Av1LoopFilter
         frame.For(planeMiRows, y =>
         {
             int miRow = ssy | (y << ssy);
+            Av1BlockInfo? last = null;
+            int blockBits = 0;
             for (int x = 0; x < planeMiCols; x++)
             {
                 int miCol = ssx | (x << ssx);
@@ -66,10 +68,16 @@ internal static class Av1LoopFilter
                 }
 
                 Av1BlockInfo b = frame.Grid[(miRow * frame.MiCols) + miCol]!;
-                int ts = TransformSize(frame, b, miRow, miCol, plane, ssx, ssy);
-                int bsize = plane == 0 ? b.Size : Av1Tables.PlaneBlockSize(b.Size, ssx, ssy);
-                units[(y * planeMiCols) + x] = ts | (FilterLevel(h, b, plane, 0) << 8) | (FilterLevel(h, b, plane, 1) << 14) | ((b.Skip && b.IsInter ? 1 : 0) << 20)
-                    | (System.Numerics.BitOperations.Log2((uint)Av1Tables.BlockSizeWide[bsize]) << 21) | (System.Numerics.BitOperations.Log2((uint)Av1Tables.BlockSizeHigh[bsize]) << 25);
+                if (b != last)
+                {
+                    // What depends on the block alone, worked out once for the units along its row.
+                    int bsize = plane == 0 ? b.Size : Av1Tables.PlaneBlockSize(b.Size, ssx, ssy);
+                    blockBits = (FilterLevel(h, b, plane, 0) << 8) | (FilterLevel(h, b, plane, 1) << 14) | ((b.Skip && b.IsInter ? 1 : 0) << 20)
+                        | (System.Numerics.BitOperations.Log2((uint)Av1Tables.BlockSizeWide[bsize]) << 21) | (System.Numerics.BitOperations.Log2((uint)Av1Tables.BlockSizeHigh[bsize]) << 25);
+                    last = b;
+                }
+
+                units[(y * planeMiCols) + x] = TransformSize(frame, b, miRow, miCol, plane, ssx, ssy) | blockBits;
             }
         });
     }
