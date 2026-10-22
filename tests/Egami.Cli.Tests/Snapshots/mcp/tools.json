@@ -507,7 +507,8 @@
           }
         },
         "required": [
-          "inputs"
+          "inputs",
+          "angle"
         ],
         "additionalProperties": false
       },
@@ -597,7 +598,8 @@
           }
         },
         "required": [
-          "inputs"
+          "inputs",
+          "direction"
         ],
         "additionalProperties": false
       },
@@ -1488,7 +1490,8 @@
           }
         },
         "required": [
-          "inputs"
+          "inputs",
+          "text"
         ],
         "additionalProperties": false
       },
@@ -1598,7 +1601,8 @@
           }
         },
         "required": [
-          "inputs"
+          "inputs",
+          "image"
         ],
         "additionalProperties": false
       },

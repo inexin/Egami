@@ -68,6 +68,15 @@ internal static class ToolCatalog
     /// <summary>Commands that only read.</summary>
     private static readonly HashSet<string> ReadOnly = new(StringComparer.Ordinal) { "info", "formats", "stats", "metadata_show" };
 
+    /// <summary>
+    /// Arguments a command can't run without, though its tree calls them optional because the shell takes each either as a word
+    /// or as an option (tool review R3).
+    /// </summary>
+    private static readonly HashSet<(string Tool, string Argument)> Needed =
+    [
+        ("rotate", "angle"), ("flip", "direction"), ("text", "text"), ("overlay", "image"),
+    ];
+
     private static readonly Lazy<List<ToolInfo>> All = new(Build);
 
     /// <summary>Gets every tool, in the order of the command tree.</summary>
@@ -142,6 +151,14 @@ internal static class ToolCatalog
             if (!Excluded.Contains(option.Name))
             {
                 parameters.Add(Parameter(option));
+            }
+        }
+
+        for (int i = 0; i < parameters.Count; i++)
+        {
+            if (Needed.Contains((name, parameters[i].Name)))
+            {
+                parameters[i] = parameters[i] with { Required = true };
             }
         }
 

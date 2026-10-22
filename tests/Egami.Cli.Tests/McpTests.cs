@@ -55,6 +55,12 @@ public sealed class McpTests : IAsyncDisposable
             Assert.Equal(!ToolCatalog.Find(tool.Name)!.Writes, tool.ProtocolTool.Annotations!.ReadOnlyHint);
         }
 
+        foreach ((string tool, string argument) in (ReadOnlySpan<(string, string)>)[("rotate", "angle"), ("flip", "direction"), ("text", "text"), ("overlay", "image")])
+        {
+            JsonElement required = tools.Single(t => t.Name == tool).ProtocolTool.InputSchema.GetProperty("required");
+            Assert.Contains(argument, required.EnumerateArray().Select(e => e.GetString()));
+        }
+
         Assert.Equal("egami", client.ServerInfo!.Name);
         Assert.Contains("workflow", client.ServerInstructions, StringComparison.Ordinal);
     }
