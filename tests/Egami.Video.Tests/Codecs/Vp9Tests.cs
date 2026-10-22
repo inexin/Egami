@@ -503,9 +503,9 @@ public class Vp9Tests
         return payloads;
     }
 
-    private static double Rational(JsonElement element, string name) => Rational(element.GetProperty(name));
+    internal static double Rational(JsonElement element, string name) => Rational(element.GetProperty(name));
 
-    private static double Rational(JsonElement value)
+    internal static double Rational(JsonElement value)
     {
         string text = value.ValueKind == JsonValueKind.Number ? value.GetRawText() : value.GetString()!;
         string[] parts = text.Split('/');

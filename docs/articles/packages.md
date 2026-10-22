@@ -15,7 +15,7 @@ the other packages have versions of their own.
 | Egami.Css | 1.x | CSS syntax, selectors, the cascade, media queries and value parsers | Nothing | [CSS](guides/css.md) |
 | Egami.Metafiles | 1.0 | Plays WMF, EMF and EMF+ pictures onto a canvas | Egami, Egami.Drawing, Egami.Fonts | [Windows metafiles](guides/metafiles.md) |
 | Egami.Barcodes | 1.0 | Writes and reads 1D and 2D barcodes | Egami, Egami.Drawing, Egami.Fonts | [Barcodes](guides/barcodes.md), [Reading barcodes](guides/barcode-reading.md) |
-| Egami.Video | 0.3 (preview) | Reads and writes video with Egami rasters as frames: WebM, Matroska, AVI, IVF and YUV4MPEG2; VP9, VP8 and Motion JPEG decode, Motion JPEG encode | Egami | [Video](guides/video.md) |
+| Egami.Video | 0.3 (preview) | Reads and writes video with Egami rasters as frames: WebM, Matroska, AVI, IVF and YUV4MPEG2; AV1, VP9, VP8 and Motion JPEG decode, Motion JPEG encode | Egami | [Video](guides/video.md) |
 | Egami.Cli | 1.1 (in progress) | The `egami` command: convert, inspect, resize and edit images from a shell, chain steps, run workflow files and batches. A .NET tool, not a library, and the one package with a dependency outside the family: System.CommandLine | Egami, Egami.Drawing, Egami.Fonts, Egami.Fonts.Substitutes, Egami.Svg, Egami.Css, Egami.Metafiles | [The egami command](cli/index.md) |
 | Egami.Heic | 1.1 (in progress) | Reads HEIC phone photos (HEVC-coded HEIF), opt-in because HEVC is covered by patents | Egami, the same version | [HEIC](formats/heic.md) |
 

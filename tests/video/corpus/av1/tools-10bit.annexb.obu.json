@@ -1,0 +1,14 @@
+{"format":{"format_name": "av1", "duration": null, "nb_streams": 1},
+"streams":[
+{"index": 0, "codec_type": "video", "codec_name": "av1", "codec_tag_string": "[0][0][0][0]", "profile": "Main", "width": 96, "height": 64, "pix_fmt": "yuv420p10le", "color_range": "tv", "r_frame_rate": "25/1", "avg_frame_rate": "25/1", "time_base": "1/1200000"}],
+"packets":[
+{"stream_index": 0, "pts": 0, "dts": 0, "duration": 48000, "size": "386", "pos": "5", "flags": "K_"},
+{"stream_index": 0, "pts": 48000, "dts": 48000, "duration": 48000, "size": "634", "pos": "395", "flags": "__"},
+{"stream_index": 0, "pts": 96000, "dts": 96000, "duration": 48000, "size": "5", "pos": "1035", "flags": "__"},
+{"stream_index": 0, "pts": 144000, "dts": 144000, "duration": 48000, "size": "118", "pos": "1042", "flags": "__"},
+{"stream_index": 0, "pts": 192000, "dts": 192000, "duration": 48000, "size": "5", "pos": "1162", "flags": "__"},
+{"stream_index": 0, "pts": 240000, "dts": 240000, "duration": 48000, "size": "572", "pos": "1171", "flags": "__"},
+{"stream_index": 0, "pts": 288000, "dts": 288000, "duration": 48000, "size": "5", "pos": "1748", "flags": "__"},
+{"stream_index": 0, "pts": 336000, "dts": 336000, "duration": 48000, "size": "152", "pos": "1757", "flags": "__"},
+{"stream_index": 0, "pts": 384000, "dts": 384000, "duration": 48000, "size": "45", "pos": "1911", "flags": "__"},
+{"stream_index": 0, "pts": 432000, "dts": 432000, "duration": 48000, "size": "23", "pos": "1958", "flags": "__"}]}

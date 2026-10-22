@@ -318,3 +318,44 @@ virtual Egami.Video.Audio.AudioCodec.CanDecode(Egami.Video.TrackInfo! track) -> 
 virtual Egami.Video.Audio.AudioCodec.CanEncode.get -> bool
 virtual Egami.Video.Audio.AudioCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
 ~override Egami.Video.Audio.ChannelLayout.Equals(object obj) -> bool
+Egami.Video.Codecs.Av1Codec
+Egami.Video.Codecs.Av1Packets
+Egami.Video.Codecs.CodecHeaderReader
+Egami.Video.Codecs.CodecHeaderReader.CodecHeaderReader(Egami.Video.TrackInfo! track, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Codecs.CodecHeaderReader.Describe(Egami.Video.EncodedPacket! packet) -> System.Collections.Generic.IReadOnlyList<Egami.Video.Codecs.CodecHeaderField>!
+Egami.Video.Codecs.CodecHeaderReader.Dispose() -> void
+Egami.Video.Codecs.CodecHeaderReader.Reset() -> void
+Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain.get -> bool
+Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain.init -> void
+Egami.Video.Containers.Av1AnnexBFormat
+Egami.Video.Containers.Av1AnnexBFormat.Av1AnnexBFormat() -> void
+Egami.Video.Containers.Av1AnnexBFormat.FrameRate.get -> Egami.Video.Rational
+Egami.Video.Containers.Av1AnnexBFormat.FrameRate.init -> void
+Egami.Video.Containers.Av1ObuFormat
+Egami.Video.Containers.Av1ObuFormat.Av1ObuFormat() -> void
+Egami.Video.Containers.Av1ObuFormat.FrameRate.get -> Egami.Video.Rational
+Egami.Video.Containers.Av1ObuFormat.FrameRate.init -> void
+override Egami.Video.Codecs.Av1Codec.CodecId.get -> string!
+override Egami.Video.Codecs.Av1Codec.CreateDecoder(Egami.Video.VideoTrackInfo! track, Egami.Video.Codecs.VideoDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Codecs.IVideoDecoder!
+override Egami.Video.Codecs.Av1Codec.Name.get -> string!
+override Egami.Video.Containers.Av1AnnexBFormat.CanMux.get -> bool
+override Egami.Video.Containers.Av1AnnexBFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+override Egami.Video.Containers.Av1AnnexBFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.Av1AnnexBFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.Av1AnnexBFormat.Name.get -> string!
+override Egami.Video.Containers.Av1AnnexBFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.Av1AnnexBFormat.SignatureLength.get -> int
+override Egami.Video.Containers.Av1ObuFormat.CanMux.get -> bool
+override Egami.Video.Containers.Av1ObuFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+override Egami.Video.Containers.Av1ObuFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.Av1ObuFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.Av1ObuFormat.Name.get -> string!
+override Egami.Video.Containers.Av1ObuFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.Av1ObuFormat.SignatureLength.get -> int
+static Egami.Video.Codecs.Av1Codec.Instance.get -> Egami.Video.Codecs.Av1Codec!
+static Egami.Video.Codecs.Av1Packets.ExtractConfig(System.ReadOnlySpan<byte> obus) -> byte[]?
+static Egami.Video.Codecs.Av1Packets.MergeFrames(System.Collections.Generic.IEnumerable<System.ReadOnlyMemory<byte>>! frames) -> byte[]!
+static Egami.Video.Codecs.Av1Packets.SplitFrames(System.ReadOnlyMemory<byte> temporalUnit) -> System.Collections.Generic.IReadOnlyList<System.ReadOnlyMemory<byte>>!
+static Egami.Video.Codecs.VideoCodecs.Av1.get -> Egami.Video.Codecs.VideoCodec!
+static Egami.Video.Containers.Av1AnnexBFormat.Instance.get -> Egami.Video.Containers.Av1AnnexBFormat!
+static Egami.Video.Containers.Av1ObuFormat.Instance.get -> Egami.Video.Containers.Av1ObuFormat!

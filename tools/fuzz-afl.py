@@ -38,7 +38,7 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "shaping": "tests/images/fuzz/shaping-seeds/*", "bidi": "tests/images/fuzz/bidi-seeds/*",
          "radiance": "tests/images/radiance/*.hdr", "exr": "tests/images/exr/*.exr",
          "gainmap": "tests/images/gainmap/*.jpg tests/images/mpf/stereo*.jpg tests/images/mpf/preview.jpg",
-         "avif": "tests/images/fuzz/avif-seeds/*", "avifbox": "tests/images/fuzz/avifbox-seeds/*", "av1": "tests/images/fuzz/av1-seeds/*", "avif-write": "tests/images/fuzz/avif-write-seeds/*",
+         "avif": "tests/images/fuzz/avif-seeds/*", "avifbox": "tests/images/fuzz/avifbox-seeds/*", "av1": "tests/images/fuzz/av1-seeds/*", "av1stream": "tests/images/fuzz/av1stream-seeds/*", "avif-write": "tests/images/fuzz/avif-write-seeds/*",
          "isobox": "tests/images/fuzz/avif-seeds/* tests/images/fuzz/heicbox-seeds/*",
          "heic": "tests/images/fuzz/heic-seeds/*", "heicbox": "tests/images/fuzz/heicbox-seeds/*", "hevc": "tests/images/fuzz/hevc-seeds/*",
          "jxl": "tests/images/fuzz/jxl-seeds/*", "jxlbox": "tests/images/fuzz/jxlbox-seeds/*", "jxlentropy": "tests/images/fuzz/jxlentropy-seeds/*",
@@ -61,6 +61,7 @@ cp -r /src/src /build/
 cp -r /src/tests/Egami.Fuzz /build/tests/
 mkdir -p /build/tests/fonts/derived && cp /src/tests/fonts/derived/NotoSansCJK-layout-subset.otf /build/tests/fonts/derived/
 cp /src/Directory.Build.props /src/Directory.Packages.props /src/global.json /build/
+mkdir -p /build/docs && cp -r /src/docs/schemas /build/docs/
 cp /src/.editorconfig /build/ 2>/dev/null || true
 find /build -type d \\( -name bin -o -name obj \\) -prune -exec rm -rf {{}} +
 dotnet publish /build/tests/Egami.Fuzz -c Release -o /out -p:TreatWarningsAsErrors=false > /tmp/publish.log

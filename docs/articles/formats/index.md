@@ -7,8 +7,8 @@ them. SVG and Windows metafiles (WMF, EMF) load through the separate [Egami.Svg]
 [Egami.Metafiles](../guides/metafiles.md) packages. Every reader checks sizes against the safety limits before it allocates, and
 every reader has been fuzzed.
 
-Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 video frames decode
-through [`Vp8StreamDecoder`](vp8.md), and the boxes of MP4, QuickTime and HEIF files can be walked with [`IsoBoxReader`](iso-boxes.md). This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.
+Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
+through [`Vp8StreamDecoder`](vp8.md) and [`Av1StreamDecoder`](av1.md), and the boxes of MP4, QuickTime and HEIF files can be walked with [`IsoBoxReader`](iso-boxes.md). This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.
 
 ## At a glance
 
@@ -31,7 +31,7 @@ through [`Vp8StreamDecoder`](vp8.md), and the boxes of MP4, QuickTime and HEIF f
 | [Radiance](radiance.md) | RGBE and XYZE, every scan order, flat, old repeat-pixel and per-channel run-length scanlines | RGBE, run-length encoded or flat, optional EXPOSURE line | `RgbF32`, linear |
 | [OpenEXR](openexr.md) | Scanline and tiled, single and multi-part, every OpenEXR 3 compression but HTJ2K, half, float and uint channels, luminance-chroma; any part, layer or channel | One scanline part, R, G, B and A, ZIP, ZIPS, RLE, PIZ or none, in half or float | `RgbaF16` when the channels are half, `RgbaF32` otherwise, `GrayF32` for luminance alone; linear |
 | [JPEG XL](jxl.md) | Every still, lossless Modular and lossy VarDCT or Modular, at 1 to 31 bits and float, with alpha, CMYK, extra channels, animations and layers, previews, PQ and HLG, gain maps, and recompressed JPEGs (given back byte for byte) | Lossless in the raster's own precision, or lossy VarDCT in XYB, at cjxl's effort and quality scales; JPEGs recompressed losslessly | By bit depth: `Rgb8`, `Rgba8`, `Gray8`, their 16-bit forms, `RgbaF16` for 16-bit float, `RgbF32`, `RgbaF32` or `GrayF32` beyond |
-| [AVIF](avif.md) | Still images: AV1 intra frames with every coding tool, equal to dav1d's decode and converted to RGB as libavif does; alpha, grids, overlays, clean aperture, orientation, ICC, CICP, HDR, gain maps, every item, and sequences of key frames | Yes: lossy and lossless still images with alpha, 8, 10 and 12 bits, 4:2:0, 4:2:2, 4:4:4 and 4:0:0 | By bit depth: `Rgb8` or `Rgba8` for 8-bit files, `Rgb16` or `Rgba16` for 10 and 12 bits, `Gray8` or `Gray16` (with alpha, `GrayAlpha8` or `GrayAlpha16`) for monochrome |
+| [AVIF](avif.md) | Still images: AV1 intra frames with every coding tool, equal to dav1d's decode and converted to RGB as libavif does; alpha, grids, overlays, clean aperture, orientation, ICC, CICP, HDR, gain maps, every item, and animated sequences | Yes: lossy and lossless still images with alpha, 8, 10 and 12 bits, 4:2:0, 4:2:2, 4:4:4 and 4:0:0 | By bit depth: `Rgb8` or `Rgba8` for 8-bit files, `Rgb16` or `Rgba16` for 10 and 12 bits, `Gray8` or `Gray16` (with alpha, `GrayAlpha8` or `GrayAlpha16`) for monochrome |
 | [HEIC](heic.md) | With Egami.Heic: HEVC intra pictures up to 12 bits, grids, alpha, gain maps, depth maps, mattes and all-intra sequences; core Egami probes them | No | `Rgb8` for 8-bit files, `Rgb16` for 10 and 12 bits, with alpha when the file has it, gray for monochrome |
 | [PNM](pnm.md) | P1 to P6 plain and binary, maxval 1 to 65,535, P7 PAM with alpha, PF and Pf float maps | P1 to P7, plain or binary; PF and Pf | `Gray8`, `Gray16`, `GrayAlpha8`, `Rgb8`, `Rgba8` or `Rgba16`; `RgbF32` or `GrayF32` for PFM |
 

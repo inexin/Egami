@@ -5,9 +5,10 @@ no copying. It is fully managed and ships only royalty-free codecs:
 
 - Containers: WebM and Matroska, AVI (with OpenDML for files over 1 GB), IVF and YUV4MPEG2, read and written, and headerless raw
   frames.
-- Codecs: VP9 (all four profiles, 8, 10 and 12 bit, equal to libvpx frame for frame), VP8 (with WebM alpha) and Motion JPEG
-  decode; Motion JPEG and uncompressed encode. FLAC and PCM audio decode and encode (see [Audio](audio.md)); other tracks
-  are copied through untouched.
+- Codecs: AV1 (8, 10 and 12 bit, 4:0:0 to 4:4:4, film grain, equal to libaom frame for frame), VP9 (all four profiles, 8,
+  10 and 12 bit, equal to libvpx frame for frame), VP8 (with WebM alpha) and Motion JPEG decode; Motion JPEG and
+  uncompressed encode. FLAC and PCM audio decode and encode (see [Audio](audio.md)); other tracks are copied through
+  untouched.
 
 ## Probing a file
 
@@ -67,7 +68,7 @@ gives an `IVideoDecoder<TPixel>` that hands out RGB frames.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-decode)]
 
-Each codec is a `VideoCodec`: `Vp9Codec`, `Vp8Codec`, `MotionJpegCodec` and `RawVideoCodec`.
+Each codec is a `VideoCodec`: `Av1Codec`, `Vp9Codec`, `Vp8Codec`, `MotionJpegCodec` and `RawVideoCodec`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-codecs)]
 
@@ -75,16 +76,57 @@ An `IVideoEncoder` takes frames and gives packets, with `VideoEncoderOptions` fo
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-encode)]
 
-`CodecHeaders.Describe` lists a packet's header fields as `CodecHeaderField`s under the codec's own names, for VP8, VP9 and
+`CodecHeaders.Describe` lists a packet's header fields as `CodecHeaderField`s under the codec's own names, for VP8, VP9, AV1 and
 Motion JPEG.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-headers)]
+
+## AV1
+
+`Av1Codec` decodes AV1 from WebM, Matroska, MP4 and IVF with Egami's AV1 decoder: every profile, 8, 10 and 12 bit, 4:0:0, 4:2:0,
+4:2:2 and 4:4:4, film grain, scaled references and scalable streams. Every frame equals libaom's. A packet is a temporal unit;
+hidden frames give no frame, and a frame shown later with show_existing_frame comes out then. Frames come out at their own size,
+8-bit planes for 8-bit streams and 16-bit planes above, 4:0:0 for monochrome.
+
+- The color comes from the sequence header; the container's fills only what the header leaves unspecified. HDR metadata OBUs
+  give the frames' `Hdr` and `Hdr10Plus` (see [HDR](#hdr)).
+- `VideoDecoderOptions.ApplyFilmGrain = false` gives the frames as coded, without the film grain the stream asks for.
+- A keyframe is a temporal unit that starts with a shown key frame. A forward key frame, hidden and shown later, is not one, as
+  FFmpeg flags them too. When a container's keyframe flag disagrees, the stream wins and `Av1.KeyframeFlagMismatch` is reported.
+- A track's av1C (its `CodecPrivate`) gives the sequence header when the first unit has none. The IVF reader builds av1C from the
+  first sequence header, and so does the Matroska writer for a track that has none, so IVF files remux to WebM, Matroska and MP4.
+- Seeking decodes from the shown key frame at or before the time, so exact seeks give the frame decoding from the start gives.
+- Broken data follows `VideoReaderOptions.Errors`: `Skip` (the default) reports `Av1.CorruptFrame`, or `Av1.MissingReference` for
+  a unit that needs frames from before the first key frame, and resumes at the next shown key frame; `Conceal` repeats the last
+  good frame in between.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1)]
+
+Raw AV1 streams are containers of their own: `Av1ObuFormat` reads and writes low-overhead OBU files (.obu, as aomenc `--obu`
+writes and aomdec and dav1d read), and `Av1AnnexBFormat` the length-delimited files of the specification's Annex B (as the
+conformance streams and aomenc `--annexb=1` write). Both are detected from their first bytes; neither has timestamps, so frames are
+timed at the format's `FrameRate`, 30 a second unless you register one with another rate. Reading a file and writing it back gives
+the same bytes, and IVF, WebM, Matroska and MP4 tracks write to them.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1-raw)]
+
+`Av1Packets` splits a temporal unit into its frames and merges them back, and builds the av1C record from a sequence header.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1-packets)]
+
+`CodecHeaders.Describe` lists an AV1 packet's OBUs, its sequence header and metadata fields, and the start of each frame header
+(up to `error_resilient_mode`). The rest of a frame header depends on the frames before it, so a `CodecHeaderReader` reads a track's
+packets in order, decoding them, and lists each frame header whole.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1-headers)]
 
 ## HDR
 
 A frame's `Color` and `Hdr` carry its color code points and static HDR metadata. `YuvVideoFrame.ToRaster` with a target
 `ColorProfile` converts through Egami's color pipeline and tone maps PQ and HLG to SDR. VP9 frames in WebM carry HDR10+
-dynamic metadata as `Hdr10PlusMetadata`, with its `Hdr10PlusPercentile` distribution and `Hdr10PlusToneCurve`.
+dynamic metadata as `Hdr10PlusMetadata`, with its `Hdr10PlusPercentile` distribution and `Hdr10PlusToneCurve`. AV1 frames take
+`Hdr` from the stream's content light level and mastering display metadata OBUs (or the track's av1C), and `Hdr10Plus` from an
+ITU-T T.35 metadata OBU.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-hdr)]
 
@@ -130,7 +172,7 @@ before the one before it) and `metadata-dropped`. A file whose moov follows its 
 ## Containers
 
 Each container is a `ContainerFormat`: `MatroskaFormat` (WebM and Matroska), `Mp4Format` (MP4 and QuickTime), `AviFormat`,
-`IvfFormat`, `Y4mFormat`, and for audio `WavFormat` and `FlacFormat`.
+`IvfFormat`, `Y4mFormat`, `Av1ObuFormat` and `Av1AnnexBFormat` for raw AV1, and for audio `WavFormat` and `FlacFormat`.
 `RawVideo` reads and writes headerless frames in a layout you give.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-containers)]

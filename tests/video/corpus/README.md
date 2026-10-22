@@ -147,3 +147,17 @@ them: interleaved, little-endian, signed, in whole bytes of the stream's depth, 
 `reference.json`; `AudioCorpusTests` decodes every file libFLAC decodes and is skipped when they are missing. After the
 `EGAMI_AUDIO_GATES=1` tests have written Egami.Video's own encodings of them, `--gates` runs `flac -t` on those and compares
 their size with `flac -0` to `-8`.
+
+## AV1 (V4.2)
+
+`tests/video/corpus/av1` holds our own AV1 clips, encoded by libaom 3.15.2's aomenc (`tools/avifref/av1corpus.py`, through
+`python tools/make-av1-references.py clips`), one per inter tool or format. `python tools/video/make-av1-corpus.py` remuxes each
+with FFmpeg (`-c copy`) into WebM, and some into Matroska, with ffprobe's view of each (`<file>.json`), and copies libaom's frame
+hashes into `<clip>.frames.json`: per output frame its size, bit depth, whether it is monochrome, and the MD5 of its planes as
+16-bit little-endian samples, with and without film grain (from `tools/make-av1-references.py`). Four clips are also raw AV1:
+`<clip>.obu` written by FFmpeg's obu muxer and `<clip>.annexb.obu` (Annex B) written by the script itself; aomdec and dav1d decode
+both to libaom's frames, checked by the script in Docker. `hdr10.ivf` is a 10-bit BT.2020 PQ clip from FFmpeg's libsvtav1 with mastering
+display and content light level metadata OBUs, and `hdr10plus.ivf` the same with an HDR10+ ITU-T T.35 metadata OBU in each unit;
+their `.side_data.json` is ffprobe's side data per frame, and their `.frames.json` aomdec's frames. libaom's own AV1 test vectors
+(including the size-changing Matroska ones) are fetched into `.cache/avif/aom-test-data` and never committed; tests that need them
+are skipped when they are missing.
