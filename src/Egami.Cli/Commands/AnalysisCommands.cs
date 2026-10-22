@@ -132,7 +132,7 @@ internal static class AnalysisCommands
             bool everything = result.GetValue(all);
             bool asJson = result.GetValue(json);
             List<(InputFile File, Measured? Measured)> found = [.. inputs.Select(i => (i, (Measured?)null))];
-            int code = Batch.Run(session, inputs, batch, input =>
+            int code = Batch.Run(session, inputs, batch, InputSource.Each(input =>
             {
                 using Raster image = input.Load(session);
                 if (index < 0 || index >= image.FrameCount)
@@ -156,7 +156,7 @@ internal static class AnalysisCommands
                 }
 
                 return [];
-            });
+            }));
 
             if (asJson)
             {

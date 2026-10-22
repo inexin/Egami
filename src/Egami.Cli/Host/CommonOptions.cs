@@ -231,7 +231,7 @@ internal sealed class ImageOptions
             return null;
         }
 
-        OutputTemplate template = Pipeline.OutputTemplate.Parse(text);
+        OutputTemplate template = Hosting.OutputTemplate.Parse(text);
         if (inputs.Count > 1)
         {
             if (template.IsStdout)

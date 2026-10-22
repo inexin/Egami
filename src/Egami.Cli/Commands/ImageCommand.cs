@@ -33,7 +33,7 @@ internal static class ImageCommand
         GlobalOptions.Configure(session, result, inputs.Count > 1 && batch.Jobs != 1 ? 1 : 0);
         OutputTemplate? output = options.OutputTemplate(session, result, inputs);
         Plan built = plan();
-        return Batch.Run(session, inputs, batch, input => special?.Invoke(input, output) ?? Runner.Run(session, input, built, output));
+        return Batch.Run(session, inputs, batch, InputSource.Each(input => special?.Invoke(input, output) ?? Runner.Run(session, input, built, output)));
     }
 
     /// <summary>The steps a plan starts with for <c>--auto-orient</c>.</summary>

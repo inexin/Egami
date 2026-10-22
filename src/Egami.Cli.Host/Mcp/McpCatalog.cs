@@ -1,11 +1,9 @@
 using System.CommandLine;
 using System.Text.Json;
 
-using Egami.Cli.Host;
-
 using ModelContextProtocol.Protocol;
 
-namespace Egami.Cli.Mcp;
+namespace Egami.Cli.Hosting.Mcp;
 
 /// <summary>How a tool argument's JSON value becomes command-line words.</summary>
 internal enum ParameterKind
@@ -47,51 +45,67 @@ internal sealed record ToolParameter(string Name, string? Token, ParameterKind K
 internal sealed record ToolInfo(string Name, string[] Words, string Description, IReadOnlyList<ToolParameter> Parameters, bool Json, bool Writes);
 
 /// <summary>
-/// The tools of <c>egami mcp</c> (MCP design Q2, Q3): one per command, with the arguments and help text of the same command tree
-/// the command line parses, so a new command or option shows up in both without glue. <c>run</c> takes its steps as a workflow
-/// object with the published schema instead of words.
+/// The tools of a tool's <c>mcp</c> server: one per command, with the arguments and help text of the same command tree the
+/// command line parses, so a new command or option shows up in both without glue. <c>run</c> takes its steps as a workflow
+/// object with the published schema instead of words, when the tool set has a workflow.
 /// </summary>
-internal static class ToolCatalog
+internal sealed class McpCatalog
 {
-    /// <summary>
-    /// Options that belong to the server, that a call always sets, or that an assistant has no basis to choose (tool review R1):
-    /// calls use one job per processor and keep going past a failed file, reporting each.
-    /// </summary>
-    private static readonly HashSet<string> Excluded = new(StringComparer.Ordinal)
+    private McpCatalog(McpToolSet set, IReadOnlyList<ToolInfo> tools)
     {
-        "--help", "--version", "--verbose", "--debug", "--quiet", "--limit", "--json", "--workflow", "--list", "--jobs", "--fail-fast",
-    };
+        Set = set;
+        Tools = tools;
+    }
 
-    /// <summary>Commands that are not tools: the server itself.</summary>
-    private static readonly HashSet<string> NotTools = new(StringComparer.Ordinal) { "mcp" };
-
-    /// <summary>Commands that only read.</summary>
-    private static readonly HashSet<string> ReadOnly = new(StringComparer.Ordinal) { "info", "formats", "stats", "metadata_show" };
-
-    /// <summary>
-    /// Arguments a command can't run without, though its tree calls them optional because the shell takes each either as a word
-    /// or as an option (tool review R3).
-    /// </summary>
-    private static readonly HashSet<(string Tool, string Argument)> Needed =
-    [
-        ("rotate", "angle"), ("flip", "direction"), ("text", "text"), ("overlay", "image"),
-    ];
-
-    private static readonly Lazy<List<ToolInfo>> All = new(Build);
+    /// <summary>Gets the tool set the catalog was built from.</summary>
+    public McpToolSet Set { get; }
 
     /// <summary>Gets every tool, in the order of the command tree.</summary>
-    public static IReadOnlyList<ToolInfo> Tools => All.Value;
+    public IReadOnlyList<ToolInfo> Tools { get; }
+
+    /// <summary>Builds the catalog of a tool set from its command tree.</summary>
+    public static McpCatalog Build(McpToolSet set)
+    {
+        Command root = set.CreateRoot();
+        List<ToolInfo> tools = [];
+        void Walk(Command command, string[] words)
+        {
+            foreach (Command child in command.Subcommands)
+            {
+                if (set.NotTools.Contains(child.Name))
+                {
+                    continue;
+                }
+
+                string[] path = [.. words, child.Name];
+                if (child.Subcommands.Count > 0)
+                {
+                    Walk(child, path);
+                }
+                else
+                {
+                    tools.Add(child.Name == "run" && set.Workflow is { } workflow ? Run(set, workflow, child) : FromCommand(set, child, path));
+                }
+            }
+        }
+
+        Walk(root, []);
+        return new McpCatalog(set, tools);
+    }
+
+    /// <summary>The catalog without the tools <paramref name="keep"/> turns down, such as signing unless the server allows it.</summary>
+    public McpCatalog Where(Func<ToolInfo, bool> keep) => new(Set, [.. Tools.Where(keep)]);
 
     /// <summary>Finds a tool by name.</summary>
-    public static ToolInfo? Find(string name) => Tools.FirstOrDefault(t => t.Name == name);
+    public ToolInfo? Find(string name) => Tools.FirstOrDefault(t => t.Name == name);
 
     /// <summary>The protocol's description of a tool.</summary>
-    public static Tool Describe(ToolInfo tool)
+    public Tool Describe(ToolInfo tool)
     {
         return new Tool
         {
             Name = tool.Name,
-            Title = "egami " + string.Join(' ', tool.Words),
+            Title = Set.Name + " " + string.Join(' ', tool.Words),
             Description = tool.Description,
             InputSchema = InputSchema(tool),
             Annotations = new ToolAnnotations
@@ -104,37 +118,10 @@ internal static class ToolCatalog
         };
     }
 
-    private static List<ToolInfo> Build()
-    {
-        CliSession session = new(new CliConsole(() => Stream.Null, () => Stream.Null, TextWriter.Null, TextWriter.Null), ".", _ => null);
-        Command root = Cli.CreateRoot(session);
-        List<ToolInfo> tools = [];
-        void Walk(Command command, string[] words)
-        {
-            foreach (Command child in command.Subcommands)
-            {
-                if (NotTools.Contains(child.Name))
-                {
-                    continue;
-                }
+    /// <summary><c>frames-split</c> or <c>--bit-depth</c> in snake case.</summary>
+    internal static string Snake(string name) => name.TrimStart('-').Replace('-', '_');
 
-                string[] path = [.. words, child.Name];
-                if (child.Subcommands.Count > 0)
-                {
-                    Walk(child, path);
-                }
-                else
-                {
-                    tools.Add(child.Name == "run" ? Run(child) : FromCommand(child, path));
-                }
-            }
-        }
-
-        Walk(root, []);
-        return tools;
-    }
-
-    private static ToolInfo FromCommand(Command command, string[] words)
+    private static ToolInfo FromCommand(McpToolSet set, Command command, string[] words)
     {
         string name = string.Join('_', words.Select(Snake));
         List<ToolParameter> parameters = [];
@@ -148,7 +135,7 @@ internal static class ToolCatalog
         foreach (Option option in command.Options)
         {
             json |= option.Name == "--json";
-            if (!Excluded.Contains(option.Name))
+            if (!set.Excluded.Contains(option.Name))
             {
                 parameters.Add(Parameter(option));
             }
@@ -156,28 +143,28 @@ internal static class ToolCatalog
 
         for (int i = 0; i < parameters.Count; i++)
         {
-            if (Needed.Contains((name, parameters[i].Name)))
+            if (set.Needed.Contains((name, parameters[i].Name)))
             {
                 parameters[i] = parameters[i] with { Required = true };
             }
         }
 
-        bool writes = !ReadOnly.Contains(name);
+        bool writes = !set.ReadOnly.Contains(name);
         return new ToolInfo(name, words, command.Description ?? string.Empty, Unique(name, parameters), json, writes);
     }
 
     /// <summary><c>run</c>: inputs as a list and the steps as a workflow object, plus run's own options.</summary>
-    private static ToolInfo Run(Command command)
+    private static ToolInfo Run(McpToolSet set, McpWorkflow workflow, Command command)
     {
         List<ToolParameter> parameters =
         [
-            new("inputs", null, ParameterKind.List, "Image files, globs (*, ?, **) or folders with recursive.", false),
-            new("workflow", null, ParameterKind.Text, "The steps, as a workflow object: { \"egami\": 1, \"steps\": [ { \"op\": \"resize\", \"size\": \"1200x\" }, { \"op\": \"save\", \"path\": \"out/{name}.webp\", \"quality\": 82 } ] }. list_steps lists the steps and their options.", false),
-            new("list_steps", "--list", ParameterKind.Flag, "List every step with its options, instead of running anything.", false),
+            new("inputs", null, ParameterKind.List, workflow.InputsDescription, false),
+            new("workflow", null, ParameterKind.Text, workflow.WorkflowDescription, false),
+            new("list_steps", "--list", ParameterKind.Flag, workflow.ListDescription, false),
         ];
         foreach (Option option in command.Options)
         {
-            if (!Excluded.Contains(option.Name))
+            if (!set.Excluded.Contains(option.Name))
             {
                 parameters.Add(Parameter(option));
             }
@@ -211,7 +198,7 @@ internal static class ToolCatalog
         return twice is null ? parameters : throw new InvalidOperationException($"The tool {tool} has two arguments named {twice}.");
     }
 
-    private static JsonElement InputSchema(ToolInfo tool)
+    private JsonElement InputSchema(ToolInfo tool)
     {
         using MemoryStream buffer = new();
         using (Utf8JsonWriter json = new(buffer))
@@ -222,9 +209,9 @@ internal static class ToolCatalog
             foreach (ToolParameter parameter in tool.Parameters)
             {
                 json.WritePropertyName(parameter.Name);
-                if (tool.Name == "run" && parameter.Name == "workflow")
+                if (tool.Name == "run" && parameter.Name == "workflow" && Set.Workflow is { } workflow)
                 {
-                    WorkflowSchema.Body.WriteTo(json);
+                    workflow.Body.WriteTo(json);
                     continue;
                 }
 
@@ -247,11 +234,11 @@ internal static class ToolCatalog
                 json.WriteEndObject();
             }
 
-            if (tool.Writes)
+            if (tool.Writes && Set.Preview is not null)
             {
                 json.WriteStartObject("preview");
                 json.WriteString("type", "boolean");
-                json.WriteString("description", "Also return the first file written as a picture, fit to 1024 pixels.");
+                json.WriteString("description", Set.PreviewDescription);
                 json.WriteEndObject();
             }
 
@@ -269,11 +256,11 @@ internal static class ToolCatalog
             }
 
             json.WriteBoolean("additionalProperties", false);
-            if (tool.Name == "run")
+            if (tool.Name == "run" && Set.Workflow is { } run)
             {
                 // The workflow schema's references point at #/$defs, so its definitions move to the top.
                 json.WritePropertyName("$defs");
-                WorkflowSchema.Definitions.WriteTo(json);
+                run.Definitions.WriteTo(json);
             }
 
             json.WriteEndObject();
@@ -281,36 +268,4 @@ internal static class ToolCatalog
 
         return JsonDocument.Parse(buffer.ToArray()).RootElement.Clone();
     }
-
-    /// <summary>
-    /// The workflow schema, from the published file built into the tool: its body without <c>$id</c>, <c>$schema</c>, <c>title</c>
-    /// and <c>$defs</c>, and the definitions apart.
-    /// </summary>
-    private static (JsonElement Body, JsonElement Definitions) WorkflowSchema { get; } = LoadWorkflowSchema();
-
-    private static (JsonElement Body, JsonElement Definitions) LoadWorkflowSchema()
-    {
-        using Stream stream = typeof(ToolCatalog).Assembly.GetManifestResourceStream("egami-workflow-1.json")
-            ?? throw new InvalidOperationException("The workflow schema is not built into the tool.");
-        using JsonDocument document = JsonDocument.Parse(stream);
-        using MemoryStream buffer = new();
-        using (Utf8JsonWriter json = new(buffer))
-        {
-            json.WriteStartObject();
-            foreach (JsonProperty property in document.RootElement.EnumerateObject())
-            {
-                if (property.Name is not ("$id" or "$schema" or "title" or "$defs"))
-                {
-                    property.WriteTo(json);
-                }
-            }
-
-            json.WriteEndObject();
-        }
-
-        return (JsonDocument.Parse(buffer.ToArray()).RootElement.Clone(), document.RootElement.GetProperty("$defs").Clone());
-    }
-
-    /// <summary><c>frames-split</c> or <c>--bit-depth</c> in snake case.</summary>
-    internal static string Snake(string name) => name.TrimStart('-').Replace('-', '_');
 }

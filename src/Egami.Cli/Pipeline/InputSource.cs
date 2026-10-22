@@ -17,6 +17,9 @@ internal sealed class InputSource
     /// <summary>Gets the input.</summary>
     public InputFile File { get; }
 
+    /// <summary>A batch's work on each input, given the input as a source to read.</summary>
+    public static Func<InputFile, IReadOnlyList<string>> Each(Func<InputSource, IReadOnlyList<string>> work) => file => work(new InputSource(file));
+
     /// <summary>Reads the input's size, format, frames and orientation without decoding pixels.</summary>
     public RasterInfo Probe(CliSession session)
     {
@@ -83,57 +86,5 @@ internal sealed class InputSource
         }
 
         return _stdin;
-    }
-}
-
-/// <summary>Writes outputs: to standard output, or to a file through a temporary name that replaces the target only once complete.</summary>
-internal static class Output
-{
-    private static readonly Lock StdoutLock = new();
-
-    /// <summary>Writes an output; <paramref name="path"/> is a full path or <c>-</c>.</summary>
-    public static void Write(CliSession session, string path, Action<Stream> write)
-    {
-        if (path == "-")
-        {
-            lock (StdoutLock)
-            {
-                using MemoryStream buffer = new();
-                write(buffer);
-                Stream stdout = session.Console.Out();
-                buffer.Position = 0;
-                buffer.CopyTo(stdout);
-                stdout.Flush();
-            }
-
-            return;
-        }
-
-        session.Paths?.Check(Path.GetFullPath(path, session.WorkingDirectory));
-        string? folder = Path.GetDirectoryName(path);
-        if (!string.IsNullOrEmpty(folder))
-        {
-            Directory.CreateDirectory(folder);
-        }
-
-        string temporary = Path.Combine(folder ?? string.Empty, $".{Path.GetFileName(path)}.{Environment.ProcessId}.{Environment.CurrentManagedThreadId}.egami-tmp");
-        try
-        {
-            using (FileStream file = new(temporary, FileMode.Create, FileAccess.Write, FileShare.None, 1 << 16))
-            {
-                write(file);
-            }
-
-            File.Move(temporary, path, overwrite: true);
-            session.Written.Enqueue(path);
-            session.Info($"wrote {path}");
-        }
-        finally
-        {
-            if (File.Exists(temporary))
-            {
-                File.Delete(temporary);
-            }
-        }
     }
 }

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The command host the family's tools share (egami, egap): exit codes, globbing, output templates, batches, the folder policy
+    and the MCP server, as source with internal types only, so there is no public API to freeze (Egap CLI design Q14). Tools
+    get it as a development dependency and compile it in; Egami.Cli compiles the same files from this folder.
+  -->
+  <PropertyGroup>
+    <PackageId>Egami.Cli.Host</PackageId>
+    <Version>$(EgamiVersion)</Version>
+    <Description>The shared command host of Egami's command-line tools as source: exit codes, globs, output templates, parallel batches, folder policy and an MCP server over System.CommandLine. Internal types only; compiled into the tool that references it.</Description>
+    <PackageTags>$(EgamiPackageTags);cli;source</PackageTags>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <!-- A source package has no lib folder by design. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <!-- The tool compiles the sources, so it needs what they use. -->
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="ModelContextProtocol.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="**\*.cs" Exclude="bin\**;obj\**" Pack="true" PackagePath="contentFiles\cs\any\Egami.Cli.Host\%(RecursiveDir)%(Filename)%(Extension)" BuildAction="Compile" PackageCopyToOutput="false" />
+  </ItemGroup>
+
+</Project>

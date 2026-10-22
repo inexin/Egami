@@ -1,7 +1,7 @@
-namespace Egami.Cli.Host;
+namespace Egami.Cli.Hosting;
 
 /// <summary>
-/// The folders <c>egami mcp</c> may read and write (MCP design Q4): a path is allowed when it lies inside one of them after
+/// The folders a tool's <c>mcp</c> server may read and write: a path is allowed when it lies inside one of them after
 /// every symbolic link and junction on the way has been followed, so a link inside an allowed folder cannot lead out of it.
 /// </summary>
 internal sealed class PathPolicy
@@ -11,10 +11,12 @@ internal sealed class PathPolicy
     private static readonly StringComparison Comparison = OperatingSystem.IsWindows() || OperatingSystem.IsMacOS() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
     private readonly string[] _roots;
+    private readonly string _toolName;
 
-    /// <summary>Allows the folders given, made absolute against <paramref name="workingDirectory"/>.</summary>
-    public PathPolicy(IEnumerable<string> folders, string workingDirectory)
+    /// <summary>Allows the folders given, made absolute against <paramref name="workingDirectory"/>, for the tool <paramref name="toolName"/>.</summary>
+    public PathPolicy(IEnumerable<string> folders, string workingDirectory, string toolName)
     {
+        _toolName = toolName;
         List<string> roots = [];
         foreach (string folder in folders)
         {
@@ -51,8 +53,8 @@ internal sealed class PathPolicy
     {
         if (!Allows(fullPath))
         {
-            throw new UsageException($"'{fullPath}' is outside the folders egami may use here ({string.Join(", ", _roots)}). "
-                + "Open the folder in your assistant, or start egami mcp with --allow <folder>.");
+            throw new UsageException($"'{fullPath}' is outside the folders {_toolName} may use here ({string.Join(", ", _roots)}). "
+                + $"Open the folder in your assistant, or start {_toolName} mcp with --allow <folder>.");
         }
     }
 

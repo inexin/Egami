@@ -31,7 +31,7 @@ internal static class InfoCommands
             List<InputFile> inputs = options.ExpandInputs(session, result);
             bool everything = result.GetValue(all), asJson = result.GetValue(json);
             List<(InputFile File, RasterInfo? Info, RasterMetadata? Metadata, string? Error)> found = [.. inputs.Select(i => (i, (RasterInfo?)null, (RasterMetadata?)null, (string?)null))];
-            int code = Batch.Run(session, inputs, batch with { FailFast = batch.FailFast }, input =>
+            int code = Batch.Run(session, inputs, batch with { FailFast = batch.FailFast }, InputSource.Each(input =>
             {
                 RasterInfo info = input.Probe(session);
                 RasterMetadata? metadata = everything ? MetadataReport.Load(session, input) : null;
@@ -41,7 +41,7 @@ internal static class InfoCommands
                 }
 
                 return [];
-            });
+            }));
 
             if (asJson)
             {

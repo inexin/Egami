@@ -405,7 +405,7 @@ public sealed class McpTests : IAsyncDisposable
     [Fact]
     public void ThePathPolicyFollowsLinksAndKeepsToWholeNames()
     {
-        PathPolicy policy = new([_tool.Folder], Path.GetPathRoot(_tool.Folder)!);
+        PathPolicy policy = new([_tool.Folder], Path.GetPathRoot(_tool.Folder)!, "egami");
         Assert.True(policy.Allows(_tool.PathOf("a/b/c.png")));
         Assert.True(policy.Allows(_tool.Folder));
         Assert.False(policy.Allows(_tool.Folder + "-sibling"));

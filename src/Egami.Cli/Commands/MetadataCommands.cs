@@ -81,7 +81,7 @@ internal static class MetadataCommands
             List<InputFile> inputs = options.ExpandInputs(session, result);
             bool asJson = result.GetValue(json);
             List<(InputFile File, RasterMetadata? Metadata)> found = [.. inputs.Select(i => (i, (RasterMetadata?)null))];
-            int code = Batch.Run(session, inputs, batch, input =>
+            int code = Batch.Run(session, inputs, batch, InputSource.Each(input =>
             {
                 RasterMetadata metadata = MetadataReport.Load(session, input);
                 lock (found)
@@ -90,7 +90,7 @@ internal static class MetadataCommands
                 }
 
                 return [];
-            });
+            }));
             if (asJson)
             {
                 JsonOut.Write(session.Console.Text, writer =>

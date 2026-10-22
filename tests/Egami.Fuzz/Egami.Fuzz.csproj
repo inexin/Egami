@@ -29,4 +29,9 @@
     <EmbeddedResource Include="..\fonts\derived\NotoSansCJK-layout-subset.otf" LogicalName="NotoSansCJK-layout-subset.otf" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="Egami.Cli.Hosting" />
+    <Using Include="Egami.Cli.Hosting.Mcp" />
+  </ItemGroup>
+
 </Project>

@@ -1,8 +1,6 @@
-using Egami.Cli.Host;
+namespace Egami.Cli.Hosting;
 
-namespace Egami.Cli.Pipeline;
-
-/// <summary>How a batch runs (CLI design Q11).</summary>
+/// <summary>How a batch runs.</summary>
 /// <param name="Jobs">How many files run at once; 0 for the processor count.</param>
 /// <param name="FailFast">Whether the first failed file stops the batch.</param>
 /// <param name="InPlace">Whether an output may replace its input.</param>
@@ -19,7 +17,7 @@ internal sealed record BatchOptions(int Jobs, bool FailFast, bool InPlace)
 internal static class Batch
 {
     /// <summary>Runs <paramref name="work"/> for every input and returns the exit code.</summary>
-    public static int Run(CliSession session, IReadOnlyList<InputFile> inputs, BatchOptions options, Func<InputSource, IReadOnlyList<string>> work)
+    public static int Run(CliHostSession session, IReadOnlyList<InputFile> inputs, BatchOptions options, Func<InputFile, IReadOnlyList<string>> work)
     {
         int jobs = options.Jobs > 0 ? options.Jobs : Environment.ProcessorCount;
         int done = 0, failed = 0, limited = 0, finished = 0;
@@ -36,7 +34,7 @@ internal static class Batch
 
             try
             {
-                work(new InputSource(file));
+                work(file);
                 Interlocked.Increment(ref done);
             }
             catch (UsageException error)
@@ -45,7 +43,7 @@ internal static class Batch
                 usageError ??= error;
                 state?.Stop();
             }
-            catch (Exception error) when (Failure(error) is { } code)
+            catch (Exception error) when (session.Failure(error) is { } code)
             {
                 Interlocked.Increment(ref failed);
                 if (code == ExitCodes.Limit)
@@ -53,7 +51,7 @@ internal static class Batch
                     Interlocked.Increment(ref limited);
                 }
 
-                session.Error($"{file.Display}: {Message(error)}");
+                session.Error($"{file.Display}: {session.Message(error)}");
                 if (options.FailFast)
                 {
                     state?.Stop();
@@ -105,31 +103,61 @@ internal static class Batch
         return limited > 0 ? ExitCodes.Limit : failed > 0 ? ExitCodes.Failed : ExitCodes.Success;
     }
 
-    /// <summary>The exit code an exception from one file maps to, or <see langword="null"/> for a bug, which is not caught.</summary>
-    public static int? Failure(Exception error)
-    {
-        return error switch
-        {
-            LimitExceededException => ExitCodes.Limit,
-            EgamiException or IOException or UnauthorizedAccessException or NotSupportedException or InvalidOperationException or ArgumentException => ExitCodes.Failed,
-            _ => null,
-        };
-    }
-
-    /// <summary>A one-line message for a failed file.</summary>
-    public static string Message(Exception error)
-    {
-        return error switch
-        {
-            LimitExceededException limit => $"exceeds a safety limit: {limit.Message} Raise it with --limit if you trust the file.",
-            FileNotFoundException missing => missing.Message,
-            _ => error.Message,
-        };
-    }
-
     /// <summary>Whether two paths name the same file.</summary>
     public static bool SamePath(string a, string b)
     {
         return a != "-" && b != "-" && string.Equals(Path.GetFullPath(a), Path.GetFullPath(b), OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+    }
+}
+
+/// <summary>Writes outputs: to standard output, or to a file through a temporary name that replaces the target only once complete.</summary>
+internal static class Output
+{
+    private static readonly Lock StdoutLock = new();
+
+    /// <summary>Writes an output; <paramref name="path"/> is a full path or <c>-</c>.</summary>
+    public static void Write(CliHostSession session, string path, Action<Stream> write)
+    {
+        if (path == "-")
+        {
+            lock (StdoutLock)
+            {
+                using MemoryStream buffer = new();
+                write(buffer);
+                Stream stdout = session.Console.Out();
+                buffer.Position = 0;
+                buffer.CopyTo(stdout);
+                stdout.Flush();
+            }
+
+            return;
+        }
+
+        session.Paths?.Check(Path.GetFullPath(path, session.WorkingDirectory));
+        string? folder = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(folder))
+        {
+            Directory.CreateDirectory(folder);
+        }
+
+        string temporary = Path.Combine(folder ?? string.Empty, $".{Path.GetFileName(path)}.{Environment.ProcessId}.{Environment.CurrentManagedThreadId}.{session.ToolName}-tmp");
+        try
+        {
+            using (FileStream file = new(temporary, FileMode.Create, FileAccess.Write, FileShare.None, 1 << 16))
+            {
+                write(file);
+            }
+
+            File.Move(temporary, path, overwrite: true);
+            session.Written.Enqueue(path);
+            session.Info($"wrote {path}");
+        }
+        finally
+        {
+            if (File.Exists(temporary))
+            {
+                File.Delete(temporary);
+            }
+        }
     }
 }

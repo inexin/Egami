@@ -22,6 +22,7 @@
   <Folder Name="/src/">
     <Project Path="src/Egami/Egami.csproj" />
     <Project Path="src/Egami.Barcodes/Egami.Barcodes.csproj" />
+    <Project Path="src/Egami.Cli.Host/Egami.Cli.Host.csproj" />
     <Project Path="src/Egami.Cli.Generators/Egami.Cli.Generators.csproj" />
     <Project Path="src/Egami.Cli/Egami.Cli.csproj" />
     <Project Path="src/Egami.Css/Egami.Css.csproj" />
