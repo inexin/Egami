@@ -7,6 +7,10 @@ Usage, from the repo root:
   python tools/video/make-audio-corpus.py              clips into tests/video/corpus/audio (checked in) with manifest.json
   python tools/video/make-audio-corpus.py --ietf       also fetch the IETF CELLAR flac-test-files into .cache/audio/flac-test-files
                                                        and write their libFLAC references (not checked in: terms unrecorded)
+  docker build -t egami-opusref:v5.1 tools/video/opusref
+  python tools/video/make-audio-corpus.py --opus       V5.1: Ogg and Opus clips into tests/video/corpus/audio/opus (checked in),
+                                                       each with opusdec's 16-bit decode, and the RFC 8251 test vectors fetched
+                                                       into .cache/audio/opus-vectors
   python tools/video/make-audio-corpus.py --check DIR  run flac -t on every .flac file in DIR (Egami.Video's own output)
   python tools/video/make-audio-corpus.py --gates      after the EGAMI_AUDIO_GATES=1 tests: flac -t on Egami.Video's encodings
                                                        of the IETF files, their size against flac -0 to -8, and flac -d's time
@@ -135,6 +139,47 @@ def check(folder):
     return failed
 
 
+OPUS_IMAGE = "egami-opusref:v5.1"
+OPUS_OUT = os.path.join(OUT, "opus")
+
+# name: shell command in /work making {out} from the sources in /tmp (a.wav: stereo 48 kHz, m.wav: mono 16 kHz, s.wav: 5.1)
+OPUS_CLIPS = {
+    "opus-stereo.opus": "opusenc --quiet --bitrate 96 /tmp/a.wav {out}",
+    "opus-mono-speech.opus": "opusenc --quiet --bitrate 10 --framesize 20 /tmp/m.wav {out}",
+    "opus-hybrid.opus": "opusenc --quiet --bitrate 24 /tmp/a.wav {out}",
+    "opus-51.opus": "opusenc --quiet --bitrate 192 /tmp/s.wav {out}",
+    "opus-fec.opus": "opusenc --quiet --bitrate 16 --expect-loss 20 /tmp/m.wav {out}",
+    "opus-chained.opus": "opusenc --quiet --bitrate 64 --title One /tmp/a.wav /tmp/1.opus && opusenc --quiet --bitrate 64 --title Two /tmp/a.wav /tmp/2.opus && cat /tmp/1.opus /tmp/2.opus > {out}",
+    "webm-opus.webm": "opusenc --quiet --bitrate 64 /tmp/a.wav /tmp/1.opus && ffmpeg -v error -i /tmp/1.opus -c:a copy {out}",
+    "mp4-opus.mp4": "opusenc --quiet --bitrate 64 /tmp/a.wav /tmp/1.opus && ffmpeg -v error -i /tmp/1.opus -c:a copy -strict -2 {out}",
+    "ogg-flac.oga": "ffmpeg -v error -i /tmp/a.wav -c:a flac -sample_fmt s16 {out}",
+    "ogg-vorbis.ogg": "ffmpeg -v error -i /tmp/a.wav -c:a libvorbis -q:a 3 {out}",
+}
+
+OPUS_SOURCES = ("ffmpeg -v error -y " + source(48000, 2) + " -c:a pcm_s16le /tmp/a.wav && ffmpeg -v error -y "
+                + source(16000, 1) + " -c:a pcm_s16le /tmp/m.wav && ffmpeg -v error -y " + source(48000, 6)
+                + " -c:a pcm_s16le -channel_layout 5.1 /tmp/s.wav")
+
+
+def make_opus():
+    os.makedirs(OPUS_OUT, exist_ok=True)
+    for name, command in OPUS_CLIPS.items():
+        out = f"/work/{name}"
+        ref = ""
+        if name.endswith(".opus"):
+            # opusdec's 16-bit decode without dither, gain and pre-skip applied, end trimmed: what Egami.Video's reader must match.
+            ref = f" && opusdec --quiet --no-dither --rate 48000 {out} /work/{name}.wav"
+        subprocess.run(["docker", "run", "--rm", "-v", f"{OPUS_OUT}:/work", OPUS_IMAGE, "sh", "-c",
+                        OPUS_SOURCES + " && " + command.format(out=out) + ref], check=True)
+        print(name, os.path.getsize(os.path.join(OPUS_OUT, name)))
+    vectors = os.path.join(CACHE, "opus-vectors")
+    if not os.path.isdir(os.path.join(vectors, "opus_newvectors")):
+        os.makedirs(vectors, exist_ok=True)
+        subprocess.run(["curl", "-sSL", "-o", os.path.join(vectors, "v.tar.gz"),
+                        "https://opus-codec.org/static/testvectors/opus_testvectors-rfc8251.tar.gz"], check=True)
+        subprocess.run(["tar", "xzf", "v.tar.gz"], cwd=vectors, check=True)
+
+
 def gates():
     """Compares .cache/audio/gates/L<n> (Egami.Video's FLAC) with libFLAC at the same level; prints sizes and flac -d's time."""
     gates_dir = os.path.join(CACHE, "gates")
@@ -162,6 +207,9 @@ if __name__ == "__main__":
         sys.exit(0)
     if "--check" in sys.argv:
         sys.exit(1 if check(sys.argv[sys.argv.index("--check") + 1]) else 0)
+    if "--opus" in sys.argv:
+        make_opus()
+        sys.exit(0)
     if "--ietf" in sys.argv:
         fetch_ietf()
     else:

@@ -79,6 +79,13 @@ public sealed record AudioDecoderOptions
     /// default; turning it off saves the MD5's time.
     /// </summary>
     public bool VerifyChecksums { get; init; } = true;
+
+    /// <summary>
+    /// Gets whether to keep the samples a packet decodes past the duration its container gives it (the padding at the end of an
+    /// Opus stream, which Ogg's last granule position and Matroska's DiscardPadding mark). Off by default, so they are trimmed.
+    /// <see cref="AudioReader"/> sets this from <see cref="AudioReaderOptions.KeepAllSamples"/>.
+    /// </summary>
+    public bool KeepPadding { get; init; }
 }
 
 /// <summary>What an audio encoder makes.</summary>
@@ -183,6 +190,9 @@ public static class AudioCodecs
 
     /// <summary>Gets the FLAC codec.</summary>
     public static AudioCodec Flac => FlacCodec.Instance;
+
+    /// <summary>Gets the Opus codec (decode only).</summary>
+    public static AudioCodec Opus => OpusCodec.Instance;
 
     /// <summary>Creates a decoder for a track.</summary>
     /// <param name="track">The track.</param>

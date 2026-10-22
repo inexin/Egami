@@ -67,7 +67,22 @@ public class FuzzRegressionTests
             return;
         }
 
-        if (input.StartsWith("wav", StringComparison.Ordinal) || input.StartsWith("flac", StringComparison.Ordinal))
+        if (input.StartsWith("opusraw", StringComparison.Ordinal))
+        {
+            Video.Audio.Codecs.Opus.OpusStreamDecoder decoder = new((data.Length > 0 ? data[0] & 1 : 0) + 1);
+            float[] pcm = new float[5760 * 2];
+            int p = 1;
+            while (p + 2 <= data.Length)
+            {
+                int length = Math.Min((data[p] << 8) | data[p + 1], data.Length - p - 2);
+                decoder.Decode(data.AsSpan(p + 2, length), pcm, 5760, false, false, out _);
+                p += 2 + length;
+            }
+
+            return;
+        }
+
+        if (input.StartsWith("wav", StringComparison.Ordinal) || input.StartsWith("flac", StringComparison.Ordinal) || input.StartsWith("ogg", StringComparison.Ordinal))
         {
             // As the fuzz target: decode converting to 16-bit stereo at 22.05 kHz, then seek.
             try

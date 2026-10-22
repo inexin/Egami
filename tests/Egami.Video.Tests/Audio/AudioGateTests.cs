@@ -115,6 +115,54 @@ public class AudioGateTests(ITestOutputHelper output)
         }
     }
 
+    [Fact]
+    public void OpusDecodeSpeed()
+    {
+        if (!Enabled || OpusVectorTests.Directory() is not { } directory)
+        {
+            Assert.Skip("Set EGAMI_AUDIO_GATES=1 and fetch the Opus test vectors (make-audio-corpus.py --opus).");
+            return;
+        }
+
+        // The twelve RFC 8251 vectors decoded to stereo, best of three, as make-audio-corpus.py --gates times opus_demo -d.
+        List<(byte[] Packet, int Length)> packets = [];
+        for (int v = 1; v <= 12; v++)
+        {
+            byte[] file = File.ReadAllBytes(Path.Combine(directory, $"testvector{v:00}.bit"));
+            for (int p = 0; p + 8 <= file.Length;)
+            {
+                int length = System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(file.AsSpan(p));
+                packets.Add((file.AsSpan(p + 8, length).ToArray(), v));
+                p += 8 + length;
+            }
+        }
+
+        double best = double.MaxValue;
+        long samples = 0;
+        float[] pcm = new float[5760 * 2 * 2];
+        for (int run = 0; run < 3; run++)
+        {
+            Egami.Video.Audio.Codecs.Opus.OpusStreamDecoder? decoder = null;
+            int vector = 0;
+            samples = 0;
+            Stopwatch watch = Stopwatch.StartNew();
+            foreach ((byte[] packet, int v) in packets)
+            {
+                if (v != vector)
+                {
+                    decoder = new Egami.Video.Audio.Codecs.Opus.OpusStreamDecoder(2);
+                    vector = v;
+                }
+
+                samples += Math.Max(0, decoder!.Decode(packet, pcm, 5760 * 2, false, false, out _));
+            }
+
+            best = Math.Min(best, watch.Elapsed.TotalSeconds);
+        }
+
+        output.WriteLine($"Opus: {samples} samples ({samples / 48000.0:F0} s of audio) in {best:F3} s, {samples / 48000.0 / best:F0}x real time");
+    }
+
     /// <summary>The IETF subset files libFLAC decodes, without the ones made to stress metadata.</summary>
     private static IEnumerable<(string Name, AudioCorpus.Reference Reference)> Sources(string directory) =>
         AudioCorpus.Load(Path.Combine(directory, "reference.json"))

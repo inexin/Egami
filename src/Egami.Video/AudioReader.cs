@@ -24,6 +24,7 @@ public sealed class AudioReader : IDisposable
     private Resampler? _resampler;
     private DiagnosticReporter? _diagnostics;
     private MediaTime? _seekTarget;
+    private MediaTime? _emittedEnd;
     private bool _endOfStream;
     private bool _flushed;
 
@@ -37,7 +38,7 @@ public sealed class AudioReader : IDisposable
                     ?? throw new ArgumentException($"Track {n} is not an audio track.", nameof(options))
                 : demuxer.Tracks.OfType<AudioTrackInfo>().FirstOrDefault())
             ?? throw new UnsupportedFormatException("The file has no audio track.");
-        _decoder = AudioCodecs.CreateDecoder(Track, (_options.Decoder ?? AudioDecoderOptions.Default) with { Errors = _options.Errors }, context);
+        _decoder = AudioCodecs.CreateDecoder(Track, (_options.Decoder ?? AudioDecoderOptions.Default) with { Errors = _options.Errors, KeepPadding = _options.KeepAllSamples }, context);
         SampleRate = _options.SampleRate ?? Track.SampleRate;
         Layout = _options.Layout ?? Track.EffectiveLayout;
     }
@@ -153,6 +154,7 @@ public sealed class AudioReader : IDisposable
         _endOfStream = false;
         _flushed = false;
         _seekTarget = time;
+        _emittedEnd = null;
     }
 
     /// <summary>Closes the file.</summary>
@@ -258,9 +260,17 @@ public sealed class AudioReader : IDisposable
             start = target;
         }
 
+        // Audio comes out once: a chained Ogg link's pre-skip, which overlaps the end of the link before, is dropped.
+        if (!_options.KeepAllSamples && _emittedEnd is { } emitted && emitted > start)
+        {
+            start = emitted;
+        }
+
         if (start > frame.Timestamp)
         {
-            long skip = (start - frame.Timestamp).Rescale(new Rational(1, frame.SampleRate)).Ticks;
+            // In the frame's own sample ticks: a difference taken in a coarser time base (MediaTime.Zero's seconds) would round away.
+            Rational samples = new(1, frame.SampleRate);
+            long skip = start.Rescale(samples).Ticks - frame.Timestamp.Rescale(samples).Ticks;
             if (skip >= frame.SampleCount)
             {
                 return false;
@@ -270,6 +280,7 @@ public sealed class AudioReader : IDisposable
         }
 
         _seekTarget = null;
+        _emittedEnd = frame.Timestamp + frame.Duration;
         return true;
     }
 
@@ -356,8 +367,9 @@ public sealed record AudioReaderOptions
     public DecodeErrorMode Errors { get; init; } = DecodeErrorMode.Skip;
 
     /// <summary>
-    /// Gets whether to keep every decoded sample: the codec's priming delay (samples before time zero) and the samples of packets an
-    /// edit list leaves out. Off by default, so the audio has exactly the samples the encoder was given.
+    /// Gets whether to keep every decoded sample: the codec's priming delay (samples before time zero, such as Opus's pre-skip), the
+    /// padding past a packet's stated duration at the end, and the samples of packets an edit list leaves out. Off by default, so
+    /// the audio has exactly the samples the encoder was given.
     /// </summary>
     public bool KeepAllSamples { get; init; }
 }

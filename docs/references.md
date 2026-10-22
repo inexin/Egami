@@ -78,6 +78,12 @@ LGPL code is never read.
 | ITU-T T.81 (JPEG), Annex K.3 | Standard Huffman tables for frames without DHT |
 | VP9 Bitstream and Decoding Process Specification v0.7 | VP9 decoder, superframes, header field names |
 | WebM codec mapping: VP9 CodecPrivate feature records | V_VP9 CodecPrivate |
+| FLAC, IETF RFC 9639 | FLAC decoder, encoder and .flac files |
+| Microsoft WAVEFORMATEXTENSIBLE; EBU Tech 3306 (RF64); Sony Wave64 GUIDs | WAV, RF64 and Wave64 |
+| ITU-R BS.775 | Downmix levels |
+| Ogg, IETF RFC 3533; Ogg Opus, IETF RFC 7845 | Ogg pages, the Opus mapping, OpusHead and OpusTags |
+| Opus, IETF RFC 6716 and RFC 8251 | Opus decoding and its test vectors |
+| Vorbis I specification (Xiph.Org) | The Ogg Vorbis mapping and Vorbis headers |
 
 ### Reference code (ideas only)
 
@@ -91,6 +97,7 @@ LGPL code is never read.
 | Library | License | Used for |
 | --- | --- | --- |
 | libvpx 1.14.1 | BSD-3, Google patent grant | The VP9 decoder (`src/Egami.Video/Codecs/Vp9`), so frames equal libvpx's sample for sample |
+| libopus 1.5.2 | BSD-3, royalty-free IETF patent licenses | The Opus decoder (`src/Egami.Video/Audio/Codecs/Opus`): RFC 6716 makes this decoder normative, and the RFC 8251 test vectors check it |
 
 ### Tools run as black boxes only (never read)
 
@@ -99,3 +106,5 @@ LGPL code is never read.
 | FFmpeg, ffprobe | LGPL/GPL | Make test clips, decode and probe for comparison, in Docker |
 | libvpx vpxenc and vpxdec | BSD-3 | Make VP9 clips and give the expected frames, in Docker (`tools/video/vp9ref`) |
 | MKVToolNix (mkvinfo) | GPL-2.0 | Check our Matroska files, in Docker |
+| libopus opus_demo and opus_compare, opus-tools | BSD-3 | Decode the Opus test vectors and make Ogg Opus clips, in Docker (`tools/video/opusref`) |
+| flac, SoX | GPL-2.0 | Make FLAC clips, check our FLAC files with flac -t, time resampling, in Docker (`tools/video/audioref`) |

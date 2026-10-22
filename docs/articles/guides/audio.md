@@ -2,12 +2,12 @@
 
 Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:
 
-- Codecs: FLAC (RFC 9639) decode and encode, and integer and float PCM.
-- Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64 and native FLAC, read and written; FLAC and PCM in
-  Matroska, WebM and MP4 too.
+- Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, and Opus (RFC 6716) decode.
+- Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC and Ogg, read and written; FLAC, PCM
+  and Opus in Matroska, WebM and MP4 too.
 - A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.
 
-Opus, Vorbis and other audio tracks are copied through untouched.
+Vorbis and other audio tracks are copied through untouched.
 
 ## Frames
 
@@ -87,6 +87,17 @@ to 8 with the reference encoder's meaning, default 5, and sizes within 1 % of li
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-codecs)]
 
+## Opus
+
+`OpusCodec` decodes every Opus stream: SILK (speech), CELT (music) and hybrid frames at every bandwidth, mono, stereo and the
+multichannel mappings of RFC 7845 (families 0, 1 and 255). Frames come out as planar float at 48 kHz, Opus's own rate, with the
+channels in the canonical order; ask `AudioReaderOptions.SampleRate` for another rate. The pre-skip (the track's
+`CodecDelay`) and the end padding are trimmed. A lost packet, reported with `IAudioDecoder.SendLoss` or seen as a gap in the
+timestamps, is concealed, or recovered from the next packet's in-band FEC when it carries some. The decoder passes the RFC
+8251 test vectors.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-opus)]
+
 ## Containers
 
 `WavFormat.Instance` reads WAV, RF64 and BW64 (PCM, float, WAVE_FORMAT_EXTENSIBLE with its channel mask, and streamed files
@@ -95,3 +106,10 @@ Wave64. LIST/INFO and id3 tags become `MediaInfo.Tags`, and cue points become ch
 FLAC: Vorbis comments as tags, pictures as attachments (cover.* for the front cover), and a seek table every 10 seconds.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-containers)]
+
+`OggFormat` reads and writes Ogg (.ogg, .opus, .oga) with Opus, Vorbis and FLAC. Timestamps come from the granule positions,
+seeking from an index built in one pass over the page headers, and pages with a bad CRC are skipped with an `ogg-crc`
+warning. A chained file (one stream after another) reads as one track when the settings stay the same, each link's TITLE a
+chapter; a link that changes them ends the track with an `ogg-chained-stream` warning.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-ogg)]

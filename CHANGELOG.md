@@ -77,7 +77,7 @@ which needs no .NET runtime.
 
 ## Egami.Video 0.5.0 (unreleased)
 
-V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing. The V5 audio steps (V5.0,
+V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg. The V5 audio steps (V5.0,
 V5.1 Opus, V5.5 Vorbis) get one API review and one release after V5.5, so these types may still change.
 
 V4.2, API reviewed and accepted 2026-10-22 (all as recommended): AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
@@ -120,6 +120,23 @@ V4.2, API reviewed and accepted 2026-10-22 (all as recommended): AV1 decode, thr
 - `VideoWriterOptions.AudioCodec` (with `AudioSampleRate`, `AudioLayout` and `AudioBitsPerSample`) and
   `VideoWriter.WriteAudio`: an audio track encoded next to the video.
 - AFL++ fuzz targets `wav` and `flac`.
+
+### Opus and Ogg (V5.1)
+
+- `OpusCodec` (decode only), registered by default: SILK, CELT and hybrid frames at every bandwidth, mono, stereo and the RFC
+  7845 multichannel mappings 0, 1 and 255, translated from libopus 1.5.2. All twelve RFC 8251 test vectors pass opus_compare
+  in mono and stereo (96.2 to 100 %), with libopus's final range on every packet; files from opusenc decode within one 16-bit
+  step of opusdec. Output is planar float at 48 kHz in the canonical channel order (5.1 and 7.1 remapped from Vorbis order).
+- Lost packets, reported with `IAudioDecoder.SendLoss` or seen as a gap in timestamps, are concealed, or recovered from the
+  next packet's in-band FEC. Ambisonic mappings (families 2 and 3) are reported as `Opus.UnsupportedMapping`.
+- `AudioDecoderOptions.KeepPadding`: end padding past a packet's stated duration is trimmed by default (Ogg's last granule
+  position, Matroska's DiscardPadding); `AudioReaderOptions.KeepAllSamples` keeps it.
+- `OggFormat`: Ogg (.ogg, .opus, .oga) read and written with Opus, Vorbis (remux only) and FLAC; CRC-checked pages,
+  timestamps from granule positions, seeking from a one-pass index, and chained files joined into one track with each
+  link's title as a chapter (`ogg-chained-stream` when a link changes the settings).
+- Opus in Matroska and WebM gains SeekPreRoll and DiscardPadding, read and written; Opus in MP4 gets its 80 ms pre-roll.
+- Decoding the twelve test vectors in stereo takes 0.72 s on one thread, against 0.89 s for libopus's opus_demo.
+- AFL++ fuzz targets `ogg` and `opusraw`.
 
 ### AV1
 

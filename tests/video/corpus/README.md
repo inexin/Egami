@@ -148,6 +148,14 @@ them: interleaved, little-endian, signed, in whole bytes of the stream's depth, 
 `EGAMI_AUDIO_GATES=1` tests have written Egami.Video's own encodings of them, `--gates` runs `flac -t` on those and compares
 their size with `flac -0` to `-8`.
 
+`silk-vectors.bin` holds SILK-only Opus packets that libopus 1.5.2 encoded from a synthetic signal, with silk_Decode's output
+hash, final range and pitch lag for each normal, concealed (PLC) and FEC call. `tools/video/opusref/silk-vectors.c` makes it in
+the egami-opusref image (the build command is in the file); `SilkTests` decodes the packets and compares.
+
+`opus-celt/celt-ref.bin` holds CELT streams (Opus CELT-only packets, and raw CELT frames with the hybrid start band 17) encoded
+from a synthetic signal with libopus 1.5.2, with libopus's final range and decoded samples for each frame, some frames lost.
+`tools/video/opusref/make-celt-reference.c` makes it in the `egami-opusref` image; `CeltTests` decodes it.
+
 ## AV1 (V4.2)
 
 `tests/video/corpus/av1` holds our own AV1 clips, encoded by libaom 3.15.2's aomenc (`tools/avifref/av1corpus.py`, through
