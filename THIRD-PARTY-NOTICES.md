@@ -784,3 +784,79 @@ metric-compatible with the fonts documents name most, used in place of fonts a m
 
 All are licensed under the SIL Open Font License 1.1. The licence files, with each font's copyright and reserved font names,
 are in the same folder, embedded in Egami.Fonts.Substitutes.dll and packed with the package under `licenses/`.
+
+## libvpx
+
+Egami.Video's VP9 decoder (`src/Egami.Video/Codecs/Vp9`) is translated from libvpx 1.14.1, the WebM project's reference
+codec, so that its frames equal libvpx's sample for sample: the uncompressed and compressed headers, reference slots and
+superframes of `vp9/decoder/vp9_decoder.c`, `vp9_decodeframe.c` and `vp9/vp9_dx_iface.c` (`Vp9FrameHeader.cs`,
+`Vp9Decoder*.cs`, `Vp9StreamDecoder.cs`); the boolean decoder of `vpx_dsp/bitreader.c` (`Vp9BoolDecoder.cs`); mode info, motion
+vector candidates and contexts from `vp9_decodemv.c`, `vp9_mvref_common.h` and `vp9_pred_common.c`; coefficient tokens from
+`vp9_detokenize.c`; probability updates and backward adaptation from `vp9_dsubexp.c`, `vp9_entropy.c`, `vp9_entropymode.c`,
+`vp9_entropymv.c` and `vpx_dsp/prob.c` (`Vp9FrameContext.cs`, `Vp9Decoder.Probabilities.cs`); intra prediction from
+`vp9_reconintra.c` and `vpx_dsp/intrapred.c` (`Vp9Intra.cs`); inter prediction and scaled references from `vp9_reconinter.c`,
+`vp9_scale.c` and `vpx_dsp/vpx_convolve.c` (`Vp9Decoder.Inter.cs`, `Vp9Convolve.cs`, `Vp9ScaleFactors.cs`); the inverse
+transforms of `vp9_idct.c` and `vpx_dsp/inv_txfm.c` (`Vp9Transform.cs`, with the one-dimensional transforms translated by
+`tools/make-vp9-transforms.py` into `Vp9Transform.OneD.cs`); and the loop filter of `vp9_loopfilter.c` and
+`vpx_dsp/loopfilter.c` (`Vp9LoopFilter.cs`). `tools/make-vp9-tables.py` generates the default probabilities, scans,
+quantizer tables, interpolation kernels and lookups of `vp9/common` into `Vp9Tables.Data.cs`. `tools/vp9ref/vp9dump.c`, a test
+tool built against libvpx in Docker, is Egami.Video's own.
+
+```
+Copyright (c) 2010, The WebM Project authors. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+
+  * Neither the name of Google, nor the WebM Project, nor the names
+    of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written
+    permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+```
+Additional IP Rights Grant (Patents)
+------------------------------------
+
+"These implementations" means the copyrightable works that implement the WebM
+codecs distributed by Google as part of the WebM Project.
+
+Google hereby grants to you a perpetual, worldwide, non-exclusive, no-charge,
+royalty-free, irrevocable (except as stated in this section) patent license to
+make, have made, use, offer to sell, sell, import, transfer, and otherwise
+run, modify and propagate the contents of these implementations of WebM, where
+such license applies only to those patent claims, both currently owned by
+Google and acquired in the future, licensable by Google that are necessarily
+infringed by these implementations of WebM. This grant does not include claims
+that would be infringed only as a consequence of further modification of these
+implementations. If you or your agent or exclusive licensee institute or order
+or agree to the institution of patent litigation or any other patent
+enforcement activity against any entity (including a cross-claim or
+counterclaim in a lawsuit) alleging that any of these implementations of WebM
+or any code incorporated within any of these implementations of WebM
+constitute direct or contributory patent infringement, or inducement of
+patent infringement, then any patent rights granted to you under this License
+for these implementations of WebM shall terminate as of the date such
+litigation is filed.
+```

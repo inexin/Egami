@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.Video</RootNamespace>
+    <PackageId>Egami.Video</PackageId>
+    <Version>0.3.0</Version>
+    <Description>A fully managed, MIT-licensed video library for .NET built on Egami: frames, packets, AVI, Matroska/WebM, IVF and YUV4MPEG2 containers, Motion JPEG, VP8 and VP9 (WebM alpha and HDR10+ included).</Description>
+    <PackageTags>$(EgamiPackageTags);video;webm;matroska;vp8;vp9;mjpeg</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <!-- For [SkipLocalsInit] on the codecs' hot paths: their scratch stackallocs are written before they are read. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Egami\Egami.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Video.Tests" />
+    <InternalsVisibleTo Include="Egami.Video.Benchmarks" />
+    <InternalsVisibleTo Include="Egami.Video.Fuzz" />
+  </ItemGroup>
+
+</Project>

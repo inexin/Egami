@@ -1,0 +1,20 @@
+[
+ {
+  "side_data_type": "Mastering display metadata",
+  "red_x": "11878269/16777216",
+  "red_y": "4898947/16777216",
+  "green_x": "11408507/67108864",
+  "green_y": "13371441/16777216",
+  "blue_x": "8791261/67108864",
+  "blue_y": "12348031/268435456",
+  "white_point_x": "10492471/33554432",
+  "white_point_y": "689963/2097152",
+  "min_luminance": "5368709/1073741824",
+  "max_luminance": "1000/1"
+ },
+ {
+  "side_data_type": "Content light level metadata",
+  "max_content": 1000,
+  "max_average": 400
+ }
+]

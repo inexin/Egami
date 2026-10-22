@@ -1,0 +1,9 @@
+{"format":{"format_name": "matroska,webm", "duration": "0.200000", "nb_streams": 1},
+"streams":[
+{"index": 0, "codec_type": "video", "codec_name": "rawvideo", "codec_tag_string": "UYVY", "width": 48, "height": 32, "pix_fmt": "uyvy422", "r_frame_rate": "25/1", "avg_frame_rate": "25/1", "time_base": "1/1000"}],
+"packets":[
+{"stream_index": 0, "pts": 0, "dts": 0, "duration": 40, "size": "3072", "pos": "550", "flags": "K_"},
+{"stream_index": 0, "pts": 40, "dts": 40, "duration": 40, "size": "3072", "pos": "3629", "flags": "K_"},
+{"stream_index": 0, "pts": 80, "dts": 80, "duration": 40, "size": "3072", "pos": "6723", "flags": "K_"},
+{"stream_index": 0, "pts": 120, "dts": 120, "duration": 40, "size": "3072", "pos": "9802", "flags": "K_"},
+{"stream_index": 0, "pts": 160, "dts": 160, "duration": 40, "size": "3072", "pos": "12896", "flags": "K_"}]}

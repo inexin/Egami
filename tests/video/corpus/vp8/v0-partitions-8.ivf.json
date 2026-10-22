@@ -1,0 +1,19 @@
+{"format":{"format_name": "ivf", "duration": "0.500000", "nb_streams": 1},
+"streams":[
+{"index": 0, "codec_type": "video", "codec_name": "vp8", "codec_tag_string": "VP80", "width": 176, "height": 144, "pix_fmt": "yuv420p", "r_frame_rate": "30/1", "avg_frame_rate": "0/0", "time_base": "1/30", "nb_frames": "15", "duration_ts": 15}],
+"packets":[
+{"stream_index": 0, "pts": 0, "dts": 0, "duration": 1, "size": "6955", "pos": "32", "flags": "K__"},
+{"stream_index": 0, "pts": 1, "dts": 1, "duration": 1, "size": "164", "pos": "6999", "flags": "___"},
+{"stream_index": 0, "pts": 2, "dts": 2, "duration": 1, "size": "1029", "pos": "7175", "flags": "___"},
+{"stream_index": 0, "pts": 3, "dts": 3, "duration": 1, "size": "1118", "pos": "8216", "flags": "___"},
+{"stream_index": 0, "pts": 4, "dts": 4, "duration": 1, "size": "1237", "pos": "9346", "flags": "___"},
+{"stream_index": 0, "pts": 5, "dts": 5, "duration": 1, "size": "1135", "pos": "10595", "flags": "___"},
+{"stream_index": 0, "pts": 6, "dts": 6, "duration": 1, "size": "1299", "pos": "11742", "flags": "___"},
+{"stream_index": 0, "pts": 7, "dts": 7, "duration": 1, "size": "1523", "pos": "13053", "flags": "___"},
+{"stream_index": 0, "pts": 8, "dts": 8, "duration": 1, "size": "1402", "pos": "14588", "flags": "___"},
+{"stream_index": 0, "pts": 9, "dts": 9, "duration": 1, "size": "1101", "pos": "16002", "flags": "___"},
+{"stream_index": 0, "pts": 10, "dts": 10, "duration": 1, "size": "1506", "pos": "17115", "flags": "___"},
+{"stream_index": 0, "pts": 11, "dts": 11, "duration": 1, "size": "1272", "pos": "18633", "flags": "___"},
+{"stream_index": 0, "pts": 12, "dts": 12, "duration": 1, "size": "1616", "pos": "19917", "flags": "___"},
+{"stream_index": 0, "pts": 13, "dts": 13, "duration": 1, "size": "1038", "pos": "21545", "flags": "___"},
+{"stream_index": 0, "pts": 14, "dts": 14, "duration": 1, "size": "1550", "pos": "22595", "flags": "___"}]}

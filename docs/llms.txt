@@ -101,6 +101,10 @@ settings, safety limits and registered formats a call uses.
 
 - [Windows metafiles](https://inexin.github.io/Egami/v1/articles/guides/metafiles.html): Egami.Metafiles plays Windows metafiles, the vector pictures Office and Windows programs exchange.
 
+## Egami.Video
+
+- [Video](https://inexin.github.io/Egami/v1/articles/guides/video.html): Egami.Video reads and writes video with Egami rasters as frames, so resizing, color and drawing from Egami work on video with no copying.
+
 ## Egami.Barcodes
 
 - [Barcodes](https://inexin.github.io/Egami/v1/articles/guides/barcodes.html): Egami.Barcodes writes and reads barcodes.

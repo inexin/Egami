@@ -57,3 +57,44 @@ licence and minimum version, set in `Directory.Packages.props`. Raise a minimum 
 | Microsoft.CodeAnalysis.CSharp | MIT (.NET Foundation) | 4.14.0 | Egami.Cli's build-time source generator only; ships nothing | Follows from Q3 and Q15 (no reflection) |
 
 Egap's format add-ons follow the same rule and keep their own list in Egap's docs/references.md.
+
+## Egami.Video
+
+Egami.Video is written from specifications. Permissively licensed code may be studied for ideas; where bit-exact output needs
+it, code is translated closely from a listed BSD library, with its notice in THIRD-PARTY-NOTICES.md in the same commit. GPL and
+LGPL code is never read.
+
+### Specifications (read freely)
+
+| Spec | Used for |
+| --- | --- |
+| EBML, IETF RFC 8794 | EBML reader and writer |
+| Matroska, IETF RFC 9559 | Matroska reader and writer |
+| Matroska codec mapping (draft-ietf-cellar-codec) | `V_MJPEG`, `V_MS/VFW/FOURCC`, audio codec ids |
+| WebM container guidelines | What WebM allows inside Matroska |
+| Microsoft AVI RIFF file reference | AVI reader and writer |
+| OpenDML AVI File Format Extensions 1.02 | AVI files over 1 GB |
+| ITU-T T.81 (JPEG), Annex K.3 | Standard Huffman tables for frames without DHT |
+| VP9 Bitstream and Decoding Process Specification v0.7 | VP9 decoder, superframes, header field names |
+| WebM codec mapping: VP9 CodecPrivate feature records | V_VP9 CodecPrivate |
+
+### Reference code (ideas only)
+
+| Library | License |
+| --- | --- |
+| mkvalidator (Matroska foundation-source) | BSD-3 |
+| libwebp, dav1d, libaom | BSD |
+
+### Translated code (notice in THIRD-PARTY-NOTICES.md)
+
+| Library | License | Used for |
+| --- | --- | --- |
+| libvpx 1.14.1 | BSD-3, Google patent grant | The VP9 decoder (`src/Egami.Video/Codecs/Vp9`), so frames equal libvpx's sample for sample |
+
+### Tools run as black boxes only (never read)
+
+| Tool | License | Use |
+| --- | --- | --- |
+| FFmpeg, ffprobe | LGPL/GPL | Make test clips, decode and probe for comparison, in Docker |
+| libvpx vpxenc and vpxdec | BSD-3 | Make VP9 clips and give the expected frames, in Docker (`tools/video/vp9ref`) |
+| MKVToolNix (mkvinfo) | GPL-2.0 | Check our Matroska files, in Docker |

@@ -1,0 +1,9 @@
+{"format":{"format_name": "avi", "duration": "0.200000", "nb_streams": 1},
+"streams":[
+{"index": 0, "codec_type": "video", "codec_name": "rawvideo", "codec_tag_string": "[0][0][0][0]", "width": 48, "height": 32, "pix_fmt": "bgr24", "r_frame_rate": "25/1", "avg_frame_rate": "25/1", "time_base": "1/25", "nb_frames": "5", "duration_ts": 5}],
+"packets":[
+{"stream_index": 0, "pts": 0, "dts": 0, "duration": 1, "size": "4608", "pos": "5762", "flags": "K_"},
+{"stream_index": 0, "pts": 1, "dts": 1, "duration": 1, "size": "4608", "pos": "10378", "flags": "K_"},
+{"stream_index": 0, "pts": 2, "dts": 2, "duration": 1, "size": "4608", "pos": "14994", "flags": "K_"},
+{"stream_index": 0, "pts": 3, "dts": 3, "duration": 1, "size": "4608", "pos": "19610", "flags": "K_"},
+{"stream_index": 0, "pts": 4, "dts": 4, "duration": 1, "size": "4608", "pos": "24226", "flags": "K_"}]}

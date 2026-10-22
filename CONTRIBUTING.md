@@ -58,15 +58,21 @@ Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks` (also 
 Fuzzing: `tools/fuzz-afl.py` runs the readers under AFL++ in Docker; its header explains the usage. A 10-minute run of each
 reader you changed is enough for a pull request.
 
+Egami.Video keeps its tools in `tools/video/`: `make-corpus.py`, `make-vp8-corpus.py` and `make-vp9-corpus.py` make the clips
+in `tests/video/corpus` and fetch the VP8 and VP9 test vectors into `.cache/video`; `fuzz-afl.py` fuzzes its readers and
+codecs; `profile-vp9.py` profiles VP9 against libvpx. Its gates against FFmpeg, libvpx and the Matroska tools live in the
+egami-compare repository (`video/`). Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Video.Benchmarks`.
+
 ## Repository layout
 
 | Path | Contents |
 | --- | --- |
 | `src/Egami/` | The core library |
-| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Fonts.Substitutes/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/`, `src/Egami.Barcodes/`, `src/Egami.Heic/` | The other packages ([Packages](docs/articles/packages.md)) |
+| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Fonts.Substitutes/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/`, `src/Egami.Barcodes/`, `src/Egami.Heic/`, `src/Egami.Video/` | The other packages ([Packages](docs/articles/packages.md)) |
 | `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) for core Egami |
 | `tests/Egami.<Package>.Tests/` | The tests of each other package |
 | `tests/Egami.Fuzz/` | Fuzzing harness (SharpFuzz and AFL++) |
+| `tests/Egami.Video.Fuzz/`, `tests/video/` | Egami.Video's fuzzing harness, and its clips, ffprobe dumps, fuzz seeds and regressions |
 | `tests/Egami.AotSmoke/` | Console app published with Native AOT in CI |
 | `tests/Egami.DocSamples/` | The code the docs show, compiled and run with the tests |
 | `samples/` | One small console app per guide; `dotnet run --project samples/Formats` |
