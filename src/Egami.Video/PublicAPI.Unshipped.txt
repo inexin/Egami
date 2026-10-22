@@ -1,1 +1,26 @@
 #nullable enable
+const Egami.Video.CodecIds.Avc = "V_MPEG4/ISO/AVC" -> string!
+const Egami.Video.CodecIds.Hevc = "V_MPEGH/ISO/HEVC" -> string!
+const Egami.Video.CodecIds.MovText = "S_TX3G" -> string!
+const Egami.Video.CodecIds.Mpeg4Visual = "V_MPEG4/ISO/ASP" -> string!
+const Egami.Video.CodecIds.QuickTimeAudio = "A_QUICKTIME" -> string!
+const Egami.Video.CodecIds.QuickTimeOther = "D_QUICKTIME" -> string!
+const Egami.Video.CodecIds.QuickTimeVideo = "V_QUICKTIME" -> string!
+Egami.Video.Containers.Mp4Format
+Egami.Video.Containers.Mp4Format.IgnoreEditLists.get -> bool
+Egami.Video.Containers.Mp4Format.IgnoreEditLists.init -> void
+Egami.Video.Containers.Mp4Format.Mp4Format() -> void
+Egami.Video.EncodedPacket.IsDiscardable.get -> bool
+Egami.Video.EncodedPacket.IsDiscardable.set -> void
+Egami.Video.MediaInfo.Timecode.get -> string?
+Egami.Video.MediaInfo.Timecode.init -> void
+Egami.Video.VideoReaderOptions.AutoOrient.get -> bool
+Egami.Video.VideoReaderOptions.AutoOrient.init -> void
+Egami.Video.VideoTrackInfo.Orientation.get -> Egami.Metadata.ImageOrientation
+Egami.Video.VideoTrackInfo.Orientation.init -> void
+override Egami.Video.Containers.Mp4Format.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.Mp4Format.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.Mp4Format.Name.get -> string!
+override Egami.Video.Containers.Mp4Format.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.Mp4Format.SignatureLength.get -> int
+static Egami.Video.Containers.Mp4Format.Instance.get -> Egami.Video.Containers.Mp4Format!

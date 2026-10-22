@@ -30,6 +30,12 @@ public sealed record MediaInfo
     /// <summary>Gets the attached files, such as fonts and cover art (Matroska Attachments; AVI has none).</summary>
     public IReadOnlyList<AttachmentInfo> Attachments { get; init; } = [];
 
+    /// <summary>
+    /// Gets the start timecode as SMPTE text, such as "01:00:00:00" (";" before the frames for drop-frame timecode), from a
+    /// QuickTime or MP4 timecode track, or <see langword="null"/> when the file has none.
+    /// </summary>
+    public string? Timecode { get; init; }
+
     /// <summary>Gets the tags, chapters and attachments, to hand to a muxer so a remux keeps them.</summary>
     public MediaMetadata Metadata => new() { Tags = Tags, Chapters = Chapters, Attachments = Attachments };
 

@@ -27,6 +27,33 @@ public static class CodecIds
     /// <summary>AV1.</summary>
     public const string Av1 = "V_AV1";
 
+    /// <summary>H.264 (MPEG-4 AVC); <see cref="TrackInfo.CodecPrivate"/> holds its decoder configuration record (avcC). Passed through, not decoded.</summary>
+    public const string Avc = "V_MPEG4/ISO/AVC";
+
+    /// <summary>HEVC (H.265); <see cref="TrackInfo.CodecPrivate"/> holds its decoder configuration record (hvcC). Passed through, not decoded.</summary>
+    public const string Hevc = "V_MPEGH/ISO/HEVC";
+
+    /// <summary>MPEG-4 Part 2 video; <see cref="TrackInfo.CodecPrivate"/> holds its decoder specific info. Passed through, not decoded.</summary>
+    public const string Mpeg4Visual = "V_MPEG4/ISO/ASP";
+
+    /// <summary>
+    /// Any other MP4 or QuickTime video: <see cref="TrackInfo.CodecPrivate"/> holds the whole sample description (stsd entry),
+    /// which an MP4 writer stores back unchanged. Matroska's V_QUICKTIME.
+    /// </summary>
+    public const string QuickTimeVideo = "V_QUICKTIME";
+
+    /// <summary>Any other MP4 or QuickTime audio, its whole sample description in <see cref="TrackInfo.CodecPrivate"/>. Matroska's A_QUICKTIME.</summary>
+    public const string QuickTimeAudio = "A_QUICKTIME";
+
+    /// <summary>Any other MP4 or QuickTime track (timecode, data, other subtitles), its whole sample description in <see cref="TrackInfo.CodecPrivate"/>.</summary>
+    public const string QuickTimeOther = "D_QUICKTIME";
+
+    /// <summary>
+    /// 3GPP timed text (mov_text, tx3g): MP4's subtitles. <see cref="TrackInfo.CodecPrivate"/> holds the text sample entry after
+    /// its 8-byte header; <see cref="MovText"/> reads and writes the samples.
+    /// </summary>
+    public const string MovText = "S_TX3G";
+
     /// <summary>Integer PCM, little-endian.</summary>
     public const string PcmLittleEndian = "A_PCM/INT/LIT";
 
