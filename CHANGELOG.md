@@ -214,7 +214,7 @@ V4.2, API reviewed and accepted 2026-10-22 (all as recommended): AV1 decode, thr
 
 ### Progress, cancellation and streams
 
-V1.3. Breaking: `MediaFile.Remux` and `MediaFile.Transcode` take two more optional parameters, so callers recompile.
+V1.3, API reviewed and accepted 2026-10-22 (all as recommended); it ships in this release. Breaking: `MediaFile.Remux` and `MediaFile.Transcode` take two more optional parameters, so callers recompile.
 
 - `MediaFile.Remux` and `MediaFile.Transcode` take `IProgress<MediaProgress>? progress` and `CancellationToken
   cancellationToken` as their last parameters. Reports come once the output is open, then at most every 250 ms, then a final
