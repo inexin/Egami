@@ -489,8 +489,14 @@ prediction of `reconinter.c` and `convolve.c` (`Av1Reconstructor*.cs`); and the 
 into `Av1InverseTransform.OneD.cs`; the deblocking filter of `av1_loopfilter.c` and `aom_dsp/loopfilter.c`
 (`Av1LoopFilter.cs`), CDEF from `cdef.c` and `cdef_block.c` (`Av1Cdef.cs`), superres upscaling from `resize.c` with its
 normative filter (`Av1Superres.cs`), loop restoration from `restoration.c` and the Wiener convolution of `convolve.c`
-(`Av1Restoration.cs`), and the Gaussian sequence of `av1/decoder/grain_synthesis.c` (`Av1FilmGrainSynthesis.cs`). Egami's AV1
-encoder takes from libaom 3.15.2 too: the arithmetic encoder of `aom_dsp/entenc.c` (`Av1SymbolEncoder.cs`), the forward transforms
+(`Av1Restoration.cs`), and the Gaussian sequence of `av1/decoder/grain_synthesis.c` (`Av1FilmGrainSynthesis.cs`). Its inter
+frames take the inter frame header, short reference signaling and global motion of `decodeframe.c` and `mvref_common.c`
+(`Av1FrameHeader.cs`); the inter mode info, reference frame contexts, reference vector stack, temporal candidates, warp samples and
+overlappable neighbours of `decodemv.c`, `mvref_common.c`, `pred_common.c`, `blockd.h`, `obmc.h` and `mv.h`
+(`Av1TileParser.Inter.cs`); the motion field projection and saved vectors of `mvref_common.c` (`Av1MotionField.cs`); the warp
+fit, shear decomposition and warp filter of `warped_motion.c` (`Av1Warp.cs`); and the interpolation, warp, wedge codebook, OBMC,
+inter-intra and distance weight tables of `filter.h`, `warped_motion.c`, `reconinter.c` and `common_data.h`, which
+`tools/make-av1-tables.py` generates into `Av1Tables.Data.cs`. Egami's AV1 encoder takes from libaom 3.15.2 too: the arithmetic encoder of `aom_dsp/entenc.c` (`Av1SymbolEncoder.cs`), the forward transforms
 of `av1/encoder/av1_fwd_txfm2d.c` and the Walsh-Hadamard transform of `hybrid_fwd_txfm.c` (`Av1ForwardTransform.cs`), whose
 one-dimensional transforms `av1_fwd_txfm1d.c` `tools/make-av1-tables.py` translates into `Av1ForwardTransform.OneD.cs` and
 `Av1ForwardTransform.Vector.cs`, the tile syntax its `bitstream.c` and `encodetxb.c` write (`Av1TileWriter.cs`), the quantizer to

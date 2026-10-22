@@ -89,7 +89,8 @@ metadata. `AvifImage.ReadItem` decodes any image item on its own.
 
 ## Sequences and layers
 
-Image sequences (avis) load every frame when all are key frames, and the first frame otherwise. Layered images load their base
-layer, until Egami decodes AV1 inter frames.
+Image sequences (avis) load every frame, inter frames included, each with its duration from the sample table, and the loop
+count from the edit list; an alpha track gives each frame its alpha. Every frame equals avifdec's. A range of frames
+(`ReaderOptions.Frames`) decodes from the key frame before its first. Layered images load their base layer.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#cookbook-sequence)]

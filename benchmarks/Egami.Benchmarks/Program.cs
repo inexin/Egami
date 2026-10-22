@@ -28,6 +28,13 @@ if (args is ["--time-filters", .. string[] names])
     return;
 }
 
+// Time AV1 decoding (Phase 2.9.5 speed gate) at one thread and all cores: -- --time-av1 [--one-thread] <file.ivf>...
+if (args is ["--time-av1", .. string[] av1s])
+{
+    Av1Timing.Run(av1s);
+    return;
+}
+
 // Time VP8 decoding (Phase 2.3.5 speed gate) at one thread and all cores: -- --time-vp8 <file.ivf>...
 if (args is ["--time-vp8", .. string[] ivfs])
 {

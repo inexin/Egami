@@ -39,6 +39,12 @@ internal sealed class AvifCodec(bool filmGrain) : IHeifCodec
             throw new CorruptDataException(input.FormatName, -1, "The AV1 item's first frame is never shown.");
         }
 
+        return Planes(frame);
+    }
+
+    /// <summary>Gives a decoded frame's planes, with its film grain unless that is turned off, and keeps its details.</summary>
+    internal HeifPlanes Planes(Av1Frame frame)
+    {
         Av1SequenceHeader sequence = frame.Sequence;
         if (!_decoded)
         {

@@ -9,8 +9,8 @@ namespace Egami.Formats.Avif;
 /// <summary>
 /// An AVIF image sequence (the avis brand), read from its tracks as libavif reads them: the first AV1 track that describes no
 /// other is the color, a track with an auxl reference to it the alpha; each track's first sample entry gives the av1C
-/// configuration and colr. Until inter frames arrive (2.9.5, design question 4), every frame loads when every sample is a sync
-/// sample (a key frame), and otherwise the first frame alone.
+/// configuration and colr. Every frame decodes, inter frames included (2.9.5 design question 5): each track's samples are temporal
+/// units of one AV1 stream, decoded in order from the last key frame before the frame asked for.
 /// </summary>
 internal sealed class AvifSequence : IHeifSequence
 {
@@ -40,6 +40,7 @@ internal sealed class AvifSequence : IHeifSequence
     }
 
     private readonly byte[] _colorPrefix;
+    private readonly StreamState _colorStream = new(), _alphaStream = new();
 
     /// <summary>Gets the container.</summary>
     internal HeifFile Heif { get; }
@@ -67,6 +68,9 @@ internal sealed class AvifSequence : IHeifSequence
 
     /// <summary>Gets the image size: the AV1 sequence's maximum frame size.</summary>
     public (int Width, int Height) Size => (Sequence.MaxFrameWidth, Sequence.MaxFrameHeight);
+
+    /// <summary>Gets true: AV1 inter frames decode, so every frame loads.</summary>
+    public bool DecodesAllFrames => true;
 
     /// <summary>Gets whether every color sample is a sync sample, so every frame decodes without inter prediction.</summary>
     public bool AllKeyFrames => Color.Samples.TrueForAll(s => s.Sync) && (Alpha is null || Alpha.Samples.TrueForAll(s => s.Sync));
@@ -145,7 +149,7 @@ internal sealed class AvifSequence : IHeifSequence
     /// <inheritdoc cref="Decode(int, IHeifCodec, EgamiInput)"/>
     internal (HeifPlanes Color, HeifPlanes? Alpha) Decode(int index, AvifCodec codec, EgamiInput input)
     {
-        HeifPlanes color = codec.Decode(Sample(Color, index, _colorPrefix), input);
+        HeifPlanes color = codec.Planes(DecodeFrame(_colorStream, Color, index, _colorPrefix, input));
         if (color.BitDepth != Config.BitDepth || color.Monochrome != Config.Monochrome)
         {
             // The layout Load gives comes from av1C, so every frame must match it.
@@ -157,7 +161,8 @@ internal sealed class AvifSequence : IHeifSequence
         {
             Av1Config config = AvifProperties.ReadAv1Config(Heif, Property(track, AvifProperties.Av1C)
                 ?? throw new CorruptDataException(Heif.FormatName, -1, "The AVIF sequence's alpha track has no av1C box."));
-            alpha = codec.Decode(Sample(track, index, Prefix(Heif, track, config.ConfigObus)), input).LumaOnly();
+            _alphaStream.Prefix ??= Prefix(Heif, track, config.ConfigObus);
+            alpha = codec.Planes(DecodeFrame(_alphaStream, track, index, _alphaStream.Prefix, input)).LumaOnly();
             if (alpha.Width != color.Width || alpha.Height != color.Height)
             {
                 throw input.Corrupt(-1, $"The alpha frame is {alpha.Width} x {alpha.Height}, but the color frame is {color.Width} x {color.Height}.");
@@ -165,6 +170,47 @@ internal sealed class AvifSequence : IHeifSequence
         }
 
         return (color, alpha);
+    }
+
+    /// <summary>
+    /// Decodes a track's frame <paramref name="index"/>: on from the frame decoded last when that is before it, else from the last
+    /// sync sample at or before it (or the start), each sample one temporal unit.
+    /// </summary>
+    private Av1Frame DecodeFrame(StreamState state, HeifTrack track, int index, byte[] prefix, EgamiInput input)
+    {
+        if (state.Stream is null || index <= state.Last)
+        {
+            int start = index;
+            while (start > 0 && !track.Samples[start].Sync)
+            {
+                start--;
+            }
+
+            state.Stream = new Av1Stream(Heif.FormatName) { Parallelism = input.Context.MaxParallelism, Limits = input.Limits };
+            state.Last = start - 1;
+        }
+
+        Av1Frame? shown = null;
+        for (int i = state.Last + 1; i <= index; i++)
+        {
+            input.CancellationToken.ThrowIfCancellationRequested();
+            byte[] data = Sample(track, i, prefix);
+            List<Av1Frame> frames = state.Stream.Decode(data, 0, data.Length, input.CancellationToken);
+            state.Last = i;
+            shown = frames.Count > 0 ? frames[^1] : null;
+        }
+
+        return shown ?? throw new CorruptDataException(Heif.FormatName, -1, $"Sample {index} of the AVIF sequence shows no frame.");
+    }
+
+    /// <summary>A track's AV1 stream and the last sample it decoded.</summary>
+    private sealed class StreamState
+    {
+        internal Av1Stream? Stream { get; set; }
+
+        internal int Last { get; set; } = -1;
+
+        internal byte[]? Prefix { get; set; }
     }
 
     /// <summary>Gets how long frame <paramref name="index"/> shows.</summary>

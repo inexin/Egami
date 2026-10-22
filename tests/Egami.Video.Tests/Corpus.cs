@@ -219,7 +219,7 @@ internal static class Corpus
         }
     }
 
-    private static int Hash(ReadOnlySpan<byte> data)
+    internal static int Hash(ReadOnlySpan<byte> data)
     {
         HashCode hash = new();
         hash.AddBytes(data);

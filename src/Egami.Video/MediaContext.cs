@@ -25,10 +25,10 @@ public sealed record MediaContext
     private static MediaContext? s_default;
 
     /// <summary>Gets the containers, tried in order when detecting a file's format.</summary>
-    public IReadOnlyList<ContainerFormat> Containers { get; init; } = [AviFormat.Instance, MatroskaFormat.Instance, MatroskaFormat.WebM, Y4mFormat.Instance, IvfFormat.Instance, Mp4Format.Instance, WavFormat.Instance, WavFormat.Wave64, FlacFormat.Instance, OggFormat.Instance];
+    public IReadOnlyList<ContainerFormat> Containers { get; init; } = [AviFormat.Instance, MatroskaFormat.Instance, MatroskaFormat.WebM, Y4mFormat.Instance, IvfFormat.Instance, Mp4Format.Instance, WavFormat.Instance, WavFormat.Wave64, FlacFormat.Instance, OggFormat.Instance, Av1ObuFormat.Instance, Av1AnnexBFormat.Instance];
 
     /// <summary>Gets the video codecs.</summary>
-    public IReadOnlyList<VideoCodec> Codecs { get; init; } = [MotionJpegCodec.Instance, Vp8Codec.Instance, Vp9Codec.Instance, RawVideoCodec.Instance];
+    public IReadOnlyList<VideoCodec> Codecs { get; init; } = [MotionJpegCodec.Instance, Vp8Codec.Instance, Vp9Codec.Instance, Av1Codec.Instance, RawVideoCodec.Instance];
 
     /// <summary>Gets the audio codecs.</summary>
     public IReadOnlyList<AudioCodec> AudioCodecs { get; init; } = [PcmCodec.Instance, PcmCodec.BigEndian, PcmCodec.FloatingPoint, FlacCodec.Instance, OpusCodec.Instance];
@@ -49,8 +49,8 @@ public sealed record MediaContext
     public Action<MediaWarning>? Warnings { get; init; }
 
     /// <summary>
-    /// Gets the shared default context, with AVI, Matroska, WebM, YUV4MPEG2, IVF, MP4, WAV, Wave64, FLAC and Ogg, Motion JPEG, VP8,
-    /// VP9 and uncompressed video, and PCM, FLAC and Opus audio registered.
+    /// Gets the shared default context, with AVI, Matroska, WebM, YUV4MPEG2, IVF, MP4, raw AV1 (OBU and Annex B), WAV, Wave64,
+    /// FLAC and Ogg, Motion JPEG, VP8, VP9, AV1 and uncompressed video, and PCM, FLAC and Opus audio registered.
     /// </summary>
     public static MediaContext Default => s_default ??= new MediaContext();
 

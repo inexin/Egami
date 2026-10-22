@@ -32,6 +32,9 @@ internal sealed class MatroskaMuxer : IMuxer
     private readonly List<(long Time, int Track, long Cluster, long Relative)> _cues = [];
     private readonly MemoryStream _cluster = new();
     private readonly TrackWriter? _cueTrack;
+    private readonly string _docType;
+    private readonly List<EncodedPacket> _held = [];
+    private bool _headersWritten;
     private long _segmentSizeOffset;
     private long _segmentDataStart;
     private long _seekHeadOffset;
@@ -97,7 +100,14 @@ internal sealed class MatroskaMuxer : IMuxer
         Tracks = outputs;
         _cueTrack = _tracks.FirstOrDefault(t => t.Input.Kind == TrackKind.Video) ?? _tracks[0];
         _metadata = metadata ?? MediaMetadata.Empty;
-        WriteHeaders(docType);
+        _docType = docType;
+
+        // An AV1 track needs its av1C in CodecPrivate; a track from IVF or raw OBUs has none, so the headers wait for its first
+        // packet's sequence header, and packets of other tracks before it are held.
+        if (!_tracks.Any(NeedsAv1Config))
+        {
+            WriteHeaders();
+        }
     }
 
     public IReadOnlyList<TrackInfo> Tracks { get; }
@@ -113,6 +123,33 @@ internal sealed class MatroskaMuxer : IMuxer
         if (!_byInputNumber.TryGetValue(packet.TrackNumber, out TrackWriter? track))
         {
             throw new ArgumentException($"Track {packet.TrackNumber} was not given to the muxer.", nameof(packet));
+        }
+
+        if (!_headersWritten)
+        {
+            if (NeedsAv1Config(track))
+            {
+                track.Input = track.Input with { CodecPrivate = Av1ConfigOf(packet.Data.Span) };
+                track.Av1ConfigLooked = true;
+            }
+
+            _held.Add(packet.Clone());
+            if (_tracks.Any(NeedsAv1Config))
+            {
+                return;
+            }
+
+            WriteHeaders();
+            foreach (EncodedPacket held in _held)
+            {
+                using (held)
+                {
+                    WritePacket(held);
+                }
+            }
+
+            _held.Clear();
+            return;
         }
 
         ReadOnlySpan<byte> data = packet.Data.Span;
@@ -249,6 +286,26 @@ internal sealed class MatroskaMuxer : IMuxer
             return;
         }
 
+        if (!_headersWritten)
+        {
+            // An AV1 track that never sent a packet is written without av1C.
+            foreach (TrackWriter track in _tracks)
+            {
+                track.Av1ConfigLooked = true;
+            }
+
+            WriteHeaders();
+            foreach (EncodedPacket held in _held)
+            {
+                using (held)
+                {
+                    WritePacket(held);
+                }
+            }
+
+            _held.Clear();
+        }
+
         foreach (TrackWriter track in _tracks)
         {
             // Hidden VP9 frames with no shown frame after them are written as they are.
@@ -371,8 +428,26 @@ internal sealed class MatroskaMuxer : IMuxer
         _clusterHasCue = false;
     }
 
-    private void WriteHeaders(string docType)
+    private static bool NeedsAv1Config(TrackWriter track) =>
+        track.Input.CodecId == CodecIds.Av1 && track.Input.CodecPrivate.IsEmpty && !track.Av1ConfigLooked;
+
+    /// <summary>The av1C of a packet's first sequence header, or nothing when it has none or it cannot be read.</summary>
+    private static ReadOnlyMemory<byte> Av1ConfigOf(ReadOnlySpan<byte> unit)
     {
+        try
+        {
+            return Codecs.Av1Packets.ExtractConfig(unit) ?? ReadOnlyMemory<byte>.Empty;
+        }
+        catch (CorruptDataException)
+        {
+            return ReadOnlyMemory<byte>.Empty;
+        }
+    }
+
+    private void WriteHeaders()
+    {
+        _headersWritten = true;
+        string docType = _docType;
         EbmlWriter.Master(_output, MatroskaIds.Ebml, e =>
         {
             EbmlWriter.Unsigned(e, MatroskaIds.EbmlVersion, 1);
@@ -543,7 +618,11 @@ internal sealed class MatroskaMuxer : IMuxer
 
         public int Number { get; }
 
-        public TrackInfo Input { get; }
+        /// <summary>Gets or sets the track as given; an AV1 track's CodecPrivate is filled from its first packet when it had none.</summary>
+        public TrackInfo Input { get; set; }
+
+        /// <summary>Gets or sets whether an AV1 track without av1C had its first packet looked at for a sequence header.</summary>
+        public bool Av1ConfigLooked { get; set; }
 
         public TrackInfo Output { get; }
 

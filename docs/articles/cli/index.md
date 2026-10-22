@@ -213,4 +213,4 @@ dotnet publish src/Egami.Cli -c Release -r linux-x64 -p:EgamiNativeAot=true
 ```
 
 The `cli-native` workflow builds and checks these for win-x64, linux-x64 and osx-arm64 on every change to the tool, and
-keeps them as the run's artifacts.
+keeps them as the run's artifacts. Each release puts them on the [releases page](https://github.com/inexin/Egami/releases).

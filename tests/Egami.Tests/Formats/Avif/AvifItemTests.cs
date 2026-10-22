@@ -116,14 +116,6 @@ public class AvifItemTests
         }
     }
 
-    [Fact]
-    public void SequenceWithInterFramesLoadsItsFirstFrame()
-    {
-        using Raster raster = Raster.Load(Path.Combine(Corpus, "libavif", "colors-animated-12bpc-keyframes-0-2-3.avif"));
-        Assert.Equal(1, raster.FrameCount);
-        Assert.Contains(raster.Metadata.Warnings, w => w.Id == "Avif.SequenceFirstFrame");
-    }
-
     [Theory]
     [InlineData("duck-layered-3.avif")]
     [InlineData("duck-progressive.avif")]

@@ -68,7 +68,7 @@ Fuzzer.OutOfProcess.Run(run);
 
 static Action<Stream> Target(string name) => name switch
 {
-    "avi" or "mkv" or "y4m" or "ivf" or "webm" or "mp4" => Demux,
+    "avi" or "mkv" or "y4m" or "ivf" or "webm" or "mp4" or "obu" => Demux,
     "mp4mux" => RemuxMp4,
     "mjpeg" => DecodeMotionJpeg,
     "vp8" => ReadVp8,
@@ -76,7 +76,9 @@ static Action<Stream> Target(string name) => name switch
     "vp9raw" => DecodeVp9Packets,
     "wav" or "flac" or "ogg" => ReadAudio,
     "opusraw" => DecodeOpusPackets,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, mp4mux, mjpeg, vp8, vp9, vp9raw, wav, flac, ogg, opusraw."),
+    "av1" => ReadAv1,
+    "av1raw" => DecodeAv1Packets,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, av1, av1raw, wav, flac, ogg, opusraw."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -377,7 +379,12 @@ static void ReadVp8(Stream stream)
 
 // A VP9 file (IVF, WebM or Matroska, alpha and HDR10+ included) read through VideoReader in each error mode, as for VP8; then an
 // exact seek, and the frames converted to RGB.
-static void ReadVp9(Stream stream)
+static void ReadVp9(Stream stream) => ReadVideo(stream, "VP9");
+
+// An AV1 file (IVF, WebM, Matroska, low-overhead OBUs or Annex B), as for VP9.
+static void ReadAv1(Stream stream) => ReadVideo(stream, "AV1");
+
+static void ReadVideo(Stream stream, string codec)
 {
     MediaContext context = Context() with { Egami = Context().Egami with { Diagnostics = _ => { } } };
     byte[] data = ReadAll(stream);
@@ -409,9 +416,9 @@ static void ReadVp9(Stream stream)
         catch (EgamiException) when (mode == DecodeErrorMode.Throw)
         {
         }
-        catch (EgamiException e) when (e is not CorruptDataException { FormatName: "VP9" })
+        catch (EgamiException e) when (!(e is CorruptDataException corrupt && corrupt.FormatName == codec))
         {
-            // Broken containers, unsupported files and safety limits, in any mode; broken VP9 frames only in Throw mode.
+            // Broken containers, unsupported files and safety limits, in any mode; broken frames only in Throw mode.
         }
     }
 }
@@ -484,6 +491,85 @@ static void DecodeVp9Packets(Stream stream)
         catch (EgamiException e) when (e is not CorruptDataException { FormatName: "VP9" })
         {
             // Unsupported subsampling and safety limits; broken frames are concealed.
+        }
+    }
+}
+
+// AV1 temporal units without a container, as for VP9: a byte giving the av1C's length, the av1C, then units of a 2-byte
+// little-endian length and the data. Each unit is split into frames and merged back, its sequence header taken out as an av1C,
+// described with and without the references, and decoded on one thread and on two.
+static void DecodeAv1Packets(Stream stream)
+{
+    MediaContext context = Context() with { Egami = Context().Egami with { Diagnostics = _ => { } } };
+    byte[] data = ReadAll(stream);
+    if (data.Length == 0)
+    {
+        return;
+    }
+
+    int privateLength = Math.Min(data[0], data.Length - 1);
+    byte[] codecPrivate = data.AsSpan(1, privateLength).ToArray();
+    List<byte[]> packets = [];
+    for (int at = 1 + privateLength; at + 2 <= data.Length && packets.Count < 30;)
+    {
+        int length = Math.Min(data[at] | (data[at + 1] << 8), data.Length - at - 2);
+        packets.Add(data.AsSpan(at + 2, length).ToArray());
+        at += 2 + length;
+    }
+
+    VideoTrackInfo track = new() { Number = 1, Kind = TrackKind.Video, CodecId = CodecIds.Av1, TimeBase = new Rational(1, 30), Width = 64, Height = 64, CodecPrivate = codecPrivate };
+    using (CodecHeaderReader headers = new(track, context))
+    {
+        foreach (byte[] packet in packets)
+        {
+            using EncodedPacket encoded = new(1, packet, MediaTime.Zero);
+            try
+            {
+                _ = CodecHeaders.Describe(track, encoded).Sum(f => f.Value);
+            }
+            catch (EgamiException)
+            {
+            }
+
+            try
+            {
+                _ = headers.Describe(encoded).Sum(f => f.Value);
+            }
+            catch (EgamiException)
+            {
+            }
+
+            try
+            {
+                IReadOnlyList<ReadOnlyMemory<byte>> frames = Egami.Video.Codecs.Av1Packets.SplitFrames(packet);
+                _ = Egami.Video.Codecs.Av1Packets.MergeFrames(frames).Length;
+                _ = Egami.Video.Codecs.Av1Packets.ExtractConfig(packet)?.Length;
+            }
+            catch (EgamiException)
+            {
+            }
+        }
+    }
+
+    foreach (int threads in (int[])[1, 2])
+    {
+        MediaContext threaded = context with { Egami = context.Egami with { MaxParallelism = threads } };
+        try
+        {
+            using IVideoDecoder decoder = VideoCodecs.Av1.CreateDecoder(track, new VideoDecoderOptions { Errors = DecodeErrorMode.Conceal }, threaded);
+            for (int i = 0; i < packets.Count; i++)
+            {
+                using EncodedPacket encoded = new(1, packets[i], new MediaTime(i, track.TimeBase)) { IsKeyframe = i == 0 };
+                decoder.Send(encoded);
+                while (decoder.TryReceive(out YuvVideoFrame? frame))
+                {
+                    frame.Dispose();
+                }
+            }
+        }
+        catch (EgamiException e) when (e is not CorruptDataException { FormatName: "AV1" })
+        {
+            // Safety limits; broken frames are concealed.
         }
     }
 }

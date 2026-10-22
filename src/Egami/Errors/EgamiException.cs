@@ -59,6 +59,9 @@ public sealed class CorruptDataException : EgamiException
 
     /// <summary>Gets a value indicating whether the problem is that the data ended early.</summary>
     internal bool IsTruncation { get; init; }
+
+    /// <summary>Gets a value indicating whether the problem is that a video frame refers to a frame the decoder does not have.</summary>
+    internal bool IsMissingReference { get; init; }
 }
 
 /// <summary>Thrown when a <see cref="SafetyLimits"/> limit is exceeded.</summary>

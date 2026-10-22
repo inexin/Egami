@@ -56,6 +56,8 @@
     <None Include="../images/psd/layers.psd" Link="images/layered.psd" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/psd/metadata.psd" Link="images/photo.psd" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/vp8/v0-altref.ivf" Link="images/clip.ivf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/av1/tools-8bit.ivf" Link="images/clip-av1.ivf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/av1/tools-10bit.webm" Link="images/av1.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/metafiles/synthetic/gdi-shapes-basic.emf" Link="images/chart.emf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/icc/compact/DisplayP3-v4.icc" Link="images/DisplayP3.icc" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/avi-mjpeg-420-pcm.avi" Link="images/camera.avi" CopyToOutputDirectory="PreserveNewest" />
