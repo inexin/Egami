@@ -116,8 +116,8 @@ carry the discard flag (D) and start before zero.
 | mp4box-frag-mfra.mp4 | MP4Box fragments with an mfra index |
 | mp4box-dash.mp4 | MP4Box DASH onDemand: one file of segments with a sidx |
 | mp4box-co64.mp4, mp4box-stz2.mp4 | 64-bit chunk offsets (co64); compact sample sizes (stz2) |
-| mp4box-chapqt.mp4 | A QuickTime chapter text track (tref chap) |
-| mp4-metadata.mp4, mov-metadata.mov | ilst tags, Nero chpl and a chapter track, cover art (covr) |
+| mp4box-chapqt.mp4 | MP4Box chapters: Nero chpl alone (GPAC 2.2 writes no chapter track for -chapqt) |
+| mp4-metadata.mp4, mov-metadata.mov | ilst tags (QuickTime udta text boxes in the MOV), Nero chpl and a QuickTime chapter text track (tref chap), cover art (covr) |
 | mp4-movtext.mp4 | mov_text (tx3g) subtitles with bold and italic style records |
 
 ipcm, sdtp, stz2 with 4- and 8-bit fields, multiple sample descriptions, HDR boxes (mdcv, clli) and broken files are built

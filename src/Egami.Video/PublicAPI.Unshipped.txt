@@ -9,6 +9,8 @@ const Egami.Video.CodecIds.QuickTimeVideo = "V_QUICKTIME" -> string!
 Egami.Video.Containers.Mp4Format
 Egami.Video.Containers.Mp4Format.IgnoreEditLists.get -> bool
 Egami.Video.Containers.Mp4Format.IgnoreEditLists.init -> void
+Egami.Video.Containers.Mp4Format.MoovAtEnd.get -> bool
+Egami.Video.Containers.Mp4Format.MoovAtEnd.init -> void
 Egami.Video.Containers.Mp4Format.Mp4Format() -> void
 Egami.Video.EncodedPacket.IsDiscardable.get -> bool
 Egami.Video.EncodedPacket.IsDiscardable.set -> void
@@ -52,6 +54,8 @@ Egami.Video.VideoReaderOptions.AutoOrient.get -> bool
 Egami.Video.VideoReaderOptions.AutoOrient.init -> void
 Egami.Video.VideoTrackInfo.Orientation.get -> Egami.Metadata.ImageOrientation
 Egami.Video.VideoTrackInfo.Orientation.init -> void
+override Egami.Video.Containers.Mp4Format.CanMux.get -> bool
+override Egami.Video.Containers.Mp4Format.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
 override Egami.Video.Containers.Mp4Format.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
 override Egami.Video.Containers.Mp4Format.IsMatch(System.ReadOnlySpan<byte> header) -> bool
 override Egami.Video.Containers.Mp4Format.Name.get -> string!

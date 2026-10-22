@@ -38,6 +38,16 @@ public sealed class Mp4Format : ContainerFormat
     /// </summary>
     public bool IgnoreEditLists { get; init; }
 
+    /// <summary>
+    /// Gets whether writers put moov after the media (V4.1 Design Q4). By default moov comes first, so the file plays while it
+    /// downloads: on a stream that can seek and read, the media is written in place and moved forward at the end, else it waits
+    /// in a temporary file. With moov at the end the media goes straight to the output, which must be able to seek.
+    /// </summary>
+    public bool MoovAtEnd { get; init; }
+
+    /// <inheritdoc/>
+    public override bool CanMux => true;
+
     /// <inheritdoc/>
     public override bool IsMatch(ReadOnlySpan<byte> header)
     {
@@ -60,5 +70,28 @@ public sealed class Mp4Format : ContainerFormat
         ArgumentNullException.ThrowIfNull(stream);
         ArgumentNullException.ThrowIfNull(context);
         return new Mp4Demuxer(stream, context, leaveOpen, IgnoreEditLists);
+    }
+
+    /// <summary>
+    /// Creates a muxer that writes ISO MP4: tracks numbered from 1 in the order given, chunks of about half a second interleaved
+    /// by time, edit lists for start offsets and codec delays, the display matrix from <see cref="VideoTrackInfo.Orientation"/>,
+    /// tags as iTunes items, cover art, and chapters both as Nero chpl and as a QuickTime chapter track. Holds AV1, VP9, VP8,
+    /// Motion JPEG, H.264, HEVC, MPEG-4 Part 2, Opus, FLAC, AAC, MP3, PCM, mov_text, and tracks read from MP4 or QuickTime with
+    /// any other codec. A file read as QuickTime is written as MP4 (Q11).
+    /// </summary>
+    /// <param name="stream">Where to write.</param>
+    /// <param name="tracks">The tracks.</param>
+    /// <param name="metadata">The tags, chapters and cover art.</param>
+    /// <param name="context">The context.</param>
+    /// <param name="leaveOpen">Whether disposing the muxer leaves the stream open.</param>
+    /// <returns>The muxer.</returns>
+    /// <exception cref="NotSupportedException">MP4 cannot hold one of the tracks, or <see cref="MoovAtEnd"/> is set and the stream cannot seek.</exception>
+    public override IMuxer CreateMuxer(Stream stream, IReadOnlyList<TrackInfo> tracks, MediaMetadata metadata, MediaContext context, bool leaveOpen)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(tracks);
+        ArgumentNullException.ThrowIfNull(metadata);
+        ArgumentNullException.ThrowIfNull(context);
+        return new Mp4Muxer(stream, tracks, metadata, context, leaveOpen, MoovAtEnd);
     }
 }
