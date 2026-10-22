@@ -10,7 +10,8 @@ namespace Egami.Fuzz;
 /// that cannot seek, a region, the HDR rendition of a gain map, the YUV planes, without film grain, and every image item on its
 /// own. avifbox puts its input after an ftyp box, so mutations reach the HEIF box reader (meta, iinf, iloc, iref, iprp, grpl and
 /// the track boxes) directly. av1 feeds a raw OBU stream to the AV1 decoder, with and without its in-loop filters, its film grain
-/// applied, on one thread or four. Only EgamiExceptions may escape.
+/// applied, on one thread or four; av1stream feeds temporal units to the stream decoder, inter frames included. Only
+/// EgamiExceptions may escape.
 /// </summary>
 internal static class AvifFuzzTarget
 {
@@ -162,6 +163,44 @@ internal static class AvifFuzzTarget
         }
         catch (EgamiException)
         {
+        }
+    }
+
+    /// <summary>
+    /// av1stream (Phase 2.9.5): temporal units, each behind a two-byte little-endian length, through the public stream decoder
+    /// with the options the first byte picks (film grain, operating point, every layer, threads). A unit that throws is skipped,
+    /// as a player would, and decoding goes on; every frame that comes out is copied into a raster of its size.
+    /// </summary>
+    public static void DecodeStream(byte[] data, EgamiContext context)
+    {
+        if (data.Length < 3)
+        {
+            return;
+        }
+
+        Av1DecoderOptions options = new() { ApplyFilmGrain = (data[0] & 1) != 0, OperatingPoint = (data[0] >> 1) & 3, OutputAllLayers = (data[0] & 8) != 0 };
+        using Av1StreamDecoder decoder = new(options, context with { MaxParallelism = (data[0] & 16) != 0 ? 4 : 1 });
+        for (int at = 1; at + 2 <= data.Length;)
+        {
+            int length = Math.Min(data[at] | (data[at + 1] << 8), data.Length - at - 2);
+            ReadOnlySpan<byte> unit = data.AsSpan(at + 2, length);
+            at += 2 + length;
+            try
+            {
+                decoder.Send(unit);
+            }
+            catch (EgamiException)
+            {
+                continue;
+            }
+
+            while (decoder.NextFrame is Av1FrameInfo next)
+            {
+                using YuvRaster picture = next.BitDepth == 8
+                    ? YuvRaster.Create(next.Width, next.Height, next.Chroma, YuvColor.Bt601Limited, context: context)
+                    : YuvRaster.Create(next.Width, next.Height, next.Chroma, next.BitDepth, YuvColor.Bt601Limited, context: context);
+                decoder.TryReceiveFrame(picture, out _);
+            }
         }
     }
 

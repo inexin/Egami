@@ -141,8 +141,9 @@ internal sealed class Av1Stream
             }
         }
 
-        if (frame is not null)
+        if (frame is not null && shown.Count == 0)
         {
+            // A unit cut off after a frame it showed gives that frame, as dav1d does; the cut-off frame is dropped.
             throw new CorruptDataException(_formatName, offset + length, "The AV1 temporal unit ends before its frame's last tile.") { IsTruncation = true };
         }
 
