@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Formats.Webp;
 
@@ -202,20 +204,34 @@ internal static class Vp8EncDsp
     /// <summary>The spectral distortion of a 16 × 16 block, the sum over its sixteen 4 × 4 blocks.</summary>
     internal static int Disto16x16(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b, int at)
     {
+        Span<int> source = stackalloc int[16];
+        HadamardWeighted16x16(a, at, source);
+        return Disto16x16(source, b, at);
+    }
+
+    /// <summary>The spectral distortion of a 16 × 16 block against a source whose sixteen weighted Hadamard magnitudes are known.</summary>
+    internal static int Disto16x16(ReadOnlySpan<int> source, ReadOnlySpan<byte> b, int at)
+    {
         int d = 0;
-        for (int y = 0; y < 16; y += 4)
+        for (int n = 0; n < 16; n++)
         {
-            for (int x = 0; x < 16; x += 4)
-            {
-                int o = at + (y * S) + x;
-                d += Disto4x4(a, o, b, o);
-            }
+            d += Math.Abs(HadamardWeighted(b, at + ((n >> 2) * 4 * S) + ((n & 3) * 4)) - source[n]) >> 5;
         }
 
         return d;
     }
 
-    private static int HadamardWeighted(ReadOnlySpan<byte> input, int at) =>
+    /// <summary>The weighted Hadamard magnitudes of the sixteen 4 × 4 blocks of the 16 × 16 block at <paramref name="at"/>, in raster order.</summary>
+    internal static void HadamardWeighted16x16(ReadOnlySpan<byte> a, int at, Span<int> output)
+    {
+        for (int n = 0; n < 16; n++)
+        {
+            output[n] = HadamardWeighted(a, at + ((n >> 2) * 4 * S) + ((n & 3) * 4));
+        }
+    }
+
+    /// <summary>The weighted Hadamard magnitude of the 4 × 4 block at <paramref name="at"/>, which the spectral distortion compares.</summary>
+    internal static int HadamardWeighted(ReadOnlySpan<byte> input, int at) =>
         Vp8TransformSimd.IsSupported ? Vp8TransformSimd.HadamardWeighted(input, at) : HadamardWeightedScalar(input, at);
 
     /// <summary>The scalar path of the weighted Hadamard magnitude.</summary>
@@ -259,13 +275,42 @@ internal static class Vp8EncDsp
     {
         Span<int> distribution = stackalloc int[32];
         distribution.Clear();
-        Span<short> output = stackalloc short[16];
-        foreach (int at in offsets)
+        if (Vp8PairSimd.IsSupported && (offsets.Length & 1) == 0)
         {
-            ForwardTransform(src, at, pred, at, output);
-            for (int k = 0; k < 16; k++)
+            // The blocks come in pairs side by side.
+            Span<byte> bins = stackalloc byte[32];
+            for (int i = 0; i < offsets.Length; i += 2)
             {
-                distribution[Math.Min(Math.Abs(output[k]) >> 3, 31)]++;
+                Debug.Assert(offsets[i + 1] == offsets[i] + 4, "The blocks of a pair are side by side.");
+                Vp8PairSimd.TransformBins(src, offsets[i], pred, offsets[i], bins);
+                foreach (byte bin in bins)
+                {
+                    distribution[bin]++;
+                }
+            }
+        }
+        else if (Vp8TransformSimd.IsSupported)
+        {
+            Span<byte> bins = stackalloc byte[16];
+            foreach (int at in offsets)
+            {
+                Vp8TransformSimd.TransformBins(src, at, pred, at, bins);
+                foreach (byte bin in bins)
+                {
+                    distribution[bin]++;
+                }
+            }
+        }
+        else
+        {
+            Span<short> output = stackalloc short[16];
+            foreach (int at in offsets)
+            {
+                ForwardTransform(src, at, pred, at, output);
+                for (int k = 0; k < 16; k++)
+                {
+                    distribution[Math.Min(Math.Abs(output[k]) >> 3, 31)]++;
+                }
             }
         }
 
@@ -316,10 +361,94 @@ internal static class Vp8EncDsp
         return true;
     }
 
+    /// <summary>
+    /// The ten 4 × 4 predictions of the block at <paramref name="at"/> in <paramref name="ctx"/> (the row above, four above-right,
+    /// the column to the left and the corner in place), as <see cref="Vp8Dsp.PredictSubblock"/> makes them, written side by side
+    /// to <paramref name="dst"/>: mode m at column (m &amp; 7) × 4 of block row m >> 3. The neighbours are read once.
+    /// </summary>
+    internal static void PredictSubblocks(ReadOnlySpan<byte> ctx, int at, Span<byte> dst)
+    {
+        _ = ctx.Slice(at - S - 1, (3 * S) + 9);
+        _ = dst.Slice(0, (7 * S) + 8);
+        ref byte p = ref MemoryMarshal.GetReference(ctx);
+        int t = at - S;
+        int x0 = Unsafe.Add(ref p, t - 1);
+        int a0 = Unsafe.Add(ref p, t), a1 = Unsafe.Add(ref p, t + 1), a2 = Unsafe.Add(ref p, t + 2), a3 = Unsafe.Add(ref p, t + 3);
+        int a4 = Unsafe.Add(ref p, t + 4), a5 = Unsafe.Add(ref p, t + 5), a6 = Unsafe.Add(ref p, t + 6), a7 = Unsafe.Add(ref p, t + 7);
+        int l0 = Unsafe.Add(ref p, at - 1), l1 = Unsafe.Add(ref p, at + S - 1), l2 = Unsafe.Add(ref p, at + (2 * S) - 1), l3 = Unsafe.Add(ref p, at + (3 * S) - 1);
+        ref byte d = ref MemoryMarshal.GetReference(dst);
+
+        uint dc = (uint)((a0 + a1 + a2 + a3 + l0 + l1 + l2 + l3 + 4) >> 3) * 0x01010101U;
+        Rows(ref d, Vp8Dsp.BDc, dc, dc, dc, dc);
+        Rows(ref d, Vp8Dsp.BTm, TmRow(l0), TmRow(l1), TmRow(l2), TmRow(l3));
+        uint ve = Row(Avg3(x0, a0, a1), Avg3(a0, a1, a2), Avg3(a1, a2, a3), Avg3(a2, a3, a4));
+        Rows(ref d, Vp8Dsp.BVe, ve, ve, ve, ve);
+        Rows(ref d, Vp8Dsp.BHe, Avg3(x0, l0, l1) * 0x01010101U, Avg3(l0, l1, l2) * 0x01010101U, Avg3(l1, l2, l3) * 0x01010101U, Avg3(l2, l3, l3) * 0x01010101U);
+
+        // Down-left: pixel (x, y) is e[x + y].
+        uint e0 = Avg3(a0, a1, a2), e1 = Avg3(a1, a2, a3), e2 = Avg3(a2, a3, a4), e3 = Avg3(a3, a4, a5), e4 = Avg3(a4, a5, a6), e5 = Avg3(a5, a6, a7), e6 = Avg3(a6, a7, a7);
+        Rows(ref d, Vp8Dsp.BLd, Row(e0, e1, e2, e3), Row(e1, e2, e3, e4), Row(e2, e3, e4, e5), Row(e3, e4, e5, e6));
+
+        // Down-right: pixel (x, y) is f[3 + x − y].
+        uint f0 = Avg3(l3, l2, l1), f1 = Avg3(l2, l1, l0), f2 = Avg3(l1, l0, x0), f3 = Avg3(l0, x0, a0), f4 = Avg3(x0, a0, a1), f5 = Avg3(a0, a1, a2), f6 = Avg3(a1, a2, a3);
+        Rows(ref d, Vp8Dsp.BRd, Row(f3, f4, f5, f6), Row(f2, f3, f4, f5), Row(f1, f2, f3, f4), Row(f0, f1, f2, f3));
+
+        uint h0 = Avg2(x0, a0), h1 = Avg2(a0, a1), h2 = Avg2(a1, a2), h3 = Avg2(a2, a3);
+        Rows(ref d, Vp8Dsp.BVr, Row(h0, h1, h2, h3), Row(f3, f4, f5, f6), Row(f2, h0, h1, h2), Row(f1, f3, f4, f5));
+        uint h4 = Avg2(a3, a4);
+        Rows(ref d, Vp8Dsp.BVl, Row(h1, h2, h3, h4), Row(e0, e1, e2, e3), Row(h2, h3, h4, e4), Row(e1, e2, e3, e5));
+        uint g0 = Avg2(l0, x0), g1 = Avg2(l1, l0), g2 = Avg2(l2, l1), g3 = Avg2(l3, l2);
+        Rows(ref d, Vp8Dsp.BHd, Row(g0, f3, f4, f5), Row(g1, f2, g0, f3), Row(g2, f1, g1, f2), Row(g3, f0, g2, f1));
+        uint u0 = Avg2(l0, l1), u1 = Avg3(l0, l1, l2), u2 = Avg2(l1, l2), u3 = Avg3(l1, l2, l3), u4 = Avg2(l2, l3), u5 = Avg3(l2, l3, l3);
+        Rows(ref d, Vp8Dsp.BHu, Row(u0, u1, u2, u3), Row(u2, u3, u4, u5), Row(u4, u5, (uint)l3, (uint)l3), (uint)l3 * 0x01010101U);
+
+        uint TmRow(int left)
+        {
+            int delta = left - x0;
+            return Row(Clip(a0 + delta), Clip(a1 + delta), Clip(a2 + delta), Clip(a3 + delta));
+        }
+
+        static uint Clip(int v) => (uint)Math.Clamp(v, 0, 255);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint Avg2(int a, int b) => (uint)((a + b + 1) >> 1);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint Avg3(int a, int b, int c) => (uint)((a + (2 * b) + c + 2) >> 2);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint Row(uint b0, uint b1, uint b2, uint b3) => b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Rows(ref byte dst, int mode, uint r0, uint r1, uint r2, uint r3)
+    {
+        ref byte at = ref Unsafe.Add(ref dst, ((mode & 7) * 4) + ((mode >> 3) * 4 * S));
+        Unsafe.WriteUnaligned(ref at, r0);
+        Unsafe.WriteUnaligned(ref Unsafe.Add(ref at, S), r1);
+        Unsafe.WriteUnaligned(ref Unsafe.Add(ref at, 2 * S), r2);
+        Unsafe.WriteUnaligned(ref Unsafe.Add(ref at, 3 * S), r3);
+    }
+
     /// <summary>Copies a <paramref name="w"/> × <paramref name="h"/> area between buffers of the work stride.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void Copy(ReadOnlySpan<byte> from, int fo, Span<byte> to, int to0, int w, int h)
     {
+        if (w == 4 && h == 4)
+        {
+            // One check for each buffer, then four 4-byte moves.
+            _ = from.Slice(fo, (3 * S) + 4);
+            _ = to.Slice(to0, (3 * S) + 4);
+            ref byte f = ref Unsafe.Add(ref MemoryMarshal.GetReference(from), fo);
+            ref byte t = ref Unsafe.Add(ref MemoryMarshal.GetReference(to), to0);
+            for (int y = 0; y < 4; y++)
+            {
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref t, y * S), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref f, y * S)));
+            }
+
+            return;
+        }
+
         for (int y = 0; y < h; y++)
         {
             from.Slice(fo + (y * S), w).CopyTo(to.Slice(to0 + (y * S), w));

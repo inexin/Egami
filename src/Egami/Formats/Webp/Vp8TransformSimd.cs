@@ -46,12 +46,27 @@ internal static class Vp8TransformSimd
     {
         ref byte rs = ref Unsafe.Add(ref MemoryMarshal.GetReference(src), s);
         ref byte rp = ref Unsafe.Add(ref MemoryMarshal.GetReference(pred), p);
+        ForwardRows(
+            Load4(ref rs) - Load4(ref rp),
+            Load4(ref Unsafe.Add(ref rs, S)) - Load4(ref Unsafe.Add(ref rp, S)),
+            Load4(ref Unsafe.Add(ref rs, 2 * S)) - Load4(ref Unsafe.Add(ref rp, 2 * S)),
+            Load4(ref Unsafe.Add(ref rs, 3 * S)) - Load4(ref Unsafe.Add(ref rp, 3 * S)),
+            out Vector128<int> o0,
+            out Vector128<int> o1,
+            out Vector128<int> o2,
+            out Vector128<int> o3);
+        ref short o = ref MemoryMarshal.GetReference(output);
+        Store4(ref o, o0);
+        Store4(ref Unsafe.Add(ref o, 4), o1);
+        Store4(ref Unsafe.Add(ref o, 8), o2);
+        Store4(ref Unsafe.Add(ref o, 12), o3);
+    }
 
+    /// <summary>The forward DCT of four rows of differences; the outputs are the rows of coefficients, in 32-bit lanes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void ForwardRows(Vector128<int> c0, Vector128<int> c1, Vector128<int> c2, Vector128<int> c3, out Vector128<int> o0, out Vector128<int> o1, out Vector128<int> o2, out Vector128<int> o3)
+    {
         // Rows of differences, then columns: c_k holds d_k of each row.
-        Vector128<int> c0 = Load4(ref rs) - Load4(ref rp);
-        Vector128<int> c1 = Load4(ref Unsafe.Add(ref rs, S)) - Load4(ref Unsafe.Add(ref rp, S));
-        Vector128<int> c2 = Load4(ref Unsafe.Add(ref rs, 2 * S)) - Load4(ref Unsafe.Add(ref rp, 2 * S));
-        Vector128<int> c3 = Load4(ref Unsafe.Add(ref rs, 3 * S)) - Load4(ref Unsafe.Add(ref rp, 3 * S));
         Transpose(ref c0, ref c1, ref c2, ref c3);
         Vector128<int> a0 = c0 + c3, a1 = c1 + c2, a2 = c1 - c2, a3 = c0 - c3;
         Vector128<int> t0 = (a0 + a1) << 3;
@@ -65,13 +80,12 @@ internal static class Vp8TransformSimd
         a1 = t1 + t2;
         a2 = t1 - t2;
         a3 = t0 - t3;
-        ref short o = ref MemoryMarshal.GetReference(output);
         Vector128<int> seven = Vector128.Create(7);
-        Store4(ref o, (a0 + a1 + seven) >> 4);
+        o0 = (a0 + a1 + seven) >> 4;
         Vector128<int> nonZero = Vector128.Create(1) & ~Vector128.Equals(a3, Vector128<int>.Zero);
-        Store4(ref Unsafe.Add(ref o, 4), (((a2 * 2217) + (a3 * 5352) + Vector128.Create(12000)) >> 16) + nonZero);
-        Store4(ref Unsafe.Add(ref o, 8), (a0 - a1 + seven) >> 4);
-        Store4(ref Unsafe.Add(ref o, 12), ((a3 * 2217) - (a2 * 5352) + Vector128.Create(51000)) >> 16);
+        o1 = (((a2 * 2217) + (a3 * 5352) + Vector128.Create(12000)) >> 16) + nonZero;
+        o2 = (a0 - a1 + seven) >> 4;
+        o3 = ((a3 * 2217) - (a2 * 5352) + Vector128.Create(51000)) >> 16;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -179,7 +193,20 @@ internal static class Vp8TransformSimd
         Vector128<int> i1 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 4)))).AsInt16());
         Vector128<int> i2 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 8)))).AsInt16());
         Vector128<int> i3 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 12)))).AsInt16());
+        InverseRows(i0, i1, i2, i3, out Vector128<int> r0, out Vector128<int> r1, out Vector128<int> r2, out Vector128<int> r3);
+        AddRow(ref row, r0);
+        AddRow(ref Unsafe.Add(ref row, stride), r1);
+        AddRow(ref Unsafe.Add(ref row, 2 * stride), r2);
+        AddRow(ref Unsafe.Add(ref row, 3 * stride), r3);
 
+        static void AddRow(ref byte at, Vector128<int> residual) =>
+            Store4Bytes(ref at, Vector128.Clamp(Load4(ref at) + residual, Vector128<int>.Zero, Vector128.Create(255)));
+    }
+
+    /// <summary>The inverse DCT of four rows of coefficients; the outputs are the rows of residuals, in 32-bit lanes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void InverseRows(Vector128<int> i0, Vector128<int> i1, Vector128<int> i2, Vector128<int> i3, out Vector128<int> r0, out Vector128<int> r1, out Vector128<int> r2, out Vector128<int> r3)
+    {
         // Vertical pass over the columns (lanes), giving tmp rows i as columns of the 4 outputs.
         Vector128<int> a = i0 + i2, b = i0 - i2;
         Vector128<int> c = Mul2(i1) - Mul1(i3), d = Mul1(i1) + Mul2(i3);
@@ -192,21 +219,13 @@ internal static class Vp8TransformSimd
         b = dc - t2;
         c = Mul2(t1) - Mul1(t3);
         d = Mul1(t1) + Mul2(t3);
-        Vector128<int> r0 = (a + d) >> 3, r1 = (b + c) >> 3, r2 = (b - c) >> 3, r3 = (a - d) >> 3;
+        r0 = (a + d) >> 3;
+        r1 = (b + c) >> 3;
+        r2 = (b - c) >> 3;
+        r3 = (a - d) >> 3;
 
-        // r_k holds output column k of each row; transpose to rows and add to the pixels.
+        // r_k holds output column k of each row; transpose to rows.
         Transpose(ref r0, ref r1, ref r2, ref r3);
-        AddRow(ref row, r0);
-        AddRow(ref Unsafe.Add(ref row, stride), r1);
-        AddRow(ref Unsafe.Add(ref row, 2 * stride), r2);
-        AddRow(ref Unsafe.Add(ref row, 3 * stride), r3);
-
-        static void AddRow(ref byte at, Vector128<int> residual)
-        {
-            Vector128<int> sum = Vector128.Clamp(Load4(ref at) + residual, Vector128<int>.Zero, Vector128.Create(255));
-            Vector128<short> packed = Sse2.PackSignedSaturate(sum, sum);
-            Unsafe.WriteUnaligned(ref at, Sse2.PackUnsignedSaturate(packed, packed).AsUInt32().ToScalar());
-        }
     }
 
     /// <summary>
@@ -215,35 +234,39 @@ internal static class Vp8TransformSimd
     /// </summary>
     internal static bool Quantize(Span<short> coefficients, Span<short> levels, Vp8Matrix m)
     {
+        _ = coefficients[15];
+        _ = levels[15];
         ref short c = ref MemoryMarshal.GetReference(coefficients);
+        Vector128<int> r0 = Load4Shorts(ref c), r1 = Load4Shorts(ref Unsafe.Add(ref c, 4)), r2 = Load4Shorts(ref Unsafe.Add(ref c, 8)), r3 = Load4Shorts(ref Unsafe.Add(ref c, 12));
+        bool any = QuantizeRows(ref r0, ref r1, ref r2, ref r3, m, ref MemoryMarshal.GetReference(levels)) != 0;
+        StoreLow16(ref c, r0);
+        StoreLow16(ref Unsafe.Add(ref c, 4), r1);
+        StoreLow16(ref Unsafe.Add(ref c, 8), r2);
+        StoreLow16(ref Unsafe.Add(ref c, 12), r3);
+        return any;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<int> Load4Shorts(ref short at) => Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref at))).AsInt16());
+
+    /// <summary>
+    /// Quantizes four rows of coefficients: the levels go out in zigzag order at <paramref name="levels"/>, and each row becomes
+    /// its dequantized values (level × step, in 32 bits). Returns a mask of the non-zero levels, bit k for coefficient k in raster order.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int QuantizeRows(ref Vector128<int> r0, ref Vector128<int> r1, ref Vector128<int> r2, ref Vector128<int> r3, Vp8Matrix m, ref short levels)
+    {
         ref int sharpen = ref MemoryArrays.Ref(m.Sharpen);
         Vector128<int> acIq = Vector128.Create((int)m.IQ[1]), acBias = Vector128.Create((int)m.Bias[1]), acThresh = Vector128.Create((int)m.ZThresh[1]), acQ = Vector128.Create(m.Q[1]);
         Vector128<int> firstIq = acIq.WithElement(0, (int)m.IQ[0]), firstBias = acBias.WithElement(0, (int)m.Bias[0]);
         Vector128<int> firstThresh = acThresh.WithElement(0, (int)m.ZThresh[0]), firstQ = acQ.WithElement(0, m.Q[0]);
         Vector128<int> max = Vector128.Create(Vp8Costs.MaxLevel);
-        Vector128<short> l03 = default, l47 = default;
-        Vector128<int> any = Vector128<int>.Zero;
-        for (int g = 0; g < 4; g++)
-        {
-            ref short at = ref Unsafe.Add(ref c, g * 4);
-            Vector128<int> v = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref at))).AsInt16());
-            Vector128<int> sign = v >> 31;
-            Vector128<int> coeff = Vector128.Abs(v) + Vector128.LoadUnsafe(ref Unsafe.Add(ref sharpen, g * 4));
-            (Vector128<int> iq, Vector128<int> bias, Vector128<int> thresh, Vector128<int> q) = g == 0 ? (firstIq, firstBias, firstThresh, firstQ) : (acIq, acBias, acThresh, acQ);
-            Vector128<int> level = Vector128.Min(((coeff * iq) + bias) >>> Vp8EncDsp.QFix, max);
-            level &= Vector128.GreaterThan(coeff, thresh);
-            level = (level ^ sign) - sign;
-            any |= level;
-            StoreLow16(ref at, level * q);
-            Vector128<short> packed = Sse2.PackSignedSaturate(level, level);
-            switch (g)
-            {
-                case 0: l03 = packed; break;
-                case 1: l03 = Sse2.UnpackLow(l03.AsInt64(), packed.AsInt64()).AsInt16(); break;
-                case 2: l47 = packed; break;
-                default: l47 = Sse2.UnpackLow(l47.AsInt64(), packed.AsInt64()).AsInt16(); break;
-            }
-        }
+        Vector128<int> level0 = QuantizeRow(ref r0, Vector128.LoadUnsafe(ref sharpen), firstIq, firstBias, firstThresh, firstQ, max);
+        Vector128<int> level1 = QuantizeRow(ref r1, Vector128.LoadUnsafe(ref Unsafe.Add(ref sharpen, 4)), acIq, acBias, acThresh, acQ, max);
+        Vector128<int> level2 = QuantizeRow(ref r2, Vector128.LoadUnsafe(ref Unsafe.Add(ref sharpen, 8)), acIq, acBias, acThresh, acQ, max);
+        Vector128<int> level3 = QuantizeRow(ref r3, Vector128.LoadUnsafe(ref Unsafe.Add(ref sharpen, 12)), acIq, acBias, acThresh, acQ, max);
+        Vector128<short> l03 = Sse2.PackSignedSaturate(level0, level1);
+        Vector128<short> l47 = Sse2.PackSignedSaturate(level2, level3);
 
         // Raster to zigzag: 0 1 4 8 5 2 3 6 | 9 12 13 10 7 11 14 15, from raster 0–7 (low) and 8–15 (high).
         Vector128<byte> lowFromLow = Vector128.Create((byte)0, 1, 2, 3, 8, 9, 0xFF, 0xFF, 10, 11, 4, 5, 6, 7, 12, 13);
@@ -252,10 +275,20 @@ internal static class Vp8TransformSimd
         Vector128<byte> highFromHigh = Vector128.Create((byte)2, 3, 8, 9, 10, 11, 4, 5, 0xFF, 0xFF, 6, 7, 12, 13, 14, 15);
         Vector128<short> z0 = (Ssse3.Shuffle(l03.AsByte(), lowFromLow) | Ssse3.Shuffle(l47.AsByte(), lowFromHigh)).AsInt16();
         Vector128<short> z1 = (Ssse3.Shuffle(l03.AsByte(), highFromLow) | Ssse3.Shuffle(l47.AsByte(), highFromHigh)).AsInt16();
-        ref short l = ref MemoryMarshal.GetReference(levels);
-        z0.StoreUnsafe(ref l);
-        z1.StoreUnsafe(ref Unsafe.Add(ref l, 8));
-        return any != Vector128<int>.Zero;
+        z0.StoreUnsafe(ref levels);
+        z1.StoreUnsafe(ref Unsafe.Add(ref levels, 8));
+        return ~Sse2.MoveMask(Vector128.Equals(Sse2.PackSignedSaturate(l03, l47), Vector128<sbyte>.Zero).AsByte()) & 0xFFFF;
+
+        static Vector128<int> QuantizeRow(ref Vector128<int> v, Vector128<int> sharpen, Vector128<int> iq, Vector128<int> bias, Vector128<int> thresh, Vector128<int> q, Vector128<int> max)
+        {
+            Vector128<int> sign = v >> 31;
+            Vector128<int> coeff = Vector128.Abs(v) + sharpen;
+            Vector128<int> level = Vector128.Min(((coeff * iq) + bias) >>> Vp8EncDsp.QFix, max);
+            level &= Vector128.GreaterThan(coeff, thresh);
+            level = (level ^ sign) - sign;
+            v = level * q;
+            return level;
+        }
     }
 
     /// <summary>The sum of squared differences over rows of 16 or 8 bytes (<paramref name="w"/>) at offset <paramref name="at"/>.</summary>
@@ -297,7 +330,13 @@ internal static class Vp8TransformSimd
     internal static int HadamardWeighted(ReadOnlySpan<byte> input, int at)
     {
         ref byte r = ref Unsafe.Add(ref MemoryMarshal.GetReference(input), at);
-        Vector128<int> c0 = Load4(ref r), c1 = Load4(ref Unsafe.Add(ref r, S)), c2 = Load4(ref Unsafe.Add(ref r, 2 * S)), c3 = Load4(ref Unsafe.Add(ref r, 3 * S));
+        return HadamardWeightedRows(Load4(ref r), Load4(ref Unsafe.Add(ref r, S)), Load4(ref Unsafe.Add(ref r, 2 * S)), Load4(ref Unsafe.Add(ref r, 3 * S)));
+    }
+
+    /// <summary>The weighted Hadamard magnitude of a 4 × 4 block given as four rows in 32-bit lanes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int HadamardWeightedRows(Vector128<int> c0, Vector128<int> c1, Vector128<int> c2, Vector128<int> c3)
+    {
         Transpose(ref c0, ref c1, ref c2, ref c3);
         Vector128<int> a0 = c0 + c2, a1 = c1 + c3, a2 = c1 - c3, a3 = c0 - c2;
         Vector128<int> t0 = a0 + a1, t1 = a3 + a2, t2 = a3 - a2, t3 = a0 - a1;
@@ -311,6 +350,111 @@ internal static class Vp8TransformSimd
             + (Vector128.Create(20, 17, 10, 4) * Vector128.Abs(a3 - a2))
             + (Vector128.Create(9, 7, 4, 2) * Vector128.Abs(a0 - a1));
         return Vector128.Sum(sum);
+    }
+
+    /// <summary>
+    /// One 4 × 4 trial of the encoder's mode search in registers: <see cref="ForwardTransform"/> of the source at
+    /// <paramref name="s"/> minus the prediction at <paramref name="p"/>, <see cref="Quantize"/> (the levels go out in zigzag
+    /// order), and the reconstruction, the prediction plus the inverse DCT of the dequantized levels, written to
+    /// <paramref name="output"/> at <paramref name="at"/>. Returns the mask of non-zero levels (bit k for coefficient k in raster
+    /// order), with the squared error of the reconstruction against the source and its weighted Hadamard magnitude, exactly as the
+    /// kernels one after the other give them.
+    /// </summary>
+    internal static int ReconstructBlock(ReadOnlySpan<byte> src, int s, ReadOnlySpan<byte> pred, int p, Vp8Matrix m, Span<short> levels, Span<byte> output, int at, out int sse, out int spectrum)
+    {
+        _ = src.Slice(s, (3 * S) + 4);
+        _ = pred.Slice(p, (3 * S) + 4);
+        _ = output.Slice(at, (3 * S) + 4);
+        _ = levels[15];
+        ref byte rs = ref Unsafe.Add(ref MemoryMarshal.GetReference(src), s);
+        ref byte rp = ref Unsafe.Add(ref MemoryMarshal.GetReference(pred), p);
+        Vector128<int> s0 = Load4(ref rs), s1 = Load4(ref Unsafe.Add(ref rs, S)), s2 = Load4(ref Unsafe.Add(ref rs, 2 * S)), s3 = Load4(ref Unsafe.Add(ref rs, 3 * S));
+        Vector128<int> p0 = Load4(ref rp), p1 = Load4(ref Unsafe.Add(ref rp, S)), p2 = Load4(ref Unsafe.Add(ref rp, 2 * S)), p3 = Load4(ref Unsafe.Add(ref rp, 3 * S));
+        ForwardRows(s0 - p0, s1 - p1, s2 - p2, s3 - p3, out Vector128<int> c0, out Vector128<int> c1, out Vector128<int> c2, out Vector128<int> c3);
+        int nz = QuantizeRows(ref c0, ref c1, ref c2, ref c3, m, ref MemoryMarshal.GetReference(levels));
+        Reconstruct(c0, c1, c2, c3, s0, s1, s2, s3, p0, p1, p2, p3, ref Unsafe.Add(ref MemoryMarshal.GetReference(output), at), out sse, out spectrum);
+        return nz;
+    }
+
+    /// <summary>
+    /// <see cref="ReconstructBlock"/> for a block of a 16 × 16 prediction, whose DC is coded in the Y2 block: the AC of
+    /// <paramref name="coefficients"/> (the forward DCT) is quantized, and the reconstruction takes coefficient 0 as given there
+    /// (the block's DC from the inverse Walsh-Hadamard transform).
+    /// </summary>
+    internal static int ReconstructAcBlock(ReadOnlySpan<short> coefficients, ReadOnlySpan<byte> src, int s, ReadOnlySpan<byte> pred, int p, Vp8Matrix m, Span<short> levels, Span<byte> output, int at, out int sse, out int spectrum)
+    {
+        _ = coefficients[15];
+        _ = src.Slice(s, (3 * S) + 4);
+        _ = pred.Slice(p, (3 * S) + 4);
+        _ = output.Slice(at, (3 * S) + 4);
+        _ = levels[15];
+        ref byte rs = ref Unsafe.Add(ref MemoryMarshal.GetReference(src), s);
+        ref byte rp = ref Unsafe.Add(ref MemoryMarshal.GetReference(pred), p);
+        ref short c = ref MemoryMarshal.GetReference(coefficients);
+        Vector128<int> c0 = Load4Shorts(ref c), c1 = Load4Shorts(ref Unsafe.Add(ref c, 4)), c2 = Load4Shorts(ref Unsafe.Add(ref c, 8)), c3 = Load4Shorts(ref Unsafe.Add(ref c, 12));
+        Vector128<int> dc = c0 & Vector128.Create(-1, 0, 0, 0);
+        c0 &= Vector128.Create(0, -1, -1, -1);
+        int nz = QuantizeRows(ref c0, ref c1, ref c2, ref c3, m, ref MemoryMarshal.GetReference(levels));
+        Vector128<int> s0 = Load4(ref rs), s1 = Load4(ref Unsafe.Add(ref rs, S)), s2 = Load4(ref Unsafe.Add(ref rs, 2 * S)), s3 = Load4(ref Unsafe.Add(ref rs, 3 * S));
+        Vector128<int> p0 = Load4(ref rp), p1 = Load4(ref Unsafe.Add(ref rp, S)), p2 = Load4(ref Unsafe.Add(ref rp, 2 * S)), p3 = Load4(ref Unsafe.Add(ref rp, 3 * S));
+
+        // Coefficient 0 quantizes to 0 (its sharpening is 0); the reconstruction takes the given DC there.
+        Reconstruct(c0 | dc, c1, c2, c3, s0, s1, s2, s3, p0, p1, p2, p3, ref Unsafe.Add(ref MemoryMarshal.GetReference(output), at), out sse, out spectrum);
+        return nz;
+    }
+
+    /// <summary>Adds the inverse DCT of dequantized rows to the prediction rows, stores the pixels and measures them against the source rows.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Reconstruct(Vector128<int> c0, Vector128<int> c1, Vector128<int> c2, Vector128<int> c3, Vector128<int> s0, Vector128<int> s1, Vector128<int> s2, Vector128<int> s3, Vector128<int> p0, Vector128<int> p1, Vector128<int> p2, Vector128<int> p3, ref byte o, out int sse, out int spectrum)
+    {
+        // The dequantized values as the 16-bit coefficients the scalar path keeps.
+        InverseRows((c0 << 16) >> 16, (c1 << 16) >> 16, (c2 << 16) >> 16, (c3 << 16) >> 16, out Vector128<int> r0, out Vector128<int> r1, out Vector128<int> r2, out Vector128<int> r3);
+        Vector128<int> max = Vector128.Create(255);
+        r0 = Vector128.Clamp(p0 + r0, Vector128<int>.Zero, max);
+        r1 = Vector128.Clamp(p1 + r1, Vector128<int>.Zero, max);
+        r2 = Vector128.Clamp(p2 + r2, Vector128<int>.Zero, max);
+        r3 = Vector128.Clamp(p3 + r3, Vector128<int>.Zero, max);
+        Store4Bytes(ref o, r0);
+        Store4Bytes(ref Unsafe.Add(ref o, S), r1);
+        Store4Bytes(ref Unsafe.Add(ref o, 2 * S), r2);
+        Store4Bytes(ref Unsafe.Add(ref o, 3 * S), r3);
+        Vector128<int> d0 = r0 - s0, d1 = r1 - s1, d2 = r2 - s2, d3 = r3 - s3;
+        sse = Vector128.Sum((d0 * d0) + (d1 * d1) + (d2 * d2) + (d3 * d3));
+        spectrum = HadamardWeightedRows(r0, r1, r2, r3);
+    }
+
+    /// <summary>
+    /// The bins of <see cref="Vp8EncDsp.Alpha"/>'s histogram for one block: |coefficient| >> 3, at most 31, for each coefficient of
+    /// the forward DCT of the source at <paramref name="s"/> minus the prediction at <paramref name="p"/>, in raster order.
+    /// </summary>
+    internal static void TransformBins(ReadOnlySpan<byte> src, int s, ReadOnlySpan<byte> pred, int p, Span<byte> bins)
+    {
+        _ = src.Slice(s, (3 * S) + 4);
+        _ = pred.Slice(p, (3 * S) + 4);
+        _ = bins[15];
+        ref byte rs = ref Unsafe.Add(ref MemoryMarshal.GetReference(src), s);
+        ref byte rp = ref Unsafe.Add(ref MemoryMarshal.GetReference(pred), p);
+        ForwardRows(
+            Load4(ref rs) - Load4(ref rp),
+            Load4(ref Unsafe.Add(ref rs, S)) - Load4(ref Unsafe.Add(ref rp, S)),
+            Load4(ref Unsafe.Add(ref rs, 2 * S)) - Load4(ref Unsafe.Add(ref rp, 2 * S)),
+            Load4(ref Unsafe.Add(ref rs, 3 * S)) - Load4(ref Unsafe.Add(ref rp, 3 * S)),
+            out Vector128<int> o0,
+            out Vector128<int> o1,
+            out Vector128<int> o2,
+            out Vector128<int> o3);
+        Vector128<int> last = Vector128.Create(31);
+        Vector128<short> low = Sse2.PackSignedSaturate(Vector128.Min(Vector128.Abs(o0) >> 3, last), Vector128.Min(Vector128.Abs(o1) >> 3, last));
+        Vector128<short> high = Sse2.PackSignedSaturate(Vector128.Min(Vector128.Abs(o2) >> 3, last), Vector128.Min(Vector128.Abs(o3) >> 3, last));
+        Sse2.PackUnsignedSaturate(low, high).StoreUnsafe(ref MemoryMarshal.GetReference(bins));
+    }
+
+    /// <summary>Stores lanes already within 0 to 255 as 4 bytes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Store4Bytes(ref byte at, Vector128<int> v)
+    {
+        Vector128<short> packed = Sse2.PackSignedSaturate(v, v);
+        Unsafe.WriteUnaligned(ref at, Sse2.PackUnsignedSaturate(packed, packed).AsUInt32().ToScalar());
     }
 
     private static class MemoryArrays

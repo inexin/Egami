@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Egami.Formats.Webp;
 
 /// <summary>The macroblock loop: prediction, mode choice, quantization and reconstruction.</summary>
@@ -29,6 +31,11 @@ internal sealed partial class Vp8Encoder
     private readonly byte[] _predI4 = new byte[8 * S];
     private byte[] _i4Tmp = new byte[4 * S];
     private byte[] _i4Best = new byte[4 * S];
+
+    // The ten 4 × 4 trials of a block, made two at a time: their levels one after the other, their reconstructions in pairs side
+    // by side (see TrialAt).
+    private readonly short[] _trialLevels = new short[160];
+    private readonly byte[] _trialRecon = new byte[8 * S];
 
     // The reconstructed neighbours of the next macroblocks (unfiltered, as intra prediction sees them).
     private readonly byte[] _topY;
@@ -342,17 +349,33 @@ internal sealed partial class Vp8Encoder
         int lambda = dqm.LambdaI16;
         int tlambda = dqm.TLambda;
         bool isFlat = Vp8EncDsp.IsFlatSource16(_yuvIn);
+        Span<int> sourceSpectrum = stackalloc int[16];
+        if (tlambda != 0)
+        {
+            Vp8EncDsp.HadamardWeighted16x16(_yuvIn, 0, sourceSpectrum);
+        }
+
         ModeScore cur = _rdTmp;
         bool first = true;
         foreach (int mode in BlockModeOrder)
         {
             cur.Init();
             cur.ModeI16 = mode;
-            cur.Nz = ReconstructIntra16(dqm, cur, _yuvOut2, mode);
-            cur.D = Vp8EncDsp.Sse(_yuvIn, _yuvOut2, 0, 16, 16);
-            cur.SD = tlambda != 0 ? Mult8(tlambda, Vp8EncDsp.Disto16x16(_yuvIn, _yuvOut2, 0)) : 0;
+            int coded = 0;
+            if (!_doTrellis && Vp8TransformSimd.IsSupported)
+            {
+                cur.Nz = ReconstructIntra16Measured(dqm, cur, _yuvOut2, mode, sourceSpectrum, out long sse, out int disto, out coded);
+                cur.D = sse;
+                cur.SD = tlambda != 0 ? Mult8(tlambda, disto) : 0;
+            }
+            else
+            {
+                cur.Nz = ReconstructIntra16(dqm, cur, _yuvOut2, mode);
+                cur.D = Vp8EncDsp.Sse(_yuvIn, _yuvOut2, 0, 16, 16);
+                cur.SD = tlambda != 0 ? Mult8(tlambda, Vp8EncDsp.Disto16x16(sourceSpectrum, _yuvOut2, 0)) : 0;
+            }
+
             cur.H = Vp8Costs.Intra16[mode];
-            cur.R = CostLuma16(cur);
             if (isFlat)
             {
                 isFlat = Vp8EncDsp.IsFlat(cur.YAc, 16, 0);
@@ -363,6 +386,13 @@ internal sealed partial class Vp8Encoder
                 }
             }
 
+            // Each coded AC level costs at least its sign bit: a mode this bound already rules out needs no rate.
+            if (!first && ((cur.H + (Vp8Costs.LevelFixed[1] * (long)coded)) * lambda) + (RdDistoMult * (cur.D + cur.SD)) >= rd.Score)
+            {
+                continue;
+            }
+
+            cur.R = CostLuma16(cur);
             SetScore(lambda, cur);
             if (first || cur.Score < rd.Score)
             {
@@ -394,6 +424,11 @@ internal sealed partial class Vp8Encoder
         StartI4();
         int headerBits = 0;
         Span<byte> modes = best.ModesI4;
+        bool fused = !_doTrellis && Vp8TransformSimd.IsSupported;
+        bool paired = fused && Vp8PairSimd.IsSupported;
+        Span<int> trialMask = stackalloc int[10];
+        Span<int> trialSse = stackalloc int[10];
+        Span<int> trialSpectrum = stackalloc int[10];
         for (int n = 0; n < 16; n++)
         {
             int x = n & 3, y = n >> 2;
@@ -402,24 +437,68 @@ internal sealed partial class Vp8Encoder
             int costAt = (above * 100) + (left * 10);
             int src = ScanY[n];
             MakeI4Predictions(n);
+            int sourceSpectrum = tlambda != 0 ? Vp8EncDsp.HadamardWeighted(_yuvIn, src) : 0;
             long bestScore = long.MaxValue;
             long bestD = 0, bestSd = 0, bestR = 0, bestH = 0;
             int bestMode = -1;
             bool bestNz = false;
-            foreach (int mode in SubModeOrder)
+            if (paired)
             {
-                bool nz = ReconstructIntra4(dqm, n, mode, _tmpLevels, _i4Tmp, 0);
-                long d = Vp8EncDsp.Sse4x4(_yuvIn, src, _i4Tmp, 0);
-                long sd = tlambda != 0 ? Mult8(tlambda, Vp8EncDsp.Disto4x4(_yuvIn, src, _i4Tmp, 0)) : 0;
+                // All ten trials first, two at a time; the winner's results are copied once it is known.
+                for (int k = 0; k < SubModeOrder.Length; k += 2)
+                {
+                    int mask = Vp8PairSimd.ReconstructTrials(_yuvIn, src, _predI4, I4PredAt(SubModeOrder[k]), I4PredAt(SubModeOrder[k + 1]), dqm.Y1, _trialLevels.AsSpan(k * 16, 32), _trialRecon, TrialAt(k), out trialSse[k], out trialSse[k + 1], out trialSpectrum[k], out trialSpectrum[k + 1]);
+                    trialMask[k] = mask & 0xFFFF;
+                    trialMask[k + 1] = mask >>> 16;
+                }
+            }
+
+            int bestK = 0;
+            for (int k = 0; k < SubModeOrder.Length; k++)
+            {
+                int mode = SubModeOrder[k];
+                bool nz, flat;
+                long d, sd;
+                int coded = 0;
+                Span<short> levels = _tmpLevels;
+                if (paired)
+                {
+                    int mask = trialMask[k];
+                    coded = BitOperations.PopCount((uint)mask);
+                    nz = mask != 0;
+                    flat = BitOperations.PopCount((uint)mask & ~1u) <= 3;
+                    d = trialSse[k];
+                    sd = tlambda != 0 ? Mult8(tlambda, Math.Abs(trialSpectrum[k] - sourceSpectrum) >> 5) : 0;
+                    levels = _trialLevels.AsSpan(k * 16, 16);
+                }
+                else if (fused)
+                {
+                    int mask = Vp8TransformSimd.ReconstructBlock(_yuvIn, src, _predI4, I4PredAt(mode), dqm.Y1, _tmpLevels, _i4Tmp, 0, out int sse, out int spectrum);
+                    coded = BitOperations.PopCount((uint)mask);
+                    nz = mask != 0;
+                    flat = BitOperations.PopCount((uint)mask & ~1u) <= 3;
+                    d = sse;
+                    sd = tlambda != 0 ? Mult8(tlambda, Math.Abs(spectrum - sourceSpectrum) >> 5) : 0;
+                }
+                else
+                {
+                    nz = ReconstructIntra4(dqm, n, mode, _tmpLevels, _i4Tmp, 0);
+                    flat = Vp8EncDsp.IsFlat(_tmpLevels, 1, 3);
+                    d = Vp8EncDsp.Sse4x4(_yuvIn, src, _i4Tmp, 0);
+                    sd = tlambda != 0 ? Mult8(tlambda, Math.Abs(Vp8EncDsp.HadamardWeighted(_i4Tmp, 0) - sourceSpectrum) >> 5) : 0;
+                }
+
                 long h = Vp8Costs.Intra4[costAt + mode];
-                long r = mode != Vp8Dsp.BDc && Vp8EncDsp.IsFlat(_tmpLevels, 1, 3) ? FlatnessPenalty : 0;
+                long r = mode != Vp8Dsp.BDc && flat ? FlatnessPenalty : 0;
                 long score = ((r + h) * lambda) + (RdDistoMult * (d + sd));
-                if (bestMode >= 0 && score >= bestScore)
+
+                // Each coded level costs at least its sign bit, so a mode this bound already rules out needs no residual cost.
+                if (bestMode >= 0 && score + (Vp8Costs.LevelFixed[1] * (long)coded * lambda) >= bestScore)
                 {
                     continue;
                 }
 
-                r += _costs.Residual(3, 0, _nzTop[x] + _nzLeft[y], _tmpLevels);
+                r += _costs.Residual(3, 0, _nzTop[x] + _nzLeft[y], levels);
                 score = ((r + h) * lambda) + (RdDistoMult * (d + sd));
                 if (bestMode < 0 || score < bestScore)
                 {
@@ -427,9 +506,19 @@ internal sealed partial class Vp8Encoder
                     (bestD, bestSd, bestR, bestH) = (d, sd, r, h);
                     bestMode = mode;
                     bestNz = nz;
-                    (_i4Tmp, _i4Best) = (_i4Best, _i4Tmp);
-                    _tmpLevels.CopyTo(best.YAc.AsSpan(n * 16, 16));
+                    bestK = k;
+                    if (!paired)
+                    {
+                        (_i4Tmp, _i4Best) = (_i4Best, _i4Tmp);
+                        levels.CopyTo(best.YAc.AsSpan(n * 16, 16));
+                    }
                 }
+            }
+
+            if (paired)
+            {
+                _trialLevels.AsSpan(bestK * 16, 16).CopyTo(best.YAc.AsSpan(n * 16, 16));
+                Vp8EncDsp.Copy(_trialRecon, TrialAt(bestK) + ((bestK & 1) * 4), _i4Best, 0, 4, 4);
             }
 
             best.D += bestD;
@@ -481,15 +570,22 @@ internal sealed partial class Vp8Encoder
         foreach (int mode in BlockModeOrder)
         {
             cur.Init();
-            int nz = ReconstructUv(mbx, dqm, cur, scratch, mode);
-            long d = Vp8EncDsp.Sse(_yuvIn, scratch, UOff, 16, 8);
-            long h = Vp8Costs.Chroma[mode];
-            long r = CostUv(cur);
-            if (mode != 0 && Vp8EncDsp.IsFlat(cur.UvLevels, 8, 2))
+            int nz = ReconstructUv(mbx, dqm, cur, scratch, mode, out long d, out int coded);
+            if (d < 0)
             {
-                r += FlatnessPenalty * 8;
+                d = Vp8EncDsp.Sse(_yuvIn, scratch, UOff, 16, 8);
             }
 
+            long h = Vp8Costs.Chroma[mode];
+            long r = mode != 0 && Vp8EncDsp.IsFlat(cur.UvLevels, 8, 2) ? FlatnessPenalty * 8 : 0;
+
+            // Each coded level costs at least its sign bit: a mode this bound already rules out needs no rate.
+            if (mode != 0 && ((r + h + (Vp8Costs.LevelFixed[1] * (long)coded)) * lambda) + (RdDistoMult * d) >= bestScore)
+            {
+                continue;
+            }
+
+            r += CostUv(cur);
             long score = ((r + h) * lambda) + (RdDistoMult * d);
             if (mode == 0 || score < bestScore)
             {
@@ -651,7 +747,7 @@ internal sealed partial class Vp8Encoder
         }
 
         rd.ModeUv = bestUv;
-        nz |= ReconstructUv(mbx, dqm, rd, _yuvOut, bestUv);
+        nz |= ReconstructUv(mbx, dqm, rd, _yuvOut, bestUv, out _, out _);
         rd.Nz = nz;
         rd.Score = bestScore;
     }
@@ -710,6 +806,69 @@ internal sealed partial class Vp8Encoder
         return nz;
     }
 
+    /// <summary>
+    /// <see cref="ReconstructIntra16"/> without the trellis, block by block in registers; also returns the squared error of the
+    /// reconstruction and its spectral distortion against the source's magnitudes <paramref name="sourceSpectrum"/>.
+    /// </summary>
+    private int ReconstructIntra16Measured(Segment dqm, ModeScore rd, byte[] output, int mode, ReadOnlySpan<int> sourceSpectrum, out long sse, out int disto, out int coded)
+    {
+        coded = 0;
+        byte[] pred = _predY16[mode];
+        Span<short> tmp = stackalloc short[256];
+        Span<short> dc = stackalloc short[16];
+        bool paired = Vp8PairSimd.IsSupported;
+        for (int n = 0; n < 16; n += paired ? 2 : 1)
+        {
+            if (paired)
+            {
+                Vp8PairSimd.ForwardTransform(_yuvIn, ScanY[n], pred, ScanY[n], tmp.Slice(n * 16, 32));
+            }
+            else
+            {
+                Vp8EncDsp.ForwardTransform(_yuvIn, ScanY[n], pred, ScanY[n], tmp.Slice(n * 16, 16));
+            }
+        }
+
+        Vp8EncDsp.ForwardWalshHadamard(tmp, dc);
+        int nz = Vp8EncDsp.Quantize(dc, rd.YDc, dqm.Y2) ? 1 << 24 : 0;
+
+        // Each block's coefficient 0 becomes its reconstructed DC.
+        Vp8Dsp.InverseWalshHadamard(dc, tmp);
+        sse = 0;
+        disto = 0;
+        if (paired)
+        {
+            // Blocks n and n + 1 side by side.
+            for (int n = 0; n < 16; n += 2)
+            {
+                int at = ScanY[n];
+                int mask = Vp8PairSimd.ReconstructCoefficients(tmp.Slice(n * 16, 32), true, _yuvIn, at, pred, at, dqm.Y1, rd.YAc.AsSpan(n * 16, 32), output, at, out int sseA, out int sseB, out int spectrumA, out int spectrumB);
+                nz |= ((mask & 0xFFFF) != 0 ? 1 << n : 0) | ((mask >>> 16) != 0 ? 2 << n : 0);
+                coded += BitOperations.PopCount((uint)mask);
+                sse += sseA + sseB;
+                disto += (Math.Abs(spectrumA - sourceSpectrum[n]) >> 5) + (Math.Abs(spectrumB - sourceSpectrum[n + 1]) >> 5);
+            }
+
+            return nz;
+        }
+
+        for (int n = 0; n < 16; n++)
+        {
+            int at = ScanY[n];
+            int mask = Vp8TransformSimd.ReconstructAcBlock(tmp.Slice(n * 16, 16), _yuvIn, at, pred, at, dqm.Y1, rd.YAc.AsSpan(n * 16, 16), output, at, out int blockSse, out int spectrum);
+            coded += BitOperations.PopCount((uint)mask);
+            if (mask != 0)
+            {
+                nz |= 1 << n;
+            }
+
+            sse += blockSse;
+            disto += Math.Abs(spectrum - sourceSpectrum[n]) >> 5;
+        }
+
+        return nz;
+    }
+
     /// <summary>Reconstructs 4 × 4 block <paramref name="n"/> in <paramref name="mode"/> into <paramref name="output"/> at <paramref name="at"/>.</summary>
     private bool ReconstructIntra4(Segment dqm, int n, int mode, Span<short> levels, byte[] output, int at)
     {
@@ -724,13 +883,23 @@ internal sealed partial class Vp8Encoder
         return nz;
     }
 
-    private int ReconstructUv(int mbx, Segment dqm, ModeScore rd, byte[] output, int mode)
+    /// <summary>Reconstructs the chroma in <paramref name="mode"/>; returns the non-zero bits, and the squared error and the count of non-zero levels when they come for free (else −1 and 0).</summary>
+    private int ReconstructUv(int mbx, Segment dqm, ModeScore rd, byte[] output, int mode, out long sse, out int coded)
     {
+        coded = 0;
         byte[] pred = _predUv[mode];
         Span<short> tmp = stackalloc short[128];
-        for (int n = 0; n < 8; n++)
+        bool paired = Vp8PairSimd.IsSupported;
+        for (int n = 0; n < 8; n += paired ? 2 : 1)
         {
-            Vp8EncDsp.ForwardTransform(_yuvIn, ScanUv[n], pred, ScanUv[n], tmp.Slice(n * 16, 16));
+            if (paired)
+            {
+                Vp8PairSimd.ForwardTransform(_yuvIn, ScanUv[n], pred, ScanUv[n], tmp.Slice(n * 16, 32));
+            }
+            else
+            {
+                Vp8EncDsp.ForwardTransform(_yuvIn, ScanUv[n], pred, ScanUv[n], tmp.Slice(n * 16, 16));
+            }
         }
 
         if (_useDerr)
@@ -739,6 +908,23 @@ internal sealed partial class Vp8Encoder
         }
 
         int nz = 0;
+        if (paired)
+        {
+            // Blocks n and n + 1 side by side.
+            sse = 0;
+            for (int n = 0; n < 8; n += 2)
+            {
+                int at = ScanUv[n];
+                int mask = Vp8PairSimd.ReconstructCoefficients(tmp.Slice(n * 16, 32), false, _yuvIn, at, pred, at, dqm.Uv, rd.UvLevels.AsSpan(n * 16, 32), output, at, out int sseA, out int sseB, out _, out _);
+                nz |= ((mask & 0xFFFF) != 0 ? 1 << n : 0) | ((mask >>> 16) != 0 ? 2 << n : 0);
+                coded += BitOperations.PopCount((uint)mask);
+                sse += sseA + sseB;
+            }
+
+            return nz << 16;
+        }
+
+        sse = -1;
         for (int n = 0; n < 8; n++)
         {
             if (Vp8EncDsp.Quantize(tmp.Slice(n * 16, 16), rd.UvLevels.AsSpan(n * 16, 16), dqm.Uv))
@@ -816,6 +1002,9 @@ internal sealed partial class Vp8Encoder
 
     // --- 4 × 4 work area ---------------------------------------------------------------------------------------------------
 
+    /// <summary>Where the pair of trials from <paramref name="k"/> (even) goes in <see cref="_trialRecon"/>: four pairs a block row.</summary>
+    private static int TrialAt(int k) => ((k >> 1 & 3) * 8) + ((k >> 3) * 4 * S);
+
     private static int I4PredAt(int mode) => ((mode & 7) * 4) + ((mode >> 3) * 4 * S);
 
     /// <summary>Lays out the macroblock's neighbours for 4 × 4 prediction, with the above-right samples repeated down the right edge.</summary>
@@ -831,12 +1020,7 @@ internal sealed partial class Vp8Encoder
 
     private void MakeI4Predictions(int n)
     {
-        int at = C0 + ((n >> 2) * 4 * S) + ((n & 3) * 4);
-        for (int mode = 0; mode < 10; mode++)
-        {
-            Vp8Dsp.PredictSubblock(mode, _i4Work, at);
-            Vp8EncDsp.Copy(_i4Work, at, _predI4, I4PredAt(mode), 4, 4);
-        }
+        Vp8EncDsp.PredictSubblocks(_i4Work, C0 + ((n >> 2) * 4 * S) + ((n & 3) * 4), _predI4);
     }
 
     /// <summary>Puts block <paramref name="n"/>'s chosen reconstruction into the work area (for the next blocks) and into <see cref="_yuvOut2"/>.</summary>

@@ -1,4 +1,8 @@
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Formats.Webp;
 
@@ -211,7 +215,19 @@ internal sealed class Vp8LevelCosts
                 band.Slice(Vp8Decoder.Bands[n] * 3 * Levels, 3 * Levels).CopyTo(Table.AsSpan(At(type, n, 0), 3 * Levels));
             }
         }
+
+        for (int i = 0; i < Table.Length; i++)
+        {
+            _withFixed[i] = (ushort)(Table[i] + Vp8Costs.LevelFixed[i % Levels]);
+        }
     }
+
+    // Table plus each level's fixed cost, for levels up to MaxVariableLevel; one entry of padding lets the last be read as 32 bits.
+    private readonly ushort[] _withFixed = new ushort[(4 * 16 * 3 * Levels) + 1];
+
+    // The start of each position's tables within one type, positions 0 to 7 and 8 to 15.
+    private static readonly Vector256<int> PositionsLow = Vector256.Create(0, 1, 2, 3, 4, 5, 6, 7) * (3 * Levels);
+    private static readonly Vector256<int> PositionsHigh = Vector256.Create(8, 9, 10, 11, 12, 13, 14, 15) * (3 * Levels);
 
     /// <summary>The index of the table for <paramref name="type"/>, coefficient position <paramref name="n"/> and <paramref name="ctx"/>.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -223,41 +239,105 @@ internal sealed class Vp8LevelCosts
     /// </summary>
     internal int Residual(int type, int first, int ctx0, ReadOnlySpan<short> levels)
     {
-        int last = -1;
-        for (int i = 15; i >= first; i--)
-        {
-            if (levels[i] != 0)
-            {
-                last = i;
-                break;
-            }
-        }
-
+        int last = LastNonZero(levels, first);
         int p0 = Probabilities[((type * 8) + Vp8Decoder.Bands[first]) * 33 + (ctx0 * 11)];
         if (last < 0)
         {
             return Vp8Costs.Bit(0, p0);
         }
 
-        ushort[] table = Table;
+        // Levels past MaxLevel never occur: quantization clamps them.
+        ref ushort table = ref MemoryMarshal.GetArrayDataReference(Table);
+        ref ushort levelFixed = ref MemoryMarshal.GetArrayDataReference(Vp8Costs.LevelFixed);
+        ref short level = ref MemoryMarshal.GetReference(levels);
         int cost = ctx0 == 0 ? Vp8Costs.Bit(1, p0) : 0;
-        int at = At(type, first, ctx0);
         int n = first;
-        for (; n < last; n++)
+        if (Avx2.IsSupported)
         {
-            int v = Math.Abs(levels[n]);
-            cost += Vp8Costs.Level(table, at, v);
-            at = At(type, n + 1, v >= 2 ? 2 : v);
+            cost += Levels16(type, first, ctx0, last, levels);
+            n = last;
+        }
+        else
+        {
+            int position = At(type, first, 0);
+            int at = position + (ctx0 * Levels);
+            for (; n < last; n++)
+            {
+                int v = Math.Abs((int)Unsafe.Add(ref level, n));
+                cost += Unsafe.Add(ref levelFixed, v) + Unsafe.Add(ref table, at + Math.Min(v, Vp8Costs.MaxVariableLevel));
+                position += 3 * Levels;
+                at = position + (Math.Min(v, 2) * Levels);
+            }
+
+            int v1 = Math.Abs((int)Unsafe.Add(ref level, n));
+            cost += Unsafe.Add(ref levelFixed, v1) + Unsafe.Add(ref table, at + Math.Min(v1, Vp8Costs.MaxVariableLevel));
         }
 
-        int vl = Math.Abs(levels[n]);
-        cost += Vp8Costs.Level(table, at, vl);
         if (n < 15)
         {
-            int ctx = vl == 1 ? 1 : 2;
+            int ctx = Math.Abs((int)Unsafe.Add(ref level, n)) == 1 ? 1 : 2;
             cost += Vp8Costs.Bit(0, Probabilities[((type * 8) + Vp8Decoder.Bands[n + 1]) * 33 + (ctx * 11)]);
         }
 
         return cost;
+    }
+
+    /// <summary>
+    /// The cost of levels <paramref name="first"/> to <paramref name="last"/> with AVX2: every position's table (its context is
+    /// the previous level, or <paramref name="ctx0"/>) is known from the levels alone, so all sixteen costs are gathered at once.
+    /// </summary>
+    private unsafe int Levels16(int type, int first, int ctx0, int last, ReadOnlySpan<short> levels)
+    {
+        _ = levels[15];
+        ref short l = ref MemoryMarshal.GetReference(levels);
+        Vector128<short> a0 = Vector128.Abs(Vector128.LoadUnsafe(ref l)), a1 = Vector128.Abs(Vector128.LoadUnsafe(ref l, 8));
+
+        // The previous level of each position, the context ctx0 at the first.
+        Vector128<short> previous0 = Sse2.ShiftLeftLogical128BitLane(a0, 2).WithElement(first, (short)ctx0);
+        Vector128<short> previous1 = Ssse3.AlignRight(a1, a0, 14);
+        Vector128<short> two = Vector128.Create((short)2), top = Vector128.Create((short)Vp8Costs.MaxVariableLevel);
+        Vector256<int> typeAt = Vector256.Create(type * 16 * 3 * Levels);
+        Vector256<int> at0 = typeAt + PositionsLow + (Avx2.ConvertToVector256Int32(Vector128.Min(previous0, two)) * Levels) + Avx2.ConvertToVector256Int32(Vector128.Min(a0, top));
+        Vector256<int> at1 = typeAt + PositionsHigh + (Avx2.ConvertToVector256Int32(Vector128.Min(previous1, two)) * Levels) + Avx2.ConvertToVector256Int32(Vector128.Min(a1, top));
+        Vector256<int> costs0, costs1;
+        fixed (ushort* table = _withFixed)
+        {
+            costs0 = Avx2.GatherVector256((int*)table, at0, 2) & Vector256.Create(0xFFFF);
+            costs1 = Avx2.GatherVector256((int*)table, at1, 2) & Vector256.Create(0xFFFF);
+        }
+
+        // Positions first to last only.
+        Vector256<int> from = Vector256.Create(first - 1), to = Vector256.Create(last + 1);
+        Vector256<int> n0 = Vector256.Create(0, 1, 2, 3, 4, 5, 6, 7), n1 = Vector256.Create(8, 9, 10, 11, 12, 13, 14, 15);
+        costs0 &= Vector256.GreaterThan(n0, from) & Vector256.LessThan(n0, to);
+        costs1 &= Vector256.GreaterThan(n1, from) & Vector256.LessThan(n1, to);
+        int cost = Vector256.Sum(costs0 + costs1);
+
+        // Levels past MaxVariableLevel share its table entry; their own fixed costs differ.
+        if (Vector128.GreaterThanAny(Vector128.Max(a0, a1), top))
+        {
+            for (int n = first; n <= last; n++)
+            {
+                int v = Math.Abs((int)Unsafe.Add(ref l, n));
+                if (v > Vp8Costs.MaxVariableLevel)
+                {
+                    cost += Vp8Costs.LevelFixed[v] - Vp8Costs.LevelFixed[Vp8Costs.MaxVariableLevel];
+                }
+            }
+        }
+
+        return cost;
+    }
+
+    /// <summary>The position of the last non-zero level of a block (16 levels) at or after <paramref name="first"/>, or −1.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int LastNonZero(ReadOnlySpan<short> levels, int first)
+    {
+        _ = levels[15];
+        ref short l = ref MemoryMarshal.GetReference(levels);
+        uint zero = Vector128.Equals(Vector128.LoadUnsafe(ref l), Vector128<short>.Zero).ExtractMostSignificantBits()
+            | (Vector128.Equals(Vector128.LoadUnsafe(ref l, 8), Vector128<short>.Zero).ExtractMostSignificantBits() << 8);
+        uint nonZero = ~zero & (0xFFFFu << first) & 0xFFFF;
+        return nonZero == 0 ? -1 : BitOperations.Log2(nonZero);
     }
 }
