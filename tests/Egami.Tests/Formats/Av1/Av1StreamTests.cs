@@ -80,6 +80,65 @@ public class Av1StreamTests
         }
     }
 
+    /// <summary>
+    /// For debugging: with AV1_DEBUG naming a vector whose raw libaom frames (av1frames.c --no-grain) are in
+    /// .cache/avif/reference/av1raw, reports each frame's first differing sample and the block there.
+    /// </summary>
+    [Fact]
+    public void FirstDifference()
+    {
+        string? vector = Environment.GetEnvironmentVariable("AV1_DEBUG");
+        string? cache = Cache();
+        if (vector is null || cache is null)
+        {
+            return;
+        }
+
+        byte[] raw = File.ReadAllBytes(Path.Combine(cache, "reference", "av1raw", vector + ".bin"));
+        byte[] data = File.ReadAllBytes(Path.Combine(cache, "aom-test-data", vector + ".ivf"));
+        Av1Stream stream = new("AV1");
+        List<string> report = [];
+        int at = 0, index = 0;
+        foreach ((int offset, int length) in IvfFrames(data))
+        {
+            foreach (Av1Frame frame in stream.Decode(data, offset, length, TestContext.Current.CancellationToken))
+            {
+                int w = BinaryPrimitives.ReadInt32LittleEndian(raw.AsSpan(at)), h = BinaryPrimitives.ReadInt32LittleEndian(raw.AsSpan(at + 4));
+                int sx = BinaryPrimitives.ReadInt32LittleEndian(raw.AsSpan(at + 16)), sy = BinaryPrimitives.ReadInt32LittleEndian(raw.AsSpan(at + 20));
+                at += 24;
+                Av1FrameHeader fh = frame.Header;
+                report.Add($"frame {index}: type {fh.FrameType} show {fh.ShowFrame} {w}x{h} filter {fh.InterpolationFilter} ref_mvs {fh.UseRefFrameMvs} skipmode {fh.SkipModePresent} refsel {fh.ReferenceSelect} warp {fh.AllowWarpedMotion}");
+                for (int plane = 0; plane < frame.Planes!.Length; plane++)
+                {
+                    int pw = plane == 0 ? w : (w + sx) >> sx, ph = plane == 0 ? h : (h + sy) >> sy;
+                    bool found = false;
+                    for (int y = 0; y < ph && !found; y++)
+                    {
+                        for (int x = 0; x < pw && !found; x++)
+                        {
+                            int want = BinaryPrimitives.ReadUInt16LittleEndian(raw.AsSpan(at + (((y * pw) + x) * 2)));
+                            int got = frame.Planes[plane][(y * frame.Strides[plane]) + x];
+                            if (want != got)
+                            {
+                                found = true;
+                                int miRow = (y << (plane > 0 ? sy : 0)) >> 2, miCol = (x << (plane > 0 ? sx : 0)) >> 2;
+                                Av1BlockInfo b = frame.Grid[(miRow * frame.MiCols) + miCol]!;
+                                report.Add($"  plane {plane} ({x},{y}) want {want} got {got}: block {b.MiCol},{b.MiRow} size {b.Size} mode {b.YMode} uv {b.UvMode} refs {b.RefFrame0},{b.RefFrame1} "
+                                    + $"mv {b.MvRow},{b.MvCol} / {b.Mv1Row},{b.Mv1Col} motion {b.MotionMode} comp {b.CompoundType} filt {b.FilterY},{b.FilterX} skip {b.Skip} ii {b.InterintraMode} wii {b.UseWedgeInterintra} tx {b.TxSize}");
+                            }
+                        }
+                    }
+
+                    at += pw * ph * 2;
+                }
+
+                index++;
+            }
+        }
+
+        Assert.Fail(string.Join(Environment.NewLine, report));
+    }
+
     /// <summary>Gets the fetched .cache/avif folder with the AV1 references, or null.</summary>
     internal static string? Cache()
     {

@@ -3,7 +3,7 @@ namespace Egami.Formats.Av1;
 /// <summary>
 /// Reconstructs a tile's blocks into the frame's planes before the loop filters: intra prediction (libaom's reconintra.c and
 /// aom_dsp/intrapred.c), chroma from luma (cfl.c), palettes, intra block copy (the intra case of reconinter.c with
-/// convolve.c's bilinear half-sample filter) and the residual (BSD 2-clause, see THIRD-PARTY-NOTICES).
+/// convolve.c's bilinear half-sample filter), inter prediction and the residual (BSD 2-clause, see THIRD-PARTY-NOTICES).
 /// </summary>
 internal sealed partial class Av1Reconstructor : IAv1Reconstructor
 {
@@ -76,6 +76,12 @@ internal sealed partial class Av1Reconstructor : IAv1Reconstructor
     public void InterPrediction(Av1TileState tile)
     {
         Av1BlockInfo b = tile.Block;
+        if (!b.UseIntrabc)
+        {
+            PredictInterBlock(tile);
+            return;
+        }
+
         for (int plane = 0; plane < _frame.Header.NumPlanes; plane++)
         {
             if (plane > 0 && !tile.IsChromaRef)
