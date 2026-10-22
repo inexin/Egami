@@ -51,8 +51,9 @@ command review freezes the names and options at 1.0.
 - From effort 5 the linear scan also reads rows through the local threshold, which keeps bars under glare apart (from effort 6
   before), and scans 29 lines instead of 25, including effort 0 to 2's lines. EAN-13 photos with glare read 16 of 22 ZXing
   test images (11 before).
-- QR tries every alignment pattern near the expected place, nearest first, then the nearest one nudged by quarter modules, so
-  strongly tilted and curled symbols read (ZXing qrcode-3 39 of 42, 37 before; qrcode-4 37 of 48, 35 before).
+- QR looks for finder patterns again with more slack when it finds fewer than three, and tries every alignment pattern
+  near the expected place, nearest first, then the nearest one nudged by quarter modules, so
+  strongly tilted and curled symbols read (ZXing qrcode-3 39 of 42, 37 before; qrcode-4 38 of 48, 35 before).
 - PDF417 cut off before its start pattern reads from the stop pattern, using the right row indicators (ZXing pdf417-3 19 of
   19, 16 before).
 

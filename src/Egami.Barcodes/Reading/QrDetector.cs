@@ -24,6 +24,12 @@ internal static class QrDetector
         List<Finder> finders = FindFinders(bits, effort);
         if (finders.Count < 3)
         {
+            // Fewer than three: once more allowing each run 0.6 of a module off instead of half (glare can thin a finder's
+            // outer ring on one side and widen its light ring).
+            finders = FindFinders(bits, effort, 0.6f);
+        }
+        if (finders.Count < 3)
+        {
             return results;
         }
 
@@ -361,7 +367,7 @@ internal static class QrDetector
 
     // ---- Finder patterns ----
 
-    internal static List<Finder> FindFinders(BitImage bits, int effort)
+    internal static List<Finder> FindFinders(BitImage bits, int effort, float slack = 0.5f)
     {
         var finders = new List<Finder>();
         int step = effort >= 7 ? 1 : Math.Max(1, Math.Min(3, bits.Height / 200));
@@ -374,9 +380,9 @@ internal static class QrDetector
             for (int i = 1; i + 4 < count; i += 2)
             {
                 ReadOnlySpan<int> counts = runs.AsSpan(i, 5);
-                if (Ratio(counts))
+                if (Ratio(counts, slack))
                 {
-                    Confirm(bits, counts, at + counts[0] + counts[1] + counts[2] + counts[3] + counts[4], y, finders);
+                    Confirm(bits, counts, at + counts[0] + counts[1] + counts[2] + counts[3] + counts[4], y, finders, slack);
                 }
 
                 at += runs[i] + runs[i + 1];
@@ -393,8 +399,10 @@ internal static class QrDetector
         return [.. confirmed.OrderByDescending(f => f.Count)];
     }
 
-    /// <summary>Whether five runs are 1:1:3:1:1, each within half a module (the center within a module and a half).</summary>
-    private static bool Ratio(ReadOnlySpan<int> counts)
+    /// <summary>
+    /// Whether five runs are 1:1:3:1:1, each within <paramref name="slack"/> of a module (the center within three times that).
+    /// </summary>
+    private static bool Ratio(ReadOnlySpan<int> counts, float slack)
     {
         int total = 0;
         foreach (int c in counts)
@@ -412,22 +420,22 @@ internal static class QrDetector
             return false;
         }
 
-        float module = total / 7f, tolerance = module * 0.5f;
+        float module = total / 7f, tolerance = module * slack;
         return MathF.Abs(module - counts[0]) < tolerance && MathF.Abs(module - counts[1]) < tolerance
             && MathF.Abs((3 * module) - counts[2]) < 3 * tolerance
             && MathF.Abs(module - counts[3]) < tolerance && MathF.Abs(module - counts[4]) < tolerance;
     }
 
-    private static bool Confirm(BitImage bits, ReadOnlySpan<int> counts, int end, int y, List<Finder> finders)
+    private static bool Confirm(BitImage bits, ReadOnlySpan<int> counts, int end, int y, List<Finder> finders, float slack)
     {
         int total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
         float cx = end - counts[4] - counts[3] - (counts[2] / 2f);
-        if (CrossCheck(bits, (int)cx, y, total, vertical: true) is not float cy)
+        if (CrossCheck(bits, (int)cx, y, total, vertical: true, slack) is not float cy)
         {
             return false;
         }
 
-        if (CrossCheck(bits, (int)cy, (int)cx, total, vertical: false) is not float refinedX)
+        if (CrossCheck(bits, (int)cy, (int)cx, total, vertical: false, slack) is not float refinedX)
         {
             return false;
         }
@@ -450,7 +458,7 @@ internal static class QrDetector
     }
 
     /// <summary>Checks the 1:1:3:1:1 pattern across a line through a point and returns the refined center along it.</summary>
-    private static float? CrossCheck(BitImage bits, int across, int along, int expected, bool vertical)
+    private static float? CrossCheck(BitImage bits, int across, int along, int expected, bool vertical, float slack)
     {
         bool Dark(int i) => vertical ? bits.IsDark(across, i) : bits.IsDark(i, across);
         Span<int> counts = stackalloc int[5];
@@ -499,7 +507,7 @@ internal static class QrDetector
         }
 
         int total = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
-        if (MathF.Abs(total - expected) > expected * 0.4f || !Ratio(counts))
+        if (MathF.Abs(total - expected) > expected * 0.4f || !Ratio(counts, slack))
         {
             return null;
         }
