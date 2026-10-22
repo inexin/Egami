@@ -36,7 +36,7 @@ command review freezes the names and options at 1.0.
 
 ### Package icon
 
-- The package has its own icon on NuGet: a lime tile with barcode bars, in `branding/` with the other package icons.
+- The package has its own icon on NuGet: a graphite tile with barcode bars, in `branding/` with the other package icons.
 
 ### Faster reading
 
