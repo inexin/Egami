@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 using Egami.Formats;
 using Egami.Metafiles;
 using Egami.Svg;
@@ -80,6 +82,24 @@ internal sealed class CliSession
     /// <summary>Gets the number of warnings written.</summary>
     public int Warnings => _warnings;
 
+    /// <summary>Gets or sets the folders every path must stay inside, or <see langword="null"/> for any path (MCP design Q4).</summary>
+    public PathPolicy? Paths { get; set; }
+
+    /// <summary>Gets or sets the most inputs one command may take, or <see langword="null"/> for no limit (MCP design Q6).</summary>
+    public int? MaxInputs { get; set; }
+
+    /// <summary>Gets or sets the token that stops a batch between files.</summary>
+    public CancellationToken Cancellation { get; set; }
+
+    /// <summary>Gets or sets what hears of each finished file of a batch: files done so far, and the batch's size.</summary>
+    public Action<int, int>? Progress { get; set; }
+
+    /// <summary>Gets or sets the inputs and steps of a <c>run</c> given as values rather than words (<c>egami mcp</c>'s run tool).</summary>
+    public RunRequest? Run { get; set; }
+
+    /// <summary>Gets the files written, in the order they were finished.</summary>
+    public ConcurrentQueue<string> Written { get; } = new();
+
     /// <summary>Gets the formats the tool reads and writes.</summary>
     public IReadOnlyList<FormatInfo> Formats => Context.Formats;
 
@@ -103,8 +123,13 @@ internal sealed class CliSession
         };
     }
 
-    /// <summary>A path made absolute against the working folder.</summary>
-    public string ResolvePath(string path) => Path.GetFullPath(path, WorkingDirectory);
+    /// <summary>A path made absolute against the working folder, and checked against <see cref="Paths"/>.</summary>
+    public string ResolvePath(string path)
+    {
+        string full = Path.GetFullPath(path, WorkingDirectory);
+        Paths?.Check(full);
+        return full;
+    }
 
     /// <summary>Loads an image named on the command line, such as an overlay or a displacement map.</summary>
     public Raster LoadImage(string path) => Raster.Load(ResolvePath(path), Context);
@@ -148,3 +173,8 @@ internal sealed class CliSession
         Console.Error.WriteLine($"egami: {level}: {diagnostic.Source} {diagnostic.Id}: {diagnostic.Message}{where}");
     }
 }
+
+/// <summary>The inputs and steps of a <c>run</c> given as values, so no input is mistaken for a step or an option.</summary>
+/// <param name="Inputs">The inputs: files, globs or folders.</param>
+/// <param name="Items">The steps, as a workflow file gives them.</param>
+internal sealed record RunRequest(IReadOnlyList<string> Inputs, List<Pipeline.PipelineItem> Items);

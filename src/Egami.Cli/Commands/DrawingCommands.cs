@@ -226,9 +226,10 @@ internal static class DrawingCommands
             return SubstituteFonts.Collection.TryGetFamily(DefaultFamily, out FontFamily bundled) ? bundled : SubstituteFonts.Collection.Families[0];
         }
 
-        string path = session.ResolvePath(font);
+        string path = System.IO.Path.GetFullPath(font, session.WorkingDirectory);
         if (File.Exists(path))
         {
+            session.Paths?.Check(path);
             FontCollection own = new();
             own.AddFile(path);
             return own.Families.Count > 0 ? own.Families[0] : throw new UsageException($"'{font}' holds no font egami can read.");

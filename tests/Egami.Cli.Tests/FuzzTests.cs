@@ -8,7 +8,7 @@ public class FuzzTests
     public static TheoryData<string, string> Seeds()
     {
         TheoryData<string, string> seeds = [];
-        foreach (string target in (string[])["size", "template", "workflow", "run"])
+        foreach (string target in (string[])["size", "template", "workflow", "run", "mcp"])
         {
             foreach (string file in Directory.GetFiles(Path.Combine(Tool.Images, "fuzz", $"cli-{target}-seeds")))
             {
@@ -29,6 +29,7 @@ public class FuzzTests
             "size" => CliFuzzTarget.Size,
             "template" => CliFuzzTarget.Template,
             "workflow" => CliFuzzTarget.Workflow,
+            "mcp" => CliFuzzTarget.Mcp,
             _ => CliFuzzTarget.Run,
         };
         run(data);

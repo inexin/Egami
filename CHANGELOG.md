@@ -30,6 +30,12 @@ command review freezes the names and options at 1.0.
 - Writer settings: `--quality`, `--lossless`, `--effort`, `--bit-depth`, `--strip` (keeps the color profile), and `--set fmt.key=value` for every
   `WriterOptions` property, generated from the library.
 - Exit codes 0 to 3, diagnostics on standard error (`-v`, `-vv`, `-q`), safety limits with `--limit` and `EGAMI_LIMITS`.
+- `egami mcp` serves every command as a tool to AI assistants over the Model Context Protocol (Roadmap 2.0.1), with the official
+  C# SDK (ModelContextProtocol.Core): one tool per command with the command's options and help text, `run` taking a workflow
+  object, JSON results with the exit code and the files written, an optional PNG preview of the result, progress and
+  cancellation for batches, and a cap of 1,000 inputs per call (`--max-inputs`). Tools read and write only inside the folders the
+  assistant opened and those given with `--allow` (the working folder when there are neither), following links, and never
+  replace an input without `in_place`. The package is also listed as an MCP server on NuGet, with its `server.json`.
 - `egami <name>` runs an `egami-<name>` program from the PATH, so other families' tools join in; `egami formats` names
   `egami-heic` for HEIC, which the tool leaves out.
 ## Egami.Barcodes 1.0.1 (unreleased)

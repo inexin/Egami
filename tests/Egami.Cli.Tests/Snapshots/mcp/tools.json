@@ -1,0 +1,1851 @@
+{
+  "tools": [
+    {
+      "name": "info",
+      "title": "egami info",
+      "description": "Show what images are: format, size, frames, pixel layout, orientation; with --all, their metadata. Pixels are not decoded.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "all": {
+            "type": "boolean",
+            "description": "Also read the metadata: color profile, EXIF, XMP, IPTC, text, resolution."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "convert",
+      "title": "egami convert",
+      "description": "Convert images to another format, or write them again with other settings.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "auto_orient": {
+            "type": "boolean",
+            "description": "Turn the image upright from its EXIF orientation first."
+          },
+          "to": {
+            "type": "string",
+            "description": "Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "resize",
+      "title": "egami resize",
+      "description": "Resize images: to a width, a height, a box, a percentage, filling or padding a box.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "auto_orient": {
+            "type": "boolean",
+            "description": "Turn the image upright from its EXIF orientation first."
+          },
+          "to": {
+            "type": "string",
+            "description": "Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "size": {
+            "type": "string",
+            "description": "The size: W, xH, WxH or P%, then optionally ! (ignore the aspect ratio), ^ (fill the box), > (only shrink) or < (only enlarge)."
+          },
+          "fit": {
+            "type": "string",
+            "description": "How a WxH box is filled: contain (inside, the default), cover (filled and cropped), fill (stretched) or pad."
+          },
+          "gravity": {
+            "type": "string",
+            "description": "What cover keeps and where pad places the image: center (the default), top, top-left, ..."
+          },
+          "filter": {
+            "type": "string",
+            "description": "The resampling kernel: bicubic (Catmull-Rom, the default), lanczos3, mitchell, bilinear, nearest, ..."
+          },
+          "linear": {
+            "type": "boolean",
+            "description": "Blend in linear light rather than in the encoded values."
+          },
+          "background": {
+            "type": "string",
+            "description": "The color --fit pad fills with (transparent by default)."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs",
+          "size"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "thumbnail",
+      "title": "egami thumbnail",
+      "description": "Make thumbnails for the web: turned upright, shrunk (never enlarged) to fit --size (256 by default), converted to sRGB, metadata left out.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "auto_orient": {
+            "type": "boolean",
+            "description": "Turn the image upright from its EXIF orientation first."
+          },
+          "to": {
+            "type": "string",
+            "description": "Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "size": {
+            "type": "string",
+            "description": "The size: W, xH, WxH or P%, then optionally ! (ignore the aspect ratio), ^ (fill the box), > (only shrink) or < (only enlarge)."
+          },
+          "fit": {
+            "type": "string",
+            "description": "How a WxH box is filled: contain (inside, the default), cover (filled and cropped), fill (stretched) or pad."
+          },
+          "gravity": {
+            "type": "string",
+            "description": "What cover keeps and where pad places the image: center (the default), top, top-left, ..."
+          },
+          "filter": {
+            "type": "string",
+            "description": "The resampling kernel: bicubic (Catmull-Rom, the default), lanczos3, mitchell, bilinear, nearest, ..."
+          },
+          "linear": {
+            "type": "boolean",
+            "description": "Blend in linear light rather than in the encoded values."
+          },
+          "background": {
+            "type": "string",
+            "description": "The color --fit pad fills with (transparent by default)."
+          },
+          "keep_metadata": {
+            "type": "boolean",
+            "description": "Keep EXIF, XMP, IPTC and text, which thumbnails leave out by default."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "crop",
+      "title": "egami crop",
+      "description": "Crop images to a rectangle.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "auto_orient": {
+            "type": "boolean",
+            "description": "Turn the image upright from its EXIF orientation first."
+          },
+          "to": {
+            "type": "string",
+            "description": "Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "rect": {
+            "type": "string",
+            "description": "The area to keep: x,y,width,height in pixels."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs",
+          "rect"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "rotate",
+      "title": "egami rotate",
+      "description": "Rotate images clockwise. A JPEG turned by a multiple of 90 degrees into a JPEG is rotated losslessly.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "auto_orient": {
+            "type": "boolean",
+            "description": "Turn the image upright from its EXIF orientation first."
+          },
+          "to": {
+            "type": "string",
+            "description": "Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "angle": {
+            "type": "string",
+            "description": "Degrees clockwise; the last input may give it instead, as in 'egami rotate in.jpg 90 -o out.jpg'."
+          },
+          "filter": {
+            "type": "string",
+            "description": "The resampling kernel for angles that are not a multiple of 90."
+          },
+          "background": {
+            "type": "string",
+            "description": "The color of the corners an angle uncovers (transparent by default)."
+          },
+          "reencode": {
+            "type": "boolean",
+            "description": "Decode and encode a JPEG even when a lossless rotation is possible."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "flip",
+      "title": "egami flip",
+      "description": "Mirror images left to right (horizontal), top to bottom (vertical) or both. A JPEG flipped into a JPEG is flipped losslessly.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "auto_orient": {
+            "type": "boolean",
+            "description": "Turn the image upright from its EXIF orientation first."
+          },
+          "to": {
+            "type": "string",
+            "description": "Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "direction": {
+            "type": "string",
+            "description": "horizontal (mirror left to right), vertical (top to bottom) or both; the last input may give it instead."
+          },
+          "reencode": {
+            "type": "boolean",
+            "description": "Decode and encode a JPEG even when a lossless flip is possible."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "auto_orient",
+      "title": "egami auto-orient",
+      "description": "Turn images upright from their EXIF orientation and reset it. A JPEG into a JPEG is turned losslessly.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "to": {
+            "type": "string",
+            "description": "Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file."
+          },
+          "reencode": {
+            "type": "boolean",
+            "description": "Decode and encode a JPEG even when a lossless turn is possible."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "run",
+      "title": "egami run",
+      "description": "Run steps over images, separated by +: 'egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --quality 82'. Every Egami operation is a step ('egami run --list'); save writes, and may come more than once.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) or folders with recursive."
+          },
+          "workflow": {
+            "description": "The steps of 'egami run' as a file: one object per step, with the step's options as properties. 'egami run --list' lists the steps and their options.",
+            "type": "object",
+            "required": [
+              "egami",
+              "steps"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "$schema": {
+                "type": "string"
+              },
+              "egami": {
+                "description": "The workflow format's version.",
+                "const": 1
+              },
+              "description": {
+                "type": "string"
+              },
+              "steps": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/step"
+                }
+              }
+            }
+          },
+          "list_steps": {
+            "type": "boolean",
+            "description": "List every step with its options, instead of running anything."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where a save without a path writes, and where the plan writes when it has no save: a file, folder, template or -."
+          },
+          "save_workflow": {
+            "type": "string",
+            "description": "Write the steps to a JSON workflow file (then run them, unless --dry-run)."
+          },
+          "dry_run": {
+            "type": "boolean",
+            "description": "Print the steps and the files each input would write, and stop."
+          },
+          "to": {
+            "type": "string",
+            "description": "Convert colors to this profile while reading."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "additionalProperties": false,
+        "$defs": {
+          "value": {
+            "description": "An option's value: text as the command line writes it (a size, a color, x,y), a number or true or false.",
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "array"
+            ],
+            "items": {
+              "type": [
+                "string",
+                "number"
+              ]
+            }
+          },
+          "step": {
+            "type": "object",
+            "required": [
+              "op"
+            ],
+            "properties": {
+              "op": {
+                "description": "The step's name, such as resize, blur or save.",
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              }
+            },
+            "if": {
+              "properties": {
+                "op": {
+                  "const": "save"
+                }
+              }
+            },
+            "then": {
+              "additionalProperties": false,
+              "properties": {
+                "op": {
+                  "const": "save"
+                },
+                "path": {
+                  "description": "Where to write; without it the save writes to -o. Templates such as out/{name}.webp work.",
+                  "type": "string"
+                },
+                "format": {
+                  "description": "The format by name or extension, when the path's extension does not say.",
+                  "type": "string"
+                },
+                "quality": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "lossless": {
+                  "type": "boolean"
+                },
+                "effort": {
+                  "type": "integer"
+                },
+                "bit-depth": {
+                  "type": "integer"
+                },
+                "strip": {
+                  "description": "Leave out metadata.",
+                  "type": "boolean"
+                },
+                "set": {
+                  "description": "Writer settings as in --set: keys such as png.compression-level, values as text, numbers or true or false.",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean"
+                    ]
+                  }
+                }
+              }
+            },
+            "else": {
+              "additionalProperties": {
+                "$ref": "#/$defs/value"
+              }
+            }
+          }
+        }
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "compare",
+      "title": "egami compare",
+      "description": "Compare two images: print a metric and exit with 1 when they differ more than --threshold.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "The first image."
+          },
+          "other": {
+            "type": "string",
+            "description": "The image to compare it with, the same size."
+          },
+          "metric": {
+            "type": "string",
+            "description": "The number to print and test: ae (pixels that differ), mae, mse, rmse (the default), peak, psnr, ssim or dssim."
+          },
+          "threshold": {
+            "type": "number",
+            "description": "Exit with 1 when the metric is worse than this (above it, or below it for psnr and ssim); without it, any difference exits with 1."
+          },
+          "fuzz": {
+            "type": "number",
+            "description": "How far apart two values may be and still count as equal, from 0 to 1, for ae and the exit code."
+          },
+          "diff": {
+            "type": "string",
+            "description": "Write a picture of the differences."
+          },
+          "diff_style": {
+            "type": "string",
+            "description": "highlight (differing pixels in red, as ImageMagick's compare) or absolute (|a - b|)."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "image",
+          "other"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "stats",
+      "title": "egami stats",
+      "description": "Measure images: per-channel minimum, maximum, mean, deviation, skewness, kurtosis and entropy, as ImageMagick's identify -verbose.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "frame": {
+            "type": "integer",
+            "description": "The frame to measure, from 0."
+          },
+          "all": {
+            "type": "boolean",
+            "description": "Also count the colors and give perceptual hashes and the pixel signature."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "frames_split",
+      "title": "egami frames split",
+      "description": "Write every frame of an animation as its own image, each a full picture as the animation shows it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "string",
+            "description": "The animation, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "A template for each frame's file: {frame} or {index} is the frame number from 0, padded as in {frame:000}; {name} is the input's name."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format, when the template's extension does not say."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Writer settings as fmt.key=value."
+          },
+          "delays": {
+            "type": "string",
+            "description": "Also write each frame's delay in milliseconds, one per line, to this file, so 'frames join --delays' can restore the timing."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "input",
+          "output"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "frames_join",
+      "title": "egami frames join",
+      "description": "Join still images, all the same size, into an animation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The frames in order: files or globs (sorted by name)."
+          },
+          "output": {
+            "type": "string",
+            "description": "The animation to write: .gif, .png (APNG) or .webp."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format, when the extension does not say."
+          },
+          "delay": {
+            "type": "string",
+            "description": "How long each frame shows: 40ms, 0.04s or 40 (milliseconds). 100ms by default."
+          },
+          "delays": {
+            "type": "string",
+            "description": "A file of delays in milliseconds, one per frame, as 'frames split --delays' writes."
+          },
+          "fps": {
+            "type": "number",
+            "description": "Frames per second, instead of --delay."
+          },
+          "loop": {
+            "type": "integer",
+            "description": "How many times the animation plays; 0 (the default) loops forever."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Writer settings as fmt.key=value."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality for WebP."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless WebP."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs",
+          "output"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "metadata_show",
+      "title": "egami metadata show",
+      "description": "Show every piece of metadata an image holds.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "metadata_strip",
+      "title": "egami metadata strip",
+      "description": "Remove metadata. A JPEG losing everything is rewritten without decoding; otherwise the image is written again, which a lossy format allows only with --reencode.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "keep": {
+            "type": "string",
+            "description": "Blocks to keep, comma-separated: icc, exif, xmp, iptc, text, resolution."
+          },
+          "reencode": {
+            "type": "boolean",
+            "description": "Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "metadata_copy",
+      "title": "egami metadata copy",
+      "description": "Copy metadata from one image to others, which are written again with it; a lossy format only with --reencode.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "from": {
+            "type": "string",
+            "description": "The image to copy metadata from."
+          },
+          "only": {
+            "type": "string",
+            "description": "Blocks to copy, comma-separated: icc, exif, xmp, iptc, text, resolution; all by default."
+          },
+          "reencode": {
+            "type": "boolean",
+            "description": "Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs",
+          "from"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "color",
+      "title": "egami color",
+      "description": "Convert images to another color profile (ICC, 2.1.2), tone mapping HDR to SDR where needed (2.9.1).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "auto_orient": {
+            "type": "boolean",
+            "description": "Turn the image upright from its EXIF orientation first."
+          },
+          "to": {
+            "type": "string",
+            "description": "The profile to convert to: srgb, display-p3, adobe-rgb, rec2020, rec2100-pq, ... or an ICC file."
+          },
+          "intent": {
+            "type": "string",
+            "description": "perceptual (the default), relative-colorimetric, saturation or absolute-colorimetric."
+          },
+          "black_point_compensation": {
+            "type": "boolean",
+            "description": "Map black to black between profiles with different black points."
+          },
+          "tone_map": {
+            "type": "string",
+            "description": "How HDR is brought into a standard range: bt2390 (the default), reinhard or clip."
+          },
+          "peak": {
+            "type": "number",
+            "description": "The HDR source's peak brightness in nits, when the file does not say."
+          },
+          "reference_white": {
+            "type": "number",
+            "description": "The brightness of SDR white in nits (203 by default)."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs",
+          "to"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "text",
+      "title": "egami text",
+      "description": "Draw a caption or watermark on images, with any font and script, wrapped to fit (2.8.2 layout).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "auto_orient": {
+            "type": "boolean",
+            "description": "Turn the image upright from its EXIF orientation first."
+          },
+          "to": {
+            "type": "string",
+            "description": "Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "text": {
+            "type": "string",
+            "description": "The text; the last input may give it instead: egami text in.png \"(c) 2026\" -o out.png."
+          },
+          "font": {
+            "type": "string",
+            "description": "A font file, an installed family name, or sans-serif, serif or monospace. Liberation Sans (bundled) by default."
+          },
+          "font_size": {
+            "type": "number",
+            "description": "The font size in pixels."
+          },
+          "color": {
+            "type": "string",
+            "description": "The text color, a CSS color (white by default)."
+          },
+          "anchor": {
+            "type": "string",
+            "description": "Where the text sits: bottom-right (the default), bottom, center, top-left, ..."
+          },
+          "margin": {
+            "type": "integer",
+            "description": "The distance from the image's edges in pixels."
+          },
+          "offset": {
+            "type": "string",
+            "description": "A further shift of the text in pixels, x,y."
+          },
+          "rotate": {
+            "type": "number",
+            "description": "Degrees clockwise to turn the text around its center."
+          },
+          "opacity": {
+            "type": "number",
+            "description": "From 0 (invisible) to 1 (the default)."
+          },
+          "width": {
+            "type": "integer",
+            "description": "The width to wrap lines at, in pixels; the image's width less the margins by default."
+          },
+          "shadow": {
+            "type": "string",
+            "description": "A drop shadow in this color, offset by a tenth of the size."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "overlay",
+      "title": "egami overlay",
+      "description": "Lay an image (a logo, a watermark, an SVG) on images, placed by anchor, with opacity and a blend mode.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format by name or extension, when -o's extension does not say (and always for -o -)."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL, TIFF's JPEG)."
+          },
+          "lossless": {
+            "type": "boolean",
+            "description": "Lossless encoding (WebP, AVIF, JPEG XL)."
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Encoder effort: higher is smaller and slower (WebP, AVIF, JPEG XL)."
+          },
+          "bit_depth": {
+            "type": "integer",
+            "description": "Bits per channel to write (PNG, AVIF)."
+          },
+          "strip": {
+            "type": "boolean",
+            "description": "Leave out metadata (EXIF, XMP, IPTC, text, resolution) but keep the color profile, so colors stay right."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys."
+          },
+          "auto_orient": {
+            "type": "boolean",
+            "description": "Turn the image upright from its EXIF orientation first."
+          },
+          "to": {
+            "type": "string",
+            "description": "Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "jobs": {
+            "type": "integer",
+            "description": "How many files to work on at once; 0 (the default) for one per processor."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "fail_fast": {
+            "type": "boolean",
+            "description": "Stop at the first file that fails."
+          },
+          "image": {
+            "type": "string",
+            "description": "The image to lay on top (SVG too); the last input may give it instead: egami overlay in.png logo.svg -o out.png."
+          },
+          "anchor": {
+            "type": "string",
+            "description": "Where it sits: bottom-right (the default), center, top-left, ..."
+          },
+          "margin": {
+            "type": "integer",
+            "description": "The distance from the image's edges in pixels."
+          },
+          "offset": {
+            "type": "string",
+            "description": "A further shift in pixels, x,y."
+          },
+          "opacity": {
+            "type": "number",
+            "description": "From 0 (invisible) to 1 (the default)."
+          },
+          "blend": {
+            "type": "string",
+            "description": "The blend mode: normal (the default), multiply, screen, overlay, darken, lighten, ..."
+          },
+          "size": {
+            "type": "string",
+            "description": "Resize the overlay first, in the size syntax (W, xH, WxH, P%)."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "montage",
+      "title": "egami montage",
+      "description": "Lay images out on a contact sheet: a grid of tiles, optionally labeled with their file names.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The images, in order: files or globs (sorted by name)."
+          },
+          "output": {
+            "type": "string",
+            "description": "The contact sheet to write."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format, when the extension does not say."
+          },
+          "columns": {
+            "type": "integer",
+            "description": "Images per row; enough for a square sheet by default."
+          },
+          "tile": {
+            "type": "string",
+            "description": "Each image's box; images are shrunk to fit it, never enlarged."
+          },
+          "spacing": {
+            "type": "integer",
+            "description": "The gap between tiles, in pixels."
+          },
+          "background": {
+            "type": "string",
+            "description": "The sheet's color (white by default)."
+          },
+          "labels": {
+            "type": "boolean",
+            "description": "Write each file's name under its image."
+          },
+          "font": {
+            "type": "string",
+            "description": "The label font: a file, an installed family, or sans-serif, serif or monospace."
+          },
+          "label_size": {
+            "type": "number",
+            "description": "The label size in pixels."
+          },
+          "set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Writer settings as fmt.key=value."
+          },
+          "quality": {
+            "type": "integer",
+            "description": "Lossy quality from 0 to 100."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs",
+          "output"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "formats",
+      "title": "egami formats",
+      "description": "List the formats egami reads and writes, or one format's writer settings for --set.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "description": "A format name or extension, to list its writer settings."
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      }
+    }
+  ],
+  "ttlMs": 0,
+  "cacheScope": "private",
+  "_meta": {
+    "io.modelcontextprotocol/serverInfo": {
+      "name": "egami",
+      "title": "Egami",
+      "version": "0.3.0",
+      "websiteUrl": "https://inexin.github.io/Egami/"
+    }
+  },
+  "resultType": "complete"
+}

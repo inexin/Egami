@@ -50,7 +50,8 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "barcode-itf": "tests/images/fuzz/barcode-digit-seeds/*", "barcode-eanupc": "tests/images/fuzz/barcode-digit-seeds/*",
          "barcode-read": "tests/images/fuzz/barcode-read-seeds/*",
          "cli-size": "tests/images/fuzz/cli-size-seeds/*", "cli-template": "tests/images/fuzz/cli-template-seeds/*",
-         "cli-workflow": "tests/images/fuzz/cli-workflow-seeds/*", "cli-run": "tests/images/fuzz/cli-run-seeds/*"}
+         "cli-workflow": "tests/images/fuzz/cli-workflow-seeds/*", "cli-run": "tests/images/fuzz/cli-run-seeds/*",
+         "cli-mcp": "tests/images/fuzz/cli-mcp-seeds/*"}
 
 SCRIPT = """
 set -e

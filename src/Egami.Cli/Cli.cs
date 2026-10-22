@@ -15,10 +15,11 @@ namespace Egami.Cli;
 /// </summary>
 internal static class Cli
 {
-    /// <summary>Runs the tool in this process.</summary>
-    public static int Run(string[] args, CliConsole console, string workingDirectory, Func<string, string?> environment)
+    /// <summary>Runs the tool in this process; <paramref name="setup"/> may set up the session first, as egami mcp does for each call.</summary>
+    public static int Run(string[] args, CliConsole console, string workingDirectory, Func<string, string?> environment, Action<CliSession>? setup = null)
     {
         CliSession session = new(console, workingDirectory, environment);
+        setup?.Invoke(session);
         ValueParsers.Session = session;
 
         // Numbers on a command line are written the same way everywhere: 0.8, never 0,8.
@@ -111,6 +112,7 @@ internal static class Cli
         root.Subcommands.Add(DrawingCommands.Overlay(session));
         root.Subcommands.Add(DrawingCommands.Montage(session));
         root.Subcommands.Add(InfoCommands.Formats(session));
+        root.Subcommands.Add(Mcp.McpCommand.Create(session));
         return root;
     }
 }
