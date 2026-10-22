@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Video | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Video | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/video.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="video">Video</h1>
+
+<p>Egami.Video reads and writes video with Egami rasters as frames, so resizing, color and drawing from Egami work on video with
+no copying. It is fully managed and ships only royalty-free codecs:</p>
+<ul>
+<li>Containers: WebM and Matroska, AVI (with OpenDML for files over 1 GB), IVF and YUV4MPEG2, read and written, and headerless raw
+frames.</li>
+<li>Codecs: VP9 (all four profiles, 8, 10 and 12 bit, equal to libvpx frame for frame), VP8 (with WebM alpha) and Motion JPEG
+decode; Motion JPEG and uncompressed encode. Audio and other tracks are copied through untouched.</li>
+</ul>
+<h2 id="probing-a-file">Probing a file</h2>
+<p><code>MediaFile.Probe</code> reads the headers and returns a <code>MediaInfo</code>: the container's <code>FormatName</code>, the <code>Duration</code>, and the
+<code>Tracks</code>. A <code>TrackInfo</code> gives a track's <code>Number</code>, <code>Kind</code> (a <code>TrackKind</code>) and <code>CodecId</code> (see <code>CodecIds</code>); a <code>VideoTrackInfo</code>
+adds its size, bit depth, chroma format, <code>FieldOrder</code>, frame rate, color and HDR metadata, and an <code>AudioTrackInfo</code> its sample
+rate and channels. <code>MediaMetadata</code> holds the tags, the chapters (<code>ChapterInfo</code>) and the attachments (<code>AttachmentInfo</code>).</p>
+<pre><code class="lang-csharp">// What a file holds, without decoding: its container, duration, tracks, tags, chapters and attachments.
+MediaInfo info = MediaFile.Probe(&quot;metadata.mkv&quot;);
+Console.WriteLine($&quot;{info.FormatName}, {info.Duration?.ToTimeSpan()}&quot;);
+foreach (TrackInfo track in info.Tracks)
+{
+    string details = track switch
+    {
+        VideoTrackInfo v =&gt; $&quot;{v.Width}x{v.Height} {v.BitDepth}-bit {v.ChromaFormat}, {v.FieldOrder}&quot;,
+        AudioTrackInfo a =&gt; $&quot;{a.SampleRate} Hz, {a.Channels} channels&quot;,
+        _ =&gt; &quot;&quot;,
+    };
+    Console.WriteLine($&quot;#{track.Number} {track.Kind} {track.CodecId} {details}&quot;);
+}
+
+MediaMetadata metadata = info.Metadata;
+foreach (ChapterInfo chapter in metadata.Chapters)
+{
+    Console.WriteLine($&quot;{chapter.Start.ToTimeSpan()} {chapter.Title}&quot;);
+}
+
+foreach (AttachmentInfo attachment in metadata.Attachments)
+{
+    File.WriteAllBytes(attachment.Name, attachment.Data.ToArray());
+}
+</code></pre><h2 id="reading-frames">Reading frames</h2>
+<p><code>VideoReader</code> opens a file and decodes its first video track. <code>ReadFrames&lt;TPixel&gt;</code> gives <code>VideoFrame&lt;TPixel&gt;</code> frames of RGB
+pixels, each with its timestamp, duration and color; dispose each frame when done with it.</p>
+<pre><code class="lang-csharp">// Every frame as RGB pixels: VP9, VP8, Motion JPEG or raw, from WebM, Matroska, AVI, IVF or YUV4MPEG2.
+using VideoReader reader = VideoReader.Open(&quot;movie.webm&quot;);
+Console.WriteLine($&quot;{reader.Track.Width}x{reader.Track.Height} at {reader.Track.FrameRate?.ToDouble()} fps&quot;);
+foreach (VideoFrame&lt;Rgba8&gt; frame in reader.ReadFrames&lt;Rgba8&gt;())
+{
+    using (frame)
+    {
+        frame.Raster.Save($&quot;frame-{frame.Timestamp.ToTimeSpan().TotalMilliseconds:0000}.png&quot;);
+    }
+}
+</code></pre>
+<p><code>ReadFrame</code> and <code>ReadFrames</code> without a pixel type give a <code>YuvVideoFrame</code>: the codec's own planes as a <code>YuvRaster</code>, at the
+stream's subsampling and bit depth, with no conversion. Both kinds of frame are a <code>VideoFrame</code>, which is what encoders and
+writers take.</p>
+<pre><code class="lang-csharp">// The codec's own planes, with no conversion: luma and chroma at the stream's subsampling and bit depth.
+using VideoReader reader = VideoReader.Open(&quot;movie.webm&quot;);
+using YuvVideoFrame first = reader.ReadFrame()!;
+YuvRaster planes = first.Raster;
+Console.WriteLine($&quot;{planes.ChromaFormat} {planes.BitDepth}-bit, color {first.Color}&quot;);
+VideoFrame frame = first;                     // the base type encoders and writers take
+using Raster&lt;Rgb8&gt; rgb = first.ToRaster&lt;Rgb8&gt;();
+</code></pre>
+<p><code>VideoReaderOptions</code> picks the track, the codec's <code>VideoDecoderOptions</code> (such as <code>DecodeAlpha</code> for WebM alpha), and what a
+broken frame does, as a <code>DecodeErrorMode</code>: <code>Skip</code> (the default) reports it and drops frames up to the next keyframe, <code>Conceal</code>
+repeats the last good frame, and <code>Throw</code> throws.</p>
+<pre><code class="lang-csharp">// How a reader decodes: which track, what a broken frame does (Skip, the default, drops it up to the next keyframe;
+// Conceal repeats the last good frame; Throw throws) and the codec's own options.
+VideoReaderOptions options = new()
+{
+    TrackNumber = 1,
+    Errors = DecodeErrorMode.Conceal,
+    Decoder = new VideoDecoderOptions { DecodeAlpha = false },
+};
+using VideoReader reader = VideoReader.Open(&quot;alpha.webm&quot;, options);
+using YuvVideoFrame frame = reader.ReadFrame()!;
+</code></pre><pre><code class="lang-csharp">// Opening reads the headers; the async forms do that off the calling thread.
+using VideoReader reader = await VideoReader.OpenAsync(&quot;movie.webm&quot;, VideoReaderOptions.Default);
+using YuvVideoFrame? frame = reader.ReadFrame();
+</code></pre><h2 id="seeking">Seeking</h2>
+<p><code>Seek</code> takes a <code>MediaTime</code> and lands on the frame shown at that time, decoding from the keyframe before it; it is exact over
+VP9's hidden and show-existing frames too. <code>SeekMode.Keyframe</code> stops at the keyframe instead, which is faster.</p>
+<pre><code class="lang-csharp">// An exact seek lands on the frame shown at the time; SeekMode.Keyframe stops at the keyframe before it, which is faster.
+using VideoReader reader = VideoReader.Open(&quot;movie.webm&quot;);
+reader.Seek(MediaTime.FromSeconds(0.5));
+using YuvVideoFrame atHalf = reader.ReadFrame()!;
+reader.Seek(MediaTime.FromSeconds(0.5), SeekMode.Keyframe);
+using YuvVideoFrame keyframe = reader.ReadFrame()!;
+</code></pre><h2 id="writing-a-clip">Writing a clip</h2>
+<p><code>VideoWriter</code> encodes images or frames into a file or stream; <code>VideoWriterOptions</code> sets the codec, the frame rate (a
+<code>Rational</code>), the quality, the chroma format, the metadata and other tracks to copy in.</p>
+<pre><code class="lang-csharp">// Images into a Motion JPEG clip; the container comes from the extension.
+VideoWriterOptions options = new() { Codec = VideoCodecs.MotionJpeg, FrameRate = new Rational(25, 1), Quality = 85 };
+using (VideoWriter writer = VideoWriter.Create(&quot;duck.mkv&quot;, options))
+{
+    for (int i = 0; i &lt; 10; i++)
+    {
+        writer.WriteFrame(duck);
+    }
+}
+
+// Or into a stream, in a format by name.
+using MemoryStream avi = new();
+using (VideoWriter writer = VideoWriter.Create(avi, &quot;avi&quot;, options, leaveOpen: true))
+{
+    writer.WriteFrame(duck);
+}
+</code></pre><h2 id="remuxing">Remuxing</h2>
+<p><code>MediaFile.Remux</code> copies a file's packets into another container without decoding. For more control, an <code>IDemuxer</code> reads
+<code>EncodedPacket</code>s (data, timestamps, the keyframe flag and <code>PacketAddition</code>s such as WebM alpha) and an <code>IMuxer</code> writes them.</p>
+<pre><code class="lang-csharp">// Copy the packets into another container without decoding; the sound and the tags come along.
+long packets = MediaFile.Remux(&quot;camera.avi&quot;, &quot;camera.mkv&quot;);
+
+// Or packet by packet, choosing what goes through.
+using IDemuxer demuxer = MediaFile.OpenDemuxer(&quot;movie.webm&quot;);
+using (IMuxer muxer = MediaFile.CreateMuxer(&quot;movie.ivf&quot;, [demuxer.Info.VideoTrack!]))
+{
+    while (demuxer.ReadPacket() is { } packet)
+    {
+        using (packet)
+        {
+            // Data, the time and whether it starts a keyframe; WebM alpha travels in Additions.
+            IReadOnlyList&lt;PacketAddition&gt; additions = packet.Additions;
+            muxer.WritePacket(packet);
+        }
+    }
+
+    muxer.Finish();
+}
+</code></pre><h2 id="codecs-by-hand">Codecs by hand</h2>
+<p><code>VideoCodecs</code> finds the codec for a track and creates an <code>IVideoDecoder</code>: send packets, receive frames. <code>VideoCodecs.CreateDecoder&lt;TPixel&gt;</code>
+gives an <code>IVideoDecoder&lt;TPixel&gt;</code> that hands out RGB frames.</p>
+<pre><code class="lang-csharp">// A codec by hand: packets in, frames out. VideoCodecs finds the codec for a track's CodecId (CodecIds.Vp9 here).
+using IDemuxer demuxer = MediaFile.OpenDemuxer(&quot;movie.webm&quot;);
+VideoTrackInfo track = demuxer.Info.VideoTrack!;
+bool isVp9 = track.CodecId == CodecIds.Vp9;
+using IVideoDecoder decoder = VideoCodecs.CreateDecoder(track, new VideoDecoderOptions { Errors = DecodeErrorMode.Throw });
+int frames = 0;
+while (demuxer.ReadPacket() is { } packet)
+{
+    using (packet)
+    {
+        decoder.Send(packet);
+    }
+
+    while (decoder.TryReceive(out YuvVideoFrame? frame))
+    {
+        using (frame)
+        {
+            frames++;
+        }
+    }
+}
+
+decoder.Flush();
+</code></pre>
+<p>Each codec is a <code>VideoCodec</code>: <code>Vp9Codec</code>, <code>Vp8Codec</code>, <code>MotionJpegCodec</code> and <code>RawVideoCodec</code>.</p>
+<pre><code class="lang-csharp">// The built-in codecs, for a MediaContext of your own or to create decoders directly.
+VideoCodec vp9 = Vp9Codec.Instance, vp8 = Vp8Codec.Instance, mjpeg = MotionJpegCodec.Instance, raw = RawVideoCodec.Instance;
+using IVideoDecoder decoder = vp9.CreateDecoder(track, VideoDecoderOptions.Default, MediaContext.Default);
+
+// Decoders that hand out RGB frames instead of planes.
+using IVideoDecoder&lt;Rgba8&gt; rgb = VideoCodecs.CreateDecoder&lt;Rgba8&gt;(track);
+</code></pre>
+<p>An <code>IVideoEncoder</code> takes frames and gives packets, with <code>VideoEncoderOptions</code> for the size, frame rate and quality.</p>
+<pre><code class="lang-csharp">// An encoder by hand: frames in, packets out, for a muxer of your own.
+VideoEncoderOptions options = new() { Width = duck.Width, Height = duck.Height, FrameRate = new Rational(30, 1), Quality = 90 };
+using IVideoEncoder encoder = MotionJpegCodec.Instance.CreateEncoder(options, MediaContext.Default);
+using (VideoFrame&lt;Rgb8&gt; frame = new(Raster.Load&lt;Rgb8&gt;(&quot;duck.png&quot;), MediaTime.Zero))
+{
+    encoder.Send(frame);
+}
+
+encoder.Flush();
+List&lt;EncodedPacket&gt; packets = [];
+while (encoder.TryReceive(out EncodedPacket? packet))
+{
+    packets.Add(packet);
+}
+
+// Uncompressed frames go the same way, losslessly.
+using IVideoEncoder rawEncoder = RawVideoCodec.Instance.CreateEncoder(options with { ChromaFormat = ChromaFormat.Yuv444 }, MediaContext.Default);
+</code></pre>
+<p><code>CodecHeaders.Describe</code> lists a packet's header fields as <code>CodecHeaderField</code>s under the codec's own names, for VP8, VP9 and
+Motion JPEG.</p>
+<pre><code class="lang-csharp">// A packet's header fields under the codec's own names, as a hex dump with meaning.
+using IDemuxer demuxer = MediaFile.OpenDemuxer(&quot;movie.webm&quot;);
+TrackInfo track = demuxer.Tracks[0];
+using EncodedPacket packet = demuxer.ReadPacket()!;
+if (CodecHeaders.CanDescribe(track))
+{
+    foreach (CodecHeaderField field in CodecHeaders.Describe(track, packet))
+    {
+        Console.WriteLine($&quot;{field.Name} = {field.Value}&quot;);
+    }
+}
+</code></pre><h2 id="hdr">HDR</h2>
+<p>A frame's <code>Color</code> and <code>Hdr</code> carry its color code points and static HDR metadata. <code>YuvVideoFrame.ToRaster</code> with a target
+<code>ColorProfile</code> converts through Egami's color pipeline and tone maps PQ and HLG to SDR. VP9 frames in WebM carry HDR10+
+dynamic metadata as <code>Hdr10PlusMetadata</code>, with its <code>Hdr10PlusPercentile</code> distribution and <code>Hdr10PlusToneCurve</code>.</p>
+<pre><code class="lang-csharp">// An HDR10 frame tone mapped to SDR through Egami's color pipeline, from its mastering display and light levels.
+using (VideoReader reader = VideoReader.Open(&quot;hdr10.mkv&quot;))
+using (YuvVideoFrame frame = reader.ReadFrame()!)
+using (Raster&lt;Rgba8&gt; sdr = frame.ToRaster&lt;Rgba8&gt;(ColorProfile.Srgb))
+{
+    sdr.Save(&quot;sdr.png&quot;);
+}
+
+// HDR10+ dynamic metadata, frame by frame.
+using VideoReader plus = VideoReader.Open(&quot;hdr10plus.webm&quot;);
+foreach (YuvVideoFrame frame in plus.ReadFrames())
+{
+    using (frame)
+    {
+        if (frame.Hdr10Plus is { } meta)
+        {
+            double maxScl = meta.MaxScl.Max();                      // cd/m²
+            Hdr10PlusPercentile median = meta.DistributionMaxRgb.First(p =&gt; p.Percentage == 50);
+            Hdr10PlusToneCurve? curve = meta.ToneCurve;
+            Console.WriteLine($&quot;MaxSCL {maxScl}, median {median.Value} cd/m², knee {curve?.KneeX}&quot;);
+        }
+    }
+}
+</code></pre><h2 id="measuring-quality">Measuring quality</h2>
+<p><code>VideoQuality</code> sums PSNR and SSIM over frames, plane by plane, as <code>PlaneScores</code>, and hashes frames the way libvpx's tests do.</p>
+<pre><code class="lang-csharp">// PSNR and SSIM of a decode against a reference, plane by plane, and the MD5 of a frame as libvpx's tests take it.
+VideoQuality quality = new();
+using (VideoReader reference = VideoReader.Open(&quot;movie.webm&quot;))
+using (VideoReader distorted = VideoReader.Open(&quot;movie.webm&quot;))
+{
+    foreach ((YuvVideoFrame a, YuvVideoFrame b) in reference.ReadFrames().Zip(distorted.ReadFrames()))
+    {
+        using (a)
+        using (b)
+        {
+            quality.Add(a.Raster, b.Raster);
+            string md5 = VideoQuality.Md5(a.Raster);
+        }
+    }
+}
+
+PlaneScores psnr = quality.Psnr, ssim = quality.Ssim;
+Console.WriteLine($&quot;{quality.Frames} frames: PSNR Y {psnr.Y:0.00} dB, SSIM {ssim.Average:0.0000}&quot;);
+</code></pre><h2 id="limits-and-warnings">Limits and warnings</h2>
+<p>A <code>MediaContext</code> holds the containers and codecs, the Egami context (memory, threads, safety limits), the <code>MediaLimits</code> for
+files from outside (packet, header and index sizes, tracks, nesting) and a handler for <code>MediaWarning</code>s: what a reader
+recovered from. VP9 decodes tile columns and loop filter rows on up to <code>MaxParallelism</code> threads.</p>
+<pre><code class="lang-csharp">// Limits for files from outside, and a handler for what a reader recovers from (a broken index, a cut-off cluster).
+List&lt;MediaWarning&gt; warnings = [];
+MediaContext context = MediaContext.Default with
+{
+    Limits = MediaLimits.Default with { MaxPacketBytes = 8 &lt;&lt; 20, MaxTracks = 8 },
+    Warnings = warnings.Add,
+    Egami = EgamiContext.Default with { MaxParallelism = 2 },
+};
+using VideoReader reader = VideoReader.Open(&quot;movie.webm&quot;, null, context);
+foreach (MediaWarning warning in warnings)
+{
+    Console.WriteLine($&quot;{warning.Code}: {warning.Message}&quot;);
+}
+</code></pre><h2 id="containers">Containers</h2>
+<p>Each container is a <code>ContainerFormat</code>: <code>MatroskaFormat</code> (WebM and Matroska), <code>AviFormat</code>, <code>IvfFormat</code> and <code>Y4mFormat</code>.
+<code>RawVideo</code> reads and writes headerless frames in a layout you give.</p>
+<pre><code class="lang-csharp">// The containers, by name or extension, and headerless raw frames in a layout you give.
+ContainerFormat? webm = MediaContext.Default.FindContainer(&quot;webm&quot;);
+bool known = webm is MatroskaFormat &amp;&amp; MediaContext.Default.FindContainer(&quot;avi&quot;) is AviFormat
+    &amp;&amp; MediaContext.Default.FindContainer(&quot;ivf&quot;) is IvfFormat &amp;&amp; MediaContext.Default.FindContainer(&quot;y4m&quot;) is Y4mFormat;
+
+VideoTrackInfo track = new()
+{
+    Number = 1,
+    Kind = TrackKind.Video,
+    CodecId = CodecIds.Uncompressed,
+    FourCC = &quot;I420&quot;,
+    TimeBase = new Rational(1, 25),
+    FrameRate = new Rational(25, 1),
+    Width = 64,
+    Height = 48,
+};
+using MemoryStream frames = new(new byte[64 * 48 * 3 / 2 * 2]);
+using IDemuxer raw = RawVideo.OpenDemuxer(frames, track);
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/video.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

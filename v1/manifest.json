@@ -10681,6 +10681,790 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.AttachmentInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.AttachmentInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.AttachmentInfo",
+      "Summary": "<p sourcefile=\"api/Egami.Video.AttachmentInfo.yml\" sourcestartlinenumber=\"1\">A file stored inside the container, such as a font for subtitles or cover art (&quot;cover.jpg&quot;).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.AudioTrackInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.AudioTrackInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.AudioTrackInfo",
+      "Summary": "<p sourcefile=\"api/Egami.Video.AudioTrackInfo.yml\" sourcestartlinenumber=\"1\">An audio track: a <xref href=\"Egami.Video.TrackInfo\" data-throw-if-not-resolved=\"false\"></xref> with the sample format.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.ChapterInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.ChapterInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.ChapterInfo",
+      "Summary": "<p sourcefile=\"api/Egami.Video.ChapterInfo.yml\" sourcestartlinenumber=\"1\">A chapter: where it starts and ends, and its title.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.CodecIds.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.CodecIds.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.CodecIds",
+      "Summary": "<p sourcefile=\"api/Egami.Video.CodecIds.yml\" sourcestartlinenumber=\"1\">Matroska codec ids (from the Matroska codec mapping) for the codecs Egami.Video names. <xref href=\"Egami.Video.TrackInfo.CodecId\" data-throw-if-not-resolved=\"false\"></xref>\nuses these for every container.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.CodecHeaderField.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.CodecHeaderField.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.CodecHeaderField",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.CodecHeaderField.yml\" sourcestartlinenumber=\"1\">One field of a compressed frame's header, as <xref href=\"Egami.Video.Codecs.CodecHeaders.Describe(Egami.Video.TrackInfo%2cEgami.Video.EncodedPacket)\" data-throw-if-not-resolved=\"false\"></xref> lists it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.CodecHeaders.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.CodecHeaders.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.CodecHeaders",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.CodecHeaders.yml\" sourcestartlinenumber=\"1\">Lists what a compressed frame's header says, field by field under the codec specification's names, for tools such as\n<code>egami-video info --headers</code> and for checking an encoder's output. VP8 (RFC 6386 sections 9 and 19) and VP9 (VP9\nbitstream specification sections 6.2 and 6.3) are described; later codecs add theirs to the same call.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.IVideoDecoder-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.IVideoDecoder-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.IVideoDecoder<TPixel>",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.IVideoDecoder-1.yml\" sourcestartlinenumber=\"1\">A decoder that converts its frames to <code class=\"typeparamref\">TPixel</code> pixels. See <xref href=\"Egami.Video.Codecs.IVideoDecoder\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.IVideoDecoder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.IVideoDecoder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.IVideoDecoder",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.IVideoDecoder.yml\" sourcestartlinenumber=\"1\">Turns packets into frames with a send and receive loop. One packet can give no frame yet (a codec that holds frames back)\nor several, so after each <xref href=\"Egami.Video.Codecs.IVideoDecoder.Send(Egami.Video.EncodedPacket)\" data-throw-if-not-resolved=\"false\"></xref> call <xref href=\"Egami.Video.Codecs.IVideoDecoder.TryReceive(Egami.Video.YuvVideoFrame%40)\" data-throw-if-not-resolved=\"false\"></xref> until it returns <a href=\"https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool\">false</a>, and at\nthe end of the stream call <xref href=\"Egami.Video.Codecs.IVideoDecoder.Flush\" data-throw-if-not-resolved=\"false\"></xref> and receive what is left.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.IVideoEncoder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.IVideoEncoder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.IVideoEncoder",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.IVideoEncoder.yml\" sourcestartlinenumber=\"1\">Turns frames into packets with a send and receive loop, the mirror of <xref href=\"Egami.Video.Codecs.IVideoDecoder\" data-throw-if-not-resolved=\"false\"></xref>. After each\n<xref href=\"Egami.Video.Codecs.IVideoEncoder.Send(Egami.Video.VideoFrame)\" data-throw-if-not-resolved=\"false\"></xref> call <xref href=\"Egami.Video.Codecs.IVideoEncoder.TryReceive(Egami.Video.EncodedPacket%40)\" data-throw-if-not-resolved=\"false\"></xref> until it returns <a href=\"https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool\">false</a>; at the end call\n<xref href=\"Egami.Video.Codecs.IVideoEncoder.Flush\" data-throw-if-not-resolved=\"false\"></xref> and receive what is left.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.MotionJpegCodec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.MotionJpegCodec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.MotionJpegCodec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.MotionJpegCodec.yml\" sourcestartlinenumber=\"1\">Motion JPEG: every frame a complete JPEG image, decoded and encoded by Egami's JPEG codec. Decoding fixes frames without\na DHT segment, weaves interlaced field pairs, ignores junk around the image and decodes several frames at once. Frames\ncome out as the JPEG's own YUV planes, BT.601 full range unless the container says otherwise.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.RawVideoCodec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.RawVideoCodec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.RawVideoCodec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.RawVideoCodec.yml\" sourcestartlinenumber=\"1\">Uncompressed video (<xref href=\"Egami.Video.CodecIds.Uncompressed\" data-throw-if-not-resolved=\"false\"></xref>): I420, YV12, Y42B, 444P, Y800, NV12, NV21, YUY2, UYVY and v210 by\nFourCC (<xref href=\"Egami.Video.VideoTrackInfo.FourCC\" data-throw-if-not-resolved=\"false\"></xref>), plain planar YUV at 8 to 12 bits with optional alpha as in YUV4MPEG2, and\nAVI's bottom-up 24-bit BI_RGB (as <xref href=\"Egami.Video.CodecIds.VfwFourCC\" data-throw-if-not-resolved=\"false\"></xref>), whose frames come out as G, B and R planes\n(<xref href=\"Egami.Pixels.YuvMatrix.Identity\" data-throw-if-not-resolved=\"false\"></xref>). Decoding and encoding copy samples, so they are lossless.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.VideoCodec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.VideoCodec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.VideoCodec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.VideoCodec.yml\" sourcestartlinenumber=\"1\">A video codec: which tracks it decodes and how to create its decoder and encoder. Register a new one with\n<xref href=\"Egami.Video.MediaContext.WithCodec(Egami.Video.Codecs.VideoCodec)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.VideoCodecs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.VideoCodecs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.VideoCodecs",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.VideoCodecs.yml\" sourcestartlinenumber=\"1\">Creates decoders and encoders from the codecs registered in a <xref href=\"Egami.Video.MediaContext\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.VideoDecoderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.VideoDecoderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.VideoDecoderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.VideoDecoderOptions.yml\" sourcestartlinenumber=\"1\">How a decoder decodes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.VideoEncoderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.VideoEncoderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.VideoEncoderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.VideoEncoderOptions.yml\" sourcestartlinenumber=\"1\">What an encoder makes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.Vp8Codec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.Vp8Codec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.Vp8Codec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.Vp8Codec.yml\" sourcestartlinenumber=\"1\">VP8 (RFC 6386), as WebM, Matroska and IVF carry it, decoded by Egami's <xref href=\"Egami.Formats.Webp.Vp8StreamDecoder\" data-throw-if-not-resolved=\"false\"></xref>: every\nframe equals libvpx's sample for sample. Frames come out as 8-bit 4:2:0 planes, BT.601 limited range unless the container says\notherwise; hidden frames (alternate references) give no frame. A WebM track with alpha (<xref href=\"Egami.Video.VideoTrackInfo.HasAlpha\" data-throw-if-not-resolved=\"false\"></xref>)\ndecodes its second VP8 stream, carried in each packet's addition 1, into the frame's alpha plane unless\n<xref href=\"Egami.Video.Codecs.VideoDecoderOptions.DecodeAlpha\" data-throw-if-not-resolved=\"false\"></xref> is off. Decode only.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.Vp9Codec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.Vp9Codec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.Vp9Codec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.Vp9Codec.yml\" sourcestartlinenumber=\"1\">VP9, as WebM, Matroska and IVF carry it, decoded in all four profiles: 8, 10 and 12 bit, 4:2:0, 4:2:2, 4:4:4 and RGB, with\nevery frame equal to libvpx's sample for sample. Frames come out at their own coded size (a stream may change size between\nkeyframes) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; hidden frames (alternate references) give no frame. A\nWebM track with alpha (<xref href=\"Egami.Video.VideoTrackInfo.HasAlpha\" data-throw-if-not-resolved=\"false\"></xref>) decodes its second VP9 stream, carried in each packet's\naddition 1, into the frame's alpha plane unless <xref href=\"Egami.Video.Codecs.VideoDecoderOptions.DecodeAlpha\" data-throw-if-not-resolved=\"false\"></xref> is off. 4:4:0 streams are not\ndecoded. Decode only.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.AviFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.AviFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.AviFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.AviFormat.yml\" sourcestartlinenumber=\"1\">AVI, the RIFF-based container from Video for Windows, with the OpenDML extensions for files over 1 GB. Reads any AVI and\nwrites Motion JPEG video with audio and other tracks copied through.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.ContainerFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.ContainerFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.ContainerFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.ContainerFormat.yml\" sourcestartlinenumber=\"1\">A container format: how to recognize it and how to open a demuxer or muxer for it. Register a new one with\n<xref href=\"Egami.Video.MediaContext.WithContainer(Egami.Video.Containers.ContainerFormat)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.IDemuxer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.IDemuxer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.IDemuxer",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.IDemuxer.yml\" sourcestartlinenumber=\"1\">Reads a container's tracks and packets. Packets come in file order, interleaved across tracks.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.IMuxer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.IMuxer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.IMuxer",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.IMuxer.yml\" sourcestartlinenumber=\"1\">Writes packets into a container. Packets should come in timestamp order across tracks, as a demuxer returns them.\n<xref href=\"System.IDisposable.Dispose\" data-throw-if-not-resolved=\"false\"></xref> finishes the file if <xref href=\"Egami.Video.Containers.IMuxer.Finish\" data-throw-if-not-resolved=\"false\"></xref> was not called.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.IvfFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.IvfFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.IvfFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.IvfFormat.yml\" sourcestartlinenumber=\"1\">IVF (.ivf): the bare frame container libvpx's tools and the VP8, VP9 and AV1 test vectors use. A 32-byte file header (FourCC,\nsize, time base, frame count) and a 12-byte header per frame (size, timestamp), with no index. Reads and writes VP8\n(<code>VP80</code>), VP9 (<code>VP90</code>) and AV1 (<code>AV01</code>) tracks; seeking scans the frame headers once. Reading a file and\nwriting it back gives the same bytes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.MatroskaFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.MatroskaFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.MatroskaFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.MatroskaFormat.yml\" sourcestartlinenumber=\"1\">Matroska (RFC 9559) and its WebM subset. Both instances read either; they differ in the DocType and extension a muxer\nwrites: <xref href=\"Egami.Video.Containers.MatroskaFormat.Instance\" data-throw-if-not-resolved=\"false\"></xref> writes Matroska (.mkv), <xref href=\"Egami.Video.Containers.MatroskaFormat.WebM\" data-throw-if-not-resolved=\"false\"></xref> writes WebM (.webm).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.RawVideo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.RawVideo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.RawVideo",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.RawVideo.yml\" sourcestartlinenumber=\"1\">Headerless raw video (&quot;rawvideo&quot;): frames of one uncompressed layout back to back, as FFmpeg's <code>-f rawvideo</code> reads and\nwrites them. Nothing in the file says the size or layout, so the caller gives them as a track.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.Y4mFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.Y4mFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.Y4mFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.Y4mFormat.yml\" sourcestartlinenumber=\"1\">YUV4MPEG2 (.y4m): uncompressed planar YUV frames behind a one-line text header, the common exchange format of video\ntools and codec test suites. Reads 4:2:0, 4:2:2, 4:4:4 and gray at 8, 10 and 12 bits, and 4:4:4 with alpha; writes the\nsame. Reading a file and writing it back gives the same bytes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.DecodeErrorMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.DecodeErrorMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.DecodeErrorMode",
+      "Summary": "<p sourcefile=\"api/Egami.Video.DecodeErrorMode.yml\" sourcestartlinenumber=\"1\">What a decoder or <xref href=\"Egami.Video.VideoReader\" data-throw-if-not-resolved=\"false\"></xref> does with a frame it cannot decode.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.EncodedPacket.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.EncodedPacket.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.EncodedPacket",
+      "Summary": "<p sourcefile=\"api/Egami.Video.EncodedPacket.yml\" sourcestartlinenumber=\"1\">One compressed unit of a track, such as a Motion JPEG frame or a block of audio: what demuxers return, decoders take,\nencoders return and muxers write. The bytes may sit in a pooled buffer, which <xref href=\"Egami.Video.EncodedPacket.Dispose\" data-throw-if-not-resolved=\"false\"></xref> returns.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.FieldOrder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.FieldOrder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.FieldOrder",
+      "Summary": "<p sourcefile=\"api/Egami.Video.FieldOrder.yml\" sourcestartlinenumber=\"1\">How a video track's frames are interlaced.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hdr10PlusMetadata.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hdr10PlusMetadata.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hdr10PlusMetadata",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hdr10PlusMetadata.yml\" sourcestartlinenumber=\"1\">HDR10+ dynamic metadata for one frame (SMPTE ST 2094-40, application version 0 or 1), as WebM carries it in each block's\nBlockAdditional with BlockAddID 4 (an ITU-T T.35 payload). The values are the first processing window's, which covers the whole\nframe; luminances are in cd/m². Egami.Video reads and keeps it but does not tone map with it: HDR to SDR conversion uses the\nstatic metadata (<xref href=\"Egami.Video.VideoFrame.Hdr\" data-throw-if-not-resolved=\"false\"></xref>).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hdr10PlusPercentile.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hdr10PlusPercentile.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hdr10PlusPercentile",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hdr10PlusPercentile.yml\" sourcestartlinenumber=\"1\">One point of HDR10+'s distribution of each pixel's brightest component: <xref href=\"Egami.Video.Hdr10PlusPercentile.Percentage\" data-throw-if-not-resolved=\"false\"></xref> percent of the pixels are at or\nbelow <xref href=\"Egami.Video.Hdr10PlusPercentile.Value\" data-throw-if-not-resolved=\"false\"></xref> cd/m².</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hdr10PlusToneCurve.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hdr10PlusToneCurve.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hdr10PlusToneCurve",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hdr10PlusToneCurve.yml\" sourcestartlinenumber=\"1\">An HDR10+ tone mapping curve for the target display: a knee point, then a Bezier curve through its anchors.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.MediaContext.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.MediaContext.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.MediaContext",
+      "Summary": "<p sourcefile=\"api/Egami.Video.MediaContext.yml\" sourcestartlinenumber=\"1\">The registered containers and codecs, the safety limits for reading, and the Egami context frames are allocated from.\nEvery entry point takes one, or uses <xref href=\"Egami.Video.MediaContext.Default\" data-throw-if-not-resolved=\"false\"></xref>. Immutable: derive a new one with <code>with</code> or\n<xref href=\"Egami.Video.MediaContext.WithContainer(Egami.Video.Containers.ContainerFormat)\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Video.MediaContext.WithCodec(Egami.Video.Codecs.VideoCodec)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.MediaFile.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.MediaFile.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.MediaFile",
+      "Summary": "<p sourcefile=\"api/Egami.Video.MediaFile.yml\" sourcestartlinenumber=\"1\">Entry points for media files: probe what a file holds, open a demuxer to read its packets, or create a muxer to write\none. The container is detected from the file's first bytes when reading, and chosen by extension when writing.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.MediaInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.MediaInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.MediaInfo",
+      "Summary": "<p sourcefile=\"api/Egami.Video.MediaInfo.yml\" sourcestartlinenumber=\"1\">What a media file holds, read from its headers without decoding any frame. Returned by <code>MediaFile.Probe</code>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.MediaLimits.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.MediaLimits.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.MediaLimits",
+      "Summary": "<p sourcefile=\"api/Egami.Video.MediaLimits.yml\" sourcestartlinenumber=\"1\">Limits that make readers reject hostile files early instead of allocating or looping without bound.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.MediaMetadata.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.MediaMetadata.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.MediaMetadata",
+      "Summary": "<p sourcefile=\"api/Egami.Video.MediaMetadata.yml\" sourcestartlinenumber=\"1\">A file's tags, chapters and attachments, as a demuxer reads them and a muxer writes them.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.MediaTime.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.MediaTime.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.MediaTime",
+      "Summary": "<p sourcefile=\"api/Egami.Video.MediaTime.yml\" sourcestartlinenumber=\"1\">A point in time or a duration in a media stream: a whole number of ticks of a <xref href=\"Egami.Video.Rational\" data-throw-if-not-resolved=\"false\"></xref> time base. Exact for\nevery container: AVI counts frames at the frame rate's reciprocal (for example 1001/30000 s), Matroska counts its\ntimestamp scale in nanoseconds. <xref href=\"System.TimeSpan\" data-throw-if-not-resolved=\"false\"></xref> rounds to 100 ns and drifts over long files; this type does not.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.MediaWarning.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.MediaWarning.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.MediaWarning",
+      "Summary": "<p sourcefile=\"api/Egami.Video.MediaWarning.yml\" sourcestartlinenumber=\"1\">Something a reader or writer handled but reports, through <xref href=\"Egami.Video.MediaContext.Warnings\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.PacketAddition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.PacketAddition.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.PacketAddition",
+      "Summary": "<p sourcefile=\"api/Egami.Video.PacketAddition.yml\" sourcestartlinenumber=\"1\">Extra data stored with a packet (a Matroska BlockMore): an id saying what it is, and its bytes. Id 1 holds a WebM VP8 or VP9\ntrack's alpha frame when the track has <xref href=\"Egami.Video.VideoTrackInfo.HasAlpha\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.PlaneScores.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.PlaneScores.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.PlaneScores",
+      "Summary": "<p sourcefile=\"api/Egami.Video.PlaneScores.yml\" sourcestartlinenumber=\"1\">A score per plane (Y, U, V and alpha when present) and an average.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Rational.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Rational.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Rational",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Rational.yml\" sourcestartlinenumber=\"1\">An exact fraction, such as a frame rate (30000/1001) or a time base (1/1000000000). Always stored in lowest terms with a\npositive denominator.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.SeekMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.SeekMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.SeekMode",
+      "Summary": "<p sourcefile=\"api/Egami.Video.SeekMode.yml\" sourcestartlinenumber=\"1\">How exact <xref href=\"Egami.Video.VideoReader.Seek(Egami.Video.MediaTime%2cEgami.Video.SeekMode)\" data-throw-if-not-resolved=\"false\"></xref> is.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.TrackInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.TrackInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.TrackInfo",
+      "Summary": "<p sourcefile=\"api/Egami.Video.TrackInfo.yml\" sourcestartlinenumber=\"1\">A track in a container: its number, kind and codec, as a demuxer reports it and a muxer takes it. Codecs are named with\nMatroska codec ids (<xref href=\"Egami.Video.CodecIds\" data-throw-if-not-resolved=\"false\"></xref>), which every container maps to and from, so a track read from AVI can be\nwritten to Matroska unchanged.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.TrackKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.TrackKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.TrackKind",
+      "Summary": "<p sourcefile=\"api/Egami.Video.TrackKind.yml\" sourcestartlinenumber=\"1\">What a track holds.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.VideoFrame-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.VideoFrame-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.VideoFrame<TPixel>",
+      "Summary": "<p sourcefile=\"api/Egami.Video.VideoFrame-1.yml\" sourcestartlinenumber=\"1\">A decoded picture converted to <code class=\"typeparamref\">TPixel</code> pixels, as <code>VideoReader.ReadFrames</code> returns it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.VideoFrame.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.VideoFrame.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.VideoFrame",
+      "Summary": "<p sourcefile=\"api/Egami.Video.VideoFrame.yml\" sourcestartlinenumber=\"1\">A decoded picture with its time: a <xref href=\"Egami.Video.YuvVideoFrame\" data-throw-if-not-resolved=\"false\"></xref> as decoders hand it out (the codec's own planes), or a\n<xref href=\"Egami.Video.VideoFrame%601\" data-throw-if-not-resolved=\"false\"></xref> of RGB pixels from <code>VideoReader.ReadFrames</code>. Disposing the frame returns its\npixel memory to the memory source it came from.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.VideoQuality.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.VideoQuality.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.VideoQuality",
+      "Summary": "<p sourcefile=\"api/Egami.Video.VideoQuality.yml\" sourcestartlinenumber=\"1\">Measures how close decoded video is to a reference, frame by frame or over a whole clip: PSNR and SSIM per plane, and MD5\nhashes of frames and packets in the layout FFmpeg's framemd5 uses (planes one after another, rows without padding,\nlittle-endian 16-bit samples above 8 bits).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.VideoReader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.VideoReader.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.VideoReader",
+      "Summary": "<p sourcefile=\"api/Egami.Video.VideoReader.yml\" sourcestartlinenumber=\"1\">Reads the frames of a video file in a few lines: opens the container, picks the video track, decodes it and hands out\nframes, as the codec's planes (<xref href=\"Egami.Video.VideoReader.ReadFrames\" data-throw-if-not-resolved=\"false\"></xref>) or as RGB rasters (<xref href=\"Egami.Video.VideoReader.ReadFrames%60%601\" data-throw-if-not-resolved=\"false\"></xref>). Frame\nmemory comes from the context's pixel memory source, pooled by default, so disposing each frame keeps memory steady over\nlong files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.VideoReaderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.VideoReaderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.VideoReaderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.VideoReaderOptions.yml\" sourcestartlinenumber=\"1\">How a <xref href=\"Egami.Video.VideoReader\" data-throw-if-not-resolved=\"false\"></xref> reads.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.VideoTrackInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.VideoTrackInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.VideoTrackInfo",
+      "Summary": "<p sourcefile=\"api/Egami.Video.VideoTrackInfo.yml\" sourcestartlinenumber=\"1\">A video track: a <xref href=\"Egami.Video.TrackInfo\" data-throw-if-not-resolved=\"false\"></xref> with the picture size, frame rate and color.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.VideoWriter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.VideoWriter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.VideoWriter",
+      "Summary": "<p sourcefile=\"api/Egami.Video.VideoWriter.yml\" sourcestartlinenumber=\"1\">Writes a video file from rasters in a few lines: encodes each frame and muxes it, picking the container from the file\nextension. The picture size comes from the first frame. Other tracks, such as audio copied from a source file, can be\nwritten alongside with <xref href=\"Egami.Video.VideoWriter.WritePacket(Egami.Video.EncodedPacket)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.VideoWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.VideoWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.VideoWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.VideoWriterOptions.yml\" sourcestartlinenumber=\"1\">What a <xref href=\"Egami.Video.VideoWriter\" data-throw-if-not-resolved=\"false\"></xref> writes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.YuvVideoFrame.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.YuvVideoFrame.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.YuvVideoFrame",
+      "Summary": "<p sourcefile=\"api/Egami.Video.YuvVideoFrame.yml\" sourcestartlinenumber=\"1\">A decoded picture in the codec's own planar YUV layout, as decoders return it: for Motion JPEG the JPEG's Y, Cb and Cr\nplanes at their own subsampling, with no color conversion.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.YuvConvertOptions.yml",
       "output": {
         ".html": {
@@ -11362,6 +12146,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/unicode-text.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/video.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/video.html"
         }
       },
       "version": ""

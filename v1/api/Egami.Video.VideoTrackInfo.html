@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class VideoTrackInfo | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class VideoTrackInfo | Egami ">
+      
+      <meta name="description" content="A video track: a  with the picture size, frame rate and color.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_VideoTrackInfo.md&amp;value=---%0Auid%3A%20Egami.Video.VideoTrackInfo%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.VideoTrackInfo">
+
+
+
+  <h1 id="Egami_Video_VideoTrackInfo" data-uid="Egami.Video.VideoTrackInfo" class="text-break">
+Class VideoTrackInfo  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A video track: a <a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a> with the picture size, frame rate and color.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record VideoTrackInfo : TrackInfo, IEquatable&lt;TrackInfo&gt;, IEquatable&lt;VideoTrackInfo&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a></div>
+      <div><span class="xref">VideoTrackInfo</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a>&gt;</div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.VideoTrackInfo.html">VideoTrackInfo</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_Number">TrackInfo.Number</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_Kind">TrackInfo.Kind</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecId">TrackInfo.CodecId</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">TrackInfo.CodecPrivate</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_TimeBase">TrackInfo.TimeBase</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_Duration">TrackInfo.Duration</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_Language">TrackInfo.Language</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_Name">TrackInfo.Name</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecDelay">TrackInfo.CodecDelay</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_Tags">TrackInfo.Tags</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_IsDefault">TrackInfo.IsDefault</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_VideoTrackInfo_examples">Examples</h2>
+  <pre><code class="lang-csharp">// What a file holds, without decoding: its container, duration, tracks, tags, chapters and attachments.
+MediaInfo info = MediaFile.Probe("metadata.mkv");
+Console.WriteLine($"{info.FormatName}, {info.Duration?.ToTimeSpan()}");
+foreach (TrackInfo track in info.Tracks)
+{
+    string details = track switch
+    {
+        VideoTrackInfo v =&gt; $"{v.Width}x{v.Height} {v.BitDepth}-bit {v.ChromaFormat}, {v.FieldOrder}",
+        AudioTrackInfo a =&gt; $"{a.SampleRate} Hz, {a.Channels} channels",
+        _ =&gt; "",
+    };
+    Console.WriteLine($"#{track.Number} {track.Kind} {track.CodecId} {details}");
+}
+
+MediaMetadata metadata = info.Metadata;
+foreach (ChapterInfo chapter in metadata.Chapters)
+{
+    Console.WriteLine($"{chapter.Start.ToTimeSpan()} {chapter.Title}");
+}
+
+foreach (AttachmentInfo attachment in metadata.Attachments)
+{
+    File.WriteAllBytes(attachment.Name, attachment.Data.ToArray());
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_VideoTrackInfo_BitDepth_" data-uid="Egami.Video.VideoTrackInfo.BitDepth*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_BitDepth" data-uid="Egami.Video.VideoTrackInfo.BitDepth">
+  BitDepth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bits per sample of the decoded planes, or 0 when the container does not say.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int BitDepth { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_VideoTrackInfo_ChromaFormat_" data-uid="Egami.Video.VideoTrackInfo.ChromaFormat*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_ChromaFormat" data-uid="Egami.Video.VideoTrackInfo.ChromaFormat">
+  ChromaFormat
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the chroma subsampling of the decoded planes, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the container does not say.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChromaFormat? ChromaFormat { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.ChromaFormat.html">ChromaFormat</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_VideoTrackInfo_ChromaSiting_" data-uid="Egami.Video.VideoTrackInfo.ChromaSiting*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_ChromaSiting" data-uid="Egami.Video.VideoTrackInfo.ChromaSiting">
+  ChromaSiting
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets where chroma samples sit relative to luma, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the container does not say.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChromaSiting? ChromaSiting { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Pixels.ChromaSiting.html">ChromaSiting</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_VideoTrackInfo_Color_" data-uid="Egami.Video.VideoTrackInfo.Color*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_Color" data-uid="Egami.Video.VideoTrackInfo.Color">
+  Color
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the color description from the container, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when it gives none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ColorCodePoints? Color { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.ColorCodePoints.html">ColorCodePoints</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_VideoTrackInfo_FieldOrder_" data-uid="Egami.Video.VideoTrackInfo.FieldOrder*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_FieldOrder" data-uid="Egami.Video.VideoTrackInfo.FieldOrder">
+  FieldOrder
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how the frames are interlaced, or <a class="xref" href="Egami.Video.FieldOrder.html#Egami_Video_FieldOrder_Progressive">Progressive</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FieldOrder FieldOrder { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.FieldOrder.html">FieldOrder</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_VideoTrackInfo_FourCC_" data-uid="Egami.Video.VideoTrackInfo.FourCC*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_FourCC" data-uid="Egami.Video.VideoTrackInfo.FourCC">
+  FourCC
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the pixel layout of an uncompressed track (<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Uncompressed">Uncompressed</a>) as a FourCC such as &quot;I420&quot;, &quot;UYVY&quot;
+or &quot;v210&quot; (Matroska ColourSpace, AVI biCompression), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for plain planar YUV described by
+<a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_ChromaFormat">ChromaFormat</a>, <a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_BitDepth">BitDepth</a> and <a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_HasAlpha">HasAlpha</a>, as in YUV4MPEG2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? FourCC { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_VideoTrackInfo_FrameRate_" data-uid="Egami.Video.VideoTrackInfo.FrameRate*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_FrameRate" data-uid="Egami.Video.VideoTrackInfo.FrameRate">
+  FrameRate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the nominal frame rate, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for variable or unknown rates.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Rational? FrameRate { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Rational.html">Rational</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_VideoTrackInfo_HasAlpha_" data-uid="Egami.Video.VideoTrackInfo.HasAlpha*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_HasAlpha" data-uid="Egami.Video.VideoTrackInfo.HasAlpha">
+  HasAlpha
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L115"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the frames carry an alpha plane (Matroska AlphaMode, used by WebM VP8 and VP9 with alpha).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HasAlpha { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_VideoTrackInfo_Hdr_" data-uid="Egami.Video.VideoTrackInfo.Hdr*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_Hdr" data-uid="Egami.Video.VideoTrackInfo.Hdr">
+  Hdr
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L125"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the HDR mastering display and content light levels (Matroska Colour), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public HdrMetadata? Hdr { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Colors.HdrMetadata.html">HdrMetadata</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_VideoTrackInfo_Height_" data-uid="Egami.Video.VideoTrackInfo.Height*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_Height" data-uid="Egami.Video.VideoTrackInfo.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the coded height in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public required int Height { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_VideoTrackInfo_PixelAspectRatio_" data-uid="Egami.Video.VideoTrackInfo.PixelAspectRatio*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_PixelAspectRatio" data-uid="Egami.Video.VideoTrackInfo.PixelAspectRatio">
+  PixelAspectRatio
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L97"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the shape of one pixel, width over height (1/1 for square pixels).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Rational PixelAspectRatio { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Rational.html">Rational</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_VideoTrackInfo_Width_" data-uid="Egami.Video.VideoTrackInfo.Width*"></a>
+
+  <h3 id="Egami_Video_VideoTrackInfo_Width" data-uid="Egami.Video.VideoTrackInfo.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the coded width in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public required int Width { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L85" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

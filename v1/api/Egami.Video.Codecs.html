@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Video.Codecs | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Video.Codecs | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Codecs">
+
+  <h1 id="Egami_Video_Codecs" data-uid="Egami.Video.Codecs" class="text-break">Namespace Egami.Video.Codecs</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.CodecHeaders.html">CodecHeaders</a></dt>
+      <dd><p>Lists what a compressed frame's header says, field by field under the codec specification's names, for tools such as
+<code>egami-video info --headers</code> and for checking an encoder's output. VP8 (RFC 6386 sections 9 and 19) and VP9 (VP9
+bitstream specification sections 6.2 and 6.3) are described; later codecs add theirs to the same call.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.MotionJpegCodec.html">MotionJpegCodec</a></dt>
+      <dd><p>Motion JPEG: every frame a complete JPEG image, decoded and encoded by Egami's JPEG codec. Decoding fixes frames without
+a DHT segment, weaves interlaced field pairs, ignores junk around the image and decodes several frames at once. Frames
+come out as the JPEG's own YUV planes, BT.601 full range unless the container says otherwise.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.RawVideoCodec.html">RawVideoCodec</a></dt>
+      <dd><p>Uncompressed video (<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Uncompressed">Uncompressed</a>): I420, YV12, Y42B, 444P, Y800, NV12, NV21, YUY2, UYVY and v210 by
+FourCC (<a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_FourCC">FourCC</a>), plain planar YUV at 8 to 12 bits with optional alpha as in YUV4MPEG2, and
+AVI's bottom-up 24-bit BI_RGB (as <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_VfwFourCC">VfwFourCC</a>), whose frames come out as G, B and R planes
+(<a class="xref" href="Egami.Pixels.YuvMatrix.html#Egami_Pixels_YuvMatrix_Identity">Identity</a>). Decoding and encoding copy samples, so they are lossless.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.VideoCodec.html">VideoCodec</a></dt>
+      <dd><p>A video codec: which tracks it decodes and how to create its decoder and encoder. Register a new one with
+<a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_WithCodec_Egami_Video_Codecs_VideoCodec_">WithCodec(VideoCodec)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.VideoCodecs.html">VideoCodecs</a></dt>
+      <dd><p>Creates decoders and encoders from the codecs registered in a <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.VideoDecoderOptions.html">VideoDecoderOptions</a></dt>
+      <dd><p>How a decoder decodes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a></dt>
+      <dd><p>What an encoder makes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.Vp8Codec.html">Vp8Codec</a></dt>
+      <dd><p>VP8 (RFC 6386), as WebM, Matroska and IVF carry it, decoded by Egami's <a class="xref" href="Egami.Formats.Webp.Vp8StreamDecoder.html">Vp8StreamDecoder</a>: every
+frame equals libvpx's sample for sample. Frames come out as 8-bit 4:2:0 planes, BT.601 limited range unless the container says
+otherwise; hidden frames (alternate references) give no frame. A WebM track with alpha (<a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_HasAlpha">HasAlpha</a>)
+decodes its second VP8 stream, carried in each packet's addition 1, into the frame's alpha plane unless
+<a class="xref" href="Egami.Video.Codecs.VideoDecoderOptions.html#Egami_Video_Codecs_VideoDecoderOptions_DecodeAlpha">DecodeAlpha</a> is off. Decode only.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.Vp9Codec.html">Vp9Codec</a></dt>
+      <dd><p>VP9, as WebM, Matroska and IVF carry it, decoded in all four profiles: 8, 10 and 12 bit, 4:2:0, 4:2:2, 4:4:4 and RGB, with
+every frame equal to libvpx's sample for sample. Frames come out at their own coded size (a stream may change size between
+keyframes) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; hidden frames (alternate references) give no frame. A
+WebM track with alpha (<a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_HasAlpha">HasAlpha</a>) decodes its second VP9 stream, carried in each packet's
+addition 1, into the frame's alpha plane unless <a class="xref" href="Egami.Video.Codecs.VideoDecoderOptions.html#Egami_Video_Codecs_VideoDecoderOptions_DecodeAlpha">DecodeAlpha</a> is off. 4:4:0 streams are not
+decoded. Decode only.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.CodecHeaderField.html">CodecHeaderField</a></dt>
+      <dd><p>One field of a compressed frame's header, as <a class="xref" href="Egami.Video.Codecs.CodecHeaders.html#Egami_Video_Codecs_CodecHeaders_Describe_Egami_Video_TrackInfo_Egami_Video_EncodedPacket_">Describe(TrackInfo, EncodedPacket)</a> lists it.</p>
+</dd>
+    </dl>
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.IVideoDecoder.html">IVideoDecoder</a></dt>
+      <dd><p>Turns packets into frames with a send and receive loop. One packet can give no frame yet (a codec that holds frames back)
+or several, so after each <a class="xref" href="Egami.Video.Codecs.IVideoDecoder.html#Egami_Video_Codecs_IVideoDecoder_Send_Egami_Video_EncodedPacket_">Send(EncodedPacket)</a> call <a class="xref" href="Egami.Video.Codecs.IVideoDecoder.html#Egami_Video_Codecs_IVideoDecoder_TryReceive_Egami_Video_YuvVideoFrame__">TryReceive(out YuvVideoFrame?)</a> until it returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, and at
+the end of the stream call <a class="xref" href="Egami.Video.Codecs.IVideoDecoder.html#Egami_Video_Codecs_IVideoDecoder_Flush">Flush()</a> and receive what is left.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.IVideoDecoder-1.html">IVideoDecoder&lt;TPixel&gt;</a></dt>
+      <dd><p>A decoder that converts its frames to <code class="typeparamref">TPixel</code> pixels. See <a class="xref" href="Egami.Video.Codecs.IVideoDecoder.html">IVideoDecoder</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html">IVideoEncoder</a></dt>
+      <dd><p>Turns frames into packets with a send and receive loop, the mirror of <a class="xref" href="Egami.Video.Codecs.IVideoDecoder.html">IVideoDecoder</a>. After each
+<a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Send_Egami_Video_VideoFrame_">Send(VideoFrame)</a> call <a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_TryReceive_Egami_Video_EncodedPacket__">TryReceive(out EncodedPacket?)</a> until it returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>; at the end call
+<a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Flush">Flush()</a> and receive what is left.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

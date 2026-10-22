@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class YuvVideoFrame | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class YuvVideoFrame | Egami ">
+      
+      <meta name="description" content="A decoded picture in the codec&#39;s own planar YUV layout, as decoders return it: for Motion JPEG the JPEG&#39;s Y, Cb and Cr planes at their own subsampling, with no color conversion.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_YuvVideoFrame.md&amp;value=---%0Auid%3A%20Egami.Video.YuvVideoFrame%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.YuvVideoFrame">
+
+
+
+  <h1 id="Egami_Video_YuvVideoFrame" data-uid="Egami.Video.YuvVideoFrame" class="text-break">
+Class YuvVideoFrame  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A decoded picture in the codec's own planar YUV layout, as decoders return it: for Motion JPEG the JPEG's Y, Cb and Cr
+planes at their own subsampling, with no color conversion.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class YuvVideoFrame : VideoFrame, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Video.VideoFrame.html">VideoFrame</a></div>
+      <div><span class="xref">YuvVideoFrame</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Timestamp">VideoFrame.Timestamp</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Duration">VideoFrame.Duration</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Color">VideoFrame.Color</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Hdr">VideoFrame.Hdr</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Hdr10Plus">VideoFrame.Hdr10Plus</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_RenderSize">VideoFrame.RenderSize</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Pixels">VideoFrame.Pixels</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Dispose">VideoFrame.Dispose()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_YuvVideoFrame_examples">Examples</h2>
+  <pre><code class="lang-csharp">using var decoder = VideoCodecs.CreateDecoder(videoTrack);
+decoder.Send(packet);
+while (decoder.TryReceive(out YuvVideoFrame? frame))
+{
+    using (frame)
+        Console.WriteLine($"{frame.Raster.ChromaFormat} {frame.Width}x{frame.Height} at {frame.Timestamp}");
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_YuvVideoFrame__ctor_" data-uid="Egami.Video.YuvVideoFrame.#ctor*"></a>
+
+  <h3 id="Egami_Video_YuvVideoFrame__ctor_Egami_YuvRaster_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__System_Nullable_Egami_Colors_ColorCodePoints__" data-uid="Egami.Video.YuvVideoFrame.#ctor(Egami.YuvRaster,Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime},System.Nullable{Egami.Colors.ColorCodePoints})">
+  YuvVideoFrame(YuvRaster, MediaTime, MediaTime?, ColorCodePoints?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a frame that takes ownership of <code class="paramref">raster</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public YuvVideoFrame(YuvRaster raster, MediaTime timestamp, MediaTime? duration = null, ColorCodePoints? color = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>raster</code> <a class="xref" href="Egami.YuvRaster.html">YuvRaster</a></dt>
+    <dd><p>The planes. Disposed with the frame.</p>
+</dd>
+    <dt><code>timestamp</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>The presentation timestamp.</p>
+</dd>
+    <dt><code>duration</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a>?</dt>
+    <dd><p>How long the frame is shown, if known.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Colors.ColorCodePoints.html">ColorCodePoints</a>?</dt>
+    <dd><p>The color description, if known.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">raster</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_YuvVideoFrame_Height_" data-uid="Egami.Video.YuvVideoFrame.Height*"></a>
+
+  <h3 id="Egami_Video_YuvVideoFrame_Height" data-uid="Egami.Video.YuvVideoFrame.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the height in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_YuvVideoFrame_Planes_" data-uid="Egami.Video.YuvVideoFrame.Planes*"></a>
+
+  <h3 id="Egami_Video_YuvVideoFrame_Planes" data-uid="Egami.Video.YuvVideoFrame.Planes">
+  Planes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the planes of a <a class="xref" href="Egami.Video.YuvVideoFrame.html">YuvVideoFrame</a>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for other frames. Lets encoders take any frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override YuvRaster Planes { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster.html">YuvRaster</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_YuvVideoFrame_Raster_" data-uid="Egami.Video.YuvVideoFrame.Raster*"></a>
+
+  <h3 id="Egami_Video_YuvVideoFrame_Raster" data-uid="Egami.Video.YuvVideoFrame.Raster">
+  Raster
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the planes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public YuvRaster Raster { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.YuvRaster.html">YuvRaster</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_YuvVideoFrame_Width_" data-uid="Egami.Video.YuvVideoFrame.Width*"></a>
+
+  <h3 id="Egami_Video_YuvVideoFrame_Width" data-uid="Egami.Video.YuvVideoFrame.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_YuvVideoFrame_CopyToPacked_" data-uid="Egami.Video.YuvVideoFrame.CopyToPacked*"></a>
+
+  <h3 id="Egami_Video_YuvVideoFrame_CopyToPacked_Egami_Pixels_YuvPackedFormat_System_Span_System_Byte__System_Int32_System_Span_System_Byte__System_Int32_" data-uid="Egami.Video.YuvVideoFrame.CopyToPacked(Egami.Pixels.YuvPackedFormat,System.Span{System.Byte},System.Int32,System.Span{System.Byte},System.Int32)">
+  CopyToPacked(YuvPackedFormat, Span&lt;byte&gt;, int, Span&lt;byte&gt;, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L164"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Copies the planes into an interleaved YUV layout. See <a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_CopyToPacked_Egami_Pixels_YuvPackedFormat_System_Span_System_Byte__System_Int32_System_Span_System_Byte__System_Int32_">CopyToPacked(YuvPackedFormat, Span&lt;byte&gt;, int, Span&lt;byte&gt;, int)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CopyToPacked(YuvPackedFormat format, Span&lt;byte&gt; data, int stride = 0, Span&lt;byte&gt; chroma = default, int chromaStride = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>format</code> <a class="xref" href="Egami.Pixels.YuvPackedFormat.html">YuvPackedFormat</a></dt>
+    <dd><p>The layout. Its chroma format and bit depth must match the planes'.</p>
+</dd>
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>Where to write the luma plane, followed by the chroma plane unless <code class="paramref">chroma</code> is given.</p>
+</dd>
+    <dt><code>stride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The row length of <code class="paramref">data</code> in bytes, or 0 for packed rows.</p>
+</dd>
+    <dt><code>chroma</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>Where to write the chroma plane of a two-plane layout, or empty to follow the luma plane.</p>
+</dd>
+    <dt><code>chromaStride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The row length of <code class="paramref">chroma</code> in bytes, or 0 for packed rows.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_YuvVideoFrame_CopyTo_" data-uid="Egami.Video.YuvVideoFrame.CopyTo*"></a>
+
+  <h3 id="Egami_Video_YuvVideoFrame_CopyTo__1_Egami_Raster___0__" data-uid="Egami.Video.YuvVideoFrame.CopyTo``1(Egami.Raster{``0})">
+  CopyTo&lt;TPixel&gt;(Raster&lt;TPixel&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L227"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts the planes to RGB pixels into an existing raster of the same size, so a frame loop reuses its memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CopyTo&lt;TPixel&gt;(Raster&lt;TPixel&gt; target) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>target</code> <a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The raster to fill.</p>
+</dd>
+  </dl>
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">target</code> has a different size.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_YuvVideoFrame_Dispose_" data-uid="Egami.Video.YuvVideoFrame.Dispose*"></a>
+
+  <h3 id="Egami_Video_YuvVideoFrame_Dispose_System_Boolean_" data-uid="Egami.Video.YuvVideoFrame.Dispose(System.Boolean)">
+  Dispose(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L235"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Releases the frame's pixel memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void Dispose(bool disposing)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>disposing</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether this is called from <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Dispose">Dispose()</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_YuvVideoFrame_FromPacked_" data-uid="Egami.Video.YuvVideoFrame.FromPacked*"></a>
+
+  <h3 id="Egami_Video_YuvVideoFrame_FromPacked_Egami_Pixels_YuvPackedFormat_System_ReadOnlySpan_System_Byte__System_Int32_System_Int32_Egami_Pixels_YuvColor_Egami_Video_MediaTime_System_Int32_System_Int32_System_ReadOnlySpan_System_Byte__System_Int32_Egami_EgamiContext_" data-uid="Egami.Video.YuvVideoFrame.FromPacked(Egami.Pixels.YuvPackedFormat,System.ReadOnlySpan{System.Byte},System.Int32,System.Int32,Egami.Pixels.YuvColor,Egami.Video.MediaTime,System.Int32,System.Int32,System.ReadOnlySpan{System.Byte},System.Int32,Egami.EgamiContext)">
+  FromPacked(YuvPackedFormat, ReadOnlySpan&lt;byte&gt;, int, int, YuvColor, MediaTime, int, int, ReadOnlySpan&lt;byte&gt;, int, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a frame from an interleaved YUV layout such as NV12, P010 or YUY2, as operating system decoders, GPUs and
+webcams hand them out. The planes are copied, so the caller keeps <code class="paramref">data</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static YuvVideoFrame FromPacked(YuvPackedFormat format, ReadOnlySpan&lt;byte&gt; data, int width, int height, YuvColor color, MediaTime timestamp, int bitDepth = 12, int stride = 0, ReadOnlySpan&lt;byte&gt; chroma = default, int chromaStride = 0, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>format</code> <a class="xref" href="Egami.Pixels.YuvPackedFormat.html">YuvPackedFormat</a></dt>
+    <dd><p>The layout.</p>
+</dd>
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The samples: the luma plane, followed by the chroma plane unless <code class="paramref">chroma</code> is given.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The width in pixels.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The height in pixels.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.YuvColor.html">YuvColor</a></dt>
+    <dd><p>The matrix, range and chroma siting.</p>
+</dd>
+    <dt><code>timestamp</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>The presentation timestamp.</p>
+</dd>
+    <dt><code>bitDepth</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The bit depth for <a class="xref" href="Egami.Pixels.YuvPackedFormat.html#Egami_Pixels_YuvPackedFormat_P016">P016</a> (10 or 12); other layouts imply theirs.</p>
+</dd>
+    <dt><code>stride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The row length of <code class="paramref">data</code> in bytes, or 0 for packed rows.</p>
+</dd>
+    <dt><code>chroma</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The chroma plane of a two-plane layout when it is not right after the luma plane.</p>
+</dd>
+    <dt><code>chromaStride</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The row length of <code class="paramref">chroma</code> in bytes, or 0 for packed rows.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context the planes are allocated from, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.YuvVideoFrame.html">YuvVideoFrame</a></dt>
+    <dd><p>The frame. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_YuvVideoFrame_ToRaster_" data-uid="Egami.Video.YuvVideoFrame.ToRaster*"></a>
+
+  <h3 id="Egami_Video_YuvVideoFrame_ToRaster__1_Egami_Colors_ColorProfile_Egami_Colors_ColorTransformOptions_" data-uid="Egami.Video.YuvVideoFrame.ToRaster``1(Egami.Colors.ColorProfile,Egami.Colors.ColorTransformOptions)">
+  ToRaster&lt;TPixel&gt;(ColorProfile, ColorTransformOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L209"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts the planes to RGB in <code class="paramref">target</code>'s encoding: the frame's <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Color">Color</a> says what it
+is coded in, and a PQ or HLG frame going to an SDR target is tone mapped (<a class="xref" href="Egami.Colors.ColorTransformOptions.html#Egami_Colors_ColorTransformOptions_ToneMapping">ToneMapping</a>,
+BT.2390 by default) from its static <a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Hdr">Hdr</a> metadata, through Egami's color pipeline. The frame's own
+values are left as they are; <a class="xref" href="Egami.Video.YuvVideoFrame.html#Egami_Video_YuvVideoFrame_ToRaster__1_Egami_EgamiContext_">ToRaster&lt;TPixel&gt;(EgamiContext?)</a> gives them unconverted.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;TPixel&gt; ToRaster&lt;TPixel&gt;(ColorProfile target, ColorTransformOptions? options = null) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>target</code> <a class="xref" href="Egami.Colors.ColorProfile.html">ColorProfile</a></dt>
+    <dd><p>The encoding to convert to, such as <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_Srgb">Srgb</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Colors.ColorTransformOptions.html">ColorTransformOptions</a></dt>
+    <dd><p>The rendering intent and tone mapping, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Colors.ColorTransformOptions.html#Egami_Colors_ColorTransformOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The raster, tagged with <code class="paramref">target</code>. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_YuvVideoFrame_ToRaster__1_Egami_Colors_ColorProfile_Egami_Colors_ColorTransformOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">using var reader = VideoReader.Open("hdr10.webm");
+foreach (YuvVideoFrame frame in reader.ReadFrames())
+    using (frame)
+    using (Raster&lt;Rgba8&gt; sdr = frame.ToRaster&lt;Rgba8&gt;(ColorProfile.Srgb))
+        sdr.Save($"frame-{frame.Timestamp.Ticks}.png");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">target</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_YuvVideoFrame_ToRaster_" data-uid="Egami.Video.YuvVideoFrame.ToRaster*"></a>
+
+  <h3 id="Egami_Video_YuvVideoFrame_ToRaster__1_Egami_EgamiContext_" data-uid="Egami.Video.YuvVideoFrame.ToRaster``1(Egami.EgamiContext)">
+  ToRaster&lt;TPixel&gt;(EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L173"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts the planes to RGB pixels in a new raster, with the planes' matrix and range (<a class="xref" href="Egami.YuvRaster.html#Egami_YuvRaster_Color">Color</a>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Raster&lt;TPixel&gt; ToRaster&lt;TPixel&gt;(EgamiContext? context = null) where TPixel : unmanaged, IPixelType&lt;TPixel&gt;</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context whose memory source the raster comes from, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the planes' own.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Raster-1.html">Raster</a>&lt;TPixel&gt;</dt>
+    <dd><p>The raster. The caller must dispose it.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TPixel</code></dt>
+    <dd><p>The pixel type.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoFrame.cs/#L92" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
