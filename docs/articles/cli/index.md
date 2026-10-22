@@ -10,7 +10,8 @@ WMF and EMF included. It has three layers:
   saved as a JSON workflow file.
 - **Batches**: every command takes many files, globs and folders, and works on several at once.
 
-The [command reference](commands.md) lists every option, and [steps for run](steps.md) every step.
+The [command reference](commands.md) lists every option, and [steps for run](steps.md) every step. `egami mcp` serves the same
+commands to an AI assistant: see [egami for AI assistants](assistants.md).
 
 ```sh
 egami info photo.jpg

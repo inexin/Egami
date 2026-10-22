@@ -1,0 +1,1 @@
+{ "tool": "text", "arguments": { "inputs": ["-x.png"], "text": "(c) 2026", "font_size": 24, "anchor": "bottom-right", "opacity": 0.5, "lossless": false, "output": "o.png" } }

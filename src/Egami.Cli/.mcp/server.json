@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.inexin/egami",
+  "title": "Egami",
+  "description": "Convert, inspect, resize and edit images on this computer with Egami, a fully managed .NET library.",
+  "websiteUrl": "https://inexin.github.io/Egami/v1/articles/cli/assistants.html",
+  "repository": {
+    "url": "https://github.com/inexin/Egami",
+    "source": "github",
+    "subfolder": "src/Egami.Cli"
+  },
+  "version": "0.3.0",
+  "packages": [
+    {
+      "registryType": "nuget",
+      "registryBaseUrl": "https://api.nuget.org",
+      "identifier": "Egami.Cli",
+      "version": "0.3.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp"
+        }
+      ]
+    }
+  ]
+}

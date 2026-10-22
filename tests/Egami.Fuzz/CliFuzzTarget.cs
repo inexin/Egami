@@ -1,7 +1,9 @@
 using System.Text;
+using System.Text.Json;
 
 using Egami.Cli.Commands;
 using Egami.Cli.Host;
+using Egami.Cli.Mcp;
 using Egami.Cli.Pipeline;
 using Egami.Cli.Steps;
 
@@ -9,8 +11,9 @@ namespace Egami.Fuzz;
 
 /// <summary>
 /// The CLI's parsers (Roadmap 2.0): cli-size reads its input as the size syntax (and uses what parses on a few sizes),
-/// cli-template as an output template (resolved for an input), cli-workflow as a JSON workflow file, and cli-run as the
-/// arguments of egami run, one per line. Each may only fail with a usage error; any other exception is a crash.
+/// cli-template as an output template (resolved for an input), cli-workflow as a JSON workflow file, cli-run as the
+/// arguments of egami run, one per line, and cli-mcp as an egami mcp tool call, { "tool": name, "arguments": { ... } }, turned
+/// into command-line words. Each may only fail with a usage error; any other exception is a crash.
 /// Egami.Cli.Tests compiles this file too and feeds it its seeds and random mutations.
 /// </summary>
 internal static class CliFuzzTarget
@@ -85,6 +88,63 @@ internal static class CliFuzzTarget
         }
         catch (UsageException)
         {
+        }
+    }
+
+    public static void Mcp(byte[] data)
+    {
+        JsonDocument document;
+        try
+        {
+            document = JsonDocument.Parse(data);
+        }
+        catch (JsonException)
+        {
+            return;
+        }
+
+        using (document)
+        {
+            JsonElement root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            ToolInfo tool = root.TryGetProperty("tool", out JsonElement name) && name.ValueKind == JsonValueKind.String && ToolCatalog.Tools.FirstOrDefault(t => name.ValueEquals(t.Name)) is { } named
+                ? named
+                : ToolCatalog.Tools[data.Length % ToolCatalog.Tools.Count];
+            Dictionary<string, JsonElement> arguments = [];
+            if (root.TryGetProperty("arguments", out JsonElement given) && given.ValueKind == JsonValueKind.Object)
+            {
+                foreach (JsonProperty property in given.EnumerateObject())
+                {
+                    // The SDK reads argument names into strings, refusing a message whose names are not valid UTF-8.
+                    string key;
+                    try
+                    {
+                        key = property.Name;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        return;
+                    }
+
+                    arguments[key] = property.Value;
+                }
+            }
+
+            try
+            {
+                (string[] words, _, _) = ToolCall.Words(tool, arguments, null);
+                if (words.Length == 0 || words.Any(w => w is null))
+                {
+                    throw new InvalidOperationException("A call gave no words.");
+                }
+            }
+            catch (UsageException)
+            {
+            }
         }
     }
 }

@@ -1,0 +1,1 @@
+{ "tool": "resize", "arguments": { "inputs": ["photos/*.jpg"], "size": "800x600^", "fit": "cover", "output": "out/{name}.webp", "quality": 82, "strip": true, "set": ["webp.method=6"], "preview": true } }

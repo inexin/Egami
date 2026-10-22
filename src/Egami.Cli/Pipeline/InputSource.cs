@@ -109,6 +109,7 @@ internal static class Output
             return;
         }
 
+        session.Paths?.Check(Path.GetFullPath(path, session.WorkingDirectory));
         string? folder = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(folder))
         {
@@ -124,6 +125,7 @@ internal static class Output
             }
 
             File.Move(temporary, path, overwrite: true);
+            session.Written.Enqueue(path);
             session.Info($"wrote {path}");
         }
         finally

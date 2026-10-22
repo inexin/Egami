@@ -150,3 +150,5 @@
       href: cli/commands.md
     - name: Steps for run
       href: cli/steps.md
+    - name: egami for AI assistants
+      href: cli/assistants.md

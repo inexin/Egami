@@ -60,7 +60,8 @@ egami run in.jpg auto-orient + resize 1200x + sharpen 0.6 + save out.webp --qual
 ```
 
 [The egami command](https://inexin.github.io/Egami/v1/articles/cli/index.html) explains its commands, steps, workflow files and
-batches.
+batches. `egami mcp` serves the same commands to AI assistants such as Claude and GitHub Copilot over the Model Context Protocol,
+inside the folders you allow: see [egami for AI assistants](https://inexin.github.io/Egami/v1/articles/cli/assistants.html).
 
 ## Documentation
 

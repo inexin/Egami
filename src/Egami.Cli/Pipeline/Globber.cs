@@ -74,8 +74,15 @@ internal static class Globber
             {
                 if (seen.Add(path))
                 {
+                    // A link inside an allowed folder may point out of it (egami mcp).
+                    session.Paths?.Check(path);
                     files.Add(new InputFile(path, Display(session, path), directory, files.Count));
                 }
+            }
+
+            if (session.MaxInputs is { } max && files.Count > max)
+            {
+                throw new UsageException($"The inputs come to more than {max} files, the most one call takes; narrow the pattern, or start egami mcp with a larger --max-inputs.");
             }
         }
 

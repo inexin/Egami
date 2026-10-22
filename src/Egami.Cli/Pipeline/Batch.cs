@@ -22,12 +22,18 @@ internal static class Batch
     public static int Run(CliSession session, IReadOnlyList<InputFile> inputs, BatchOptions options, Func<InputSource, IReadOnlyList<string>> work)
     {
         int jobs = options.Jobs > 0 ? options.Jobs : Environment.ProcessorCount;
-        int done = 0, failed = 0, limited = 0;
+        int done = 0, failed = 0, limited = 0, finished = 0;
         bool usage = false;
         UsageException? usageError = null;
 
         void One(InputFile file, ParallelLoopState? state)
         {
+            if (session.Cancellation.IsCancellationRequested)
+            {
+                state?.Stop();
+                return;
+            }
+
             try
             {
                 work(new InputSource(file));
@@ -53,6 +59,10 @@ internal static class Batch
                     state?.Stop();
                 }
             }
+            finally
+            {
+                session.Progress?.Invoke(Interlocked.Increment(ref finished), inputs.Count);
+            }
         }
 
         if (inputs.Count == 1 || jobs == 1)
@@ -60,7 +70,7 @@ internal static class Batch
             foreach (InputFile file in inputs)
             {
                 One(file, null);
-                if (usage || (options.FailFast && failed > 0))
+                if (usage || (options.FailFast && failed > 0) || session.Cancellation.IsCancellationRequested)
                 {
                     break;
                 }
@@ -75,6 +85,8 @@ internal static class Batch
         {
             throw usageError;
         }
+
+        session.Cancellation.ThrowIfCancellationRequested();
 
         if (inputs.Count > 1)
         {

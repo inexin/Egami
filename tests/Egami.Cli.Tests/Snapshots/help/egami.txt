@@ -31,4 +31,5 @@ Commands:
   overlay <inputs>                  Lay an image (a logo, a watermark, an SVG) on images, placed by anchor, with opacity and a blend mode.
   montage <inputs>                  Lay images out on a contact sheet: a grid of tiles, optionally labeled with their file names.
   formats <format>                  List the formats egami reads and writes, or one format's writer settings for --set.
+  mcp                               Serve egami's commands as tools to an AI assistant over the Model Context Protocol, on standard input and output. Tools read and write only inside the folders the assistant opened and those given with --allow, and never replace an input unless asked.
 

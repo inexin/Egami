@@ -93,7 +93,17 @@ internal static class RunCommand
         session.InPlace = parsed.Flags.Contains("--in-place");
 
         List<PipelineItem> items;
-        if (parsed.Value("--workflow") is { } workflowPath)
+        if (session.Run is { } given)
+        {
+            if (parsed.Steps.Count > 0 || parsed.Inputs.Count > 0 || parsed.Value("--workflow") is not null)
+            {
+                throw new UsageException("Give the inputs and steps as values or as words, not both.");
+            }
+
+            items = given.Items;
+            parsed.Inputs.AddRange(given.Inputs);
+        }
+        else if (parsed.Value("--workflow") is { } workflowPath)
         {
             if (parsed.Steps.Count > 0)
             {

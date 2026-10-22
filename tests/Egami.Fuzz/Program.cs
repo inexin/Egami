@@ -66,8 +66,9 @@ using DrawingPath = Egami.Drawing.Path;
 // The css target (Phase 2.10, CssFuzzTarget.cs) parses its bytes as a style sheet and a declaration list, matches, cascades and
 // computes them over a small tree and runs every value parser; Egami.Css never throws on input. The svg target (SvgFuzzTarget.cs)
 // loads an SVG document under small limits, draws it, saves and loads it again, and loads it strictly.
-// The cli-size, cli-template, cli-workflow and cli-run targets (Roadmap 2.0, CliFuzzTarget.cs) read the egami tool's size syntax,
-// output templates, JSON workflow files and run arguments, which may only fail with a usage error.
+// The cli-size, cli-template, cli-workflow, cli-run and cli-mcp targets (Roadmap 2.0 and 2.0.1, CliFuzzTarget.cs) read the egami
+// tool's size syntax, output templates, JSON workflow files, run arguments and egami mcp tool calls, which may only fail with a
+// usage error.
 //
 //   dotnet run --project tests/Egami.Fuzz -- png            run one input from stdin (used by AFL++ through SharpFuzz)
 //   dotnet run --project tests/Egami.Fuzz -- png file.png   run one file, to reproduce a crash
@@ -203,6 +204,7 @@ static Action<Stream> Target(string name) => name switch
     "cli-template" => stream => Egami.Fuzz.CliFuzzTarget.Template(ReadAll(stream)),
     "cli-workflow" => stream => Egami.Fuzz.CliFuzzTarget.Workflow(ReadAll(stream)),
     "cli-run" => stream => Egami.Fuzz.CliFuzzTarget.Run(ReadAll(stream)),
+    "cli-mcp" => stream => Egami.Fuzz.CliFuzzTarget.Mcp(ReadAll(stream)),
     "svg" => stream => Egami.Fuzz.SvgFuzzTarget.Run(ReadAll(stream)),
     "wmf" or "emf" => stream => Egami.Fuzz.MetafileFuzzTarget.Run(ReadAll(stream)),
     "emfplus" => stream => Egami.Fuzz.MetafileFuzzTarget.RunPlus(ReadAll(stream)),
