@@ -203,4 +203,38 @@ public class Mp4ReaderTests
         Assert.Equal("image/jpeg", cover.MediaType);
         Assert.True(cover.Data.Span.StartsWith((ReadOnlySpan<byte>)[0xFF, 0xD8]));
     }
+
+    [Fact]
+    public void MovTextSamplesKeepTextAndStyles()
+    {
+        using IDemuxer demuxer = MediaFile.OpenDemuxer(PathOf("mp4-movtext.mp4"));
+        TrackInfo track = demuxer.Tracks.Single(t => t.CodecId == CodecIds.MovText);
+        Assert.Equal("eng", track.Language);
+        Assert.Equal(TrackKind.Subtitle, track.Kind);
+        List<MovTextSample> samples = [];
+        while (demuxer.ReadPacket() is { } packet)
+        {
+            using (packet)
+            {
+                if (packet.TrackNumber == track.Number)
+                {
+                    MovTextSample sample = MovTextSample.Parse(packet.Data.Span);
+                    Assert.Equal(packet.Data.ToArray(), sample.ToBytes());
+                    samples.Add(sample);
+                }
+            }
+        }
+
+        Assert.Equal(["", "Plain line", "Bold and italic", "Two\nlines"], samples.Select(s => s.Text));
+        Assert.Equal([new MovTextStyle(0, 4, MovTextFace.Bold, 16, new Egami.Pixels.Rgba8(255, 255, 255, 255)), new MovTextStyle(9, 15, MovTextFace.Italic, 16, new Egami.Pixels.Rgba8(255, 255, 255, 255))],
+            samples[2].Styles);
+    }
+
+    [Fact]
+    public void BrokenMovTextSamplesThrow()
+    {
+        Assert.Throws<CorruptDataException>(() => MovTextSample.Parse([0]));
+        Assert.Throws<CorruptDataException>(() => MovTextSample.Parse([0, 5, (byte)'a']));
+        Assert.Throws<CorruptDataException>(() => MovTextSample.Parse([0, 1, (byte)'a', 0, 0, 0, 20, (byte)'s', (byte)'t', (byte)'y', (byte)'l']));
+    }
 }

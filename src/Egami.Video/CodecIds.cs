@@ -50,7 +50,7 @@ public static class CodecIds
 
     /// <summary>
     /// 3GPP timed text (mov_text, tx3g): MP4's subtitles. <see cref="TrackInfo.CodecPrivate"/> holds the text sample entry after
-    /// its 8-byte header; <see cref="MovText"/> reads and writes the samples.
+    /// its 8-byte header; <see cref="MovTextSample"/> reads and writes the samples.
     /// </summary>
     public const string MovText = "S_TX3G";
 
