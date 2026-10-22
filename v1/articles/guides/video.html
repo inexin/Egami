@@ -92,9 +92,10 @@ no copying. It is fully managed and ships only royalty-free codecs:</p>
 <ul>
 <li>Containers: WebM and Matroska, AVI (with OpenDML for files over 1 GB), IVF and YUV4MPEG2, read and written, and headerless raw
 frames.</li>
-<li>Codecs: VP9 (all four profiles, 8, 10 and 12 bit, equal to libvpx frame for frame), VP8 (with WebM alpha) and Motion JPEG
-decode; Motion JPEG and uncompressed encode. FLAC and PCM audio decode and encode (see <a href="audio.html">Audio</a>); other tracks
-are copied through untouched.</li>
+<li>Codecs: AV1 (8, 10 and 12 bit, 4:0:0 to 4:4:4, film grain, equal to libaom frame for frame), VP9 (all four profiles, 8,
+10 and 12 bit, equal to libvpx frame for frame), VP8 (with WebM alpha) and Motion JPEG decode; Motion JPEG and
+uncompressed encode. FLAC and PCM audio decode and encode (see <a href="audio.html">Audio</a>); other tracks are copied through
+untouched.</li>
 </ul>
 <h2 id="probing-a-file">Probing a file</h2>
 <p><code>MediaFile.Probe</code> reads the headers and returns a <code>MediaInfo</code>: the container's <code>FormatName</code>, the <code>Duration</code>, and the
@@ -243,7 +244,7 @@ while (demuxer.ReadPacket() is { } packet)
 
 decoder.Flush();
 </code></pre>
-<p>Each codec is a <code>VideoCodec</code>: <code>Vp9Codec</code>, <code>Vp8Codec</code>, <code>MotionJpegCodec</code> and <code>RawVideoCodec</code>.</p>
+<p>Each codec is a <code>VideoCodec</code>: <code>Av1Codec</code>, <code>Vp9Codec</code>, <code>Vp8Codec</code>, <code>MotionJpegCodec</code> and <code>RawVideoCodec</code>.</p>
 <pre><code class="lang-csharp">// The built-in codecs, for a MediaContext of your own or to create decoders directly.
 VideoCodec vp9 = Vp9Codec.Instance, vp8 = Vp8Codec.Instance, mjpeg = MotionJpegCodec.Instance, raw = RawVideoCodec.Instance;
 using IVideoDecoder decoder = vp9.CreateDecoder(track, VideoDecoderOptions.Default, MediaContext.Default);
@@ -270,7 +271,7 @@ while (encoder.TryReceive(out EncodedPacket? packet))
 // Uncompressed frames go the same way, losslessly.
 using IVideoEncoder rawEncoder = RawVideoCodec.Instance.CreateEncoder(options with { ChromaFormat = ChromaFormat.Yuv444 }, MediaContext.Default);
 </code></pre>
-<p><code>CodecHeaders.Describe</code> lists a packet's header fields as <code>CodecHeaderField</code>s under the codec's own names, for VP8, VP9 and
+<p><code>CodecHeaders.Describe</code> lists a packet's header fields as <code>CodecHeaderField</code>s under the codec's own names, for VP8, VP9, AV1 and
 Motion JPEG.</p>
 <pre><code class="lang-csharp">// A packet's header fields under the codec's own names, as a hex dump with meaning.
 using IDemuxer demuxer = MediaFile.OpenDemuxer(&quot;movie.webm&quot;);
@@ -283,10 +284,101 @@ if (CodecHeaders.CanDescribe(track))
         Console.WriteLine($&quot;{field.Name} = {field.Value}&quot;);
     }
 }
+</code></pre><h2 id="av1">AV1</h2>
+<p><code>Av1Codec</code> decodes AV1 from WebM, Matroska, MP4 and IVF with Egami's AV1 decoder: every profile, 8, 10 and 12 bit, 4:0:0, 4:2:0,
+4:2:2 and 4:4:4, film grain, scaled references and scalable streams. Every frame equals libaom's. A packet is a temporal unit;
+hidden frames give no frame, and a frame shown later with show_existing_frame comes out then. Frames come out at their own size,
+8-bit planes for 8-bit streams and 16-bit planes above, 4:0:0 for monochrome.</p>
+<ul>
+<li>The color comes from the sequence header; the container's fills only what the header leaves unspecified. HDR metadata OBUs
+give the frames' <code>Hdr</code> and <code>Hdr10Plus</code> (see <a href="#hdr">HDR</a>).</li>
+<li><code>VideoDecoderOptions.ApplyFilmGrain = false</code> gives the frames as coded, without the film grain the stream asks for.</li>
+<li>A keyframe is a temporal unit that starts with a shown key frame. A forward key frame, hidden and shown later, is not one, as
+FFmpeg flags them too. When a container's keyframe flag disagrees, the stream wins and <code>Av1.KeyframeFlagMismatch</code> is reported.</li>
+<li>A track's av1C (its <code>CodecPrivate</code>) gives the sequence header when the first unit has none. The IVF reader builds av1C from the
+first sequence header, and so does the Matroska writer for a track that has none, so IVF files remux to WebM, Matroska and MP4.</li>
+<li>Seeking decodes from the shown key frame at or before the time, so exact seeks give the frame decoding from the start gives.</li>
+<li>Broken data follows <code>VideoReaderOptions.Errors</code>: <code>Skip</code> (the default) reports <code>Av1.CorruptFrame</code>, or <code>Av1.MissingReference</code> for
+a unit that needs frames from before the first key frame, and resumes at the next shown key frame; <code>Conceal</code> repeats the last
+good frame in between.</li>
+</ul>
+<pre><code class="lang-csharp">// AV1 from WebM, Matroska, MP4 or IVF reads like any other video: 10 and 12-bit streams give 16-bit planes.
+using (VideoReader reader = VideoReader.Open(&quot;av1.webm&quot;))
+{
+    foreach (YuvVideoFrame frame in reader.ReadFrames())
+    {
+        using (frame)
+        {
+            Console.WriteLine($&quot;{frame.Timestamp}: {frame.Width}x{frame.Height}, {frame.Raster.BitDepth} bit {frame.Raster.ChromaFormat}, {frame.Color}&quot;);
+        }
+    }
+}
+
+// The frames as coded, without the film grain the stream asks for; broken units are skipped to the next key frame and
+// reported as Av1.CorruptFrame or Av1.MissingReference, or repeat the last good frame with Conceal.
+VideoReaderOptions options = new()
+{
+    Decoder = new VideoDecoderOptions { ApplyFilmGrain = false },
+    Errors = DecodeErrorMode.Conceal,
+};
+using VideoReader plain = VideoReader.Open(&quot;av1.webm&quot;, options);
+using YuvVideoFrame first = plain.ReadFrame()!;
+</code></pre>
+<p>Raw AV1 streams are containers of their own: <code>Av1ObuFormat</code> reads and writes low-overhead OBU files (.obu, as aomenc <code>--obu</code>
+writes and aomdec and dav1d read), and <code>Av1AnnexBFormat</code> the length-delimited files of the specification's Annex B (as the
+conformance streams and aomenc <code>--annexb=1</code> write). Both are detected from their first bytes; neither has timestamps, so frames are
+timed at the format's <code>FrameRate</code>, 30 a second unless you register one with another rate. Reading a file and writing it back gives
+the same bytes, and IVF, WebM, Matroska and MP4 tracks write to them.</p>
+<pre><code class="lang-csharp">// Raw AV1 streams have no timestamps: frames are timed at the format's frame rate, 30 a second unless you register another.
+MediaContext context = MediaContext.Default.WithContainer(new Av1ObuFormat { FrameRate = new Rational(24, 1) });
+
+// An IVF clip to a low-overhead .obu file (what aomdec and dav1d read) and to Annex B, then read back.
+MediaFile.Remux(&quot;clip-av1.ivf&quot;, &quot;clip.obu&quot;);
+using (IDemuxer demuxer = MediaFile.OpenDemuxer(&quot;clip-av1.ivf&quot;))
+using (IMuxer annexB = Av1AnnexBFormat.Instance.CreateMuxer(File.Create(&quot;clip-annexb.obu&quot;), demuxer.Tracks, MediaContext.Default, leaveOpen: false))
+{
+    while (demuxer.ReadPacket() is { } packet)
+    {
+        using (packet)
+        {
+            annexB.WritePacket(packet);
+        }
+    }
+}
+
+using VideoReader reader = VideoReader.Open(&quot;clip.obu&quot;, context: context);
+Console.WriteLine($&quot;{MediaFile.Probe(&quot;clip-annexb.obu&quot;).FormatName}; {reader.Track.FrameRate} fps&quot;);
+</code></pre>
+<p><code>Av1Packets</code> splits a temporal unit into its frames and merges them back, and builds the av1C record from a sequence header.</p>
+<pre><code class="lang-csharp">// An AV1 packet is a temporal unit: split it into its frames and join them back; build the av1C an MP4 or Matroska
+// track needs from its sequence header.
+using IDemuxer demuxer = MediaFile.OpenDemuxer(&quot;clip-av1.ivf&quot;);
+using EncodedPacket packet = demuxer.ReadPacket()!;
+IReadOnlyList&lt;ReadOnlyMemory&lt;byte&gt;&gt; frames = Av1Packets.SplitFrames(packet.Data);
+byte[] unit = Av1Packets.MergeFrames(frames);
+byte[]? av1C = Av1Packets.ExtractConfig(packet.Data.Span);
+Console.WriteLine($&quot;{frames.Count} frames, av1C of {av1C?.Length} bytes&quot;);
+</code></pre>
+<p><code>CodecHeaders.Describe</code> lists an AV1 packet's OBUs, its sequence header and metadata fields, and the start of each frame header
+(up to <code>error_resilient_mode</code>). The rest of a frame header depends on the frames before it, so a <code>CodecHeaderReader</code> reads a track's
+packets in order, decoding them, and lists each frame header whole.</p>
+<pre><code class="lang-csharp">// An AV1 frame header depends on the frames before it: a CodecHeaderReader reads the packets in order and lists each whole.
+using IDemuxer demuxer = MediaFile.OpenDemuxer(&quot;av1.webm&quot;);
+using CodecHeaderReader headers = new(demuxer.Tracks[0]);
+while (demuxer.ReadPacket() is { } packet)
+{
+    using (packet)
+    {
+        IReadOnlyList&lt;CodecHeaderField&gt; fields = headers.Describe(packet);
+        Console.WriteLine(string.Join(&quot;, &quot;, fields.Where(f =&gt; f.Name is &quot;frame_type&quot; or &quot;order_hint&quot; or &quot;base_q_idx&quot;).Select(f =&gt; $&quot;{f.Name} = {f.Value}&quot;)));
+    }
+}
 </code></pre><h2 id="hdr">HDR</h2>
 <p>A frame's <code>Color</code> and <code>Hdr</code> carry its color code points and static HDR metadata. <code>YuvVideoFrame.ToRaster</code> with a target
 <code>ColorProfile</code> converts through Egami's color pipeline and tone maps PQ and HLG to SDR. VP9 frames in WebM carry HDR10+
-dynamic metadata as <code>Hdr10PlusMetadata</code>, with its <code>Hdr10PlusPercentile</code> distribution and <code>Hdr10PlusToneCurve</code>.</p>
+dynamic metadata as <code>Hdr10PlusMetadata</code>, with its <code>Hdr10PlusPercentile</code> distribution and <code>Hdr10PlusToneCurve</code>. AV1 frames take
+<code>Hdr</code> from the stream's content light level and mastering display metadata OBUs (or the track's av1C), and <code>Hdr10Plus</code> from an
+ITU-T T.35 metadata OBU.</p>
 <pre><code class="lang-csharp">// An HDR10 frame tone mapped to SDR through Egami's color pipeline, from its mastering display and light levels.
 using (VideoReader reader = VideoReader.Open(&quot;hdr10.mkv&quot;))
 using (YuvVideoFrame frame = reader.ReadFrame()!)
@@ -401,7 +493,7 @@ changes its sample description), <code>mp4-fragment-track</code> and <code>mp4-t
 before the one before it) and <code>metadata-dropped</code>. A file whose moov follows its media needs a stream that can seek.</p>
 <h2 id="containers">Containers</h2>
 <p>Each container is a <code>ContainerFormat</code>: <code>MatroskaFormat</code> (WebM and Matroska), <code>Mp4Format</code> (MP4 and QuickTime), <code>AviFormat</code>,
-<code>IvfFormat</code>, <code>Y4mFormat</code>, and for audio <code>WavFormat</code> and <code>FlacFormat</code>.
+<code>IvfFormat</code>, <code>Y4mFormat</code>, <code>Av1ObuFormat</code> and <code>Av1AnnexBFormat</code> for raw AV1, and for audio <code>WavFormat</code> and <code>FlacFormat</code>.
 <code>RawVideo</code> reads and writes headerless frames in a layout you give.</p>
 <pre><code class="lang-csharp">// The containers, by name or extension, and headerless raw frames in a layout you give.
 ContainerFormat? webm = MediaContext.Default.FindContainer(&quot;webm&quot;);

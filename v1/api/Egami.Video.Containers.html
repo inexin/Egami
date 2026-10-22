@@ -95,6 +95,26 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.Av1AnnexBFormat.html">Av1AnnexBFormat</a></dt>
+      <dd><p>A raw AV1 stream in the length-delimited format of the AV1 specification's Annex B, as the AV1 conformance streams and aomenc
+<code>--annexb=1</code> write it: each temporal unit, each frame unit in it and each OBU in that carries its length as leb128, and
+OBUs have no size field. Readers give each temporal unit as a packet of low-overhead OBUs with their size fields, the form
+every other container uses; writers turn such packets back, dropping the size fields and adding the lengths, with a temporal
+delimiter at the start of each unit. There are no timestamps: temporal unit n is at n frames of <a class="xref" href="Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_FrameRate">FrameRate</a>.
+Reading a file and writing it back gives the same bytes. Not detected from the extension, which .obu files share: an Annex B
+file is recognized by its first temporal delimiter.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.Av1ObuFormat.html">Av1ObuFormat</a></dt>
+      <dd><p>A raw AV1 stream of low-overhead OBUs (.obu; AV1 specification section 5.2), as aomenc writes with <code>--obu</code> and aomdec and
+dav1d read: each temporal unit starts with a temporal delimiter OBU, and every OBU has its size field. There is no header,
+index or timestamp, so temporal unit n is at n frames of <a class="xref" href="Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_FrameRate">FrameRate</a>. Reading a file and writing it back gives the
+same bytes; the writer adds a temporal delimiter to a packet that has none. The track's size, bit depth, chroma format and
+av1C come from the first sequence header.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Containers.AviFormat.html">AviFormat</a></dt>
       <dd><p>AVI, the RIFF-based container from Video for Windows, with the OpenDML extensions for files over 1 GB. Reads any AVI and
 writes Motion JPEG video with audio and other tracks copied through.</p>

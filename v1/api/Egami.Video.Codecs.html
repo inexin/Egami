@@ -95,10 +95,36 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.Av1Codec.html">Av1Codec</a></dt>
+      <dd><p>AV1, as WebM, Matroska, MP4, IVF and raw OBU files carry it, decoded by Egami's AV1 decoder in the Main, High and Professional
+profiles: 8, 10 and 12 bit, 4:0:0, 4:2:0, 4:2:2 and 4:4:4, film grain, scaled references and scalable streams, every frame equal
+to libaom's sample for sample. A packet is a temporal unit. Frames come out at their own size (a stream may change size at a
+key frame) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; a monochrome stream gives 4:0:0 planes. Hidden frames give
+no frame; a frame shown later with show_existing_frame comes out then. Decode only.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.Av1Packets.html">Av1Packets</a></dt>
+      <dd><p>Helpers for AV1 packets, which hold a temporal unit of low-overhead OBUs (AV1 specification section 5, each OBU with its size
+field): split a unit into its frames and merge them back, and build the av1C configuration record MP4 and Matroska store
+for a track.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.CodecHeaderReader.html">CodecHeaderReader</a></dt>
+      <dd><p>Lists the header fields of a track's packets read in order, keeping what a codec's later headers depend on. For AV1 it
+decodes each temporal unit with Egami's <a class="xref" href="Egami.Formats.Av1.Av1StreamDecoder.html">Av1StreamDecoder</a>, so each frame header is listed whole, as the decoder
+read it (<a class="xref" href="Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_LastHeaders">LastHeaders</a>, under the specification's syntax element and variable names), in place
+of the start <a class="xref" href="Egami.Video.Codecs.CodecHeaders.html#Egami_Video_Codecs_CodecHeaders_Describe_Egami_Video_TrackInfo_Egami_Video_EncodedPacket_">Describe(TrackInfo, EncodedPacket)</a> gives. Other codecs give what <a class="xref" href="Egami.Video.Codecs.CodecHeaders.html#Egami_Video_Codecs_CodecHeaders_Describe_Egami_Video_TrackInfo_Egami_Video_EncodedPacket_">Describe(TrackInfo, EncodedPacket)</a> gives.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Codecs.CodecHeaders.html">CodecHeaders</a></dt>
       <dd><p>Lists what a compressed frame's header says, field by field under the codec specification's names, for tools such as
-<code>egami-video info --headers</code> and for checking an encoder's output. VP8 (RFC 6386 sections 9 and 19) and VP9 (VP9
-bitstream specification sections 6.2 and 6.3) are described; later codecs add theirs to the same call.</p>
+<code>egami-video info --headers</code> and for checking an encoder's output. VP8 (RFC 6386 sections 9 and 19), VP9 (VP9
+bitstream specification sections 6.2 and 6.3) and AV1 (AV1 specification section 5) are described; later codecs add theirs to
+the same call. An AV1 frame header depends on the reference frames, so <a class="xref" href="Egami.Video.Codecs.CodecHeaderReader.html">CodecHeaderReader</a> reads a track's packets
+in order to list them whole.</p>
 </dd>
     </dl>
     <dl class="jumplist">

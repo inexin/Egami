@@ -159,6 +159,38 @@ while (decoder.TryReceive(out VideoFrame&lt;Rgb8&gt;? frame))
 </h2>
 
 
+  <a id="Egami_Video_Codecs_VideoCodecs_Av1_" data-uid="Egami.Video.Codecs.VideoCodecs.Av1*"></a>
+
+  <h3 id="Egami_Video_Codecs_VideoCodecs_Av1" data-uid="Egami.Video.Codecs.VideoCodecs.Av1">
+  Av1
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodecs.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the AV1 codec.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static VideoCodec Av1 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Codecs.VideoCodec.html">VideoCodec</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_Codecs_VideoCodecs_MotionJpeg_" data-uid="Egami.Video.Codecs.VideoCodecs.MotionJpeg*"></a>
 
   <h3 id="Egami_Video_Codecs_VideoCodecs_MotionJpeg" data-uid="Egami.Video.Codecs.VideoCodecs.MotionJpeg">
@@ -263,7 +295,7 @@ while (decoder.TryReceive(out VideoFrame&lt;Rgb8&gt;? frame))
 
   <h3 id="Egami_Video_Codecs_VideoCodecs_CreateDecoder_Egami_Video_VideoTrackInfo_Egami_Video_Codecs_VideoDecoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Codecs.VideoCodecs.CreateDecoder(Egami.Video.VideoTrackInfo,Egami.Video.Codecs.VideoDecoderOptions,Egami.Video.MediaContext)">
   CreateDecoder(VideoTrackInfo, VideoDecoderOptions?, MediaContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodecs.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodecs.cs/#L39"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a decoder for a track, which hands out frames in the codec's own planar YUV layout.</p>
@@ -339,7 +371,7 @@ decoder.Flush();</code></pre>
 
   <h3 id="Egami_Video_Codecs_VideoCodecs_CreateDecoder__1_Egami_Video_VideoTrackInfo_Egami_Video_Codecs_VideoDecoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Codecs.VideoCodecs.CreateDecoder``1(Egami.Video.VideoTrackInfo,Egami.Video.Codecs.VideoDecoderOptions,Egami.Video.MediaContext)">
   CreateDecoder&lt;TPixel&gt;(VideoTrackInfo, VideoDecoderOptions?, MediaContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodecs.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodecs.cs/#L58"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a decoder for a track that converts its frames to <code class="typeparamref">TPixel</code> pixels.</p>
@@ -421,7 +453,7 @@ decoder.Flush();</code></pre>
 
   <h3 id="Egami_Video_Codecs_VideoCodecs_Get_System_String_Egami_Video_MediaContext_" data-uid="Egami.Video.Codecs.VideoCodecs.Get(System.String,Egami.Video.MediaContext)">
   Get(string, MediaContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodecs.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodecs.cs/#L70"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Finds the registered codec with a codec id.</p>

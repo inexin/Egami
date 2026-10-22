@@ -189,8 +189,9 @@ foreach (AvifItem item in details.Items.Where(i =&gt; i.IsImage &amp;&amp; i.Rol
     image.Save($&quot;item-{item.Id}-{item.Role}.png&quot;);
 }
 </code></pre><h2 id="sequences-and-layers">Sequences and layers</h2>
-<p>Image sequences (avis) load every frame when all are key frames, and the first frame otherwise. Layered images load their base
-layer, until Egami decodes AV1 inter frames.</p>
+<p>Image sequences (avis) load every frame, inter frames included, each with its duration from the sample table, and the loop
+count from the edit list; an alpha track gives each frame its alpha. Every frame equals avifdec's. A range of frames
+(<code>ReaderOptions.Frames</code>) decodes from the key frame before its first. Layered images load their base layer.</p>
 <pre><code class="lang-csharp">// An image sequence whose frames are all key frames loads as an animation; save it as an animated WebP.
 using Raster&lt;Rgba8&gt; frames = Raster.Load&lt;Rgba8&gt;(&quot;sequence.avif&quot;);
 TimeSpan firstDelay = frames.Frames[0].Metadata.Delay;

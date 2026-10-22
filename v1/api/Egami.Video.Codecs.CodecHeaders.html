@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class CodecHeaders | Egami ">
       
-      <meta name="description" content="Lists what a compressed frame&#39;s header says, field by field under the codec specification&#39;s names, for tools such as egami-video info --headers and for checking an encoder&#39;s output. VP8 (RFC 6386 sections 9 and 19) and VP9 (VP9 bitstream specification sections 6.2 and 6.3) are described; later codecs add theirs to the same call.">
+      <meta name="description" content="Lists what a compressed frame&#39;s header says, field by field under the codec specification&#39;s names, for tools such as egami-video info --headers and for checking an encoder&#39;s output. VP8 (RFC 6386 sections 9 and 19), VP9 (VP9 bitstream specification sections 6.2 and 6.3) and AV1 (AV1 specification section 5) are described; later codecs add theirs to the same call. An AV1 frame header depends on the reference frames, so  reads a track&#39;s packets in order to list them whole.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_Codecs_CodecHeaders" data-uid="Egami.Video.Codecs.CodecHeaders" class="text-break">
-Class CodecHeaders  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/CodecHeaders.cs/#L25"><i class="bi bi-code-slash"></i></a>
+Class CodecHeaders  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/CodecHeaders.cs/#L29"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -98,8 +98,10 @@ Class CodecHeaders  <a class="header-action link-secondary" title="View source" 
   </div>
 
   <div class="markdown summary"><p>Lists what a compressed frame's header says, field by field under the codec specification's names, for tools such as
-<code>egami-video info --headers</code> and for checking an encoder's output. VP8 (RFC 6386 sections 9 and 19) and VP9 (VP9
-bitstream specification sections 6.2 and 6.3) are described; later codecs add theirs to the same call.</p>
+<code>egami-video info --headers</code> and for checking an encoder's output. VP8 (RFC 6386 sections 9 and 19), VP9 (VP9
+bitstream specification sections 6.2 and 6.3) and AV1 (AV1 specification section 5) are described; later codecs add theirs to
+the same call. An AV1 frame header depends on the reference frames, so <a class="xref" href="Egami.Video.Codecs.CodecHeaderReader.html">CodecHeaderReader</a> reads a track's packets
+in order to list them whole.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -172,7 +174,7 @@ while (demuxer.ReadPacket() is { } packet)
 
   <h3 id="Egami_Video_Codecs_CodecHeaders_CanDescribe_Egami_Video_TrackInfo_" data-uid="Egami.Video.Codecs.CodecHeaders.CanDescribe(Egami.Video.TrackInfo)">
   CanDescribe(TrackInfo)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/CodecHeaders.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/CodecHeaders.cs/#L36"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns whether <a class="xref" href="Egami.Video.Codecs.CodecHeaders.html#Egami_Video_Codecs_CodecHeaders_Describe_Egami_Video_TrackInfo_Egami_Video_EncodedPacket_">Describe(TrackInfo, EncodedPacket)</a> knows the track's codec.</p>
@@ -211,7 +213,7 @@ while (demuxer.ReadPacket() is { } packet)
 
   <h3 id="Egami_Video_Codecs_CodecHeaders_Describe_Egami_Video_TrackInfo_Egami_Video_EncodedPacket_" data-uid="Egami.Video.Codecs.CodecHeaders.Describe(Egami.Video.TrackInfo,Egami.Video.EncodedPacket)">
   Describe(TrackInfo, EncodedPacket)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/CodecHeaders.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/CodecHeaders.cs/#L60"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Lists the header fields of one packet of <code class="paramref">track</code>, in bitstream order. Lists in the header give one field
@@ -221,7 +223,11 @@ values they imply. For VP8, the coefficient and motion vector probability update
 (<code>frames_in_superframe_minus_1</code>, <code>frame_sizes[i]</code>) and then each frame after a <code>frame</code> field with its
 index; each frame gives its uncompressed header, then the compressed header's <code>tx_mode</code> and reference mode with its
 probability updates as counts (<code>coef_prob_updates</code> and so on). A VP9 frame that takes its size from a reference is
-read with the track's size, which decides how many tile bits it has.</p>
+read with the track's size, which decides how many tile bits it has. For AV1, each OBU gives <code>obu_type</code> (with
+<code>temporal_id</code> and <code>spatial_id</code> when it has an extension) and <code>obu_size</code>, then a sequence header its coded
+fields, a metadata OBU <code>metadata_type</code> and its fields (content light level, mastering display, scalability,
+timecode; ITU-T T.35 as its country code and <code>itu_t_t35_payload_bytes</code>, the payload's length), and a frame header
+its start up to <code>error_resilient_mode</code>; the rest needs the reference frames, which <a class="xref" href="Egami.Video.Codecs.CodecHeaderReader.html">CodecHeaderReader</a> keeps.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -266,7 +272,7 @@ read with the track's size, which decides how many tile bits it has.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/CodecHeaders.cs/#L25" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/CodecHeaders.cs/#L29" class="edit-link">Edit this page</a>
         </div>
 
 

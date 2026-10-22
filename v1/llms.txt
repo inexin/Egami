@@ -31,6 +31,7 @@ settings, safety limits and registered formats a call uses.
 
 - [Overview](https://inexin.github.io/Egami/v1/articles/formats/index.html): Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and …
 - [AVIF](https://inexin.github.io/Egami/v1/articles/formats/avif.html): Egami reads and writes AVIF still images, written from the AV1 and HEIF specifications with no native code.
+- [AV1 video frames](https://inexin.github.io/Egami/v1/articles/formats/av1.html): `Av1StreamDecoder` decodes AV1 video a temporal unit at a time.
 - [BMP](https://inexin.github.io/Egami/v1/articles/formats/bmp.html): Egami reads Windows bitmaps with core, info, V2 to V5 and OS/2 2.x headers at 1 to 32 bits, RLE4, RLE8 and RLE24, bit fields, embedded PNG and JPEG and V5 ICC profiles.
 - [CCITT fax](https://inexin.github.io/Egami/v1/articles/formats/ccitt.html): Egami decodes raw CCITT fax data.
 - [GIF](https://inexin.github.io/Egami/v1/articles/formats/gif.html): Egami reads GIF 87a and 89a files, with every disposal method, interlaced images, transparency, the loop count, comments, XMP and ICC profiles, and writes GIF 89a.

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Av1ObuFormat | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Av1ObuFormat | Egami ">
+      
+      <meta name="description" content="A raw AV1 stream of low-overhead OBUs (.obu; AV1 specification section 5.2), as aomenc writes with --obu and aomdec and dav1d read: each temporal unit starts with a temporal delimiter OBU, and every OBU has its size field. There is no header, index or timestamp, so temporal unit n is at n frames of . Reading a file and writing it back gives the same bytes; the writer adds a temporal delimiter to a packet that has none. The track&#39;s size, bit depth, chroma format and av1C come from the first sequence header.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Containers_Av1ObuFormat.md&amp;value=---%0Auid%3A%20Egami.Video.Containers.Av1ObuFormat%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Containers.Av1ObuFormat">
+
+
+
+  <h1 id="Egami_Video_Containers_Av1ObuFormat" data-uid="Egami.Video.Containers.Av1ObuFormat" class="text-break">
+Class Av1ObuFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Av1ObuFormat.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Containers.html">Containers</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A raw AV1 stream of low-overhead OBUs (.obu; AV1 specification section 5.2), as aomenc writes with <code>--obu</code> and aomdec and
+dav1d read: each temporal unit starts with a temporal delimiter OBU, and every OBU has its size field. There is no header,
+index or timestamp, so temporal unit n is at n frames of <a class="xref" href="Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_FrameRate">FrameRate</a>. Reading a file and writing it back gives the
+same bytes; the writer adds a temporal delimiter to a packet that has none. The track's size, bit depth, chroma format and
+av1C come from the first sequence header.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Av1ObuFormat : ContainerFormat</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Video.Containers.ContainerFormat.html">ContainerFormat</a></div>
+      <div><span class="xref">Av1ObuFormat</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaContext_System_Boolean_">ContainerFormat.CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaContext, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_ToString">ContainerFormat.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Containers_Av1ObuFormat_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Raw AV1 streams have no timestamps: frames are timed at the format's frame rate, 30 a second unless you register another.
+MediaContext context = MediaContext.Default.WithContainer(new Av1ObuFormat { FrameRate = new Rational(24, 1) });
+
+// An IVF clip to a low-overhead .obu file (what aomdec and dav1d read) and to Annex B, then read back.
+MediaFile.Remux("clip-av1.ivf", "clip.obu");
+using (IDemuxer demuxer = MediaFile.OpenDemuxer("clip-av1.ivf"))
+using (IMuxer annexB = Av1AnnexBFormat.Instance.CreateMuxer(File.Create("clip-annexb.obu"), demuxer.Tracks, MediaContext.Default, leaveOpen: false))
+{
+    while (demuxer.ReadPacket() is { } packet)
+    {
+        using (packet)
+        {
+            annexB.WritePacket(packet);
+        }
+    }
+}
+
+using VideoReader reader = VideoReader.Open("clip.obu", context: context);
+Console.WriteLine($"{MediaFile.Probe("clip-annexb.obu").FormatName}; {reader.Track.FrameRate} fps");</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Containers_Av1ObuFormat_CanMux_" data-uid="Egami.Video.Containers.Av1ObuFormat.CanMux*"></a>
+
+  <h3 id="Egami_Video_Containers_Av1ObuFormat_CanMux" data-uid="Egami.Video.Containers.Av1ObuFormat.CanMux">
+  CanMux
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Av1ObuFormat.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_">CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaMetadata, MediaContext, bool)</a> is supported.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool CanMux { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Av1ObuFormat_Extensions_" data-uid="Egami.Video.Containers.Av1ObuFormat.Extensions*"></a>
+
+  <h3 id="Egami_Video_Containers_Av1ObuFormat_Extensions" data-uid="Egami.Video.Containers.Av1ObuFormat.Extensions">
+  Extensions
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Av1ObuFormat.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the file extensions, with the dot, the first being the one writers use.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IReadOnlyList&lt;string&gt; Extensions { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Av1ObuFormat_FrameRate_" data-uid="Egami.Video.Containers.Av1ObuFormat.FrameRate*"></a>
+
+  <h3 id="Egami_Video_Containers_Av1ObuFormat_FrameRate" data-uid="Egami.Video.Containers.Av1ObuFormat.FrameRate">
+  FrameRate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Av1ObuFormat.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the frame rate readers time the temporal units with, as the file has no timestamps. Default 30 frames a second.
+Register a format with another rate through <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_WithContainer_Egami_Video_Containers_ContainerFormat_">WithContainer(ContainerFormat)</a>, or open it directly.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Rational FrameRate { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Rational.html">Rational</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Av1ObuFormat_Instance_" data-uid="Egami.Video.Containers.Av1ObuFormat.Instance*"></a>
+
+  <h3 id="Egami_Video_Containers_Av1ObuFormat_Instance" data-uid="Egami.Video.Containers.Av1ObuFormat.Instance">
+  Instance
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Av1ObuFormat.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the format at 30 frames a second.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Av1ObuFormat Instance { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Containers.Av1ObuFormat.html">Av1ObuFormat</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Av1ObuFormat_Name_" data-uid="Egami.Video.Containers.Av1ObuFormat.Name*"></a>
+
+  <h3 id="Egami_Video_Containers_Av1ObuFormat_Name" data-uid="Egami.Video.Containers.Av1ObuFormat.Name">
+  Name
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Av1ObuFormat.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the format's name, such as &quot;AVI&quot; or &quot;Matroska&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string Name { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Av1ObuFormat_SignatureLength_" data-uid="Egami.Video.Containers.Av1ObuFormat.SignatureLength*"></a>
+
+  <h3 id="Egami_Video_Containers_Av1ObuFormat_SignatureLength" data-uid="Egami.Video.Containers.Av1ObuFormat.SignatureLength">
+  SignatureLength
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Av1ObuFormat.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many leading bytes <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_IsMatch_System_ReadOnlySpan_System_Byte__">IsMatch(ReadOnlySpan&lt;byte&gt;)</a> needs to decide.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int SignatureLength { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Containers_Av1ObuFormat_CreateMuxer_" data-uid="Egami.Video.Containers.Av1ObuFormat.CreateMuxer*"></a>
+
+  <h3 id="Egami_Video_Containers_Av1ObuFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.Containers.Av1ObuFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)">
+  CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaMetadata, MediaContext, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Av1ObuFormat.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a muxer for one AV1 video track. Non-seekable output works: nothing is patched.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IMuxer CreateMuxer(Stream stream, IReadOnlyList&lt;TrackInfo&gt; tracks, MediaMetadata metadata, MediaContext context, bool leaveOpen)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write.</p>
+</dd>
+    <dt><code>tracks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a>&gt;</dt>
+    <dd><p>The one AV1 track.</p>
+</dd>
+    <dt><code>metadata</code> <a class="xref" href="Egami.Video.MediaMetadata.html">MediaMetadata</a></dt>
+    <dd><p>Ignored: the format has no tags.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context.</p>
+</dd>
+    <dt><code>leaveOpen</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether disposing the muxer leaves the stream open.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Containers.IMuxer.html">IMuxer</a></dt>
+    <dd><p>The muxer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The tracks are not one AV1 video track.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Containers_Av1ObuFormat_IsMatch_" data-uid="Egami.Video.Containers.Av1ObuFormat.IsMatch*"></a>
+
+  <h3 id="Egami_Video_Containers_Av1ObuFormat_IsMatch_System_ReadOnlySpan_System_Byte__" data-uid="Egami.Video.Containers.Av1ObuFormat.IsMatch(System.ReadOnlySpan{System.Byte})">
+  IsMatch(ReadOnlySpan&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Av1ObuFormat.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns whether the file's first bytes belong to this format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool IsMatch(ReadOnlySpan&lt;byte&gt; header)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>header</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>Up to <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_SignatureLength">SignatureLength</a> leading bytes; fewer when the file is shorter.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the format matches.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Containers_Av1ObuFormat_IsMatch_System_ReadOnlySpan_System_Byte___remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The file must start with a temporal delimiter OBU with its size field.</p>
+</div>
+
+
+
+
+  <a id="Egami_Video_Containers_Av1ObuFormat_OpenDemuxer_" data-uid="Egami.Video.Containers.Av1ObuFormat.OpenDemuxer*"></a>
+
+  <h3 id="Egami_Video_Containers_Av1ObuFormat_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.Containers.Av1ObuFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)">
+  OpenDemuxer(Stream, MediaContext, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Av1ObuFormat.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Opens a demuxer that reads packets from <code class="paramref">stream</code>, starting at its current position.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IDemuxer OpenDemuxer(Stream stream, MediaContext context, bool leaveOpen)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The file. Seeking is used when the stream supports it.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The limits and registered codecs.</p>
+</dd>
+    <dt><code>leaveOpen</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether disposing the demuxer leaves the stream open.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Containers.IDemuxer.html">IDemuxer</a></dt>
+    <dd><p>The demuxer, with its tracks read.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The headers break the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The file breaks a limit in <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Limits">Limits</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><a class="xref" href="Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_FrameRate">FrameRate</a> is not positive.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Av1ObuFormat.cs/#L16" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

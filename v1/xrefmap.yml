@@ -37262,6 +37262,377 @@ references:
   commentId: N:Egami.Formats
   fullName: Egami.Formats
   nameWithType: Egami.Formats
+- uid: Egami.Formats.Av1
+  name: Egami.Formats.Av1
+  href: api/Egami.Formats.Av1.html
+  commentId: N:Egami.Formats.Av1
+  fullName: Egami.Formats.Av1
+  nameWithType: Egami.Formats.Av1
+- uid: Egami.Formats.Av1.Av1DecoderOptions
+  name: Av1DecoderOptions
+  href: api/Egami.Formats.Av1.Av1DecoderOptions.html
+  commentId: T:Egami.Formats.Av1.Av1DecoderOptions
+  fullName: Egami.Formats.Av1.Av1DecoderOptions
+  nameWithType: Av1DecoderOptions
+- uid: Egami.Formats.Av1.Av1DecoderOptions.ApplyFilmGrain
+  name: ApplyFilmGrain
+  href: api/Egami.Formats.Av1.Av1DecoderOptions.html#Egami_Formats_Av1_Av1DecoderOptions_ApplyFilmGrain
+  commentId: P:Egami.Formats.Av1.Av1DecoderOptions.ApplyFilmGrain
+  fullName: Egami.Formats.Av1.Av1DecoderOptions.ApplyFilmGrain
+  nameWithType: Av1DecoderOptions.ApplyFilmGrain
+- uid: Egami.Formats.Av1.Av1DecoderOptions.ApplyFilmGrain*
+  name: ApplyFilmGrain
+  href: api/Egami.Formats.Av1.Av1DecoderOptions.html#Egami_Formats_Av1_Av1DecoderOptions_ApplyFilmGrain_
+  commentId: Overload:Egami.Formats.Av1.Av1DecoderOptions.ApplyFilmGrain
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1DecoderOptions.ApplyFilmGrain
+  nameWithType: Av1DecoderOptions.ApplyFilmGrain
+- uid: Egami.Formats.Av1.Av1DecoderOptions.Default
+  name: Default
+  href: api/Egami.Formats.Av1.Av1DecoderOptions.html#Egami_Formats_Av1_Av1DecoderOptions_Default
+  commentId: P:Egami.Formats.Av1.Av1DecoderOptions.Default
+  fullName: Egami.Formats.Av1.Av1DecoderOptions.Default
+  nameWithType: Av1DecoderOptions.Default
+- uid: Egami.Formats.Av1.Av1DecoderOptions.Default*
+  name: Default
+  href: api/Egami.Formats.Av1.Av1DecoderOptions.html#Egami_Formats_Av1_Av1DecoderOptions_Default_
+  commentId: Overload:Egami.Formats.Av1.Av1DecoderOptions.Default
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1DecoderOptions.Default
+  nameWithType: Av1DecoderOptions.Default
+- uid: Egami.Formats.Av1.Av1DecoderOptions.OperatingPoint
+  name: OperatingPoint
+  href: api/Egami.Formats.Av1.Av1DecoderOptions.html#Egami_Formats_Av1_Av1DecoderOptions_OperatingPoint
+  commentId: P:Egami.Formats.Av1.Av1DecoderOptions.OperatingPoint
+  fullName: Egami.Formats.Av1.Av1DecoderOptions.OperatingPoint
+  nameWithType: Av1DecoderOptions.OperatingPoint
+- uid: Egami.Formats.Av1.Av1DecoderOptions.OperatingPoint*
+  name: OperatingPoint
+  href: api/Egami.Formats.Av1.Av1DecoderOptions.html#Egami_Formats_Av1_Av1DecoderOptions_OperatingPoint_
+  commentId: Overload:Egami.Formats.Av1.Av1DecoderOptions.OperatingPoint
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1DecoderOptions.OperatingPoint
+  nameWithType: Av1DecoderOptions.OperatingPoint
+- uid: Egami.Formats.Av1.Av1DecoderOptions.OutputAllLayers
+  name: OutputAllLayers
+  href: api/Egami.Formats.Av1.Av1DecoderOptions.html#Egami_Formats_Av1_Av1DecoderOptions_OutputAllLayers
+  commentId: P:Egami.Formats.Av1.Av1DecoderOptions.OutputAllLayers
+  fullName: Egami.Formats.Av1.Av1DecoderOptions.OutputAllLayers
+  nameWithType: Av1DecoderOptions.OutputAllLayers
+- uid: Egami.Formats.Av1.Av1DecoderOptions.OutputAllLayers*
+  name: OutputAllLayers
+  href: api/Egami.Formats.Av1.Av1DecoderOptions.html#Egami_Formats_Av1_Av1DecoderOptions_OutputAllLayers_
+  commentId: Overload:Egami.Formats.Av1.Av1DecoderOptions.OutputAllLayers
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1DecoderOptions.OutputAllLayers
+  nameWithType: Av1DecoderOptions.OutputAllLayers
+- uid: Egami.Formats.Av1.Av1FrameInfo
+  name: Av1FrameInfo
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html
+  commentId: T:Egami.Formats.Av1.Av1FrameInfo
+  fullName: Egami.Formats.Av1.Av1FrameInfo
+  nameWithType: Av1FrameInfo
+- uid: Egami.Formats.Av1.Av1FrameInfo.#ctor(Egami.Formats.Av1.Av1FrameKind,System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,Egami.Pixels.ChromaFormat,System.Int32,System.Int32,Egami.Colors.ColorCodePoints)
+  name: Av1FrameInfo(Av1FrameKind, bool, int, int, int, int, int, ChromaFormat, int, int, ColorCodePoints)
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo__ctor_Egami_Formats_Av1_Av1FrameKind_System_Boolean_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32_Egami_Pixels_ChromaFormat_System_Int32_System_Int32_Egami_Colors_ColorCodePoints_
+  commentId: M:Egami.Formats.Av1.Av1FrameInfo.#ctor(Egami.Formats.Av1.Av1FrameKind,System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,Egami.Pixels.ChromaFormat,System.Int32,System.Int32,Egami.Colors.ColorCodePoints)
+  name.vb: New(Av1FrameKind, Boolean, Integer, Integer, Integer, Integer, Integer, ChromaFormat, Integer, Integer, ColorCodePoints)
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Av1FrameInfo(Egami.Formats.Av1.Av1FrameKind, bool, int, int, int, int, int, Egami.Pixels.ChromaFormat, int, int, Egami.Colors.ColorCodePoints)
+  fullName.vb: Egami.Formats.Av1.Av1FrameInfo.New(Egami.Formats.Av1.Av1FrameKind, Boolean, Integer, Integer, Integer, Integer, Integer, Egami.Pixels.ChromaFormat, Integer, Integer, Egami.Colors.ColorCodePoints)
+  nameWithType: Av1FrameInfo.Av1FrameInfo(Av1FrameKind, bool, int, int, int, int, int, ChromaFormat, int, int, ColorCodePoints)
+  nameWithType.vb: Av1FrameInfo.New(Av1FrameKind, Boolean, Integer, Integer, Integer, Integer, Integer, ChromaFormat, Integer, Integer, ColorCodePoints)
+- uid: Egami.Formats.Av1.Av1FrameInfo.#ctor*
+  name: Av1FrameInfo
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo__ctor_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Av1FrameInfo
+  fullName.vb: Egami.Formats.Av1.Av1FrameInfo.New
+  nameWithType: Av1FrameInfo.Av1FrameInfo
+  nameWithType.vb: Av1FrameInfo.New
+- uid: Egami.Formats.Av1.Av1FrameInfo.BitDepth
+  name: BitDepth
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_BitDepth
+  commentId: P:Egami.Formats.Av1.Av1FrameInfo.BitDepth
+  fullName: Egami.Formats.Av1.Av1FrameInfo.BitDepth
+  nameWithType: Av1FrameInfo.BitDepth
+- uid: Egami.Formats.Av1.Av1FrameInfo.BitDepth*
+  name: BitDepth
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_BitDepth_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.BitDepth
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameInfo.BitDepth
+  nameWithType: Av1FrameInfo.BitDepth
+- uid: Egami.Formats.Av1.Av1FrameInfo.Chroma
+  name: Chroma
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_Chroma
+  commentId: P:Egami.Formats.Av1.Av1FrameInfo.Chroma
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Chroma
+  nameWithType: Av1FrameInfo.Chroma
+- uid: Egami.Formats.Av1.Av1FrameInfo.Chroma*
+  name: Chroma
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_Chroma_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.Chroma
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Chroma
+  nameWithType: Av1FrameInfo.Chroma
+- uid: Egami.Formats.Av1.Av1FrameInfo.Color
+  name: Color
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_Color
+  commentId: P:Egami.Formats.Av1.Av1FrameInfo.Color
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Color
+  nameWithType: Av1FrameInfo.Color
+- uid: Egami.Formats.Av1.Av1FrameInfo.Color*
+  name: Color
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_Color_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.Color
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Color
+  nameWithType: Av1FrameInfo.Color
+- uid: Egami.Formats.Av1.Av1FrameInfo.Height
+  name: Height
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_Height
+  commentId: P:Egami.Formats.Av1.Av1FrameInfo.Height
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Height
+  nameWithType: Av1FrameInfo.Height
+- uid: Egami.Formats.Av1.Av1FrameInfo.Height*
+  name: Height
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_Height_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.Height
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Height
+  nameWithType: Av1FrameInfo.Height
+- uid: Egami.Formats.Av1.Av1FrameInfo.IsShownKeyFrame
+  name: IsShownKeyFrame
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_IsShownKeyFrame
+  commentId: P:Egami.Formats.Av1.Av1FrameInfo.IsShownKeyFrame
+  fullName: Egami.Formats.Av1.Av1FrameInfo.IsShownKeyFrame
+  nameWithType: Av1FrameInfo.IsShownKeyFrame
+- uid: Egami.Formats.Av1.Av1FrameInfo.IsShownKeyFrame*
+  name: IsShownKeyFrame
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_IsShownKeyFrame_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.IsShownKeyFrame
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameInfo.IsShownKeyFrame
+  nameWithType: Av1FrameInfo.IsShownKeyFrame
+- uid: Egami.Formats.Av1.Av1FrameInfo.Kind
+  name: Kind
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_Kind
+  commentId: P:Egami.Formats.Av1.Av1FrameInfo.Kind
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Kind
+  nameWithType: Av1FrameInfo.Kind
+- uid: Egami.Formats.Av1.Av1FrameInfo.Kind*
+  name: Kind
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_Kind_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.Kind
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Kind
+  nameWithType: Av1FrameInfo.Kind
+- uid: Egami.Formats.Av1.Av1FrameInfo.RenderHeight
+  name: RenderHeight
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_RenderHeight
+  commentId: P:Egami.Formats.Av1.Av1FrameInfo.RenderHeight
+  fullName: Egami.Formats.Av1.Av1FrameInfo.RenderHeight
+  nameWithType: Av1FrameInfo.RenderHeight
+- uid: Egami.Formats.Av1.Av1FrameInfo.RenderHeight*
+  name: RenderHeight
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_RenderHeight_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.RenderHeight
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameInfo.RenderHeight
+  nameWithType: Av1FrameInfo.RenderHeight
+- uid: Egami.Formats.Av1.Av1FrameInfo.RenderWidth
+  name: RenderWidth
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_RenderWidth
+  commentId: P:Egami.Formats.Av1.Av1FrameInfo.RenderWidth
+  fullName: Egami.Formats.Av1.Av1FrameInfo.RenderWidth
+  nameWithType: Av1FrameInfo.RenderWidth
+- uid: Egami.Formats.Av1.Av1FrameInfo.RenderWidth*
+  name: RenderWidth
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_RenderWidth_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.RenderWidth
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameInfo.RenderWidth
+  nameWithType: Av1FrameInfo.RenderWidth
+- uid: Egami.Formats.Av1.Av1FrameInfo.SpatialId
+  name: SpatialId
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_SpatialId
+  commentId: P:Egami.Formats.Av1.Av1FrameInfo.SpatialId
+  fullName: Egami.Formats.Av1.Av1FrameInfo.SpatialId
+  nameWithType: Av1FrameInfo.SpatialId
+- uid: Egami.Formats.Av1.Av1FrameInfo.SpatialId*
+  name: SpatialId
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_SpatialId_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.SpatialId
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameInfo.SpatialId
+  nameWithType: Av1FrameInfo.SpatialId
+- uid: Egami.Formats.Av1.Av1FrameInfo.TemporalId
+  name: TemporalId
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_TemporalId
+  commentId: P:Egami.Formats.Av1.Av1FrameInfo.TemporalId
+  fullName: Egami.Formats.Av1.Av1FrameInfo.TemporalId
+  nameWithType: Av1FrameInfo.TemporalId
+- uid: Egami.Formats.Av1.Av1FrameInfo.TemporalId*
+  name: TemporalId
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_TemporalId_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.TemporalId
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameInfo.TemporalId
+  nameWithType: Av1FrameInfo.TemporalId
+- uid: Egami.Formats.Av1.Av1FrameInfo.Width
+  name: Width
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_Width
+  commentId: P:Egami.Formats.Av1.Av1FrameInfo.Width
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Width
+  nameWithType: Av1FrameInfo.Width
+- uid: Egami.Formats.Av1.Av1FrameInfo.Width*
+  name: Width
+  href: api/Egami.Formats.Av1.Av1FrameInfo.html#Egami_Formats_Av1_Av1FrameInfo_Width_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameInfo.Width
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameInfo.Width
+  nameWithType: Av1FrameInfo.Width
+- uid: Egami.Formats.Av1.Av1FrameKind
+  name: Av1FrameKind
+  href: api/Egami.Formats.Av1.Av1FrameKind.html
+  commentId: T:Egami.Formats.Av1.Av1FrameKind
+  fullName: Egami.Formats.Av1.Av1FrameKind
+  nameWithType: Av1FrameKind
+- uid: Egami.Formats.Av1.Av1FrameKind.Inter
+  name: Inter
+  href: api/Egami.Formats.Av1.Av1FrameKind.html#Egami_Formats_Av1_Av1FrameKind_Inter
+  commentId: F:Egami.Formats.Av1.Av1FrameKind.Inter
+  fullName: Egami.Formats.Av1.Av1FrameKind.Inter
+  nameWithType: Av1FrameKind.Inter
+- uid: Egami.Formats.Av1.Av1FrameKind.IntraOnly
+  name: IntraOnly
+  href: api/Egami.Formats.Av1.Av1FrameKind.html#Egami_Formats_Av1_Av1FrameKind_IntraOnly
+  commentId: F:Egami.Formats.Av1.Av1FrameKind.IntraOnly
+  fullName: Egami.Formats.Av1.Av1FrameKind.IntraOnly
+  nameWithType: Av1FrameKind.IntraOnly
+- uid: Egami.Formats.Av1.Av1FrameKind.Key
+  name: Key
+  href: api/Egami.Formats.Av1.Av1FrameKind.html#Egami_Formats_Av1_Av1FrameKind_Key
+  commentId: F:Egami.Formats.Av1.Av1FrameKind.Key
+  fullName: Egami.Formats.Av1.Av1FrameKind.Key
+  nameWithType: Av1FrameKind.Key
+- uid: Egami.Formats.Av1.Av1FrameKind.Switch
+  name: Switch
+  href: api/Egami.Formats.Av1.Av1FrameKind.html#Egami_Formats_Av1_Av1FrameKind_Switch
+  commentId: F:Egami.Formats.Av1.Av1FrameKind.Switch
+  fullName: Egami.Formats.Av1.Av1FrameKind.Switch
+  nameWithType: Av1FrameKind.Switch
+- uid: Egami.Formats.Av1.Av1StreamDecoder
+  name: Av1StreamDecoder
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html
+  commentId: T:Egami.Formats.Av1.Av1StreamDecoder
+  fullName: Egami.Formats.Av1.Av1StreamDecoder
+  nameWithType: Av1StreamDecoder
+- uid: Egami.Formats.Av1.Av1StreamDecoder.#ctor(Egami.Formats.Av1.Av1DecoderOptions,Egami.EgamiContext)
+  name: Av1StreamDecoder(Av1DecoderOptions?, EgamiContext?)
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder__ctor_Egami_Formats_Av1_Av1DecoderOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Av1.Av1StreamDecoder.#ctor(Egami.Formats.Av1.Av1DecoderOptions,Egami.EgamiContext)
+  name.vb: New(Av1DecoderOptions, EgamiContext)
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.Av1StreamDecoder(Egami.Formats.Av1.Av1DecoderOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Av1.Av1StreamDecoder.New(Egami.Formats.Av1.Av1DecoderOptions, Egami.EgamiContext)
+  nameWithType: Av1StreamDecoder.Av1StreamDecoder(Av1DecoderOptions?, EgamiContext?)
+  nameWithType.vb: Av1StreamDecoder.New(Av1DecoderOptions, EgamiContext)
+- uid: Egami.Formats.Av1.Av1StreamDecoder.#ctor*
+  name: Av1StreamDecoder
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder__ctor_
+  commentId: Overload:Egami.Formats.Av1.Av1StreamDecoder.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.Av1StreamDecoder
+  fullName.vb: Egami.Formats.Av1.Av1StreamDecoder.New
+  nameWithType: Av1StreamDecoder.Av1StreamDecoder
+  nameWithType.vb: Av1StreamDecoder.New
+- uid: Egami.Formats.Av1.Av1StreamDecoder.Dispose
+  name: Dispose()
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_Dispose
+  commentId: M:Egami.Formats.Av1.Av1StreamDecoder.Dispose
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.Dispose()
+  nameWithType: Av1StreamDecoder.Dispose()
+- uid: Egami.Formats.Av1.Av1StreamDecoder.Dispose*
+  name: Dispose
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_Dispose_
+  commentId: Overload:Egami.Formats.Av1.Av1StreamDecoder.Dispose
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.Dispose
+  nameWithType: Av1StreamDecoder.Dispose
+- uid: Egami.Formats.Av1.Av1StreamDecoder.LastHeaders
+  name: LastHeaders
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_LastHeaders
+  commentId: P:Egami.Formats.Av1.Av1StreamDecoder.LastHeaders
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.LastHeaders
+  nameWithType: Av1StreamDecoder.LastHeaders
+- uid: Egami.Formats.Av1.Av1StreamDecoder.LastHeaders*
+  name: LastHeaders
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_LastHeaders_
+  commentId: Overload:Egami.Formats.Av1.Av1StreamDecoder.LastHeaders
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.LastHeaders
+  nameWithType: Av1StreamDecoder.LastHeaders
+- uid: Egami.Formats.Av1.Av1StreamDecoder.NextFrame
+  name: NextFrame
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_NextFrame
+  commentId: P:Egami.Formats.Av1.Av1StreamDecoder.NextFrame
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.NextFrame
+  nameWithType: Av1StreamDecoder.NextFrame
+- uid: Egami.Formats.Av1.Av1StreamDecoder.NextFrame*
+  name: NextFrame
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_NextFrame_
+  commentId: Overload:Egami.Formats.Av1.Av1StreamDecoder.NextFrame
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.NextFrame
+  nameWithType: Av1StreamDecoder.NextFrame
+- uid: Egami.Formats.Av1.Av1StreamDecoder.Reset
+  name: Reset()
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_Reset
+  commentId: M:Egami.Formats.Av1.Av1StreamDecoder.Reset
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.Reset()
+  nameWithType: Av1StreamDecoder.Reset()
+- uid: Egami.Formats.Av1.Av1StreamDecoder.Reset*
+  name: Reset
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_Reset_
+  commentId: Overload:Egami.Formats.Av1.Av1StreamDecoder.Reset
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.Reset
+  nameWithType: Av1StreamDecoder.Reset
+- uid: Egami.Formats.Av1.Av1StreamDecoder.Send(System.ReadOnlySpan{System.Byte})
+  name: Send(ReadOnlySpan<byte>)
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_Send_System_ReadOnlySpan_System_Byte__
+  commentId: M:Egami.Formats.Av1.Av1StreamDecoder.Send(System.ReadOnlySpan{System.Byte})
+  name.vb: Send(ReadOnlySpan(Of Byte))
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.Send(System.ReadOnlySpan<byte>)
+  fullName.vb: Egami.Formats.Av1.Av1StreamDecoder.Send(System.ReadOnlySpan(Of Byte))
+  nameWithType: Av1StreamDecoder.Send(ReadOnlySpan<byte>)
+  nameWithType.vb: Av1StreamDecoder.Send(ReadOnlySpan(Of Byte))
+- uid: Egami.Formats.Av1.Av1StreamDecoder.Send*
+  name: Send
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_Send_
+  commentId: Overload:Egami.Formats.Av1.Av1StreamDecoder.Send
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.Send
+  nameWithType: Av1StreamDecoder.Send
+- uid: Egami.Formats.Av1.Av1StreamDecoder.TryReceiveFrame(Egami.YuvRaster,Egami.Formats.Av1.Av1FrameInfo@)
+  name: TryReceiveFrame(YuvRaster, out Av1FrameInfo)
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_TryReceiveFrame_Egami_YuvRaster_Egami_Formats_Av1_Av1FrameInfo__
+  commentId: M:Egami.Formats.Av1.Av1StreamDecoder.TryReceiveFrame(Egami.YuvRaster,Egami.Formats.Av1.Av1FrameInfo@)
+  name.vb: TryReceiveFrame(YuvRaster, Av1FrameInfo)
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.TryReceiveFrame(Egami.YuvRaster, out Egami.Formats.Av1.Av1FrameInfo)
+  fullName.vb: Egami.Formats.Av1.Av1StreamDecoder.TryReceiveFrame(Egami.YuvRaster, Egami.Formats.Av1.Av1FrameInfo)
+  nameWithType: Av1StreamDecoder.TryReceiveFrame(YuvRaster, out Av1FrameInfo)
+  nameWithType.vb: Av1StreamDecoder.TryReceiveFrame(YuvRaster, Av1FrameInfo)
+- uid: Egami.Formats.Av1.Av1StreamDecoder.TryReceiveFrame*
+  name: TryReceiveFrame
+  href: api/Egami.Formats.Av1.Av1StreamDecoder.html#Egami_Formats_Av1_Av1StreamDecoder_TryReceiveFrame_
+  commentId: Overload:Egami.Formats.Av1.Av1StreamDecoder.TryReceiveFrame
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1StreamDecoder.TryReceiveFrame
+  nameWithType: Av1StreamDecoder.TryReceiveFrame
 - uid: Egami.Formats.Avif
   name: Egami.Formats.Avif
   href: api/Egami.Formats.Avif.html
@@ -73967,6 +74338,121 @@ references:
   commentId: N:Egami.Video.Codecs
   fullName: Egami.Video.Codecs
   nameWithType: Egami.Video.Codecs
+- uid: Egami.Video.Codecs.Av1Codec
+  name: Av1Codec
+  href: api/Egami.Video.Codecs.Av1Codec.html
+  commentId: T:Egami.Video.Codecs.Av1Codec
+  fullName: Egami.Video.Codecs.Av1Codec
+  nameWithType: Av1Codec
+- uid: Egami.Video.Codecs.Av1Codec.CodecId
+  name: CodecId
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_CodecId
+  commentId: P:Egami.Video.Codecs.Av1Codec.CodecId
+  fullName: Egami.Video.Codecs.Av1Codec.CodecId
+  nameWithType: Av1Codec.CodecId
+- uid: Egami.Video.Codecs.Av1Codec.CodecId*
+  name: CodecId
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_CodecId_
+  commentId: Overload:Egami.Video.Codecs.Av1Codec.CodecId
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1Codec.CodecId
+  nameWithType: Av1Codec.CodecId
+- uid: Egami.Video.Codecs.Av1Codec.CreateDecoder(Egami.Video.VideoTrackInfo,Egami.Video.Codecs.VideoDecoderOptions,Egami.Video.MediaContext)
+  name: CreateDecoder(VideoTrackInfo, VideoDecoderOptions?, MediaContext)
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_CreateDecoder_Egami_Video_VideoTrackInfo_Egami_Video_Codecs_VideoDecoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Codecs.Av1Codec.CreateDecoder(Egami.Video.VideoTrackInfo,Egami.Video.Codecs.VideoDecoderOptions,Egami.Video.MediaContext)
+  name.vb: CreateDecoder(VideoTrackInfo, VideoDecoderOptions, MediaContext)
+  fullName: Egami.Video.Codecs.Av1Codec.CreateDecoder(Egami.Video.VideoTrackInfo, Egami.Video.Codecs.VideoDecoderOptions?, Egami.Video.MediaContext)
+  fullName.vb: Egami.Video.Codecs.Av1Codec.CreateDecoder(Egami.Video.VideoTrackInfo, Egami.Video.Codecs.VideoDecoderOptions, Egami.Video.MediaContext)
+  nameWithType: Av1Codec.CreateDecoder(VideoTrackInfo, VideoDecoderOptions?, MediaContext)
+  nameWithType.vb: Av1Codec.CreateDecoder(VideoTrackInfo, VideoDecoderOptions, MediaContext)
+- uid: Egami.Video.Codecs.Av1Codec.CreateDecoder*
+  name: CreateDecoder
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_CreateDecoder_
+  commentId: Overload:Egami.Video.Codecs.Av1Codec.CreateDecoder
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1Codec.CreateDecoder
+  nameWithType: Av1Codec.CreateDecoder
+- uid: Egami.Video.Codecs.Av1Codec.Instance
+  name: Instance
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_Instance
+  commentId: P:Egami.Video.Codecs.Av1Codec.Instance
+  fullName: Egami.Video.Codecs.Av1Codec.Instance
+  nameWithType: Av1Codec.Instance
+- uid: Egami.Video.Codecs.Av1Codec.Instance*
+  name: Instance
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_Instance_
+  commentId: Overload:Egami.Video.Codecs.Av1Codec.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1Codec.Instance
+  nameWithType: Av1Codec.Instance
+- uid: Egami.Video.Codecs.Av1Codec.Name
+  name: Name
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_Name
+  commentId: P:Egami.Video.Codecs.Av1Codec.Name
+  fullName: Egami.Video.Codecs.Av1Codec.Name
+  nameWithType: Av1Codec.Name
+- uid: Egami.Video.Codecs.Av1Codec.Name*
+  name: Name
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_Name_
+  commentId: Overload:Egami.Video.Codecs.Av1Codec.Name
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1Codec.Name
+  nameWithType: Av1Codec.Name
+- uid: Egami.Video.Codecs.Av1Packets
+  name: Av1Packets
+  href: api/Egami.Video.Codecs.Av1Packets.html
+  commentId: T:Egami.Video.Codecs.Av1Packets
+  fullName: Egami.Video.Codecs.Av1Packets
+  nameWithType: Av1Packets
+- uid: Egami.Video.Codecs.Av1Packets.ExtractConfig(System.ReadOnlySpan{System.Byte})
+  name: ExtractConfig(ReadOnlySpan<byte>)
+  href: api/Egami.Video.Codecs.Av1Packets.html#Egami_Video_Codecs_Av1Packets_ExtractConfig_System_ReadOnlySpan_System_Byte__
+  commentId: M:Egami.Video.Codecs.Av1Packets.ExtractConfig(System.ReadOnlySpan{System.Byte})
+  name.vb: ExtractConfig(ReadOnlySpan(Of Byte))
+  fullName: Egami.Video.Codecs.Av1Packets.ExtractConfig(System.ReadOnlySpan<byte>)
+  fullName.vb: Egami.Video.Codecs.Av1Packets.ExtractConfig(System.ReadOnlySpan(Of Byte))
+  nameWithType: Av1Packets.ExtractConfig(ReadOnlySpan<byte>)
+  nameWithType.vb: Av1Packets.ExtractConfig(ReadOnlySpan(Of Byte))
+- uid: Egami.Video.Codecs.Av1Packets.ExtractConfig*
+  name: ExtractConfig
+  href: api/Egami.Video.Codecs.Av1Packets.html#Egami_Video_Codecs_Av1Packets_ExtractConfig_
+  commentId: Overload:Egami.Video.Codecs.Av1Packets.ExtractConfig
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1Packets.ExtractConfig
+  nameWithType: Av1Packets.ExtractConfig
+- uid: Egami.Video.Codecs.Av1Packets.MergeFrames(System.Collections.Generic.IEnumerable{System.ReadOnlyMemory{System.Byte}})
+  name: MergeFrames(IEnumerable<ReadOnlyMemory<byte>>)
+  href: api/Egami.Video.Codecs.Av1Packets.html#Egami_Video_Codecs_Av1Packets_MergeFrames_System_Collections_Generic_IEnumerable_System_ReadOnlyMemory_System_Byte___
+  commentId: M:Egami.Video.Codecs.Av1Packets.MergeFrames(System.Collections.Generic.IEnumerable{System.ReadOnlyMemory{System.Byte}})
+  name.vb: MergeFrames(IEnumerable(Of ReadOnlyMemory(Of Byte)))
+  fullName: Egami.Video.Codecs.Av1Packets.MergeFrames(System.Collections.Generic.IEnumerable<System.ReadOnlyMemory<byte>>)
+  fullName.vb: Egami.Video.Codecs.Av1Packets.MergeFrames(System.Collections.Generic.IEnumerable(Of System.ReadOnlyMemory(Of Byte)))
+  nameWithType: Av1Packets.MergeFrames(IEnumerable<ReadOnlyMemory<byte>>)
+  nameWithType.vb: Av1Packets.MergeFrames(IEnumerable(Of ReadOnlyMemory(Of Byte)))
+- uid: Egami.Video.Codecs.Av1Packets.MergeFrames*
+  name: MergeFrames
+  href: api/Egami.Video.Codecs.Av1Packets.html#Egami_Video_Codecs_Av1Packets_MergeFrames_
+  commentId: Overload:Egami.Video.Codecs.Av1Packets.MergeFrames
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1Packets.MergeFrames
+  nameWithType: Av1Packets.MergeFrames
+- uid: Egami.Video.Codecs.Av1Packets.SplitFrames(System.ReadOnlyMemory{System.Byte})
+  name: SplitFrames(ReadOnlyMemory<byte>)
+  href: api/Egami.Video.Codecs.Av1Packets.html#Egami_Video_Codecs_Av1Packets_SplitFrames_System_ReadOnlyMemory_System_Byte__
+  commentId: M:Egami.Video.Codecs.Av1Packets.SplitFrames(System.ReadOnlyMemory{System.Byte})
+  name.vb: SplitFrames(ReadOnlyMemory(Of Byte))
+  fullName: Egami.Video.Codecs.Av1Packets.SplitFrames(System.ReadOnlyMemory<byte>)
+  fullName.vb: Egami.Video.Codecs.Av1Packets.SplitFrames(System.ReadOnlyMemory(Of Byte))
+  nameWithType: Av1Packets.SplitFrames(ReadOnlyMemory<byte>)
+  nameWithType.vb: Av1Packets.SplitFrames(ReadOnlyMemory(Of Byte))
+- uid: Egami.Video.Codecs.Av1Packets.SplitFrames*
+  name: SplitFrames
+  href: api/Egami.Video.Codecs.Av1Packets.html#Egami_Video_Codecs_Av1Packets_SplitFrames_
+  commentId: Overload:Egami.Video.Codecs.Av1Packets.SplitFrames
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1Packets.SplitFrames
+  nameWithType: Av1Packets.SplitFrames
 - uid: Egami.Video.Codecs.CodecHeaderField
   name: CodecHeaderField
   href: api/Egami.Video.Codecs.CodecHeaderField.html
@@ -74018,6 +74504,70 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.CodecHeaderField.Value
   nameWithType: CodecHeaderField.Value
+- uid: Egami.Video.Codecs.CodecHeaderReader
+  name: CodecHeaderReader
+  href: api/Egami.Video.Codecs.CodecHeaderReader.html
+  commentId: T:Egami.Video.Codecs.CodecHeaderReader
+  fullName: Egami.Video.Codecs.CodecHeaderReader
+  nameWithType: CodecHeaderReader
+- uid: Egami.Video.Codecs.CodecHeaderReader.#ctor(Egami.Video.TrackInfo,Egami.Video.MediaContext)
+  name: CodecHeaderReader(TrackInfo, MediaContext?)
+  href: api/Egami.Video.Codecs.CodecHeaderReader.html#Egami_Video_Codecs_CodecHeaderReader__ctor_Egami_Video_TrackInfo_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Codecs.CodecHeaderReader.#ctor(Egami.Video.TrackInfo,Egami.Video.MediaContext)
+  name.vb: New(TrackInfo, MediaContext)
+  fullName: Egami.Video.Codecs.CodecHeaderReader.CodecHeaderReader(Egami.Video.TrackInfo, Egami.Video.MediaContext?)
+  fullName.vb: Egami.Video.Codecs.CodecHeaderReader.New(Egami.Video.TrackInfo, Egami.Video.MediaContext)
+  nameWithType: CodecHeaderReader.CodecHeaderReader(TrackInfo, MediaContext?)
+  nameWithType.vb: CodecHeaderReader.New(TrackInfo, MediaContext)
+- uid: Egami.Video.Codecs.CodecHeaderReader.#ctor*
+  name: CodecHeaderReader
+  href: api/Egami.Video.Codecs.CodecHeaderReader.html#Egami_Video_Codecs_CodecHeaderReader__ctor_
+  commentId: Overload:Egami.Video.Codecs.CodecHeaderReader.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Codecs.CodecHeaderReader.CodecHeaderReader
+  fullName.vb: Egami.Video.Codecs.CodecHeaderReader.New
+  nameWithType: CodecHeaderReader.CodecHeaderReader
+  nameWithType.vb: CodecHeaderReader.New
+- uid: Egami.Video.Codecs.CodecHeaderReader.Describe(Egami.Video.EncodedPacket)
+  name: Describe(EncodedPacket)
+  href: api/Egami.Video.Codecs.CodecHeaderReader.html#Egami_Video_Codecs_CodecHeaderReader_Describe_Egami_Video_EncodedPacket_
+  commentId: M:Egami.Video.Codecs.CodecHeaderReader.Describe(Egami.Video.EncodedPacket)
+  fullName: Egami.Video.Codecs.CodecHeaderReader.Describe(Egami.Video.EncodedPacket)
+  nameWithType: CodecHeaderReader.Describe(EncodedPacket)
+- uid: Egami.Video.Codecs.CodecHeaderReader.Describe*
+  name: Describe
+  href: api/Egami.Video.Codecs.CodecHeaderReader.html#Egami_Video_Codecs_CodecHeaderReader_Describe_
+  commentId: Overload:Egami.Video.Codecs.CodecHeaderReader.Describe
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.CodecHeaderReader.Describe
+  nameWithType: CodecHeaderReader.Describe
+- uid: Egami.Video.Codecs.CodecHeaderReader.Dispose
+  name: Dispose()
+  href: api/Egami.Video.Codecs.CodecHeaderReader.html#Egami_Video_Codecs_CodecHeaderReader_Dispose
+  commentId: M:Egami.Video.Codecs.CodecHeaderReader.Dispose
+  fullName: Egami.Video.Codecs.CodecHeaderReader.Dispose()
+  nameWithType: CodecHeaderReader.Dispose()
+- uid: Egami.Video.Codecs.CodecHeaderReader.Dispose*
+  name: Dispose
+  href: api/Egami.Video.Codecs.CodecHeaderReader.html#Egami_Video_Codecs_CodecHeaderReader_Dispose_
+  commentId: Overload:Egami.Video.Codecs.CodecHeaderReader.Dispose
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.CodecHeaderReader.Dispose
+  nameWithType: CodecHeaderReader.Dispose
+- uid: Egami.Video.Codecs.CodecHeaderReader.Reset
+  name: Reset()
+  href: api/Egami.Video.Codecs.CodecHeaderReader.html#Egami_Video_Codecs_CodecHeaderReader_Reset
+  commentId: M:Egami.Video.Codecs.CodecHeaderReader.Reset
+  fullName: Egami.Video.Codecs.CodecHeaderReader.Reset()
+  nameWithType: CodecHeaderReader.Reset()
+- uid: Egami.Video.Codecs.CodecHeaderReader.Reset*
+  name: Reset
+  href: api/Egami.Video.Codecs.CodecHeaderReader.html#Egami_Video_Codecs_CodecHeaderReader_Reset_
+  commentId: Overload:Egami.Video.Codecs.CodecHeaderReader.Reset
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.CodecHeaderReader.Reset
+  nameWithType: CodecHeaderReader.Reset
 - uid: Egami.Video.Codecs.CodecHeaders
   name: CodecHeaders
   href: api/Egami.Video.Codecs.CodecHeaders.html
@@ -74556,6 +75106,19 @@ references:
   commentId: T:Egami.Video.Codecs.VideoCodecs
   fullName: Egami.Video.Codecs.VideoCodecs
   nameWithType: VideoCodecs
+- uid: Egami.Video.Codecs.VideoCodecs.Av1
+  name: Av1
+  href: api/Egami.Video.Codecs.VideoCodecs.html#Egami_Video_Codecs_VideoCodecs_Av1
+  commentId: P:Egami.Video.Codecs.VideoCodecs.Av1
+  fullName: Egami.Video.Codecs.VideoCodecs.Av1
+  nameWithType: VideoCodecs.Av1
+- uid: Egami.Video.Codecs.VideoCodecs.Av1*
+  name: Av1
+  href: api/Egami.Video.Codecs.VideoCodecs.html#Egami_Video_Codecs_VideoCodecs_Av1_
+  commentId: Overload:Egami.Video.Codecs.VideoCodecs.Av1
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoCodecs.Av1
+  nameWithType: VideoCodecs.Av1
 - uid: Egami.Video.Codecs.VideoCodecs.CreateDecoder(Egami.Video.VideoTrackInfo,Egami.Video.Codecs.VideoDecoderOptions,Egami.Video.MediaContext)
   name: CreateDecoder(VideoTrackInfo, VideoDecoderOptions?, MediaContext?)
   href: api/Egami.Video.Codecs.VideoCodecs.html#Egami_Video_Codecs_VideoCodecs_CreateDecoder_Egami_Video_VideoTrackInfo_Egami_Video_Codecs_VideoDecoderOptions_Egami_Video_MediaContext_
@@ -74642,6 +75205,19 @@ references:
   commentId: T:Egami.Video.Codecs.VideoDecoderOptions
   fullName: Egami.Video.Codecs.VideoDecoderOptions
   nameWithType: VideoDecoderOptions
+- uid: Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain
+  name: ApplyFilmGrain
+  href: api/Egami.Video.Codecs.VideoDecoderOptions.html#Egami_Video_Codecs_VideoDecoderOptions_ApplyFilmGrain
+  commentId: P:Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain
+  fullName: Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain
+  nameWithType: VideoDecoderOptions.ApplyFilmGrain
+- uid: Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain*
+  name: ApplyFilmGrain
+  href: api/Egami.Video.Codecs.VideoDecoderOptions.html#Egami_Video_Codecs_VideoDecoderOptions_ApplyFilmGrain_
+  commentId: Overload:Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoDecoderOptions.ApplyFilmGrain
+  nameWithType: VideoDecoderOptions.ApplyFilmGrain
 - uid: Egami.Video.Codecs.VideoDecoderOptions.DecodeAlpha
   name: DecodeAlpha
   href: api/Egami.Video.Codecs.VideoDecoderOptions.html#Egami_Video_Codecs_VideoDecoderOptions_DecodeAlpha
@@ -74906,6 +75482,270 @@ references:
   commentId: N:Egami.Video.Containers
   fullName: Egami.Video.Containers
   nameWithType: Egami.Video.Containers
+- uid: Egami.Video.Containers.Av1AnnexBFormat
+  name: Av1AnnexBFormat
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html
+  commentId: T:Egami.Video.Containers.Av1AnnexBFormat
+  fullName: Egami.Video.Containers.Av1AnnexBFormat
+  nameWithType: Av1AnnexBFormat
+- uid: Egami.Video.Containers.Av1AnnexBFormat.CanMux
+  name: CanMux
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_CanMux
+  commentId: P:Egami.Video.Containers.Av1AnnexBFormat.CanMux
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.CanMux
+  nameWithType: Av1AnnexBFormat.CanMux
+- uid: Egami.Video.Containers.Av1AnnexBFormat.CanMux*
+  name: CanMux
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_CanMux_
+  commentId: Overload:Egami.Video.Containers.Av1AnnexBFormat.CanMux
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.CanMux
+  nameWithType: Av1AnnexBFormat.CanMux
+- uid: Egami.Video.Containers.Av1AnnexBFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name: CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.Av1AnnexBFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name.vb: CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo>, Egami.Video.MediaMetadata, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.Av1AnnexBFormat.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList(Of Egami.Video.TrackInfo), Egami.Video.MediaMetadata, Egami.Video.MediaContext, Boolean)
+  nameWithType: Av1AnnexBFormat.CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  nameWithType.vb: Av1AnnexBFormat.CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+- uid: Egami.Video.Containers.Av1AnnexBFormat.CreateMuxer*
+  name: CreateMuxer
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_CreateMuxer_
+  commentId: Overload:Egami.Video.Containers.Av1AnnexBFormat.CreateMuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.CreateMuxer
+  nameWithType: Av1AnnexBFormat.CreateMuxer
+- uid: Egami.Video.Containers.Av1AnnexBFormat.Extensions
+  name: Extensions
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_Extensions
+  commentId: P:Egami.Video.Containers.Av1AnnexBFormat.Extensions
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.Extensions
+  nameWithType: Av1AnnexBFormat.Extensions
+- uid: Egami.Video.Containers.Av1AnnexBFormat.Extensions*
+  name: Extensions
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_Extensions_
+  commentId: Overload:Egami.Video.Containers.Av1AnnexBFormat.Extensions
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.Extensions
+  nameWithType: Av1AnnexBFormat.Extensions
+- uid: Egami.Video.Containers.Av1AnnexBFormat.FrameRate
+  name: FrameRate
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_FrameRate
+  commentId: P:Egami.Video.Containers.Av1AnnexBFormat.FrameRate
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.FrameRate
+  nameWithType: Av1AnnexBFormat.FrameRate
+- uid: Egami.Video.Containers.Av1AnnexBFormat.FrameRate*
+  name: FrameRate
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_FrameRate_
+  commentId: Overload:Egami.Video.Containers.Av1AnnexBFormat.FrameRate
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.FrameRate
+  nameWithType: Av1AnnexBFormat.FrameRate
+- uid: Egami.Video.Containers.Av1AnnexBFormat.Instance
+  name: Instance
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_Instance
+  commentId: P:Egami.Video.Containers.Av1AnnexBFormat.Instance
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.Instance
+  nameWithType: Av1AnnexBFormat.Instance
+- uid: Egami.Video.Containers.Av1AnnexBFormat.Instance*
+  name: Instance
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_Instance_
+  commentId: Overload:Egami.Video.Containers.Av1AnnexBFormat.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.Instance
+  nameWithType: Av1AnnexBFormat.Instance
+- uid: Egami.Video.Containers.Av1AnnexBFormat.IsMatch(System.ReadOnlySpan{System.Byte})
+  name: IsMatch(ReadOnlySpan<byte>)
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_IsMatch_System_ReadOnlySpan_System_Byte__
+  commentId: M:Egami.Video.Containers.Av1AnnexBFormat.IsMatch(System.ReadOnlySpan{System.Byte})
+  name.vb: IsMatch(ReadOnlySpan(Of Byte))
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.IsMatch(System.ReadOnlySpan<byte>)
+  fullName.vb: Egami.Video.Containers.Av1AnnexBFormat.IsMatch(System.ReadOnlySpan(Of Byte))
+  nameWithType: Av1AnnexBFormat.IsMatch(ReadOnlySpan<byte>)
+  nameWithType.vb: Av1AnnexBFormat.IsMatch(ReadOnlySpan(Of Byte))
+- uid: Egami.Video.Containers.Av1AnnexBFormat.IsMatch*
+  name: IsMatch
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_IsMatch_
+  commentId: Overload:Egami.Video.Containers.Av1AnnexBFormat.IsMatch
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.IsMatch
+  nameWithType: Av1AnnexBFormat.IsMatch
+- uid: Egami.Video.Containers.Av1AnnexBFormat.Name
+  name: Name
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_Name
+  commentId: P:Egami.Video.Containers.Av1AnnexBFormat.Name
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.Name
+  nameWithType: Av1AnnexBFormat.Name
+- uid: Egami.Video.Containers.Av1AnnexBFormat.Name*
+  name: Name
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_Name_
+  commentId: Overload:Egami.Video.Containers.Av1AnnexBFormat.Name
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.Name
+  nameWithType: Av1AnnexBFormat.Name
+- uid: Egami.Video.Containers.Av1AnnexBFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name: OpenDemuxer(Stream, MediaContext, bool)
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.Av1AnnexBFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name.vb: OpenDemuxer(Stream, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.Av1AnnexBFormat.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, Boolean)
+  nameWithType: Av1AnnexBFormat.OpenDemuxer(Stream, MediaContext, bool)
+  nameWithType.vb: Av1AnnexBFormat.OpenDemuxer(Stream, MediaContext, Boolean)
+- uid: Egami.Video.Containers.Av1AnnexBFormat.OpenDemuxer*
+  name: OpenDemuxer
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_OpenDemuxer_
+  commentId: Overload:Egami.Video.Containers.Av1AnnexBFormat.OpenDemuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.OpenDemuxer
+  nameWithType: Av1AnnexBFormat.OpenDemuxer
+- uid: Egami.Video.Containers.Av1AnnexBFormat.SignatureLength
+  name: SignatureLength
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_SignatureLength
+  commentId: P:Egami.Video.Containers.Av1AnnexBFormat.SignatureLength
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.SignatureLength
+  nameWithType: Av1AnnexBFormat.SignatureLength
+- uid: Egami.Video.Containers.Av1AnnexBFormat.SignatureLength*
+  name: SignatureLength
+  href: api/Egami.Video.Containers.Av1AnnexBFormat.html#Egami_Video_Containers_Av1AnnexBFormat_SignatureLength_
+  commentId: Overload:Egami.Video.Containers.Av1AnnexBFormat.SignatureLength
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1AnnexBFormat.SignatureLength
+  nameWithType: Av1AnnexBFormat.SignatureLength
+- uid: Egami.Video.Containers.Av1ObuFormat
+  name: Av1ObuFormat
+  href: api/Egami.Video.Containers.Av1ObuFormat.html
+  commentId: T:Egami.Video.Containers.Av1ObuFormat
+  fullName: Egami.Video.Containers.Av1ObuFormat
+  nameWithType: Av1ObuFormat
+- uid: Egami.Video.Containers.Av1ObuFormat.CanMux
+  name: CanMux
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_CanMux
+  commentId: P:Egami.Video.Containers.Av1ObuFormat.CanMux
+  fullName: Egami.Video.Containers.Av1ObuFormat.CanMux
+  nameWithType: Av1ObuFormat.CanMux
+- uid: Egami.Video.Containers.Av1ObuFormat.CanMux*
+  name: CanMux
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_CanMux_
+  commentId: Overload:Egami.Video.Containers.Av1ObuFormat.CanMux
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1ObuFormat.CanMux
+  nameWithType: Av1ObuFormat.CanMux
+- uid: Egami.Video.Containers.Av1ObuFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name: CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.Av1ObuFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name.vb: CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.Av1ObuFormat.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo>, Egami.Video.MediaMetadata, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.Av1ObuFormat.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList(Of Egami.Video.TrackInfo), Egami.Video.MediaMetadata, Egami.Video.MediaContext, Boolean)
+  nameWithType: Av1ObuFormat.CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  nameWithType.vb: Av1ObuFormat.CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+- uid: Egami.Video.Containers.Av1ObuFormat.CreateMuxer*
+  name: CreateMuxer
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_CreateMuxer_
+  commentId: Overload:Egami.Video.Containers.Av1ObuFormat.CreateMuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1ObuFormat.CreateMuxer
+  nameWithType: Av1ObuFormat.CreateMuxer
+- uid: Egami.Video.Containers.Av1ObuFormat.Extensions
+  name: Extensions
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_Extensions
+  commentId: P:Egami.Video.Containers.Av1ObuFormat.Extensions
+  fullName: Egami.Video.Containers.Av1ObuFormat.Extensions
+  nameWithType: Av1ObuFormat.Extensions
+- uid: Egami.Video.Containers.Av1ObuFormat.Extensions*
+  name: Extensions
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_Extensions_
+  commentId: Overload:Egami.Video.Containers.Av1ObuFormat.Extensions
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1ObuFormat.Extensions
+  nameWithType: Av1ObuFormat.Extensions
+- uid: Egami.Video.Containers.Av1ObuFormat.FrameRate
+  name: FrameRate
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_FrameRate
+  commentId: P:Egami.Video.Containers.Av1ObuFormat.FrameRate
+  fullName: Egami.Video.Containers.Av1ObuFormat.FrameRate
+  nameWithType: Av1ObuFormat.FrameRate
+- uid: Egami.Video.Containers.Av1ObuFormat.FrameRate*
+  name: FrameRate
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_FrameRate_
+  commentId: Overload:Egami.Video.Containers.Av1ObuFormat.FrameRate
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1ObuFormat.FrameRate
+  nameWithType: Av1ObuFormat.FrameRate
+- uid: Egami.Video.Containers.Av1ObuFormat.Instance
+  name: Instance
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_Instance
+  commentId: P:Egami.Video.Containers.Av1ObuFormat.Instance
+  fullName: Egami.Video.Containers.Av1ObuFormat.Instance
+  nameWithType: Av1ObuFormat.Instance
+- uid: Egami.Video.Containers.Av1ObuFormat.Instance*
+  name: Instance
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_Instance_
+  commentId: Overload:Egami.Video.Containers.Av1ObuFormat.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1ObuFormat.Instance
+  nameWithType: Av1ObuFormat.Instance
+- uid: Egami.Video.Containers.Av1ObuFormat.IsMatch(System.ReadOnlySpan{System.Byte})
+  name: IsMatch(ReadOnlySpan<byte>)
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_IsMatch_System_ReadOnlySpan_System_Byte__
+  commentId: M:Egami.Video.Containers.Av1ObuFormat.IsMatch(System.ReadOnlySpan{System.Byte})
+  name.vb: IsMatch(ReadOnlySpan(Of Byte))
+  fullName: Egami.Video.Containers.Av1ObuFormat.IsMatch(System.ReadOnlySpan<byte>)
+  fullName.vb: Egami.Video.Containers.Av1ObuFormat.IsMatch(System.ReadOnlySpan(Of Byte))
+  nameWithType: Av1ObuFormat.IsMatch(ReadOnlySpan<byte>)
+  nameWithType.vb: Av1ObuFormat.IsMatch(ReadOnlySpan(Of Byte))
+- uid: Egami.Video.Containers.Av1ObuFormat.IsMatch*
+  name: IsMatch
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_IsMatch_
+  commentId: Overload:Egami.Video.Containers.Av1ObuFormat.IsMatch
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1ObuFormat.IsMatch
+  nameWithType: Av1ObuFormat.IsMatch
+- uid: Egami.Video.Containers.Av1ObuFormat.Name
+  name: Name
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_Name
+  commentId: P:Egami.Video.Containers.Av1ObuFormat.Name
+  fullName: Egami.Video.Containers.Av1ObuFormat.Name
+  nameWithType: Av1ObuFormat.Name
+- uid: Egami.Video.Containers.Av1ObuFormat.Name*
+  name: Name
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_Name_
+  commentId: Overload:Egami.Video.Containers.Av1ObuFormat.Name
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1ObuFormat.Name
+  nameWithType: Av1ObuFormat.Name
+- uid: Egami.Video.Containers.Av1ObuFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name: OpenDemuxer(Stream, MediaContext, bool)
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.Av1ObuFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name.vb: OpenDemuxer(Stream, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.Av1ObuFormat.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.Av1ObuFormat.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, Boolean)
+  nameWithType: Av1ObuFormat.OpenDemuxer(Stream, MediaContext, bool)
+  nameWithType.vb: Av1ObuFormat.OpenDemuxer(Stream, MediaContext, Boolean)
+- uid: Egami.Video.Containers.Av1ObuFormat.OpenDemuxer*
+  name: OpenDemuxer
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_OpenDemuxer_
+  commentId: Overload:Egami.Video.Containers.Av1ObuFormat.OpenDemuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1ObuFormat.OpenDemuxer
+  nameWithType: Av1ObuFormat.OpenDemuxer
+- uid: Egami.Video.Containers.Av1ObuFormat.SignatureLength
+  name: SignatureLength
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_SignatureLength
+  commentId: P:Egami.Video.Containers.Av1ObuFormat.SignatureLength
+  fullName: Egami.Video.Containers.Av1ObuFormat.SignatureLength
+  nameWithType: Av1ObuFormat.SignatureLength
+- uid: Egami.Video.Containers.Av1ObuFormat.SignatureLength*
+  name: SignatureLength
+  href: api/Egami.Video.Containers.Av1ObuFormat.html#Egami_Video_Containers_Av1ObuFormat_SignatureLength_
+  commentId: Overload:Egami.Video.Containers.Av1ObuFormat.SignatureLength
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Av1ObuFormat.SignatureLength
+  nameWithType: Av1ObuFormat.SignatureLength
 - uid: Egami.Video.Containers.AviFormat
   name: AviFormat
   href: api/Egami.Video.Containers.AviFormat.html
