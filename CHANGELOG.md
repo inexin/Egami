@@ -61,6 +61,12 @@ command review freezes the names and options at 1.0.
 - PDF417 cut off before its start pattern reads from the stop pattern, using the right row indicators (ZXing pdf417-3 19 of
   19, 16 before).
 
+### Faster writing
+
+- `Barcode.Code128` takes about 0.6 times ZXing.Net 0.16.10's time (1.6 times before): the code set search runs on the
+  stack, and the symbol characters and bars are built without lists or copies. Code 128 and Code 39 no longer copy
+  text without control characters for the human-readable text.
+
 ## Egami.Video 0.3.0 (unreleased)
 
 Egami.Video now lives in the Egami repository (it was inexin/Egami.Video), built and tested with the other packages; its

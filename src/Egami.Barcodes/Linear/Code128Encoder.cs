@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Egami.Barcodes.Linear;
 
 /// <summary>
@@ -31,6 +34,17 @@ internal static class Code128Encoder
     /// <summary>Encodes the input (bytes 0 to 255 and <see cref="Fnc1"/>) as symbol character values, start to check, without the stop.</summary>
     public static List<int> Encode(ReadOnlySpan<int> input)
     {
+        Span<int> values = input.Length <= 300 ? stackalloc int[MaxValues(input.Length)] : new int[MaxValues(input.Length)];
+        return [.. values[..Encode(input, values)]];
+    }
+
+    /// <summary>The most symbol characters, start to check, that an input of the given length can take.</summary>
+    public static int MaxValues(int length) => (length * 4) + 2;
+
+    /// <summary>Encodes the input into <paramref name="values"/>, of at least <see cref="MaxValues"/> characters, and returns how many it wrote.</summary>
+    [SkipLocalsInit]
+    public static int Encode(ReadOnlySpan<int> input, Span<int> values)
+    {
         int n = input.Length;
 
         // cost[(i * 3) + s]: fewest characters for input[i..] when the symbol is in set s at i, set changes included.
@@ -38,31 +52,15 @@ internal static class Code128Encoder
         Span<int> cost = cells <= 1024 ? stackalloc int[cells] : new int[cells];
         Span<int> step = cells <= 1024 ? stackalloc int[cells] : new int[cells];
         cost[(n * 3)..].Clear();
-        Span<int> direct = stackalloc int[3];
-        Span<int> directStep = stackalloc int[3];
         for (int i = n - 1; i >= 0; i--)
         {
-            for (int set = 0; set < 3; set++)
-            {
-                (direct[set], directStep[set]) = Direct(input, i, set, cost);
-            }
-
-            for (int set = 0; set < 3; set++)
-            {
-                // On a tie, change to C now, so digits go in pairs as early as they can; otherwise stay, and prefer B to A.
-                int best = direct[set], how = directStep[set];
-                foreach (int other in (ReadOnlySpan<int>)[SetC, SetB, SetA])
-                {
-                    if (other != set && direct[other] < int.MaxValue && (1 + direct[other] < best || (1 + direct[other] == best && other == SetC)))
-                    {
-                        best = 1 + direct[other];
-                        how = Latch + other;
-                    }
-                }
-
-                cost[(i * 3) + set] = best;
-                step[(i * 3) + set] = how;
-            }
+            (int a, int stepA) = Direct(input, i, SetA, cost);
+            (int b, int stepB) = Direct(input, i, SetB, cost);
+            (int c, int stepC) = Direct(input, i, SetC, cost);
+            int at = i * 3;
+            (cost[at + SetA], step[at + SetA]) = Choose(SetA, a, stepA, a, b, c);
+            (cost[at + SetB], step[at + SetB]) = Choose(SetB, b, stepB, a, b, c);
+            (cost[at + SetC], step[at + SetC]) = Choose(SetC, c, stepC, a, b, c);
         }
 
         // The start character picks the first set; ties go to C, then B, then A.
@@ -75,7 +73,8 @@ internal static class Code128Encoder
             }
         }
 
-        var values = new List<int> { StartA + start };
+        int count = 0;
+        values[count++] = StartA + start;
         int current = start;
         for (int i = 0; i < n;)
         {
@@ -83,7 +82,7 @@ internal static class Code128Encoder
             if (how >= Latch)
             {
                 int target = how - Latch;
-                values.Add(target switch { SetA => CodeA, SetB => CodeB, _ => CodeC });
+                values[count++] = target switch { SetA => CodeA, SetB => CodeB, _ => CodeC };
                 current = target;
                 how = step[(i * 3) + current] < Latch ? step[(i * 3) + current] : Direct(input, i, current, cost).Step;
             }
@@ -91,57 +90,93 @@ internal static class Code128Encoder
             switch (how)
             {
                 case Pair:
-                    values.Add(((input[i] - '0') * 10) + (input[i + 1] - '0'));
+                    values[count++] = ((input[i] - '0') * 10) + (input[i + 1] - '0');
                     i += 2;
                     break;
                 case Shift:
                     // FNC4 goes before the shift, in the current set: the shift changes the set of the one character after it.
                     if (input[i] >= 128)
                     {
-                        values.Add(current == SetA ? 101 : 100);
+                        values[count++] = current == SetA ? 101 : 100;
                     }
 
-                    values.Add(ShiftValue);
-                    AddCharacter(values, input[i] & 0x7F, current == SetA ? SetB : SetA);
+                    values[count++] = ShiftValue;
+                    count = AddCharacter(values, count, input[i] & 0x7F, current == SetA ? SetB : SetA);
                     i++;
                     break;
                 default:
-                    AddCharacter(values, input[i], current);
+                    count = AddCharacter(values, count, input[i], current);
                     i++;
                     break;
             }
         }
 
         int check = values[0];
-        for (int i = 1; i < values.Count; i++)
+        for (int i = 1; i < count; i++)
         {
             check += values[i] * i;
         }
 
-        values.Add(check % 103);
-        return values;
+        values[count++] = check % 103;
+        return count;
     }
 
     /// <summary>Returns the bar and space widths of symbol characters followed by the stop character.</summary>
-    public static int[] Runs(List<int> values)
+    public static int[] Runs(ReadOnlySpan<int> values)
     {
-        int[] runs = new int[(values.Count * 6) + 7];
+        int[] runs = new int[(values.Length * 6) + 7];
+        ReadOnlySpan<int> widths = s_widths;
         int at = 0;
         foreach (int value in values)
         {
-            s_widths[value].CopyTo(runs.AsSpan(at));
+            widths.Slice(value * 6, 6).CopyTo(runs.AsSpan(at));
             at += 6;
         }
 
-        s_widths[Stop].CopyTo(runs.AsSpan(at));
+        widths.Slice(Stop * 6, 7).CopyTo(runs.AsSpan(at));
         return runs;
     }
 
-    private static readonly int[][] s_widths = [.. s_patterns.Select(p => p.Select(c => c - '0').ToArray())];
+    /// <summary>Returns the bar and space widths of symbol characters followed by the stop character.</summary>
+    public static int[] Runs(List<int> values) => Runs(CollectionsMarshal.AsSpan(values));
+
+    // The widths of every symbol character, six each from value * 6; the stop character's seven come last.
+    private static readonly int[] s_widths = [.. s_patterns.SelectMany(p => p.Select(c => c - '0'))];
 
     private const int Single = 0, Pair = 1, Shift = 2, Latch = 10;
 
+    /// <summary>
+    /// The cheapest way on from set <paramref name="set"/>: staying, at <paramref name="own"/>, or changing to another set first,
+    /// at one more than that set's cost without a change (<paramref name="a"/>, <paramref name="b"/> or <paramref name="c"/>).
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static (int Cost, int Step) Choose(int set, int own, int how, int a, int b, int c)
+    {
+        // On a tie, change to C now, so digits go in pairs as early as they can; otherwise stay, and prefer B to A.
+        int best = own;
+        if (set != SetC && c < int.MaxValue && 1 + c <= best)
+        {
+            best = 1 + c;
+            how = Latch + SetC;
+        }
+
+        if (set != SetB && b < int.MaxValue && 1 + b < best)
+        {
+            best = 1 + b;
+            how = Latch + SetB;
+        }
+
+        if (set != SetA && a < int.MaxValue && 1 + a < best)
+        {
+            best = 1 + a;
+            how = Latch + SetA;
+        }
+
+        return (best, how);
+    }
+
     /// <summary>The cheapest way to encode from position i staying in the set (no change of set first), and its cost.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static (int Cost, int Step) Direct(ReadOnlySpan<int> input, int i, int set, ReadOnlySpan<int> cost)
     {
         int c = input[i];
@@ -178,21 +213,22 @@ internal static class Code128Encoder
 
     private static bool InSet(int c, int set) => set == SetA ? c < 96 : c >= 32;
 
-    private static void AddCharacter(List<int> values, int c, int set)
+    private static int AddCharacter(Span<int> values, int count, int c, int set)
     {
         if (c == Fnc1)
         {
-            values.Add(Fnc1Value);
-            return;
+            values[count] = Fnc1Value;
+            return count + 1;
         }
 
         if (c >= 128)
         {
             // FNC4 is code 101 in set A and code 100 in set B.
-            values.Add(set == SetA ? 101 : 100);
+            values[count++] = set == SetA ? 101 : 100;
             c &= 0x7F;
         }
 
-        values.Add(c >= 32 ? c - 32 : c + 64);
+        values[count] = c >= 32 ? c - 32 : c + 64;
+        return count + 1;
     }
 }

@@ -121,6 +121,27 @@ public sealed class BarcodeModules
         return new BarcodeModules(width, height, modules, []);
     }
 
+    /// <summary>Makes a linear symbol from runs the encoder owns and hands over, without copying them.</summary>
+    internal static BarcodeModules WrapLinear(int[] runs, int height)
+    {
+        System.Diagnostics.Debug.Assert(runs.Length % 2 == 1 && height > 0);
+        int width = 0;
+        foreach (int run in runs)
+        {
+            width += run;
+        }
+
+        bool[] dark = new bool[width];
+        int x = 0;
+        for (int i = 0; i < runs.Length; i += 2)
+        {
+            dark.AsSpan(x, runs[i]).Fill(true);
+            x += runs[i] + (i + 1 < runs.Length ? runs[i + 1] : 0);
+        }
+
+        return new BarcodeModules(width, height, dark, runs);
+    }
+
     /// <summary>Gets a row of a 2D grid, or the columns of a linear symbol.</summary>
     internal ReadOnlySpan<bool> Row(int y) => IsLinear ? _dark : _dark.AsSpan(y * Width, Width);
 }

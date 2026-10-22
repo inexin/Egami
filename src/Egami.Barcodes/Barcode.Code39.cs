@@ -124,11 +124,20 @@ public sealed partial class Barcode
         }
     }
 
-    private static string ControlsAsSpaces(string text) => string.Create(text.Length, text, static (span, text) =>
+    private static string ControlsAsSpaces(string text)
     {
-        for (int i = 0; i < span.Length; i++)
+        // char.IsControl: U+0000 to U+001F and U+007F to U+009F. Most text has none and is returned as it is.
+        if (!text.AsSpan().ContainsAnyInRange('\0', '\x1F') && !text.AsSpan().ContainsAnyInRange('\x7F', '\x9F'))
         {
-            span[i] = char.IsControl(text[i]) ? ' ' : text[i];
+            return text;
         }
-    });
+
+        return string.Create(text.Length, text, static (span, text) =>
+        {
+            for (int i = 0; i < span.Length; i++)
+            {
+                span[i] = char.IsControl(text[i]) ? ' ' : text[i];
+            }
+        });
+    }
 }
