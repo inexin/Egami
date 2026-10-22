@@ -359,6 +359,14 @@ A new package that writes and reads barcodes, drawn through Egami.Drawing.
 
 ## Egami 1.1.0 (unreleased)
 
+### AV1 video
+
+- `Av1StreamDecoder` (in `Egami.Formats.Av1`) decodes AV1 video a temporal unit at a time: key, inter, intra-only and switch
+  frames with every inter tool of the Main, High and Professional profiles, 8 to 12 bits, 4:0:0 to 4:4:4, film grain, scaled
+  references, superres and scalable streams (operating point and layer options). Every frame equals libaom's on libaom's test
+  vectors and on clips for each tool. `Av1DecoderOptions`, `Av1FrameInfo` and `Av1FrameKind` go with it. Egami.Video uses it for
+  AV1 in WebM, Matroska, MP4 and IVF.
+
 ### ISO BMFF boxes
 
 - `IsoBoxReader`, `IsoBox` and `FourCC` (in `Egami.Formats.Iso`) walk the boxes of MP4, QuickTime, HEIF and AVIF files from

@@ -239,6 +239,12 @@ internal sealed class Av1Frame
     /// <summary>Gets or sets the columns of each 8x8 block's saved vector.</summary>
     internal int[]? SavedMvCols { get; set; }
 
+    /// <summary>Gets the temporal layer of the frame's headers.</summary>
+    internal int TemporalId { get; init; }
+
+    /// <summary>Gets the spatial layer of the frame's headers.</summary>
+    internal int SpatialId { get; init; }
+
     /// <summary>Gets or sets whether show_existing_frame may still show this frame (a key frame is shown that way once).</summary>
     internal bool Showable { get; set; }
 

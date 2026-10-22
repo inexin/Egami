@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 
 using Egami.Formats.Av1;
+using Egami.Pixels;
 
 namespace Egami.Tests.Formats.Av1;
 
@@ -78,6 +79,73 @@ public class Av1StreamTests
             Assert.True(expected[i][5].GetString() == gotNoGrain[i], $"frame {i} before film grain differs from libaom's");
             Assert.True(expected[i][4].GetString() == got[i], $"frame {i} with film grain differs from libaom's");
         }
+    }
+
+    /// <summary>The exact gate through the public <see cref="Av1StreamDecoder"/>: each frame copied out hashes as libaom's.</summary>
+    [Theory]
+    [MemberData(nameof(Vectors))]
+    public void PublicDecoderFramesEqualLibaoms(string vector)
+    {
+        string cache = Cache() ?? throw LocalCorpus.Skip("av1");
+        JsonElement[] expected = [.. JsonDocument.Parse(File.ReadAllBytes(Path.Combine(cache, "reference", "av1", vector + ".json")))
+            .RootElement.GetProperty("frames").EnumerateArray()];
+        byte[] data = File.ReadAllBytes(VectorPath(cache, vector));
+        using Av1StreamDecoder decoder = new();
+        int index = 0;
+        foreach ((int offset, int length) in IvfFrames(data))
+        {
+            decoder.Send(data.AsSpan(offset, length));
+            while (decoder.NextFrame is Av1FrameInfo next)
+            {
+                using YuvRaster picture = next.BitDepth == 8
+                    ? YuvRaster.Create(next.Width, next.Height, next.Chroma, YuvColor.Bt601Limited)
+                    : YuvRaster.Create(next.Width, next.Height, next.Chroma, next.BitDepth, YuvColor.Bt601Limited);
+                Assert.True(decoder.TryReceiveFrame(picture, out _));
+                Assert.True(expected[index][4].GetString() == Md5(picture), $"frame {index} differs from libaom's");
+                index++;
+            }
+        }
+
+        Assert.Equal(expected.Length, index);
+    }
+
+    private static string Md5(YuvRaster picture)
+    {
+        using IncrementalHash md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+        byte[] row = new byte[picture.Width * 2];
+        foreach (int plane in picture.ChromaFormat == ChromaFormat.Yuv400 ? [0] : new[] { 0, 1, 2 })
+        {
+            if (picture is YuvRaster<byte> bytes)
+            {
+                YuvPlane<byte> p = plane == 0 ? bytes.Y : plane == 1 ? bytes.U! : bytes.V!;
+                for (int y = 0; y < p.Height; y++)
+                {
+                    Span<byte> r = p.Row(y);
+                    for (int x = 0; x < p.Width; x++)
+                    {
+                        BinaryPrimitives.WriteUInt16LittleEndian(row.AsSpan(x * 2), r[x]);
+                    }
+
+                    md5.AppendData(row, 0, p.Width * 2);
+                }
+            }
+            else
+            {
+                YuvPlane<ushort> p = plane == 0 ? ((YuvRaster<ushort>)picture).Y : plane == 1 ? ((YuvRaster<ushort>)picture).U! : ((YuvRaster<ushort>)picture).V!;
+                for (int y = 0; y < p.Height; y++)
+                {
+                    Span<ushort> r = p.Row(y);
+                    for (int x = 0; x < p.Width; x++)
+                    {
+                        BinaryPrimitives.WriteUInt16LittleEndian(row.AsSpan(x * 2), r[x]);
+                    }
+
+                    md5.AppendData(row, 0, p.Width * 2);
+                }
+            }
+        }
+
+        return Convert.ToHexStringLower(md5.GetHashAndReset());
     }
 
     /// <summary>
