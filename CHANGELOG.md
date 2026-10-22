@@ -134,6 +134,13 @@ V4.2: AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
   from the first packet for a track that has none.
 - `Av1Packets`: `SplitFrames`, `MergeFrames` and `ExtractConfig` (av1C from a sequence header).
 
+### Raw AV1
+
+- `Av1ObuFormat` (.obu, low-overhead OBUs as aomdec and dav1d read them) and `Av1AnnexBFormat` (the specification's Annex B,
+  as the conformance streams use), registered by default and detected from their first bytes, read and written. Frames are timed
+  at a `FrameRate` you set (30 a second by default). Reading and writing back gives the same bytes; packets match ffprobe's,
+  and aomdec and dav1d decode the files the writers make to libaom's frames.
+
 ## Egami.Video 0.4.0 (unreleased)
 
 V4.1, API reviewed and accepted 2026-10-22 (all as recommended): MP4 and QuickTime. Built on Egami's public ISO BMFF box

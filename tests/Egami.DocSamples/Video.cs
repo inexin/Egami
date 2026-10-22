@@ -516,4 +516,36 @@ public class Video
         Assert.Equal(packet.Data.ToArray(), unit);
         Assert.Equal(demuxer.Tracks[0].CodecPrivate.ToArray(), av1C);
     }
+
+    [Fact]
+    public void RawAv1()
+    {
+        using SampleFiles files = new();
+
+        #region video-av1-raw
+        // Raw AV1 streams have no timestamps: frames are timed at the format's frame rate, 30 a second unless you register another.
+        MediaContext context = MediaContext.Default.WithContainer(new Av1ObuFormat { FrameRate = new Rational(24, 1) });
+
+        // An IVF clip to a low-overhead .obu file (what aomdec and dav1d read) and to Annex B, then read back.
+        MediaFile.Remux("clip-av1.ivf", "clip.obu");
+        using (IDemuxer demuxer = MediaFile.OpenDemuxer("clip-av1.ivf"))
+        using (IMuxer annexB = Av1AnnexBFormat.Instance.CreateMuxer(File.Create("clip-annexb.obu"), demuxer.Tracks, MediaContext.Default, leaveOpen: false))
+        {
+            while (demuxer.ReadPacket() is { } packet)
+            {
+                using (packet)
+                {
+                    annexB.WritePacket(packet);
+                }
+            }
+        }
+
+        using VideoReader reader = VideoReader.Open("clip.obu", context: context);
+        Console.WriteLine($"{MediaFile.Probe("clip-annexb.obu").FormatName}; {reader.Track.FrameRate} fps");
+        #endregion
+
+        Assert.Equal("AV1 Annex B", MediaFile.Probe("clip-annexb.obu").FormatName);
+        Assert.Equal(new Rational(24, 1), reader.Track.FrameRate);
+        Assert.Equal(12, reader.ReadFrames().Select(f => { f.Dispose(); return 0; }).Count());
+    }
 }
