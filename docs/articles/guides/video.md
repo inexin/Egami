@@ -74,7 +74,7 @@ An `IVideoEncoder` takes frames and gives packets, with `VideoEncoderOptions` fo
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-encode)]
 
-`CodecHeaders.Describe` lists a packet's header fields as `CodecHeaderField`s under the codec's own names, for VP8, VP9 and
+`CodecHeaders.Describe` lists a packet's header fields as `CodecHeaderField`s under the codec's own names, for VP8, VP9, AV1 and
 Motion JPEG.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-headers)]
@@ -109,6 +109,12 @@ the same bytes, and IVF, WebM, Matroska and MP4 tracks write to them.
 `Av1Packets` splits a temporal unit into its frames and merges them back, and builds the av1C record from a sequence header.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1-packets)]
+
+`CodecHeaders.Describe` lists an AV1 packet's OBUs, its sequence header and metadata fields, and the start of each frame header
+(up to `error_resilient_mode`). The rest of a frame header depends on the frames before it, so a `CodecHeaderReader` reads a track's
+packets in order, decoding them, and lists each frame header whole.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-av1-headers)]
 
 ## HDR
 

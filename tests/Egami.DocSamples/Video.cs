@@ -548,4 +548,29 @@ public class Video
         Assert.Equal(new Rational(24, 1), reader.Track.FrameRate);
         Assert.Equal(12, reader.ReadFrames().Select(f => { f.Dispose(); return 0; }).Count());
     }
+
+    [Fact]
+    public void Av1Headers()
+    {
+        using SampleFiles files = new();
+
+        #region video-av1-headers
+        // An AV1 frame header depends on the frames before it: a CodecHeaderReader reads the packets in order and lists each whole.
+        using IDemuxer demuxer = MediaFile.OpenDemuxer("av1.webm");
+        using CodecHeaderReader headers = new(demuxer.Tracks[0]);
+        while (demuxer.ReadPacket() is { } packet)
+        {
+            using (packet)
+            {
+                IReadOnlyList<CodecHeaderField> fields = headers.Describe(packet);
+                Console.WriteLine(string.Join(", ", fields.Where(f => f.Name is "frame_type" or "order_hint" or "base_q_idx").Select(f => $"{f.Name} = {f.Value}")));
+            }
+        }
+        #endregion
+
+        demuxer.Seek(MediaTime.Zero);
+        headers.Reset();
+        using EncodedPacket first = demuxer.ReadPacket()!;
+        Assert.Contains(headers.Describe(first), f => f.Name == "base_q_idx");
+    }
 }
