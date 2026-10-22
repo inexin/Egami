@@ -3,10 +3,11 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami.Cli 0.3.0 (unreleased)
+## Egami.Cli 1.0.0 (unreleased)
 
-A new package: the `egami` command-line tool, a .NET tool built on Egami's public API (Roadmap 2.0). Previews (0.x) until a
-command review freezes the names and options at 1.0.
+A new package: the `egami` command-line tool, a .NET tool built on Egami's public API (Roadmap 2.0). The command review froze
+its names and options at 1.0. The `cli-native` workflow builds it as a native program for win-x64, linux-x64 and osx-arm64,
+which needs no .NET runtime.
 
 ### Commands
 

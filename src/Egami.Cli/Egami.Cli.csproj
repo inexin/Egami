@@ -6,8 +6,8 @@
     <!-- Not "egami": on a case-insensitive file system egami.dll and Egami.dll would collide. The tool command is egami. -->
     <AssemblyName>Egami.Cli</AssemblyName>
     <PackageId>Egami.Cli</PackageId>
-    <!-- Its own version line (CLI design Q1, Q16): 0.x previews until the command review freezes the syntax at 1.0. -->
-    <Version>0.3.0</Version>
+    <!-- Its own version line (CLI design Q1, Q16). 1.0 froze the command names and options after the command review. -->
+    <Version>1.0.0</Version>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>egami</ToolCommandName>
     <!-- Also listed as an MCP server on NuGet, with .mcp/server.json (MCP design Q8). -->
@@ -21,7 +21,8 @@
     <!-- A run is short, so loops get optimized code at once rather than after on-stack replacement: a 12-megapixel JPEG
          converts about a quarter faster. -->
     <TieredCompilationQuickJitForLoops>false</TieredCompilationQuickJitForLoops>
-    <!-- Native AOT binaries: dotnet publish src/Egami.Cli -c Release -r win-x64|linux-x64|osx-arm64 -p:EgamiNativeAot=true.
+    <!-- Native AOT binaries: dotnet publish src/Egami.Cli -c Release -r win-x64|linux-x64|osx-arm64 -p:EgamiNativeAot=true,
+         as .github/workflows/cli-native.yml does.
          A property of our own, since PublishAot itself would reach the netstandard2.0 generator. -->
     <PublishAot Condition="'$(EgamiNativeAot)' == 'true'">true</PublishAot>
     <StripSymbols>true</StripSymbols>
@@ -53,7 +54,7 @@
   </Target>
 
   <!-- The native program is named egami; the assembly cannot be, since assembly names ignore case and Egami is taken. -->
-  <Target Name="NameNativeProgram" AfterTargets="Publish" Condition="'$(EgamiNativeAot)' == 'true'">
+  <Target Name="NameNativeProgram" AfterTargets="CopyNativeBinary" Condition="'$(EgamiNativeAot)' == 'true'">
     <Move SourceFiles="$(PublishDir)$(TargetName)$(_NativeExecutableExtension)" DestinationFiles="$(PublishDir)egami$(_NativeExecutableExtension)" />
   </Target>
 
