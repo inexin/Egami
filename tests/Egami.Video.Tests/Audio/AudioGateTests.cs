@@ -1,0 +1,125 @@
+using System.Diagnostics;
+
+using Egami.Video.Audio;
+using Egami.Video.Audio.Codecs;
+
+namespace Egami.Video.Tests.Audio;
+
+/// <summary>
+/// The V5.0 gate runs that need the IETF FLAC test files and take minutes: set EGAMI_AUDIO_GATES=1. They write Egami.Video's FLAC
+/// encodings into .cache/audio/gates for make-audio-corpus.py --gates to compare with libFLAC (flac -t, sizes) and print
+/// decode speed.
+/// </summary>
+public class AudioGateTests(ITestOutputHelper output)
+{
+    private static bool Enabled => Environment.GetEnvironmentVariable("EGAMI_AUDIO_GATES") == "1";
+
+    [Fact]
+    public void EncodeIetfFilesAtEveryLevel()
+    {
+        if (!Enabled || AudioCorpus.IetfDirectory is not { } directory)
+        {
+            Assert.Skip("Set EGAMI_AUDIO_GATES=1 and fetch the IETF FLAC test files (make-audio-corpus.py --ietf).");
+            return;
+        }
+
+        string root = Path.Combine(directory, "..", "gates");
+        foreach ((string name, AudioCorpus.Reference reference) in Sources(directory))
+        {
+            for (int level = 0; level <= 8; level++)
+            {
+                string target = Path.Combine(root, $"L{level}", Path.GetFileName(name));
+                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                using AudioReader reader = AudioReader.Open(Path.Combine(directory, name), new AudioReaderOptions { SampleFormat = null });
+                using AudioWriter writer = AudioWriter.Create(target, new AudioWriterOptions { Codec = FlacCodec.Instance, Level = level, BitsPerSample = reference.Bits });
+                foreach (AudioFrame frame in reader.ReadFrames())
+                {
+                    using (frame)
+                    {
+                        writer.Write(frame);
+                    }
+                }
+            }
+
+            output.WriteLine($"encoded {name}");
+        }
+    }
+
+    [Fact]
+    public void DecodeSpeed()
+    {
+        if (!Enabled || AudioCorpus.IetfDirectory is not { } directory)
+        {
+            Assert.Skip("Set EGAMI_AUDIO_GATES=1 and fetch the IETF FLAC test files (make-audio-corpus.py --ietf).");
+            return;
+        }
+
+        long samples = 0;
+        Stopwatch watch = new();
+        foreach ((string name, _) in Sources(directory))
+        {
+            byte[] data = File.ReadAllBytes(Path.Combine(directory, name));
+            for (int run = 0; run < 3; run++)
+            {
+                watch.Start();
+                using AudioReader reader = AudioReader.Open(new MemoryStream(data), new AudioReaderOptions { SampleFormat = null, Decoder = new AudioDecoderOptions { VerifyChecksums = true } });
+                foreach (AudioFrame frame in reader.ReadFrames())
+                {
+                    samples += frame.SampleCount * frame.ChannelCount;
+                    frame.Dispose();
+                }
+
+                watch.Stop();
+            }
+        }
+
+        output.WriteLine($"Decoded {samples / 3} samples in {watch.Elapsed.TotalSeconds / 3:F3} s a pass: {samples / watch.Elapsed.TotalSeconds / 1e6:F1} M samples/s");
+    }
+
+    [Fact]
+    public void ResamplerSpeed()
+    {
+        if (!Enabled)
+        {
+            Assert.Skip("Set EGAMI_AUDIO_GATES=1.");
+            return;
+        }
+
+        // 60 s of stereo float at 44.1 kHz to 48 kHz at each quality, as make-audio-corpus.py --gates times SoX and FFmpeg.
+        using AudioFrame input = new(SampleFormat.F32Planar, ChannelLayout.Stereo, 44100, 44100 * 60, MediaTime.Zero);
+        for (int c = 0; c < 2; c++)
+        {
+            Span<float> s = input.GetSpan<float>(c);
+            for (int i = 0; i < s.Length; i++)
+            {
+                s[i] = 0.5f * MathF.Sin(2 * MathF.PI * 440 * i / 44100);
+            }
+        }
+
+        foreach (ResamplerQuality quality in Enum.GetValues<ResamplerQuality>())
+        {
+            Stopwatch watch = Stopwatch.StartNew();
+            using Resampler resampler = new(44100, 48000, ChannelLayout.Stereo, quality);
+            for (int start = 0; start < input.SampleCount; start += 4096)
+            {
+                using AudioFrame part = input.Slice(start, Math.Min(4096, input.SampleCount - start));
+                resampler.Send(part);
+                while (resampler.TryReceive(out AudioFrame? frame))
+                {
+                    frame.Dispose();
+                }
+            }
+
+            resampler.Flush();
+            output.WriteLine($"Resampler {quality}: 60 s in {watch.Elapsed.TotalSeconds:F3} s ({resampler.FilterLength} taps)");
+        }
+    }
+
+    /// <summary>The IETF subset files libFLAC decodes, without the ones made to stress metadata.</summary>
+    private static IEnumerable<(string Name, AudioCorpus.Reference Reference)> Sources(string directory) =>
+        AudioCorpus.Load(Path.Combine(directory, "reference.json"))
+            .Where(p => p.Key.StartsWith("subset/", StringComparison.Ordinal) && p.Value.Md5.Length > 0 && p.Value.Bits >= 4
+                && !p.Key.Contains("Extremely large", StringComparison.Ordinal) && !p.Key.Contains("combined", StringComparison.Ordinal))
+            .OrderBy(p => p.Key, StringComparer.Ordinal)
+            .Select(p => (p.Key, p.Value));
+}

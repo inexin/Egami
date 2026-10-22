@@ -75,6 +75,50 @@ which needs no .NET runtime.
   stack, and the symbol characters and bars are built without lists or copies. Code 128 and Code 39 no longer copy
   text without control characters for the human-readable text.
 
+## Egami.Video 0.5.0 (unreleased)
+
+V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing. The V5 audio steps (V5.0,
+V5.1 Opus, V5.5 Vorbis) get one API review and one release after V5.5, so these types may still change.
+
+### Frames and conversion
+
+- `AudioFrame`: samples for every channel with a timestamp, rate, `ChannelLayout` and `SampleFormat`, from the context's
+  memory source. Twelve sample formats: unsigned 8-bit, signed 16, 32 and 64-bit, 32 and 64-bit float, each interleaved or
+  planar; `ValidBits` says how many bits an integer sample uses (24-bit audio is `S32` with 24).
+- `Convert` and `CopyTo` change the format, with optional triangular dither (`AudioConvertOptions.Dither`).
+- `ChannelLayout` and `Speakers`: channels in WAVE_FORMAT_EXTENSIBLE order, presets from mono to 7.1.4, unpositioned channels.
+- `ChannelMixer`: ITU-R BS.775 downmix and upmix matrices, or one of your own.
+- `Resampler`: polyphase windowed-sinc (Kaiser) between any two rates, `ResamplerQuality.Fast`, `Good` (default: under 0.1 dB
+  ripple to 0.9 of Nyquist, 100 dB stopband) and `Best` (140 dB), with exact timestamps.
+
+### Codecs
+
+- `AudioCodec`, `IAudioDecoder` (with `SendLoss`), `IAudioEncoder`, `AudioDecoderOptions`, `AudioEncoderOptions` and
+  `AudioCodecs`, registered in `MediaContext.AudioCodecs` with `MediaContext.WithCodec(AudioCodec)`.
+- `PcmCodec`: 8 to 32-bit integer PCM, little and big-endian, and 32 and 64-bit float, decoded and encoded.
+- `FlacCodec`: all of RFC 9639 decoded, bit-exact with libFLAC on every IETF FLAC test file it decodes, with CRC and MD5
+  checks (`Flac.BadCrc`, `Flac.Md5Mismatch`); encoding at levels 0 to 8 (default 5), 4 to 32 bits, 1 to 8 channels, files
+  within 1 % of libFLAC's size at every level and accepted by `flac -t`.
+- `AudioTrackInfo.Layout` and `AudioTrackInfo.SeekPreRoll`.
+
+### Containers
+
+- `WavFormat`: WAV, RF64 and BW64 (`WavFormat.Instance`) and Sony Wave64 (`WavFormat.Wave64`), read and written:
+  WAVE_FORMAT_EXTENSIBLE, streamed files with unfilled sizes, LIST/INFO and id3 tags, cue points as chapters, and RF64 by
+  itself past 4 GB.
+- `FlacFormat`: native FLAC read and written, with Vorbis comments, pictures as attachments, seek tables and the channel mask.
+- FLAC and PCM in Matroska and MP4 decode and encode through the existing containers.
+
+### Reading and writing
+
+- `AudioReader` and `AudioReaderOptions`: the first audio track of any file as planar float, or the format, rate and layout
+  asked for; codec delay and edit lists trimmed (`KeepAllSamples` keeps them); sample-exact `Seek`.
+- `AudioWriter` and `AudioWriterOptions`: frames of any length and format into WAV, Wave64, FLAC, Matroska or MP4.
+- `MediaFile.Transcode`: copies a file and encodes its audio again with another codec, for example FLAC in Matroska.
+- `VideoWriterOptions.AudioCodec` (with `AudioSampleRate`, `AudioLayout` and `AudioBitsPerSample`) and
+  `VideoWriter.WriteAudio`: an audio track encoded next to the video.
+- AFL++ fuzz targets `wav` and `flac`.
+
 ## Egami.Video 0.4.0 (unreleased)
 
 V4.1, API reviewed and accepted 2026-10-22 (all as recommended): MP4 and QuickTime. Built on Egami's public ISO BMFF box

@@ -1,1 +1,320 @@
 #nullable enable
+abstract Egami.Video.Audio.AudioCodec.CodecId.get -> string!
+abstract Egami.Video.Audio.AudioCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
+abstract Egami.Video.Audio.AudioCodec.Name.get -> string!
+const Egami.Video.Audio.ChannelLayout.MaxChannels = 255 -> int
+const Egami.Video.Audio.ChannelMixer.MinusThreeDecibels = 0.70710677 -> float
+Egami.Video.Audio.AudioCodec
+Egami.Video.Audio.AudioCodec.AudioCodec() -> void
+Egami.Video.Audio.AudioCodecs
+Egami.Video.Audio.AudioConvertOptions
+Egami.Video.Audio.AudioConvertOptions.<Clone>$() -> Egami.Video.Audio.AudioConvertOptions!
+Egami.Video.Audio.AudioConvertOptions.AudioConvertOptions() -> void
+Egami.Video.Audio.AudioConvertOptions.Dither.get -> bool
+Egami.Video.Audio.AudioConvertOptions.Dither.init -> void
+Egami.Video.Audio.AudioConvertOptions.Equals(Egami.Video.Audio.AudioConvertOptions? other) -> bool
+Egami.Video.Audio.AudioConvertOptions.Mixer.get -> Egami.Video.Audio.ChannelMixer?
+Egami.Video.Audio.AudioConvertOptions.Mixer.init -> void
+Egami.Video.Audio.AudioDecoderOptions
+Egami.Video.Audio.AudioDecoderOptions.<Clone>$() -> Egami.Video.Audio.AudioDecoderOptions!
+Egami.Video.Audio.AudioDecoderOptions.AudioDecoderOptions() -> void
+Egami.Video.Audio.AudioDecoderOptions.Equals(Egami.Video.Audio.AudioDecoderOptions? other) -> bool
+Egami.Video.Audio.AudioDecoderOptions.Errors.get -> Egami.Video.DecodeErrorMode
+Egami.Video.Audio.AudioDecoderOptions.Errors.init -> void
+Egami.Video.Audio.AudioDecoderOptions.VerifyChecksums.get -> bool
+Egami.Video.Audio.AudioDecoderOptions.VerifyChecksums.init -> void
+Egami.Video.Audio.AudioEncoderOptions
+Egami.Video.Audio.AudioEncoderOptions.<Clone>$() -> Egami.Video.Audio.AudioEncoderOptions!
+Egami.Video.Audio.AudioEncoderOptions.AudioEncoderOptions() -> void
+Egami.Video.Audio.AudioEncoderOptions.BitsPerSample.get -> int
+Egami.Video.Audio.AudioEncoderOptions.BitsPerSample.init -> void
+Egami.Video.Audio.AudioEncoderOptions.Equals(Egami.Video.Audio.AudioEncoderOptions? other) -> bool
+Egami.Video.Audio.AudioEncoderOptions.FrameSize.get -> int
+Egami.Video.Audio.AudioEncoderOptions.FrameSize.init -> void
+Egami.Video.Audio.AudioEncoderOptions.Layout.get -> Egami.Video.Audio.ChannelLayout
+Egami.Video.Audio.AudioEncoderOptions.Layout.init -> void
+Egami.Video.Audio.AudioEncoderOptions.Level.get -> int?
+Egami.Video.Audio.AudioEncoderOptions.Level.init -> void
+Egami.Video.Audio.AudioEncoderOptions.SampleRate.get -> int
+Egami.Video.Audio.AudioEncoderOptions.SampleRate.init -> void
+Egami.Video.Audio.AudioFrame
+Egami.Video.Audio.AudioFrame.AsSpan<T>(int channel = 0) -> System.ReadOnlySpan<T>
+Egami.Video.Audio.AudioFrame.AudioFrame(Egami.Video.Audio.SampleFormat format, Egami.Video.Audio.ChannelLayout layout, int sampleRate, int sampleCount, Egami.Video.MediaTime timestamp, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Audio.AudioFrame.ChannelCount.get -> int
+Egami.Video.Audio.AudioFrame.Convert(Egami.Video.Audio.SampleFormat format, Egami.Video.Audio.ChannelLayout? layout = null, Egami.Video.Audio.AudioConvertOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.AudioFrame!
+Egami.Video.Audio.AudioFrame.CopyTo(Egami.Video.Audio.AudioFrame! destination, Egami.Video.Audio.AudioConvertOptions? options = null) -> void
+Egami.Video.Audio.AudioFrame.Dispose() -> void
+Egami.Video.Audio.AudioFrame.Duration.get -> Egami.Video.MediaTime
+Egami.Video.Audio.AudioFrame.Format.get -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.AudioFrame.GetBytes(int channel = 0) -> System.Span<byte>
+Egami.Video.Audio.AudioFrame.GetSpan<T>(int channel = 0) -> System.Span<T>
+Egami.Video.Audio.AudioFrame.Layout.get -> Egami.Video.Audio.ChannelLayout
+Egami.Video.Audio.AudioFrame.PlaneCount.get -> int
+Egami.Video.Audio.AudioFrame.SampleCount.get -> int
+Egami.Video.Audio.AudioFrame.SampleRate.get -> int
+Egami.Video.Audio.AudioFrame.Slice(int start, int count, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.AudioFrame!
+Egami.Video.Audio.AudioFrame.Timestamp.get -> Egami.Video.MediaTime
+Egami.Video.Audio.AudioFrame.Timestamp.set -> void
+Egami.Video.Audio.AudioFrame.ValidBits.get -> int
+Egami.Video.Audio.AudioFrame.ValidBits.init -> void
+Egami.Video.Audio.ChannelLayout
+Egami.Video.Audio.ChannelLayout.ChannelCount.get -> int
+Egami.Video.Audio.ChannelLayout.ChannelLayout() -> void
+Egami.Video.Audio.ChannelLayout.ChannelLayout(Egami.Video.Audio.Speakers speakers) -> void
+Egami.Video.Audio.ChannelLayout.ChannelLayout(Egami.Video.Audio.Speakers speakers, int channelCount) -> void
+Egami.Video.Audio.ChannelLayout.Equals(Egami.Video.Audio.ChannelLayout other) -> bool
+Egami.Video.Audio.ChannelLayout.GetSpeaker(int channel) -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.ChannelLayout.IndexOf(Egami.Video.Audio.Speakers speaker) -> int
+Egami.Video.Audio.ChannelLayout.IsPositioned.get -> bool
+Egami.Video.Audio.ChannelLayout.Speakers.get -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.ChannelMixer
+Egami.Video.Audio.ChannelMixer.ChannelMixer(Egami.Video.Audio.ChannelLayout input, Egami.Video.Audio.ChannelLayout output, float lfeLevel = 0) -> void
+Egami.Video.Audio.ChannelMixer.ChannelMixer(Egami.Video.Audio.ChannelLayout input, Egami.Video.Audio.ChannelLayout output, float[,]! matrix) -> void
+Egami.Video.Audio.ChannelMixer.GetMatrix() -> float[,]!
+Egami.Video.Audio.ChannelMixer.Input.get -> Egami.Video.Audio.ChannelLayout
+Egami.Video.Audio.ChannelMixer.Mix(Egami.Video.Audio.AudioFrame! source, Egami.Video.Audio.AudioFrame! destination) -> void
+Egami.Video.Audio.ChannelMixer.Mix(Egami.Video.Audio.AudioFrame! source, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.AudioFrame!
+Egami.Video.Audio.ChannelMixer.Output.get -> Egami.Video.Audio.ChannelLayout
+Egami.Video.Audio.ChannelMixer.this[int output, int input].get -> float
+Egami.Video.Audio.Codecs.FlacCodec
+Egami.Video.Audio.Codecs.PcmCodec
+Egami.Video.Audio.IAudioDecoder
+Egami.Video.Audio.IAudioDecoder.Flush() -> void
+Egami.Video.Audio.IAudioDecoder.Reset() -> void
+Egami.Video.Audio.IAudioDecoder.Send(Egami.Video.EncodedPacket! packet) -> void
+Egami.Video.Audio.IAudioDecoder.SendLoss(Egami.Video.MediaTime duration) -> void
+Egami.Video.Audio.IAudioDecoder.TryReceive(out Egami.Video.Audio.AudioFrame? frame) -> bool
+Egami.Video.Audio.IAudioEncoder
+Egami.Video.Audio.IAudioEncoder.Flush() -> void
+Egami.Video.Audio.IAudioEncoder.FrameSize.get -> int
+Egami.Video.Audio.IAudioEncoder.Send(Egami.Video.Audio.AudioFrame! frame) -> void
+Egami.Video.Audio.IAudioEncoder.Track.get -> Egami.Video.AudioTrackInfo!
+Egami.Video.Audio.IAudioEncoder.TryReceive(out Egami.Video.EncodedPacket? packet) -> bool
+Egami.Video.Audio.Resampler
+Egami.Video.Audio.Resampler.Dispose() -> void
+Egami.Video.Audio.Resampler.FilterLength.get -> int
+Egami.Video.Audio.Resampler.Flush() -> void
+Egami.Video.Audio.Resampler.InputRate.get -> int
+Egami.Video.Audio.Resampler.Layout.get -> Egami.Video.Audio.ChannelLayout
+Egami.Video.Audio.Resampler.OutputFormat.get -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.Resampler.OutputLayout.get -> Egami.Video.Audio.ChannelLayout
+Egami.Video.Audio.Resampler.OutputRate.get -> int
+Egami.Video.Audio.Resampler.Quality.get -> Egami.Video.Audio.ResamplerQuality
+Egami.Video.Audio.Resampler.Resampler(int inputRate, int outputRate, Egami.Video.Audio.ChannelLayout layout, Egami.Video.Audio.ResamplerQuality quality = Egami.Video.Audio.ResamplerQuality.Good, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Audio.Resampler.Resampler(int inputRate, int outputRate, Egami.Video.Audio.ChannelLayout layout, Egami.Video.Audio.ResamplerQuality quality, Egami.Video.Audio.ChannelLayout? outputLayout, Egami.Video.Audio.SampleFormat outputFormat, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Audio.Resampler.Reset() -> void
+Egami.Video.Audio.Resampler.Send(Egami.Video.Audio.AudioFrame! frame) -> void
+Egami.Video.Audio.Resampler.TryReceive(out Egami.Video.Audio.AudioFrame? frame) -> bool
+Egami.Video.Audio.ResamplerQuality
+Egami.Video.Audio.ResamplerQuality.Best = 2 -> Egami.Video.Audio.ResamplerQuality
+Egami.Video.Audio.ResamplerQuality.Fast = 0 -> Egami.Video.Audio.ResamplerQuality
+Egami.Video.Audio.ResamplerQuality.Good = 1 -> Egami.Video.Audio.ResamplerQuality
+Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.F32 = 4 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.F32Planar = 10 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.F64 = 5 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.F64Planar = 11 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.S16 = 1 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.S16Planar = 7 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.S32 = 2 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.S32Planar = 8 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.S64 = 3 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.S64Planar = 9 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.U8 = 0 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormat.U8Planar = 6 -> Egami.Video.Audio.SampleFormat
+Egami.Video.Audio.SampleFormatExtensions
+Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.BackCenter = 256 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.BackLeft = 16 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.BackRight = 32 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.FrontCenter = 4 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.FrontLeft = 1 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.FrontLeftOfCenter = 64 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.FrontRight = 2 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.FrontRightOfCenter = 128 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.LowFrequency = 8 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.None = 0 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.SideLeft = 512 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.SideRight = 1024 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.TopBackCenter = 65536 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.TopBackLeft = 32768 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.TopBackRight = 131072 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.TopCenter = 2048 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.TopFrontCenter = 8192 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.TopFrontLeft = 4096 -> Egami.Video.Audio.Speakers
+Egami.Video.Audio.Speakers.TopFrontRight = 16384 -> Egami.Video.Audio.Speakers
+Egami.Video.AudioReader
+Egami.Video.AudioReader.CanSeek.get -> bool
+Egami.Video.AudioReader.Dispose() -> void
+Egami.Video.AudioReader.Info.get -> Egami.Video.MediaInfo!
+Egami.Video.AudioReader.Layout.get -> Egami.Video.Audio.ChannelLayout
+Egami.Video.AudioReader.ReadFrame() -> Egami.Video.Audio.AudioFrame?
+Egami.Video.AudioReader.ReadFrames() -> System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame!>!
+Egami.Video.AudioReader.SampleRate.get -> int
+Egami.Video.AudioReader.Seek(Egami.Video.MediaTime time) -> void
+Egami.Video.AudioReader.Track.get -> Egami.Video.AudioTrackInfo!
+Egami.Video.AudioReader.TryRead(out Egami.Video.Audio.AudioFrame? frame) -> bool
+Egami.Video.AudioReaderOptions
+Egami.Video.AudioReaderOptions.<Clone>$() -> Egami.Video.AudioReaderOptions!
+Egami.Video.AudioReaderOptions.AudioReaderOptions() -> void
+Egami.Video.AudioReaderOptions.Decoder.get -> Egami.Video.Audio.AudioDecoderOptions?
+Egami.Video.AudioReaderOptions.Decoder.init -> void
+Egami.Video.AudioReaderOptions.Dither.get -> bool
+Egami.Video.AudioReaderOptions.Dither.init -> void
+Egami.Video.AudioReaderOptions.Equals(Egami.Video.AudioReaderOptions? other) -> bool
+Egami.Video.AudioReaderOptions.Errors.get -> Egami.Video.DecodeErrorMode
+Egami.Video.AudioReaderOptions.Errors.init -> void
+Egami.Video.AudioReaderOptions.KeepAllSamples.get -> bool
+Egami.Video.AudioReaderOptions.KeepAllSamples.init -> void
+Egami.Video.AudioReaderOptions.Layout.get -> Egami.Video.Audio.ChannelLayout?
+Egami.Video.AudioReaderOptions.Layout.init -> void
+Egami.Video.AudioReaderOptions.Quality.get -> Egami.Video.Audio.ResamplerQuality
+Egami.Video.AudioReaderOptions.Quality.init -> void
+Egami.Video.AudioReaderOptions.SampleFormat.get -> Egami.Video.Audio.SampleFormat?
+Egami.Video.AudioReaderOptions.SampleFormat.init -> void
+Egami.Video.AudioReaderOptions.SampleRate.get -> int?
+Egami.Video.AudioReaderOptions.SampleRate.init -> void
+Egami.Video.AudioReaderOptions.TrackNumber.get -> int?
+Egami.Video.AudioReaderOptions.TrackNumber.init -> void
+Egami.Video.AudioTrackInfo.Layout.get -> Egami.Video.Audio.ChannelLayout?
+Egami.Video.AudioTrackInfo.Layout.init -> void
+Egami.Video.AudioTrackInfo.SeekPreRoll.get -> Egami.Video.MediaTime?
+Egami.Video.AudioTrackInfo.SeekPreRoll.init -> void
+Egami.Video.AudioWriter
+Egami.Video.AudioWriter.Dispose() -> void
+Egami.Video.AudioWriter.Finish() -> void
+Egami.Video.AudioWriter.SampleCount.get -> long
+Egami.Video.AudioWriter.Track.get -> Egami.Video.AudioTrackInfo?
+Egami.Video.AudioWriter.Write(Egami.Video.Audio.AudioFrame! frame) -> void
+Egami.Video.AudioWriterOptions
+Egami.Video.AudioWriterOptions.<Clone>$() -> Egami.Video.AudioWriterOptions!
+Egami.Video.AudioWriterOptions.AudioWriterOptions() -> void
+Egami.Video.AudioWriterOptions.BitsPerSample.get -> int
+Egami.Video.AudioWriterOptions.BitsPerSample.init -> void
+Egami.Video.AudioWriterOptions.Codec.get -> Egami.Video.Audio.AudioCodec?
+Egami.Video.AudioWriterOptions.Codec.init -> void
+Egami.Video.AudioWriterOptions.Equals(Egami.Video.AudioWriterOptions? other) -> bool
+Egami.Video.AudioWriterOptions.Layout.get -> Egami.Video.Audio.ChannelLayout?
+Egami.Video.AudioWriterOptions.Layout.init -> void
+Egami.Video.AudioWriterOptions.Level.get -> int?
+Egami.Video.AudioWriterOptions.Level.init -> void
+Egami.Video.AudioWriterOptions.Metadata.get -> Egami.Video.MediaMetadata!
+Egami.Video.AudioWriterOptions.Metadata.init -> void
+Egami.Video.AudioWriterOptions.Quality.get -> Egami.Video.Audio.ResamplerQuality
+Egami.Video.AudioWriterOptions.Quality.init -> void
+Egami.Video.AudioWriterOptions.SampleRate.get -> int?
+Egami.Video.AudioWriterOptions.SampleRate.init -> void
+Egami.Video.Containers.FlacFormat
+Egami.Video.Containers.WavFormat
+Egami.Video.MediaContext.AudioCodecs.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Audio.AudioCodec!>!
+Egami.Video.MediaContext.AudioCodecs.init -> void
+Egami.Video.MediaContext.FindAudioCodec(Egami.Video.TrackInfo! track) -> Egami.Video.Audio.AudioCodec?
+Egami.Video.MediaContext.WithCodec(Egami.Video.Audio.AudioCodec! codec) -> Egami.Video.MediaContext!
+Egami.Video.VideoWriter.AudioTrack.get -> Egami.Video.AudioTrackInfo?
+Egami.Video.VideoWriter.WriteAudio(Egami.Video.Audio.AudioFrame! frame) -> void
+Egami.Video.VideoWriterOptions.AudioBitsPerSample.get -> int
+Egami.Video.VideoWriterOptions.AudioBitsPerSample.init -> void
+Egami.Video.VideoWriterOptions.AudioCodec.get -> Egami.Video.Audio.AudioCodec?
+Egami.Video.VideoWriterOptions.AudioCodec.init -> void
+Egami.Video.VideoWriterOptions.AudioLayout.get -> Egami.Video.Audio.ChannelLayout?
+Egami.Video.VideoWriterOptions.AudioLayout.init -> void
+Egami.Video.VideoWriterOptions.AudioSampleRate.get -> int
+Egami.Video.VideoWriterOptions.AudioSampleRate.init -> void
+override Egami.Video.Audio.AudioCodec.ToString() -> string!
+override Egami.Video.Audio.AudioConvertOptions.Equals(object? obj) -> bool
+override Egami.Video.Audio.AudioConvertOptions.GetHashCode() -> int
+override Egami.Video.Audio.AudioConvertOptions.ToString() -> string!
+override Egami.Video.Audio.AudioDecoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Audio.AudioDecoderOptions.GetHashCode() -> int
+override Egami.Video.Audio.AudioDecoderOptions.ToString() -> string!
+override Egami.Video.Audio.AudioEncoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Audio.AudioEncoderOptions.GetHashCode() -> int
+override Egami.Video.Audio.AudioEncoderOptions.ToString() -> string!
+override Egami.Video.Audio.AudioFrame.ToString() -> string!
+override Egami.Video.Audio.ChannelLayout.GetHashCode() -> int
+override Egami.Video.Audio.ChannelLayout.ToString() -> string!
+override Egami.Video.Audio.Codecs.FlacCodec.CanEncode.get -> bool
+override Egami.Video.Audio.Codecs.FlacCodec.CodecId.get -> string!
+override Egami.Video.Audio.Codecs.FlacCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
+override Egami.Video.Audio.Codecs.FlacCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
+override Egami.Video.Audio.Codecs.FlacCodec.Name.get -> string!
+override Egami.Video.Audio.Codecs.PcmCodec.CanDecode(Egami.Video.TrackInfo! track) -> bool
+override Egami.Video.Audio.Codecs.PcmCodec.CanEncode.get -> bool
+override Egami.Video.Audio.Codecs.PcmCodec.CodecId.get -> string!
+override Egami.Video.Audio.Codecs.PcmCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
+override Egami.Video.Audio.Codecs.PcmCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
+override Egami.Video.Audio.Codecs.PcmCodec.Name.get -> string!
+override Egami.Video.AudioReaderOptions.Equals(object? obj) -> bool
+override Egami.Video.AudioReaderOptions.GetHashCode() -> int
+override Egami.Video.AudioReaderOptions.ToString() -> string!
+override Egami.Video.AudioWriterOptions.Equals(object? obj) -> bool
+override Egami.Video.AudioWriterOptions.GetHashCode() -> int
+override Egami.Video.AudioWriterOptions.ToString() -> string!
+override Egami.Video.Containers.FlacFormat.CanMux.get -> bool
+override Egami.Video.Containers.FlacFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+override Egami.Video.Containers.FlacFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.FlacFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.FlacFormat.Name.get -> string!
+override Egami.Video.Containers.FlacFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.FlacFormat.SignatureLength.get -> int
+override Egami.Video.Containers.WavFormat.CanMux.get -> bool
+override Egami.Video.Containers.WavFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+override Egami.Video.Containers.WavFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.WavFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.WavFormat.Name.get -> string!
+override Egami.Video.Containers.WavFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.WavFormat.SignatureLength.get -> int
+static Egami.Video.Audio.AudioCodecs.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.IAudioDecoder!
+static Egami.Video.Audio.AudioCodecs.Flac.get -> Egami.Video.Audio.AudioCodec!
+static Egami.Video.Audio.AudioCodecs.Get(string! codecId, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.AudioCodec!
+static Egami.Video.Audio.AudioCodecs.Pcm.get -> Egami.Video.Audio.AudioCodec!
+static Egami.Video.Audio.AudioConvertOptions.Default.get -> Egami.Video.Audio.AudioConvertOptions!
+static Egami.Video.Audio.AudioConvertOptions.operator !=(Egami.Video.Audio.AudioConvertOptions? left, Egami.Video.Audio.AudioConvertOptions? right) -> bool
+static Egami.Video.Audio.AudioConvertOptions.operator ==(Egami.Video.Audio.AudioConvertOptions? left, Egami.Video.Audio.AudioConvertOptions? right) -> bool
+static Egami.Video.Audio.AudioDecoderOptions.Default.get -> Egami.Video.Audio.AudioDecoderOptions!
+static Egami.Video.Audio.AudioDecoderOptions.operator !=(Egami.Video.Audio.AudioDecoderOptions? left, Egami.Video.Audio.AudioDecoderOptions? right) -> bool
+static Egami.Video.Audio.AudioDecoderOptions.operator ==(Egami.Video.Audio.AudioDecoderOptions? left, Egami.Video.Audio.AudioDecoderOptions? right) -> bool
+static Egami.Video.Audio.AudioEncoderOptions.operator !=(Egami.Video.Audio.AudioEncoderOptions? left, Egami.Video.Audio.AudioEncoderOptions? right) -> bool
+static Egami.Video.Audio.AudioEncoderOptions.operator ==(Egami.Video.Audio.AudioEncoderOptions? left, Egami.Video.Audio.AudioEncoderOptions? right) -> bool
+static Egami.Video.Audio.ChannelLayout.ForChannelCount(int channelCount) -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.Mono.get -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.operator !=(Egami.Video.Audio.ChannelLayout left, Egami.Video.Audio.ChannelLayout right) -> bool
+static Egami.Video.Audio.ChannelLayout.operator ==(Egami.Video.Audio.ChannelLayout left, Egami.Video.Audio.ChannelLayout right) -> bool
+static Egami.Video.Audio.ChannelLayout.Quad.get -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.Stereo.get -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.Surround21.get -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.Surround30.get -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.Surround50.get -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.Surround51.get -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.Surround51Side.get -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.Surround61.get -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.Surround71.get -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.Surround714.get -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.ChannelLayout.Unpositioned(int channelCount) -> Egami.Video.Audio.ChannelLayout
+static Egami.Video.Audio.Codecs.FlacCodec.Instance.get -> Egami.Video.Audio.Codecs.FlacCodec!
+static Egami.Video.Audio.Codecs.PcmCodec.BigEndian.get -> Egami.Video.Audio.Codecs.PcmCodec!
+static Egami.Video.Audio.Codecs.PcmCodec.FloatingPoint.get -> Egami.Video.Audio.Codecs.PcmCodec!
+static Egami.Video.Audio.Codecs.PcmCodec.Instance.get -> Egami.Video.Audio.Codecs.PcmCodec!
+static Egami.Video.Audio.SampleFormatExtensions.BitsPerSample(this Egami.Video.Audio.SampleFormat format) -> int
+static Egami.Video.Audio.SampleFormatExtensions.BytesPerSample(this Egami.Video.Audio.SampleFormat format) -> int
+static Egami.Video.Audio.SampleFormatExtensions.IsFloat(this Egami.Video.Audio.SampleFormat format) -> bool
+static Egami.Video.Audio.SampleFormatExtensions.IsPlanar(this Egami.Video.Audio.SampleFormat format) -> bool
+static Egami.Video.Audio.SampleFormatExtensions.ToInterleaved(this Egami.Video.Audio.SampleFormat format) -> Egami.Video.Audio.SampleFormat
+static Egami.Video.Audio.SampleFormatExtensions.ToPlanar(this Egami.Video.Audio.SampleFormat format) -> Egami.Video.Audio.SampleFormat
+static Egami.Video.AudioReader.Open(string! path, Egami.Video.AudioReaderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.AudioReader!
+static Egami.Video.AudioReader.Open(System.IO.Stream! stream, Egami.Video.AudioReaderOptions? options = null, Egami.Video.MediaContext? context = null, bool leaveOpen = false) -> Egami.Video.AudioReader!
+static Egami.Video.AudioReaderOptions.Default.get -> Egami.Video.AudioReaderOptions!
+static Egami.Video.AudioReaderOptions.operator !=(Egami.Video.AudioReaderOptions? left, Egami.Video.AudioReaderOptions? right) -> bool
+static Egami.Video.AudioReaderOptions.operator ==(Egami.Video.AudioReaderOptions? left, Egami.Video.AudioReaderOptions? right) -> bool
+static Egami.Video.AudioWriter.Create(string! path, Egami.Video.AudioWriterOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.AudioWriter!
+static Egami.Video.AudioWriter.Create(System.IO.Stream! stream, string! formatNameOrExtension, Egami.Video.AudioWriterOptions? options = null, Egami.Video.MediaContext? context = null, bool leaveOpen = false) -> Egami.Video.AudioWriter!
+static Egami.Video.AudioWriterOptions.operator !=(Egami.Video.AudioWriterOptions? left, Egami.Video.AudioWriterOptions? right) -> bool
+static Egami.Video.AudioWriterOptions.operator ==(Egami.Video.AudioWriterOptions? left, Egami.Video.AudioWriterOptions? right) -> bool
+static Egami.Video.Containers.FlacFormat.Instance.get -> Egami.Video.Containers.FlacFormat!
+static Egami.Video.Containers.WavFormat.Instance.get -> Egami.Video.Containers.WavFormat!
+static Egami.Video.Containers.WavFormat.Wave64.get -> Egami.Video.Containers.WavFormat!
+static Egami.Video.MediaFile.Transcode(string! inputPath, string! outputPath, Egami.Video.Audio.AudioCodec? audio = null, int? audioLevel = null, System.Func<Egami.Video.TrackInfo!, bool>? tracks = null, Egami.Video.MediaContext? context = null) -> long
+virtual Egami.Video.Audio.AudioCodec.CanDecode(Egami.Video.TrackInfo! track) -> bool
+virtual Egami.Video.Audio.AudioCodec.CanEncode.get -> bool
+virtual Egami.Video.Audio.AudioCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
+~override Egami.Video.Audio.ChannelLayout.Equals(object obj) -> bool

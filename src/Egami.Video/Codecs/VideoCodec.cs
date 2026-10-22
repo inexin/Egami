@@ -4,7 +4,7 @@ namespace Egami.Video.Codecs;
 
 /// <summary>
 /// A video codec: which tracks it decodes and how to create its decoder and encoder. Register a new one with
-/// <see cref="MediaContext.WithCodec"/>.
+/// <see cref="MediaContext.WithCodec(VideoCodec)"/>.
 /// </summary>
 /// <example>
 /// <code language="csharp">

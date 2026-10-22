@@ -74,7 +74,8 @@ static Action<Stream> Target(string name) => name switch
     "vp8" => ReadVp8,
     "vp9" => ReadVp9,
     "vp9raw" => DecodeVp9Packets,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, mp4mux, mjpeg, vp8, vp9, vp9raw."),
+    "wav" or "flac" => ReadAudio,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, mp4mux, mjpeg, vp8, vp9, vp9raw, wav, flac."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -110,6 +111,47 @@ static void Demux(Stream stream)
     {
         using IDemuxer streaming = MediaFile.OpenDemuxer(new ForwardOnlyStream(data), context);
         ReadAndDecode(streaming, context, maxPackets: 200);
+    }
+    catch (EgamiException)
+    {
+    }
+}
+
+// An audio file (V5.0: WAV, Wave64, RF64, FLAC): decode it through AudioReader, converting to 16-bit stereo at 22.05 kHz so the
+// resampler and mixer run too, seek and decode again; then the same bytes as a non-seekable stream with the codec's own samples.
+static void ReadAudio(Stream stream)
+{
+    MediaContext context = Context() with { Egami = Context().Egami with { Diagnostics = _ => { } } };
+    byte[] data = ReadAll(stream);
+    static void Drain(Egami.Video.AudioReader reader, int maxFrames)
+    {
+        for (int i = 0; i < maxFrames && reader.TryRead(out Egami.Video.Audio.AudioFrame? frame); i++)
+        {
+            frame.Dispose();
+        }
+    }
+
+    try
+    {
+        using Egami.Video.AudioReader reader = Egami.Video.AudioReader.Open(new MemoryStream(data), new Egami.Video.AudioReaderOptions
+        {
+            SampleFormat = Egami.Video.Audio.SampleFormat.S16,
+            SampleRate = 22050,
+            Layout = Egami.Video.Audio.ChannelLayout.Stereo,
+            Quality = Egami.Video.Audio.ResamplerQuality.Fast,
+        }, context);
+        Drain(reader, 100);
+        reader.Seek(MediaTime.FromSeconds(0.25));
+        Drain(reader, 10);
+    }
+    catch (EgamiException)
+    {
+    }
+
+    try
+    {
+        using Egami.Video.AudioReader streaming = Egami.Video.AudioReader.Open(new ForwardOnlyStream(data), new Egami.Video.AudioReaderOptions { SampleFormat = null, Errors = DecodeErrorMode.Conceal }, context);
+        Drain(streaming, 100);
     }
     catch (EgamiException)
     {

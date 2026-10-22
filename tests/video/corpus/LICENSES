@@ -4,3 +4,10 @@ repository's MIT license.
 
 The files in vp9/ were generated the same way by tools/video/make-vp9-corpus.py: libvpx's vpxenc, FFmpeg and mkvmerge run in
 Docker (tools/video/vp9ref) on synthetic lavfi sources (testsrc2 and mandelbrot). They too contain no third-party content.
+
+The files in audio/ were generated the same way by tools/video/make-audio-corpus.py: FFmpeg and the flac tool run in Docker
+(tools/video/audioref) on synthetic lavfi sine tones and a solid-color cover picture. They too contain no third-party content.
+
+The IETF CELLAR flac-test-files (https://github.com/ietf-wg-cellar/flac-test-files) are CC0 1.0 per their LICENSE.txt. They are
+fetched into .cache/audio/flac-test-files by make-audio-corpus.py --ietf rather than committed, because of their size (about
+300 MB).
