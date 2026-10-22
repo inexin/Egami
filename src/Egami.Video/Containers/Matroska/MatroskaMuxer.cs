@@ -171,7 +171,8 @@ internal sealed class MatroskaMuxer : IMuxer
         // SimpleBlock: track number VINT, 16-bit time relative to the Cluster, flags, data. A packet with additions needs a
         // BlockGroup, where a ReferenceBlock (pointing at the track's previous block) marks a frame that is not a keyframe.
         long relative = time - _clusterTime;
-        if (packet.Additions.Count == 0)
+        long discardPadding = DiscardPadding(track, packet, data);
+        if (packet.Additions.Count == 0 && discardPadding == 0)
         {
             EbmlWriter.Header(_cluster, MatroskaIds.SimpleBlock, 4 + data.Length);
             WriteBlockHeader(_cluster, track.Number, relative, packet.IsKeyframe ? (byte)0x80 : (byte)0);
@@ -197,17 +198,26 @@ internal sealed class MatroskaMuxer : IMuxer
                 EbmlWriter.Element(group, MatroskaIds.ReferenceBlock, value[skip..]);
             }
 
-            EbmlWriter.Master(group, MatroskaIds.BlockAdditions, a =>
+            if (discardPadding > 0)
             {
-                foreach (PacketAddition addition in packet.Additions)
+                EbmlWriter.Unsigned(group, MatroskaIds.DiscardPadding, (ulong)discardPadding);
+            }
+
+            if (packet.Additions.Count > 0)
+            {
+                EbmlWriter.Master(group, MatroskaIds.BlockAdditions, a =>
                 {
-                    EbmlWriter.Master(a, MatroskaIds.BlockMore, m =>
+                    foreach (PacketAddition addition in packet.Additions)
                     {
-                        EbmlWriter.Unsigned(m, MatroskaIds.BlockAddId, (ulong)Math.Max(1, addition.Id));
-                        EbmlWriter.Element(m, MatroskaIds.BlockAdditional, addition.Data.Span);
-                    });
-                }
-            });
+                        EbmlWriter.Master(a, MatroskaIds.BlockMore, m =>
+                        {
+                            EbmlWriter.Unsigned(m, MatroskaIds.BlockAddId, (ulong)Math.Max(1, addition.Id));
+                            EbmlWriter.Element(m, MatroskaIds.BlockAdditional, addition.Data.Span);
+                        });
+                    }
+                });
+            }
+
             EbmlWriter.Header(_cluster, MatroskaIds.BlockGroup, group.Length);
             group.Position = 0;
             group.CopyTo(_cluster);
@@ -217,6 +227,19 @@ internal sealed class MatroskaMuxer : IMuxer
 
         long end = time + (packet.Duration is { } d ? d.Rescale(Milliseconds).Ticks : track.DefaultMilliseconds);
         _endTime = Math.Max(_endTime, end - track.DelayMilliseconds);
+    }
+
+    /// <summary>The nanoseconds an Opus packet decodes past its stated duration, written as DiscardPadding; 0 for others.</summary>
+    private static long DiscardPadding(TrackWriter track, EncodedPacket packet, ReadOnlySpan<byte> data)
+    {
+        if (track.Input.CodecId != CodecIds.Opus || packet.Duration is not { } duration || data.IsEmpty)
+        {
+            return 0;
+        }
+
+        int samples = Audio.Codecs.Opus.OpusPacket.SampleCount(data, 48000);
+        long padding = new MediaTime(samples, new Rational(1, 48000)).Rescale(Rational.Nanosecond).Ticks - duration.Rescale(Rational.Nanosecond).Ticks;
+        return samples > 0 && padding > 0 ? padding : 0;
     }
 
     public void Finish()
@@ -584,6 +607,16 @@ internal sealed class MatroskaMuxer : IMuxer
             if (t.CodecDelay is { Ticks: > 0 } delay)
             {
                 EbmlWriter.Unsigned(e, MatroskaIds.CodecDelay, (ulong)delay.Rescale(Rational.Nanosecond).Ticks);
+            }
+
+            if (t is AudioTrackInfo { SeekPreRoll: { Ticks: > 0 } preRoll })
+            {
+                EbmlWriter.Unsigned(e, MatroskaIds.SeekPreRoll, (ulong)preRoll.Rescale(Rational.Nanosecond).Ticks);
+            }
+            else if (t.CodecId == CodecIds.Opus)
+            {
+                // RFC 7845 asks for 80 ms of pre-roll before a seek target in Opus.
+                EbmlWriter.Unsigned(e, MatroskaIds.SeekPreRoll, 80_000_000);
             }
 
             switch (t)

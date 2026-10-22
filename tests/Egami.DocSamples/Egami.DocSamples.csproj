@@ -24,6 +24,8 @@
 
   <ItemGroup>
     <None Include="../images/ops/duck.png" Link="images/duck.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/audio/opus/opus-hybrid.opus" Link="images/talk.opus" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/audio/opus/webm-opus.webm" Link="images/music.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ops/egret.png" Link="images/egret.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/radiance/desk-rle.hdr" Link="images/desk.hdr" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/mpf/uhdr-default.jpg" Link="images/ultrahdr.jpg" CopyToOutputDirectory="PreserveNewest" />

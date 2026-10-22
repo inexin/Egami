@@ -307,6 +307,7 @@ internal static class Mp4Codecs
             Tags = tags,
             IsDefault = track.Enabled,
             CodecDelay = delay,
+            SeekPreRoll = codecId == CodecIds.Opus ? new MediaTime(80, new Rational(1, 1000)) : null,
             SampleRate = rate,
             Channels = channels,
             BitsPerSample = compressed ? 0 : bits,

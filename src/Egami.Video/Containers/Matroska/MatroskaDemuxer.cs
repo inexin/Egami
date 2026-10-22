@@ -749,6 +749,7 @@ internal sealed class MatroskaDemuxer : IDemuxer
         ReadOnlyMemory<byte> block = default;
         long? duration = null;
         bool hasReference = false;
+        long discardPadding = 0;
         List<PacketAddition>? additions = null;
         foreach ((uint id, ReadOnlyMemory<byte> body) in Ebml.Children(group))
         {
@@ -762,6 +763,9 @@ internal sealed class MatroskaDemuxer : IDemuxer
                     break;
                 case MatroskaIds.ReferenceBlock:
                     hasReference = true;
+                    break;
+                case MatroskaIds.DiscardPadding:
+                    discardPadding = Math.Max(0, Ebml.ReadSigned(body.Span));
                     break;
                 case MatroskaIds.BlockAdditions:
                     foreach ((uint moreId, ReadOnlyMemory<byte> more) in Ebml.Children(body))
@@ -778,7 +782,7 @@ internal sealed class MatroskaDemuxer : IDemuxer
 
         if (!block.IsEmpty)
         {
-            ParseBlock(block, simple: false, duration, hasReference, elementStart, additions);
+            ParseBlock(block, simple: false, duration, hasReference, elementStart, additions, discardPadding);
         }
     }
 
@@ -802,7 +806,7 @@ internal sealed class MatroskaDemuxer : IDemuxer
         return new PacketAddition(addId, data);
     }
 
-    private void ParseBlock(ReadOnlyMemory<byte> block, bool simple, long? blockDuration, bool hasReference, long elementStart, List<PacketAddition>? additions = null)
+    private void ParseBlock(ReadOnlyMemory<byte> block, bool simple, long? blockDuration, bool hasReference, long elementStart, List<PacketAddition>? additions = null, long discardPadding = 0)
     {
         ReadOnlySpan<byte> span = block.Span;
         int trackLength = Ebml.ReadVint(span, out long trackNumber);
@@ -861,6 +865,17 @@ internal sealed class MatroskaDemuxer : IDemuxer
             else if (frameDuration > 0)
             {
                 packet.Duration = new MediaTime(frameDuration, TimeBase);
+            }
+
+            if (track.Track?.CodecId == CodecIds.Opus && frames == 1)
+            {
+                // Opus packets say how long they are; DiscardPadding (nanoseconds) cuts the end of the stream's last one.
+                int samples = Audio.Codecs.Opus.OpusPacket.SampleCount(payload, 48000);
+                if (samples > 0)
+                {
+                    MediaTime length = new(samples, new Rational(1, 48000));
+                    packet.Duration = discardPadding > 0 ? length - new MediaTime(Math.Min(discardPadding, length.Rescale(Rational.Nanosecond).Ticks), Rational.Nanosecond) : length;
+                }
             }
 
             _pending.Enqueue(packet);
@@ -1244,6 +1259,7 @@ internal sealed class MatroskaDemuxer : IDemuxer
         private bool _default = true;
         private long _defaultDuration;
         private long _codecDelay;
+        private long _seekPreRoll;
         private int _width, _height, _displayWidth, _displayHeight, _displayUnit;
         private int _fieldOrder, _interlaced;
         private ColorCodePoints? _color;
@@ -1277,6 +1293,7 @@ internal sealed class MatroskaDemuxer : IDemuxer
                     case MatroskaIds.FlagDefault: t._default = Ebml.ReadUnsigned(b) != 0; break;
                     case MatroskaIds.DefaultDuration: t._defaultDuration = (long)Math.Min(Ebml.ReadUnsigned(b), long.MaxValue / 4); break;
                     case MatroskaIds.CodecDelay: t._codecDelay = (long)Math.Min(Ebml.ReadUnsigned(b), long.MaxValue / 4); break;
+                    case MatroskaIds.SeekPreRoll: t._seekPreRoll = (long)Math.Min(Ebml.ReadUnsigned(b), long.MaxValue / 4); break;
                     case MatroskaIds.Video: t.ParseVideo(body); break;
                     case MatroskaIds.Audio: t.ParseAudio(body); break;
                     case MatroskaIds.ContentEncodings: t.ParseEncodings(body); break;
@@ -1423,6 +1440,7 @@ internal sealed class MatroskaDemuxer : IDemuxer
                         IsDefault = _default,
                         Tags = tags,
                         CodecDelay = delay,
+                        SeekPreRoll = _seekPreRoll > 0 ? new MediaTime(_seekPreRoll, Rational.Nanosecond) : null,
                     };
                     break;
                 default:

@@ -100,6 +100,7 @@ internal static class MatroskaIds
     public const uint Block = 0xA1;
     public const uint BlockDuration = 0x9B;
     public const uint ReferenceBlock = 0xFB;
+    public const uint DiscardPadding = 0x75A2;
     public const uint BlockAdditions = 0x75A1;
     public const uint BlockMore = 0xA6;
     public const uint BlockAddId = 0xEE;

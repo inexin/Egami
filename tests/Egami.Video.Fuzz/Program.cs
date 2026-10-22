@@ -74,8 +74,9 @@ static Action<Stream> Target(string name) => name switch
     "vp8" => ReadVp8,
     "vp9" => ReadVp9,
     "vp9raw" => DecodeVp9Packets,
-    "wav" or "flac" => ReadAudio,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, mp4mux, mjpeg, vp8, vp9, vp9raw, wav, flac."),
+    "wav" or "flac" or "ogg" => ReadAudio,
+    "opusraw" => DecodeOpusPackets,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, mp4mux, mjpeg, vp8, vp9, vp9raw, wav, flac, ogg, opusraw."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -155,6 +156,40 @@ static void ReadAudio(Stream stream)
     }
     catch (EgamiException)
     {
+    }
+}
+
+// Raw Opus packets (V5.1): the first byte picks mono or stereo, then packets with 16-bit big-endian lengths go to the
+// decoder; a zero length is a lost packet (concealment), and every third packet is also decoded as in-band FEC.
+static void DecodeOpusPackets(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 1)
+    {
+        return;
+    }
+
+    Egami.Video.Audio.Codecs.Opus.OpusStreamDecoder decoder = new((data[0] & 1) + 1);
+    float[] pcm = new float[5760 * 2];
+    int p = 1;
+    int n = 0;
+    while (p + 2 <= data.Length && n++ < 200)
+    {
+        int length = Math.Min((data[p] << 8) | data[p + 1], data.Length - p - 2);
+        ReadOnlySpan<byte> packet = data.AsSpan(p + 2, length);
+        p += 2 + length;
+        if (length == 0)
+        {
+            decoder.Decode([], pcm, Math.Max(120, decoder.LastPacketDuration), false, false, out _);
+            continue;
+        }
+
+        if (n % 3 == 0)
+        {
+            decoder.Decode(packet, pcm, 5760, true, false, out _);
+        }
+
+        decoder.Decode(packet, pcm, 5760, false, false, out _);
     }
 }
 

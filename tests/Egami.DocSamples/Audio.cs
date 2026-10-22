@@ -273,4 +273,41 @@ public class Audio
 
         Assert.Equal(CodecIds.Flac, MediaFile.Probe("talk-flac.mkv").Tracks[0].CodecId);
     }
+
+    [Fact]
+    public void Opus()
+    {
+        using SampleFiles files = new();
+
+        #region audio-opus
+        // Opus decodes to planar float at 48 kHz; pre-skip and end padding are trimmed, so the length is the original's.
+        using AudioReader reader = AudioReader.Open("talk.opus");
+        Console.WriteLine($"{reader.Track.CodecId}, {reader.Track.Channels} channels, pre-skip {reader.Track.CodecDelay?.ToTimeSpan()}");
+        long samples = 0;
+        while (reader.TryRead(out AudioFrame? frame))
+        {
+            using (frame)
+            {
+                samples += frame.SampleCount;
+            }
+        }
+        #endregion
+
+        Assert.Equal(24000, samples);
+    }
+
+    [Fact]
+    public void Ogg()
+    {
+        using SampleFiles files = new();
+
+        #region audio-ogg
+        // An Opus track moves from WebM to an .opus file and back without decoding; the tags travel in OpusTags.
+        MediaFile.Remux("music.webm", "music.opus");
+        MediaInfo info = MediaFile.Probe("music.opus");
+        Console.WriteLine($"{info.FormatName}: {info.Tracks[0].CodecId}, {info.Duration?.ToTimeSpan()}, {info.Chapters.Count} chapters");
+        #endregion
+
+        Assert.Equal("Ogg", info.FormatName);
+    }
 }

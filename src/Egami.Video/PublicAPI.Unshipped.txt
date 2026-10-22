@@ -21,6 +21,8 @@ Egami.Video.Audio.AudioDecoderOptions.AudioDecoderOptions() -> void
 Egami.Video.Audio.AudioDecoderOptions.Equals(Egami.Video.Audio.AudioDecoderOptions? other) -> bool
 Egami.Video.Audio.AudioDecoderOptions.Errors.get -> Egami.Video.DecodeErrorMode
 Egami.Video.Audio.AudioDecoderOptions.Errors.init -> void
+Egami.Video.Audio.AudioDecoderOptions.KeepPadding.get -> bool
+Egami.Video.Audio.AudioDecoderOptions.KeepPadding.init -> void
 Egami.Video.Audio.AudioDecoderOptions.VerifyChecksums.get -> bool
 Egami.Video.Audio.AudioDecoderOptions.VerifyChecksums.init -> void
 Egami.Video.Audio.AudioEncoderOptions
@@ -77,6 +79,7 @@ Egami.Video.Audio.ChannelMixer.Mix(Egami.Video.Audio.AudioFrame! source, Egami.V
 Egami.Video.Audio.ChannelMixer.Output.get -> Egami.Video.Audio.ChannelLayout
 Egami.Video.Audio.ChannelMixer.this[int output, int input].get -> float
 Egami.Video.Audio.Codecs.FlacCodec
+Egami.Video.Audio.Codecs.OpusCodec
 Egami.Video.Audio.Codecs.PcmCodec
 Egami.Video.Audio.IAudioDecoder
 Egami.Video.Audio.IAudioDecoder.Flush() -> void
@@ -205,6 +208,7 @@ Egami.Video.AudioWriterOptions.Quality.init -> void
 Egami.Video.AudioWriterOptions.SampleRate.get -> int?
 Egami.Video.AudioWriterOptions.SampleRate.init -> void
 Egami.Video.Containers.FlacFormat
+Egami.Video.Containers.OggFormat
 Egami.Video.Containers.WavFormat
 Egami.Video.MediaContext.AudioCodecs.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Audio.AudioCodec!>!
 Egami.Video.MediaContext.AudioCodecs.init -> void
@@ -238,6 +242,9 @@ override Egami.Video.Audio.Codecs.FlacCodec.CodecId.get -> string!
 override Egami.Video.Audio.Codecs.FlacCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
 override Egami.Video.Audio.Codecs.FlacCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
 override Egami.Video.Audio.Codecs.FlacCodec.Name.get -> string!
+override Egami.Video.Audio.Codecs.OpusCodec.CodecId.get -> string!
+override Egami.Video.Audio.Codecs.OpusCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
+override Egami.Video.Audio.Codecs.OpusCodec.Name.get -> string!
 override Egami.Video.Audio.Codecs.PcmCodec.CanDecode(Egami.Video.TrackInfo! track) -> bool
 override Egami.Video.Audio.Codecs.PcmCodec.CanEncode.get -> bool
 override Egami.Video.Audio.Codecs.PcmCodec.CodecId.get -> string!
@@ -257,6 +264,13 @@ override Egami.Video.Containers.FlacFormat.IsMatch(System.ReadOnlySpan<byte> hea
 override Egami.Video.Containers.FlacFormat.Name.get -> string!
 override Egami.Video.Containers.FlacFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
 override Egami.Video.Containers.FlacFormat.SignatureLength.get -> int
+override Egami.Video.Containers.OggFormat.CanMux.get -> bool
+override Egami.Video.Containers.OggFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+override Egami.Video.Containers.OggFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.OggFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.OggFormat.Name.get -> string!
+override Egami.Video.Containers.OggFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.OggFormat.SignatureLength.get -> int
 override Egami.Video.Containers.WavFormat.CanMux.get -> bool
 override Egami.Video.Containers.WavFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
 override Egami.Video.Containers.WavFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -267,6 +281,7 @@ override Egami.Video.Containers.WavFormat.SignatureLength.get -> int
 static Egami.Video.Audio.AudioCodecs.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.IAudioDecoder!
 static Egami.Video.Audio.AudioCodecs.Flac.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Get(string! codecId, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.AudioCodec!
+static Egami.Video.Audio.AudioCodecs.Opus.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Pcm.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioConvertOptions.Default.get -> Egami.Video.Audio.AudioConvertOptions!
 static Egami.Video.Audio.AudioConvertOptions.operator !=(Egami.Video.Audio.AudioConvertOptions? left, Egami.Video.Audio.AudioConvertOptions? right) -> bool
@@ -292,6 +307,7 @@ static Egami.Video.Audio.ChannelLayout.Surround71.get -> Egami.Video.Audio.Chann
 static Egami.Video.Audio.ChannelLayout.Surround714.get -> Egami.Video.Audio.ChannelLayout
 static Egami.Video.Audio.ChannelLayout.Unpositioned(int channelCount) -> Egami.Video.Audio.ChannelLayout
 static Egami.Video.Audio.Codecs.FlacCodec.Instance.get -> Egami.Video.Audio.Codecs.FlacCodec!
+static Egami.Video.Audio.Codecs.OpusCodec.Instance.get -> Egami.Video.Audio.Codecs.OpusCodec!
 static Egami.Video.Audio.Codecs.PcmCodec.BigEndian.get -> Egami.Video.Audio.Codecs.PcmCodec!
 static Egami.Video.Audio.Codecs.PcmCodec.FloatingPoint.get -> Egami.Video.Audio.Codecs.PcmCodec!
 static Egami.Video.Audio.Codecs.PcmCodec.Instance.get -> Egami.Video.Audio.Codecs.PcmCodec!
@@ -311,6 +327,7 @@ static Egami.Video.AudioWriter.Create(System.IO.Stream! stream, string! formatNa
 static Egami.Video.AudioWriterOptions.operator !=(Egami.Video.AudioWriterOptions? left, Egami.Video.AudioWriterOptions? right) -> bool
 static Egami.Video.AudioWriterOptions.operator ==(Egami.Video.AudioWriterOptions? left, Egami.Video.AudioWriterOptions? right) -> bool
 static Egami.Video.Containers.FlacFormat.Instance.get -> Egami.Video.Containers.FlacFormat!
+static Egami.Video.Containers.OggFormat.Instance.get -> Egami.Video.Containers.OggFormat!
 static Egami.Video.Containers.WavFormat.Instance.get -> Egami.Video.Containers.WavFormat!
 static Egami.Video.Containers.WavFormat.Wave64.get -> Egami.Video.Containers.WavFormat!
 static Egami.Video.MediaFile.Transcode(string! inputPath, string! outputPath, Egami.Video.Audio.AudioCodec? audio = null, int? audioLevel = null, System.Func<Egami.Video.TrackInfo!, bool>? tracks = null, Egami.Video.MediaContext? context = null) -> long
