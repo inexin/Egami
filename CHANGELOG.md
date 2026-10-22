@@ -86,8 +86,8 @@ which needs no .NET runtime.
 
 ## Egami.Video 0.5.0 (unreleased)
 
-V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg. The V5 audio steps (V5.0,
-V5.1 Opus, V5.5 Vorbis) get one API review and one release after V5.5, so these types may still change.
+V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;
+V5.5: Vorbis decoding. V5 audio API reviewed and accepted 2026-10-22 (all as recommended).
 
 V4.2, API reviewed and accepted 2026-10-22 (all as recommended): AV1 decode, through Egami's AV1 stream decoder (Egami 1.1.0).
 
