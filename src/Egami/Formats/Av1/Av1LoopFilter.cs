@@ -183,7 +183,7 @@ internal static class Av1LoopFilter
         return plane == 0 ? frame.TxSizeMap[(miRow * frame.MiCols) + miCol] : Av1Tables.MaxUvTxSize(b.Size, ssx, ssy);
     }
 
-    /// <summary>get_filter_level for an intra frame's block: the reference is always intra.</summary>
+    /// <summary>av1_get_filter_level: the level with the block's delta, its segment's and the reference and mode deltas.</summary>
     private static int FilterLevel(Av1FrameHeader h, Av1BlockInfo b, int plane, int dir)
     {
         int baseLevel = plane == 0 ? h.LoopFilterLevel[dir] : h.LoopFilterLevel[plane + 1];
@@ -202,7 +202,16 @@ internal static class Av1LoopFilter
 
         if (h.LoopFilterDeltaEnabled)
         {
-            level = Math.Clamp(level + (h.LoopFilterRefDeltas[0] * (1 << (level >> 5))), 0, 63);
+            int scale = 1 << (level >> 5);
+            int rf = Math.Max(b.RefFrame0, Ref.Intra);
+            level += h.LoopFilterRefDeltas[rf] * scale;
+            if (rf > Ref.Intra)
+            {
+                // mode_lf_lut: the global modes take delta 0, every other inter mode delta 1.
+                level += h.LoopFilterModeDeltas[b.YMode is InterMode.Global or InterMode.GlobalGlobal ? 0 : 1] * scale;
+            }
+
+            level = Math.Clamp(level, 0, 63);
         }
 
         return level;

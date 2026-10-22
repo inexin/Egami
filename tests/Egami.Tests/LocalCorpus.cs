@@ -10,6 +10,7 @@ internal static class LocalCorpus
     /// <summary>The codecs with a local corpus, and the command that fetches it.</summary>
     private static readonly Dictionary<string, string> Fetch = new()
     {
+        ["av1"] = "tools/make-av1-references.py",
         ["avif"] = "tools/make-avif-references.py",
         ["exr"] = "tools/make-hdr-references.py exr",
         ["heic"] = "tools/make-heic-references.py",
