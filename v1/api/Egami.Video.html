@@ -168,6 +168,14 @@ one. The container is detected from the file's first bytes when reading, and cho
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.MovTextSample.html">MovTextSample</a></dt>
+      <dd><p>One mov_text subtitle (3GPP timed text, TS 26.245; codec <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_MovText">MovText</a>): its text and the style runs that
+make parts of it bold, italic, underlined, larger or colored. Parse a packet's bytes to read it, and write one with
+<a class="xref" href="Egami.Video.MovTextSample.html#Egami_Video_MovTextSample_ToBytes">ToBytes()</a>. Modifier boxes other than styles (highlight, karaoke, scroll delay, links, text box, blink, wrap) are
+kept as stored, so a sample read and written again keeps its bytes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.PacketAddition.html">PacketAddition</a></dt>
       <dd><p>Extra data stored with a packet (a Matroska BlockMore): an id saying what it is, and its bytes. Id 1 holds a WebM VP8 or VP9
 track's alpha frame when the track has <a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_HasAlpha">HasAlpha</a>.</p>
@@ -257,6 +265,11 @@ timestamp scale in nanoseconds. <a class="xref" href="https://learn.microsoft.co
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.MovTextStyle.html">MovTextStyle</a></dt>
+      <dd><p>A style run of a mov_text subtitle (a 3GPP StyleRecord): which characters it covers and how they look.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Rational.html">Rational</a></dt>
       <dd><p>An exact fraction, such as a frame rate (30000/1001) or a time base (1/1000000000). Always stored in lowest terms with a
 positive denominator.</p>
@@ -273,6 +286,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.FieldOrder.html">FieldOrder</a></dt>
       <dd><p>How a video track's frames are interlaced.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.MovTextFace.html">MovTextFace</a></dt>
+      <dd><p>How the characters of a <a class="xref" href="Egami.Video.MovTextStyle.html">MovTextStyle</a> are drawn.</p>
 </dd>
     </dl>
     <dl class="jumplist">

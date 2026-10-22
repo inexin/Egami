@@ -263,7 +263,7 @@ while (demuxer.ReadPacket() is { } packet)
 
   <h3 id="Egami_Video_EncodedPacket_Additions" data-uid="Egami.Video.EncodedPacket.Additions">
   Additions
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/EncodedPacket.cs/#L101"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/EncodedPacket.cs/#L107"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the extra data stored with the packet (Matroska BlockAdditions), such as the alpha frame of a WebM VP8 or VP9 track
@@ -395,6 +395,39 @@ codec without frame reordering (Motion JPEG, audio).</p>
 
 
 
+  <a id="Egami_Video_EncodedPacket_IsDiscardable_" data-uid="Egami.Video.EncodedPacket.IsDiscardable*"></a>
+
+  <h3 id="Egami_Video_EncodedPacket_IsDiscardable" data-uid="Egami.Video.EncodedPacket.IsDiscardable">
+  IsDiscardable
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/EncodedPacket.cs/#L101"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the packet is needed only to decode the packets after it: its frame or audio falls outside the part of the
+track the file shows, as an MP4 edit list says. Readers decode it and drop what it gives; muxers keep it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsDiscardable { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_EncodedPacket_IsKeyframe_" data-uid="Egami.Video.EncodedPacket.IsKeyframe*"></a>
 
   <h3 id="Egami_Video_EncodedPacket_IsKeyframe" data-uid="Egami.Video.EncodedPacket.IsKeyframe">
@@ -431,7 +464,7 @@ codec without frame reordering (Motion JPEG, audio).</p>
 
   <h3 id="Egami_Video_EncodedPacket_OwnsData" data-uid="Egami.Video.EncodedPacket.OwnsData">
   OwnsData
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/EncodedPacket.cs/#L104"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/EncodedPacket.cs/#L110"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the packet's bytes are in a buffer it owns and returns on <a class="xref" href="Egami.Video.EncodedPacket.html#Egami_Video_EncodedPacket_Dispose">Dispose()</a>.</p>
@@ -531,7 +564,7 @@ codec without frame reordering (Motion JPEG, audio).</p>
 
   <h3 id="Egami_Video_EncodedPacket_Clone" data-uid="Egami.Video.EncodedPacket.Clone">
   Clone()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/EncodedPacket.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/EncodedPacket.cs/#L127"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a packet with the same bytes and fields that owns its own copy of the bytes.</p>
@@ -570,7 +603,7 @@ codec without frame reordering (Motion JPEG, audio).</p>
 
   <h3 id="Egami_Video_EncodedPacket_Dispose" data-uid="Egami.Video.EncodedPacket.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/EncodedPacket.cs/#L134"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/EncodedPacket.cs/#L141"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the pooled buffer, if any. The bytes must not be used afterwards.</p>
@@ -597,7 +630,7 @@ codec without frame reordering (Motion JPEG, audio).</p>
 
   <h3 id="Egami_Video_EncodedPacket_GetWritableData" data-uid="Egami.Video.EncodedPacket.GetWritableData">
   GetWritableData()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/EncodedPacket.cs/#L110"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/EncodedPacket.cs/#L116"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the bytes for writing, when the packet owns its buffer (it was rented or given an owner).</p>

@@ -94,7 +94,7 @@ them. SVG and Windows metafiles (WMF, EMF) load through the separate <a href="..
 <a href="../guides/metafiles.html">Egami.Metafiles</a> packages. Every reader checks sizes against the safety limits before it allocates, and
 every reader has been fuzzed.</p>
 <p>Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 video frames decode
-through <a href="vp8.html"><code>Vp8StreamDecoder</code></a>. This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.</p>
+through <a href="vp8.html"><code>Vp8StreamDecoder</code></a>, and the boxes of MP4, QuickTime and HEIF files can be walked with <a href="iso-boxes.html"><code>IsoBoxReader</code></a>. This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.</p>
 <h2 id="at-a-glance">At a glance</h2>
 <table>
 <thead>

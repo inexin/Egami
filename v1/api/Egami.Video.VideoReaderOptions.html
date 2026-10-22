@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_VideoReaderOptions" data-uid="Egami.Video.VideoReaderOptions" class="text-break">
-Class VideoReaderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L318"><i class="bi bi-code-slash"></i></a>
+Class VideoReaderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L342"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -168,11 +168,45 @@ using YuvVideoFrame frame = reader.ReadFrame()!;</code></pre>
 </h2>
 
 
+  <a id="Egami_Video_VideoReaderOptions_AutoOrient_" data-uid="Egami.Video.VideoReaderOptions.AutoOrient*"></a>
+
+  <h3 id="Egami_Video_VideoReaderOptions_AutoOrient" data-uid="Egami.Video.VideoReaderOptions.AutoOrient">
+  AutoOrient
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L366"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.VideoReader.html#Egami_Video_VideoReader_ReadFrames__1">ReadFrames&lt;TPixel&gt;()</a> turns and mirrors each frame upright by the track's
+<a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_Orientation">Orientation</a> (an MP4 or QuickTime display matrix). Off by default: frames come out as coded,
+as Egami loads photos without applying their EXIF orientation.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AutoOrient { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_VideoReaderOptions_Decoder_" data-uid="Egami.Video.VideoReaderOptions.Decoder*"></a>
 
   <h3 id="Egami_Video_VideoReaderOptions_Decoder" data-uid="Egami.Video.VideoReaderOptions.Decoder">
   Decoder
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L327"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L351"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how to decode, such as a reduced scale for thumbnails, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
@@ -204,7 +238,7 @@ using YuvVideoFrame frame = reader.ReadFrame()!;</code></pre>
 
   <h3 id="Egami_Video_VideoReaderOptions_Default" data-uid="Egami.Video.VideoReaderOptions.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L321"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L345"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the default options.</p>
@@ -236,7 +270,7 @@ using YuvVideoFrame frame = reader.ReadFrame()!;</code></pre>
 
   <h3 id="Egami_Video_VideoReaderOptions_Errors" data-uid="Egami.Video.VideoReaderOptions.Errors">
   Errors
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L335"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L359"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets what to do with a frame that cannot be decoded. <a class="xref" href="Egami.Video.DecodeErrorMode.html#Egami_Video_DecodeErrorMode_Skip">Skip</a> (the default) reports it through the
@@ -271,7 +305,7 @@ ones; <a class="xref" href="Egami.Video.DecodeErrorMode.html#Egami_Video_DecodeE
 
   <h3 id="Egami_Video_VideoReaderOptions_TrackNumber" data-uid="Egami.Video.VideoReaderOptions.TrackNumber">
   TrackNumber
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L324"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L348"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the track to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the first video track.</p>
@@ -303,7 +337,7 @@ ones; <a class="xref" href="Egami.Video.DecodeErrorMode.html#Egami_Video_DecodeE
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L318" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoReader.cs/#L342" class="edit-link">Edit this page</a>
         </div>
 
 

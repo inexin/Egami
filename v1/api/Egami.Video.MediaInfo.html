@@ -292,7 +292,7 @@ Console.WriteLine($"{info.FormatName}, {info.Duration?.ToTimeSpan()}, {info.Trac
 
   <h3 id="Egami_Video_MediaInfo_Metadata" data-uid="Egami.Video.MediaInfo.Metadata">
   Metadata
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaInfo.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaInfo.cs/#L40"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the tags, chapters and attachments, to hand to a muxer so a remux keeps them.</p>
@@ -353,6 +353,39 @@ on). AVI INFO chunks are mapped to those names; INFO chunks without one keep the
 
 
 
+  <a id="Egami_Video_MediaInfo_Timecode_" data-uid="Egami.Video.MediaInfo.Timecode*"></a>
+
+  <h3 id="Egami_Video_MediaInfo_Timecode" data-uid="Egami.Video.MediaInfo.Timecode">
+  Timecode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaInfo.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the start timecode as SMPTE text, such as &quot;01:00:00:00&quot; (&quot;;&quot; before the frames for drop-frame timecode), from a
+QuickTime or MP4 timecode track, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the file has none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Timecode { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_MediaInfo_Tracks_" data-uid="Egami.Video.MediaInfo.Tracks*"></a>
 
   <h3 id="Egami_Video_MediaInfo_Tracks" data-uid="Egami.Video.MediaInfo.Tracks">
@@ -389,7 +422,7 @@ on). AVI INFO chunks are mapped to those names; INFO chunks without one keep the
 
   <h3 id="Egami_Video_MediaInfo_VideoTrack" data-uid="Egami.Video.MediaInfo.VideoTrack">
   VideoTrack
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaInfo.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaInfo.cs/#L43"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the first video track, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when there is none.</p>

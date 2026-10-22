@@ -121,6 +121,14 @@ writes: <a class="xref" href="Egami.Video.Containers.MatroskaFormat.html#Egami_V
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.Mp4Format.html">Mp4Format</a></dt>
+      <dd><p>MP4 and QuickTime (ISO/IEC 14496-12 and 14496-14, and Apple's QuickTime File Format): .mp4, .m4v, .m4a and .mov files, flat or
+fragmented (CMAF, DASH segments). Reads every track: AV1, VP9, VP8, Motion JPEG, Opus, FLAC, PCM and mov_text map to their
+codec ids, and any other track (H.264, HEVC, AAC, timecode) is passed through so a remux keeps it. Edit lists are applied, the
+display matrix becomes <a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_Orientation">Orientation</a>, and tags, chapters and cover art are read.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Containers.RawVideo.html">RawVideo</a></dt>
       <dd><p>Headerless raw video (&quot;rawvideo&quot;): frames of one uncompressed layout back to back, as FFmpeg's <code>-f rawvideo</code> reads and
 writes them. Nothing in the file says the size or layout, so the caller gives them as a track.</p>

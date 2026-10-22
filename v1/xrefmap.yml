@@ -41128,6 +41128,347 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Ico.IcoWriterOptions.WindowsSizes
   nameWithType: IcoWriterOptions.WindowsSizes
+- uid: Egami.Formats.Iso
+  name: Egami.Formats.Iso
+  href: api/Egami.Formats.Iso.html
+  commentId: N:Egami.Formats.Iso
+  fullName: Egami.Formats.Iso
+  nameWithType: Egami.Formats.Iso
+- uid: Egami.Formats.Iso.FourCC
+  name: FourCC
+  href: api/Egami.Formats.Iso.FourCC.html
+  commentId: T:Egami.Formats.Iso.FourCC
+  fullName: Egami.Formats.Iso.FourCC
+  nameWithType: FourCC
+- uid: Egami.Formats.Iso.FourCC.#ctor(System.UInt32)
+  name: FourCC(uint)
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC__ctor_System_UInt32_
+  commentId: M:Egami.Formats.Iso.FourCC.#ctor(System.UInt32)
+  name.vb: New(UInteger)
+  fullName: Egami.Formats.Iso.FourCC.FourCC(uint)
+  fullName.vb: Egami.Formats.Iso.FourCC.New(UInteger)
+  nameWithType: FourCC.FourCC(uint)
+  nameWithType.vb: FourCC.New(UInteger)
+- uid: Egami.Formats.Iso.FourCC.#ctor*
+  name: FourCC
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC__ctor_
+  commentId: Overload:Egami.Formats.Iso.FourCC.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Formats.Iso.FourCC.FourCC
+  fullName.vb: Egami.Formats.Iso.FourCC.New
+  nameWithType: FourCC.FourCC
+  nameWithType.vb: FourCC.New
+- uid: Egami.Formats.Iso.FourCC.Parse(System.String)
+  name: Parse(string)
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC_Parse_System_String_
+  commentId: M:Egami.Formats.Iso.FourCC.Parse(System.String)
+  name.vb: Parse(String)
+  fullName: Egami.Formats.Iso.FourCC.Parse(string)
+  fullName.vb: Egami.Formats.Iso.FourCC.Parse(String)
+  nameWithType: FourCC.Parse(string)
+  nameWithType.vb: FourCC.Parse(String)
+- uid: Egami.Formats.Iso.FourCC.Parse*
+  name: Parse
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC_Parse_
+  commentId: Overload:Egami.Formats.Iso.FourCC.Parse
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.FourCC.Parse
+  nameWithType: FourCC.Parse
+- uid: Egami.Formats.Iso.FourCC.ToString
+  name: ToString()
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC_ToString
+  commentId: M:Egami.Formats.Iso.FourCC.ToString
+  fullName: Egami.Formats.Iso.FourCC.ToString()
+  nameWithType: FourCC.ToString()
+- uid: Egami.Formats.Iso.FourCC.ToString*
+  name: ToString
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC_ToString_
+  commentId: Overload:Egami.Formats.Iso.FourCC.ToString
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.FourCC.ToString
+  nameWithType: FourCC.ToString
+- uid: Egami.Formats.Iso.FourCC.TryParse(System.ReadOnlySpan{System.Char},Egami.Formats.Iso.FourCC@)
+  name: TryParse(ReadOnlySpan<char>, out FourCC)
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC_TryParse_System_ReadOnlySpan_System_Char__Egami_Formats_Iso_FourCC__
+  commentId: M:Egami.Formats.Iso.FourCC.TryParse(System.ReadOnlySpan{System.Char},Egami.Formats.Iso.FourCC@)
+  name.vb: TryParse(ReadOnlySpan(Of Char), FourCC)
+  fullName: Egami.Formats.Iso.FourCC.TryParse(System.ReadOnlySpan<char>, out Egami.Formats.Iso.FourCC)
+  fullName.vb: Egami.Formats.Iso.FourCC.TryParse(System.ReadOnlySpan(Of Char), Egami.Formats.Iso.FourCC)
+  nameWithType: FourCC.TryParse(ReadOnlySpan<char>, out FourCC)
+  nameWithType.vb: FourCC.TryParse(ReadOnlySpan(Of Char), FourCC)
+- uid: Egami.Formats.Iso.FourCC.TryParse*
+  name: TryParse
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC_TryParse_
+  commentId: Overload:Egami.Formats.Iso.FourCC.TryParse
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.FourCC.TryParse
+  nameWithType: FourCC.TryParse
+- uid: Egami.Formats.Iso.FourCC.Value
+  name: Value
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC_Value
+  commentId: P:Egami.Formats.Iso.FourCC.Value
+  fullName: Egami.Formats.Iso.FourCC.Value
+  nameWithType: FourCC.Value
+- uid: Egami.Formats.Iso.FourCC.Value*
+  name: Value
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC_Value_
+  commentId: Overload:Egami.Formats.Iso.FourCC.Value
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.FourCC.Value
+  nameWithType: FourCC.Value
+- uid: Egami.Formats.Iso.FourCC.op_Implicit(Egami.Formats.Iso.FourCC)~System.UInt32
+  name: implicit operator uint(FourCC)
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC_op_Implicit_Egami_Formats_Iso_FourCC__System_UInt32
+  commentId: M:Egami.Formats.Iso.FourCC.op_Implicit(Egami.Formats.Iso.FourCC)~System.UInt32
+  name.vb: CType(FourCC)
+  fullName: Egami.Formats.Iso.FourCC.implicit operator uint(Egami.Formats.Iso.FourCC)
+  fullName.vb: Egami.Formats.Iso.FourCC.CType(Egami.Formats.Iso.FourCC)
+  nameWithType: FourCC.implicit operator uint(FourCC)
+  nameWithType.vb: FourCC.CType(FourCC)
+- uid: Egami.Formats.Iso.FourCC.op_Implicit*
+  name: implicit operator
+  href: api/Egami.Formats.Iso.FourCC.html#Egami_Formats_Iso_FourCC_op_Implicit_
+  commentId: Overload:Egami.Formats.Iso.FourCC.op_Implicit
+  isSpec: "True"
+  name.vb: CType
+  fullName: Egami.Formats.Iso.FourCC.implicit operator
+  fullName.vb: Egami.Formats.Iso.FourCC.CType
+  nameWithType: FourCC.implicit operator
+  nameWithType.vb: FourCC.CType
+- uid: Egami.Formats.Iso.IsoBox
+  name: IsoBox
+  href: api/Egami.Formats.Iso.IsoBox.html
+  commentId: T:Egami.Formats.Iso.IsoBox
+  fullName: Egami.Formats.Iso.IsoBox
+  nameWithType: IsoBox
+- uid: Egami.Formats.Iso.IsoBox.#ctor(Egami.Formats.Iso.FourCC,System.Int64,System.Int64,System.Int64,System.Nullable{System.Guid})
+  name: IsoBox(FourCC, long, long, long, Guid?)
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox__ctor_Egami_Formats_Iso_FourCC_System_Int64_System_Int64_System_Int64_System_Nullable_System_Guid__
+  commentId: M:Egami.Formats.Iso.IsoBox.#ctor(Egami.Formats.Iso.FourCC,System.Int64,System.Int64,System.Int64,System.Nullable{System.Guid})
+  name.vb: New(FourCC, Long, Long, Long, Guid?)
+  fullName: Egami.Formats.Iso.IsoBox.IsoBox(Egami.Formats.Iso.FourCC, long, long, long, System.Guid?)
+  fullName.vb: Egami.Formats.Iso.IsoBox.New(Egami.Formats.Iso.FourCC, Long, Long, Long, System.Guid?)
+  nameWithType: IsoBox.IsoBox(FourCC, long, long, long, Guid?)
+  nameWithType.vb: IsoBox.New(FourCC, Long, Long, Long, Guid?)
+- uid: Egami.Formats.Iso.IsoBox.#ctor*
+  name: IsoBox
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox__ctor_
+  commentId: Overload:Egami.Formats.Iso.IsoBox.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Formats.Iso.IsoBox.IsoBox
+  fullName.vb: Egami.Formats.Iso.IsoBox.New
+  nameWithType: IsoBox.IsoBox
+  nameWithType.vb: IsoBox.New
+- uid: Egami.Formats.Iso.IsoBox.ContentLength
+  name: ContentLength
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_ContentLength
+  commentId: P:Egami.Formats.Iso.IsoBox.ContentLength
+  fullName: Egami.Formats.Iso.IsoBox.ContentLength
+  nameWithType: IsoBox.ContentLength
+- uid: Egami.Formats.Iso.IsoBox.ContentLength*
+  name: ContentLength
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_ContentLength_
+  commentId: Overload:Egami.Formats.Iso.IsoBox.ContentLength
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBox.ContentLength
+  nameWithType: IsoBox.ContentLength
+- uid: Egami.Formats.Iso.IsoBox.ContentStart
+  name: ContentStart
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_ContentStart
+  commentId: P:Egami.Formats.Iso.IsoBox.ContentStart
+  fullName: Egami.Formats.Iso.IsoBox.ContentStart
+  nameWithType: IsoBox.ContentStart
+- uid: Egami.Formats.Iso.IsoBox.ContentStart*
+  name: ContentStart
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_ContentStart_
+  commentId: Overload:Egami.Formats.Iso.IsoBox.ContentStart
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBox.ContentStart
+  nameWithType: IsoBox.ContentStart
+- uid: Egami.Formats.Iso.IsoBox.End
+  name: End
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_End
+  commentId: P:Egami.Formats.Iso.IsoBox.End
+  fullName: Egami.Formats.Iso.IsoBox.End
+  nameWithType: IsoBox.End
+- uid: Egami.Formats.Iso.IsoBox.End*
+  name: End
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_End_
+  commentId: Overload:Egami.Formats.Iso.IsoBox.End
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBox.End
+  nameWithType: IsoBox.End
+- uid: Egami.Formats.Iso.IsoBox.Size
+  name: Size
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_Size
+  commentId: P:Egami.Formats.Iso.IsoBox.Size
+  fullName: Egami.Formats.Iso.IsoBox.Size
+  nameWithType: IsoBox.Size
+- uid: Egami.Formats.Iso.IsoBox.Size*
+  name: Size
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_Size_
+  commentId: Overload:Egami.Formats.Iso.IsoBox.Size
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBox.Size
+  nameWithType: IsoBox.Size
+- uid: Egami.Formats.Iso.IsoBox.Start
+  name: Start
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_Start
+  commentId: P:Egami.Formats.Iso.IsoBox.Start
+  fullName: Egami.Formats.Iso.IsoBox.Start
+  nameWithType: IsoBox.Start
+- uid: Egami.Formats.Iso.IsoBox.Start*
+  name: Start
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_Start_
+  commentId: Overload:Egami.Formats.Iso.IsoBox.Start
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBox.Start
+  nameWithType: IsoBox.Start
+- uid: Egami.Formats.Iso.IsoBox.ToString
+  name: ToString()
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_ToString
+  commentId: M:Egami.Formats.Iso.IsoBox.ToString
+  fullName: Egami.Formats.Iso.IsoBox.ToString()
+  nameWithType: IsoBox.ToString()
+- uid: Egami.Formats.Iso.IsoBox.ToString*
+  name: ToString
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_ToString_
+  commentId: Overload:Egami.Formats.Iso.IsoBox.ToString
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBox.ToString
+  nameWithType: IsoBox.ToString
+- uid: Egami.Formats.Iso.IsoBox.Type
+  name: Type
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_Type
+  commentId: P:Egami.Formats.Iso.IsoBox.Type
+  fullName: Egami.Formats.Iso.IsoBox.Type
+  nameWithType: IsoBox.Type
+- uid: Egami.Formats.Iso.IsoBox.Type*
+  name: Type
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_Type_
+  commentId: Overload:Egami.Formats.Iso.IsoBox.Type
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBox.Type
+  nameWithType: IsoBox.Type
+- uid: Egami.Formats.Iso.IsoBox.UserType
+  name: UserType
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_UserType
+  commentId: P:Egami.Formats.Iso.IsoBox.UserType
+  fullName: Egami.Formats.Iso.IsoBox.UserType
+  nameWithType: IsoBox.UserType
+- uid: Egami.Formats.Iso.IsoBox.UserType*
+  name: UserType
+  href: api/Egami.Formats.Iso.IsoBox.html#Egami_Formats_Iso_IsoBox_UserType_
+  commentId: Overload:Egami.Formats.Iso.IsoBox.UserType
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBox.UserType
+  nameWithType: IsoBox.UserType
+- uid: Egami.Formats.Iso.IsoBoxReader
+  name: IsoBoxReader
+  href: api/Egami.Formats.Iso.IsoBoxReader.html
+  commentId: T:Egami.Formats.Iso.IsoBoxReader
+  fullName: Egami.Formats.Iso.IsoBoxReader
+  nameWithType: IsoBoxReader
+- uid: Egami.Formats.Iso.IsoBoxReader.#ctor(System.ReadOnlySpan{System.Byte},System.String)
+  name: IsoBoxReader(ReadOnlySpan<byte>, string)
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader__ctor_System_ReadOnlySpan_System_Byte__System_String_
+  commentId: M:Egami.Formats.Iso.IsoBoxReader.#ctor(System.ReadOnlySpan{System.Byte},System.String)
+  name.vb: New(ReadOnlySpan(Of Byte), String)
+  fullName: Egami.Formats.Iso.IsoBoxReader.IsoBoxReader(System.ReadOnlySpan<byte>, string)
+  fullName.vb: Egami.Formats.Iso.IsoBoxReader.New(System.ReadOnlySpan(Of Byte), String)
+  nameWithType: IsoBoxReader.IsoBoxReader(ReadOnlySpan<byte>, string)
+  nameWithType.vb: IsoBoxReader.New(ReadOnlySpan(Of Byte), String)
+- uid: Egami.Formats.Iso.IsoBoxReader.#ctor(System.ReadOnlySpan{System.Byte},System.String,System.Int64)
+  name: IsoBoxReader(ReadOnlySpan<byte>, string, long)
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader__ctor_System_ReadOnlySpan_System_Byte__System_String_System_Int64_
+  commentId: M:Egami.Formats.Iso.IsoBoxReader.#ctor(System.ReadOnlySpan{System.Byte},System.String,System.Int64)
+  name.vb: New(ReadOnlySpan(Of Byte), String, Long)
+  fullName: Egami.Formats.Iso.IsoBoxReader.IsoBoxReader(System.ReadOnlySpan<byte>, string, long)
+  fullName.vb: Egami.Formats.Iso.IsoBoxReader.New(System.ReadOnlySpan(Of Byte), String, Long)
+  nameWithType: IsoBoxReader.IsoBoxReader(ReadOnlySpan<byte>, string, long)
+  nameWithType.vb: IsoBoxReader.New(ReadOnlySpan(Of Byte), String, Long)
+- uid: Egami.Formats.Iso.IsoBoxReader.#ctor*
+  name: IsoBoxReader
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader__ctor_
+  commentId: Overload:Egami.Formats.Iso.IsoBoxReader.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Formats.Iso.IsoBoxReader.IsoBoxReader
+  fullName.vb: Egami.Formats.Iso.IsoBoxReader.New
+  nameWithType: IsoBoxReader.IsoBoxReader
+  nameWithType.vb: IsoBoxReader.New
+- uid: Egami.Formats.Iso.IsoBoxReader.Children(Egami.Formats.Iso.IsoBox@,System.Int32)
+  name: Children(in IsoBox, int)
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader_Children_Egami_Formats_Iso_IsoBox__System_Int32_
+  commentId: M:Egami.Formats.Iso.IsoBoxReader.Children(Egami.Formats.Iso.IsoBox@,System.Int32)
+  name.vb: Children(IsoBox, Integer)
+  fullName: Egami.Formats.Iso.IsoBoxReader.Children(in Egami.Formats.Iso.IsoBox, int)
+  fullName.vb: Egami.Formats.Iso.IsoBoxReader.Children(Egami.Formats.Iso.IsoBox, Integer)
+  nameWithType: IsoBoxReader.Children(in IsoBox, int)
+  nameWithType.vb: IsoBoxReader.Children(IsoBox, Integer)
+- uid: Egami.Formats.Iso.IsoBoxReader.Children*
+  name: Children
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader_Children_
+  commentId: Overload:Egami.Formats.Iso.IsoBoxReader.Children
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBoxReader.Children
+  nameWithType: IsoBoxReader.Children
+- uid: Egami.Formats.Iso.IsoBoxReader.Content(Egami.Formats.Iso.IsoBox@)
+  name: Content(in IsoBox)
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader_Content_Egami_Formats_Iso_IsoBox__
+  commentId: M:Egami.Formats.Iso.IsoBoxReader.Content(Egami.Formats.Iso.IsoBox@)
+  name.vb: Content(IsoBox)
+  fullName: Egami.Formats.Iso.IsoBoxReader.Content(in Egami.Formats.Iso.IsoBox)
+  fullName.vb: Egami.Formats.Iso.IsoBoxReader.Content(Egami.Formats.Iso.IsoBox)
+  nameWithType: IsoBoxReader.Content(in IsoBox)
+  nameWithType.vb: IsoBoxReader.Content(IsoBox)
+- uid: Egami.Formats.Iso.IsoBoxReader.Content*
+  name: Content
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader_Content_
+  commentId: Overload:Egami.Formats.Iso.IsoBoxReader.Content
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBoxReader.Content
+  nameWithType: IsoBoxReader.Content
+- uid: Egami.Formats.Iso.IsoBoxReader.MaxHeaderSize
+  name: MaxHeaderSize
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader_MaxHeaderSize
+  commentId: F:Egami.Formats.Iso.IsoBoxReader.MaxHeaderSize
+  fullName: Egami.Formats.Iso.IsoBoxReader.MaxHeaderSize
+  nameWithType: IsoBoxReader.MaxHeaderSize
+- uid: Egami.Formats.Iso.IsoBoxReader.Next(Egami.Formats.Iso.IsoBox@)
+  name: Next(out IsoBox)
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader_Next_Egami_Formats_Iso_IsoBox__
+  commentId: M:Egami.Formats.Iso.IsoBoxReader.Next(Egami.Formats.Iso.IsoBox@)
+  name.vb: Next(IsoBox)
+  fullName: Egami.Formats.Iso.IsoBoxReader.Next(out Egami.Formats.Iso.IsoBox)
+  fullName.vb: Egami.Formats.Iso.IsoBoxReader.Next(Egami.Formats.Iso.IsoBox)
+  nameWithType: IsoBoxReader.Next(out IsoBox)
+  nameWithType.vb: IsoBoxReader.Next(IsoBox)
+- uid: Egami.Formats.Iso.IsoBoxReader.Next*
+  name: Next
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader_Next_
+  commentId: Overload:Egami.Formats.Iso.IsoBoxReader.Next
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBoxReader.Next
+  nameWithType: IsoBoxReader.Next
+- uid: Egami.Formats.Iso.IsoBoxReader.ReadHeader(System.ReadOnlySpan{System.Byte},System.Int64,System.Int64,System.String)
+  name: ReadHeader(ReadOnlySpan<byte>, long, long, string)
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader_ReadHeader_System_ReadOnlySpan_System_Byte__System_Int64_System_Int64_System_String_
+  commentId: M:Egami.Formats.Iso.IsoBoxReader.ReadHeader(System.ReadOnlySpan{System.Byte},System.Int64,System.Int64,System.String)
+  name.vb: ReadHeader(ReadOnlySpan(Of Byte), Long, Long, String)
+  fullName: Egami.Formats.Iso.IsoBoxReader.ReadHeader(System.ReadOnlySpan<byte>, long, long, string)
+  fullName.vb: Egami.Formats.Iso.IsoBoxReader.ReadHeader(System.ReadOnlySpan(Of Byte), Long, Long, String)
+  nameWithType: IsoBoxReader.ReadHeader(ReadOnlySpan<byte>, long, long, string)
+  nameWithType.vb: IsoBoxReader.ReadHeader(ReadOnlySpan(Of Byte), Long, Long, String)
+- uid: Egami.Formats.Iso.IsoBoxReader.ReadHeader*
+  name: ReadHeader
+  href: api/Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader_ReadHeader_
+  commentId: Overload:Egami.Formats.Iso.IsoBoxReader.ReadHeader
+  isSpec: "True"
+  fullName: Egami.Formats.Iso.IsoBoxReader.ReadHeader
+  nameWithType: IsoBoxReader.ReadHeader
 - uid: Egami.Formats.Jbig2
   name: Egami.Formats.Jbig2
   href: api/Egami.Formats.Jbig2.html
@@ -71104,18 +71445,36 @@ references:
   commentId: F:Egami.Video.CodecIds.Av1
   fullName: Egami.Video.CodecIds.Av1
   nameWithType: CodecIds.Av1
+- uid: Egami.Video.CodecIds.Avc
+  name: Avc
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Avc
+  commentId: F:Egami.Video.CodecIds.Avc
+  fullName: Egami.Video.CodecIds.Avc
+  nameWithType: CodecIds.Avc
 - uid: Egami.Video.CodecIds.Flac
   name: Flac
   href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Flac
   commentId: F:Egami.Video.CodecIds.Flac
   fullName: Egami.Video.CodecIds.Flac
   nameWithType: CodecIds.Flac
+- uid: Egami.Video.CodecIds.Hevc
+  name: Hevc
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Hevc
+  commentId: F:Egami.Video.CodecIds.Hevc
+  fullName: Egami.Video.CodecIds.Hevc
+  nameWithType: CodecIds.Hevc
 - uid: Egami.Video.CodecIds.MotionJpeg
   name: MotionJpeg
   href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_MotionJpeg
   commentId: F:Egami.Video.CodecIds.MotionJpeg
   fullName: Egami.Video.CodecIds.MotionJpeg
   nameWithType: CodecIds.MotionJpeg
+- uid: Egami.Video.CodecIds.MovText
+  name: MovText
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_MovText
+  commentId: F:Egami.Video.CodecIds.MovText
+  fullName: Egami.Video.CodecIds.MovText
+  nameWithType: CodecIds.MovText
 - uid: Egami.Video.CodecIds.Mp2
   name: Mp2
   href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Mp2
@@ -71128,6 +71487,12 @@ references:
   commentId: F:Egami.Video.CodecIds.Mp3
   fullName: Egami.Video.CodecIds.Mp3
   nameWithType: CodecIds.Mp3
+- uid: Egami.Video.CodecIds.Mpeg4Visual
+  name: Mpeg4Visual
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Mpeg4Visual
+  commentId: F:Egami.Video.CodecIds.Mpeg4Visual
+  fullName: Egami.Video.CodecIds.Mpeg4Visual
+  nameWithType: CodecIds.Mpeg4Visual
 - uid: Egami.Video.CodecIds.Opus
   name: Opus
   href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Opus
@@ -71152,6 +71517,24 @@ references:
   commentId: F:Egami.Video.CodecIds.PcmLittleEndian
   fullName: Egami.Video.CodecIds.PcmLittleEndian
   nameWithType: CodecIds.PcmLittleEndian
+- uid: Egami.Video.CodecIds.QuickTimeAudio
+  name: QuickTimeAudio
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_QuickTimeAudio
+  commentId: F:Egami.Video.CodecIds.QuickTimeAudio
+  fullName: Egami.Video.CodecIds.QuickTimeAudio
+  nameWithType: CodecIds.QuickTimeAudio
+- uid: Egami.Video.CodecIds.QuickTimeOther
+  name: QuickTimeOther
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_QuickTimeOther
+  commentId: F:Egami.Video.CodecIds.QuickTimeOther
+  fullName: Egami.Video.CodecIds.QuickTimeOther
+  nameWithType: CodecIds.QuickTimeOther
+- uid: Egami.Video.CodecIds.QuickTimeVideo
+  name: QuickTimeVideo
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_QuickTimeVideo
+  commentId: F:Egami.Video.CodecIds.QuickTimeVideo
+  fullName: Egami.Video.CodecIds.QuickTimeVideo
+  nameWithType: CodecIds.QuickTimeVideo
 - uid: Egami.Video.CodecIds.Uncompressed
   name: Uncompressed
   href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Uncompressed
@@ -72757,6 +73140,151 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Containers.MatroskaFormat.WebM
   nameWithType: MatroskaFormat.WebM
+- uid: Egami.Video.Containers.Mp4Format
+  name: Mp4Format
+  href: api/Egami.Video.Containers.Mp4Format.html
+  commentId: T:Egami.Video.Containers.Mp4Format
+  fullName: Egami.Video.Containers.Mp4Format
+  nameWithType: Mp4Format
+- uid: Egami.Video.Containers.Mp4Format.CanMux
+  name: CanMux
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_CanMux
+  commentId: P:Egami.Video.Containers.Mp4Format.CanMux
+  fullName: Egami.Video.Containers.Mp4Format.CanMux
+  nameWithType: Mp4Format.CanMux
+- uid: Egami.Video.Containers.Mp4Format.CanMux*
+  name: CanMux
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_CanMux_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.CanMux
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.CanMux
+  nameWithType: Mp4Format.CanMux
+- uid: Egami.Video.Containers.Mp4Format.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name: CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.Mp4Format.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name.vb: CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.Mp4Format.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo>, Egami.Video.MediaMetadata, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.Mp4Format.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList(Of Egami.Video.TrackInfo), Egami.Video.MediaMetadata, Egami.Video.MediaContext, Boolean)
+  nameWithType: Mp4Format.CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  nameWithType.vb: Mp4Format.CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+- uid: Egami.Video.Containers.Mp4Format.CreateMuxer*
+  name: CreateMuxer
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_CreateMuxer_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.CreateMuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.CreateMuxer
+  nameWithType: Mp4Format.CreateMuxer
+- uid: Egami.Video.Containers.Mp4Format.Extensions
+  name: Extensions
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_Extensions
+  commentId: P:Egami.Video.Containers.Mp4Format.Extensions
+  fullName: Egami.Video.Containers.Mp4Format.Extensions
+  nameWithType: Mp4Format.Extensions
+- uid: Egami.Video.Containers.Mp4Format.Extensions*
+  name: Extensions
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_Extensions_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.Extensions
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.Extensions
+  nameWithType: Mp4Format.Extensions
+- uid: Egami.Video.Containers.Mp4Format.IgnoreEditLists
+  name: IgnoreEditLists
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_IgnoreEditLists
+  commentId: P:Egami.Video.Containers.Mp4Format.IgnoreEditLists
+  fullName: Egami.Video.Containers.Mp4Format.IgnoreEditLists
+  nameWithType: Mp4Format.IgnoreEditLists
+- uid: Egami.Video.Containers.Mp4Format.IgnoreEditLists*
+  name: IgnoreEditLists
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_IgnoreEditLists_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.IgnoreEditLists
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.IgnoreEditLists
+  nameWithType: Mp4Format.IgnoreEditLists
+- uid: Egami.Video.Containers.Mp4Format.Instance
+  name: Instance
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_Instance
+  commentId: P:Egami.Video.Containers.Mp4Format.Instance
+  fullName: Egami.Video.Containers.Mp4Format.Instance
+  nameWithType: Mp4Format.Instance
+- uid: Egami.Video.Containers.Mp4Format.Instance*
+  name: Instance
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_Instance_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.Instance
+  nameWithType: Mp4Format.Instance
+- uid: Egami.Video.Containers.Mp4Format.IsMatch(System.ReadOnlySpan{System.Byte})
+  name: IsMatch(ReadOnlySpan<byte>)
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_IsMatch_System_ReadOnlySpan_System_Byte__
+  commentId: M:Egami.Video.Containers.Mp4Format.IsMatch(System.ReadOnlySpan{System.Byte})
+  name.vb: IsMatch(ReadOnlySpan(Of Byte))
+  fullName: Egami.Video.Containers.Mp4Format.IsMatch(System.ReadOnlySpan<byte>)
+  fullName.vb: Egami.Video.Containers.Mp4Format.IsMatch(System.ReadOnlySpan(Of Byte))
+  nameWithType: Mp4Format.IsMatch(ReadOnlySpan<byte>)
+  nameWithType.vb: Mp4Format.IsMatch(ReadOnlySpan(Of Byte))
+- uid: Egami.Video.Containers.Mp4Format.IsMatch*
+  name: IsMatch
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_IsMatch_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.IsMatch
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.IsMatch
+  nameWithType: Mp4Format.IsMatch
+- uid: Egami.Video.Containers.Mp4Format.MoovAtEnd
+  name: MoovAtEnd
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_MoovAtEnd
+  commentId: P:Egami.Video.Containers.Mp4Format.MoovAtEnd
+  fullName: Egami.Video.Containers.Mp4Format.MoovAtEnd
+  nameWithType: Mp4Format.MoovAtEnd
+- uid: Egami.Video.Containers.Mp4Format.MoovAtEnd*
+  name: MoovAtEnd
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_MoovAtEnd_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.MoovAtEnd
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.MoovAtEnd
+  nameWithType: Mp4Format.MoovAtEnd
+- uid: Egami.Video.Containers.Mp4Format.Name
+  name: Name
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_Name
+  commentId: P:Egami.Video.Containers.Mp4Format.Name
+  fullName: Egami.Video.Containers.Mp4Format.Name
+  nameWithType: Mp4Format.Name
+- uid: Egami.Video.Containers.Mp4Format.Name*
+  name: Name
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_Name_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.Name
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.Name
+  nameWithType: Mp4Format.Name
+- uid: Egami.Video.Containers.Mp4Format.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name: OpenDemuxer(Stream, MediaContext, bool)
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.Mp4Format.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name.vb: OpenDemuxer(Stream, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.Mp4Format.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.Mp4Format.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, Boolean)
+  nameWithType: Mp4Format.OpenDemuxer(Stream, MediaContext, bool)
+  nameWithType.vb: Mp4Format.OpenDemuxer(Stream, MediaContext, Boolean)
+- uid: Egami.Video.Containers.Mp4Format.OpenDemuxer*
+  name: OpenDemuxer
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_OpenDemuxer_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.OpenDemuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.OpenDemuxer
+  nameWithType: Mp4Format.OpenDemuxer
+- uid: Egami.Video.Containers.Mp4Format.SignatureLength
+  name: SignatureLength
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_SignatureLength
+  commentId: P:Egami.Video.Containers.Mp4Format.SignatureLength
+  fullName: Egami.Video.Containers.Mp4Format.SignatureLength
+  nameWithType: Mp4Format.SignatureLength
+- uid: Egami.Video.Containers.Mp4Format.SignatureLength*
+  name: SignatureLength
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_SignatureLength_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.SignatureLength
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.SignatureLength
+  nameWithType: Mp4Format.SignatureLength
 - uid: Egami.Video.Containers.RawVideo
   name: RawVideo
   href: api/Egami.Video.Containers.RawVideo.html
@@ -73063,6 +73591,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.EncodedPacket.GetWritableData
   nameWithType: EncodedPacket.GetWritableData
+- uid: Egami.Video.EncodedPacket.IsDiscardable
+  name: IsDiscardable
+  href: api/Egami.Video.EncodedPacket.html#Egami_Video_EncodedPacket_IsDiscardable
+  commentId: P:Egami.Video.EncodedPacket.IsDiscardable
+  fullName: Egami.Video.EncodedPacket.IsDiscardable
+  nameWithType: EncodedPacket.IsDiscardable
+- uid: Egami.Video.EncodedPacket.IsDiscardable*
+  name: IsDiscardable
+  href: api/Egami.Video.EncodedPacket.html#Egami_Video_EncodedPacket_IsDiscardable_
+  commentId: Overload:Egami.Video.EncodedPacket.IsDiscardable
+  isSpec: "True"
+  fullName: Egami.Video.EncodedPacket.IsDiscardable
+  nameWithType: EncodedPacket.IsDiscardable
 - uid: Egami.Video.EncodedPacket.IsKeyframe
   name: IsKeyframe
   href: api/Egami.Video.EncodedPacket.html#Egami_Video_EncodedPacket_IsKeyframe
@@ -73754,6 +74295,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.MediaInfo.Tags
   nameWithType: MediaInfo.Tags
+- uid: Egami.Video.MediaInfo.Timecode
+  name: Timecode
+  href: api/Egami.Video.MediaInfo.html#Egami_Video_MediaInfo_Timecode
+  commentId: P:Egami.Video.MediaInfo.Timecode
+  fullName: Egami.Video.MediaInfo.Timecode
+  nameWithType: MediaInfo.Timecode
+- uid: Egami.Video.MediaInfo.Timecode*
+  name: Timecode
+  href: api/Egami.Video.MediaInfo.html#Egami_Video_MediaInfo_Timecode_
+  commentId: Overload:Egami.Video.MediaInfo.Timecode
+  isSpec: "True"
+  fullName: Egami.Video.MediaInfo.Timecode
+  nameWithType: MediaInfo.Timecode
 - uid: Egami.Video.MediaInfo.Tracks
   name: Tracks
   href: api/Egami.Video.MediaInfo.html#Egami_Video_MediaInfo_Tracks
@@ -74357,6 +74911,232 @@ references:
   isSpec: "True"
   fullName: Egami.Video.MediaWarning.TrackNumber
   nameWithType: MediaWarning.TrackNumber
+- uid: Egami.Video.MovTextFace
+  name: MovTextFace
+  href: api/Egami.Video.MovTextFace.html
+  commentId: T:Egami.Video.MovTextFace
+  fullName: Egami.Video.MovTextFace
+  nameWithType: MovTextFace
+- uid: Egami.Video.MovTextFace.Bold
+  name: Bold
+  href: api/Egami.Video.MovTextFace.html#Egami_Video_MovTextFace_Bold
+  commentId: F:Egami.Video.MovTextFace.Bold
+  fullName: Egami.Video.MovTextFace.Bold
+  nameWithType: MovTextFace.Bold
+- uid: Egami.Video.MovTextFace.Italic
+  name: Italic
+  href: api/Egami.Video.MovTextFace.html#Egami_Video_MovTextFace_Italic
+  commentId: F:Egami.Video.MovTextFace.Italic
+  fullName: Egami.Video.MovTextFace.Italic
+  nameWithType: MovTextFace.Italic
+- uid: Egami.Video.MovTextFace.None
+  name: None
+  href: api/Egami.Video.MovTextFace.html#Egami_Video_MovTextFace_None
+  commentId: F:Egami.Video.MovTextFace.None
+  fullName: Egami.Video.MovTextFace.None
+  nameWithType: MovTextFace.None
+- uid: Egami.Video.MovTextFace.Underline
+  name: Underline
+  href: api/Egami.Video.MovTextFace.html#Egami_Video_MovTextFace_Underline
+  commentId: F:Egami.Video.MovTextFace.Underline
+  fullName: Egami.Video.MovTextFace.Underline
+  nameWithType: MovTextFace.Underline
+- uid: Egami.Video.MovTextSample
+  name: MovTextSample
+  href: api/Egami.Video.MovTextSample.html
+  commentId: T:Egami.Video.MovTextSample
+  fullName: Egami.Video.MovTextSample
+  nameWithType: MovTextSample
+- uid: Egami.Video.MovTextSample.#ctor(System.String)
+  name: MovTextSample(string)
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample__ctor_System_String_
+  commentId: M:Egami.Video.MovTextSample.#ctor(System.String)
+  name.vb: New(String)
+  fullName: Egami.Video.MovTextSample.MovTextSample(string)
+  fullName.vb: Egami.Video.MovTextSample.New(String)
+  nameWithType: MovTextSample.MovTextSample(string)
+  nameWithType.vb: MovTextSample.New(String)
+- uid: Egami.Video.MovTextSample.#ctor*
+  name: MovTextSample
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample__ctor_
+  commentId: Overload:Egami.Video.MovTextSample.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.MovTextSample.MovTextSample
+  fullName.vb: Egami.Video.MovTextSample.New
+  nameWithType: MovTextSample.MovTextSample
+  nameWithType.vb: MovTextSample.New
+- uid: Egami.Video.MovTextSample.OtherBoxes
+  name: OtherBoxes
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample_OtherBoxes
+  commentId: P:Egami.Video.MovTextSample.OtherBoxes
+  fullName: Egami.Video.MovTextSample.OtherBoxes
+  nameWithType: MovTextSample.OtherBoxes
+- uid: Egami.Video.MovTextSample.OtherBoxes*
+  name: OtherBoxes
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample_OtherBoxes_
+  commentId: Overload:Egami.Video.MovTextSample.OtherBoxes
+  isSpec: "True"
+  fullName: Egami.Video.MovTextSample.OtherBoxes
+  nameWithType: MovTextSample.OtherBoxes
+- uid: Egami.Video.MovTextSample.Parse(System.ReadOnlySpan{System.Byte})
+  name: Parse(ReadOnlySpan<byte>)
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample_Parse_System_ReadOnlySpan_System_Byte__
+  commentId: M:Egami.Video.MovTextSample.Parse(System.ReadOnlySpan{System.Byte})
+  name.vb: Parse(ReadOnlySpan(Of Byte))
+  fullName: Egami.Video.MovTextSample.Parse(System.ReadOnlySpan<byte>)
+  fullName.vb: Egami.Video.MovTextSample.Parse(System.ReadOnlySpan(Of Byte))
+  nameWithType: MovTextSample.Parse(ReadOnlySpan<byte>)
+  nameWithType.vb: MovTextSample.Parse(ReadOnlySpan(Of Byte))
+- uid: Egami.Video.MovTextSample.Parse*
+  name: Parse
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample_Parse_
+  commentId: Overload:Egami.Video.MovTextSample.Parse
+  isSpec: "True"
+  fullName: Egami.Video.MovTextSample.Parse
+  nameWithType: MovTextSample.Parse
+- uid: Egami.Video.MovTextSample.Styles
+  name: Styles
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample_Styles
+  commentId: P:Egami.Video.MovTextSample.Styles
+  fullName: Egami.Video.MovTextSample.Styles
+  nameWithType: MovTextSample.Styles
+- uid: Egami.Video.MovTextSample.Styles*
+  name: Styles
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample_Styles_
+  commentId: Overload:Egami.Video.MovTextSample.Styles
+  isSpec: "True"
+  fullName: Egami.Video.MovTextSample.Styles
+  nameWithType: MovTextSample.Styles
+- uid: Egami.Video.MovTextSample.Text
+  name: Text
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample_Text
+  commentId: P:Egami.Video.MovTextSample.Text
+  fullName: Egami.Video.MovTextSample.Text
+  nameWithType: MovTextSample.Text
+- uid: Egami.Video.MovTextSample.Text*
+  name: Text
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample_Text_
+  commentId: Overload:Egami.Video.MovTextSample.Text
+  isSpec: "True"
+  fullName: Egami.Video.MovTextSample.Text
+  nameWithType: MovTextSample.Text
+- uid: Egami.Video.MovTextSample.ToBytes
+  name: ToBytes()
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample_ToBytes
+  commentId: M:Egami.Video.MovTextSample.ToBytes
+  fullName: Egami.Video.MovTextSample.ToBytes()
+  nameWithType: MovTextSample.ToBytes()
+- uid: Egami.Video.MovTextSample.ToBytes*
+  name: ToBytes
+  href: api/Egami.Video.MovTextSample.html#Egami_Video_MovTextSample_ToBytes_
+  commentId: Overload:Egami.Video.MovTextSample.ToBytes
+  isSpec: "True"
+  fullName: Egami.Video.MovTextSample.ToBytes
+  nameWithType: MovTextSample.ToBytes
+- uid: Egami.Video.MovTextStyle
+  name: MovTextStyle
+  href: api/Egami.Video.MovTextStyle.html
+  commentId: T:Egami.Video.MovTextStyle
+  fullName: Egami.Video.MovTextStyle
+  nameWithType: MovTextStyle
+- uid: Egami.Video.MovTextStyle.#ctor(System.Int32,System.Int32,Egami.Video.MovTextFace,System.Int32,Egami.Pixels.Rgba8,System.Int32)
+  name: MovTextStyle(int, int, MovTextFace, int, Rgba8, int)
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle__ctor_System_Int32_System_Int32_Egami_Video_MovTextFace_System_Int32_Egami_Pixels_Rgba8_System_Int32_
+  commentId: M:Egami.Video.MovTextStyle.#ctor(System.Int32,System.Int32,Egami.Video.MovTextFace,System.Int32,Egami.Pixels.Rgba8,System.Int32)
+  name.vb: New(Integer, Integer, MovTextFace, Integer, Rgba8, Integer)
+  fullName: Egami.Video.MovTextStyle.MovTextStyle(int, int, Egami.Video.MovTextFace, int, Egami.Pixels.Rgba8, int)
+  fullName.vb: Egami.Video.MovTextStyle.New(Integer, Integer, Egami.Video.MovTextFace, Integer, Egami.Pixels.Rgba8, Integer)
+  nameWithType: MovTextStyle.MovTextStyle(int, int, MovTextFace, int, Rgba8, int)
+  nameWithType.vb: MovTextStyle.New(Integer, Integer, MovTextFace, Integer, Rgba8, Integer)
+- uid: Egami.Video.MovTextStyle.#ctor*
+  name: MovTextStyle
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle__ctor_
+  commentId: Overload:Egami.Video.MovTextStyle.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.MovTextStyle.MovTextStyle
+  fullName.vb: Egami.Video.MovTextStyle.New
+  nameWithType: MovTextStyle.MovTextStyle
+  nameWithType.vb: MovTextStyle.New
+- uid: Egami.Video.MovTextStyle.Color
+  name: Color
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_Color
+  commentId: P:Egami.Video.MovTextStyle.Color
+  fullName: Egami.Video.MovTextStyle.Color
+  nameWithType: MovTextStyle.Color
+- uid: Egami.Video.MovTextStyle.Color*
+  name: Color
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_Color_
+  commentId: Overload:Egami.Video.MovTextStyle.Color
+  isSpec: "True"
+  fullName: Egami.Video.MovTextStyle.Color
+  nameWithType: MovTextStyle.Color
+- uid: Egami.Video.MovTextStyle.End
+  name: End
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_End
+  commentId: P:Egami.Video.MovTextStyle.End
+  fullName: Egami.Video.MovTextStyle.End
+  nameWithType: MovTextStyle.End
+- uid: Egami.Video.MovTextStyle.End*
+  name: End
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_End_
+  commentId: Overload:Egami.Video.MovTextStyle.End
+  isSpec: "True"
+  fullName: Egami.Video.MovTextStyle.End
+  nameWithType: MovTextStyle.End
+- uid: Egami.Video.MovTextStyle.Face
+  name: Face
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_Face
+  commentId: P:Egami.Video.MovTextStyle.Face
+  fullName: Egami.Video.MovTextStyle.Face
+  nameWithType: MovTextStyle.Face
+- uid: Egami.Video.MovTextStyle.Face*
+  name: Face
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_Face_
+  commentId: Overload:Egami.Video.MovTextStyle.Face
+  isSpec: "True"
+  fullName: Egami.Video.MovTextStyle.Face
+  nameWithType: MovTextStyle.Face
+- uid: Egami.Video.MovTextStyle.FontId
+  name: FontId
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_FontId
+  commentId: P:Egami.Video.MovTextStyle.FontId
+  fullName: Egami.Video.MovTextStyle.FontId
+  nameWithType: MovTextStyle.FontId
+- uid: Egami.Video.MovTextStyle.FontId*
+  name: FontId
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_FontId_
+  commentId: Overload:Egami.Video.MovTextStyle.FontId
+  isSpec: "True"
+  fullName: Egami.Video.MovTextStyle.FontId
+  nameWithType: MovTextStyle.FontId
+- uid: Egami.Video.MovTextStyle.FontSize
+  name: FontSize
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_FontSize
+  commentId: P:Egami.Video.MovTextStyle.FontSize
+  fullName: Egami.Video.MovTextStyle.FontSize
+  nameWithType: MovTextStyle.FontSize
+- uid: Egami.Video.MovTextStyle.FontSize*
+  name: FontSize
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_FontSize_
+  commentId: Overload:Egami.Video.MovTextStyle.FontSize
+  isSpec: "True"
+  fullName: Egami.Video.MovTextStyle.FontSize
+  nameWithType: MovTextStyle.FontSize
+- uid: Egami.Video.MovTextStyle.Start
+  name: Start
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_Start
+  commentId: P:Egami.Video.MovTextStyle.Start
+  fullName: Egami.Video.MovTextStyle.Start
+  nameWithType: MovTextStyle.Start
+- uid: Egami.Video.MovTextStyle.Start*
+  name: Start
+  href: api/Egami.Video.MovTextStyle.html#Egami_Video_MovTextStyle_Start_
+  commentId: Overload:Egami.Video.MovTextStyle.Start
+  isSpec: "True"
+  fullName: Egami.Video.MovTextStyle.Start
+  nameWithType: MovTextStyle.Start
 - uid: Egami.Video.PacketAddition
   name: PacketAddition
   href: api/Egami.Video.PacketAddition.html
@@ -75535,6 +76315,19 @@ references:
   commentId: T:Egami.Video.VideoReaderOptions
   fullName: Egami.Video.VideoReaderOptions
   nameWithType: VideoReaderOptions
+- uid: Egami.Video.VideoReaderOptions.AutoOrient
+  name: AutoOrient
+  href: api/Egami.Video.VideoReaderOptions.html#Egami_Video_VideoReaderOptions_AutoOrient
+  commentId: P:Egami.Video.VideoReaderOptions.AutoOrient
+  fullName: Egami.Video.VideoReaderOptions.AutoOrient
+  nameWithType: VideoReaderOptions.AutoOrient
+- uid: Egami.Video.VideoReaderOptions.AutoOrient*
+  name: AutoOrient
+  href: api/Egami.Video.VideoReaderOptions.html#Egami_Video_VideoReaderOptions_AutoOrient_
+  commentId: Overload:Egami.Video.VideoReaderOptions.AutoOrient
+  isSpec: "True"
+  fullName: Egami.Video.VideoReaderOptions.AutoOrient
+  nameWithType: VideoReaderOptions.AutoOrient
 - uid: Egami.Video.VideoReaderOptions.Decoder
   name: Decoder
   href: api/Egami.Video.VideoReaderOptions.html#Egami_Video_VideoReaderOptions_Decoder
@@ -75723,6 +76516,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoTrackInfo.Height
   nameWithType: VideoTrackInfo.Height
+- uid: Egami.Video.VideoTrackInfo.Orientation
+  name: Orientation
+  href: api/Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_Orientation
+  commentId: P:Egami.Video.VideoTrackInfo.Orientation
+  fullName: Egami.Video.VideoTrackInfo.Orientation
+  nameWithType: VideoTrackInfo.Orientation
+- uid: Egami.Video.VideoTrackInfo.Orientation*
+  name: Orientation
+  href: api/Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_Orientation_
+  commentId: Overload:Egami.Video.VideoTrackInfo.Orientation
+  isSpec: "True"
+  fullName: Egami.Video.VideoTrackInfo.Orientation
+  nameWithType: VideoTrackInfo.Orientation
 - uid: Egami.Video.VideoTrackInfo.PixelAspectRatio
   name: PixelAspectRatio
   href: api/Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_PixelAspectRatio

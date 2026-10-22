@@ -346,8 +346,61 @@ foreach (MediaWarning warning in warnings)
 {
     Console.WriteLine($&quot;{warning.Code}: {warning.Message}&quot;);
 }
-</code></pre><h2 id="containers">Containers</h2>
-<p>Each container is a <code>ContainerFormat</code>: <code>MatroskaFormat</code> (WebM and Matroska), <code>AviFormat</code>, <code>IvfFormat</code> and <code>Y4mFormat</code>.
+</code></pre><h2 id="mp4-and-quicktime">MP4 and QuickTime</h2>
+<p><code>Mp4Format</code> reads .mp4, .m4v, .m4a and .mov files, flat or fragmented (CMAF and DASH segments, phone recordings), and writes
+ISO MP4. Every track is read: AV1, VP9, VP8, Motion JPEG, Opus, FLAC, PCM and mov_text with their settings, and H.264, HEVC,
+AAC or any other codec passed through, so a remux keeps them byte for byte. Opening a long file reads only its index.</p>
+<ul>
+<li>Edit lists are applied, as FFmpeg shows them: a delayed track starts later, and packets before the start are marked
+<code>EncodedPacket.IsDiscardable</code> (the reader decodes them and drops their frames). <code>new Mp4Format { IgnoreEditLists = true }</code>
+gives the media's own times.</li>
+<li>The display matrix is <code>VideoTrackInfo.Orientation</code>. Frames come out as coded; <code>VideoReaderOptions.AutoOrient</code> turns them.</li>
+<li>A timecode track gives <code>MediaInfo.Timecode</code>. Tags, cover art (as an attachment named cover.jpg or cover.png) and chapters
+(Nero chpl or a QuickTime chapter track) are read, and written back.</li>
+<li><code>MovTextSample</code> reads and writes mov_text subtitles with their style runs (<code>MovTextStyle</code>: the characters each covers, <code>MovTextFace</code> bold, italic or underline, size and color).</li>
+<li>Writing puts moov before the media, so the file plays while it downloads. On a stream that can seek and read the media is
+moved forward at the end; otherwise it waits in a temporary file. <code>new Mp4Format { MoovAtEnd = true }</code> writes moov last,
+straight to a seekable stream. A QuickTime file is written as MP4.</li>
+</ul>
+<pre><code class="lang-csharp">// MP4 and QuickTime files read like any other: rotation from the display matrix, the start timecode, edit lists applied.
+MediaInfo phone = MediaFile.Probe(&quot;phone.mov&quot;);
+Console.WriteLine($&quot;{phone.FormatName}: turn {phone.VideoTrack!.Orientation} to show upright&quot;);
+Console.WriteLine($&quot;starts at timecode {MediaFile.Probe(&quot;camera.mov&quot;).Timecode}&quot;);
+
+// Frames come out as coded; AutoOrient turns each one upright.
+using (VideoReader reader = VideoReader.Open(&quot;phone.mov&quot;, new VideoReaderOptions { AutoOrient = true }))
+{
+    using VideoFrame&lt;Rgb8&gt; upright = reader.ReadFrames&lt;Rgb8&gt;().First();
+    Console.WriteLine($&quot;{reader.Track.Width}x{reader.Track.Height} coded, {upright.Raster.Width}x{upright.Raster.Height} shown&quot;);
+}
+
+// Writing MP4: moov before the media (the file plays while it downloads), tags, chapters and cover art kept.
+MediaFile.Remux(&quot;movie.webm&quot;, &quot;movie.mp4&quot;);
+MediaFile.Remux(&quot;metadata.mkv&quot;, &quot;metadata.mp4&quot;);
+
+// mov_text subtitles: each packet's text and style runs.
+using IDemuxer demuxer = MediaFile.OpenDemuxer(&quot;subtitled.mp4&quot;);
+TrackInfo subtitles = demuxer.Tracks.First(t =&gt; t.CodecId == CodecIds.MovText);
+while (demuxer.ReadPacket() is { } packet)
+{
+    using (packet)
+    {
+        if (packet.TrackNumber == subtitles.Number)
+        {
+            MovTextSample text = MovTextSample.Parse(packet.Data.Span);
+            Console.WriteLine($&quot;{packet.Timestamp.ToTimeSpan()}: {text.Text} ({text.Styles.Count} styles)&quot;);
+        }
+    }
+}
+</code></pre>
+<p>Broken files are read up to the damage, with a warning through <code>MediaContext.Warnings</code>: <code>mp4-truncated</code> (the file was cut
+off), <code>mp4-bad-track</code>, <code>mp4-bad-box</code> and <code>mp4-bad-fragment</code> (broken boxes, skipped), <code>mp4-sample-table</code> (tables that disagree),
+<code>mp4-edit-list</code> (an edit list with several media edits or another rate, not applied), <code>mp4-sample-descriptions</code> (a track that
+changes its sample description), <code>mp4-fragment-track</code> and <code>mp4-track-id</code>. Writers report <code>mp4-timestamps</code> (a packet decoding
+before the one before it) and <code>metadata-dropped</code>. A file whose moov follows its media needs a stream that can seek.</p>
+<h2 id="containers">Containers</h2>
+<p>Each container is a <code>ContainerFormat</code>: <code>MatroskaFormat</code> (WebM and Matroska), <code>Mp4Format</code> (MP4 and QuickTime), <code>AviFormat</code>,
+<code>IvfFormat</code> and <code>Y4mFormat</code>.
 <code>RawVideo</code> reads and writes headerless frames in a layout you give.</p>
 <pre><code class="lang-csharp">// The containers, by name or extension, and headerless raw frames in a layout you give.
 ContainerFormat? webm = MediaContext.Default.FindContainer(&quot;webm&quot;);

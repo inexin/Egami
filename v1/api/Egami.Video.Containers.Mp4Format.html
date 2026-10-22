@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Mp4Format | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Mp4Format | Egami ">
+      
+      <meta name="description" content="MP4 and QuickTime (ISO/IEC 14496-12 and 14496-14, and Apple&#39;s QuickTime File Format): .mp4, .m4v, .m4a and .mov files, flat or fragmented (CMAF, DASH segments). Reads every track: AV1, VP9, VP8, Motion JPEG, Opus, FLAC, PCM and mov_text map to their codec ids, and any other track (H.264, HEVC, AAC, timecode) is passed through so a remux keeps it. Edit lists are applied, the display matrix becomes , and tags, chapters and cover art are read.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Containers_Mp4Format.md&amp;value=---%0Auid%3A%20Egami.Video.Containers.Mp4Format%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Containers.Mp4Format">
+
+
+
+  <h1 id="Egami_Video_Containers_Mp4Format" data-uid="Egami.Video.Containers.Mp4Format" class="text-break">
+Class Mp4Format  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Containers.html">Containers</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>MP4 and QuickTime (ISO/IEC 14496-12 and 14496-14, and Apple's QuickTime File Format): .mp4, .m4v, .m4a and .mov files, flat or
+fragmented (CMAF, DASH segments). Reads every track: AV1, VP9, VP8, Motion JPEG, Opus, FLAC, PCM and mov_text map to their
+codec ids, and any other track (H.264, HEVC, AAC, timecode) is passed through so a remux keeps it. Edit lists are applied, the
+display matrix becomes <a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_Orientation">Orientation</a>, and tags, chapters and cover art are read.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Mp4Format : ContainerFormat</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Video.Containers.ContainerFormat.html">ContainerFormat</a></div>
+      <div><span class="xref">Mp4Format</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaContext_System_Boolean_">ContainerFormat.CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaContext, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_ToString">ContainerFormat.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Containers_Mp4Format_examples">Examples</h2>
+  <pre><code class="lang-csharp">using IDemuxer demuxer = Mp4Format.Instance.OpenDemuxer(File.OpenRead("phone.mov"), MediaContext.Default, leaveOpen: false);
+foreach (TrackInfo track in demuxer.Tracks)
+    Console.WriteLine($"{track.Number}: {track.Kind} {track.CodecId}");</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Containers_Mp4Format_CanMux_" data-uid="Egami.Video.Containers.Mp4Format.CanMux*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4Format_CanMux" data-uid="Egami.Video.Containers.Mp4Format.CanMux">
+  CanMux
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_">CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaMetadata, MediaContext, bool)</a> is supported.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool CanMux { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Mp4Format_Extensions_" data-uid="Egami.Video.Containers.Mp4Format.Extensions*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4Format_Extensions" data-uid="Egami.Video.Containers.Mp4Format.Extensions">
+  Extensions
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the file extensions, with the dot, the first being the one writers use.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IReadOnlyList&lt;string&gt; Extensions { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Mp4Format_IgnoreEditLists_" data-uid="Egami.Video.Containers.Mp4Format.IgnoreEditLists*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4Format_IgnoreEditLists" data-uid="Egami.Video.Containers.Mp4Format.IgnoreEditLists">
+  IgnoreEditLists
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether readers ignore edit lists (V4.1 Design Q5). By default an edit list is applied: packet timestamps follow it,
+an empty edit delays the track, and packets wholly outside the edit are marked <a class="xref" href="Egami.Video.EncodedPacket.html#Egami_Video_EncodedPacket_IsDiscardable">IsDiscardable</a>.
+Ignored, timestamps are the media's own. Register a format with this set through <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_WithContainer_Egami_Video_Containers_ContainerFormat_">WithContainer(ContainerFormat)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IgnoreEditLists { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Mp4Format_Instance_" data-uid="Egami.Video.Containers.Mp4Format.Instance*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4Format_Instance" data-uid="Egami.Video.Containers.Mp4Format.Instance">
+  Instance
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L23"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the MP4 format, which applies edit lists.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Mp4Format Instance { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Containers.Mp4Format.html">Mp4Format</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Mp4Format_MoovAtEnd_" data-uid="Egami.Video.Containers.Mp4Format.MoovAtEnd*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4Format_MoovAtEnd" data-uid="Egami.Video.Containers.Mp4Format.MoovAtEnd">
+  MoovAtEnd
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether writers put moov after the media (V4.1 Design Q4). By default moov comes first, so the file plays while it
+downloads: on a stream that can seek and read, the media is written in place and moved forward at the end, else it waits
+in a temporary file. With moov at the end the media goes straight to the output, which must be able to seek.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool MoovAtEnd { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Mp4Format_Name_" data-uid="Egami.Video.Containers.Mp4Format.Name*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4Format_Name" data-uid="Egami.Video.Containers.Mp4Format.Name">
+  Name
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the format's name, such as &quot;AVI&quot; or &quot;Matroska&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string Name { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Mp4Format_SignatureLength_" data-uid="Egami.Video.Containers.Mp4Format.SignatureLength*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4Format_SignatureLength" data-uid="Egami.Video.Containers.Mp4Format.SignatureLength">
+  SignatureLength
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many leading bytes <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_IsMatch_System_ReadOnlySpan_System_Byte__">IsMatch(ReadOnlySpan&lt;byte&gt;)</a> needs to decide.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int SignatureLength { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Containers_Mp4Format_CreateMuxer_" data-uid="Egami.Video.Containers.Mp4Format.CreateMuxer*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4Format_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.Containers.Mp4Format.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)">
+  CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaMetadata, MediaContext, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a muxer that writes ISO MP4: tracks numbered from 1 in the order given, chunks of about half a second interleaved
+by time, edit lists for start offsets and codec delays, the display matrix from <a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_Orientation">Orientation</a>,
+tags as iTunes items, cover art, and chapters both as Nero chpl and as a QuickTime chapter track. Holds AV1, VP9, VP8,
+Motion JPEG, H.264, HEVC, MPEG-4 Part 2, Opus, FLAC, AAC, MP3, PCM, mov_text, and tracks read from MP4 or QuickTime with
+any other codec. A file read as QuickTime is written as MP4 (Q11).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IMuxer CreateMuxer(Stream stream, IReadOnlyList&lt;TrackInfo&gt; tracks, MediaMetadata metadata, MediaContext context, bool leaveOpen)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write.</p>
+</dd>
+    <dt><code>tracks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a>&gt;</dt>
+    <dd><p>The tracks.</p>
+</dd>
+    <dt><code>metadata</code> <a class="xref" href="Egami.Video.MediaMetadata.html">MediaMetadata</a></dt>
+    <dd><p>The tags, chapters and cover art.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context.</p>
+</dd>
+    <dt><code>leaveOpen</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether disposing the muxer leaves the stream open.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Containers.IMuxer.html">IMuxer</a></dt>
+    <dd><p>The muxer.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>MP4 cannot hold one of the tracks, or <a class="xref" href="Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_MoovAtEnd">MoovAtEnd</a> is set and the stream cannot seek.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Containers_Mp4Format_IsMatch_" data-uid="Egami.Video.Containers.Mp4Format.IsMatch*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4Format_IsMatch_System_ReadOnlySpan_System_Byte__" data-uid="Egami.Video.Containers.Mp4Format.IsMatch(System.ReadOnlySpan{System.Byte})">
+  IsMatch(ReadOnlySpan&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns whether the file's first bytes belong to this format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool IsMatch(ReadOnlySpan&lt;byte&gt; header)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>header</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>Up to <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_SignatureLength">SignatureLength</a> leading bytes; fewer when the file is shorter.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the format matches.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Mp4Format_OpenDemuxer_" data-uid="Egami.Video.Containers.Mp4Format.OpenDemuxer*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4Format_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.Containers.Mp4Format.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)">
+  OpenDemuxer(Stream, MediaContext, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Opens a demuxer that reads packets from <code class="paramref">stream</code>, starting at its current position.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IDemuxer OpenDemuxer(Stream stream, MediaContext context, bool leaveOpen)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The file. Seeking is used when the stream supports it.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The limits and registered codecs.</p>
+</dd>
+    <dt><code>leaveOpen</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether disposing the demuxer leaves the stream open.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Containers.IDemuxer.html">IDemuxer</a></dt>
+    <dd><p>The demuxer, with its tracks read.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The headers break the format's rules.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The file breaks a limit in <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Limits">Limits</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L20" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

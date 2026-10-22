@@ -182,7 +182,7 @@ decoder.Flush();</code></pre>
 
   <h3 id="Egami_Video_CodecIds_Aac" data-uid="Egami.Video.CodecIds.Aac">
   Aac
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L76"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>AAC.</p>
@@ -213,7 +213,7 @@ decoder.Flush();</code></pre>
 
   <h3 id="Egami_Video_CodecIds_Ac3" data-uid="Egami.Video.CodecIds.Ac3">
   Ac3
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L73"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Dolby AC-3.</p>
@@ -244,7 +244,7 @@ decoder.Flush();</code></pre>
 
   <h3 id="Egami_Video_CodecIds_AcmAudio" data-uid="Egami.Video.CodecIds.AcmAudio">
   AcmAudio
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L88"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Any Audio Compression Manager codec; <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">CodecPrivate</a> holds its WAVEFORMATEX.</p>
@@ -304,9 +304,40 @@ decoder.Flush();</code></pre>
 
 
 
+  <h3 id="Egami_Video_CodecIds_Avc" data-uid="Egami.Video.CodecIds.Avc">
+  Avc
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>H.264 (MPEG-4 AVC); <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">CodecPrivate</a> holds its decoder configuration record (avcC). Passed through, not decoded.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string Avc = &quot;V_MPEG4/ISO/AVC&quot;</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
   <h3 id="Egami_Video_CodecIds_Flac" data-uid="Egami.Video.CodecIds.Flac">
   Flac
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L85"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>FLAC.</p>
@@ -315,6 +346,37 @@ decoder.Flush();</code></pre>
 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public const string Flac = &quot;A_FLAC&quot;</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Egami_Video_CodecIds_Hevc" data-uid="Egami.Video.CodecIds.Hevc">
+  Hevc
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>HEVC (H.265); <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">CodecPrivate</a> holds its decoder configuration record (hvcC). Passed through, not decoded.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string Hevc = &quot;V_MPEGH/ISO/HEVC&quot;</code></pre>
   </div>
 
 
@@ -366,9 +428,41 @@ decoder.Flush();</code></pre>
 
 
 
+  <h3 id="Egami_Video_CodecIds_MovText" data-uid="Egami.Video.CodecIds.MovText">
+  MovText
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>3GPP timed text (mov_text, tx3g): MP4's subtitles. <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">CodecPrivate</a> holds the text sample entry after
+its 8-byte header; <a class="xref" href="Egami.Video.MovTextSample.html">MovTextSample</a> reads and writes the samples.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string MovText = &quot;S_TX3G&quot;</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
   <h3 id="Egami_Video_CodecIds_Mp2" data-uid="Egami.Video.CodecIds.Mp2">
   Mp2
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L70"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>MPEG audio layer II.</p>
@@ -399,7 +493,7 @@ decoder.Flush();</code></pre>
 
   <h3 id="Egami_Video_CodecIds_Mp3" data-uid="Egami.Video.CodecIds.Mp3">
   Mp3
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L67"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>MPEG audio layer III (MP3).</p>
@@ -428,9 +522,40 @@ decoder.Flush();</code></pre>
 
 
 
+  <h3 id="Egami_Video_CodecIds_Mpeg4Visual" data-uid="Egami.Video.CodecIds.Mpeg4Visual">
+  Mpeg4Visual
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>MPEG-4 Part 2 video; <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">CodecPrivate</a> holds its decoder specific info. Passed through, not decoded.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string Mpeg4Visual = &quot;V_MPEG4/ISO/ASP&quot;</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
   <h3 id="Egami_Video_CodecIds_Opus" data-uid="Egami.Video.CodecIds.Opus">
   Opus
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L79"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Opus.</p>
@@ -461,7 +586,7 @@ decoder.Flush();</code></pre>
 
   <h3 id="Egami_Video_CodecIds_PcmBigEndian" data-uid="Egami.Video.CodecIds.PcmBigEndian">
   PcmBigEndian
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L61"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Integer PCM, big-endian.</p>
@@ -492,7 +617,7 @@ decoder.Flush();</code></pre>
 
   <h3 id="Egami_Video_CodecIds_PcmFloat" data-uid="Egami.Video.CodecIds.PcmFloat">
   PcmFloat
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L64"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>IEEE float PCM.</p>
@@ -523,7 +648,7 @@ decoder.Flush();</code></pre>
 
   <h3 id="Egami_Video_CodecIds_PcmLittleEndian" data-uid="Egami.Video.CodecIds.PcmLittleEndian">
   PcmLittleEndian
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L58"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Integer PCM, little-endian.</p>
@@ -532,6 +657,100 @@ decoder.Flush();</code></pre>
 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public const string PcmLittleEndian = &quot;A_PCM/INT/LIT&quot;</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Egami_Video_CodecIds_QuickTimeAudio" data-uid="Egami.Video.CodecIds.QuickTimeAudio">
+  QuickTimeAudio
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Any other MP4 or QuickTime audio, its whole sample description in <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">CodecPrivate</a>. Matroska's A_QUICKTIME.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string QuickTimeAudio = &quot;A_QUICKTIME&quot;</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Egami_Video_CodecIds_QuickTimeOther" data-uid="Egami.Video.CodecIds.QuickTimeOther">
+  QuickTimeOther
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Any other MP4 or QuickTime track (timecode, data, other subtitles), its whole sample description in <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">CodecPrivate</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string QuickTimeOther = &quot;D_QUICKTIME&quot;</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Egami_Video_CodecIds_QuickTimeVideo" data-uid="Egami.Video.CodecIds.QuickTimeVideo">
+  QuickTimeVideo
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Any other MP4 or QuickTime video: <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">CodecPrivate</a> holds the whole sample description (stsd entry),
+which an MP4 writer stores back unchanged. Matroska's V_QUICKTIME.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string QuickTimeVideo = &quot;V_QUICKTIME&quot;</code></pre>
   </div>
 
 
@@ -616,7 +835,7 @@ decoder.Flush();</code></pre>
 
   <h3 id="Egami_Video_CodecIds_Vorbis" data-uid="Egami.Video.CodecIds.Vorbis">
   Vorbis
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L82"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Vorbis.</p>

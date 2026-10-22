@@ -6201,6 +6201,62 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Iso.FourCC.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Iso.FourCC.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Iso.FourCC",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Iso.FourCC.yml\" sourcestartlinenumber=\"1\">A four-character code as ISO/IEC 14496-12 (ISO BMFF) stores box, brand, handler and sample entry types: four bytes read\nas a big-endian number.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Iso.IsoBox.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Iso.IsoBox.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Iso.IsoBox",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Iso.IsoBox.yml\" sourcestartlinenumber=\"1\">A box of ISO/IEC 14496-12 (ISO BMFF), as MP4, QuickTime, HEIF and AVIF files are made of: its type and where its header and\ncontents lie. Positions are byte offsets in the file when the reader was told where its data starts, else in the data read.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Iso.IsoBoxReader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Iso.IsoBoxReader.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Iso.IsoBoxReader",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Iso.IsoBoxReader.yml\" sourcestartlinenumber=\"1\">Reads the boxes of ISO/IEC 14496-12 from bytes in memory, one level at a time: 32-bit sizes, 64-bit large sizes, size 0 (to\nthe end of the enclosing box) and uuid boxes. A box that runs past its parent, or whose size is too small for its header,\nraises a <xref href=\"Egami.CorruptDataException\" data-throw-if-not-resolved=\"false\"></xref>; nothing is allocated.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Iso.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Iso.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Iso",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Jbig2.Jbig2CombinationOperator.yml",
       "output": {
         ".html": {
@@ -11017,6 +11073,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.Mp4Format.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.Mp4Format.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.Mp4Format",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.Mp4Format.yml\" sourcestartlinenumber=\"1\">MP4 and QuickTime (ISO/IEC 14496-12 and 14496-14, and Apple's QuickTime File Format): .mp4, .m4v, .m4a and .mov files, flat or\nfragmented (CMAF, DASH segments). Reads every track: AV1, VP9, VP8, Motion JPEG, Opus, FLAC, PCM and mov_text map to their\ncodec ids, and any other track (H.264, HEVC, AAC, timecode) is passed through so a remux keeps it. Edit lists are applied, the\ndisplay matrix becomes <xref href=\"Egami.Video.VideoTrackInfo.Orientation\" data-throw-if-not-resolved=\"false\"></xref>, and tags, chapters and cover art are read.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Containers.RawVideo.yml",
       "output": {
         ".html": {
@@ -11238,6 +11308,48 @@
       "IsMRef": true,
       "Title": "Egami.Video.MediaWarning",
       "Summary": "<p sourcefile=\"api/Egami.Video.MediaWarning.yml\" sourcestartlinenumber=\"1\">Something a reader or writer handled but reports, through <xref href=\"Egami.Video.MediaContext.Warnings\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.MovTextFace.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.MovTextFace.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.MovTextFace",
+      "Summary": "<p sourcefile=\"api/Egami.Video.MovTextFace.yml\" sourcestartlinenumber=\"1\">How the characters of a <xref href=\"Egami.Video.MovTextStyle\" data-throw-if-not-resolved=\"false\"></xref> are drawn.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.MovTextSample.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.MovTextSample.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.MovTextSample",
+      "Summary": "<p sourcefile=\"api/Egami.Video.MovTextSample.yml\" sourcestartlinenumber=\"1\">One mov_text subtitle (3GPP timed text, TS 26.245; codec <xref href=\"Egami.Video.CodecIds.MovText\" data-throw-if-not-resolved=\"false\"></xref>): its text and the style runs that\nmake parts of it bold, italic, underlined, larger or colored. Parse a packet's bytes to read it, and write one with\n<xref href=\"Egami.Video.MovTextSample.ToBytes\" data-throw-if-not-resolved=\"false\"></xref>. Modifier boxes other than styles (highlight, karaoke, scroll delay, links, text box, blink, wrap) are\nkept as stored, so a sample read and written again keeps its bytes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.MovTextStyle.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.MovTextStyle.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.MovTextStyle",
+      "Summary": "<p sourcefile=\"api/Egami.Video.MovTextStyle.yml\" sourcestartlinenumber=\"1\">A style run of a mov_text subtitle (a 3GPP StyleRecord): which characters it covers and how they look.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11676,6 +11788,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/formats/index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/iso-boxes.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/iso-boxes.html"
         }
       },
       "version": ""

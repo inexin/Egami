@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct IsoBoxReader | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct IsoBoxReader | Egami ">
+      
+      <meta name="description" content="Reads the boxes of ISO/IEC 14496-12 from bytes in memory, one level at a time: 32-bit sizes, 64-bit large sizes, size 0 (to the end of the enclosing box) and uuid boxes. A box that runs past its parent, or whose size is too small for its header, raises a ; nothing is allocated.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Iso_IsoBoxReader.md&amp;value=---%0Auid%3A%20Egami.Formats.Iso.IsoBoxReader%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Iso.IsoBoxReader">
+
+
+
+  <h1 id="Egami_Formats_Iso_IsoBoxReader" data-uid="Egami.Formats.Iso.IsoBoxReader" class="text-break">
+Struct IsoBoxReader  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Iso/IsoBox.cs/#L124"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Iso.html">Iso</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Reads the boxes of ISO/IEC 14496-12 from bytes in memory, one level at a time: 32-bit sizes, 64-bit large sizes, size 0 (to
+the end of the enclosing box) and uuid boxes. A box that runs past its parent, or whose size is too small for its header,
+raises a <a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a>; nothing is allocated.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ref struct IsoBoxReader</code></pre>
+  </div>
+
+
+
+
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.tostring">ValueType.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Iso_IsoBoxReader_examples">Examples</h2>
+  <pre><code class="lang-csharp">// List an AVIF, HEIC or MP4 file's top-level boxes and the boxes inside meta.
+IsoBoxReader top = new(avif, "AVIF");
+while (top.Next(out IsoBox box))
+{
+    found.Add($"{box.Type} {box.Size}");
+    if (box.Type == FourCC.Parse("meta"))
+    {
+        // meta is a full box: its version and flags (4 bytes) come before its children.
+        IsoBoxReader children = top.Children(box, skip: 4);
+        while (children.Next(out IsoBox child))
+        {
+            found.Add($"  {child.Type} at {child.Start}");
+        }
+    }
+}</code></pre>
+
+
+  <h2 id="Egami_Formats_Iso_IsoBoxReader_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>To walk a large file, read its top-level box headers from the stream with <a class="xref" href="Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader_ReadHeader_System_ReadOnlySpan_System_Byte__System_Int64_System_Int64_System_String_">ReadHeader(ReadOnlySpan&lt;byte&gt;, long, long, string)</a>, load the boxes you need
+(such as moov) and walk each with a reader told where the box starts in the file, so every position it reports is a file
+offset.</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Formats_Iso_IsoBoxReader__ctor_" data-uid="Egami.Formats.Iso.IsoBoxReader.#ctor*"></a>
+
+  <h3 id="Egami_Formats_Iso_IsoBoxReader__ctor_System_ReadOnlySpan_System_Byte__System_String_" data-uid="Egami.Formats.Iso.IsoBoxReader.#ctor(System.ReadOnlySpan{System.Byte},System.String)">
+  IsoBoxReader(ReadOnlySpan&lt;byte&gt;, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Iso/IsoBox.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Starts reading the boxes of <code class="paramref">data</code>, whose positions are reported from 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IsoBoxReader(ReadOnlySpan&lt;byte&gt; data, string formatName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The boxes, such as a whole file or the contents of one box.</p>
+</dd>
+    <dt><code>formatName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The format named in a <a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a>, such as &quot;MP4&quot;.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">formatName</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Iso_IsoBoxReader__ctor_" data-uid="Egami.Formats.Iso.IsoBoxReader.#ctor*"></a>
+
+  <h3 id="Egami_Formats_Iso_IsoBoxReader__ctor_System_ReadOnlySpan_System_Byte__System_String_System_Int64_" data-uid="Egami.Formats.Iso.IsoBoxReader.#ctor(System.ReadOnlySpan{System.Byte},System.String,System.Int64)">
+  IsoBoxReader(ReadOnlySpan&lt;byte&gt;, string, long)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Iso/IsoBox.cs/#L153"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Starts reading the boxes of <code class="paramref">data</code>, which starts at <code class="paramref">offset</code> in the file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IsoBoxReader(ReadOnlySpan&lt;byte&gt; data, string formatName, long offset)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The boxes, such as a moov box read from a file.</p>
+</dd>
+    <dt><code>formatName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The format named in a <a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a>, such as &quot;MP4&quot;.</p>
+</dd>
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>Where <code class="paramref">data</code> starts in the file; boxes and errors report positions from there.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">formatName</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">offset</code> is negative.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="fields">Fields
+</h2>
+
+
+
+  <h3 id="Egami_Formats_Iso_IsoBoxReader_MaxHeaderSize" data-uid="Egami.Formats.Iso.IsoBoxReader.MaxHeaderSize">
+  MaxHeaderSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Iso/IsoBox.cs/#L127"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The most bytes a box header takes: size, type, large size and a uuid box's extended type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const int MaxHeaderSize = 32</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_Iso_IsoBoxReader_Children_" data-uid="Egami.Formats.Iso.IsoBoxReader.Children*"></a>
+
+  <h3 id="Egami_Formats_Iso_IsoBoxReader_Children_Egami_Formats_Iso_IsoBox__System_Int32_" data-uid="Egami.Formats.Iso.IsoBoxReader.Children(Egami.Formats.Iso.IsoBox@,System.Int32)">
+  Children(in IsoBox, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Iso/IsoBox.cs/#L229"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a reader over the boxes inside <code class="paramref">box</code>, a box this reader returned.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly IsoBoxReader Children(in IsoBox box, int skip = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>box</code> <a class="xref" href="Egami.Formats.Iso.IsoBox.html">IsoBox</a></dt>
+    <dd><p>The parent box.</p>
+</dd>
+    <dt><code>skip</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>How many bytes of the contents come before the first child: 0 for a plain container such as moov, 4 for a full box's
+version and flags (meta), 8 for stsd's version, flags and entry count.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Iso.IsoBoxReader.html">IsoBoxReader</a></dt>
+    <dd><p>The reader of the children.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">skip</code> is negative, or <code class="paramref">box</code> lies outside this reader's data.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The box's contents are shorter than <code class="paramref">skip</code>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Iso_IsoBoxReader_Content_" data-uid="Egami.Formats.Iso.IsoBoxReader.Content*"></a>
+
+  <h3 id="Egami_Formats_Iso_IsoBoxReader_Content_Egami_Formats_Iso_IsoBox__" data-uid="Egami.Formats.Iso.IsoBoxReader.Content(Egami.Formats.Iso.IsoBox@)">
+  Content(in IsoBox)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Iso/IsoBox.cs/#L245"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the contents of <code class="paramref">box</code>, a box this reader returned.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly ReadOnlySpan&lt;byte&gt; Content(in IsoBox box)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>box</code> <a class="xref" href="Egami.Formats.Iso.IsoBox.html">IsoBox</a></dt>
+    <dd><p>The box.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes after its header.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">box</code> lies outside this reader's data.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Iso_IsoBoxReader_Next_" data-uid="Egami.Formats.Iso.IsoBoxReader.Next*"></a>
+
+  <h3 id="Egami_Formats_Iso_IsoBoxReader_Next_Egami_Formats_Iso_IsoBox__" data-uid="Egami.Formats.Iso.IsoBoxReader.Next(Egami.Formats.Iso.IsoBox@)">
+  Next(out IsoBox)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Iso/IsoBox.cs/#L206"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads the next box; returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> at the end of the data or the enclosing box.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Next(out IsoBox box)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>box</code> <a class="xref" href="Egami.Formats.Iso.IsoBox.html">IsoBox</a></dt>
+    <dd><p>The box read.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether there was another box.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The box's header is cut off, its size is smaller than its header, or it runs past its parent.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Iso_IsoBoxReader_ReadHeader_" data-uid="Egami.Formats.Iso.IsoBoxReader.ReadHeader*"></a>
+
+  <h3 id="Egami_Formats_Iso_IsoBoxReader_ReadHeader_System_ReadOnlySpan_System_Byte__System_Int64_System_Int64_System_String_" data-uid="Egami.Formats.Iso.IsoBoxReader.ReadHeader(System.ReadOnlySpan{System.Byte},System.Int64,System.Int64,System.String)">
+  ReadHeader(ReadOnlySpan&lt;byte&gt;, long, long, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Iso/IsoBox.cs/#L196"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a box header from the first bytes of a box, for walking boxes in a stream without reading them into memory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IsoBox ReadHeader(ReadOnlySpan&lt;byte&gt; header, long position, long end, string formatName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>header</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes at <code class="paramref">position</code>: <a class="xref" href="Egami.Formats.Iso.IsoBoxReader.html#Egami_Formats_Iso_IsoBoxReader_MaxHeaderSize">MaxHeaderSize</a> of them, or all that remain before <code class="paramref">end</code>.</p>
+</dd>
+    <dt><code>position</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>Where the box starts in the file.</p>
+</dd>
+    <dt><code>end</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>Where the enclosing box ends, or the file's length for a top-level box (<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64.maxvalue">MaxValue</a> when unknown).</p>
+</dd>
+    <dt><code>formatName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The format named in a <a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Iso.IsoBox.html">IsoBox</a></dt>
+    <dd><p>The box. A size of 0 makes it run to <code class="paramref">end</code>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The header is cut off, its size is smaller than the header, or the box runs past <code class="paramref">end</code>.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Iso/IsoBox.cs/#L124" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
