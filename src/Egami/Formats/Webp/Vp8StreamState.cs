@@ -63,6 +63,36 @@ internal sealed class Vp8StreamState
         Array.Clear(SignBias);
     }
 
+    /// <summary>Makes this state a copy of <paramref name="other"/>, the segment map included.</summary>
+    internal void CopyFrom(Vp8StreamState other)
+    {
+        other.CoefficientProbabilities.CopyTo(CoefficientProbabilities, 0);
+        other.YModeProbabilities.CopyTo(YModeProbabilities, 0);
+        other.UvModeProbabilities.CopyTo(UvModeProbabilities, 0);
+        other.MvProbabilities.CopyTo(MvProbabilities, 0);
+        ClampingType = other.ClampingType;
+        AbsoluteSegmentValues = other.AbsoluteSegmentValues;
+        other.SegmentQuantizer.CopyTo(SegmentQuantizer, 0);
+        other.SegmentFilterLevel.CopyTo(SegmentFilterLevel, 0);
+        other.SegmentProbabilities.CopyTo(SegmentProbabilities, 0);
+        other.ReferenceFilterDeltas.CopyTo(ReferenceFilterDeltas, 0);
+        other.ModeFilterDeltas.CopyTo(ModeFilterDeltas, 0);
+        other.SignBias.CopyTo(SignBias, 0);
+        if (other.SegmentMap is null)
+        {
+            SegmentMap = null;
+        }
+        else
+        {
+            if (SegmentMap is null || SegmentMap.Length != other.SegmentMap.Length)
+            {
+                SegmentMap = new byte[other.SegmentMap.Length];
+            }
+
+            other.SegmentMap.CopyTo(SegmentMap, 0);
+        }
+    }
+
     /// <summary>Keeps the entropy context, for a frame whose probability updates apply to it alone (refresh_entropy_probs 0).</summary>
     internal void SaveEntropy()
     {

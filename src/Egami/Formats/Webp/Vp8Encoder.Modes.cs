@@ -25,8 +25,9 @@ internal sealed partial class Vp8Encoder
     private readonly byte[] _ctxY = new byte[17 * S];
     private readonly byte[] _ctxU = new byte[9 * S];
     private readonly byte[] _ctxV = new byte[9 * S];
-    private readonly byte[][] _predY16 = [new byte[16 * S], new byte[16 * S], new byte[16 * S], new byte[16 * S]];
-    private readonly byte[][] _predUv = [new byte[8 * S], new byte[8 * S], new byte[8 * S], new byte[8 * S]];
+    // A fifth prediction of each holds an inter frame's motion-compensated prediction (InterSlot).
+    private readonly byte[][] _predY16 = [new byte[16 * S], new byte[16 * S], new byte[16 * S], new byte[16 * S], new byte[16 * S]];
+    private readonly byte[][] _predUv = [new byte[8 * S], new byte[8 * S], new byte[8 * S], new byte[8 * S], new byte[8 * S]];
     private readonly byte[] _i4Work = new byte[17 * S];
     private readonly byte[] _predI4 = new byte[8 * S];
     private byte[] _i4Tmp = new byte[4 * S];
@@ -81,7 +82,7 @@ internal sealed partial class Vp8Encoder
         }
 
         ResetTokens();
-        _costs.Update(Vp8Tables.DefaultCoeffProbs);
+        _costs.Update(_baseProbs);
         int maxCount = Math.Max((_mbw * _mbh) >> 3, 96);
         int count = maxCount;
         bool adapt = Effort >= 4;
@@ -311,14 +312,15 @@ internal sealed partial class Vp8Encoder
         rd.Init();
         Segment dqm = _dqm[_segment[mb]];
         _useDerr = errorDiffusion;
-        if (Effort >= 4)
+        int effort = _inter is null ? Effort : Math.Max(Effort, 4);
+        if (effort >= 4)
         {
-            _doTrellis = Effort >= 6;
+            _doTrellis = effort >= 6;
             PickBestIntra16(dqm, rd);
             bool i4 = _maxI4HeaderBits > 0 && PickBestIntra4(mbx, mb, dqm, rd);
             _isI16[mb] = !i4;
             PickBestUv(mbx, dqm, rd);
-            if (Effort == 5)
+            if (effort == 5)
             {
                 _doTrellis = true;
                 QuantizeLumaAgain(mbx, mb, dqm, rd);
@@ -326,7 +328,7 @@ internal sealed partial class Vp8Encoder
         }
         else
         {
-            RefineUsingDistortion(mbx, mby, mb, dqm, rd, tryBoth: Effort >= 2);
+            RefineUsingDistortion(mbx, mby, mb, dqm, rd, tryBoth: effort >= 2);
         }
 
         if (_isI16[mb])
@@ -1258,6 +1260,13 @@ internal sealed partial class Vp8Encoder
             D = SD = R = H = 0;
             Nz = 0;
             Score = long.MaxValue;
+        }
+
+        internal void CopyAllFrom(ModeScore other)
+        {
+            CopyLuma16From(other);
+            ModeUv = other.ModeUv;
+            other.UvLevels.CopyTo(UvLevels, 0);
         }
 
         internal void CopyLuma16From(ModeScore other)

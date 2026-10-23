@@ -438,10 +438,10 @@ internal sealed partial class Vp8Decoder
         return x != 0 && br.GetBit(p[1]) != 0 ? -x : x;
     }
 
-    private static int Bias(int mv, bool invert) => invert ? Vp8ModeInfo.Pack(-Vp8ModeInfo.Row(mv), -Vp8ModeInfo.Col(mv)) : mv;
+    internal static int Bias(int mv, bool invert) => invert ? Vp8ModeInfo.Pack(-Vp8ModeInfo.Row(mv), -Vp8ModeInfo.Col(mv)) : mv;
 
     /// <summary>Clamps a near vector to at most 16 pixels past the frame's macroblock-aligned edges (libvpx's vp8_clamp_mv2).</summary>
-    private static int ClampNear(int mv, int toLeft, int toRight, int toTop, int toBottom)
+    internal static int ClampNear(int mv, int toLeft, int toRight, int toTop, int toBottom)
     {
         int row = Vp8ModeInfo.Row(mv);
         int col = Vp8ModeInfo.Col(mv);
@@ -450,7 +450,7 @@ internal sealed partial class Vp8Decoder
         return Vp8ModeInfo.Pack((short)row, (short)col);
     }
 
-    private static byte OutOfBounds(int row, int col, int lo, int hi, int top, int bottom) =>
+    internal static byte OutOfBounds(int row, int col, int lo, int hi, int top, int bottom) =>
         (byte)(col < lo || col > hi || row < top || row > bottom ? 1 : 0);
 
     /// <summary>
@@ -462,14 +462,24 @@ internal sealed partial class Vp8Decoder
     {
         Vp8ModeInfo info = _video!.Modes;
         int here = info.Index(mbx, mby);
-        Vp8FrameBuffer frame = _video.Reference(info.Reference[here]);
-        bool sixTap = Header.Version == 0;
-        bool fullPixel = Header.Version == 3;
+        PredictMacroblock(info, here, _video.Reference(info.Reference[here]), mbx, mby, MbWidth, MbHeight, Header.Version, RowsY, dy, StrideY, RowsU, RowsV, dc, StrideC);
+    }
+
+    /// <summary>
+    /// Predicts macroblock (<paramref name="mbx"/>, <paramref name="mby"/>) of a frame <paramref name="mbWidth"/> ×
+    /// <paramref name="mbHeight"/> macroblocks from <paramref name="frame"/> as <paramref name="info"/> describes it at
+    /// <paramref name="here"/>: luma into <paramref name="dstY"/> at <paramref name="dy"/>, chroma into <paramref name="dstU"/> and
+    /// <paramref name="dstV"/> at <paramref name="dc"/>. The encoder predicts with it too, so its references match the decoder's.
+    /// </summary>
+    internal static void PredictMacroblock(Vp8ModeInfo info, int here, Vp8FrameBuffer frame, int mbx, int mby, int mbWidth, int mbHeight, int version, Span<byte> dstY, int dy, int strideY, Span<byte> dstU, Span<byte> dstV, int dc, int strideC)
+    {
+        bool sixTap = version == 0;
+        bool fullPixel = version == 3;
         bool clamp = info.NeedsClamp[here] != 0;
         int toLeft = -(mbx * 16) << 3;
-        int toRight = ((MbWidth - 1 - mbx) * 16) << 3;
+        int toRight = ((mbWidth - 1 - mbx) * 16) << 3;
         int toTop = -(mby * 16) << 3;
-        int toBottom = ((MbHeight - 1 - mby) * 16) << 3;
+        int toBottom = ((mbHeight - 1 - mby) * 16) << 3;
         int x = mbx * 16;
         int y = mby * 16;
         int chromaWidth = frame.AlignedWidth / 2;
@@ -483,7 +493,7 @@ internal sealed partial class Vp8Decoder
                 ClampToBorder(ref row, ref col, toLeft, toRight, toTop, toBottom);
             }
 
-            Vp8InterPredict.Predict(frame.Y, frame.OriginY, frame.StrideY, frame.AlignedWidth, frame.AlignedHeight, Vp8FrameBuffer.Border, x, y, 16, 16, row, col, sixTap, RowsY, dy, StrideY);
+            Vp8InterPredict.Predict(frame.Y, frame.OriginY, frame.StrideY, frame.AlignedWidth, frame.AlignedHeight, Vp8FrameBuffer.Border, x, y, 16, 16, row, col, sixTap, dstY, dy, strideY);
 
             // Chroma moves half as far, rounded away from zero, in eighths of a chroma pixel.
             row = (short)((short)(row + (1 | (row >> 31))) / 2);
@@ -500,7 +510,7 @@ internal sealed partial class Vp8Decoder
                 return;
             }
 
-            Vp8InterPredict.PredictChroma(frame.U, frame.V, frame.OriginC, frame.StrideC, chromaWidth, chromaHeight, Vp8FrameBuffer.ChromaBorder, x / 2, y / 2, row, col, sixTap, RowsU, RowsV, dc, StrideC);
+            Vp8InterPredict.PredictChroma(frame.U, frame.V, frame.OriginC, frame.StrideC, chromaWidth, chromaHeight, Vp8FrameBuffer.ChromaBorder, x / 2, y / 2, row, col, sixTap, dstU, dstV, dc, strideC);
             return;
         }
 
@@ -523,7 +533,7 @@ internal sealed partial class Vp8Decoder
                 ClampToBorder(ref row, ref col, toLeft, toRight, toTop, toBottom);
             }
 
-            Vp8InterPredict.Predict(frame.Y, frame.OriginY, frame.StrideY, frame.AlignedWidth, frame.AlignedHeight, Vp8FrameBuffer.Border, x + bx, y + by, size, size, row, col, sixTap, RowsY, dy + (by * StrideY) + bx, StrideY);
+            Vp8InterPredict.Predict(frame.Y, frame.OriginY, frame.StrideY, frame.AlignedWidth, frame.AlignedHeight, Vp8FrameBuffer.Border, x + bx, y + by, size, size, row, col, sixTap, dstY, dy + (by * strideY) + bx, strideY);
         }
 
         // Each 4 × 4 chroma block moves by the average of the four luma blocks it covers.
@@ -552,8 +562,8 @@ internal sealed partial class Vp8Decoder
 
                 int cx = j * 4;
                 int cy = i * 4;
-                Vp8InterPredict.Predict(frame.U, frame.OriginC, frame.StrideC, chromaWidth, chromaHeight, Vp8FrameBuffer.ChromaBorder, (x / 2) + cx, (y / 2) + cy, 4, 4, row, col, sixTap, RowsU, dc + (cy * StrideC) + cx, StrideC);
-                Vp8InterPredict.Predict(frame.V, frame.OriginC, frame.StrideC, chromaWidth, chromaHeight, Vp8FrameBuffer.ChromaBorder, (x / 2) + cx, (y / 2) + cy, 4, 4, row, col, sixTap, RowsV, dc + (cy * StrideC) + cx, StrideC);
+                Vp8InterPredict.Predict(frame.U, frame.OriginC, frame.StrideC, chromaWidth, chromaHeight, Vp8FrameBuffer.ChromaBorder, (x / 2) + cx, (y / 2) + cy, 4, 4, row, col, sixTap, dstU, dc + (cy * strideC) + cx, strideC);
+                Vp8InterPredict.Predict(frame.V, frame.OriginC, frame.StrideC, chromaWidth, chromaHeight, Vp8FrameBuffer.ChromaBorder, (x / 2) + cx, (y / 2) + cy, 4, 4, row, col, sixTap, dstV, dc + (cy * strideC) + cx, strideC);
             }
         }
     }
@@ -562,7 +572,7 @@ internal sealed partial class Vp8Decoder
     /// Limits a luma vector that reaches so far past the frame that no frame pixel is used (19 pixels past the top or left, 18 past
     /// the bottom or right) to 16 pixels, whole: the prediction is the same (libvpx's clamp_mv_to_umv_border).
     /// </summary>
-    private static void ClampToBorder(ref int row, ref int col, int toLeft, int toRight, int toTop, int toBottom)
+    internal static void ClampToBorder(ref int row, ref int col, int toLeft, int toRight, int toTop, int toBottom)
     {
         if (col < toLeft - (19 << 3))
         {

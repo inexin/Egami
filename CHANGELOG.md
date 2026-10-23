@@ -12,6 +12,19 @@ changes that break code come only in a new major version.
   with every siting and the existing upsampling and downsampling options, within one level of the exact reference. Saving them as
   JPEG writes 4:2:2 or 4:2:0; saving as AVIF goes through RGB, and `AvifWriterOptions.Chroma` set to either chooses as if unset.
 
+### VP8 video encoding
+
+- `Vp8StreamEncoder` encodes VP8 video (RFC 6386) a frame at a time from 4:2:0 `YuvRaster` pictures: key frames through the lossy
+  WebP encoder, inter frames with motion search against the last, golden and alternate references to quarter pixels, every vector
+  mode (ZERO, NEAREST, NEAR, NEW and SPLIT in all four layouts) chosen by rate and distortion against the intra modes, and the
+  mode, vector and coefficient probability updates that save bits. libvpx 1.14.1 decodes every test stream exactly as Egami does.
+- `Vp8FramePlan` sets each frame's type, `Quality` or `Quantizer`, `Effort` (0 to 10), references and their refreshes and copies,
+  sign biases, hidden frames, error resilience and token partitions; `Vp8References` and `Vp8ReferenceCopy` go with it.
+  `Vp8EncodedFrame` returns the frame's data with its bits, quantizer, filter level, squared error and macroblock counts.
+- At the default effort the frames are within a few percent of libvpx `--good --cpu-used=1` in BD-rate on natural clips (about
+  10% larger on test patterns), taking 1.3 to 2.9 times libvpx's time on one thread. Lossy WebP stills are unchanged, byte for
+  byte.
+
 ## Egami.Cli 1.1.0 (2026-10-22)
 
 A new package: the `egami` command-line tool, a .NET tool built on Egami's public API (Roadmap 2.0). It carries its own copy of

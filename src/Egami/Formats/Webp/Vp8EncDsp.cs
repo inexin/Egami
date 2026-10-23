@@ -462,6 +462,9 @@ internal static class Vp8EncDsp
 /// </summary>
 internal sealed class Vp8Matrix
 {
+    // The rounding of inter residuals: they are mostly noise, so far more of their small coefficients go to 0 than an intra's.
+    private const byte InterBias = 56;
+
     private static ReadOnlySpan<byte> FrequencySharpening => [0, 30, 60, 90, 30, 60, 90, 90, 60, 90, 90, 90, 90, 90, 90, 90];
 
     internal int[] Q { get; } = new int[2];
@@ -474,10 +477,13 @@ internal sealed class Vp8Matrix
 
     internal int[] Sharpen { get; } = new int[16];
 
-    /// <summary>Sets the steps; <paramref name="kind"/> is 0 for luma, 1 for Y2, 2 for chroma. Returns the average step.</summary>
-    internal int Set(int dc, int ac, int kind)
+    /// <summary>
+    /// Sets the steps; <paramref name="kind"/> is 0 for luma, 1 for Y2, 2 for chroma. An inter residual rounds down more and is
+    /// not sharpened. Returns the average step.
+    /// </summary>
+    internal int Set(int dc, int ac, int kind, bool inter = false)
     {
-        ReadOnlySpan<byte> bias = kind switch { 0 => [96, 110], 1 => [96, 108], _ => [110, 115] };
+        ReadOnlySpan<byte> bias = inter ? [InterBias, InterBias] : kind switch { 0 => [96, 110], 1 => [96, 108], _ => [110, 115] };
         Q[0] = dc;
         Q[1] = ac;
         for (int i = 0; i < 2; i++)
@@ -489,7 +495,7 @@ internal sealed class Vp8Matrix
 
         for (int i = 0; i < 16; i++)
         {
-            Sharpen[i] = kind == 0 ? (FrequencySharpening[i] * Q[i == 0 ? 0 : 1]) >> 11 : 0;
+            Sharpen[i] = kind == 0 && !inter ? (FrequencySharpening[i] * Q[i == 0 ? 0 : 1]) >> 11 : 0;
         }
 
         return ((dc + (15 * ac)) + 8) >> 4;

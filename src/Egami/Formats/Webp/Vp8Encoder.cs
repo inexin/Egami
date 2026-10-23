@@ -23,6 +23,25 @@ internal sealed record Vp8EncoderOptions
 
     /// <summary>Gets the number of token partitions, 1, 2, 4 or 8; macroblock rows take turns. One is smallest; more let decoders work in parallel.</summary>
     internal int Partitions { get; init; } = 1;
+
+    /// <summary>Gets a quantizer index, 0 to 127, that replaces the quality's and turns segments off; null to use the quality.</summary>
+    internal int? Quantizer { get; init; }
+
+    /// <summary>
+    /// Gets whether the frame belongs to a video stream: its probabilities carry over to the next frame (unless
+    /// <see cref="RefreshEntropy"/> is false), key frames set the loop filter's reference and mode deltas, and the frame is not
+    /// padded to an even size.
+    /// </summary>
+    internal bool Video { get; init; }
+
+    /// <summary>Gets whether a video frame's probabilities carry over to the next frame; false is error resilient.</summary>
+    internal bool RefreshEntropy { get; init; } = true;
+
+    /// <summary>Gets whether the frame is shown; a hidden video frame only updates the references.</summary>
+    internal bool Show { get; init; } = true;
+
+    /// <summary>Gets a loop filter level, 0 to 63, that replaces the one the encoder works out; null to work it out.</summary>
+    internal int? FilterLevel { get; init; }
 }
 
 /// <summary>
@@ -88,7 +107,7 @@ internal sealed partial class Vp8Encoder
     private static readonly int[] ScanUv = [UOff, UOff + 4, UOff + (4 * S), UOff + (4 * S) + 4, VOff, VOff + 4, VOff + (4 * S), VOff + (4 * S) + 4];
 
     private readonly Vp8Planes _src;
-    private readonly Vp8EncoderOptions _options;
+    private Vp8EncoderOptions _options;
     private readonly int _mbw;
     private readonly int _mbh;
     private readonly Segment[] _dqm = [new(), new(), new(), new()];
@@ -139,9 +158,25 @@ internal sealed partial class Vp8Encoder
     private int Effort => _options.Effort;
 
     /// <summary>Encodes the planes and returns the payload of a VP8 chunk.</summary>
-    internal byte[] Encode()
+    internal byte[] Encode() => Encode(_options);
+
+    /// <summary>
+    /// Encodes the planes as a key frame with <paramref name="options"/> and returns the frame; a stream's encoder is kept and
+    /// called again for each of its key frames.
+    /// </summary>
+    internal byte[] Encode(Vp8EncoderOptions options)
     {
-        _segmentCount = Math.Clamp(_options.Segments, 1, 4);
+        _options = options;
+        _inter = null;
+        Vp8Tables.DefaultCoeffProbs.CopyTo(_baseProbs);
+        _maxI4HeaderBits = 256 * 16 * 16;
+        foreach (Segment m in _dqm)
+        {
+            m.Alpha = 0;
+            m.Beta = 0;
+        }
+
+        _segmentCount = options.Quantizer is null ? Math.Clamp(_options.Segments, 1, 4) : 1;
         if (_segmentCount > 1 && Effort > 0)
         {
             Analyze();
@@ -150,6 +185,7 @@ internal sealed partial class Vp8Encoder
         {
             _segmentCount = 1;
             _uvAlpha = MidAlpha;
+            Array.Clear(_segment);
         }
 
         SetSegmentParams();
@@ -168,10 +204,18 @@ internal sealed partial class Vp8Encoder
     {
         while (true)
         {
-            MainLoop();
+            if (_inter is null)
+            {
+                MainLoop();
+            }
+            else
+            {
+                InterLoop();
+            }
+
             FinalizeProbabilities();
             AdjustFilterStrength();
-            using Vp8BoolEncoder first = WritePartition0();
+            using Vp8BoolEncoder first = _inter is null ? WritePartition0() : WriteInterPartition0();
             ReadOnlySpan<byte> p0 = first.Finish();
             if (p0.Length > MaxPartition0)
             {
@@ -187,7 +231,11 @@ internal sealed partial class Vp8Encoder
             Vp8BoolEncoder[] partitions = EmitTokens();
             try
             {
-                return Assemble(p0, partitions);
+                _parts = new byte[partitions.Length][];
+                for (int i = 0; i < partitions.Length; i++)
+                {
+                    _parts[i] = partitions[i].Finish().ToArray();
+                }
             }
             finally
             {
@@ -196,34 +244,66 @@ internal sealed partial class Vp8Encoder
                     partition.Dispose();
                 }
             }
+
+            return Assemble(p0, _parts);
         }
     }
 
     private int PartitionCount => _options.Partitions is 2 or 4 or 8 ? _options.Partitions : 1;
 
-    private byte[] Assemble(ReadOnlySpan<byte> p0, Vp8BoolEncoder[] partitions)
+    // The token partitions of the frame encoded last, kept so its header can be written again with another filter level.
+    private byte[][] _parts = [];
+
+    /// <summary>
+    /// Writes the frame encoded last again with loop filter level <paramref name="level"/>; only for a frame without segments, an
+    /// inter frame or a key frame with a fixed quantizer.
+    /// </summary>
+    internal byte[] WithFilterLevel(int level)
     {
-        byte[][] parts = new byte[partitions.Length][];
-        int total = 10 + p0.Length + (3 * (partitions.Length - 1));
-        for (int i = 0; i < partitions.Length; i++)
+        _filterLevel = level;
+        for (int s = 0; s < 4; s++)
         {
-            parts[i] = partitions[i].Finish().ToArray();
-            total += parts[i].Length;
+            _dqm[s].FStrength = level;
         }
 
-        // An even size, as libwebp writes it: some readers lose their place after an odd VP8 chunk's padding byte.
-        byte[] frame = new byte[total + (total & 1)];
-        uint tag = ((uint)p0.Length << 5) | (1 << 4);
+        using Vp8BoolEncoder first = _inter is null ? WritePartition0() : WriteInterPartition0();
+        return Assemble(first.Finish(), _parts);
+    }
+
+    /// <summary>Gets the loop filter level of the frame encoded last.</summary>
+    internal int FilterLevel => _filterLevel;
+
+    /// <summary>Gets the base quantizer index of the frame encoded last.</summary>
+    internal int BaseQuantizer => _baseQuant;
+
+    private byte[] Assemble(ReadOnlySpan<byte> p0, byte[][] parts)
+    {
+        bool key = _inter is null;
+        int header = key ? 10 : 3;
+        int total = header + p0.Length + (3 * (parts.Length - 1));
+        foreach (byte[] part in parts)
+        {
+            total += part.Length;
+        }
+
+        // An even size, as libwebp writes it: some readers lose their place after an odd VP8 chunk's padding byte. A video frame
+        // has no chunk.
+        byte[] frame = new byte[_options.Video ? total : total + (total & 1)];
+        uint tag = ((uint)p0.Length << 5) | (_options.Show ? 1u << 4 : 0) | (key ? 0u : 1u);
         frame[0] = (byte)tag;
         frame[1] = (byte)(tag >> 8);
         frame[2] = (byte)(tag >> 16);
-        frame[3] = 0x9D;
-        frame[4] = 0x01;
-        frame[5] = 0x2A;
-        BinaryPrimitives.WriteUInt16LittleEndian(frame.AsSpan(6), (ushort)_src.Width);
-        BinaryPrimitives.WriteUInt16LittleEndian(frame.AsSpan(8), (ushort)_src.Height);
-        p0.CopyTo(frame.AsSpan(10));
-        int at = 10 + p0.Length;
+        if (key)
+        {
+            frame[3] = 0x9D;
+            frame[4] = 0x01;
+            frame[5] = 0x2A;
+            BinaryPrimitives.WriteUInt16LittleEndian(frame.AsSpan(6), (ushort)_src.Width);
+            BinaryPrimitives.WriteUInt16LittleEndian(frame.AsSpan(8), (ushort)_src.Height);
+        }
+
+        p0.CopyTo(frame.AsSpan(header));
+        int at = header + p0.Length;
         for (int i = 0; i < parts.Length - 1; i++)
         {
             frame[at++] = (byte)parts[i].Length;
@@ -409,6 +489,11 @@ internal sealed partial class Vp8Encoder
             _dqm[i].Quant = Math.Clamp((int)(127.0 * (1.0 - c)), 0, 127);
         }
 
+        if (_options.Quantizer is int fixedQuant)
+        {
+            _dqm[0].Quant = Math.Clamp(fixedQuant, 0, 127);
+        }
+
         _baseQuant = _dqm[0].Quant;
         for (int i = _segmentCount; i < 4; i++)
         {
@@ -519,7 +604,12 @@ internal sealed partial class Vp8Encoder
     private void AdjustFilterStrength()
     {
         int maxLevel = 0;
-        if (_options.FilterStrength > 0)
+        if (_inter is not null)
+        {
+            // An inter frame starts from the quantizer's level alone: the edges of its intra macroblocks say little about it.
+            maxLevel = _dqm[0].FStrength;
+        }
+        else if (_options.FilterStrength > 0)
         {
             for (int s = 0; s < _segmentCount; s++)
             {
@@ -531,6 +621,15 @@ internal sealed partial class Vp8Encoder
         }
 
         _filterLevel = maxLevel;
+        if (_options.FilterLevel is int level)
+        {
+            for (int s = 0; s < 4; s++)
+            {
+                _dqm[s].FStrength = level;
+            }
+
+            _filterLevel = level;
+        }
     }
 
     private static ushort[] BuildAcTable2()
@@ -605,23 +704,58 @@ internal sealed partial class Vp8Encoder
             }
         }
 
+        WriteFilterHeader(bw, key: true);
+        bw.PutValue(int.Log2(PartitionCount), 2);
+        WriteQuantizers(bw);
+        bw.PutBitUniform(_options.Video && _options.RefreshEntropy ? 1 : 0); // refresh entropy probabilities
+        WriteCoefficientProbabilities(bw);
+        WriteModes(bw);
+        return bw;
+    }
+
+    // The loop filter deltas of a video stream, as libvpx sets them: intra macroblocks and the golden and alternate references
+    // filter a little harder or softer, and by mode B_PRED, ZERO, the other vectors and SPLIT.
+    private static ReadOnlySpan<sbyte> ReferenceFilterDeltas => [2, 0, -2, -2];
+
+    private static ReadOnlySpan<sbyte> ModeFilterDeltas => [4, -2, 2, 4];
+
+    /// <summary>Writes the filter type, level and sharpness, and in a video stream the deltas (a key frame sets them, later frames keep them).</summary>
+    private void WriteFilterHeader(Vp8BoolEncoder bw, bool key)
+    {
         bw.PutBitUniform(0); // normal filter
         bw.PutValue(_filterLevel, 6);
         bw.PutValue(0, 3); // sharpness
-        bw.PutBitUniform(0); // no filter deltas
-        bw.PutValue(int.Log2(PartitionCount), 2);
+        if (bw.PutBitUniform(_options.Video ? 1 : 0) != 0 && bw.PutBitUniform(key ? 1 : 0) != 0)
+        {
+            foreach (sbyte delta in ReferenceFilterDeltas)
+            {
+                bw.PutOptionalSigned(delta, 6);
+            }
+
+            foreach (sbyte delta in ModeFilterDeltas)
+            {
+                bw.PutOptionalSigned(delta, 6);
+            }
+        }
+    }
+
+    private void WriteQuantizers(Vp8BoolEncoder bw)
+    {
         bw.PutValue(_baseQuant, 7);
         bw.PutOptionalSigned(0, 4); // y1 dc
         bw.PutOptionalSigned(0, 4); // y2 dc
         bw.PutOptionalSigned(0, 4); // y2 ac
         bw.PutOptionalSigned(_dqUvDc, 4);
         bw.PutOptionalSigned(_dqUvAc, 4);
-        bw.PutBitUniform(0); // refresh entropy probabilities
-        ReadOnlySpan<byte> defaults = Vp8Tables.DefaultCoeffProbs;
+    }
+
+    /// <summary>Writes the coefficient probability updates against the frame's starting probabilities, and the skip probability.</summary>
+    private void WriteCoefficientProbabilities(Vp8BoolEncoder bw)
+    {
         ReadOnlySpan<byte> update = Vp8Tables.CoeffUpdateProbs;
         for (int i = 0; i < Vp8Costs.ProbabilityCount; i++)
         {
-            if (bw.PutBit(_finalProbs[i] != defaults[i] ? 1 : 0, update[i]) != 0)
+            if (bw.PutBit(_finalProbs[i] != _baseProbs[i] ? 1 : 0, update[i]) != 0)
             {
                 bw.PutValue(_finalProbs[i], 8);
             }
@@ -631,9 +765,6 @@ internal sealed partial class Vp8Encoder
         {
             bw.PutValue(_skipProb, 8);
         }
-
-        WriteModes(bw);
-        return bw;
     }
 
     private void WriteModes(Vp8BoolEncoder bw)
