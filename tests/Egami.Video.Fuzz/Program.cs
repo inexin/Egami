@@ -79,6 +79,7 @@ static Action<Stream> Target(string name) => name switch
     "vorbisraw" => DecodeVorbisPackets,
     "av1" => ReadAv1,
     "av1raw" => DecodeAv1Packets,
+    "vp8enc" => EncodeVp8,
     _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, av1, av1raw, wav, flac, ogg, opusraw, vorbisraw."),
 };
 
@@ -91,6 +92,92 @@ static MediaContext Context() => MediaContext.Default with
     },
     Limits = MediaLimits.Default with { MaxPacketBytes = 8 << 20, MaxHeaderBytes = 1 << 20, MaxIndexEntries = 1_000_000, MaxTracks = 16 },
 };
+
+// The VP8 encoder: the first bytes pick the size and options, the rest fills the frames; every frame must come back out of
+// Egami's decoder, and nothing may throw, since every option it can pick is valid.
+static void EncodeVp8(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 9)
+    {
+        return;
+    }
+
+    int width = 1 + (data[0] % 48), height = 1 + (data[1] % 48), frames = 1 + (data[2] % 12);
+    RateControlMode mode = (RateControlMode)(data[3] % 4);
+    VideoEncoderOptions options = new()
+    {
+        Width = width,
+        Height = height,
+        Quality = data[4] % 101,
+        Effort = data[5] % 11,
+        RateControl = mode,
+        Bitrate = mode is RateControlMode.Bitrate or RateControlMode.ConstantBitrate ? 1000 + (data[6] * 4000L) : null,
+        Quantizer = mode == RateControlMode.Quantizer ? data[6] % 128 : null,
+        LatencyMode = (data[7] & 1) != 0 ? LatencyMode.Realtime : LatencyMode.Quality,
+        KeyframeInterval = (data[7] & 2) != 0 ? 1 + (data[7] >> 4) : null,
+        Vp8 = new Vp8EncoderOptions { Alpha = (data[7] & 4) != 0, Partitions = 1 << ((data[7] >> 3) & 3), GoldenInterval = 4 + (data[6] % 8) },
+    };
+    MediaContext context = Context();
+    using IVideoEncoder encoder = VideoCodecs.Vp8.CreateEncoder(options, context);
+    List<EncodedPacket> packets = [];
+    int at = 0;
+    for (int f = 0; f < frames; f++)
+    {
+        YuvRaster<byte> picture = YuvRaster.Create(width, height, ChromaFormat.Yuv420, YuvColor.Bt601Limited, alpha: true);
+        foreach (YuvPlane<byte>? plane in (YuvPlane<byte>?[])[picture.Y, picture.U, picture.V, picture.A])
+        {
+            for (int y = 0; y < plane!.Height; y++)
+            {
+                Span<byte> row = plane.Row(y);
+                for (int x = 0; x < row.Length; x++)
+                {
+                    row[x] = data[8 + (at++ % (data.Length - 8))];
+                }
+            }
+        }
+
+        using YuvVideoFrame frame = new(picture, new MediaTime(f, new Rational(1, 30)));
+        encoder.Send(frame, new EncodeFrameOptions { ForceKeyframe = (data[(at + f) % data.Length] & 7) == 0 });
+        while (encoder.TryReceive(out EncodedPacket? packet))
+        {
+            packets.Add(packet);
+        }
+    }
+
+    encoder.Flush();
+    while (encoder.TryReceive(out EncodedPacket? packet))
+    {
+        packets.Add(packet);
+    }
+
+    using IVideoDecoder decoder = VideoCodecs.Vp8.CreateDecoder(encoder.Track, null, context);
+    int shown = 0;
+    foreach (EncodedPacket packet in packets)
+    {
+        using (packet)
+        {
+            decoder.Send(packet);
+            while (decoder.TryReceive(out YuvVideoFrame? frame))
+            {
+                frame.Dispose();
+                shown++;
+            }
+        }
+    }
+
+    decoder.Flush();
+    while (decoder.TryReceive(out YuvVideoFrame? frame))
+    {
+        frame.Dispose();
+        shown++;
+    }
+
+    if (shown != frames)
+    {
+        throw new InvalidOperationException($"{frames} frames went in, {shown} came out of the decoder.");
+    }
+}
 
 // Any container: probe, read every packet (decoding Motion JPEG ones), then seek and read again; then the same bytes as a
 // non-seekable stream.

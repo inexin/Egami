@@ -100,6 +100,62 @@ public sealed class VideoWriter : IDisposable
         return new VideoWriter(tracks => MediaFile.CreateMuxer(stream, formatNameOrExtension, tracks, context, leaveOpen, options.Metadata), options, context);
     }
 
+    /// <summary>
+    /// Runs the first pass of a two-pass encode over frames: it learns how hard each one is to code, so the second pass, with
+    /// <see cref="VideoWriterOptions.FirstPassStats"/> and <see cref="RateControlMode.Bitrate"/>, spreads the bitrate over the
+    /// whole clip. Save the result with <see cref="FirstPassStats.Save(string)"/> to run the passes apart.
+    /// </summary>
+    /// <param name="frames">The frames in display order, all one size: the same frames the second pass writes. They are not disposed.</param>
+    /// <param name="progress">Told the position and frame count as the pass goes, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Stops the pass.</param>
+    /// <returns>The statistics.</returns>
+    /// <exception cref="ArgumentException">The frames change size, or there are none.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-two-pass"/>
+    /// </example>
+    public static FirstPassStats AnalyzeFirstPass(IEnumerable<VideoFrame> frames, IProgress<MediaProgress>? progress = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(frames);
+        long count = 0;
+        long start = TimeProvider.System.GetTimestamp();
+        MediaTime position = MediaTime.Zero;
+        FirstPassStats stats = FirstPassStats.Analyze(frames, cancellationToken, progress is null ? null : frame =>
+        {
+            count++;
+            position = frame.Timestamp;
+            progress.Report(new MediaProgress { Position = position, Frames = count, Elapsed = TimeProvider.System.GetElapsedTime(start) });
+        });
+        progress?.Report(new MediaProgress { Position = position, Frames = count, Elapsed = TimeProvider.System.GetElapsedTime(start), Fraction = 1, IsFinal = true });
+        return stats;
+    }
+
+    /// <summary>Runs the first pass of a two-pass encode over a video file's first video track: it reads the file once, decoding every frame.</summary>
+    /// <param name="inputPath">The source file, which the second pass reads again.</param>
+    /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
+    /// <param name="progress">Told the position and frame count as the pass goes, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Stops the pass.</param>
+    /// <returns>The statistics.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-two-pass"/>
+    /// </example>
+    public static FirstPassStats AnalyzeFirstPass(string inputPath, MediaContext? context = null, IProgress<MediaProgress>? progress = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(inputPath);
+        using VideoReader reader = VideoReader.Open(inputPath, null, context);
+        return AnalyzeFirstPass(Disposing(reader.ReadFrames()), progress, cancellationToken);
+    }
+
+    private static IEnumerable<VideoFrame> Disposing(IEnumerable<YuvVideoFrame> frames)
+    {
+        foreach (YuvVideoFrame frame in frames)
+        {
+            using (frame)
+            {
+                yield return frame;
+            }
+        }
+    }
+
     /// <summary>Writes a frame at the next frame time (frame count over the frame rate).</summary>
     /// <typeparam name="TPixel">The pixel type.</typeparam>
     /// <param name="image">The picture. The writer does not keep it.</param>
@@ -235,6 +291,17 @@ public sealed class VideoWriter : IDisposable
                     FrameRate = _options.FrameRate,
                     Quality = _options.Quality,
                     ChromaFormat = _options.ChromaFormat,
+                    Effort = _options.Effort,
+                    RateControl = _options.RateControl,
+                    Bitrate = _options.Bitrate,
+                    MaxBitrate = _options.MaxBitrate,
+                    BufferSize = _options.BufferSize,
+                    Quantizer = _options.Quantizer,
+                    LatencyMode = _options.LatencyMode,
+                    KeyframeInterval = _options.KeyframeInterval,
+                    SceneCutKeyframes = _options.SceneCutKeyframes,
+                    FirstPassStats = _options.FirstPassStats,
+                    Vp8 = _options.Vp8,
                 },
                 _context);
             _encoder.Send(frame);
@@ -321,6 +388,42 @@ public sealed record VideoWriterOptions
 
     /// <summary>Gets the chroma subsampling for RGB frames, or <see langword="null"/> for the codec's default.</summary>
     public ChromaFormat? ChromaFormat { get; init; }
+
+    /// <summary>Gets how hard the encoder works, 0 to 10, or <see langword="null"/> for the codec's default (<see cref="VideoEncoderOptions.Effort"/>).</summary>
+    public int? Effort { get; init; }
+
+    /// <summary>Gets how the encoder spends bits (<see cref="VideoEncoderOptions.RateControl"/>). Default constant quality.</summary>
+    public RateControlMode RateControl { get; init; }
+
+    /// <summary>Gets the target bitrate in bits per second for the bitrate modes (<see cref="VideoEncoderOptions.Bitrate"/>).</summary>
+    public long? Bitrate { get; init; }
+
+    /// <summary>Gets the highest bitrate for <see cref="RateControlMode.Bitrate"/> (<see cref="VideoEncoderOptions.MaxBitrate"/>).</summary>
+    public long? MaxBitrate { get; init; }
+
+    /// <summary>Gets the decoder buffer for <see cref="RateControlMode.ConstantBitrate"/> (<see cref="VideoEncoderOptions.BufferSize"/>).</summary>
+    public long? BufferSize { get; init; }
+
+    /// <summary>Gets the codec's own quantizer for <see cref="RateControlMode.Quantizer"/> (<see cref="VideoEncoderOptions.Quantizer"/>).</summary>
+    public int? Quantizer { get; init; }
+
+    /// <summary>Gets whether the encoder may hold frames back (<see cref="VideoEncoderOptions.LatencyMode"/>). Default <see cref="Codecs.LatencyMode.Quality"/>.</summary>
+    public LatencyMode LatencyMode { get; init; }
+
+    /// <summary>Gets the most frames between keyframes, or <see langword="null"/> for 10 seconds' worth (<see cref="VideoEncoderOptions.KeyframeInterval"/>).</summary>
+    public int? KeyframeInterval { get; init; }
+
+    /// <summary>Gets whether scene cuts start keyframes (<see cref="VideoEncoderOptions.SceneCutKeyframes"/>). Default on.</summary>
+    public bool SceneCutKeyframes { get; init; } = true;
+
+    /// <summary>
+    /// Gets the statistics from <see cref="VideoWriter.AnalyzeFirstPass(IEnumerable{VideoFrame}, IProgress{MediaProgress}?, CancellationToken)"/>
+    /// for the second pass of a two-pass <see cref="RateControlMode.Bitrate"/> encode, or <see langword="null"/> for one pass.
+    /// </summary>
+    public FirstPassStats? FirstPassStats { get; init; }
+
+    /// <summary>Gets the VP8 expert settings, or <see langword="null"/> for the defaults.</summary>
+    public Vp8EncoderOptions? Vp8 { get; init; }
 
     /// <summary>
     /// Gets tracks written alongside the video, such as audio from the source file, whose packets go through

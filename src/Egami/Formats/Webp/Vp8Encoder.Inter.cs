@@ -1,6 +1,4 @@
-using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
+using System.Buffers;
 
 namespace Egami.Formats.Webp;
 
@@ -26,6 +24,17 @@ internal sealed partial class Vp8Encoder
     private const int SplitGate = 2;
 
     private static readonly int[] NoSpectrum = new int[16];
+
+    private static byte[][] BuildCandidateBuffers()
+    {
+        byte[][] buffers = new byte[12][];
+        for (int i = 0; i < buffers.Length; i++)
+        {
+            buffers[i] = new byte[16 * S];
+        }
+
+        return buffers;
+    }
     private static readonly ushort[] InterIntra4Costs = BuildInterIntra4Costs();
 
     private Vp8InterFrame? _inter;
@@ -39,6 +48,11 @@ internal sealed partial class Vp8Encoder
     private byte[] _interOut = new byte[16 * S];
     private byte[] _interTrial = new byte[16 * S];
     private readonly byte[] _searchPred = new byte[16 * S];
+
+    // The best prediction of the last 16 × 16 search, the candidates' luma predictions, and a split's.
+    private readonly byte[] _searchBest = new byte[16 * S];
+    private readonly byte[][] _candidatePred = BuildCandidateBuffers();
+    private readonly byte[] _splitPred = new byte[16 * S];
     private readonly int[] _trialSub = new int[16];
     private readonly byte[] _trialPartModes = new byte[16];
     private readonly int[] _bestSub = new int[16];
@@ -62,6 +76,9 @@ internal sealed partial class Vp8Encoder
     private int _probIntra = 63;
     private int _probLast = 128;
     private int _probGolden = 128;
+
+    /// <summary>Gets which macroblocks of the frame encoded last have no coefficients, in raster order.</summary>
+    internal bool[] ZeroFlags => _zero;
 
     /// <summary>Gets the intra macroblocks of the inter frame encoded last.</summary>
     internal int IntraMacroblocks { get; private set; }
@@ -128,51 +145,251 @@ internal sealed partial class Vp8Encoder
         }
     }
 
+    // The row workers of inter frames (worker 0 is this encoder), how far each macroblock row has come, which worker coded
+    // each row and where its tokens end in that worker's buffer.
+    private Vp8Encoder[] _workers = [];
+    private int[] _rowProgress = [];
+    private int[] _rowWorker = [];
+    private int[] _rowTokenEnd = [];
+    private int _nextRow;
+
+    /// <summary>
+    /// A row worker for inter frames: it shares <paramref name="master"/>'s frame (the source, the per-macroblock choices, the
+    /// rows above's context, the rate tables) and has work buffers, left contexts, counts and tokens of its own.
+    /// </summary>
+    private Vp8Encoder(Vp8Encoder master)
+    {
+        _src = master._src;
+        _options = master._options;
+        _mbw = master._mbw;
+        _mbh = master._mbh;
+        _dqm = master._dqm;
+        _mbHeaderLimit = master._mbHeaderLimit;
+        _segment = master._segment;
+        _isI16 = master._isI16;
+        _yMode = master._yMode;
+        _uvMode = master._uvMode;
+        _modes = master._modes;
+        _zero = master._zero;
+        _alpha = master._alpha;
+        _topY = master._topY;
+        _topU = master._topU;
+        _topV = master._topV;
+        _topNz = master._topNz;
+        _modesAbove = master._modesAbove;
+        _topDerr = master._topDerr;
+        _tokenStart = master._tokenStart;
+        _costs = master._costs;
+        _interDqm = master._interDqm;
+        _mvCost = master._mvCost;
+    }
+
+    /// <summary>Gets or sets the decoder whose threads share a video frame's macroblock rows; null for one thread.</summary>
+    internal Vp8VideoDecoder? Pool { get; set; }
+
     private void InterLoop()
+    {
+        CodeRows();
+        ChooseInterProbabilities();
+    }
+
+    /// <summary>
+    /// Chooses and records every macroblock of a video frame. Rows go to the workers as they come free, a wavefront: a
+    /// macroblock waits until the row above has finished the one above-right of it, the last neighbour it reads. A macroblock's
+    /// choices depend only on its neighbours and the frame, so the frame is the same on any number of threads.
+    /// </summary>
+    private void CodeRows()
     {
         Array.Clear(_topNz);
         Array.Clear(_modesAbove);
         Array.Clear(_topDerr);
         Array.Clear(_zero);
+        foreach (Segment m in _dqm)
+        {
+            m.MaxEdge = 0;
+        }
+
+        // The rates come from the probabilities the frame starts from throughout: estimates that followed the frame's own
+        // statistics would make each macroblock depend on all before it.
+        _costs.Update(_baseProbs);
+        Vp8VideoDecoder? pool = Pool;
+        int threads = pool is null ? 1 : Math.Min(pool.Threads, _mbh);
+        if (_rowProgress.Length != _mbh)
+        {
+            _rowProgress = new int[_mbh];
+            _rowWorker = new int[_mbh];
+            _rowTokenEnd = new int[_mbh];
+        }
+
+        if (_workers.Length < threads)
+        {
+            Vp8Encoder[] workers = new Vp8Encoder[threads];
+            workers[0] = this;
+            for (int w = 1; w < threads; w++)
+            {
+                workers[w] = w < _workers.Length ? _workers[w] : new Vp8Encoder(this);
+            }
+
+            _workers = workers;
+        }
+
+        StartRows(this, threads);
+        for (int w = 1; w < threads; w++)
+        {
+            _workers[w].StartRows(this, threads);
+        }
+
+        _nextRow = 0;
+        if (threads == 1)
+        {
+            CodeRows(this, 0, null);
+        }
+        else
+        {
+            Array.Clear(_rowProgress);
+            pool!.RunWorkers(threads, w => _workers[w].CodeRows(this, w, pool));
+            MergeRows(threads);
+        }
+
+        _tokenStart[_mbw * _mbh] = _tokenCount;
+    }
+
+    /// <summary>Takes <paramref name="master"/>'s frame settings for a worker and clears its counts and tokens.</summary>
+    private void StartRows(Vp8Encoder master, int threads)
+    {
         Array.Clear(_mvCounts);
         Array.Clear(_refCounts);
         Array.Clear(_yModeCounts);
         Array.Clear(_uvModeCounts);
-        _dqm[0].MaxEdge = 0;
-        _useDerr = false;
         IntraMacroblocks = 0;
-        ResetTokens();
-        _costs.Update(_baseProbs);
-        int maxCount = Math.Max((_mbw * _mbh) >> 3, 96);
-        int count = maxCount;
-        bool adapt = Effort >= 4;
-        for (int mby = 0; mby < _mbh; mby++)
+        _useDerr = false;
+        if (master == this)
         {
+            ResetTokens();
+            return;
+        }
+
+        _options = master._options;
+        _inter = master._inter;
+        _info = master._info;
+        _partModes = master._partModes;
+        _baseQuant = master._baseQuant;
+        _dqUvAc = master._dqUvAc;
+        _dqUvDc = master._dqUvDc;
+        _uvAlpha = master._uvAlpha;
+        _segmentCount = master._segmentCount;
+        _maxI4HeaderBits = master._maxI4HeaderBits;
+        _lambda = master._lambda;
+        _lambdaSad = master._lambdaSad;
+        _probIntra = master._probIntra;
+        _probLast = master._probLast;
+        _probGolden = master._probGolden;
+        Reconstruction = master.Reconstruction;
+        ResetTokens(Math.Max(4096, _mbw * _mbh * 64 / threads));
+    }
+
+    /// <summary>Codes macroblock rows as they come free until none is left; <paramref name="pool"/> is null on one thread.</summary>
+    private void CodeRows(Vp8Encoder master, int worker, Vp8VideoDecoder? pool)
+    {
+        int[] progress = master._rowProgress;
+        bool key = _inter is null;
+        bool errorDiffusion = _options.Quality <= 98;
+        while (true)
+        {
+            int mby = Interlocked.Increment(ref master._nextRow) - 1;
+            if (mby >= _mbh)
+            {
+                return;
+            }
+
+            master._rowWorker[mby] = worker;
             Array.Clear(_leftNz);
             Array.Clear(_modesLeft);
             Array.Clear(_leftDerr);
             for (int mbx = 0; mbx < _mbw; mbx++)
             {
-                int mb = (mby * _mbw) + mbx;
-                if (adapt && --count < 0)
+                if (pool is not null && mby > 0)
                 {
-                    RunningProbabilities();
-                    count = maxCount;
+                    pool.WaitFor(progress, mby - 1, Math.Min(mbx + 2, _mbw));
                 }
 
+                int mb = (mby * _mbw) + mbx;
                 Import(mbx, mby);
                 ReconstructedContext(mbx, mby);
                 MakePredictions(mbx, mby);
                 _topNz.AsSpan(mbx * 9, 9).CopyTo(_nzTop);
                 _leftNz.CopyTo(_nzLeft);
-                DecideInter(mbx, mby, mb);
+                if (key)
+                {
+                    Decimate(mbx, mby, mb, errorDiffusion);
+                }
+                else
+                {
+                    DecideInter(mbx, mby, mb);
+                }
+
                 RecordMacroblock(mbx, mb);
                 SaveBoundary(mbx, mby, mb);
+                if (pool is not null)
+                {
+                    Volatile.Write(ref progress[mby], mbx + 1);
+                }
             }
+
+            master._rowTokenEnd[mby] = _tokenCount;
+        }
+    }
+
+    /// <summary>Gathers the workers' tokens into this encoder's buffer in row order, and adds up their statistics and counts.</summary>
+    private void MergeRows(int threads)
+    {
+        int total = 0;
+        for (int w = 0; w < threads; w++)
+        {
+            total += _workers[w]._tokenCount;
         }
 
-        _tokenStart[_mbw * _mbh] = _tokenCount;
-        ChooseInterProbabilities();
+        ushort[] merged = ArrayPool<ushort>.Shared.Rent(Math.Max(total, 4096));
+        int at = 0;
+        for (int mby = 0; mby < _mbh; mby++)
+        {
+            Vp8Encoder owner = _workers[_rowWorker[mby]];
+            int first = mby * _mbw;
+            int start = _tokenStart[first], end = _rowTokenEnd[mby];
+            owner._tokens.AsSpan(start, end - start).CopyTo(merged.AsSpan(at));
+            int shift = at - start;
+            for (int mb = first; mb < first + _mbw; mb++)
+            {
+                _tokenStart[mb] += shift;
+            }
+
+            at += end - start;
+        }
+
+        ArrayPool<ushort>.Shared.Return(_tokens);
+        _tokens = merged;
+        _tokenCount = total;
+        for (int w = 1; w < threads; w++)
+        {
+            Vp8Encoder worker = _workers[w];
+            Add(_totals, worker._totals);
+            Add(_ones, worker._ones);
+            Add(_zeroTotals, worker._zeroTotals);
+            Add(_zeroOnes, worker._zeroOnes);
+            Add(_mvCounts, worker._mvCounts);
+            Add(_refCounts, worker._refCounts);
+            Add(_yModeCounts, worker._yModeCounts);
+            Add(_uvModeCounts, worker._uvModeCounts);
+            IntraMacroblocks += worker.IntraMacroblocks;
+        }
+
+        static void Add(int[] to, int[] from)
+        {
+            for (int i = 0; i < to.Length; i++)
+            {
+                to[i] += from[i];
+            }
+        }
     }
 
     // --- Mode choice -------------------------------------------------------------------------------------------------------
@@ -186,6 +403,9 @@ internal sealed partial class Vp8Encoder
         internal long Header;
         internal long Quick;
         internal int Sse;
+
+        // Where its luma prediction is kept once measured (in _candidatePred).
+        internal int Slot;
     }
 
     /// <summary>What the near vector search finds for a macroblock and reference, and the counts that pick the mode probabilities.</summary>
@@ -206,7 +426,7 @@ internal sealed partial class Vp8Encoder
         Vp8ModeInfo info = _info!;
         Segment dqm = _interDqm;
         int here = info.Index(mbx, mby);
-        _doTrellis = Effort >= 6;
+        _doTrellis = inter.Trellis;
         _rdInterBest = long.MaxValue;
 
         Span<Candidate> candidates = stackalloc Candidate[12];
@@ -227,24 +447,52 @@ internal sealed partial class Vp8Encoder
             Add(candidates, ref n, start, r, Vp8ModeInfo.Zero, 0, refCost + VectorModeCost(Vp8ModeInfo.Zero, near));
             Add(candidates, ref n, start, r, Vp8ModeInfo.Nearest, near.Nearest, refCost + VectorModeCost(Vp8ModeInfo.Nearest, near));
             Add(candidates, ref n, start, r, Vp8ModeInfo.Near, near.Near, refCost + VectorModeCost(Vp8ModeInfo.Near, near));
-            int previous = 0;
-            if (inter.Previous is { } p && p.Reference[here] == r)
+
+            // A second reference is searched only where its near vectors come close to the best prediction of the ones before.
+            bool search = start == 0 || inter.ReferenceGate == 0;
+            if (!search)
             {
-                previous = p.Mv[here];
+                long before = long.MaxValue, near3 = long.MaxValue;
+                for (int i = 0; i < n; i++)
+                {
+                    long sse = CandidateSse(ref candidates[i], mbx, mby);
+                    if (i < start)
+                    {
+                        before = Math.Min(before, sse);
+                    }
+                    else
+                    {
+                        near3 = Math.Min(near3, sse);
+                    }
+                }
+
+                search = 4 * near3 < inter.ReferenceGate * before;
             }
 
-            int found = Search(frame, mbx, mby, 0, 0, 16, 16, near.Best, [near.Best, near.Nearest, near.Near, previous, 0], inter.SearchRange);
-            Add(candidates, ref n, start, r, Vp8ModeInfo.New, found, refCost + VectorModeCost(Vp8ModeInfo.New, near) + MvCost(found, near.Best));
+            if (search)
+            {
+                int previous = 0;
+                if (inter.Previous is { } p && p.Reference[here] == r)
+                {
+                    previous = p.Mv[here];
+                }
+
+                int found = Search(frame, mbx, mby, 0, 0, 16, 16, near.Best, [near.Best, near.Nearest, near.Near, previous, 0], inter.SearchRange, out int foundSse);
+                int at = Add(candidates, ref n, start, r, Vp8ModeInfo.New, found, refCost + VectorModeCost(Vp8ModeInfo.New, near) + MvCost(found, near.Best));
+                if (candidates[at].Sse < 0 && foundSse >= 0)
+                {
+                    // The search's own prediction of its vector.
+                    candidates[at].Sse = foundSse;
+                    _searchBest.AsSpan().CopyTo(_candidatePred[candidates[at].Slot]);
+                }
+            }
         }
 
         // Rank by the luma prediction error, then code the best few in full.
         for (int i = 0; i < n; i++)
         {
             ref Candidate c = ref candidates[i];
-            Vp8FrameBuffer frame = inter.References[c.Reference]!;
-            Vp8InterPredict.Predict(frame.Y, frame.OriginY, frame.StrideY, frame.AlignedWidth, frame.AlignedHeight, Vp8FrameBuffer.Border, mbx * 16, mby * 16, 16, 16, Vp8ModeInfo.Row(c.Mv), Vp8ModeInfo.Col(c.Mv), true, _searchPred, 0, S);
-            c.Sse = Vp8EncDsp.Sse(_yuvIn, _searchPred, 0, 16, 16);
-            c.Quick = ((long)c.Sse << 8) + (_lambda * c.Header);
+            c.Quick = ((long)CandidateSse(ref c, mbx, mby) << 8) + (_lambda * c.Header);
         }
 
         for (int i = 1; i < n; i++)
@@ -267,7 +515,7 @@ internal sealed partial class Vp8Encoder
         {
             Candidate c = candidates[i];
             SetVector(here, c.Reference, c.Mode, c.Mv);
-            long score = CodeInter(mbx, mby, c.Reference, dqm, false, c.Header);
+            long score = CodeInter(mbx, mby, c.Reference, dqm, c.Slot, c.Header);
             if (score < bestScore)
             {
                 bestScore = score;
@@ -296,7 +544,7 @@ internal sealed partial class Vp8Encoder
                 long header = RefCost(r) + VectorModeCost(Vp8ModeInfo.Split, nears[r]) + LayoutCost(layout);
                 header += PlanSplit(mbx, mby, r, nears[r], layout, seed);
                 SetSplit(here, r, layout, _trialSub);
-                long score = CodeInter(mbx, mby, r, dqm, true, header);
+                long score = CodeInter(mbx, mby, r, dqm, -1, header);
                 if (score < bestScore)
                 {
                     bestScore = score;
@@ -308,9 +556,10 @@ internal sealed partial class Vp8Encoder
             }
         }
 
-        // Intra only where a 16 × 16 intra prediction comes near the best vector's.
+        // Intra only where a 16 × 16 intra prediction comes near the best vector's, and the vector leaves enough to code that it
+        // might lose.
         bool tryIntra = n == 0 || inter.IntraGate == 0;
-        if (!tryIntra)
+        if (!tryIntra && 4L * candidates[0].Sse >= (long)inter.IntraFloor * qs * qs)
         {
             int intra = int.MaxValue;
             for (int mode = 0; mode < 4; mode++)
@@ -337,8 +586,11 @@ internal sealed partial class Vp8Encoder
         CommitInter(here, mb, best, bestLayout, nears[best.Reference]);
     }
 
-    /// <summary>Adds a candidate unless one of the same reference already has its vector at no more header cost.</summary>
-    private static void Add(Span<Candidate> candidates, ref int n, int start, int reference, int mode, int mv, long header)
+    /// <summary>
+    /// Adds a candidate unless one of the same reference already has its vector, which then takes the mode if its header costs
+    /// less; returns where the candidate with the vector is.
+    /// </summary>
+    private static int Add(Span<Candidate> candidates, ref int n, int start, int reference, int mode, int mv, long header)
     {
         for (int i = start; i < n; i++)
         {
@@ -350,24 +602,42 @@ internal sealed partial class Vp8Encoder
                     candidates[i].Header = header;
                 }
 
-                return;
+                return i;
             }
         }
 
-        candidates[n++] = new Candidate { Reference = reference, Mode = mode, Mv = mv, Header = header };
+        candidates[n] = new Candidate { Reference = reference, Mode = mode, Mv = mv, Header = header, Sse = -1, Slot = n };
+        return n++;
+    }
+
+    /// <summary>The luma squared error of a 16 × 16 candidate's prediction, measured once.</summary>
+    private int CandidateSse(ref Candidate c, int mbx, int mby)
+    {
+        if (c.Sse < 0)
+        {
+            Vp8FrameBuffer frame = _inter!.References[c.Reference]!;
+            byte[] pred = _candidatePred[c.Slot];
+            Vp8InterPredict.Predict(frame.Y, frame.OriginY, frame.StrideY, frame.AlignedWidth, frame.AlignedHeight, Vp8FrameBuffer.Border, mbx * 16, mby * 16, 16, 16, Vp8ModeInfo.Row(c.Mv), Vp8ModeInfo.Col(c.Mv), true, pred, 0, S);
+            c.Sse = Vp8EncDsp.Sse(_yuvIn, pred, 0, 16, 16);
+        }
+
+        return c.Sse;
     }
 
     /// <summary>
     /// Predicts the macroblock as <see cref="_info"/> now describes it, codes the residual into <see cref="_interTrial"/> and
     /// <see cref="_rdTrial"/>, and keeps it in <see cref="_interOut"/> and <see cref="_rdInter"/> when it is the best so far;
-    /// returns the rate-distortion score.
+    /// returns the rate-distortion score. A 16 × 16 vector's luma prediction is the candidate's in <paramref name="slot"/>; −1 for
+    /// a split.
     /// </summary>
-    private long CodeInter(int mbx, int mby, int reference, Segment dqm, bool split, long header)
+    private long CodeInter(int mbx, int mby, int reference, Segment dqm, int slot, long header)
     {
         Vp8ModeInfo info = _info!;
         Vp8FrameBuffer frame = _inter!.References[reference]!;
         byte[] predUv = _predUv[InterSlot];
-        Vp8Decoder.PredictMacroblock(info, info.Index(mbx, mby), frame, mbx, mby, _mbw, _mbh, 0, _predY16[InterSlot], 0, S, predUv.AsSpan(UOff), predUv.AsSpan(VOff), 0, S);
+        bool split = slot < 0;
+        byte[] predY = _predY16[InterSlot] = split ? _splitPred : _candidatePred[slot];
+        Vp8Decoder.PredictMacroblock(info, info.Index(mbx, mby), frame, mbx, mby, _mbw, _mbh, 0, predY, 0, S, predUv.AsSpan(UOff), predUv.AsSpan(VOff), 0, S, luma: split);
         ModeScore cur = _rdTrial;
         cur.Init();
         long d;
@@ -901,8 +1171,11 @@ internal sealed partial class Vp8Encoder
     /// each weighted with the vector's cost against <paramref name="best"/>. Vectors stay within 16 pixels of the frame, so
     /// they need no clamping. Returns the vector in eighths.
     /// </summary>
-    private int Search(Vp8FrameBuffer frame, int mbx, int mby, int bx, int by, int w, int h, int best, ReadOnlySpan<int> seeds, int range)
+    private int Search(Vp8FrameBuffer frame, int mbx, int mby, int bx, int by, int w, int h, int best, ReadOnlySpan<int> seeds, int range, out int bestSse)
     {
+        // A macroblock's search keeps its best prediction (in _searchBest) and that prediction's error.
+        bool keep = w == 16 && h == 16;
+        int sse = -1;
         int lo = -(mbx * 16) - 16, hi = ((_mbw - 1 - mbx) * 16) + 16;
         int top = -(mby * 16) - 16, bottom = ((_mbh - 1 - mby) * 16) + 16;
         int x0 = (mbx * 16) + bx, y0 = (mby * 16) + by;
@@ -968,6 +1241,12 @@ internal sealed partial class Vp8Encoder
         // Fractions: halves, then quarters, around the best so far: the four nearest, then the corner between the better two.
         int mv = Vp8ModeInfo.Pack(bestY * 8, bestX * 8);
         long current = SubPelCost(mv);
+        int keptSse = current == long.MaxValue ? -1 : sse;
+        if (keep && keptSse >= 0)
+        {
+            _searchPred.AsSpan().CopyTo(_searchBest);
+        }
+
         for (int step = 4; step >= (_inter!.QuarterPixel ? 2 : 4); step >>= 1)
         {
             int centre = mv;
@@ -976,6 +1255,7 @@ internal sealed partial class Vp8Encoder
             Try(r0 + (up < down ? -step : step), c0 + (left < right ? -step : step));
         }
 
+        bestSse = keptSse;
         return mv;
 
         long Try(int row, int col)
@@ -989,7 +1269,11 @@ internal sealed partial class Vp8Encoder
             long cost = SubPelCost(candidate);
             if (cost < current)
             {
-                (mv, current) = (candidate, cost);
+                (mv, current, keptSse) = (candidate, cost, sse);
+                if (keep)
+                {
+                    _searchPred.AsSpan().CopyTo(_searchBest);
+                }
             }
 
             return cost;
@@ -1003,7 +1287,7 @@ internal sealed partial class Vp8Encoder
                 return long.MaxValue;
             }
 
-            int sad = Sad(_yuvIn, src, frame.Y, frame.OriginY + ((y0 + y) * frame.StrideY) + x0 + x, frame.StrideY, w, h);
+            int sad = Vp8EncDsp.Sad(_yuvIn, src, frame.Y, frame.OriginY + ((y0 + y) * frame.StrideY) + x0 + x, frame.StrideY, w, h);
             return ((long)sad << 8) + ((long)_lambdaSad * rate);
         }
 
@@ -1016,7 +1300,7 @@ internal sealed partial class Vp8Encoder
             }
 
             Vp8InterPredict.Predict(frame.Y, frame.OriginY, frame.StrideY, frame.AlignedWidth, frame.AlignedHeight, Vp8FrameBuffer.Border, x0, y0, w, h, Vp8ModeInfo.Row(vector), Vp8ModeInfo.Col(vector), true, _searchPred, src, S);
-            int sse = Vp8EncDsp.Sse(_yuvIn, _searchPred, src, w, h);
+            sse = Vp8EncDsp.Sse(_yuvIn, _searchPred, src, w, h);
             return ((long)sse << 8) + ((long)_lambda * rate);
         }
     }
@@ -1052,7 +1336,7 @@ internal sealed partial class Vp8Encoder
             int aboveMv = (k >> 2) != 0 ? sub[k - 4] : info.Mode[above] != Vp8ModeInfo.Split ? info.Mv[above] : info.SubMv[(above * 16) + k + 12];
             int context = ((aboveMv == 0 ? 1 : 0) << 2) | ((leftMv == 0 ? 1 : 0) << 1) | (leftMv == aboveMv ? 1 : 0);
             ReadOnlySpan<byte> p = probs.Slice(context * 3, 3);
-            int found = Search(frame, mbx, mby, bx, by, w, h, near.Best, [previous, seed, 0, near.Best], layout == 3 ? 4 : 8);
+            int found = Search(frame, mbx, mby, bx, by, w, h, near.Best, [previous, seed, 0, near.Best], layout == 3 ? 4 : 8, out _);
             Span<int> mvs = [leftMv, aboveMv, 0, found];
             long bestCost = long.MaxValue;
             int choice = 2;
@@ -1105,42 +1389,54 @@ internal sealed partial class Vp8Encoder
         return header;
     }
 
-    /// <summary>The sum of absolute differences of a block of the work-stride source and a reference plane.</summary>
-    private static int Sad(ReadOnlySpan<byte> src, int s, ReadOnlySpan<byte> plane, int p, int stride, int w, int h)
+    // --- Loop filter search -----------------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Returns the luma squared error against the source of the inter frame encoded last, filtered at frame level
+    /// <paramref name="level"/> as the decoder filters it (the normal filter, sharpness 0, the stream's reference and mode
+    /// deltas): <see cref="Reconstruction"/>'s unfiltered luma is filtered in <paramref name="work"/>, a plane of its size.
+    /// The same as decoding the frame at that level and measuring its luma, at a fraction of the cost.
+    /// </summary>
+    internal long FilteredLumaError(int level, byte[] work)
     {
-        if (Sse2.IsSupported && (w == 16 || w == 8))
+        Vp8Planes recon = Reconstruction!;
+        int stride = recon.Stride;
+        recon.Y.AsSpan(0, stride * _mbh * 16).CopyTo(work);
+        if (level > 0)
         {
-            Vector128<ulong> sum = Vector128<ulong>.Zero;
-            for (int y = 0; y < h; y++, s += S, p += stride)
+            Span<Vp8Decoder.FilterInfo> strengths = stackalloc Vp8Decoder.FilterInfo[16];
+            ReadOnlySpan<sbyte> refDeltas = ReferenceFilterDeltas, modeDeltas = ModeFilterDeltas;
+            for (int reference = 0; reference < 4; reference++)
             {
-                Vector128<byte> a, b;
-                if (w == 16)
+                for (int mode = 0; mode < 4; mode++)
                 {
-                    a = Vector128.Create(src.Slice(s, 16));
-                    b = Vector128.Create(plane.Slice(p, 16));
+                    int l = level + refDeltas[reference] + ((reference > 0 ? mode > 0 : mode == 0) ? modeDeltas[mode] : 0);
+                    strengths[(reference * 4) + mode] = Vp8Decoder.Strength(Math.Clamp(l, 0, 63), 0, key: false);
                 }
-                else
-                {
-                    a = Vector128.CreateScalar(MemoryMarshal.Read<ulong>(src.Slice(s, 8))).AsByte();
-                    b = Vector128.CreateScalar(MemoryMarshal.Read<ulong>(plane.Slice(p, 8))).AsByte();
-                }
-
-                sum += Sse2.SumAbsoluteDifferences(a, b).AsUInt64();
             }
 
-            return (int)(sum.GetElement(0) + sum.GetElement(1));
-        }
-
-        int total = 0;
-        for (int y = 0; y < h; y++, s += S, p += stride)
-        {
-            for (int x = 0; x < w; x++)
+            Vp8ModeInfo info = _info!;
+            for (int mby = 0; mby < _mbh; mby++)
             {
-                total += Math.Abs(src[s + x] - plane[p + x]);
+                for (int mbx = 0; mbx < _mbw; mbx++)
+                {
+                    int here = info.Index(mbx, mby);
+                    int reference = info.Reference[here], mode = info.Mode[here];
+                    int index = reference == 0 ? (mode == Vp8ModeInfo.BPred ? 0 : 1) : mode == Vp8ModeInfo.Zero ? 1 : mode == Vp8ModeInfo.Split ? 3 : 2;
+                    bool hasY2 = mode != Vp8ModeInfo.BPred && mode != Vp8ModeInfo.Split;
+                    bool inner = !hasY2 || !_zero[(mby * _mbw) + mbx];
+                    Vp8Decoder.FilterLuma(work, (mby * 16 * stride) + (mbx * 16), stride, strengths[(reference * 4) + index], mbx > 0, mby > 0, inner);
+                }
             }
         }
 
-        return total;
+        long sum = 0;
+        for (int y = 0; y < _src.Height; y++)
+        {
+            sum += Vp8EncDsp.SquaredError(_src.Y.AsSpan(y * stride, _src.Width), work.AsSpan(y * stride, _src.Width));
+        }
+
+        return sum;
     }
 
     // --- Frame header ------------------------------------------------------------------------------------------------------

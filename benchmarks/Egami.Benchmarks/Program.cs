@@ -51,6 +51,15 @@ if (args is ["--time-vp8", .. string[] ivfs])
     return;
 }
 
+// Encode a raw 4:2:0 clip as VP8 (5.2 encoder speed gate), timed, with size and PSNR:
+// -- --encode-vp8 <in.yuv> <width> <height> <frames> <quantizer> <effort> <threads> <out.ivf> [runs]
+if (args is ["--encode-vp8", string vp8In, string vp8W, string vp8H, string vp8Frames, string vp8Q, string vp8Effort, string vp8Threads, string vp8Out, .. string[] vp8Runs])
+{
+    static int I(string s) => int.Parse(s, System.Globalization.CultureInfo.InvariantCulture);
+    Vp8EncodeTiming.Run(vp8In, I(vp8W), I(vp8H), I(vp8Frames), I(vp8Q), I(vp8Effort), I(vp8Threads), vp8Out, vp8Runs.Length > 0 ? I(vp8Runs[0]) : 1);
+    return;
+}
+
 // Time the barcode reader: -- --time-barcodes [--zxing-cpp <bench.json>] [--only <set prefix>] <folder>... (a blackbox folder is read
 // set by set with its formats, as the 2.11.1 speed gate does; any other folder at one thread and all cores)
 if (args is ["--time-barcodes", .. string[] barcodeArgs])
