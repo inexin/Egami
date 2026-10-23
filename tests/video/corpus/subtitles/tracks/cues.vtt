@@ -1,0 +1,20 @@
+WEBVTT
+
+NOTE This is a comment
+that spans lines
+
+intro
+00:00:00.500 --> 00:00:02.000 align:start line:0
+<v Roger Bingham>We are in New York City</v>
+
+00:00:02.000 --> 00:00:04.000 region:fred position:10%,line-left size:35%
+<c.loud.big>Loud</c> and <b>bold</b> &amp; <i>italic</i> &lt;tag&gt;
+
+NOTE another note
+
+3
+00:00:04.000 --> 00:00:06.500 vertical:rl line:50%,center
+<ruby>漢<rt>kan</rt>字<rt>ji</rt></ruby> <lang ja>日本語</lang>
+
+00:00:07.000 --> 00:00:09.000
+<00:00:07.000>Kar<00:00:07.500>a<00:00:08.000>oke

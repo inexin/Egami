@@ -31,3 +31,5 @@ tests/images/fuzz/barcode-*/** binary
 *.webm binary
 tests/video/fuzz-seeds/** binary
 tests/video/fuzz-regressions/** binary
+# Subtitle test files keep their exact bytes (line endings, byte order marks and code pages are what they test).
+tests/video/corpus/subtitles/** -text
