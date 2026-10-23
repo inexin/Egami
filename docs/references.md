@@ -35,6 +35,7 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [HM](https://vcgit.hhi.fraunhofer.de/jvet/HM), the HEVC reference software | C++ | BSD-3 (grants no patent rights) | Where H.265 is unclear; HM's decoder is the bit-exact reference | 2.9.4 |
 | [libhevc](https://android.googlesource.com/platform/external/libhevc) | C | Apache 2.0 | Fast SIMD structure of an HEVC decoder | 2.9.4 |
 | [CrabbyAvif](https://github.com/webmproject/CrabbyAvif) | Rust | Apache 2.0 | HEIF item handling, including HEIC | 2.9.4 |
+| [libebur128](https://github.com/jiixyj/libebur128) | C | MIT | EBU R 128 loudness: K-weighting at any rate, gating, loudness range | Video V1.4 |
 
 Specifications, textbooks and papers are always fine. Code under GPL, LGPL or AGPL, and code with no license, is never used.
 
