@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class SubtitleDocument | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class SubtitleDocument | Egami ">
+      
+      <meta name="description" content="A subtitle file in memory: its cues, and the styles, regions and header its format carries. Loads SRT, WebVTT, ASS and SSA into one model, saves any of SRT, WebVTT and ASS, and shifts, scales, syncs and clips the timing. A document saved in the format it was read from, unchanged, gives back the same bytes; changed cues are written in the format&#39;s canonical form, and what a target format cannot hold is reported once per kind as Subtitle.Dropped.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Subtitles_SubtitleDocument.md&amp;value=---%0Auid%3A%20Egami.Video.Subtitles.SubtitleDocument%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Subtitles.SubtitleDocument">
+
+
+
+  <h1 id="Egami_Video_Subtitles_SubtitleDocument" data-uid="Egami.Video.Subtitles.SubtitleDocument" class="text-break">
+Class SubtitleDocument  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.Tracks.cs/#L5"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Subtitles.html">Subtitles</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A subtitle file in memory: its cues, and the styles, regions and header its format carries. Loads SRT, WebVTT, ASS and SSA
+into one model, saves any of SRT, WebVTT and ASS, and shifts, scales, syncs and clips the timing. A document saved in the
+format it was read from, unchanged, gives back the same bytes; changed cues are written in the format's canonical form, and
+what a target format cannot hold is reported once per kind as <code>Subtitle.Dropped</code>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class SubtitleDocument</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">SubtitleDocument</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Subtitles_SubtitleDocument_examples">Examples</h2>
+  <pre><code class="lang-csharp">// SRT, WebVTT, ASS and SSA, told apart by their content. Saving an unchanged file gives back its exact bytes; the format
+// comes from the argument, then the extension, then the format it was read as.
+SubtitleDocument subtitles = SubtitleDocument.Load("movie.srt");
+foreach (SubtitleCue cue in subtitles.Cues)
+{
+    Console.WriteLine($"{cue.Start.ToTimeSpan():g} {cue.PlainText}");
+}
+
+subtitles.Save("movie.vtt");
+subtitles.Save("movie.ass");</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument__ctor_" data-uid="Egami.Video.Subtitles.SubtitleDocument.#ctor*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument__ctor_Egami_Video_Subtitles_SubtitleFormat_" data-uid="Egami.Video.Subtitles.SubtitleDocument.#ctor(Egami.Video.Subtitles.SubtitleFormat)">
+  SubtitleDocument(SubtitleFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates an empty document.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SubtitleDocument(SubtitleFormat format = SubtitleFormat.Srt)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>format</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html">SubtitleFormat</a></dt>
+    <dd><p>The format <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html#Egami_Video_Subtitles_SubtitleDocument_Save_System_String_System_Nullable_Egami_Video_Subtitles_SubtitleFormat__Egami_Video_Subtitles_SubtitleWriterOptions_Egami_Video_MediaContext_">Save(string, SubtitleFormat?, SubtitleWriterOptions?, MediaContext?)</a> writes by default.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Attachments_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Attachments*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Attachments" data-uid="Egami.Video.Subtitles.SubtitleDocument.Attachments">
+  Attachments
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the files an ASS script embeds (fonts and pictures), decoded.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public List&lt;SubtitleAttachment&gt; Attachments { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="Egami.Video.Subtitles.SubtitleAttachment.html">SubtitleAttachment</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Cues_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Cues*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Cues" data-uid="Egami.Video.Subtitles.SubtitleDocument.Cues">
+  Cues
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the cues, in file order. <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html#Egami_Video_Subtitles_SubtitleDocument_Sort">Sort()</a> puts them in time order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public List&lt;SubtitleCue&gt; Cues { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="Egami.Video.Subtitles.SubtitleCue.html">SubtitleCue</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Format_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Format*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Format" data-uid="Egami.Video.Subtitles.SubtitleDocument.Format">
+  Format
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the format the document was read from, which saving writes unless told otherwise.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SubtitleFormat Format { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html">SubtitleFormat</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_HeaderText_" data-uid="Egami.Video.Subtitles.SubtitleDocument.HeaderText*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_HeaderText" data-uid="Egami.Video.Subtitles.SubtitleDocument.HeaderText">
+  HeaderText
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the WebVTT header: the text after <code>WEBVTT</code> on the first line and the header lines below it, with line
+breaks as <code>\n</code>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? HeaderText { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Regions_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Regions*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Regions" data-uid="Egami.Video.Subtitles.SubtitleDocument.Regions">
+  Regions
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the WebVTT regions cues can show in.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public List&lt;SubtitleRegion&gt; Regions { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="Egami.Video.Subtitles.SubtitleRegion.html">SubtitleRegion</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_ScriptInfo_" data-uid="Egami.Video.Subtitles.SubtitleDocument.ScriptInfo*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_ScriptInfo" data-uid="Egami.Video.Subtitles.SubtitleDocument.ScriptInfo">
+  ScriptInfo
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the ASS <code>[Script Info]</code> fields in order, such as <code>Title</code>, <code>PlayResX</code> and <code>WrapStyle</code>, without
+<code>ScriptType</code>, which the writer sets.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public List&lt;KeyValuePair&lt;string, string&gt;&gt; ScriptInfo { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.keyvaluepair-2">KeyValuePair</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_StyleSheets_" data-uid="Egami.Video.Subtitles.SubtitleDocument.StyleSheets*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_StyleSheets" data-uid="Egami.Video.Subtitles.SubtitleDocument.StyleSheets">
+  StyleSheets
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the WebVTT <code>STYLE</code> blocks: CSS for the <code>::cue</code> pseudo-element, as written.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public List&lt;string&gt; StyleSheets { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Styles_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Styles*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Styles" data-uid="Egami.Video.Subtitles.SubtitleDocument.Styles">
+  Styles
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the ASS and SSA styles cues name in <a class="xref" href="Egami.Video.Subtitles.SubtitleCue.html#Egami_Video_Subtitles_SubtitleCue_Style">Style</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public List&lt;SubtitleStyle&gt; Styles { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="Egami.Video.Subtitles.SubtitleStyle.html">SubtitleStyle</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Clip_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Clip*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Clip_Egami_Video_MediaTime_Egami_Video_MediaTime_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Clip(Egami.Video.MediaTime,Egami.Video.MediaTime)">
+  Clip(MediaTime, MediaTime)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.Timing.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Keeps only what shows between <code class="paramref">start</code> and <code class="paramref">end</code>: cues wholly outside are removed and
+cues across an edge are cut at it. Times stay on the same clock; <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html#Egami_Video_Subtitles_SubtitleDocument_Shift_Egami_Video_MediaTime_">Shift(MediaTime)</a> by minus <code class="paramref">start</code>
+to make the range start at zero.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Clip(MediaTime start, MediaTime end)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>start</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>The start of the range.</p>
+</dd>
+    <dt><code>end</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>The end of the range.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of cues removed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">end</code> is before <code class="paramref">start</code>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Clone_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Clone*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Clone" data-uid="Egami.Video.Subtitles.SubtitleDocument.Clone">
+  Clone()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L205"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a copy of the document whose cues and lists can change without touching this one.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SubtitleDocument Clone()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_DetectFormat_" data-uid="Egami.Video.Subtitles.SubtitleDocument.DetectFormat*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_DetectFormat_System_ReadOnlySpan_System_Byte__" data-uid="Egami.Video.Subtitles.SubtitleDocument.DetectFormat(System.ReadOnlySpan{System.Byte})">
+  DetectFormat(ReadOnlySpan&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L149"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Tells a subtitle format from the start of a file, or returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static SubtitleFormat? DetectFormat(ReadOnlySpan&lt;byte&gt; data)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The start of the file; a few hundred bytes are enough.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html">SubtitleFormat</a>?</dt>
+    <dd><p>The format, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the data is not one of them.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_FixOverlaps_" data-uid="Egami.Video.Subtitles.SubtitleDocument.FixOverlaps*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_FixOverlaps" data-uid="Egami.Video.Subtitles.SubtitleDocument.FixOverlaps">
+  FixOverlaps()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.Timing.cs/#L110"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sorts the cues, then ends each cue no later than the next cue on the same layer starts, so two lines never show at once
+by accident. Cues that start at the same time, and ASS comments, are left alone: they are meant to show together.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int FixOverlaps()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of cues shortened.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_FromPackets_" data-uid="Egami.Video.Subtitles.SubtitleDocument.FromPackets*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_FromPackets_Egami_Video_TrackInfo_System_Collections_Generic_IEnumerable_Egami_Video_EncodedPacket__Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Subtitles.SubtitleDocument.FromPackets(Egami.Video.TrackInfo,System.Collections.Generic.IEnumerable{Egami.Video.EncodedPacket},Egami.Video.Subtitles.SubtitleReaderOptions,Egami.Video.MediaContext)">
+  FromPackets(TrackInfo, IEnumerable&lt;EncodedPacket&gt;, SubtitleReaderOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.Tracks.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a subtitle track from its packets; packets of other tracks are skipped.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static SubtitleDocument FromPackets(TrackInfo track, IEnumerable&lt;EncodedPacket&gt; packets, SubtitleReaderOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>track</code> <a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a></dt>
+    <dd><p>The subtitle track.</p>
+</dd>
+    <dt><code>packets</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Egami.Video.EncodedPacket.html">EncodedPacket</a>&gt;</dt>
+    <dd><p>The packets, in file order.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleReaderOptions.html">SubtitleReaderOptions</a></dt>
+    <dd><p>The strictness, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>Where diagnostics go, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a></dt>
+    <dd><p>The document.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Subtitles_SubtitleDocument_FromPackets_Egami_Video_TrackInfo_System_Collections_Generic_IEnumerable_Egami_Video_EncodedPacket__Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Read a subtitle track out of a container: mov_text, WebVTT, SRT and ASS tracks become a document.
+using (IDemuxer movie = MediaFile.OpenDemuxer("subtitled.mp4"))
+{
+    TrackInfo track = movie.Tracks.First(t =&gt; SubtitleDocument.IsTextCodec(t.CodecId));
+    SubtitleDocument.ReadTrack(movie, track).Save("subtitled.srt");
+}
+
+// Add one to a copy of a video: the writer makes the track and its packets, merged in time order with the video's.
+using IDemuxer input = MediaFile.OpenDemuxer("movie.webm");
+SubtitleTrackWriter subtitles = new(captions, input.Tracks.Count + 1, SubtitleTrackWriter.CodecIdFor("webm", captions.Format));
+using (IMuxer output = MediaFile.CreateMuxer("captioned.webm", [.. input.Tracks, subtitles.Track with { Language = "eng" }]))
+{
+    int next = 0;
+    while (input.ReadPacket() is { } packet)
+    {
+        using (packet)
+        {
+            for (; next &lt; subtitles.Packets.Count &amp;&amp; subtitles.Packets[next].Timestamp &lt;= packet.Timestamp; next++)
+            {
+                output.WritePacket(subtitles.Packets[next]);
+            }
+
+            output.WritePacket(packet);
+        }
+    }
+
+    for (; next &lt; subtitles.Packets.Count; next++)
+    {
+        output.WritePacket(subtitles.Packets[next]);
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The track's codec is not a text subtitle codec.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_IsTextCodec_" data-uid="Egami.Video.Subtitles.SubtitleDocument.IsTextCodec*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_IsTextCodec_System_String_" data-uid="Egami.Video.Subtitles.SubtitleDocument.IsTextCodec(System.String)">
+  IsTextCodec(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.Tracks.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a codec is one of the text subtitle codecs Egami.Video reads and writes: <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_SubRip">SubRip</a>,
+<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_WebVtt">WebVtt</a>, the WebM <code>D_WEBVTT</code> kinds, <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Ass">Ass</a>, <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Ssa">Ssa</a>
+(read only), <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_MovText">MovText</a> and <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Mp4WebVtt">Mp4WebVtt</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool IsTextCodec(string codecId)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>codecId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The codec id.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html#Egami_Video_Subtitles_SubtitleDocument_FromPackets_Egami_Video_TrackInfo_System_Collections_Generic_IEnumerable_Egami_Video_EncodedPacket__Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext_">FromPackets(TrackInfo, IEnumerable&lt;EncodedPacket&gt;, SubtitleReaderOptions?, MediaContext?)</a> reads it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Load_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Load*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Load_System_IO_Stream_Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Load(System.IO.Stream,Egami.Video.Subtitles.SubtitleReaderOptions,Egami.Video.MediaContext)">
+  Load(Stream, SubtitleReaderOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L98"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads a subtitle file from a stream, read to its end. The format comes from the content.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static SubtitleDocument Load(Stream stream, SubtitleReaderOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleReaderOptions.html">SubtitleReaderOptions</a></dt>
+    <dd><p>The encoding, strictness and format, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>Where diagnostics go, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a></dt>
+    <dd><p>The document.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Subtitles_SubtitleDocument_Load_System_IO_Stream_Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Files without a byte order mark that are not UTF-8 are read with the encoding you name, or else as Windows-1252, with a
+// Subtitle.Encoding warning. Output is always UTF-8. Strict turns every repaired line into an exception.
+MediaContext context = new() { Egami = EgamiContext.Default with { Diagnostics = d =&gt; log.Add($"{d.Id}: {d.Message}") } };
+SubtitleDocument old = SubtitleDocument.Load("old.srt", context: context);
+SubtitleDocument latin1 = SubtitleDocument.Load("old.srt", new SubtitleReaderOptions { Encoding = Encoding.Latin1 });
+Console.WriteLine($"{old.Cues[0].PlainText} / {latin1.Cues[0].PlainText}");
+
+try
+{
+    SubtitleDocument.Parse("1\n00:00:01.000 --&gt; 00:00:02.000\nHi\n", options: new SubtitleReaderOptions { Strict = true });
+}
+catch (CorruptDataException e)
+{
+    Console.WriteLine(e.Message);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The data is not SRT, WebVTT, ASS or SSA.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data is broken past repair, or is malformed and <a class="xref" href="Egami.Video.Subtitles.SubtitleReaderOptions.html#Egami_Video_Subtitles_SubtitleReaderOptions_Strict">Strict</a> is set.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Load_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Load*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Load_System_ReadOnlySpan_System_Byte__Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Load(System.ReadOnlySpan{System.Byte},Egami.Video.Subtitles.SubtitleReaderOptions,Egami.Video.MediaContext)">
+  Load(ReadOnlySpan&lt;byte&gt;, SubtitleReaderOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a subtitle file's bytes. The format comes from the content.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static SubtitleDocument Load(ReadOnlySpan&lt;byte&gt; data, SubtitleReaderOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The bytes.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleReaderOptions.html">SubtitleReaderOptions</a></dt>
+    <dd><p>The encoding, strictness and format, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>Where diagnostics go, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a></dt>
+    <dd><p>The document.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Subtitles_SubtitleDocument_Load_System_ReadOnlySpan_System_Byte__Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Files without a byte order mark that are not UTF-8 are read with the encoding you name, or else as Windows-1252, with a
+// Subtitle.Encoding warning. Output is always UTF-8. Strict turns every repaired line into an exception.
+MediaContext context = new() { Egami = EgamiContext.Default with { Diagnostics = d =&gt; log.Add($"{d.Id}: {d.Message}") } };
+SubtitleDocument old = SubtitleDocument.Load("old.srt", context: context);
+SubtitleDocument latin1 = SubtitleDocument.Load("old.srt", new SubtitleReaderOptions { Encoding = Encoding.Latin1 });
+Console.WriteLine($"{old.Cues[0].PlainText} / {latin1.Cues[0].PlainText}");
+
+try
+{
+    SubtitleDocument.Parse("1\n00:00:01.000 --&gt; 00:00:02.000\nHi\n", options: new SubtitleReaderOptions { Strict = true });
+}
+catch (CorruptDataException e)
+{
+    Console.WriteLine(e.Message);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The data is not SRT, WebVTT, ASS or SSA.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The data is broken past repair, or is malformed and <a class="xref" href="Egami.Video.Subtitles.SubtitleReaderOptions.html#Egami_Video_Subtitles_SubtitleReaderOptions_Strict">Strict</a> is set.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Load_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Load*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Load_System_String_Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Load(System.String,Egami.Video.Subtitles.SubtitleReaderOptions,Egami.Video.MediaContext)">
+  Load(string, SubtitleReaderOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads a subtitle file. The format comes from the content, then the extension.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static SubtitleDocument Load(string path, SubtitleReaderOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleReaderOptions.html">SubtitleReaderOptions</a></dt>
+    <dd><p>The encoding, strictness and format, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>Where diagnostics go, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a></dt>
+    <dd><p>The document.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Subtitles_SubtitleDocument_Load_System_String_Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// SRT, WebVTT, ASS and SSA, told apart by their content. Saving an unchanged file gives back its exact bytes; the format
+// comes from the argument, then the extension, then the format it was read as.
+SubtitleDocument subtitles = SubtitleDocument.Load("movie.srt");
+foreach (SubtitleCue cue in subtitles.Cues)
+{
+    Console.WriteLine($"{cue.Start.ToTimeSpan():g} {cue.PlainText}");
+}
+
+subtitles.Save("movie.vtt");
+subtitles.Save("movie.ass");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The file is not SRT, WebVTT, ASS or SSA.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The file is broken past repair, or is malformed and <a class="xref" href="Egami.Video.Subtitles.SubtitleReaderOptions.html#Egami_Video_Subtitles_SubtitleReaderOptions_Strict">Strict</a> is set.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Parse_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Parse*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Parse_System_String_System_Nullable_Egami_Video_Subtitles_SubtitleFormat__Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Parse(System.String,System.Nullable{Egami.Video.Subtitles.SubtitleFormat},Egami.Video.Subtitles.SubtitleReaderOptions,Egami.Video.MediaContext)">
+  Parse(string, SubtitleFormat?, SubtitleReaderOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads subtitles from text already decoded.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static SubtitleDocument Parse(string text, SubtitleFormat? format = null, SubtitleReaderOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html">SubtitleFormat</a>?</dt>
+    <dd><p>The format, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to tell it from the text.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleReaderOptions.html">SubtitleReaderOptions</a></dt>
+    <dd><p>The strictness, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults. The encoding is not used.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>Where diagnostics go, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a></dt>
+    <dd><p>The document.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Subtitles_SubtitleDocument_Parse_System_String_System_Nullable_Egami_Video_Subtitles_SubtitleFormat__Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// ASS keeps its styles, layers, margins and every override tag: the ones Egami understands become fields, the rest stay
+// as written in OtherTags, so a script edited here and saved again still animates.
+SubtitleDocument sign = SubtitleDocument.Parse(script);
+SubtitleCue cue = sign.Cues[0];
+Console.WriteLine($"{cue.Style} at {cue.Position}, {sign.Styles[0].FontSize} pt");
+foreach (SubtitleSpan span in cue.Spans)
+{
+    Console.WriteLine($"'{span.Text}' color {span.Color} tags {span.OtherTags}");
+}
+
+cue.End += MediaTime.FromSeconds(1);
+string saved = sign.ToText();</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The text is not SRT, WebVTT, ASS or SSA.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The text is broken past repair, or is malformed and <a class="xref" href="Egami.Video.Subtitles.SubtitleReaderOptions.html#Egami_Video_Subtitles_SubtitleReaderOptions_Strict">Strict</a> is set.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_ReadTrack_" data-uid="Egami.Video.Subtitles.SubtitleDocument.ReadTrack*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_ReadTrack_Egami_Video_Containers_IDemuxer_Egami_Video_TrackInfo_Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Subtitles.SubtitleDocument.ReadTrack(Egami.Video.Containers.IDemuxer,Egami.Video.TrackInfo,Egami.Video.Subtitles.SubtitleReaderOptions,Egami.Video.MediaContext)">
+  ReadTrack(IDemuxer, TrackInfo, SubtitleReaderOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.Tracks.cs/#L21"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a subtitle track from a demuxer: the packets from where the demuxer is to the end of the file. Packets of other
+tracks are read past and disposed, so open a demuxer for this alone, or collect the packets and use
+<a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html#Egami_Video_Subtitles_SubtitleDocument_FromPackets_Egami_Video_TrackInfo_System_Collections_Generic_IEnumerable_Egami_Video_EncodedPacket__Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext_">FromPackets(TrackInfo, IEnumerable&lt;EncodedPacket&gt;, SubtitleReaderOptions?, MediaContext?)</a> while remuxing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static SubtitleDocument ReadTrack(IDemuxer demuxer, TrackInfo track, SubtitleReaderOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>demuxer</code> <a class="xref" href="Egami.Video.Containers.IDemuxer.html">IDemuxer</a></dt>
+    <dd><p>The demuxer.</p>
+</dd>
+    <dt><code>track</code> <a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a></dt>
+    <dd><p>The subtitle track, one of <a class="xref" href="Egami.Video.Containers.IDemuxer.html#Egami_Video_Containers_IDemuxer_Tracks">Tracks</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleReaderOptions.html">SubtitleReaderOptions</a></dt>
+    <dd><p>The strictness, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>Where diagnostics go, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a></dt>
+    <dd><p>The document, in the format the track's codec carries (SRT for mov_text).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Subtitles_SubtitleDocument_ReadTrack_Egami_Video_Containers_IDemuxer_Egami_Video_TrackInfo_Egami_Video_Subtitles_SubtitleReaderOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Read a subtitle track out of a container: mov_text, WebVTT, SRT and ASS tracks become a document.
+using (IDemuxer movie = MediaFile.OpenDemuxer("subtitled.mp4"))
+{
+    TrackInfo track = movie.Tracks.First(t =&gt; SubtitleDocument.IsTextCodec(t.CodecId));
+    SubtitleDocument.ReadTrack(movie, track).Save("subtitled.srt");
+}
+
+// Add one to a copy of a video: the writer makes the track and its packets, merged in time order with the video's.
+using IDemuxer input = MediaFile.OpenDemuxer("movie.webm");
+SubtitleTrackWriter subtitles = new(captions, input.Tracks.Count + 1, SubtitleTrackWriter.CodecIdFor("webm", captions.Format));
+using (IMuxer output = MediaFile.CreateMuxer("captioned.webm", [.. input.Tracks, subtitles.Track with { Language = "eng" }]))
+{
+    int next = 0;
+    while (input.ReadPacket() is { } packet)
+    {
+        using (packet)
+        {
+            for (; next &lt; subtitles.Packets.Count &amp;&amp; subtitles.Packets[next].Timestamp &lt;= packet.Timestamp; next++)
+            {
+                output.WritePacket(subtitles.Packets[next]);
+            }
+
+            output.WritePacket(packet);
+        }
+    }
+
+    for (; next &lt; subtitles.Packets.Count; next++)
+    {
+        output.WritePacket(subtitles.Packets[next]);
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The track's codec is not a text subtitle codec: see <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html#Egami_Video_Subtitles_SubtitleDocument_IsTextCodec_System_String_">IsTextCodec(string)</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Save_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Save*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Save_System_IO_Stream_System_Nullable_Egami_Video_Subtitles_SubtitleFormat__Egami_Video_Subtitles_SubtitleWriterOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Save(System.IO.Stream,System.Nullable{Egami.Video.Subtitles.SubtitleFormat},Egami.Video.Subtitles.SubtitleWriterOptions,Egami.Video.MediaContext)">
+  Save(Stream, SubtitleFormat?, SubtitleWriterOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L181"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the document to a stream.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream stream, SubtitleFormat? format = null, SubtitleWriterOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html">SubtitleFormat</a>?</dt>
+    <dd><p>The format to write, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html#Egami_Video_Subtitles_SubtitleDocument_Format">Format</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleWriterOptions.html">SubtitleWriterOptions</a></dt>
+    <dd><p>The byte order mark and line ending, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>Where <code>Subtitle.Dropped</code> diagnostics go, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Subtitles_SubtitleDocument_Save_System_IO_Stream_System_Nullable_Egami_Video_Subtitles_SubtitleFormat__Egami_Video_Subtitles_SubtitleWriterOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// SRT, WebVTT, ASS and SSA, told apart by their content. Saving an unchanged file gives back its exact bytes; the format
+// comes from the argument, then the extension, then the format it was read as.
+SubtitleDocument subtitles = SubtitleDocument.Load("movie.srt");
+foreach (SubtitleCue cue in subtitles.Cues)
+{
+    Console.WriteLine($"{cue.Start.ToTimeSpan():g} {cue.PlainText}");
+}
+
+subtitles.Save("movie.vtt");
+subtitles.Save("movie.ass");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The format is <a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html#Egami_Video_Subtitles_SubtitleFormat_Ssa">Ssa</a>, which is read only.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Save_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Save*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Save_System_String_System_Nullable_Egami_Video_Subtitles_SubtitleFormat__Egami_Video_Subtitles_SubtitleWriterOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Save(System.String,System.Nullable{Egami.Video.Subtitles.SubtitleFormat},Egami.Video.Subtitles.SubtitleWriterOptions,Egami.Video.MediaContext)">
+  Save(string, SubtitleFormat?, SubtitleWriterOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Saves the document. The format comes from <code class="paramref">format</code>, then the file extension, then <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html#Egami_Video_Subtitles_SubtitleDocument_Format">Format</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(string path, SubtitleFormat? format = null, SubtitleWriterOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html">SubtitleFormat</a>?</dt>
+    <dd><p>The format to write, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleWriterOptions.html">SubtitleWriterOptions</a></dt>
+    <dd><p>The byte order mark and line ending, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>Where <code>Subtitle.Dropped</code> diagnostics go, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Subtitles_SubtitleDocument_Save_System_String_System_Nullable_Egami_Video_Subtitles_SubtitleFormat__Egami_Video_Subtitles_SubtitleWriterOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// SRT, WebVTT, ASS and SSA, told apart by their content. Saving an unchanged file gives back its exact bytes; the format
+// comes from the argument, then the extension, then the format it was read as.
+SubtitleDocument subtitles = SubtitleDocument.Load("movie.srt");
+foreach (SubtitleCue cue in subtitles.Cues)
+{
+    Console.WriteLine($"{cue.Start.ToTimeSpan():g} {cue.PlainText}");
+}
+
+subtitles.Save("movie.vtt");
+subtitles.Save("movie.ass");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The format is <a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html#Egami_Video_Subtitles_SubtitleFormat_Ssa">Ssa</a>, which is read only.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Scale_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Scale*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Scale_Egami_Video_Rational_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Scale(Egami.Video.Rational)">
+  Scale(Rational)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.Timing.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Multiplies every time by <code class="paramref">factor</code>, exactly. To fit subtitles made for 23.976 fps video to the same
+video sped up to 25 fps, scale by <code>new Rational(24000, 25025)</code> (23.976 / 25).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Scale(Rational factor)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>factor</code> <a class="xref" href="Egami.Video.Rational.html">Rational</a></dt>
+    <dd><p>The factor. Must be positive.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">factor</code> is zero or negative.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Shift_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Shift*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Shift_Egami_Video_MediaTime_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Shift(Egami.Video.MediaTime)">
+  Shift(MediaTime)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.Timing.cs/#L8"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Moves every cue by <code class="paramref">offset</code>: positive to show later, negative to show sooner. Exact for any time base.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Shift(MediaTime offset)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>offset</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>How far to move.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Sort_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Sort*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Sort" data-uid="Egami.Video.Subtitles.SubtitleDocument.Sort">
+  Sort()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.Timing.cs/#L98"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Puts the cues in order of start time, then end time; cues that start together keep their order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Sort()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_Sync_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Sync*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_Sync_Egami_Video_MediaTime_Egami_Video_MediaTime_Egami_Video_MediaTime_Egami_Video_MediaTime_" data-uid="Egami.Video.Subtitles.SubtitleDocument.Sync(Egami.Video.MediaTime,Egami.Video.MediaTime,Egami.Video.MediaTime,Egami.Video.MediaTime)">
+  Sync(MediaTime, MediaTime, MediaTime, MediaTime)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.Timing.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Retimes every cue by two sync points: what is at <code class="paramref">from1</code> moves to <code class="paramref">to1</code>, what is at
+<code class="paramref">from2</code> to <code class="paramref">to2</code>, and everything else in proportion. Fixes both an offset and a
+speed difference at once; each time is computed from its original, rounded to the nanosecond, so nothing drifts.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Sync(MediaTime from1, MediaTime to1, MediaTime from2, MediaTime to2)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>from1</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>A time in the subtitles, such as the first line's start.</p>
+</dd>
+    <dt><code>to1</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>Where it should be in the video.</p>
+</dd>
+    <dt><code>from2</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>A second time in the subtitles, far from the first, such as the last line's start.</p>
+</dd>
+    <dt><code>to2</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>Where it should be in the video.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">from1</code> and <code class="paramref">from2</code> are the same time.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleDocument_ToText_" data-uid="Egami.Video.Subtitles.SubtitleDocument.ToText*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleDocument_ToText_System_Nullable_Egami_Video_Subtitles_SubtitleFormat__Egami_Video_Subtitles_SubtitleWriterOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Subtitles.SubtitleDocument.ToText(System.Nullable{Egami.Video.Subtitles.SubtitleFormat},Egami.Video.Subtitles.SubtitleWriterOptions,Egami.Video.MediaContext)">
+  ToText(SubtitleFormat?, SubtitleWriterOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.cs/#L196"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the document as text in a format, without a byte order mark.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string ToText(SubtitleFormat? format = null, SubtitleWriterOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>format</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html">SubtitleFormat</a>?</dt>
+    <dd><p>The format to write, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html#Egami_Video_Subtitles_SubtitleDocument_Format">Format</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleWriterOptions.html">SubtitleWriterOptions</a></dt>
+    <dd><p>The line ending, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>Where <code>Subtitle.Dropped</code> diagnostics go, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Subtitles_SubtitleDocument_ToText_System_Nullable_Egami_Video_Subtitles_SubtitleFormat__Egami_Video_Subtitles_SubtitleWriterOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Cues hold spans of styled text. Times are exact: shifting by a frame or scaling 23.976 to 25 fps keeps the fraction.
+subtitles.Cues.Add(new SubtitleCue(MediaTime.FromSeconds(7), MediaTime.FromSeconds(9),
+[
+    new SubtitleSpan("Out "),
+    new SubtitleSpan("where?") { Bold = true, Color = new Rgba8(255, 255, 0, 255) },
+]));
+
+subtitles.Shift(MediaTime.FromSeconds(-0.5));
+subtitles.Scale(new Rational(24000, 25025));
+subtitles.Clip(MediaTime.Zero, MediaTime.FromSeconds(8));
+subtitles.FixOverlaps();
+string srt = subtitles.ToText(SubtitleFormat.Srt);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The format is <a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html#Egami_Video_Subtitles_SubtitleFormat_Ssa">Ssa</a>, which is read only.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleDocument.Tracks.cs/#L5" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -12599,6 +12599,258 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitleAlignment.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitleAlignment.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitleAlignment",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitleAlignment.yml\" sourcestartlinenumber=\"1\">Where a cue sits on the screen, as the keys of a numeric keypad lay out (ASS <code>\\an</code>): 1 is bottom left, 2 bottom\ncenter (the usual place), 9 top right.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitleAttachment.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitleAttachment.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitleAttachment",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitleAttachment.yml\" sourcestartlinenumber=\"1\">An embedded file of an ASS script (its <code>[Fonts]</code> or <code>[Graphics]</code> section), decoded.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitleCue.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitleCue.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitleCue",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitleCue.yml\" sourcestartlinenumber=\"1\">One subtitle: when it shows, its text as <xref href=\"Egami.Video.Subtitles.SubtitleSpan\" data-throw-if-not-resolved=\"false\"></xref> runs, and where and how it is placed. Read from SRT,\nWebVTT or ASS into the same fields, so a cue converts between them; a cue that is not changed is written back to its own\nformat exactly as it was read.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitleDocument.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitleDocument.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitleDocument",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitleDocument.yml\" sourcestartlinenumber=\"1\">A subtitle file in memory: its cues, and the styles, regions and header its format carries. Loads SRT, WebVTT, ASS and SSA\ninto one model, saves any of SRT, WebVTT and ASS, and shifts, scales, syncs and clips the timing. A document saved in the\nformat it was read from, unchanged, gives back the same bytes; changed cues are written in the format's canonical form, and\nwhat a target format cannot hold is reported once per kind as <code>Subtitle.Dropped</code>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitleFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitleFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitleFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitleFormat.yml\" sourcestartlinenumber=\"1\">A text subtitle format <xref href=\"Egami.Video.Subtitles.SubtitleDocument\" data-throw-if-not-resolved=\"false\"></xref> reads and writes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitlePosition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitlePosition.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitlePosition",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitlePosition.yml\" sourcestartlinenumber=\"1\">An exact place for a cue (ASS <code>\\pos</code>), in the script's pixels (<code>PlayResX</code> by <code>PlayResY</code>, 384 by 288 when the\nscript does not say). The cue's <xref href=\"Egami.Video.Subtitles.SubtitleCue.Alignment\" data-throw-if-not-resolved=\"false\"></xref> says which point of the text sits there.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitleReaderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitleReaderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitleReaderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitleReaderOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Subtitles.SubtitleDocument\" data-throw-if-not-resolved=\"false\"></xref> reads a subtitle file.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitleRegion.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitleRegion.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitleRegion",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitleRegion.yml\" sourcestartlinenumber=\"1\">A WebVTT region (a <code>REGION</code> block): a box cues can show in, which scrolls lines up as new cues arrive. Cues name it\nin <xref href=\"Egami.Video.Subtitles.WebVttCueSettings.Region\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitleSpan.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitleSpan.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitleSpan",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitleSpan.yml\" sourcestartlinenumber=\"1\">A run of a cue's text with one look: bold, italic, color, font and so on, as SRT tags, WebVTT cue tags and ASS override tags\nset them. Line breaks are <code>\\n</code> inside <xref href=\"Egami.Video.Subtitles.SubtitleSpan.Text\" data-throw-if-not-resolved=\"false\"></xref>. Fields a format cannot show are dropped when it is written, and\nreported as <code>Subtitle.Dropped</code>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitleStyle.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitleStyle.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitleStyle",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitleStyle.yml\" sourcestartlinenumber=\"1\">A named ASS or SSA style (a <code>Style:</code> line of <code>[V4+ Styles]</code> or <code>[V4 Styles]</code>): the font, colors, outline and\nplace cues get unless their override tags say otherwise. Colors are straight RGBA, with ASS's inverted alpha already\nturned around (255 is opaque).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitleTrackWriter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitleTrackWriter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitleTrackWriter",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitleTrackWriter.yml\" sourcestartlinenumber=\"1\">Turns a <xref href=\"Egami.Video.Subtitles.SubtitleDocument\" data-throw-if-not-resolved=\"false\"></xref> into a subtitle track for a container: the <xref href=\"Egami.Video.Subtitles.SubtitleTrackWriter.Track\" data-throw-if-not-resolved=\"false\"></xref> to give the muxer and\nthe <xref href=\"Egami.Video.Subtitles.SubtitleTrackWriter.Packets\" data-throw-if-not-resolved=\"false\"></xref> to write, in time order. Matroska takes SRT, WebVTT and ASS tracks; WebM takes WebVTT\n(<xref href=\"Egami.Video.CodecIds.WebMWebVtt\" data-throw-if-not-resolved=\"false\"></xref>); MP4 takes mov_text and WebVTT (<xref href=\"Egami.Video.CodecIds.MovText\" data-throw-if-not-resolved=\"false\"></xref>,\n<xref href=\"Egami.Video.CodecIds.Mp4WebVtt\" data-throw-if-not-resolved=\"false\"></xref>). What the codec cannot hold is reported as <code>Subtitle.Dropped</code>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.SubtitleWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.SubtitleWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.SubtitleWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.SubtitleWriterOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Subtitles.SubtitleDocument\" data-throw-if-not-resolved=\"false\"></xref> writes a subtitle file. Output is always UTF-8.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.WebVttAlign.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.WebVttAlign.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.WebVttAlign",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.WebVttAlign.yml\" sourcestartlinenumber=\"1\">How a WebVTT cue's text lines are aligned in its box (<code>align</code> setting).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.WebVttCueSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.WebVttCueSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.WebVttCueSettings",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.WebVttCueSettings.yml\" sourcestartlinenumber=\"1\">A WebVTT cue's settings (the text after the timings: <code>line:0 position:20% align:start</code>), with the defaults the W3C\nspec gives and the same meaning as the browser's <code>VTTCue</code>. Read from WebVTT; WebVTT output writes them back, and\nbuilds them from <xref href=\"Egami.Video.Subtitles.SubtitleCue.Alignment\" data-throw-if-not-resolved=\"false\"></xref> for cues that have none.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.WebVttLineAlign.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.WebVttLineAlign.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.WebVttLineAlign",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.WebVttLineAlign.yml\" sourcestartlinenumber=\"1\">Which edge of a WebVTT cue box its line places (the part after the comma in <code>line:50%,center</code>).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.WebVttPositionAlign.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.WebVttPositionAlign.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.WebVttPositionAlign",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.WebVttPositionAlign.yml\" sourcestartlinenumber=\"1\">Which point of a WebVTT cue box its position places (the part after the comma in <code>position:10%,line-left</code>).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.WebVttVertical.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.WebVttVertical.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles.WebVttVertical",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Subtitles.WebVttVertical.yml\" sourcestartlinenumber=\"1\">A WebVTT cue's writing direction (<code>vertical</code> setting).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Subtitles.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Subtitles.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Subtitles",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.TrackInfo.yml",
       "output": {
         ".html": {
@@ -13488,6 +13740,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/streaming-mp4.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/subtitles.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/subtitles.html"
         }
       },
       "version": ""

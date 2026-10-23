@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class SubtitleTrackWriter | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class SubtitleTrackWriter | Egami ">
+      
+      <meta name="description" content="Turns a  into a subtitle track for a container: the  to give the muxer and the  to write, in time order. Matroska takes SRT, WebVTT and ASS tracks; WebM takes WebVTT (); MP4 takes mov_text and WebVTT (, ). What the codec cannot hold is reported as Subtitle.Dropped.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Subtitles_SubtitleTrackWriter.md&amp;value=---%0Auid%3A%20Egami.Video.Subtitles.SubtitleTrackWriter%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Subtitles.SubtitleTrackWriter">
+
+
+
+  <h1 id="Egami_Video_Subtitles_SubtitleTrackWriter" data-uid="Egami.Video.Subtitles.SubtitleTrackWriter" class="text-break">
+Class SubtitleTrackWriter  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleTrackWriter.cs/#L14"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Subtitles.html">Subtitles</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Turns a <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a> into a subtitle track for a container: the <a class="xref" href="Egami.Video.Subtitles.SubtitleTrackWriter.html#Egami_Video_Subtitles_SubtitleTrackWriter_Track">Track</a> to give the muxer and
+the <a class="xref" href="Egami.Video.Subtitles.SubtitleTrackWriter.html#Egami_Video_Subtitles_SubtitleTrackWriter_Packets">Packets</a> to write, in time order. Matroska takes SRT, WebVTT and ASS tracks; WebM takes WebVTT
+(<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_WebMWebVtt">WebMWebVtt</a>); MP4 takes mov_text and WebVTT (<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_MovText">MovText</a>,
+<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Mp4WebVtt">Mp4WebVtt</a>). What the codec cannot hold is reported as <code>Subtitle.Dropped</code>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class SubtitleTrackWriter</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">SubtitleTrackWriter</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Subtitles_SubtitleTrackWriter_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Read a subtitle track out of a container: mov_text, WebVTT, SRT and ASS tracks become a document.
+using (IDemuxer movie = MediaFile.OpenDemuxer("subtitled.mp4"))
+{
+    TrackInfo track = movie.Tracks.First(t =&gt; SubtitleDocument.IsTextCodec(t.CodecId));
+    SubtitleDocument.ReadTrack(movie, track).Save("subtitled.srt");
+}
+
+// Add one to a copy of a video: the writer makes the track and its packets, merged in time order with the video's.
+using IDemuxer input = MediaFile.OpenDemuxer("movie.webm");
+SubtitleTrackWriter subtitles = new(captions, input.Tracks.Count + 1, SubtitleTrackWriter.CodecIdFor("webm", captions.Format));
+using (IMuxer output = MediaFile.CreateMuxer("captioned.webm", [.. input.Tracks, subtitles.Track with { Language = "eng" }]))
+{
+    int next = 0;
+    while (input.ReadPacket() is { } packet)
+    {
+        using (packet)
+        {
+            for (; next &lt; subtitles.Packets.Count &amp;&amp; subtitles.Packets[next].Timestamp &lt;= packet.Timestamp; next++)
+            {
+                output.WritePacket(subtitles.Packets[next]);
+            }
+
+            output.WritePacket(packet);
+        }
+    }
+
+    for (; next &lt; subtitles.Packets.Count; next++)
+    {
+        output.WritePacket(subtitles.Packets[next]);
+    }
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_Subtitles_SubtitleTrackWriter__ctor_" data-uid="Egami.Video.Subtitles.SubtitleTrackWriter.#ctor*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleTrackWriter__ctor_Egami_Video_Subtitles_SubtitleDocument_System_Int32_System_String_Egami_Video_MediaContext_" data-uid="Egami.Video.Subtitles.SubtitleTrackWriter.#ctor(Egami.Video.Subtitles.SubtitleDocument,System.Int32,System.String,Egami.Video.MediaContext)">
+  SubtitleTrackWriter(SubtitleDocument, int, string?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleTrackWriter.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates the track and its packets.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SubtitleTrackWriter(SubtitleDocument document, int trackNumber, string? codecId = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>document</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a></dt>
+    <dd><p>The subtitles.</p>
+</dd>
+    <dt><code>trackNumber</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number the track has among the muxer's tracks.</p>
+</dd>
+    <dt><code>codecId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The codec, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the one that keeps the document's own format in Matroska:
+<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_SubRip">SubRip</a>, <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_WebVtt">WebVtt</a> or <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Ass">Ass</a>. <a class="xref" href="Egami.Video.Subtitles.SubtitleTrackWriter.html#Egami_Video_Subtitles_SubtitleTrackWriter_CodecIdFor_System_String_Egami_Video_Subtitles_SubtitleFormat_">CodecIdFor(string, SubtitleFormat)</a> picks
+one for a container.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>Where <code>Subtitle.Dropped</code> diagnostics go, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The codec is not one of the six text codecs Egami.Video writes.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Subtitles_SubtitleTrackWriter_Packets_" data-uid="Egami.Video.Subtitles.SubtitleTrackWriter.Packets*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleTrackWriter_Packets" data-uid="Egami.Video.Subtitles.SubtitleTrackWriter.Packets">
+  Packets
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleTrackWriter.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the packets, in time order, each with its duration. MP4 tracks get a packet for every gap too, since MP4 samples
+follow each other without holes, and one for each span of time where the same cues show, since they cannot overlap.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;EncodedPacket&gt; Packets { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.EncodedPacket.html">EncodedPacket</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Subtitles_SubtitleTrackWriter_Track_" data-uid="Egami.Video.Subtitles.SubtitleTrackWriter.Track*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleTrackWriter_Track" data-uid="Egami.Video.Subtitles.SubtitleTrackWriter.Track">
+  Track
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleTrackWriter.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the track to give the muxer. It is a record: set <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_Language">Language</a>, <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_Name">Name</a> or
+<a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_IsDefault">IsDefault</a> with <code>with</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TrackInfo Track { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Subtitles_SubtitleTrackWriter_CodecIdFor_" data-uid="Egami.Video.Subtitles.SubtitleTrackWriter.CodecIdFor*"></a>
+
+  <h3 id="Egami_Video_Subtitles_SubtitleTrackWriter_CodecIdFor_System_String_Egami_Video_Subtitles_SubtitleFormat_" data-uid="Egami.Video.Subtitles.SubtitleTrackWriter.CodecIdFor(System.String,Egami.Video.Subtitles.SubtitleFormat)">
+  CodecIdFor(string, SubtitleFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleTrackWriter.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Picks the codec for subtitles in a container: what keeps the most of <code class="paramref">format</code> there.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string CodecIdFor(string formatNameOrExtension, SubtitleFormat format)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>formatNameOrExtension</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The container, as a format name or file extension: mkv, mka, webm, mp4, m4v or mov.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html">SubtitleFormat</a></dt>
+    <dd><p>The subtitles' format.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The codec id.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The container holds no text subtitles.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Subtitles/SubtitleTrackWriter.cs/#L14" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

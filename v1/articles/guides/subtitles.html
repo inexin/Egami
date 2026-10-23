@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Subtitles | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Subtitles | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/subtitles.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="subtitles">Subtitles</h1>
+
+<p>Egami.Video reads and writes text subtitle files in the <code>Egami.Video.Subtitles</code> namespace: SubRip (.srt), WebVTT (.vtt),
+Advanced SubStation Alpha (.ass) and SubStation Alpha v4 (.ssa, read only). It is fully managed, with no rendering: cues are
+text with styling and placement, ready to edit, retime, convert or show.</p>
+<ul>
+<li>Reading is lenient, as players are. A malformed line is repaired and reported as <code>Subtitle.Repaired</code>; a
+<code>SubtitleReaderOptions</code> with <code>Strict</code> set throws a <code>CorruptDataException</code> instead.</li>
+<li>WebVTT is parsed exactly as the W3C spec says, and passes the web-platform-tests parsing suite.</li>
+<li>An unchanged file saved in its own format gives back the same bytes. Edited cues are written in a canonical form; the rest
+of the file stays as it was.</li>
+<li>Converting reports what the target format cannot hold as <code>Subtitle.Dropped</code>, once per kind of feature.</li>
+</ul>
+<h2 id="loading-and-saving">Loading and saving</h2>
+<p><code>SubtitleDocument.Load</code> reads a file, stream or bytes, and <code>Parse</code> reads a string. The format is found from the content
+(<code>DetectFormat</code> tells it alone); <code>SubtitleReaderOptions.Format</code> forces one. <code>Save</code> writes a file or stream, and <code>ToText</code> a
+string: the <code>SubtitleFormat</code> comes from the argument, then the file's extension, then the document's <code>Format</code>.
+<code>SubtitleWriterOptions</code> sets the byte order mark and the line ending; by default they follow the source file when the
+format is the same, and are &quot;\n&quot; for WebVTT and &quot;\r\n&quot; for the others.</p>
+<pre><code class="lang-csharp">// SRT, WebVTT, ASS and SSA, told apart by their content. Saving an unchanged file gives back its exact bytes; the format
+// comes from the argument, then the extension, then the format it was read as.
+SubtitleDocument subtitles = SubtitleDocument.Load(&quot;movie.srt&quot;);
+foreach (SubtitleCue cue in subtitles.Cues)
+{
+    Console.WriteLine($&quot;{cue.Start.ToTimeSpan():g} {cue.PlainText}&quot;);
+}
+
+subtitles.Save(&quot;movie.vtt&quot;);
+subtitles.Save(&quot;movie.ass&quot;);
+</code></pre><h2 id="cues-and-spans">Cues and spans</h2>
+<p>A document's <code>Cues</code> are <code>SubtitleCue</code> objects: a <code>Start</code> and an <code>End</code> as exact <code>MediaTime</code> values, an <code>Id</code>, and <code>Spans</code> of
+text. A <code>SubtitleSpan</code> is a run of text with one look: <code>Bold</code>, <code>Italic</code>, <code>Underline</code>, <code>Strikeout</code>, a <code>Color</code>, a <code>Font</code> and
+<code>FontSize</code>, a WebVTT <code>Voice</code>, <code>Classes</code>, <code>Language</code> and <code>Ruby</code>, a karaoke <code>Timestamp</code>, ASS tags Egami does not model in
+<code>OtherTags</code>, and <code>IsDrawing</code> for ASS vector drawings. <code>PlainText</code> joins the spans' text; line breaks are &quot;\n&quot; in every format.</p>
+<p>Placement is the cue's <code>Alignment</code>, a <code>SubtitleAlignment</code> laid out like a phone keypad (<code>BottomCenter</code> is the default, 2),
+and an exact <code>Position</code> (a <code>SubtitlePosition</code> in script pixels, ASS <code>\pos</code>). <code>RawText</code> keeps the cue's text as the file had
+it.</p>
+<p>The document retimes all cues, karaoke times included, without rounding: <code>Shift</code> adds a time, <code>Scale</code> multiplies by a
+<code>Rational</code> (24000/25025 turns 23.976 fps timing into 25 fps), and <code>Sync</code> fixes an offset and a drift together from two
+pairs of times. <code>Clip</code> keeps the cues inside a range and cuts the ones across its edges, <code>Sort</code> orders the cues, and
+<code>FixOverlaps</code> ends each cue before the next one on the same layer starts. Times are rounded only when written: to
+milliseconds for SRT and WebVTT, centiseconds for ASS.</p>
+<pre><code class="lang-csharp">// Cues hold spans of styled text. Times are exact: shifting by a frame or scaling 23.976 to 25 fps keeps the fraction.
+subtitles.Cues.Add(new SubtitleCue(MediaTime.FromSeconds(7), MediaTime.FromSeconds(9),
+[
+    new SubtitleSpan(&quot;Out &quot;),
+    new SubtitleSpan(&quot;where?&quot;) { Bold = true, Color = new Rgba8(255, 255, 0, 255) },
+]));
+
+subtitles.Shift(MediaTime.FromSeconds(-0.5));
+subtitles.Scale(new Rational(24000, 25025));
+subtitles.Clip(MediaTime.Zero, MediaTime.FromSeconds(8));
+subtitles.FixOverlaps();
+string srt = subtitles.ToText(SubtitleFormat.Srt);
+</code></pre><h2 id="ass-and-ssa">ASS and SSA</h2>
+<p>ASS documents keep their <code>ScriptInfo</code> lines, <code>Styles</code> (<code>SubtitleStyle</code>: font, colors, outline, shadow, margins and the
+rest of a V4+ style line), embedded fonts and graphics as <code>Attachments</code> (<code>SubtitleAttachment</code>, decoded from the file's
+uuencoding), and any other section as written. A cue has the event's <code>Style</code>, <code>Actor</code>, <code>Layer</code>, <code>IsComment</code>,
+<code>MarginLeft</code>, <code>MarginRight</code>, <code>MarginVertical</code> and <code>Effect</code>.</p>
+<p>The override tags <code>\b</code>, <code>\i</code>, <code>\u</code>, <code>\s</code>, <code>\c</code> and <code>\1c</code>, <code>\fn</code>, <code>\fs</code> and <code>\k</code> become span fields, and <code>\an</code>, <code>\a</code> and
+<code>\pos</code> cue fields. Every other tag, such as <code>\blur</code>, <code>\fad</code> or <code>\t</code>, stays as written in the span's <code>OtherTags</code>, so an
+animated script loaded, retimed and saved still plays the same. SSA files are read the same way, with their legacy
+alignment numbers mapped; they are written as ASS.</p>
+<pre><code class="lang-csharp">// ASS keeps its styles, layers, margins and every override tag: the ones Egami understands become fields, the rest stay
+// as written in OtherTags, so a script edited here and saved again still animates.
+SubtitleDocument sign = SubtitleDocument.Parse(script);
+SubtitleCue cue = sign.Cues[0];
+Console.WriteLine($&quot;{cue.Style} at {cue.Position}, {sign.Styles[0].FontSize} pt&quot;);
+foreach (SubtitleSpan span in cue.Spans)
+{
+    Console.WriteLine($&quot;'{span.Text}' color {span.Color} tags {span.OtherTags}&quot;);
+}
+
+cue.End += MediaTime.FromSeconds(1);
+string saved = sign.ToText();
+</code></pre><h2 id="webvtt">WebVTT</h2>
+<p>A WebVTT cue's settings are in <code>SubtitleCue.WebVtt</code>, a <code>WebVttCueSettings</code> with the browser <code>VTTCue</code>'s meaning: <code>Vertical</code>
+(<code>WebVttVertical</code>), <code>Line</code>, <code>SnapToLines</code> and <code>LineAlign</code> (<code>WebVttLineAlign</code>), <code>Position</code> and <code>PositionAlign</code>
+(<code>WebVttPositionAlign</code>), <code>Size</code>, <code>Align</code> (<code>WebVttAlign</code>) and <code>Region</code>. The document's <code>Regions</code> are <code>SubtitleRegion</code>
+blocks, and its <code>StyleSheets</code> the <code>STYLE</code> blocks' CSS, kept as text. <code>HeaderText</code> is the text after <code>WEBVTT</code> on the first
+line.</p>
+<p>Cue text keeps voices (<code>&lt;v&gt;</code>), classes (<code>&lt;c.name&gt;</code>), languages (<code>&lt;lang&gt;</code>), ruby and karaoke timestamps. Named character
+references use the full HTML table.</p>
+<pre><code class="lang-csharp">// WebVTT is read as the W3C spec says, the way browsers do: cue settings, regions, voices, classes, ruby and karaoke
+// timestamps. Writing to another format reports what it cannot keep as Subtitle.Dropped, once per kind.
+SubtitleDocument captions = SubtitleDocument.Parse(vtt);
+WebVttCueSettings settings = captions.Cues[0].WebVtt!;
+Console.WriteLine($&quot;{settings.Region} {settings.Align}; {captions.Regions[0].Lines} lines&quot;);
+Console.WriteLine($&quot;{captions.Cues[0].Spans[0].Voice}: {captions.Cues[0].PlainText}&quot;);
+
+captions.Cues[1].WebVtt = captions.Cues[1].WebVtt! with { Line = 85 };
+string ass = captions.ToText(SubtitleFormat.Ass);
+</code></pre><h2 id="converting-between-formats">Converting between formats</h2>
+<p>Any document saves to any writable format. Alignment and positions carry across: a WebVTT cue placed with <code>line</code> and
+<code>position</code> percentages becomes an ASS <code>\an</code> and <code>\pos</code>, and an ASS alignment becomes WebVTT <code>line</code> and <code>align</code> settings.
+SRT keeps bold, italic, underline, colors and fonts as the common <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code>, <code>&lt;u&gt;</code> and <code>&lt;font&gt;</code> tags and alignment as
+<code>{\an8}</code>. What a format cannot hold is left out and reported once per kind, such as ASS animation tags in SRT, or colors in
+WebVTT.</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>SRT</th>
+<th>WebVTT</th>
+<th>ASS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bold, italic, underline</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Strikeout, colors, fonts</td>
+<td>Yes</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Alignment</td>
+<td><code>{\an}</code> tag</td>
+<td>Settings</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Exact position</td>
+<td>No</td>
+<td>Percentages</td>
+<td><code>\pos</code></td>
+</tr>
+<tr>
+<td>Voices, classes, languages, ruby</td>
+<td>No</td>
+<td>Yes</td>
+<td>Actor only</td>
+</tr>
+<tr>
+<td>Karaoke timing</td>
+<td>No</td>
+<td>Timestamps</td>
+<td><code>\k</code></td>
+</tr>
+<tr>
+<td>Styles, layers, margins, effects, other tags</td>
+<td>No</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="subtitle-tracks-in-containers">Subtitle tracks in containers</h2>
+<p><code>SubtitleDocument.ReadTrack</code> reads a subtitle track from an <code>IDemuxer</code>, and <code>FromPackets</code> reads one from packets you already
+hold, for example while remuxing. <code>IsTextCodec</code> tells which codecs they read. <code>SubtitleTrackWriter</code> turns a document into a
+track: its <code>Track</code> goes to the muxer, and its <code>Packets</code> go to the muxer in time order with the other tracks' packets.
+<code>CodecIdFor</code> picks the codec for a container:</p>
+<table>
+<thead>
+<tr>
+<th>Container</th>
+<th>Codecs</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Matroska</td>
+<td><code>CodecIds.SubRip</code>, <code>CodecIds.WebVtt</code>, <code>CodecIds.Ass</code> (and <code>CodecIds.Ssa</code>, read only)</td>
+<td>Each cue is a block with its duration. ASS keeps its header in the track; WebVTT keeps its header, settings and identifiers.</td>
+</tr>
+<tr>
+<td>WebM</td>
+<td><code>CodecIds.WebMWebVtt</code></td>
+<td>The identifier, settings and text in each block, as WebM and FFmpeg store them.</td>
+</tr>
+<tr>
+<td>MP4</td>
+<td><code>CodecIds.MovText</code>, <code>CodecIds.Mp4WebVtt</code></td>
+<td>Samples cannot overlap or leave gaps, so the writer adds empty samples and splits overlapping cues. The reader joins them again.</td>
+</tr>
+</tbody>
+</table>
+<p>mov_text keeps bold, italic, underline, colors and font sizes; alignment, positions and strikeout are reported as
+<code>Subtitle.Dropped</code>. Tracks written by FFmpeg, MKVToolNix and GPAC MP4Box read back to the cues of their source file, and
+those tools read the tracks Egami.Video writes.</p>
+<pre><code class="lang-csharp">// Read a subtitle track out of a container: mov_text, WebVTT, SRT and ASS tracks become a document.
+using (IDemuxer movie = MediaFile.OpenDemuxer(&quot;subtitled.mp4&quot;))
+{
+    TrackInfo track = movie.Tracks.First(t =&gt; SubtitleDocument.IsTextCodec(t.CodecId));
+    SubtitleDocument.ReadTrack(movie, track).Save(&quot;subtitled.srt&quot;);
+}
+
+// Add one to a copy of a video: the writer makes the track and its packets, merged in time order with the video's.
+using IDemuxer input = MediaFile.OpenDemuxer(&quot;movie.webm&quot;);
+SubtitleTrackWriter subtitles = new(captions, input.Tracks.Count + 1, SubtitleTrackWriter.CodecIdFor(&quot;webm&quot;, captions.Format));
+using (IMuxer output = MediaFile.CreateMuxer(&quot;captioned.webm&quot;, [.. input.Tracks, subtitles.Track with { Language = &quot;eng&quot; }]))
+{
+    int next = 0;
+    while (input.ReadPacket() is { } packet)
+    {
+        using (packet)
+        {
+            for (; next &lt; subtitles.Packets.Count &amp;&amp; subtitles.Packets[next].Timestamp &lt;= packet.Timestamp; next++)
+            {
+                output.WritePacket(subtitles.Packets[next]);
+            }
+
+            output.WritePacket(packet);
+        }
+    }
+
+    for (; next &lt; subtitles.Packets.Count; next++)
+    {
+        output.WritePacket(subtitles.Packets[next]);
+    }
+}
+</code></pre><h2 id="encodings-and-diagnostics">Encodings and diagnostics</h2>
+<p>Files are read by their byte order mark (UTF-8, UTF-16 little or big-endian), then as UTF-8 when the bytes are valid UTF-8,
+then in <code>SubtitleReaderOptions.Encoding</code> when it is set. Without one, WebVTT is UTF-8 (as its spec says), and other files
+are read as UTF-16 when they look like it, or else as Windows-1252, with a <code>Subtitle.Encoding</code> warning. Output is always
+UTF-8. The warnings go to the <code>Diagnostics</code> handler of the <code>MediaContext</code>'s <code>Egami</code> context; see
+<a href="../diagnostics.html">Diagnostics</a>.</p>
+<pre><code class="lang-csharp">// Files without a byte order mark that are not UTF-8 are read with the encoding you name, or else as Windows-1252, with a
+// Subtitle.Encoding warning. Output is always UTF-8. Strict turns every repaired line into an exception.
+MediaContext context = new() { Egami = EgamiContext.Default with { Diagnostics = d =&gt; log.Add($&quot;{d.Id}: {d.Message}&quot;) } };
+SubtitleDocument old = SubtitleDocument.Load(&quot;old.srt&quot;, context: context);
+SubtitleDocument latin1 = SubtitleDocument.Load(&quot;old.srt&quot;, new SubtitleReaderOptions { Encoding = Encoding.Latin1 });
+Console.WriteLine($&quot;{old.Cues[0].PlainText} / {latin1.Cues[0].PlainText}&quot;);
+
+try
+{
+    SubtitleDocument.Parse(&quot;1\n00:00:01.000 --&gt; 00:00:02.000\nHi\n&quot;, options: new SubtitleReaderOptions { Strict = true });
+}
+catch (CorruptDataException e)
+{
+    Console.WriteLine(e.Message);
+}
+</code></pre>
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/subtitles.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

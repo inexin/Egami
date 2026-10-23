@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Egami.Video.Subtitles | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Egami.Video.Subtitles | Egami ">
+      
+      
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Subtitles">
+
+  <h1 id="Egami_Video_Subtitles" data-uid="Egami.Video.Subtitles" class="text-break">Namespace Egami.Video.Subtitles</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="classes">
+Classes
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleAttachment.html">SubtitleAttachment</a></dt>
+      <dd><p>An embedded file of an ASS script (its <code>[Fonts]</code> or <code>[Graphics]</code> section), decoded.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleCue.html">SubtitleCue</a></dt>
+      <dd><p>One subtitle: when it shows, its text as <a class="xref" href="Egami.Video.Subtitles.SubtitleSpan.html">SubtitleSpan</a> runs, and where and how it is placed. Read from SRT,
+WebVTT or ASS into the same fields, so a cue converts between them; a cue that is not changed is written back to its own
+format exactly as it was read.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a></dt>
+      <dd><p>A subtitle file in memory: its cues, and the styles, regions and header its format carries. Loads SRT, WebVTT, ASS and SSA
+into one model, saves any of SRT, WebVTT and ASS, and shifts, scales, syncs and clips the timing. A document saved in the
+format it was read from, unchanged, gives back the same bytes; changed cues are written in the format's canonical form, and
+what a target format cannot hold is reported once per kind as <code>Subtitle.Dropped</code>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleReaderOptions.html">SubtitleReaderOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a> reads a subtitle file.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleRegion.html">SubtitleRegion</a></dt>
+      <dd><p>A WebVTT region (a <code>REGION</code> block): a box cues can show in, which scrolls lines up as new cues arrive. Cues name it
+in <a class="xref" href="Egami.Video.Subtitles.WebVttCueSettings.html#Egami_Video_Subtitles_WebVttCueSettings_Region">Region</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleSpan.html">SubtitleSpan</a></dt>
+      <dd><p>A run of a cue's text with one look: bold, italic, color, font and so on, as SRT tags, WebVTT cue tags and ASS override tags
+set them. Line breaks are <code>\n</code> inside <a class="xref" href="Egami.Video.Subtitles.SubtitleSpan.html#Egami_Video_Subtitles_SubtitleSpan_Text">Text</a>. Fields a format cannot show are dropped when it is written, and
+reported as <code>Subtitle.Dropped</code>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleStyle.html">SubtitleStyle</a></dt>
+      <dd><p>A named ASS or SSA style (a <code>Style:</code> line of <code>[V4+ Styles]</code> or <code>[V4 Styles]</code>): the font, colors, outline and
+place cues get unless their override tags say otherwise. Colors are straight RGBA, with ASS's inverted alpha already
+turned around (255 is opaque).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleTrackWriter.html">SubtitleTrackWriter</a></dt>
+      <dd><p>Turns a <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a> into a subtitle track for a container: the <a class="xref" href="Egami.Video.Subtitles.SubtitleTrackWriter.html#Egami_Video_Subtitles_SubtitleTrackWriter_Track">Track</a> to give the muxer and
+the <a class="xref" href="Egami.Video.Subtitles.SubtitleTrackWriter.html#Egami_Video_Subtitles_SubtitleTrackWriter_Packets">Packets</a> to write, in time order. Matroska takes SRT, WebVTT and ASS tracks; WebM takes WebVTT
+(<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_WebMWebVtt">WebMWebVtt</a>); MP4 takes mov_text and WebVTT (<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_MovText">MovText</a>,
+<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Mp4WebVtt">Mp4WebVtt</a>). What the codec cannot hold is reported as <code>Subtitle.Dropped</code>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleWriterOptions.html">SubtitleWriterOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a> writes a subtitle file. Output is always UTF-8.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.WebVttCueSettings.html">WebVttCueSettings</a></dt>
+      <dd><p>A WebVTT cue's settings (the text after the timings: <code>line:0 position:20% align:start</code>), with the defaults the W3C
+spec gives and the same meaning as the browser's <code>VTTCue</code>. Read from WebVTT; WebVTT output writes them back, and
+builds them from <a class="xref" href="Egami.Video.Subtitles.SubtitleCue.html#Egami_Video_Subtitles_SubtitleCue_Alignment">Alignment</a> for cues that have none.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitlePosition.html">SubtitlePosition</a></dt>
+      <dd><p>An exact place for a cue (ASS <code>\pos</code>), in the script's pixels (<code>PlayResX</code> by <code>PlayResY</code>, 384 by 288 when the
+script does not say). The cue's <a class="xref" href="Egami.Video.Subtitles.SubtitleCue.html#Egami_Video_Subtitles_SubtitleCue_Alignment">Alignment</a> says which point of the text sits there.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleAlignment.html">SubtitleAlignment</a></dt>
+      <dd><p>Where a cue sits on the screen, as the keys of a numeric keypad lay out (ASS <code>\an</code>): 1 is bottom left, 2 bottom
+center (the usual place), 9 top right.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.SubtitleFormat.html">SubtitleFormat</a></dt>
+      <dd><p>A text subtitle format <a class="xref" href="Egami.Video.Subtitles.SubtitleDocument.html">SubtitleDocument</a> reads and writes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.WebVttAlign.html">WebVttAlign</a></dt>
+      <dd><p>How a WebVTT cue's text lines are aligned in its box (<code>align</code> setting).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.WebVttLineAlign.html">WebVttLineAlign</a></dt>
+      <dd><p>Which edge of a WebVTT cue box its line places (the part after the comma in <code>line:50%,center</code>).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.WebVttPositionAlign.html">WebVttPositionAlign</a></dt>
+      <dd><p>Which point of a WebVTT cue box its position places (the part after the comma in <code>position:10%,line-left</code>).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Subtitles.WebVttVertical.html">WebVttVertical</a></dt>
+      <dd><p>A WebVTT cue's writing direction (<code>vertical</code> setting).</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
