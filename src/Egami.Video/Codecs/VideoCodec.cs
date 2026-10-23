@@ -108,18 +108,18 @@ public sealed record VideoEncoderOptions
 
     /// <summary>
     /// Gets the quality, or <see langword="null"/> for the codec's default: 1 to 100 for Motion JPEG (default 75, as Egami's JPEG
-    /// writer), 0 to 100 for VP8 and VP9 (default 60, the scale of Egami's AVIF writer, where equal numbers look alike). With
+    /// writer), 0 to 100 for VP8, VP9 and AV1 (default 60, the scale of Egami's AVIF writer, where equal numbers look alike). With
     /// <see cref="RateControlMode.Quality"/> it is what every frame aims at.
     /// </summary>
     public int? Quality { get; init; }
 
     /// <summary>
     /// Gets how hard the encoder works, 0 (fastest) to 10 (smallest files), or <see langword="null"/> for the codec's default
-    /// (4 for VP8 and VP9). Motion JPEG has no effort.
+    /// (4 for VP8, VP9 and AV1). Motion JPEG has no effort.
     /// </summary>
     public int? Effort { get; init; }
 
-    /// <summary>Gets how the encoder spends bits (VP8, VP9). Default <see cref="RateControlMode.Quality"/>: constant quality.</summary>
+    /// <summary>Gets how the encoder spends bits (VP8, VP9, AV1). Default <see cref="RateControlMode.Quality"/>: constant quality.</summary>
     public RateControlMode RateControl { get; init; }
 
     /// <summary>
@@ -141,12 +141,12 @@ public sealed record VideoEncoderOptions
     public long? BufferSize { get; init; }
 
     /// <summary>
-    /// Gets the codec's own quantizer for <see cref="RateControlMode.Quantizer"/> (0 to 127 for VP8, 0 to 255 for VP9), or <see langword="null"/>
+    /// Gets the codec's own quantizer for <see cref="RateControlMode.Quantizer"/> (0 to 127 for VP8, 0 to 255 for VP9 and AV1), or <see langword="null"/>
     /// to take the one <see cref="Quality"/> maps to.
     /// </summary>
     public int? Quantizer { get; init; }
 
-    /// <summary>Gets whether the encoder may hold frames back to code them better (VP8, VP9). Default <see cref="LatencyMode.Quality"/>.</summary>
+    /// <summary>Gets whether the encoder may hold frames back to code them better (VP8, VP9, AV1). Default <see cref="LatencyMode.Quality"/>.</summary>
     public LatencyMode LatencyMode { get; init; }
 
     /// <summary>
@@ -173,6 +173,9 @@ public sealed record VideoEncoderOptions
 
     /// <summary>Gets the VP9 expert settings, or <see langword="null"/> for <see cref="Vp9EncoderOptions.Default"/>.</summary>
     public Vp9EncoderOptions? Vp9 { get; init; }
+
+    /// <summary>Gets the AV1 expert settings, or <see langword="null"/> for <see cref="Av1EncoderOptions.Default"/>.</summary>
+    public Av1EncoderOptions? Av1 { get; init; }
 
     /// <summary>
     /// Gets the largest packet size in bytes to aim for, or <see langword="null"/> for none. Motion JPEG then picks, per frame,
