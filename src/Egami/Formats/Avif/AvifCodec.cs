@@ -59,7 +59,7 @@ internal sealed class AvifCodec(bool filmGrain) : IHeifCodec
             FilmGrain ??= Describe(grain);
         }
 
-        ushort[][] planes = filmGrain ? Av1FilmGrainSynthesis.Apply(frame) : frame.Planes!;
+        ushort[][] planes = Av1Samples.Widen(filmGrain ? Av1FilmGrainSynthesis.Apply(frame) : frame.Planes!);
         int count = sequence.Monochrome ? 1 : 3;
         return new HeifPlanes(frame.Header.UpscaledWidth, frame.Header.FrameHeight, sequence.BitDepth, sequence.SubsamplingX,
             sequence.SubsamplingY, sequence.Monochrome, planes[..count], frame.Strides[..count]);

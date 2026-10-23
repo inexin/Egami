@@ -154,7 +154,7 @@ internal sealed partial class Av1TileEncoder
     {
         int x0 = _miCol * 4, y0 = _miRow * 4;
         int w = Math.Min(bw, _source.Widths[0] - x0), h = Math.Min(bh, _source.Heights[0] - y0);
-        ushort[] frame = _frame.Planes![0];
+        ushort[] frame = _frame.Plane<ushort>(0);
         ushort[] source = _source.Planes[0];
         int stride = _frame.Strides[0];
         long error = 0;

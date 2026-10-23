@@ -119,7 +119,7 @@ public sealed class Av1StreamDecoder : IDisposable
         }
 
         _frames.Dequeue();
-        ushort[][] planes = _filmGrain ? Av1FilmGrainSynthesis.Apply(frame) : frame.Planes!;
+        Array[] planes = _filmGrain ? Av1FilmGrainSynthesis.Apply(frame) : frame.Planes!;
         int ssx = frame.Sequence.SubsamplingX, ssy = frame.Sequence.SubsamplingY;
         int cw = (info.Width + ssx) >> ssx, ch = (info.Height + ssy) >> ssy;
         if (destination is YuvRaster<byte> bytes)
@@ -177,24 +177,32 @@ public sealed class Av1StreamDecoder : IDisposable
             new ColorCodePoints((byte)s.ColorPrimaries, (byte)s.TransferCharacteristics, (byte)s.MatrixCoefficients, s.FullRange));
     }
 
-    private static void Copy(ushort[] plane, int stride, YuvPlane<byte> to, int width, int height)
+    private static void Copy<T>(Array plane, int stride, YuvPlane<T> to, int width, int height)
+        where T : unmanaged
     {
         for (int y = 0; y < height; y++)
         {
-            ReadOnlySpan<ushort> source = plane.AsSpan(y * stride, width);
-            Span<byte> row = to.Row(y);
-            for (int x = 0; x < width; x++)
+            Span<T> row = to.Row(y)[..width];
+            if (plane is T[] same)
             {
-                row[x] = (byte)source[x];
+                same.AsSpan(y * stride, width).CopyTo(row);
             }
-        }
-    }
-
-    private static void Copy(ushort[] plane, int stride, YuvPlane<ushort> to, int width, int height)
-    {
-        for (int y = 0; y < height; y++)
-        {
-            plane.AsSpan(y * stride, width).CopyTo(to.Row(y));
+            else if (plane is byte[] bytes)
+            {
+                ReadOnlySpan<byte> source = bytes.AsSpan(y * stride, width);
+                for (int x = 0; x < width; x++)
+                {
+                    row[x] = Av1Samples.From<T>(source[x]);
+                }
+            }
+            else
+            {
+                ReadOnlySpan<ushort> source = ((ushort[])plane).AsSpan(y * stride, width);
+                for (int x = 0; x < width; x++)
+                {
+                    row[x] = Av1Samples.From<T>(source[x]);
+                }
+            }
         }
     }
 }

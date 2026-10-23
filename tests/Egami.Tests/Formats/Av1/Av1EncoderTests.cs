@@ -244,6 +244,7 @@ public class Av1EncoderTests
 
     private static void AssertPlanes(Av1EncoderInput input, Av1Frame decoded, ushort[][] expected, string what)
     {
+        ushort[][] decodedPlanes = decoded.WidePlanes();
         for (int plane = 0; plane < expected.Length; plane++)
         {
             int ssx = plane > 0 ? decoded.Sequence.SubsamplingX : 0, ssy = plane > 0 ? decoded.Sequence.SubsamplingY : 0;
@@ -252,7 +253,7 @@ public class Av1EncoderTests
             {
                 for (int x = 0; x < w; x++)
                 {
-                    int want = expected[plane][(y * w) + x], got = decoded.Planes![plane][(y * decoded.Strides[plane]) + x];
+                    int want = expected[plane][(y * w) + x], got = decodedPlanes[plane][(y * decoded.Strides[plane]) + x];
                     if (want != got)
                     {
                         Assert.Fail($"Plane {plane} at {x}, {y} decodes to {got}, not the {what}'s {want}.");
@@ -265,7 +266,8 @@ public class Av1EncoderTests
     internal static void AssertSame(Av1Frame expected, Av1Frame actual)
     {
         int width = expected.Header.UpscaledWidth, height = expected.Header.FrameHeight;
-        for (int plane = 0; plane < expected.Planes!.Length; plane++)
+        ushort[][] expectedPlanes = expected.WidePlanes(), actualPlanes = actual.WidePlanes();
+        for (int plane = 0; plane < expectedPlanes.Length; plane++)
         {
             int ssx = plane > 0 ? expected.Sequence.SubsamplingX : 0, ssy = plane > 0 ? expected.Sequence.SubsamplingY : 0;
             int w = (width + ssx) >> ssx, h = (height + ssy) >> ssy;
@@ -273,7 +275,7 @@ public class Av1EncoderTests
             {
                 for (int x = 0; x < w; x++)
                 {
-                    int want = expected.Planes[plane][(y * expected.Strides[plane]) + x], got = actual.Planes![plane][(y * actual.Strides[plane]) + x];
+                    int want = expectedPlanes[plane][(y * expected.Strides[plane]) + x], got = actualPlanes[plane][(y * actual.Strides[plane]) + x];
                     if (want != got)
                     {
                         Assert.Fail($"Plane {plane} at {x}, {y} decodes to {got}, not the encoder's reconstruction {want}.");

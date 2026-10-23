@@ -67,7 +67,7 @@ internal static class Av1FilterSearch
             }
 
             frame.Header = Reparse(sequence, parameters);
-            Av1LoopFilter.Apply(frame);
+            Av1LoopFilter.Apply<ushort>(frame);
             return;
         }
 
@@ -79,12 +79,12 @@ internal static class Av1FilterSearch
                 errors = new long[planes];
                 for (int plane = 0; plane < planes; plane++)
                 {
-                    prefilter[plane].CopyTo(frame.Planes![plane], 0);
+                    prefilter[plane].CopyTo(frame.Plane<ushort>(plane), 0);
                 }
 
                 Array.Fill(parameters.LoopFilterLevel, level);
                 frame.Header = Reparse(sequence, parameters);
-                Av1LoopFilter.Apply(frame);
+                Av1LoopFilter.Apply<ushort>(frame);
                 for (int plane = 0; plane < planes; plane++)
                 {
                     errors[plane] = PlaneError(frame, source, plane);
@@ -138,11 +138,11 @@ internal static class Av1FilterSearch
 
         for (int plane = 0; plane < planes; plane++)
         {
-            prefilter[plane].CopyTo(frame.Planes![plane], 0);
+            prefilter[plane].CopyTo(frame.Plane<ushort>(plane), 0);
         }
 
         frame.Header = Reparse(sequence, parameters);
-        Av1LoopFilter.Apply(frame);
+        Av1LoopFilter.Apply<ushort>(frame);
     }
 
     /// <summary>
@@ -176,7 +176,7 @@ internal static class Av1FilterSearch
         {
             for (int plane = 0; plane < planes; plane++)
             {
-                deblocked[plane].CopyTo(frame.Planes![plane], 0);
+                deblocked[plane].CopyTo(frame.Plane<ushort>(plane), 0);
             }
 
             parameters.CdefBits = 0;
@@ -188,7 +188,7 @@ internal static class Av1FilterSearch
             }
 
             frame.Header = Reparse(sequence, parameters);
-            Av1Cdef.Apply(frame);
+            Av1Cdef.Apply<ushort>(frame);
             for (int u = 0; u < units; u++)
             {
                 if (coded[u])
@@ -277,11 +277,11 @@ internal static class Av1FilterSearch
 
         for (int plane = 0; plane < planes; plane++)
         {
-            deblocked[plane].CopyTo(frame.Planes![plane], 0);
+            deblocked[plane].CopyTo(frame.Plane<ushort>(plane), 0);
         }
 
         frame.Header = Reparse(sequence, parameters);
-        Av1Cdef.Apply(frame);
+        Av1Cdef.Apply<ushort>(frame);
 
         static long Total(List<(int Y, int Uv)> set, bool[] coded, long[,] luma, long[,] chroma)
         {
@@ -316,7 +316,7 @@ internal static class Av1FilterSearch
 
     private static long PlaneError(Av1Frame frame, Av1EncoderSource source, int plane)
     {
-        ushort[] a = frame.Planes![plane], b = source.Planes[plane];
+        ushort[] a = frame.Plane<ushort>(plane), b = source.Planes[plane];
         int stride = frame.Strides[plane];
         long error = 0;
         for (int y = 0; y < source.Heights[plane]; y++)
@@ -339,7 +339,7 @@ internal static class Av1FilterSearch
         int fbr = unit / frame.CdefStride, fbc = unit % frame.CdefStride;
         int x0 = (fbc * 64) >> ssx, y0 = (fbr * 64) >> ssy;
         int x1 = Math.Min(x0 + (64 >> ssx), source.Widths[plane]), y1 = Math.Min(y0 + (64 >> ssy), source.Heights[plane]);
-        ushort[] a = frame.Planes![plane], b = source.Planes[plane];
+        ushort[] a = frame.Plane<ushort>(plane), b = source.Planes[plane];
         int stride = frame.Strides[plane];
         long error = 0;
         for (int y = y0; y < y1; y++)

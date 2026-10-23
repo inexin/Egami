@@ -11,7 +11,8 @@ internal static class Av1Superres
     private const int ExtraBits = 8;
 
     /// <summary>Upscales a plane to the frame's upscaled width; returns the new plane and its stride.</summary>
-    internal static (ushort[] Plane, int Stride) Upscale(Av1Frame frame, ushort[] src, int srcStride, int plane)
+    internal static (T[] Plane, int Stride) Upscale<T>(Av1Frame frame, T[] src, int srcStride, int plane)
+        where T : unmanaged
     {
         Av1FrameHeader h = frame.Header;
         int ssx = plane > 0 ? frame.Sequence.SubsamplingX : 0, ssy = plane > 0 ? frame.Sequence.SubsamplingY : 0;
@@ -19,7 +20,7 @@ internal static class Av1Superres
         int rows = (h.FrameHeight + ssy) >> ssy;
         int stride = (upscaledWidth + 63) & ~63;
         int allocatedRows = src.Length / srcStride;
-        ushort[] dst = new ushort[stride * allocatedRows];
+        T[] dst = new T[(stride * allocatedRows) + Av1Samples.Padding];
         int max = (1 << frame.Sequence.BitDepth) - 1;
         int step = ((downscaledWidth << ScaleSubpelBits) + (upscaledWidth / 2)) / upscaledWidth;
         int err = (upscaledWidth * step) - (downscaledWidth << ScaleSubpelBits);
@@ -58,10 +59,10 @@ internal static class Av1Superres
                             sx = srcWidth - 1;
                         }
 
-                        sum += src[row + downX0 + sx] * filter[k];
+                        sum += Av1Samples.Get(src[row + downX0 + sx]) * filter[k];
                     }
 
-                    dst[(y * stride) + upX0 + x] = (ushort)Math.Clamp((sum + 64) >> 7, 0, max);
+                    dst[(y * stride) + upX0 + x] = Av1Samples.From<T>(Math.Clamp((sum + 64) >> 7, 0, max));
                     xq += step;
                 }
             }

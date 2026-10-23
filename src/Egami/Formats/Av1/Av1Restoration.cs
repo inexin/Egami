@@ -18,7 +18,8 @@ internal static class Av1Restoration
     /// Restores the frame's planes: <paramref name="cdef"/> is the CDEF output and <paramref name="deblocked"/> the deblocked
     /// frame, both at the upscaled width with the given strides; the result replaces the frame's planes.
     /// </summary>
-    internal static void Apply(Av1Frame frame, ushort[][] cdef, ushort[][] deblocked, int[] strides)
+    internal static void Apply<T>(Av1Frame frame, T[][] cdef, T[][] deblocked, int[] strides)
+        where T : unmanaged
     {
         for (int plane = 0; plane < frame.Header.NumPlanes; plane++)
         {
@@ -28,19 +29,20 @@ internal static class Av1Restoration
                 continue;
             }
 
-            ushort[] output = (ushort[])cdef[plane].Clone();
-            PlaneFilter.Run(frame, plane, lr, cdef[plane], deblocked[plane], output, strides[plane]);
+            T[] output = (T[])cdef[plane].Clone();
+            PlaneFilter<T>.Run(frame, plane, lr, cdef[plane], deblocked[plane], output, strides[plane]);
             frame.Planes![plane] = output;
         }
     }
 
-    private sealed class PlaneFilter
+    private sealed class PlaneFilter<T>
+        where T : unmanaged
     {
-        private readonly ushort[] _cdef, _deblocked, _output;
+        private readonly T[] _cdef, _deblocked, _output;
         private readonly int _stride, _ssy, _planeW, _planeH, _bitDepth, _plane;
         private int _stripeStart, _stripeEnd;
 
-        internal PlaneFilter(Av1Frame frame, int plane, ushort[] cdef, ushort[] deblocked, ushort[] output, int stride)
+        internal PlaneFilter(Av1Frame frame, int plane, T[] cdef, T[] deblocked, T[] output, int stride)
         {
             _cdef = cdef;
             _deblocked = deblocked;
@@ -55,9 +57,9 @@ internal static class Av1Restoration
         }
 
         /// <summary>Filters a plane's units, each row of units on its own thread: they read the CDEF and deblocked planes only.</summary>
-        internal static void Run(Av1Frame frame, int plane, Av1RestorationPlane lr, ushort[] cdef, ushort[] deblocked, ushort[] output, int stride)
+        internal static void Run(Av1Frame frame, int plane, Av1RestorationPlane lr, T[] cdef, T[] deblocked, T[] output, int stride)
         {
-            PlaneFilter shape = new(frame, plane, cdef, deblocked, output, stride);
+            PlaneFilter<T> shape = new(frame, plane, cdef, deblocked, output, stride);
             int unitSize = lr.UnitSize, extSize = unitSize * 3 / 2;
             int voffset = 8 >> shape._ssy;
             List<(int VStart, int VEnd)> rows = [];
@@ -71,7 +73,7 @@ internal static class Av1Restoration
 
             frame.For(rows.Count, row =>
             {
-                PlaneFilter filter = new(frame, plane, cdef, deblocked, output, stride);
+                PlaneFilter<T> filter = new(frame, plane, cdef, deblocked, output, stride);
                 int x0 = 0, col = 0;
                 while (x0 < filter._planeW)
                 {
@@ -120,15 +122,15 @@ internal static class Av1Restoration
             y = Math.Clamp(y, 0, _planeH - 1);
             if (y < _stripeStart)
             {
-                return _deblocked[(Math.Max(_stripeStart - 2, y) * _stride) + x];
+                return Av1Samples.Get(_deblocked[(Math.Max(_stripeStart - 2, y) * _stride) + x]);
             }
 
             if (y > _stripeEnd)
             {
-                return _deblocked[(Math.Min(_stripeEnd + 2, y) * _stride) + x];
+                return Av1Samples.Get(_deblocked[(Math.Min(_stripeEnd + 2, y) * _stride) + x]);
             }
 
-            return _cdef[(y * _stride) + x];
+            return Av1Samples.Get(_cdef[(y * _stride) + x]);
         }
 
         /// <summary>av1_highbd_wiener_convolve_add_src: the 7-tap filters, horizontal into a clamped intermediate, then vertical.</summary>
@@ -168,7 +170,7 @@ internal static class Av1Restoration
                         sum += vf[k] * temp[((r + k) * width) + x];
                     }
 
-                    _output[((v + r) * _stride) + hStart + x] = (ushort)Math.Clamp((sum + (1 << (round1 - 1))) >> round1, 0, max);
+                    _output[((v + r) * _stride) + hStart + x] = Av1Samples.From<T>(Math.Clamp((sum + (1 << (round1 - 1))) >> round1, 0, max));
                 }
             }
         }
@@ -228,7 +230,7 @@ internal static class Av1Restoration
                     }
 
                     short w = (short)((value + (1 << 10)) >> 11);
-                    _output[((v + i) * _stride) + hStart + j] = (ushort)Math.Clamp((int)w, 0, max);
+                    _output[((v + i) * _stride) + hStart + j] = Av1Samples.From<T>(Math.Clamp((int)w, 0, max));
                 }
             }
         }

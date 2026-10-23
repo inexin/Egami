@@ -13,15 +13,19 @@ internal static class Av1FilmGrainSynthesis
     private const int SubGrainWidth = 44;
     private const int SubGrainHeight = 38;
 
-    /// <summary>Returns the frame's planes with grain added, or the planes themselves when the frame applies none.</summary>
-    internal static ushort[][] Apply(Av1Frame frame)
+    /// <summary>
+    /// Returns the frame's planes with grain added, as 16-bit planes, or the planes themselves (of the frame's sample type) when
+    /// the frame applies none.
+    /// </summary>
+    internal static Array[] Apply(Av1Frame frame)
     {
         Av1FilmGrain g = frame.Header.FilmGrain;
-        ushort[][] input = frame.Planes!;
         if (!g.ApplyGrain)
         {
-            return input;
+            return frame.Planes!;
         }
+
+        ushort[][] input = frame.WidePlanes();
 
         Av1SequenceHeader seq = frame.Sequence;
         int bd = seq.BitDepth;
