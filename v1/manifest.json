@@ -14444,6 +14444,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/guides/h264.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/h264.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/guides/hdr.md",
       "output": {
         ".html": {

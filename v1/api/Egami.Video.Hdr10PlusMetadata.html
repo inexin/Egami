@@ -423,6 +423,51 @@ or below (distribution_maxrgb_percentages and percentiles), in cd/m².</p>
 
 
 
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Hdr10PlusMetadata_Parse_" data-uid="Egami.Video.Hdr10PlusMetadata.Parse*"></a>
+
+  <h3 id="Egami_Video_Hdr10PlusMetadata_Parse_System_ReadOnlyMemory_System_Byte__" data-uid="Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory{System.Byte})">
+  Parse(ReadOnlyMemory&lt;byte&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Hdr10PlusMetadata.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads an ITU-T T.35 HDR10+ payload, as an H.264 or HEVC user data registered SEI message, an AV1 metadata OBU or a WebM
+BlockAdditional carries it: from itu_t_t35_country_code (0xB5) on. Codec packages outside Egami.Video use it to give
+<a class="xref" href="Egami.Video.VideoFrame.html#Egami_Video_VideoFrame_Hdr10Plus">Hdr10Plus</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Hdr10PlusMetadata? Parse(ReadOnlyMemory&lt;byte&gt; payload)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>payload</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The T.35 payload, from the country code on.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Hdr10PlusMetadata.html">Hdr10PlusMetadata</a></dt>
+    <dd><p>The metadata, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the payload is not HDR10+ or is cut off.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
 
 </article>
 

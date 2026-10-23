@@ -86387,6 +86387,22 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Hdr10PlusMetadata.MaxScl
   nameWithType: Hdr10PlusMetadata.MaxScl
+- uid: Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory{System.Byte})
+  name: Parse(ReadOnlyMemory<byte>)
+  href: api/Egami.Video.Hdr10PlusMetadata.html#Egami_Video_Hdr10PlusMetadata_Parse_System_ReadOnlyMemory_System_Byte__
+  commentId: M:Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory{System.Byte})
+  name.vb: Parse(ReadOnlyMemory(Of Byte))
+  fullName: Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory<byte>)
+  fullName.vb: Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory(Of Byte))
+  nameWithType: Hdr10PlusMetadata.Parse(ReadOnlyMemory<byte>)
+  nameWithType.vb: Hdr10PlusMetadata.Parse(ReadOnlyMemory(Of Byte))
+- uid: Egami.Video.Hdr10PlusMetadata.Parse*
+  name: Parse
+  href: api/Egami.Video.Hdr10PlusMetadata.html#Egami_Video_Hdr10PlusMetadata_Parse_
+  commentId: Overload:Egami.Video.Hdr10PlusMetadata.Parse
+  isSpec: "True"
+  fullName: Egami.Video.Hdr10PlusMetadata.Parse
+  nameWithType: Hdr10PlusMetadata.Parse
 - uid: Egami.Video.Hdr10PlusMetadata.Raw
   name: Raw
   href: api/Egami.Video.Hdr10PlusMetadata.html#Egami_Video_Hdr10PlusMetadata_Raw

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>H.264 | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="H.264 | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/h264.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="h264">H.264</h1>
+
+<p>Egami.Video.H264 decodes H.264 (AVC), the codec of most MP4 and MOV files from phones, cameras and the web. It is a separate,
+opt-in package because H.264 is covered by patents (see <a href="#patents">Patents</a>); Egami.Video itself contains no H.264 decoder and
+copies H.264 tracks through untouched when this package is not registered.</p>
+<ul>
+<li>Profiles: progressive Constrained Baseline, Main, High, High 10 and High 4:2:2, at 8 and 10 bits, 4:0:0, 4:2:0 and 4:2:2,
+and their Intra profiles. CAVLC and CABAC, B-frames with spatial and temporal direct prediction, weighted prediction, the
+8x8 transform and scaling matrices, long-term references and several slices per frame.</li>
+<li>Containers: MP4, MOV, Matroska and AVI through Egami.Video's readers, and raw Annex B <code>.h264</code> files through <code>H264Format</code>.</li>
+<li>Frames equal FFmpeg's decode sample for sample on every clip in the test corpus.</li>
+<li>Not decoded: interlaced streams (field and MBAFF pictures), 4:4:4 and lossless (High 4:4:4), and the Extended profile's
+data partitions, FMO, ASO and SP and SI slices. They give <code>UnsupportedFormatException</code>.</li>
+</ul>
+<h2 id="registering">Registering</h2>
+<p><code>WithH264()</code> (from <code>H264MediaContextExtensions</code>) adds the decoder, <code>H264Codec</code>, and the raw stream reader, <code>H264Format</code>, to a
+<code>MediaContext</code>. Nothing registers them on its own; set the context as the default with <code>MediaContext.SetDefault</code> to use it
+everywhere.</p>
+<pre><code class="lang-csharp">// Opt in to H.264 once: WithH264() adds the decoder and the raw .h264 reader to a context. MediaContext.SetDefault makes it
+// the default for every call.
+MediaContext context = MediaContext.Default.WithH264();
+using VideoReader reader = VideoReader.Open(&quot;h264.mp4&quot;, context: context);
+Console.WriteLine($&quot;{reader.Track.CodecId} {reader.Track.Width}x{reader.Track.Height}&quot;);
+</code></pre><h2 id="decoding">Decoding</h2>
+<p>Frames come out in display order through <code>VideoReader</code>, like any other codec, as <code>YuvVideoFrame</code>s with the stream's own
+planes (8-bit samples in bytes, 10-bit in ushorts) or converted to a pixel type. The colour comes from the stream's VUI, then
+the container, and otherwise BT.601 for 576 lines and fewer and BT.709 above; HDR10 mastering display and content light level
+SEI become the frame's <code>Hdr</code>, and HDR10+ user data SEI its <code>Hdr10Plus</code>.</p>
+<pre><code class="lang-csharp">// Frames come out in display order, B-frames included; a broken slice is concealed from the frame before.
+using VideoReader reader = VideoReader.Open(&quot;h264.mp4&quot;, new VideoReaderOptions { Errors = DecodeErrorMode.Conceal }, context);
+int count = 0;
+foreach (VideoFrame&lt;Rgb8&gt; frame in reader.ReadFrames&lt;Rgb8&gt;())
+{
+    using (frame)
+    {
+        if (count++ == 0)
+        {
+            frame.Raster.Save(&quot;first.png&quot;);
+        }
+    }
+}
+</code></pre>
+<p>Broken data follows <code>VideoReaderOptions.Errors</code>. A slice that cannot be read reports <code>H264.CorruptSlice</code>, and the macroblocks
+it leaves out are filled from the previous frame (<code>Conceal</code>, and <code>Skip</code>, the default) or the frame is finished and the error
+thrown (<code>Throw</code>). Decoding that starts in the middle of a stream waits for the next IDR or recovery point; a reference frame
+that is missing is replaced by the nearest one.</p>
+<p>Slices decode in parallel when a frame has several, and deblocking runs on <code>EgamiContext.MaxParallelism</code> threads as a wave
+down the frame.</p>
+<h2 id="raw-h264-files">Raw .h264 files</h2>
+<p><code>H264Format</code> reads raw Annex B streams (<code>.h264</code>, <code>.264</code> and <code>.avc</code>), as encoders and <code>ffmpeg -f h264</code> write them. Such a stream
+has no timestamps, so frames are timed by the stream's VUI frame rate, or 25 frames a second, unless <code>FrameRate</code> is set.
+Seeking goes back to the IDR frame before the target.</p>
+<pre><code class="lang-csharp">// A raw .h264 stream has no timestamps: frames are timed by the stream's own frame rate, or 25 a second, unless you
+// register the format with a rate of your own.
+MediaContext context = MediaContext.Default.WithH264().WithContainer(new H264Format { FrameRate = new Rational(30, 1) });
+using VideoReader reader = VideoReader.Open(&quot;camera.h264&quot;, context: context);
+Console.WriteLine($&quot;{reader.Track.Width}x{reader.Track.Height} at {reader.Track.FrameRate} fps&quot;);
+
+// Remuxing keeps the stream as it is, here into MP4.
+MediaFile.Remux(&quot;camera.h264&quot;, &quot;camera.mp4&quot;, context: context);
+</code></pre><h2 id="patents">Patents</h2>
+<p>H.264 is covered by patents. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence
+depends on your country and on how you use and distribute this package; commercial products may need one from the AVC patent
+pools or holders. Egami.Video does not depend on this package.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/h264.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
