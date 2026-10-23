@@ -149,6 +149,17 @@ before the samples, so a non-seekable output is written through a temporary file
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-aiff)]
 
+`CafFormat` reads and writes Apple's Core Audio Format (.caf): PCM of 8 to 32 bits in either byte order, 32 and 64-bit float,
+G.711, ALAC, Opus, AAC, MP3, AC-3 and FLAC, with 64-bit chunk sizes and so no 4 GB limit. The packet table (pakt) cuts
+variable-size packets and gives the priming frames, which become the track's `CodecDelay`, and the padding at the end; the
+magic cookie (kuki) becomes the track's `CodecPrivate`. The info chunk becomes tags, markers and regions named by the strg
+chunk become chapters, and a chan chunk gives the layout. Other formats pass through with an `X_CAF/` codec id. The writer
+streams PCM and G.711: on a non-seekable output the data chunk's size is -1, meaning "to the end of the file". For other
+codecs it puts the packet table after the samples, or before them through a temporary file when the output cannot seek, so
+the file can be read as a stream. Reading a file whose packet table follows the samples needs a seekable stream.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-caf)]
+
 `OggFormat` reads and writes Ogg (.ogg, .opus, .oga) with Opus, Vorbis and FLAC. Timestamps come from the granule positions,
 seeking from an index built in one pass over the page headers, and pages with a bad CRC are skipped with an `ogg-crc`
 warning. A chained file (one stream after another) reads as one track when the settings stay the same, each link's TITLE a

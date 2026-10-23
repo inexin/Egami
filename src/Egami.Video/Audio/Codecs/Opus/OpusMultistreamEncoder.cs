@@ -13,7 +13,7 @@ internal sealed class OpusMultistreamEncoder
     private const int Overlap = 120;
 
     // vorbis_mappings[8]: streams, coupled streams, mapping.
-    private static readonly (int Streams, int Coupled, byte[] Mapping)[] VorbisMappings =
+    internal static readonly (int Streams, int Coupled, byte[] Mapping)[] VorbisMappings =
     [
         (1, 0, [0]),
         (1, 1, [0, 1]),

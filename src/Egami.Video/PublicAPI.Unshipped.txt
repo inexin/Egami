@@ -1617,6 +1617,16 @@ override Egami.Video.Containers.AiffFormat.CanMux.get -> bool
 override Egami.Video.Containers.AiffFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
 override Egami.Video.Containers.AiffFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
 override Egami.Video.Containers.AiffFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+const Egami.Video.CodecIds.Alac = "A_ALAC" -> string!
+Egami.Video.Containers.CafFormat
+override Egami.Video.Containers.CafFormat.CanMux.get -> bool
+override Egami.Video.Containers.CafFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+override Egami.Video.Containers.CafFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.CafFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.CafFormat.Name.get -> string!
+override Egami.Video.Containers.CafFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.CafFormat.SignatureLength.get -> int
+static Egami.Video.Containers.CafFormat.Instance.get -> Egami.Video.Containers.CafFormat!
 const Egami.Video.Analysis.AudioLevelMeter.HistogramBins = 145 -> int
 Egami.Video.Analysis.AudioLevelMeter
 Egami.Video.Analysis.AudioLevelMeter.Add(Egami.Video.Audio.AudioFrame! frame) -> void
@@ -1852,3 +1862,4 @@ static Egami.Video.Analysis.SpectrogramOptions.operator ==(Egami.Video.Analysis.
 static Egami.Video.Analysis.WaveformOptions.Default.get -> Egami.Video.Analysis.WaveformOptions!
 static Egami.Video.Analysis.WaveformOptions.operator !=(Egami.Video.Analysis.WaveformOptions? left, Egami.Video.Analysis.WaveformOptions? right) -> bool
 static Egami.Video.Analysis.WaveformOptions.operator ==(Egami.Video.Analysis.WaveformOptions? left, Egami.Video.Analysis.WaveformOptions? right) -> bool
+static Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory<byte> payload) -> Egami.Video.Hdr10PlusMetadata?

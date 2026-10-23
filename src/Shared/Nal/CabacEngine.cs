@@ -40,6 +40,12 @@ internal sealed class CabacEngine
     private uint _value;
     private int _bitsNeeded;
 
+    /// <summary>Gets the data the engine reads, for raw samples (pcm_sample) that follow a terminating 1 bin.</summary>
+    internal byte[] Data => _data;
+
+    /// <summary>Gets the end of the data, as <see cref="Start"/> was given it.</summary>
+    internal int End => _end;
+
     /// <summary>Gets the byte position: after a terminating 1 bin, where the next byte-aligned data starts.</summary>
     internal int Position => _position;
 

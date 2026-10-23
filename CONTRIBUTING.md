@@ -61,7 +61,9 @@ reader you changed is enough for a pull request.
 Egami.Video keeps its tools in `tools/video/`: `make-corpus.py`, `make-vp8-corpus.py` and `make-vp9-corpus.py` make the clips
 in `tests/video/corpus` and fetch the VP8 and VP9 test vectors into `.cache/video`; `fuzz-afl.py` fuzzes its readers and
 codecs; `profile-vp9.py` profiles VP9 against libvpx; `make-subtitle-tracks.py`, `check-subtitle-tracks.py`,
-`make-subtitle-references.py` and `time-subtitles.py` make and check the subtitle files against FFmpeg, MKVToolNix and MP4Box. Its gates against FFmpeg, libvpx and the Matroska tools live in the
+`make-subtitle-references.py` and `time-subtitles.py` make and check the subtitle files against FFmpeg, MKVToolNix and MP4Box;
+`make-h264-corpus.py` makes the H.264 clips and their FFmpeg frame hashes, and `make-h264-tables.py` regenerates Egami.Video.H264's
+CAVLC and CABAC tables from OpenH264. Its gates against FFmpeg, libvpx and the Matroska tools live in the
 egami-compare repository (`video/`). Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Video.Benchmarks`.
 
 ## Repository layout
@@ -69,7 +71,7 @@ egami-compare repository (`video/`). Benchmarks: `dotnet run -c Release --projec
 | Path | Contents |
 | --- | --- |
 | `src/Egami/` | The core library |
-| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Fonts.Substitutes/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/`, `src/Egami.Barcodes/`, `src/Egami.Heic/`, `src/Egami.Video/` | The other packages ([Packages](docs/articles/packages.md)) |
+| `src/Egami.Drawing/`, `src/Egami.Fonts/`, `src/Egami.Fonts.Substitutes/`, `src/Egami.Svg/`, `src/Egami.Css/`, `src/Egami.Metafiles/`, `src/Egami.Barcodes/`, `src/Egami.Heic/`, `src/Egami.Video/`, `src/Egami.Video.H264/` | The other packages ([Packages](docs/articles/packages.md)) |
 | `src/Shared/` | Internal source compiled into more than one package as linked files: `src/Shared/Nal/` is the NAL code H.264 and HEVC share (its README says how) |
 | `tests/Egami.Tests/` | Unit, conformance, round-trip and SIMD equivalence tests (xUnit) for core Egami |
 | `tests/Egami.<Package>.Tests/` | The tests of each other package |

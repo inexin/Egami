@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <None Include="../video/corpus/**/*" LinkBase="corpus" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="../video/fuzz-regressions/**/*" LinkBase="fuzz-regressions" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/fuzz-regressions/**/*" Exclude="../video/fuzz-regressions/h264/**" LinkBase="fuzz-regressions" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

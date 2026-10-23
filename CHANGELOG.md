@@ -248,7 +248,30 @@ recommended).
   method's own default `--threshold`, and `--min-gap` 0.6 s by default; `ffmpeg -vf select='gt(scene,X)'` maps to
   `--method content`.
 
+## Egami.Video.H264 0.6.0 (unreleased)
+
+V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version. The API review is still to come.
+
+- `H264Codec` and `WithH264()`: a managed H.264 decoder written from ITU-T H.264 for progressive Constrained Baseline, Main,
+  High, High 10 and High 4:2:2 streams, 8 and 10 bit, 4:0:0, 4:2:0 and 4:2:2, and their Intra profiles: CAVLC and CABAC, B
+  slices with spatial and temporal direct prediction, explicit and implicit weighted prediction, the 8x8 transform and scaling
+  matrices, long-term references and memory management, and several slices per frame. Frames equal FFmpeg's decode on all 31
+  corpus clips. Interlaced streams, 4:4:4, lossless, FMO, ASO, SP and SI slices and data partitions give
+  `UnsupportedFormatException`.
+- Decoding starts at the first IDR or recovery point; a broken slice reports `H264.CorruptSlice` and its macroblocks are
+  concealed from the frame before (`Skip` and `Conceal`) or the frame is finished and the error thrown (`Throw`); a missing
+  reference reports `H264.MissingReference`. Colour comes from the VUI, then the container, then BT.601 or BT.709 by size; HDR10
+  mastering display and content light level SEI become `Hdr`, HDR10+ (T.35 user data SEI) `Hdr10Plus`.
+- Slices of a frame decode in parallel and deblocking runs as a wavefront on `MaxParallelism` threads, with the same frames as
+  one thread. Motion compensation, deblocking and the output copy use Vector128 with a scalar reference the tests compare.
+- `H264Format`: raw Annex B streams (.h264, .264, .avc), read with a keyframe index for seeking, timed by the VUI frame rate,
+  25 fps, or `FrameRate`.
+- The CABAC initialisation values and CAVLC tables are transcribed from OpenH264 (BSD-2), see THIRD-PARTY-NOTICES.md.
+
 ## Egami.Video 0.6.0 (unreleased)
+
+- `Hdr10PlusMetadata.Parse` is public, so codec packages such as Egami.Video.H264 read HDR10+ T.35 payloads with Egami.Video's
+  parser (internals are made public as outside packages need them).
 
 V4.3: fragmented MP4 writing, and HLS and DASH segments. API reviewed and accepted 2026-10-23 (all as recommended).
 
@@ -472,6 +495,22 @@ V5.9 stage A: AIFF and AIFF-C, and G.711.
 - `G711Codec.MuLaw` and `G711Codec.ALaw` (`CodecIds.G711MuLaw`, `CodecIds.G711ALaw`) decode ITU-T G.711 to 16-bit samples, from
   AIFF-C, WAV, AVI (format tags 6 and 7) and MP4 and MOV (ulaw, alaw). Matroska has no G.711 id, so it does not take them.
 - Fuzz target `aiff`.
+
+V5.9 stage B: CAF.
+
+### CAF
+
+- `CafFormat`: Apple's Core Audio Format (.caf). Reads PCM (integer and float, either byte order), G.711, ALAC, Opus, AAC, MP3,
+  MP2, AC-3 and FLAC; other formats pass through as `X_CAF/<format>` packets. The packet table cuts variable-size packets and
+  gives the priming frames (`CodecDelay`) and the end padding (the last packets' durations); the magic cookie becomes
+  `CodecPrivate` (ALAC's 24-byte config, AAC's AudioSpecificConfig, FLAC's metadata blocks; Opus gets an OpusHead). The info
+  chunk becomes tags, markers and regions (named from strg) become chapters, and chan gives the layout. Sample-exact seeking
+  for PCM, packet-exact for the rest.
+- Writes one track of any of those codecs. PCM and G.711 stream, with a data chunk sized -1 on a non-seekable output; other
+  codecs get their packet table after the samples, or before them through a temporary file on a non-seekable output.
+  ffmpeg reads the files with their tags and layout. `CodecIds.Alac` names ALAC tracks (decoding comes in stage C).
+- Fuzz target `caf`; `tools/video/fuzz-afl.py` now knows the `aiff` and `caf` targets. A CHAN or chan chunk whose bitmap names
+  more or fewer speakers than the file has channels is now ignored instead of throwing (AIFF-C too).
 
 ## Egami.Video 0.5.0 (unreleased)
 

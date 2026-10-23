@@ -70,6 +70,8 @@
     <None Include="../video/corpus/mp4/mov-rotate90.mov" Link="images/phone.mov" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/mp4/mp4-movtext.mp4" Link="images/subtitled.mp4" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/mp4/mov-tmcd.mov" Link="images/camera.mov" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/h264/cabac-b-spatial.mp4" Link="images/h264.mp4" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/h264/high-crop.h264" Link="images/camera.h264" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/vp9/p0-altref.webm" Link="images/movie.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/vp9/alpha-ramp.webm" Link="images/alpha.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/vp9/hdr10.mkv" Link="images/hdr10.mkv" CopyToOutputDirectory="PreserveNewest" />
@@ -96,6 +98,7 @@
     <ProjectReference Include="..\..\src\Egami.Metafiles\Egami.Metafiles.csproj" />
     <ProjectReference Include="..\..\src\Egami.Heic\Egami.Heic.csproj" />
     <ProjectReference Include="..\..\src\Egami.Video\Egami.Video.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Video.H264\Egami.Video.H264.csproj" />
     <ProjectReference Include="..\..\samples\Animation\Animation.csproj" />
     <ProjectReference Include="..\..\samples\Color\Color.csproj" />
     <ProjectReference Include="..\..\samples\Compositing\Compositing.csproj" />
