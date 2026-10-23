@@ -3,6 +3,7 @@ using System.Text;
 
 using Egami.Colors;
 using Egami.Video.Audio.Codecs.Ac3;
+using Egami.Video.Audio.Codecs.Alac;
 
 namespace Egami.Video.Containers.Mp4;
 
@@ -27,6 +28,8 @@ internal static class Mp4SampleEntries
     {
         CodecIds.Av1 when track.CodecPrivate.IsEmpty => "an AV1 track needs its av1C configuration in CodecPrivate",
         CodecIds.Av1 or CodecIds.Vp9 or CodecIds.Vp8 or CodecIds.MotionJpeg or CodecIds.Avc or CodecIds.Hevc or CodecIds.Mpeg4Visual => null,
+        CodecIds.Alac when AlacSpecificConfig.Extract(track.CodecPrivate.Span).Length == 0 => "an ALAC track needs its ALACSpecificConfig in CodecPrivate",
+        CodecIds.Alac => null,
         CodecIds.Opus or CodecIds.Flac or CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis or CodecIds.Ac3 or CodecIds.EAc3 => null,
         CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian or CodecIds.PcmFloat => null,
         CodecIds.MovText or CodecIds.Mp4WebVtt => null,
@@ -127,6 +130,7 @@ internal static class Mp4SampleEntries
         {
             CodecIds.Opus => "Opus",
             CodecIds.Flac => "fLaC",
+            CodecIds.Alac => "alac",
             CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis => "mp4a",
             CodecIds.Ac3 => "ac-3",
             CodecIds.EAc3 => "ec-3",
@@ -154,6 +158,12 @@ internal static class Mp4SampleEntries
             case CodecIds.Flac:
                 w.StartFull("dfLa", 0, 0);
                 w.Bytes(priv.StartsWith("fLaC"u8) ? priv[4..] : priv);
+                w.End();
+                break;
+            case CodecIds.Alac:
+                // Apple's ALAC in MP4: an alac full box holding ALACSpecificConfig, as FFmpeg and Apple write it.
+                w.StartFull("alac", 0, 0);
+                w.Bytes(AlacSpecificConfig.Extract(priv));
                 w.End();
                 break;
             case CodecIds.Aac:

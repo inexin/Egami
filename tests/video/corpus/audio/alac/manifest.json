@@ -1,0 +1,242 @@
+{
+  "s16-mono-tone": {
+    "bits": 16,
+    "channels": 1,
+    "rate": 44100,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1000
+  },
+  "s16-stereo-tone": {
+    "bits": 16,
+    "channels": 2,
+    "rate": 44100,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1001
+  },
+  "s16-stereo-tone-fast": {
+    "bits": 16,
+    "channels": 2,
+    "rate": 44100,
+    "fast": true,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1002
+  },
+  "s16-stereo-noise": {
+    "bits": 16,
+    "channels": 2,
+    "rate": 44100,
+    "fast": false,
+    "kind": "noise",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1003
+  },
+  "s16-stereo-noise-fast": {
+    "bits": 16,
+    "channels": 2,
+    "rate": 44100,
+    "fast": true,
+    "kind": "noise",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1004
+  },
+  "s16-stereo-silence": {
+    "bits": 16,
+    "channels": 2,
+    "rate": 48000,
+    "fast": false,
+    "kind": "burst",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1005
+  },
+  "s16-stereo-frame1024": {
+    "bits": 16,
+    "channels": 2,
+    "rate": 22050,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 1024,
+    "samples": 9000,
+    "seed": 1006
+  },
+  "s20-stereo-tone": {
+    "bits": 20,
+    "channels": 2,
+    "rate": 48000,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1007
+  },
+  "s20-stereo-tone-fast": {
+    "bits": 20,
+    "channels": 2,
+    "rate": 48000,
+    "fast": true,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1008
+  },
+  "s20-mono-noise": {
+    "bits": 20,
+    "channels": 1,
+    "rate": 48000,
+    "fast": false,
+    "kind": "noise",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1009
+  },
+  "s24-mono-tone": {
+    "bits": 24,
+    "channels": 1,
+    "rate": 96000,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1010
+  },
+  "s24-stereo-tone": {
+    "bits": 24,
+    "channels": 2,
+    "rate": 96000,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1011
+  },
+  "s24-stereo-tone-fast": {
+    "bits": 24,
+    "channels": 2,
+    "rate": 96000,
+    "fast": true,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1012
+  },
+  "s24-stereo-noise": {
+    "bits": 24,
+    "channels": 2,
+    "rate": 48000,
+    "fast": false,
+    "kind": "noise",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1013
+  },
+  "s32-mono-noise": {
+    "bits": 32,
+    "channels": 1,
+    "rate": 48000,
+    "fast": false,
+    "kind": "noise",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1014
+  },
+  "s32-stereo-tone": {
+    "bits": 32,
+    "channels": 2,
+    "rate": 192000,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1015
+  },
+  "s32-stereo-tone-fast": {
+    "bits": 32,
+    "channels": 2,
+    "rate": 192000,
+    "fast": true,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1016
+  },
+  "s16-3ch-tone": {
+    "bits": 16,
+    "channels": 3,
+    "rate": 44100,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1017
+  },
+  "s24-4ch-tone": {
+    "bits": 24,
+    "channels": 4,
+    "rate": 48000,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1018
+  },
+  "s16-5ch-tone": {
+    "bits": 16,
+    "channels": 5,
+    "rate": 44100,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1019
+  },
+  "s24-6ch-tone": {
+    "bits": 24,
+    "channels": 6,
+    "rate": 48000,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1020
+  },
+  "s16-6ch-tone-fast": {
+    "bits": 16,
+    "channels": 6,
+    "rate": 48000,
+    "fast": true,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1021
+  },
+  "s16-7ch-tone": {
+    "bits": 16,
+    "channels": 7,
+    "rate": 48000,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1022
+  },
+  "s20-8ch-tone": {
+    "bits": 20,
+    "channels": 8,
+    "rate": 48000,
+    "fast": false,
+    "kind": "tone",
+    "frameSize": 4096,
+    "samples": 9000,
+    "seed": 1023
+  }
+}

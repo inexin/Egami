@@ -1873,3 +1873,11 @@ static Egami.Video.Analysis.WaveformOptions.Default.get -> Egami.Video.Analysis.
 static Egami.Video.Analysis.WaveformOptions.operator !=(Egami.Video.Analysis.WaveformOptions? left, Egami.Video.Analysis.WaveformOptions? right) -> bool
 static Egami.Video.Analysis.WaveformOptions.operator ==(Egami.Video.Analysis.WaveformOptions? left, Egami.Video.Analysis.WaveformOptions? right) -> bool
 static Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory<byte> payload) -> Egami.Video.Hdr10PlusMetadata?
+Egami.Video.Audio.Codecs.AlacCodec
+override Egami.Video.Audio.Codecs.AlacCodec.CanEncode.get -> bool
+override Egami.Video.Audio.Codecs.AlacCodec.CodecId.get -> string!
+override Egami.Video.Audio.Codecs.AlacCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
+override Egami.Video.Audio.Codecs.AlacCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
+override Egami.Video.Audio.Codecs.AlacCodec.Name.get -> string!
+static Egami.Video.Audio.AudioCodecs.Alac.get -> Egami.Video.Audio.AudioCodec!
+static Egami.Video.Audio.Codecs.AlacCodec.Instance.get -> Egami.Video.Audio.Codecs.AlacCodec!

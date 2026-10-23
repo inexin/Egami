@@ -183,13 +183,14 @@ public sealed class AudioWriter : IDisposable
 
         if (first.Format.IsFloat())
         {
-            return codec.CodecId == CodecIds.PcmFloat ? first.Format.BitsPerSample() : codec.CodecId == CodecIds.Flac ? 24 : 16;
+            return codec.CodecId == CodecIds.PcmFloat ? first.Format.BitsPerSample() : codec.CodecId is CodecIds.Flac or CodecIds.Alac ? 24 : 16;
         }
 
         int bits = first.ValidBits;
         return codec.CodecId switch
         {
             CodecIds.Flac => Math.Clamp(bits, 4, 32),
+            CodecIds.Alac => bits <= 16 ? 16 : bits <= 20 ? 20 : bits <= 24 ? 24 : 32,
             CodecIds.PcmFloat => 32,
             _ => bits <= 8 ? 8 : bits <= 16 ? 16 : bits <= 24 ? 24 : 32,
         };
@@ -272,11 +273,11 @@ public sealed record AudioWriterOptions
 
     /// <summary>
     /// Gets the bits per sample stored, or 0 to follow the first frame: its valid bits for integer samples (16 for 16-bit, 24 for
-    /// 24-bit in S32), and for float samples float PCM of the same size, 24-bit FLAC, or 16-bit integer PCM.
+    /// 24-bit in S32), and for float samples float PCM of the same size, 24-bit FLAC or ALAC, or 16-bit integer PCM.
     /// </summary>
     public int BitsPerSample { get; init; }
 
-    /// <summary>Gets the compression level, or <see langword="null"/> for the codec's default (FLAC: 0 to 8, default 5).</summary>
+    /// <summary>Gets the compression level, or <see langword="null"/> for the codec's default (FLAC: 0 to 8, default 5; ALAC: 0 fast or 1, the default).</summary>
     public int? Level { get; init; }
 
     /// <summary>Gets how Opus codes, or <see langword="null"/> for <see cref="OpusEncoderOptions.Default"/>.</summary>
