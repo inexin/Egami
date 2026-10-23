@@ -340,14 +340,7 @@ public sealed class VideoDetectorTests
 
             foreach (IVideoDetector detector in detectors)
             {
-                long before = GC.GetAllocatedBytesForCurrentThread();
-                for (int i = 10; i < frames.Count; i++)
-                {
-                    detector.Add(frames[i]);
-                }
-
-                long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-                Assert.True(allocated < 1024, $"{detector.GetType().Name}: {allocated} bytes over 30 frames");
+                FrameAllocations.AssertNone(detector.GetType().Name, frames.Count - 10, i => detector.Add(frames[10 + i]));
             }
         }
         finally
