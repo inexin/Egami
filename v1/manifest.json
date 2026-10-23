@@ -11367,6 +11367,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.Mp3Codec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.Mp3Codec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.Mp3Codec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.Mp3Codec.yml\" sourcestartlinenumber=\"1\">MPEG audio (ISO/IEC 11172-3 and 13818-3), decode only: Layers I, II and III (MP3) of MPEG-1, MPEG-2 and MPEG-2.5, every\nrate from 8 to 48 kHz, mono, stereo, joint and dual channel, free-format bit rates, and the CRC-16 when frames carry it.\nFrames come out as planar float, one per MPEG frame (1152 samples, 576 for MPEG-2 and 2.5 Layer III, 384 for Layer I).\nRead from .mp3 files and from MP3 and MP2 tracks in AVI, Matroska and MP4. The decoder is translated from minimp3.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Codecs.OpusCodec.yml",
       "output": {
         ".html": {
@@ -12064,6 +12078,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Containers.MatroskaFormat",
       "Summary": "<p sourcefile=\"api/Egami.Video.Containers.MatroskaFormat.yml\" sourcestartlinenumber=\"1\">Matroska (RFC 9559) and its WebM subset. Both instances read either; they differ in the DocType and extension a muxer\nwrites: <xref href=\"Egami.Video.Containers.MatroskaFormat.Instance\" data-throw-if-not-resolved=\"false\"></xref> writes Matroska (.mkv), <xref href=\"Egami.Video.Containers.MatroskaFormat.WebM\" data-throw-if-not-resolved=\"false\"></xref> writes WebM (.webm).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.Mp3Format.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.Mp3Format.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.Mp3Format",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.Mp3Format.yml\" sourcestartlinenumber=\"1\">MPEG audio files (.mp3, .mp2, .mp1, .mpa): MP3 and MP2 frames with their tags. The reader takes ID3v2.2, 2.3 and 2.4 tags\n(text frames into <xref href=\"Egami.Video.MediaInfo.Tags\" data-throw-if-not-resolved=\"false\"></xref>, pictures as attachments with the front cover named cover.*, CHAP frames as\nchapters), ID3v1 and APEv2 tags at the end, and finds frames by three matching headers, so junk and false syncs are skipped.\nA Xing, Info or VBRI frame gives the frame count and duration, and its LAME tag the encoder delay and padding, so the audio\nis gapless: the first packet starts before zero and the last packet's duration stops at the source's end. Seeks are exact\nby default (<xref href=\"Egami.Video.Containers.Mp3Format.FastSeek\" data-throw-if-not-resolved=\"false\"></xref> uses the Xing table instead). The writer stores an ID3v2.4 tag and the frames, with a\nXing header and LAME-layout tag on a seekable stream, so MP3 can leave Matroska or MP4 without a re-encode.</p>\n"
     },
     {
       "type": "ManagedReference",

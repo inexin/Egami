@@ -74236,6 +74236,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.AudioCodecs.Get
   nameWithType: AudioCodecs.Get
+- uid: Egami.Video.Audio.AudioCodecs.Mp3
+  name: Mp3
+  href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Mp3
+  commentId: P:Egami.Video.Audio.AudioCodecs.Mp3
+  fullName: Egami.Video.Audio.AudioCodecs.Mp3
+  nameWithType: AudioCodecs.Mp3
+- uid: Egami.Video.Audio.AudioCodecs.Mp3*
+  name: Mp3
+  href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Mp3_
+  commentId: Overload:Egami.Video.Audio.AudioCodecs.Mp3
+  isSpec: "True"
+  fullName: Egami.Video.Audio.AudioCodecs.Mp3
+  nameWithType: AudioCodecs.Mp3
 - uid: Egami.Video.Audio.AudioCodecs.Opus
   name: Opus
   href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Opus
@@ -75222,6 +75235,80 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Codecs.FlacCodec.Name
   nameWithType: FlacCodec.Name
+- uid: Egami.Video.Audio.Codecs.Mp3Codec
+  name: Mp3Codec
+  href: api/Egami.Video.Audio.Codecs.Mp3Codec.html
+  commentId: T:Egami.Video.Audio.Codecs.Mp3Codec
+  fullName: Egami.Video.Audio.Codecs.Mp3Codec
+  nameWithType: Mp3Codec
+- uid: Egami.Video.Audio.Codecs.Mp3Codec.CanDecode(Egami.Video.TrackInfo)
+  name: CanDecode(TrackInfo)
+  href: api/Egami.Video.Audio.Codecs.Mp3Codec.html#Egami_Video_Audio_Codecs_Mp3Codec_CanDecode_Egami_Video_TrackInfo_
+  commentId: M:Egami.Video.Audio.Codecs.Mp3Codec.CanDecode(Egami.Video.TrackInfo)
+  fullName: Egami.Video.Audio.Codecs.Mp3Codec.CanDecode(Egami.Video.TrackInfo)
+  nameWithType: Mp3Codec.CanDecode(TrackInfo)
+- uid: Egami.Video.Audio.Codecs.Mp3Codec.CanDecode*
+  name: CanDecode
+  href: api/Egami.Video.Audio.Codecs.Mp3Codec.html#Egami_Video_Audio_Codecs_Mp3Codec_CanDecode_
+  commentId: Overload:Egami.Video.Audio.Codecs.Mp3Codec.CanDecode
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Mp3Codec.CanDecode
+  nameWithType: Mp3Codec.CanDecode
+- uid: Egami.Video.Audio.Codecs.Mp3Codec.CodecId
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.Mp3Codec.html#Egami_Video_Audio_Codecs_Mp3Codec_CodecId
+  commentId: P:Egami.Video.Audio.Codecs.Mp3Codec.CodecId
+  fullName: Egami.Video.Audio.Codecs.Mp3Codec.CodecId
+  nameWithType: Mp3Codec.CodecId
+- uid: Egami.Video.Audio.Codecs.Mp3Codec.CodecId*
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.Mp3Codec.html#Egami_Video_Audio_Codecs_Mp3Codec_CodecId_
+  commentId: Overload:Egami.Video.Audio.Codecs.Mp3Codec.CodecId
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Mp3Codec.CodecId
+  nameWithType: Mp3Codec.CodecId
+- uid: Egami.Video.Audio.Codecs.Mp3Codec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name: CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  href: api/Egami.Video.Audio.Codecs.Mp3Codec.html#Egami_Video_Audio_Codecs_Mp3Codec_CreateDecoder_Egami_Video_AudioTrackInfo_Egami_Video_Audio_AudioDecoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Audio.Codecs.Mp3Codec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name.vb: CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+  fullName: Egami.Video.Audio.Codecs.Mp3Codec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions?, Egami.Video.MediaContext)
+  fullName.vb: Egami.Video.Audio.Codecs.Mp3Codec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions, Egami.Video.MediaContext)
+  nameWithType: Mp3Codec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  nameWithType.vb: Mp3Codec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+- uid: Egami.Video.Audio.Codecs.Mp3Codec.CreateDecoder*
+  name: CreateDecoder
+  href: api/Egami.Video.Audio.Codecs.Mp3Codec.html#Egami_Video_Audio_Codecs_Mp3Codec_CreateDecoder_
+  commentId: Overload:Egami.Video.Audio.Codecs.Mp3Codec.CreateDecoder
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Mp3Codec.CreateDecoder
+  nameWithType: Mp3Codec.CreateDecoder
+- uid: Egami.Video.Audio.Codecs.Mp3Codec.Instance
+  name: Instance
+  href: api/Egami.Video.Audio.Codecs.Mp3Codec.html#Egami_Video_Audio_Codecs_Mp3Codec_Instance
+  commentId: P:Egami.Video.Audio.Codecs.Mp3Codec.Instance
+  fullName: Egami.Video.Audio.Codecs.Mp3Codec.Instance
+  nameWithType: Mp3Codec.Instance
+- uid: Egami.Video.Audio.Codecs.Mp3Codec.Instance*
+  name: Instance
+  href: api/Egami.Video.Audio.Codecs.Mp3Codec.html#Egami_Video_Audio_Codecs_Mp3Codec_Instance_
+  commentId: Overload:Egami.Video.Audio.Codecs.Mp3Codec.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Mp3Codec.Instance
+  nameWithType: Mp3Codec.Instance
+- uid: Egami.Video.Audio.Codecs.Mp3Codec.Name
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.Mp3Codec.html#Egami_Video_Audio_Codecs_Mp3Codec_Name
+  commentId: P:Egami.Video.Audio.Codecs.Mp3Codec.Name
+  fullName: Egami.Video.Audio.Codecs.Mp3Codec.Name
+  nameWithType: Mp3Codec.Name
+- uid: Egami.Video.Audio.Codecs.Mp3Codec.Name*
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.Mp3Codec.html#Egami_Video_Audio_Codecs_Mp3Codec_Name_
+  commentId: Overload:Egami.Video.Audio.Codecs.Mp3Codec.Name
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Mp3Codec.Name
+  nameWithType: Mp3Codec.Name
 - uid: Egami.Video.Audio.Codecs.OpusCodec
   name: OpusCodec
   href: api/Egami.Video.Audio.Codecs.OpusCodec.html
@@ -76818,6 +76905,12 @@ references:
   commentId: F:Egami.Video.CodecIds.MovText
   fullName: Egami.Video.CodecIds.MovText
   nameWithType: CodecIds.MovText
+- uid: Egami.Video.CodecIds.Mp1
+  name: Mp1
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Mp1
+  commentId: F:Egami.Video.CodecIds.Mp1
+  fullName: Egami.Video.CodecIds.Mp1
+  nameWithType: CodecIds.Mp1
 - uid: Egami.Video.CodecIds.Mp2
   name: Mp2
   href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Mp2
@@ -79551,6 +79644,138 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Containers.MatroskaFormat.WebM
   nameWithType: MatroskaFormat.WebM
+- uid: Egami.Video.Containers.Mp3Format
+  name: Mp3Format
+  href: api/Egami.Video.Containers.Mp3Format.html
+  commentId: T:Egami.Video.Containers.Mp3Format
+  fullName: Egami.Video.Containers.Mp3Format
+  nameWithType: Mp3Format
+- uid: Egami.Video.Containers.Mp3Format.CanMux
+  name: CanMux
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_CanMux
+  commentId: P:Egami.Video.Containers.Mp3Format.CanMux
+  fullName: Egami.Video.Containers.Mp3Format.CanMux
+  nameWithType: Mp3Format.CanMux
+- uid: Egami.Video.Containers.Mp3Format.CanMux*
+  name: CanMux
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_CanMux_
+  commentId: Overload:Egami.Video.Containers.Mp3Format.CanMux
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp3Format.CanMux
+  nameWithType: Mp3Format.CanMux
+- uid: Egami.Video.Containers.Mp3Format.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name: CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.Mp3Format.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name.vb: CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.Mp3Format.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo>, Egami.Video.MediaMetadata, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.Mp3Format.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList(Of Egami.Video.TrackInfo), Egami.Video.MediaMetadata, Egami.Video.MediaContext, Boolean)
+  nameWithType: Mp3Format.CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  nameWithType.vb: Mp3Format.CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+- uid: Egami.Video.Containers.Mp3Format.CreateMuxer*
+  name: CreateMuxer
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_CreateMuxer_
+  commentId: Overload:Egami.Video.Containers.Mp3Format.CreateMuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp3Format.CreateMuxer
+  nameWithType: Mp3Format.CreateMuxer
+- uid: Egami.Video.Containers.Mp3Format.Extensions
+  name: Extensions
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_Extensions
+  commentId: P:Egami.Video.Containers.Mp3Format.Extensions
+  fullName: Egami.Video.Containers.Mp3Format.Extensions
+  nameWithType: Mp3Format.Extensions
+- uid: Egami.Video.Containers.Mp3Format.Extensions*
+  name: Extensions
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_Extensions_
+  commentId: Overload:Egami.Video.Containers.Mp3Format.Extensions
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp3Format.Extensions
+  nameWithType: Mp3Format.Extensions
+- uid: Egami.Video.Containers.Mp3Format.FastSeek
+  name: FastSeek
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_FastSeek
+  commentId: P:Egami.Video.Containers.Mp3Format.FastSeek
+  fullName: Egami.Video.Containers.Mp3Format.FastSeek
+  nameWithType: Mp3Format.FastSeek
+- uid: Egami.Video.Containers.Mp3Format.FastSeek*
+  name: FastSeek
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_FastSeek_
+  commentId: Overload:Egami.Video.Containers.Mp3Format.FastSeek
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp3Format.FastSeek
+  nameWithType: Mp3Format.FastSeek
+- uid: Egami.Video.Containers.Mp3Format.Instance
+  name: Instance
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_Instance
+  commentId: P:Egami.Video.Containers.Mp3Format.Instance
+  fullName: Egami.Video.Containers.Mp3Format.Instance
+  nameWithType: Mp3Format.Instance
+- uid: Egami.Video.Containers.Mp3Format.Instance*
+  name: Instance
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_Instance_
+  commentId: Overload:Egami.Video.Containers.Mp3Format.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp3Format.Instance
+  nameWithType: Mp3Format.Instance
+- uid: Egami.Video.Containers.Mp3Format.IsMatch(System.ReadOnlySpan{System.Byte})
+  name: IsMatch(ReadOnlySpan<byte>)
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_IsMatch_System_ReadOnlySpan_System_Byte__
+  commentId: M:Egami.Video.Containers.Mp3Format.IsMatch(System.ReadOnlySpan{System.Byte})
+  name.vb: IsMatch(ReadOnlySpan(Of Byte))
+  fullName: Egami.Video.Containers.Mp3Format.IsMatch(System.ReadOnlySpan<byte>)
+  fullName.vb: Egami.Video.Containers.Mp3Format.IsMatch(System.ReadOnlySpan(Of Byte))
+  nameWithType: Mp3Format.IsMatch(ReadOnlySpan<byte>)
+  nameWithType.vb: Mp3Format.IsMatch(ReadOnlySpan(Of Byte))
+- uid: Egami.Video.Containers.Mp3Format.IsMatch*
+  name: IsMatch
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_IsMatch_
+  commentId: Overload:Egami.Video.Containers.Mp3Format.IsMatch
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp3Format.IsMatch
+  nameWithType: Mp3Format.IsMatch
+- uid: Egami.Video.Containers.Mp3Format.Name
+  name: Name
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_Name
+  commentId: P:Egami.Video.Containers.Mp3Format.Name
+  fullName: Egami.Video.Containers.Mp3Format.Name
+  nameWithType: Mp3Format.Name
+- uid: Egami.Video.Containers.Mp3Format.Name*
+  name: Name
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_Name_
+  commentId: Overload:Egami.Video.Containers.Mp3Format.Name
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp3Format.Name
+  nameWithType: Mp3Format.Name
+- uid: Egami.Video.Containers.Mp3Format.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name: OpenDemuxer(Stream, MediaContext, bool)
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.Mp3Format.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name.vb: OpenDemuxer(Stream, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.Mp3Format.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.Mp3Format.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, Boolean)
+  nameWithType: Mp3Format.OpenDemuxer(Stream, MediaContext, bool)
+  nameWithType.vb: Mp3Format.OpenDemuxer(Stream, MediaContext, Boolean)
+- uid: Egami.Video.Containers.Mp3Format.OpenDemuxer*
+  name: OpenDemuxer
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_OpenDemuxer_
+  commentId: Overload:Egami.Video.Containers.Mp3Format.OpenDemuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp3Format.OpenDemuxer
+  nameWithType: Mp3Format.OpenDemuxer
+- uid: Egami.Video.Containers.Mp3Format.SignatureLength
+  name: SignatureLength
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_SignatureLength
+  commentId: P:Egami.Video.Containers.Mp3Format.SignatureLength
+  fullName: Egami.Video.Containers.Mp3Format.SignatureLength
+  nameWithType: Mp3Format.SignatureLength
+- uid: Egami.Video.Containers.Mp3Format.SignatureLength*
+  name: SignatureLength
+  href: api/Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_SignatureLength_
+  commentId: Overload:Egami.Video.Containers.Mp3Format.SignatureLength
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp3Format.SignatureLength
+  nameWithType: Mp3Format.SignatureLength
 - uid: Egami.Video.Containers.Mp4Format
   name: Mp4Format
   href: api/Egami.Video.Containers.Mp4Format.html

@@ -102,6 +102,14 @@ levels 0 to 8 with the reference encoder's meaning, default 5. Read and written 
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Codecs.Mp3Codec.html">Mp3Codec</a></dt>
+      <dd><p>MPEG audio (ISO/IEC 11172-3 and 13818-3), decode only: Layers I, II and III (MP3) of MPEG-1, MPEG-2 and MPEG-2.5, every
+rate from 8 to 48 kHz, mono, stereo, joint and dual channel, free-format bit rates, and the CRC-16 when frames carry it.
+Frames come out as planar float, one per MPEG frame (1152 samples, 576 for MPEG-2 and 2.5 Layer III, 384 for Layer I).
+Read from .mp3 files and from MP3 and MP2 tracks in AVI, Matroska and MP4. The decoder is translated from minimp3.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Codecs.OpusCodec.html">OpusCodec</a></dt>
       <dd><p>Opus (RFC 6716 with the RFC 8251 updates), decode only: SILK, CELT and hybrid frames at every bandwidth, mono, stereo and
 the multichannel mapping families 0, 1 and 255 (RFC 7845), with packet loss concealment and in-band FEC. Frames come out as

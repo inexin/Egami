@@ -151,6 +151,17 @@ writes: <a class="xref" href="Egami.Video.Containers.MatroskaFormat.html#Egami_V
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.Mp3Format.html">Mp3Format</a></dt>
+      <dd><p>MPEG audio files (.mp3, .mp2, .mp1, .mpa): MP3 and MP2 frames with their tags. The reader takes ID3v2.2, 2.3 and 2.4 tags
+(text frames into <a class="xref" href="Egami.Video.MediaInfo.html#Egami_Video_MediaInfo_Tags">Tags</a>, pictures as attachments with the front cover named cover.*, CHAP frames as
+chapters), ID3v1 and APEv2 tags at the end, and finds frames by three matching headers, so junk and false syncs are skipped.
+A Xing, Info or VBRI frame gives the frame count and duration, and its LAME tag the encoder delay and padding, so the audio
+is gapless: the first packet starts before zero and the last packet's duration stops at the source's end. Seeks are exact
+by default (<a class="xref" href="Egami.Video.Containers.Mp3Format.html#Egami_Video_Containers_Mp3Format_FastSeek">FastSeek</a> uses the Xing table instead). The writer stores an ID3v2.4 tag and the frames, with a
+Xing header and LAME-layout tag on a seekable stream, so MP3 can leave Matroska or MP4 without a re-encode.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Containers.Mp4Format.html">Mp4Format</a></dt>
       <dd><p>MP4 and QuickTime (ISO/IEC 14496-12 and 14496-14, and Apple's QuickTime File Format): .mp4, .m4v, .m4a and .mov files, flat or
 fragmented (CMAF, DASH segments). Reads every track: AV1, VP9, VP8, Motion JPEG, Opus, FLAC, PCM and mov_text map to their

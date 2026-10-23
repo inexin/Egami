@@ -89,12 +89,13 @@
 
 <p>Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:</p>
 <ul>
-<li>Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and Vorbis I decode.</li>
-<li>Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC and Ogg, read and written; FLAC, PCM,
-Opus and Vorbis in Matroska, WebM and MP4 too.</li>
+<li>Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode, Vorbis I decode and MPEG audio
+(MP3, MP2 and MP1) decode.</li>
+<li>Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC, Ogg and MP3, read and written; FLAC,
+PCM, Opus, Vorbis and MP3 in Matroska, WebM and MP4 too.</li>
 <li>A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.</li>
 </ul>
-<p>Other audio tracks, such as AAC and MP3, are copied through untouched.</p>
+<p>Other audio tracks, such as AAC, are copied through untouched.</p>
 <h2 id="frames">Frames</h2>
 <p>An <code>AudioFrame</code> holds <code>SampleCount</code> samples for every channel of its <code>Layout</code>, its <code>SampleRate</code>, its <code>Format</code> (a
 <code>SampleFormat</code>) and the <code>Timestamp</code> of its first sample. Frame memory comes from the context's memory source; dispose each
@@ -285,6 +286,31 @@ using (AudioReader reader = AudioReader.Open(&quot;song.ogg&quot;))
 }
 
 MediaFile.Transcode(&quot;song.ogg&quot;, &quot;song.flac&quot;, audio: FlacCodec.Instance);
+</code></pre><h2 id="mp3">MP3</h2>
+<p><code>Mp3Codec</code> decodes MPEG audio (ISO/IEC 11172-3 and 13818-3): Layers I, II and III of MPEG-1, MPEG-2 and MPEG-2.5, every rate
+from 8 to 48 kHz, mono, stereo, joint and dual channel, and free-format bit rates. Frames come out as planar float, one per MPEG
+frame, and pass the ISO/IEC 11172-4 compliance streams at full accuracy. The decoder is translated from minimp3 (CC0). Damaged
+frames are found by resynchronizing on three matching headers, and a frame whose CRC-16 does not match is reported as
+<code>Mp3.BadCrc</code>; with <code>DecodeErrorMode.Conceal</code> a bad frame becomes silence of its own length, so the timing stays right.</p>
+<p><code>Mp3Format</code> reads .mp3, .mp2, .mp1 and .mpa files: ID3v2.2 to 2.4 tags (text frames as tags, pictures as attachments with the
+front cover named cover.*, CHAP frames as chapters), ID3v1 and APEv2 tags, and the Xing, Info or VBRI frame. The LAME tag's
+encoder delay and padding become the track's <code>CodecDelay</code> and the last packet's duration, so the audio is gapless: a LAME
+file decodes to exactly the samples the encoder was given. Seeks are exact: the first seek reads every frame header into an
+index, and the reader starts early enough to fill the bit reservoir. Set <code>Mp3Format.FastSeek</code> (registered with
+<code>MediaContext.WithContainer</code>) to seek by the Xing table instead, which reads nothing first but lands within about a percent.
+The writer stores an ID3v2.4 tag and the frames, with a Xing header and LAME tag on a seekable stream, so MP3 leaves Matroska
+or MP4 without a re-encode.</p>
+<pre><code class="lang-csharp">// MP3 decodes to planar float; the LAME tag's delay and padding are trimmed, so the length is the source's exact length.
+MediaInfo info = MediaFile.Probe(&quot;podcast.mp3&quot;);
+Console.WriteLine($&quot;{info.Tags[&quot;TITLE&quot;]}: {info.Duration?.ToTimeSpan()}, {info.Chapters.Count} chapters, cover {info.Attachments[0].Name}&quot;);
+using (AudioReader reader = AudioReader.Open(&quot;podcast.mp3&quot;))
+{
+    reader.Seek(MediaTime.FromSeconds(0.15)); // exact: the next sample is the one at 150 ms
+    Console.WriteLine($&quot;{reader.Track.CodecId}, {reader.SampleRate} Hz, {reader.Layout.ChannelCount} channels&quot;);
+}
+
+// An MP3 track leaves Matroska without a re-encode; the .mp3 gets an ID3v2.4 tag and a Xing header.
+MediaFile.Remux(&quot;episode.mka&quot;, &quot;episode.mp3&quot;);
 </code></pre><h2 id="containers">Containers</h2>
 <p><code>WavFormat.Instance</code> reads WAV, RF64 and BW64 (PCM, float, WAVE_FORMAT_EXTENSIBLE with its channel mask, and streamed files
 whose sizes were never filled in), and writes WAV that turns into RF64 by itself past 4 GB. <code>WavFormat.Wave64</code> is Sony
