@@ -164,6 +164,13 @@ internal sealed class H264Deblock
     {
         ComputeStrengths(mbX, mbY, addr, left, top);
         ref int bs = ref MemoryMarshal.GetArrayDataReference(_bs);
+        Vector256<int> any = Vector256.LoadUnsafe(ref bs) | Vector256.LoadUnsafe(ref bs, 8) | Vector256.LoadUnsafe(ref bs, 16) | Vector256.LoadUnsafe(ref bs, 24);
+        if (any == Vector256<int>.Zero)
+        {
+            // No edge of the macroblock is filtered, in luma or chroma.
+            return;
+        }
+
         bool t8 = _mb.Transform8x8[addr];
         sbyte[] qps = _mb.Qp;
         int stride = _pic.Stride;

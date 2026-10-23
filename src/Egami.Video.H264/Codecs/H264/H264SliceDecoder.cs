@@ -63,6 +63,20 @@ internal sealed partial class H264SliceDecoder
     private int _chromaDcCoded;
     private int _chromaAcCoded;
 
+    // The neighbouring macroblocks of the current one that are available, as Neighbor* bits.
+    private int _neighbors;
+
+    // The picture's motion arrays, per list.
+    private sbyte[] _refIdx0 = [];
+    private sbyte[] _refIdx1 = [];
+    private int[] _mv0 = [];
+    private int[] _mv1 = [];
+
+    private const int NeighborA = 1;
+    private const int NeighborB = 2;
+    private const int NeighborC = 4;
+    private const int NeighborD = 8;
+
     /// <summary>Gets the number of macroblocks the last call decoded.</summary>
     internal int Decoded { get; private set; }
 
@@ -95,6 +109,10 @@ internal sealed partial class H264SliceDecoder
         _qp = h.SliceQp;
         _prevQpDeltaNonZero = false;
         _inter.Setup(pic, h, list0, list1, implicitWeights);
+        _refIdx0 = pic.RefIdx[0];
+        _refIdx1 = pic.RefIdx[1];
+        _mv0 = pic.Mv[0];
+        _mv1 = pic.Mv[1];
         Decoded = 0;
         LastMb = -1;
 
@@ -182,6 +200,12 @@ internal sealed partial class H264SliceDecoder
         _mbAddr = mbAddr;
         _mbX = mbAddr % _widthMbs;
         _mbY = mbAddr / _widthMbs;
+
+        // Which neighbouring macroblocks (6.4.9: A left, B above, C above right, D above left) are in this slice.
+        _neighbors = (_mbX > 0 && Available(mbAddr - 1) ? NeighborA : 0)
+            | (_mbY > 0 && Available(mbAddr - _widthMbs) ? NeighborB : 0)
+            | (_mbY > 0 && _mbX < _widthMbs - 1 && Available(mbAddr - _widthMbs + 1) ? NeighborC : 0)
+            | (_mbY > 0 && _mbX > 0 && Available(mbAddr - _widthMbs - 1) ? NeighborD : 0);
         _mb.Slice[mbAddr] = _slice;
         _mb.Transform8x8[mbAddr] = false;
         _mb.Cbp[mbAddr] = 0;

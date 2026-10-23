@@ -184,50 +184,19 @@ internal sealed partial class H264SliceDecoder
     {
         refIdx = -1;
         mv = 0;
-        int addr;
-        if (by < 0)
-        {
-            if (bx < 0)
-            {
-                addr = _mbX > 0 && _mbY > 0 ? _mbAddr - _widthMbs - 1 : -1;
-            }
-            else if (bx > 3)
-            {
-                addr = _mbX < _widthMbs - 1 && _mbY > 0 ? _mbAddr - _widthMbs + 1 : -1;
-            }
-            else
-            {
-                addr = TopMb;
-            }
-        }
-        else if (bx < 0)
-        {
-            addr = LeftMb;
-        }
-        else if (bx > 3)
-        {
-            return false;
-        }
-        else
-        {
-            if ((_decodedMask & (1 << (bx + (by * 4)))) == 0)
-            {
-                return false;
-            }
-
-            addr = _mbAddr;
-        }
-
-        if (addr != _mbAddr && !Available(addr))
+        bool available = by < 0
+            ? bx < 0 ? (_neighbors & NeighborD) != 0 : bx > 3 ? (_neighbors & NeighborC) != 0 : (_neighbors & NeighborB) != 0
+            : bx < 0 ? (_neighbors & NeighborA) != 0 : bx <= 3 && (_decodedMask & (1 << (bx + (by * 4)))) != 0;
+        if (!available)
         {
             return false;
         }
 
         int b = Block(bx, by);
-        refIdx = _pic.RefIdx[list][b];
+        refIdx = (list == 0 ? _refIdx0 : _refIdx1)[b];
         if (refIdx >= 0)
         {
-            mv = _pic.Mv[list][b];
+            mv = (list == 0 ? _mv0 : _mv1)[b];
         }
 
         return true;
