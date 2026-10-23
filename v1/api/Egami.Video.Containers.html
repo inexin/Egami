@@ -95,6 +95,14 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.Ac3Format.html">Ac3Format</a></dt>
+      <dd><p>Raw AC-3 and E-AC-3 (.ac3, .eac3, .ec3; ATSC A/52): sync frames back to back, with no container around them. AC-3 frames
+(<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Ac3">Ac3</a>) are read one per packet; E-AC-3 (<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_EAc3">EAc3</a>) is passed through, an
+independent frame and the substreams that follow it per packet. Writing copies the packets out unchanged, so a track from
+MP4, Matroska, CAF or AVI can be extracted without decoding. Seeking builds a frame index in one pass.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Containers.AiffFormat.html">AiffFormat</a></dt>
       <dd><p>AIFF and AIFF-C (.aif, .aiff, .aifc; Apple's Audio Interchange File Format 1.3 and its AIFF-C draft): big-endian integer
 PCM, AIFF-C's little-endian (sowt), 24 and 32-bit (in24, in32), float (fl32, fl64) and G.711 (ulaw, alaw) samples. Other
