@@ -210,6 +210,52 @@ public class VideoAnalysis
         Assert.Equal(75, report.Frames);
     }
 
+    [Fact]
+    public void AudioDetectors()
+    {
+        using SampleFiles files = new();
+        WriteClip("shots.mkv");
+
+        #region analysis-audio-detectors
+        // Silent stretches as silencedetect finds them (under -60 dBFS for 2 s by default), and the sample levels volumedetect
+        // and astats report, per channel and over all channels.
+        SilenceDetector silence = new(new SilenceOptions { Noise = -50, MinDuration = MediaTime.FromSeconds(0.5) });
+        AudioLevelMeter levels = new();
+        MediaAnalysis.Run("shots.mkv", new MediaAnalysisOptions { Scenes = null, AudioDetectors = [silence, levels] });
+
+        Console.WriteLine($"{silence.Ranges.Count} silent stretches");
+        AudioLevelReport report = levels.Report();
+        Console.WriteLine($"Peak {report.Overall.Peak:0.0} dBFS, RMS {report.Overall.Rms:0.0} dBFS, {report.Overall.Clipped} clipped");
+        #endregion
+
+        Assert.Empty(silence.Ranges);
+        Assert.Equal(-18, report.Overall.Peak, 0.1);
+        Assert.Equal(-21, report.Overall.Rms, 0.1);
+    }
+
+    [Fact]
+    public void Loudness()
+    {
+        using SampleFiles files = new();
+        WriteClip("shots.mkv");
+
+        #region analysis-loudness
+        // EBU R 128 loudness: integrated, range and true peak at the end, momentary and short-term while the audio plays.
+        LoudnessMeter meter = new(new LoudnessOptions { KeepSeries = true });
+        MediaAnalysis.Run("shots.mkv", new MediaAnalysisOptions { Scenes = null, AudioDetectors = [meter] });
+        LoudnessReport loudness = meter.Report();
+        Console.WriteLine($"I {loudness.Integrated:0.0} LUFS, LRA {loudness.Range:0.0} LU, true peak {loudness.TruePeak:0.0} dBTP");
+        foreach (LoudnessValue value in meter.ShortTermSeries)
+        {
+            Console.WriteLine($"{value.Time.ToTimeSpan()}: {value.Loudness:0.0} LUFS");
+        }
+        #endregion
+
+        Assert.Equal(-18, loudness.Integrated, 0.1);
+        Assert.Equal(-18, loudness.TruePeak, 0.2);
+        Assert.NotEmpty(meter.ShortTermSeries);
+    }
+
     private sealed class DarkestFrame : IVideoDetector
     {
         private double _lowest = double.MaxValue;

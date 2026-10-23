@@ -210,6 +210,19 @@ keeps a `SignalFrame` per frame.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-signal)]
 
+On the audio side, `SilenceDetector` finds silent stretches as silencedetect does, over all channels or each one, with its
+`SilenceOptions`; `AudioLevelMeter` returns an `AudioLevelReport` with `ChannelLevels` for each channel and overall: peak,
+RMS, DC offset, crest factor, clipped samples, noise floor, zero crossings and a 1 dB histogram, as volumedetect and astats
+report them.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-audio-detectors)]
+
+`LoudnessMeter` measures loudness as ITU-R BS.1770 and EBU R 128 define it, at any rate from 8 to 384 kHz: momentary and
+short-term loudness while audio comes in, and a `LoudnessReport` with the gated integrated loudness, the loudness range
+(EBU Tech 3342) and the true peak. `LoudnessOptions` turns the true peak off or keeps a `LoudnessValue` every 100 ms.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-loudness)]
+
 ## Limits and warnings
 
 A `MediaContext` holds the containers and codecs, the Egami context (memory, threads, safety limits), the `MediaLimits` for
