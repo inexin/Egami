@@ -68,6 +68,9 @@ internal sealed partial class H264SliceDecoder
     /// <summary>Gets the address of the last macroblock decoded, or -1.</summary>
     internal int LastMb { get; private set; } = -1;
 
+    /// <summary>Gets or sets what runs when the last macroblock of a row is decoded, with the row.</summary>
+    internal Action<int>? RowFinished { get; set; }
+
     /// <summary>Decodes a slice. A broken slice throws <see cref="CorruptDataException"/>; the macroblocks before the damage stay.</summary>
     internal void Decode(H264SliceHeader h, byte[] padded, int length, H264Picture pic, H264MbState mb, int slice, H264Picture[] list0, H264Picture[] list1, int[] implicitWeights)
     {
@@ -205,6 +208,10 @@ internal sealed partial class H264SliceDecoder
         _pic.MbIntra[addr] = H264MbState.IsIntra(_kind);
         Decoded++;
         LastMb = addr;
+        if (_mbX == _widthMbs - 1)
+        {
+            RowFinished?.Invoke(_mbY);
+        }
     }
 
     /// <summary>QPC (Table 8-15) for a QPY and a chroma offset, without the bit depth offset.</summary>

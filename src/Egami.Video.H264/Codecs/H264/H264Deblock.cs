@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -266,26 +267,36 @@ internal sealed class H264Deblock
         }
 
         ref ushort origin = ref MemoryMarshal.GetArrayDataReference(plane);
-        Span<short> bsLanes = stackalloc short[8];
-        Span<short> tcLanes = stackalloc short[8];
         int first = (dir * 16) + (edge * 4);
+        int tc1 = H264Tables.Tc0[indexA * 3] * scale, tc2 = H264Tables.Tc0[(indexA * 3) + 1] * scale, tc3 = H264Tables.Tc0[(indexA * 3) + 2] * scale;
         for (int k0 = 0; k0 < length; k0 += 8)
         {
-            int any = 0;
-            for (int l = 0; l < 8; l++)
+            // Eight lanes cover two segments of four samples or four of two.
+            Vector128<short> bs;
+            if (segment == 4)
             {
-                int bS = _bs[first + ((k0 + l) / segment)];
-                any |= bS;
-                bsLanes[l] = (short)bS;
-                tcLanes[l] = (short)(bS is > 0 and < 4 ? H264Tables.Tc0[(indexA * 3) + bS - 1] * scale : 0);
+                int s0 = _bs[first + (k0 >> 2)], s1 = _bs[first + (k0 >> 2) + 1];
+                if ((s0 | s1) == 0)
+                {
+                    continue;
+                }
+
+                bs = Vector128.Create(Vector64.Create((short)s0), Vector64.Create((short)s1));
+            }
+            else
+            {
+                int s0 = _bs[first + (k0 >> 1)], s1 = _bs[first + (k0 >> 1) + 1], s2 = _bs[first + (k0 >> 1) + 2], s3 = _bs[first + (k0 >> 1) + 3];
+                if ((s0 | s1 | s2 | s3) == 0)
+                {
+                    continue;
+                }
+
+                bs = Vector128.Create((short)s0, (short)s0, (short)s1, (short)s1, (short)s2, (short)s2, (short)s3, (short)s3);
             }
 
-            if (any == 0)
-            {
-                continue;
-            }
-
-            Vector128<short> bs = Vector128.Create((ReadOnlySpan<short>)bsLanes), tc0 = Vector128.Create((ReadOnlySpan<short>)tcLanes);
+            Vector128<short> tc0 = (Vector128.Equals(bs, Vector128.Create((short)1)) & Vector128.Create((short)tc1))
+                | (Vector128.Equals(bs, Vector128.Create((short)2)) & Vector128.Create((short)tc2))
+                | (Vector128.Equals(bs, Vector128.Create((short)3)) & Vector128.Create((short)tc3));
             Vector128<short> p3, p2, p1, p0, q0, q1, q2, q3;
             if (dir == 1)
             {
@@ -352,11 +363,14 @@ internal sealed class H264Deblock
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<short> Row(ref ushort at, int offset) => Vector128.LoadUnsafe(ref Unsafe.Add(ref at, offset)).AsInt16();
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Store(Vector128<short> v, ref ushort at, int offset) => v.AsUInt16().StoreUnsafe(ref Unsafe.Add(ref at, offset));
 
     /// <summary>The luma filter of 8.7.2.3 and 8.7.2.4 for eight lanes: bS 1 to 3 by tc, bS 4 strong, others unchanged.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void FilterLuma(Vector128<short> p3, ref Vector128<short> p2, ref Vector128<short> p1, ref Vector128<short> p0,
         ref Vector128<short> q0, ref Vector128<short> q1, ref Vector128<short> q2, Vector128<short> q3, Vector128<short> bs,
         Vector128<short> tc0, int alpha, int beta, int max)
@@ -406,6 +420,7 @@ internal sealed class H264Deblock
     }
 
     /// <summary>The chroma filter for eight lanes: bS 1 to 3 by tc0 + 1, bS 4 the 3-tap filter on the edge samples.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void FilterChroma(ref Vector128<short> p1, ref Vector128<short> p0, ref Vector128<short> q0, ref Vector128<short> q1,
         Vector128<short> bs, Vector128<short> tc0, int alpha, int beta, int max)
     {
@@ -432,9 +447,11 @@ internal sealed class H264Deblock
         q0 = Vector128.ConditionalSelect(filter, nq0, q0);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<short> Clamp(Vector128<short> v, Vector128<short> low, Vector128<short> high) => Vector128.Min(Vector128.Max(v, low), high);
 
     /// <summary>Transposes eight rows of eight 16-bit samples in place, with the unpack (zip) operations of the hardware.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Transpose(ref Vector128<short> a0, ref Vector128<short> a1, ref Vector128<short> a2, ref Vector128<short> a3,
         ref Vector128<short> a4, ref Vector128<short> a5, ref Vector128<short> a6, ref Vector128<short> a7)
     {
@@ -454,62 +471,180 @@ internal sealed class H264Deblock
         a7 = Hi(c3.AsInt64(), c7.AsInt64()).AsInt16();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<short> Lo(Vector128<short> a, Vector128<short> b) => Sse2.IsSupported ? Sse2.UnpackLow(a, b) : AdvSimd.Arm64.ZipLow(a, b);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<short> Hi(Vector128<short> a, Vector128<short> b) => Sse2.IsSupported ? Sse2.UnpackHigh(a, b) : AdvSimd.Arm64.ZipHigh(a, b);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<int> Lo(Vector128<int> a, Vector128<int> b) => Sse2.IsSupported ? Sse2.UnpackLow(a, b) : AdvSimd.Arm64.ZipLow(a, b);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<int> Hi(Vector128<int> a, Vector128<int> b) => Sse2.IsSupported ? Sse2.UnpackHigh(a, b) : AdvSimd.Arm64.ZipHigh(a, b);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<long> Lo(Vector128<long> a, Vector128<long> b) => Sse2.IsSupported ? Sse2.UnpackLow(a, b) : AdvSimd.Arm64.ZipLow(a, b);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<long> Hi(Vector128<long> a, Vector128<long> b) => Sse2.IsSupported ? Sse2.UnpackHigh(a, b) : AdvSimd.Arm64.ZipHigh(a, b);
 
     /// <summary>Derives bS (8.7.2.1) for every 4-sample segment of the macroblock's luma edges, internal ones included.</summary>
     private void ComputeStrengths(int mbX, int mbY, int addr, bool left, bool top)
     {
+        bool[] mbIntra = _pic.MbIntra;
+        if (mbIntra[addr])
+        {
+            // An intra macroblock: 4 on its own edges, 3 inside.
+            _bs.AsSpan().Fill(3);
+            _bs.AsSpan(0, 4).Fill(4);
+            _bs.AsSpan(16, 4).Fill(4);
+            return;
+        }
+
+        if (!UseVectors)
+        {
+            ComputeStrengthsScalar(mbX, mbY, addr, left, top);
+            return;
+        }
+
         int w4 = _mb.W4;
-        bool intraQ = _pic.MbIntra[addr];
+        int b0 = (mbY * 4 * w4) + (mbX * 4);
+        ref int bs = ref MemoryMarshal.GetArrayDataReference(_bs);
+
+        // Vertical edges: row y of the macroblock's blocks holds segment y of edges 0 to 3; the row is transposed into the edges.
+        Vector128<int> r0 = Strengths(b0, mbX > 0 ? 1 : 0), r1 = Strengths(b0 + w4, mbX > 0 ? 1 : 0);
+        Vector128<int> r2 = Strengths(b0 + (2 * w4), mbX > 0 ? 1 : 0), r3 = Strengths(b0 + (3 * w4), mbX > 0 ? 1 : 0);
+        Vector128<long> t0 = Lo(r0, r1).AsInt64(), t1 = Lo(r2, r3).AsInt64(), t2 = Hi(r0, r1).AsInt64(), t3 = Hi(r2, r3).AsInt64();
+        Lo(t0, t1).AsInt32().StoreUnsafe(ref bs, 0);
+        Hi(t0, t1).AsInt32().StoreUnsafe(ref bs, 4);
+        Lo(t2, t3).AsInt32().StoreUnsafe(ref bs, 8);
+        Hi(t2, t3).AsInt32().StoreUnsafe(ref bs, 12);
+
+        // Horizontal edges: row e of blocks against the row above it is edge e.
+        if (top)
+        {
+            (mbIntra[addr - _widthMbs] ? Vector128.Create(4) : Strengths(b0, w4)).StoreUnsafe(ref bs, 16);
+        }
+
+        Strengths(b0 + w4, w4).StoreUnsafe(ref bs, 20);
+        Strengths(b0 + (2 * w4), w4).StoreUnsafe(ref bs, 24);
+        Strengths(b0 + (3 * w4), w4).StoreUnsafe(ref bs, 28);
+        if (left && mbIntra[addr - 1])
+        {
+            _bs[0] = _bs[1] = _bs[2] = _bs[3] = 4;
+        }
+    }
+
+    /// <summary>
+    /// The bS of four blocks q, q + 1, q + 2 and q + 3 against the blocks <paramref name="back"/> before each: 2 where either has
+    /// coefficients, 0 where both have the same motion, else <see cref="MotionDiffers"/>. A back of 0 stands for 1 at the left
+    /// picture edge, where the first block has no neighbour; its result is not used.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Vector128<int> Strengths(int q, int back)
+    {
+        ref byte nz = ref MemoryMarshal.GetArrayDataReference(_mb.Nonzero);
+        int[][] refs = _pic.RefPicId, mvs = _pic.Mv;
+        ref int ref0 = ref MemoryMarshal.GetArrayDataReference(refs[0]), ref1 = ref MemoryMarshal.GetArrayDataReference(refs[1]);
+        ref int mv0 = ref MemoryMarshal.GetArrayDataReference(mvs[0]), mv1 = ref MemoryMarshal.GetArrayDataReference(mvs[1]);
+        if ((uint)(q + 3) >= (uint)refs[0].Length || (uint)(q + 3) >= (uint)_mb.Nonzero.Length)
+        {
+            throw H264Errors.Corrupt("A deblocking edge lies outside the picture.");
+        }
+
+        Vector128<int> nq = Vector128.WidenLower(Vector128.WidenLower(Vector128.CreateScalar(Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref nz, q))).AsByte()).AsInt16());
+        Vector128<int> rq0 = Vector128.LoadUnsafe(ref ref0, (nuint)q), rq1 = Vector128.LoadUnsafe(ref ref1, (nuint)q);
+        Vector128<int> mq0 = Vector128.LoadUnsafe(ref mv0, (nuint)q), mq1 = Vector128.LoadUnsafe(ref mv1, (nuint)q);
+        Vector128<int> np, rp0, rp1, mp0, mp1;
+        if (back == 0)
+        {
+            np = Vector128.Shuffle(nq, Vector128.Create(0, 0, 1, 2));
+            rp0 = Vector128.Shuffle(rq0, Vector128.Create(0, 0, 1, 2));
+            rp1 = Vector128.Shuffle(rq1, Vector128.Create(0, 0, 1, 2));
+            mp0 = Vector128.Shuffle(mq0, Vector128.Create(0, 0, 1, 2));
+            mp1 = Vector128.Shuffle(mq1, Vector128.Create(0, 0, 1, 2));
+            back = 1;
+        }
+        else
+        {
+            int p = q - back;
+            np = Vector128.WidenLower(Vector128.WidenLower(Vector128.CreateScalar(Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref nz, p))).AsByte()).AsInt16());
+            rp0 = Vector128.LoadUnsafe(ref ref0, (nuint)p);
+            rp1 = Vector128.LoadUnsafe(ref ref1, (nuint)p);
+            mp0 = Vector128.LoadUnsafe(ref mv0, (nuint)p);
+            mp1 = Vector128.LoadUnsafe(ref mv1, (nuint)p);
+        }
+
+        Vector128<int> coded = ~Vector128.Equals(nq | np, Vector128<int>.Zero);
+        Vector128<int> same = Vector128.Equals(rq0, rp0) & Vector128.Equals(rq1, rp1)
+            & (Vector128.LessThan(rp0, Vector128<int>.Zero) | Vector128.Equals(mq0, mp0))
+            & (Vector128.LessThan(rp1, Vector128<int>.Zero) | Vector128.Equals(mq1, mp1));
+        Vector128<int> result = coded & Vector128.Create(2);
+        uint pending = (~(coded | same)).ExtractMostSignificantBits();
+        while (pending != 0)
+        {
+            int lane = BitOperations.TrailingZeroCount(pending);
+            pending &= pending - 1;
+            if (MotionDiffers(q + lane - back, q + lane))
+            {
+                result = result.WithElement(lane, 1);
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>The scalar form of <see cref="ComputeStrengths"/>, the reference the vector form matches.</summary>
+    private void ComputeStrengthsScalar(int mbX, int mbY, int addr, bool left, bool top)
+    {
+        int w4 = _mb.W4;
+        int[] bsOut = _bs;
+        bool[] mbIntra = _pic.MbIntra;
+        bool intraQ = mbIntra[addr];
+        byte[] nonzero = _mb.Nonzero;
+        int[] ref0 = _pic.RefPicId[0], ref1 = _pic.RefPicId[1], mv0 = _pic.Mv[0], mv1 = _pic.Mv[1];
+        int b0 = (mbY * 4 * w4) + (mbX * 4);
         for (int dir = 0; dir < 2; dir++)
         {
             for (int edge = 0; edge < 4; edge++)
             {
+                int o = (dir * 16) + (edge * 4);
                 bool mbEdge = edge == 0;
                 if (mbEdge && !(dir == 0 ? left : top))
                 {
                     continue;
                 }
 
-                int addrP = !mbEdge ? addr : dir == 0 ? addr - 1 : addr - _widthMbs;
-                bool intra = intraQ || _pic.MbIntra[addrP];
-                for (int k = 0; k < 4; k++)
+                if (intraQ || mbIntra[!mbEdge ? addr : dir == 0 ? addr - 1 : addr - _widthMbs])
                 {
+                    int v = mbEdge ? 4 : 3;
+                    bsOut[o] = bsOut[o + 1] = bsOut[o + 2] = bsOut[o + 3] = v;
+                    continue;
+                }
+
+                // Block q of segment k, and the step back across the edge to its neighbour p.
+                int q = dir == 0 ? b0 + edge : b0 + (edge * w4), along = dir == 0 ? w4 : 1, back = dir == 0 ? 1 : w4;
+                for (int k = 0; k < 4; k++, q += along)
+                {
+                    int pb = q - back;
                     int bs;
-                    if (intra)
+                    if ((nonzero[q] | nonzero[pb]) != 0)
                     {
-                        bs = mbEdge ? 4 : 3;
+                        bs = 2;
                     }
                     else
                     {
-                        int qx = (mbX * 4) + (dir == 0 ? edge : k), qy = (mbY * 4) + (dir == 0 ? k : edge);
-                        int q = (qy * w4) + qx;
-                        int pb = dir == 0 ? q - 1 : q - w4;
-                        bs = (_mb.Nonzero[q] | _mb.Nonzero[pb]) != 0 ? 2 : SameMotion(pb, q) ? 0 : MotionDiffers(pb, q) ? 1 : 0;
+                        // The same references and vectors, the common case, give bS 0 at once.
+                        int rp0 = ref0[pb], rp1 = ref1[pb], rq0 = ref0[q], rq1 = ref1[q];
+                        bool same = rp0 == rq0 && rp1 == rq1 && (rp0 < 0 || mv0[pb] == mv0[q]) && (rp1 < 0 || mv1[pb] == mv1[q]);
+                        bs = !same && MotionDiffers(pb, q) ? 1 : 0;
                     }
 
-                    _bs[(dir * 16) + (edge * 4) + k] = bs;
+                    bsOut[o + k] = bs;
                 }
             }
         }
-    }
-
-    /// <summary>Whether two blocks have exactly the same references and vectors, the common case, which gives bS 0 at once.</summary>
-    private bool SameMotion(int p, int q)
-    {
-        H264Picture pic = _pic;
-        return pic.RefPicId[0][p] == pic.RefPicId[0][q] && pic.RefPicId[1][p] == pic.RefPicId[1][q]
-            && (pic.RefPicId[0][p] < 0 || pic.Mv[0][p] == pic.Mv[0][q]) && (pic.RefPicId[1][p] < 0 || pic.Mv[1][p] == pic.Mv[1][q]);
     }
 
     /// <summary>Whether the two blocks use different reference pictures, a different number of vectors or vectors 4 or more apart.</summary>
