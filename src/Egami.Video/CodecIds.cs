@@ -116,6 +116,12 @@ public static class CodecIds
     public const string Flac = "A_FLAC";
 
     /// <summary>
+    /// Apple Lossless (ALAC); <see cref="TrackInfo.CodecPrivate"/> holds its 24-byte ALACSpecificConfig (frame length, bit depth,
+    /// Rice parameters, channels, rate), as Matroska stores it.
+    /// </summary>
+    public const string Alac = "A_ALAC";
+
+    /// <summary>
     /// G.711 μ-law (ITU-T G.711), one byte per sample. Matroska has no id of its own for it, so this one is Egami.Video's and
     /// Matroska writers refuse it.
     /// </summary>

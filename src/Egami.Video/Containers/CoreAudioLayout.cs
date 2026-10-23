@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Numerics;
 
 using Egami.Video.Audio;
 
@@ -39,8 +40,13 @@ internal static class CoreAudioLayout
         Speakers speakers = tag == UseChannelBitmap
             ? (Speakers)(BinaryPrimitives.ReadUInt32BigEndian(body[4..]) & 0x3FFFF)
             : Tags.GetValueOrDefault(tag);
+        if (speakers == Speakers.None || BitOperations.PopCount((uint)speakers) != channels)
+        {
+            return null;
+        }
+
         ChannelLayout layout = new(speakers, channels);
-        return speakers != Speakers.None && layout.IsPositioned ? layout : null;
+        return layout.IsPositioned ? layout : null;
     }
 
     /// <summary>Builds a chunk body that stores a positioned layout as a bitmap, or null for an unpositioned one.</summary>
