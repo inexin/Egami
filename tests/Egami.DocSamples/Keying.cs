@@ -23,6 +23,25 @@ public class Keying
     }
 
     [Fact]
+    public void ChromaKey()
+    {
+        using SampleFiles files = new();
+        using Raster photo = Raster.Load("duck.png");
+        using Raster<Rgba8> backdrop = Raster.Create(photo.Width, photo.Height, new Rgba8(40, 60, 110, 255));
+
+        #region chroma-key
+        // Key out a green screen by chroma, so its lighter and darker patches go too, soften the edge, and take the green cast off
+        // what is left; then put the result over a new background.
+        photo.Apply(ops => ops
+            .ChromaKey(new Rgba8(0, 177, 64, 255), similarity: 0.12f, blend: 0.06f)
+            .Despill(DespillColor.Green, mix: 0.5f), Ct);
+        backdrop.Apply(ops => ops.DrawImage(photo, new Point(0, 0)), Ct);
+        #endregion
+
+        Assert.True(backdrop.Width > 0);
+    }
+
+    [Fact]
     public void Replace()
     {
         using SampleFiles files = new();

@@ -41,6 +41,7 @@ public sealed partial class RasterOps
                 OffsetOperation offset => new OperationReach(Math.Abs(offset.Shift.X), Math.Abs(offset.Shift.Y)),
                 Scopes.INeighbourhoodStep neighbourhood => neighbourhood.Reach is (int X, int Y) r ? new OperationReach(r.X, r.Y) : null,
                 ColorMatrixOperation or ArithmeticOperation or FilterOperation or BlendColorOperation or MakeTransparentOperation
+                    or ChromaKeyOperation or DespillOperation
                     or ReplaceColorOperation or LinearGrayscaleOperation or FlattenOperation or PosterizeOperation => new OperationReach(0, 0),
                 _ => null,
             };
