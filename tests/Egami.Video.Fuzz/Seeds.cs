@@ -132,6 +132,17 @@ internal static class Seeds
         }
     }
 
+    /// <summary>H.264 seeds: the smallest clips of tests/video/corpus/h264 whole, CAVLC and CABAC, 10-bit, 4:2:2, and one MP4.</summary>
+    public static void WriteH264(string directory)
+    {
+        string h264 = Directory.CreateDirectory(Path.Combine(directory, "h264")).FullName;
+        string corpus = Path.Combine("tests", "video", "corpus", "h264");
+        foreach (string file in (ReadOnlySpan<string>)["tiny-motion.h264", "qp-high.h264", "gray.h264", "high-crop.h264", "high10.mp4", "high422-cavlc.h264", "cavlc-slices.h264"])
+        {
+            File.Copy(Path.Combine(corpus, file), Path.Combine(h264, file), overwrite: true);
+        }
+    }
+
     public static void Write(string directory)
     {
         string avi = Directory.CreateDirectory(Path.Combine(directory, "avi")).FullName;
@@ -141,6 +152,7 @@ internal static class Seeds
         WriteVp8(directory);
         WriteVp9(directory);
         WriteAv1(directory);
+        WriteH264(directory);
         WriteMp4(directory);
         WriteMp3(directory);
         WriteSubtitles(directory);

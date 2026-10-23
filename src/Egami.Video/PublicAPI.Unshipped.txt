@@ -1787,3 +1787,4 @@ static Egami.Video.Audio.LoudnessValue.operator !=(Egami.Video.Audio.LoudnessVal
 static Egami.Video.Audio.LoudnessValue.operator ==(Egami.Video.Audio.LoudnessValue left, Egami.Video.Audio.LoudnessValue right) -> bool
 ~override Egami.Video.Audio.LoudnessValue.Equals(object obj) -> bool
 ~override Egami.Video.Audio.LoudnessValue.ToString() -> string
+static Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory<byte> payload) -> Egami.Video.Hdr10PlusMetadata?
