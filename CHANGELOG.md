@@ -21,6 +21,11 @@ changes that break code come only in a new major version.
 - Exit code 130 (`ExitCodes.Cancelled`) for a run stopped with Ctrl+C, and progress from within one file for the MCP server's
   notifications, both for `egami-video`.
 
+### Package icons
+
+- Egami.Cli (`egami`) and Egami.Cli.Host have their own icons on NuGet: a prompt on an indigo tile, and a terminal window on a
+  slate tile.
+
 ### Text recognition (OCR)
 
 - A new namespace, `Egami.Ocr`: one shape for every OCR engine, so code that needs text from an image works with whichever engine
@@ -189,6 +194,10 @@ which needs no .NET runtime.
 A new package: the `egami-video` command-line tool (Video V1.1), a .NET tool built on Egami.Video's public API that carries
 Egami.Video's version. It ships with the next Egami.Video release. Command and tool review accepted 2026-10-23 (all as
 recommended).
+
+### Package icon
+
+- The package has its own icon on NuGet: a play mark and a prompt on a magenta tile.
 
 ### Commands
 
