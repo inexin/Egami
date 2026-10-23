@@ -40,7 +40,7 @@ Commands:
   animate <inputs>              Make an animated GIF, WebP or PNG (APNG) from a stretch of video, at a frame rate and size of your choice.
   hash <inputs>                 Hash every decoded frame or packet of each track, in the layout of ffmpeg -f framemd5, to check that decoding matches.
   compare <reference> <inputs>  Measure PSNR and SSIM per plane between a reference clip and others, frame by frame in presentation order, as ffmpeg's psnr and ssim filters do.
-  audio <inputs>                Decode audio to WAV, FLAC or Ogg FLAC, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
+  audio <inputs>                Decode audio to WAV, FLAC, Ogg FLAC or Opus, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
   formats                       List the containers and codecs egami-video reads and writes, like ffmpeg -formats and -codecs.
   ffmpeg <arguments>            Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -lavfi, -filter_complex (psnr, ssim), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; anything else stops with exit code 2.
   ffprobe <arguments>           Run an ffprobe command line with egami-video: 'egami-video ffprobe -of json -show_streams in.mkv'. --explain prints the native command instead. Takes -i, -show_streams, -show_format, -show_packets, -show_frames, -show_chapters, -select_streams, -show_entries, -of, -print_format, -output_format (json, csv, compact, default, flat, xml), -v, -loglevel, -hide_banner, -pretty; anything else stops with exit code 2.
@@ -554,7 +554,7 @@ Options:
 
 ```text
 Description:
-  Decode audio to WAV, FLAC or Ogg FLAC, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
+  Decode audio to WAV, FLAC, Ogg FLAC or Opus, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
 
 Usage:
   egami-video audio <inputs>... [options]
@@ -572,11 +572,12 @@ Options:
   -j, --jobs <count>              How many files to work on at once; 0 (the default) for one per processor.
   --in-place                      Allow outputs to replace their inputs.
   --fail-fast                     Stop at the first file that fails.
-  -c, --codec <flac|pcm>          The audio codec to write: flac or pcm; by default FLAC, except PCM in WAV, Wave64 and AVI.
+  -c, --codec <flac|pcm|opus>     The audio codec to write: flac, pcm or opus; by default Opus in .opus and WebM, PCM in WAV, Wave64 and AVI, and FLAC otherwise.
   -ar, --rate <Hz>                Resample to this many samples per second.
   -ac, --channels <count|layout>  Mix to this many channels or this layout: mono, stereo, 2.1, 3.0, quad, 5.0, 5.1, 5.1(side), 6.1, 7.1 or 7.1.4.
   --sample-format <format>        The samples to store: u8, s16, s24, s32, f32 or f64 (float only with pcm); by default the source's depth.
   --level <0-8>                   FLAC's compression level, from 0 (fastest) to 8 (smallest); 5 by default.
+  -b, --bitrate <bits/s>          Opus's bitrate for all channels together, such as 96k; 64k a channel by default.
   -vn, --no-video                 Leave out video tracks, keeping only audio (and subtitles) in a Matroska or MP4 output.
 ```
 

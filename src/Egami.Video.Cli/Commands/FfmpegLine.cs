@@ -58,6 +58,8 @@ internal sealed class FfmpegLine
 
     public string? SampleRate { get; set; }
 
+    public string? AudioBitrate { get; set; }
+
     public string? Channels { get; set; }
 
     public string? SampleFormat { get; set; }
@@ -158,6 +160,7 @@ internal sealed class FfmpegLine
                 case "-frames:v" or "-vframes" or "-frames": line.Frames = Next(); break;
                 case "-q:v" or "-qscale:v" or "-qscale" or "-q": line.Quality = Next(); break;
                 case "-ar": line.SampleRate = Next(); break;
+                case "-b:a" or "-ab": line.AudioBitrate = Next(); break;
                 case "-ac": line.Channels = Next(); break;
                 case "-sample_fmt": line.SampleFormat = Next(); break;
                 case "-metadata": line.Metadata.Add(Next()); break;

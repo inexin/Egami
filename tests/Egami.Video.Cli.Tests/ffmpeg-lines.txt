@@ -80,6 +80,10 @@
 => audio in.mkv -o out.wav --rate 44100 --channels 2 --no-video | ffmpeg -i in.mkv -vn -ar 44100 -ac 2 out.wav
 => audio in.mkv -o out.wav --sample-format s16 --no-video | ffmpeg -i in.mkv -vn -sample_fmt s16 out.wav
 => audio in.mkv -o out.mkv --codec flac | ffmpeg -i in.mkv -c:v copy -c:a flac out.mkv
+=> audio in.flac -o out.opus --codec opus --bitrate 96k | ffmpeg -i in.flac -c:a libopus -b:a 96k out.opus
+=> audio in.wav -o out.opus | ffmpeg -i in.wav out.opus
+=> audio in.mkv -o out.webm --codec opus | ffmpeg -i in.mkv -c:v copy -c:a libopus out.webm
+=> audio in.mkv -o out.ogg --codec opus --bitrate 64k --no-video | ffmpeg -i in.mkv -vn -c:a opus -ab 64k out.ogg
 => audio in.mkv -o out.flac --track a:1 | ffmpeg -i in.mkv -map 0:a:1 out.flac
 => audio in.mkv -o out.wav --rate 16000 --channels 1 | ffmpeg -i in.mkv -ar 16000 -ac 1 out.wav
 => embed video.mkv --add audio.flac -o out.mkv | ffmpeg -i video.mkv -i audio.flac -c copy out.mkv

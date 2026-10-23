@@ -47,7 +47,7 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 | `animate` | Animated GIF, WebP or APNG | `ffmpeg -i in.mp4 out.gif` |
 | `hash` | Hashes of every frame or packet | `-f framemd5` |
 | `compare` | PSNR and SSIM between clips | `-lavfi psnr`, `-lavfi ssim` |
-| `audio` | Audio to WAV or FLAC; audio again while copying video | `-vn -c:a flac`, `-ar`, `-ac` |
+| `audio` | Audio to WAV, FLAC or Opus; audio again while copying video | `-vn -c:a flac`, `-c:a libopus -b:a`, `-ar`, `-ac` |
 | `formats` | The containers and codecs this build reads and writes | `ffmpeg -formats` |
 
 Commands that copy packets (`remux`, `trim`, `concat`, `segment`, `timestamps`, `extract`, `embed`, `metadata`) never decode, so
@@ -133,13 +133,17 @@ egami-video run in.mkv crop 0 10 160 100 + grayscale + save gray.avi --quality 9
 
 ## Audio
 
-`audio` decodes the picked audio track to WAV, Wave64, FLAC or Ogg FLAC, resampling with `--rate`, mixing with `--channels` and
-converting with `--sample-format`. With a video container as output it copies the video unchanged and encodes the audio again.
+`audio` decodes the picked audio track to WAV, Wave64, FLAC, Ogg FLAC or Opus, resampling with `--rate`, mixing with `--channels`
+and converting with `--sample-format`. With a video container as output it copies the video unchanged and encodes the audio
+again. `--codec` picks FLAC, PCM or Opus; .opus and WebM outputs get Opus, WAV, Wave64 and AVI get PCM, and the rest FLAC.
+`--bitrate` sets Opus's bitrate for all channels together (64k a channel by default); `--level` sets FLAC's compression.
 
 ```sh
 egami-video audio in.mkv -o sound.flac
 egami-video audio in.webm --rate 44100 --channels stereo --sample-format s16 -o sound.wav
 egami-video audio in.mkv --codec flac -o flac-audio.mkv
+egami-video audio sound.flac --bitrate 96k -o sound.opus
+egami-video audio in.mp4 --bitrate 64k -o opus-audio.webm
 ```
 
 ## Checking
