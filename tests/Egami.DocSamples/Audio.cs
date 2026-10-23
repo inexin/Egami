@@ -263,6 +263,33 @@ public class Audio
     }
 
     [Fact]
+    public void Caf()
+    {
+        using SampleFiles files = new();
+        using AudioFrame tone = Tone();
+
+        #region audio-caf
+        // CAF has no 4 GB limit and streams PCM: on a pipe the data chunk simply runs to the end of the file.
+        using (AudioWriter writer = AudioWriter.Create("tone.caf"))
+        {
+            writer.Write(tone);
+        }
+
+        // Opus, AAC, MP3, AC-3, FLAC and ALAC packets are cut by the packet table, which also gives the priming frames.
+        using (AudioWriter writer = AudioWriter.Create("tone-opus.caf", new AudioWriterOptions { Codec = AudioCodecs.Opus }))
+        {
+            writer.Write(tone);
+        }
+
+        AudioTrackInfo opus = (AudioTrackInfo)MediaFile.Probe("tone-opus.caf").Tracks[0];
+        Console.WriteLine($"{opus.CodecId}: {opus.Duration}, {opus.CodecDelay} priming");
+        #endregion
+
+        Assert.Equal("CAF", MediaFile.Probe("tone.caf").FormatName);
+        Assert.Equal(CodecIds.Opus, opus.CodecId);
+    }
+
+    [Fact]
     public void VideoWithAudio()
     {
         using SampleFiles files = new();

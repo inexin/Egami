@@ -452,6 +452,22 @@ V5.9 stage A: AIFF and AIFF-C, and G.711.
   AIFF-C, WAV, AVI (format tags 6 and 7) and MP4 and MOV (ulaw, alaw). Matroska has no G.711 id, so it does not take them.
 - Fuzz target `aiff`.
 
+V5.9 stage B: CAF.
+
+### CAF
+
+- `CafFormat`: Apple's Core Audio Format (.caf). Reads PCM (integer and float, either byte order), G.711, ALAC, Opus, AAC, MP3,
+  MP2, AC-3 and FLAC; other formats pass through as `X_CAF/<format>` packets. The packet table cuts variable-size packets and
+  gives the priming frames (`CodecDelay`) and the end padding (the last packets' durations); the magic cookie becomes
+  `CodecPrivate` (ALAC's 24-byte config, AAC's AudioSpecificConfig, FLAC's metadata blocks; Opus gets an OpusHead). The info
+  chunk becomes tags, markers and regions (named from strg) become chapters, and chan gives the layout. Sample-exact seeking
+  for PCM, packet-exact for the rest.
+- Writes one track of any of those codecs. PCM and G.711 stream, with a data chunk sized -1 on a non-seekable output; other
+  codecs get their packet table after the samples, or before them through a temporary file on a non-seekable output.
+  ffmpeg reads the files with their tags and layout. `CodecIds.Alac` names ALAC tracks (decoding comes in stage C).
+- Fuzz target `caf`; `tools/video/fuzz-afl.py` now knows the `aiff` and `caf` targets. A CHAN or chan chunk whose bitmap names
+  more or fewer speakers than the file has channels is now ignored instead of throwing (AIFF-C too).
+
 ## Egami.Video 0.5.0 (unreleased)
 
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;
