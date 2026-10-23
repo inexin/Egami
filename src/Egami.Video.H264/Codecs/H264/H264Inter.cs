@@ -255,6 +255,64 @@ internal sealed class H264Inter
         ref ushort a = ref MemoryMarshal.GetArrayDataReference(_pred0);
         ref ushort b = ref MemoryMarshal.GetArrayDataReference(_pred1);
         ref ushort d = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(plane), at);
+        if (max == 255 && w1 == 0 && Math.Abs(w0) <= 128 && round <= 64)
+        {
+            // One list at 8 bits: a sample times a weight of at most 128, plus the rounding, fits a signed 16-bit lane.
+            Vector128<short> sw0 = Vector128.Create((short)w0), sRound = Vector128.Create((short)round), sOffset = Vector128.Create((short)offset),
+                sMax = Vector128.Create((short)max);
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x += 8)
+                {
+                    Vector128<short> p0 = Vector128.LoadUnsafe(ref a, (nuint)((y * PredStride) + x)).AsInt16();
+                    Vector128<short> v = (((p0 * sw0) + sRound) >> shift) + sOffset;
+                    v = Vector128.Min(Vector128.Max(v, Vector128<short>.Zero), sMax);
+                    ref ushort to = ref Unsafe.Add(ref d, (y * stride) + x);
+                    if (w == 4)
+                    {
+                        Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref to), v.AsUInt64().ToScalar());
+                    }
+                    else
+                    {
+                        v.AsUInt16().StoreUnsafe(ref to);
+                    }
+                }
+            }
+
+            return;
+        }
+
+        if (Sse2.IsSupported)
+        {
+            // Two lists: the products of each sample pair add in one multiply-add into 32-bit lanes.
+            Vector128<short> weights = Vector128.Create((int)((ushort)w0 | ((uint)(ushort)w1 << 16))).AsInt16();
+            Vector128<int> iRound = Vector128.Create(round), iOffset = Vector128.Create(offset), iMax = Vector128.Create(max);
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x += 8)
+                {
+                    nuint i = (nuint)((y * PredStride) + x);
+                    Vector128<short> p0 = Vector128.LoadUnsafe(ref a, i).AsInt16(), p1 = Vector128.LoadUnsafe(ref b, i).AsInt16();
+                    Vector128<int> lo = ((Sse2.MultiplyAddAdjacent(Sse2.UnpackLow(p0, p1), weights) + iRound) >> shift) + iOffset;
+                    Vector128<int> hi = ((Sse2.MultiplyAddAdjacent(Sse2.UnpackHigh(p0, p1), weights) + iRound) >> shift) + iOffset;
+                    lo = Vector128.Min(Vector128.Max(lo, Vector128<int>.Zero), iMax);
+                    hi = Vector128.Min(Vector128.Max(hi, Vector128<int>.Zero), iMax);
+                    Vector128<ushort> v = Vector128.Narrow(lo.AsUInt32(), hi.AsUInt32());
+                    ref ushort to = ref Unsafe.Add(ref d, (y * stride) + x);
+                    if (w == 4)
+                    {
+                        Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref to), v.AsUInt64().ToScalar());
+                    }
+                    else
+                    {
+                        v.StoreUnsafe(ref to);
+                    }
+                }
+            }
+
+            return;
+        }
+
         Vector128<int> vw0 = Vector128.Create(w0), vw1 = Vector128.Create(w1), vRound = Vector128.Create(round),
             vOffset = Vector128.Create(offset), vMax = Vector128.Create(max);
         for (int y = 0; y < h; y++)
