@@ -512,7 +512,7 @@ internal sealed partial class Av1TileEncoder
         _reconstructor.InterPrediction(this);
         _reconstructor.LumaOnly = false;
         long error = Distortion(0, _b.Size);
-        start.Restore(this);
+        start.Restore(this, lumaOnly: !_header.SegmentationEnabled);
         return Av1Rate.RdCost(_rdmult, rate, error);
     }
 

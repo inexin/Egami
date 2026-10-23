@@ -63,12 +63,22 @@ public class Avif
         logo.Save("logo.avif", new AvifWriterOptions { Quality = 80, AlphaQuality = 100 });
         #endregion
 
+        #region write-animation
+        // A raster with several frames saves as an animated AVIF: one AV1 stream of a key frame and inter frames, each frame's
+        // delay, the loop count (0 plays forever) and, when any frame is transparent, an alpha track.
+        using Raster<Rgba8> pan = Raster.Load<Rgba8>("pan.gif");
+        pan.Metadata.LoopCount = 0;
+        pan.Save("pan.avif", new AvifWriterOptions { Quality = 70 });
+        #endregion
+
         #region write-yuv
         // YUV planes are written as they are: no conversion or resampling, their matrix, range and siting in the file.
         using YuvRaster planes = YuvRaster.Load("duck.avif");
         planes.Save("duck-planes.avif", new AvifWriterOptions { Lossless = true });
         #endregion
 
+        using Raster<Rgba8> panAgain = Raster.Load<Rgba8>("pan.avif");
+        Assert.Equal(pan.FrameCount, panAgain.FrameCount);
         using YuvRaster again = YuvRaster.Load("duck-planes.avif");
         Assert.Equal((planes.ChromaFormat, planes.BitDepth, planes.Color), (again.ChromaFormat, again.BitDepth, again.Color));
         Assert.True(new FileInfo("duck-q35.avif").Length < new FileInfo("duck-q60.avif").Length);

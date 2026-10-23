@@ -426,6 +426,16 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         (long Cost, int Row, int Col) intrabc = IntrabcAllowed(bsize) ? SearchIntrabc(bsize, start, budget, chroma) : (long.MaxValue, 0, 0);
         budget = Math.Min(budget, intrabc.Cost);
 
+        // An inter block predicted well enough to drop its residual is not searched for an intra mode, below the efforts that
+        // search everything (libaom's skip_intra_in_interframe).
+        if (inter.Cost != long.MaxValue && inter.Choice.Skip && !_profile.IntraAfterSkip)
+        {
+            start.Restore(this);
+            long kept = EncodeInterWinner(inter.Choice, start, chroma);
+            Give(start);
+            return kept;
+        }
+
         // Luma: the modes whose prediction alone costs least, coded in full at the largest transform; then the best of them at
         // each smaller transform depth. Chroma's own symbols count at DC.
         LumaChoice bestLuma = default;
@@ -1696,6 +1706,9 @@ internal sealed class Av1SearchProfile
     /// <summary>Gets whether each reference's global motion is estimated.</summary>
     internal bool GlobalMotion { get; init; }
 
+    /// <summary>Gets whether an inter block whose prediction needs no residual still searches the intra modes.</summary>
+    internal bool IntraAfterSkip { get; init; }
+
     /// <summary>Gets a buffer for the transform types of one size.</summary>
     internal int[] TxTypeBuffer { get; } = new int[16];
 
@@ -1736,6 +1749,7 @@ internal sealed class Av1SearchProfile
             Filters = effort <= 4 ? 0 : effort <= 6 ? 1 : 2,
             InterTxSplit = effort >= 5,
             GlobalMotion = effort >= 7,
+            IntraAfterSkip = effort >= 8,
         };
 
     }

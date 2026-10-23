@@ -31,6 +31,30 @@ changes that break code come only in a new major version.
   10% larger on test patterns), taking 1.3 to 2.9 times libvpx's time on one thread. Lossy WebP stills are unchanged, byte for
   byte.
 
+### AV1 video encoding
+
+- `Av1StreamEncoder` encodes AV1 video a frame at a time from `YuvRaster` pictures: key and intra-only frames with the AVIF intra
+  encoder, and inter frames that predict each block from up to seven references with motion search to an eighth of a pixel from
+  the reference vector stack, NEARESTMV, NEARMV, GLOBALMV and NEWMV, the compound pairs (averaged, distance-weighted, wedge and
+  difference-weighted), skip mode, inter-intra, overlapped and locally warped motion and dual interpolation filters, chosen by
+  rate and distortion against the intra modes as `Effort` allows. From Effort 7 each reference's global motion (translation,
+  rotation and zoom, or affine) is estimated. Hidden frames are held for the next temporal unit and shown later with
+  `ShowExisting`. libaom 3.15.2 and dav1d 1.5.4 decode every test stream exactly as Egami does, and the output is the same at one
+  thread and at all cores.
+- `Av1SequenceOptions` sets the stream's size, bit depth, chroma format, color, siting and level, or with `FromSequenceHeader`
+  reproduces an existing sequence header byte for byte. `Av1FramePlan` sets each frame's kind, `Quality` or `QIndex`, `Effort`,
+  reference slots, refreshes, hidden frames and order hints, error resilience, primary reference, superblock quantizers and screen
+  content tools; `Av1References` goes with it. `Av1EncodedFrame` returns the temporal unit with its bits, quantizer, order hint and
+  squared error.
+- AVIF stills are unchanged, byte for byte.
+
+### Animated AVIF
+
+- A raster with several frames saves as an animated AVIF (avis): one AV1 stream in a color track with each frame's delay, the
+  alpha, when any frame is transparent, in an auxiliary track, the loop count in the edit list, and the first frame as the primary
+  item. avifdec decodes every frame exactly as Egami does.
+- AVIF and HEIC image sequences now load their loop count from the edit list and the track duration (it was 0 or 1).
+
 ## Egami.Cli 1.1.0 (2026-10-22)
 
 A new package: the `egami` command-line tool, a .NET tool built on Egami's public API (Roadmap 2.0). It carries its own copy of
