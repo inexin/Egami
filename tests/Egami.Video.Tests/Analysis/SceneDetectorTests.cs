@@ -249,14 +249,7 @@ public sealed class SceneDetectorTests
                 detector.Add(frames[i]);
             }
 
-            long before = GC.GetAllocatedBytesForCurrentThread();
-            for (int i = 20; i < frames.Count; i++)
-            {
-                detector.Add(frames[i]);
-            }
-
-            long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-            Assert.True(allocated < 1024, $"{allocated} bytes allocated over 40 frames");
+            FrameAllocations.AssertNone(nameof(SceneDetector), frames.Count - 20, i => detector.Add(frames[20 + i]));
         }
         finally
         {
