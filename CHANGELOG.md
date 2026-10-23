@@ -70,6 +70,12 @@ which needs no .NET runtime.
   `egami-heic` for HEIC, which the tool leaves out.
 ## Egami 1.1.1 (unreleased)
 
+### Ink drawing
+
+- An image drawn on an `InkCanvas` with overprint off now knocks out every plate it covers, as a solid fill does. Before, the
+  plates the image had no ink for (spot plates under an RGB photo, or under an ink image of process plates only) kept what
+  was below where the image was opaque, so a spot showed through.
+
 ### AV1 video
 
 - 8-bit AV1 decodes about 9 % faster on one thread: 8-bit frames keep their samples as bytes, and the motion filter, the
