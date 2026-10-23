@@ -92,6 +92,46 @@ internal static class CutTimes
     }
 
     /// <summary>
+    /// Clips a subtitle packet to <c>[start, end)</c>: a cue shown across <paramref name="start"/> begins there, and one shown
+    /// past <paramref name="end"/> stops there. Returns whether any of the cue is left; a packet without a duration is left when
+    /// it starts inside. A <see langword="null"/> bound leaves that side open.
+    /// </summary>
+    public static bool ClipCue(EncodedPacket packet, MediaTime? start, MediaTime? end)
+    {
+        MediaTime time = packet.Timestamp;
+        if (end is { } stop && time >= stop)
+        {
+            return false;
+        }
+
+        if (packet.Duration is not { } duration)
+        {
+            return start is not { } first || time >= first;
+        }
+
+        MediaTime last = time + duration;
+        if (start is { } begin && time < begin)
+        {
+            if (last <= begin)
+            {
+                return false;
+            }
+
+            packet.Timestamp = begin;
+            packet.DecodeTimestamp = packet.DecodeTimestamp is null ? null : begin;
+            time = begin;
+        }
+
+        if (end is { } limit && last > limit)
+        {
+            last = limit;
+        }
+
+        packet.Duration = last - time;
+        return true;
+    }
+
+    /// <summary>
     /// The chapters that overlap <c>[start, end)</c>, clipped to it and moved <paramref name="shift"/> earlier; an open
     /// <paramref name="end"/> keeps everything after <paramref name="start"/>.
     /// </summary>

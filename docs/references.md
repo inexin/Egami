@@ -96,6 +96,10 @@ LGPL code is never read.
 | ISO/IEC 11172-3 and 13818-3 (MPEG-1 and MPEG-2 audio), with MPEG-2.5's 8 to 12 kHz rates | MPEG audio Layers I, II and III, frame headers and the CRC-16; the ISO/IEC 11172-4 compliance streams test the decoder |
 | ID3 tag version 2.2, 2.3 and 2.4 and the ID3v1 layout (id3.org informal standards); APEv2 item layout (wiki.hydrogenaud.io) | Tags, pictures and chapters in .mp3 files |
 | Xing VBR header, Fraunhofer VBRI header, and the LAME "Mp3 Info Tag rev 1" specification (Gabriel Bouvigne) | Frame counts, seek tables, and the encoder delay and padding for gapless playback |
+| WebVTT, W3C; WHATWG HTML named character references (as data) | WebVTT parsing and writing, cue text entities |
+| SubRip (SRT) as players read it; Sub Station Alpha v4.00+ script format | SRT, ASS and SSA files |
+| Matroska subtitle codec mapping; WebM WebVTT mapping | `S_TEXT/*` and `D_WEBVTT/*` tracks |
+| ISO/IEC 14496-30; 3GPP TS 26.245 | WebVTT (`wvtt`) and timed text (`tx3g`) in MP4 |
 
 ### Reference code (ideas only)
 
@@ -103,6 +107,7 @@ LGPL code is never read.
 | --- | --- |
 | mkvalidator (Matroska foundation-source) | BSD-3 |
 | libwebp, libvpx (the VP8 encoder: mode decision, loop filter deltas), dav1d, libaom | BSD |
+| libass (how ASS override tags behave), pysubs2 (subtitle edge cases) | ISC, MIT |
 
 ### Translated code (notice in THIRD-PARTY-NOTICES.md)
 
@@ -118,6 +123,8 @@ LGPL code is never read.
 | --- | --- | --- |
 | FFmpeg, ffprobe | LGPL/GPL | Make test clips, decode and probe for comparison, in Docker |
 | libvpx vpxenc and vpxdec | BSD-3 | Make VP8 and VP9 clips and give the expected frames, and decode the VP8 encoder's streams, in Docker (`tools/vp8ref`, `tools/video/vp9ref`) |
-| MKVToolNix (mkvinfo) | GPL-2.0 | Check our Matroska files, in Docker |
+| MKVToolNix (mkvinfo, mkvmerge, mkvextract) | GPL-2.0 | Check our Matroska files and make and check subtitle tracks, in Docker |
+| GPAC MP4Box | LGPL-2.1 | Make and check MP4 subtitle tracks (`tools/video/make-subtitle-tracks.py`), in Docker |
+| web-platform-tests webvtt suite | BSD-3 | WebVTT parsing tests, fetched as data by `tools/video/fetch-webvtt-tests.py` |
 | libopus opus_demo and opus_compare, opus-tools | BSD-3 | Decode the Opus test vectors and make Ogg Opus clips, in Docker (`tools/video/opusref`) |
 | flac, SoX | GPL-2.0 | Make FLAC clips, check our FLAC files with flac -t, time resampling, in Docker (`tools/video/audioref`) |

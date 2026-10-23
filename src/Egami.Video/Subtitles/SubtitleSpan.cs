@@ -13,16 +13,16 @@ namespace Egami.Video.Subtitles;
 /// </example>
 public sealed record SubtitleSpan(string Text)
 {
-    /// <summary>Gets whether the text is bold.</summary>
+    /// <summary>Gets whether the text is bold; for ASS, the style's bold counts.</summary>
     public bool Bold { get; init; }
 
-    /// <summary>Gets whether the text is italic.</summary>
+    /// <summary>Gets whether the text is italic; for ASS, the style's italics count.</summary>
     public bool Italic { get; init; }
 
-    /// <summary>Gets whether the text is underlined.</summary>
+    /// <summary>Gets whether the text is underlined; for ASS, the style's underline counts.</summary>
     public bool Underline { get; init; }
 
-    /// <summary>Gets whether the text is struck out.</summary>
+    /// <summary>Gets whether the text is struck out; for ASS, the style's strikeout counts.</summary>
     public bool Strikeout { get; init; }
 
     /// <summary>Gets the text color (SRT <c>font color</c>, ASS <c>\c</c>), or <see langword="null"/> for the style's color.</summary>

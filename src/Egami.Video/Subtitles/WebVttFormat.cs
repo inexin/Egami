@@ -285,7 +285,11 @@ internal static class WebVttFormat
             return false;
         }
 
-        long total = (((value1 * 3600) + (value2 * 60) + value3) * 1000) + value4;
+        if (!SubtitleText.TryTotal(value1, value2, value3, value4, 1000, out long total))
+        {
+            return false;
+        }
+
         time = new MediaTime(total, SubtitleText.Milliseconds);
         return true;
     }
@@ -513,6 +517,12 @@ internal static class WebVttFormat
                 continue;
             }
 
+            if (cue.IsComment)
+            {
+                log.Dropped("ASS comment events", index + 1);
+                continue;
+            }
+
             SubtitleWriting.EnsureBlankLine(output, newLine);
             SubtitleWriting.CheckTimes(cue, index, log);
             SubtitleWriting.CheckCue(document, cue, index, log, SubtitleFormat.WebVtt);
@@ -534,7 +544,7 @@ internal static class WebVttFormat
             string body = cue.TextUnchanged(SubtitleFormat.WebVtt) ? cue.RawText! : WebVttCueText.Write(spans);
 
             // A cue's text ends at a blank line or an arrow, so neither may appear in it.
-            body = string.Join('\n', body.ReplaceLineEndings("\n").Split('\n').Where(l => l.Length > 0)).Replace("-->", "--&gt;");
+            body = string.Join('\n', body.ReplaceLineBreaks("\n").Split('\n').Where(l => l.Length > 0)).Replace("-->", "--&gt;");
             if (body.Length > 0)
             {
                 output.Append(body.Replace("\n", newLine)).Append(newLine);
@@ -554,7 +564,7 @@ internal static class WebVttFormat
         output.Append("WEBVTT");
         if (document.HeaderText is { Length: > 0 } header)
         {
-            string[] lines = [.. header.ReplaceLineEndings("\n").Split('\n').Where(l => l.Length > 0 && !l.Contains("-->", StringComparison.Ordinal))];
+            string[] lines = [.. header.ReplaceLineBreaks("\n").Split('\n').Where(l => l.Length > 0 && !l.Contains("-->", StringComparison.Ordinal))];
             if (lines.Length > 0 && lines[0].Length > 0)
             {
                 output.Append(' ').Append(lines[0]);
@@ -588,7 +598,7 @@ internal static class WebVttFormat
 
         foreach (string sheet in document.StyleSheets)
         {
-            string css = string.Join(newLine, sheet.ReplaceLineEndings("\n").Split('\n').Where(l => l.Length > 0).Select(l => l.Replace("-->", "- ->")));
+            string css = string.Join(newLine, sheet.ReplaceLineBreaks("\n").Split('\n').Where(l => l.Length > 0).Select(l => l.Replace("-->", "- ->")));
             output.Append(newLine).Append("STYLE").Append(newLine).Append(css).Append(newLine);
         }
 

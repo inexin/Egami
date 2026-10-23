@@ -23,4 +23,11 @@ if (args is ["--encode-opus", .. string[] opus])
     return;
 }
 
+// Time reading subtitle files and writing them as SRT (V1.2): -- --time-subtitles <file>..., or --time-subtitles --write <dir>.
+if (args is ["--time-subtitles", .. string[] subtitles])
+{
+    SubtitleTiming.Run(subtitles);
+    return;
+}
+
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);

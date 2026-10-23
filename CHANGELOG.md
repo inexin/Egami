@@ -306,6 +306,8 @@ V5.8: MPEG audio decoding and .mp3 files. The API review is still to come.
 
 ### Text subtitles (V1.2)
 
+API reviewed and accepted 2026-10-23 (Q1 applies ASS styles in SRT and WebVTT; the rest as recommended).
+
 - `SubtitleDocument` in `Egami.Video.Subtitles` reads and writes SRT, WebVTT and ASS, and reads SSA v4: `Load`, `Parse`,
   `Save`, `ToText` and `DetectFormat`. Cues (`SubtitleCue`) are spans of styled text (`SubtitleSpan`) with exact `MediaTime`
   times, a keypad `SubtitleAlignment` and an exact `SubtitlePosition`; ASS styles, layers, margins, embedded fonts and every
@@ -323,6 +325,15 @@ V5.8: MPEG audio decoding and .mp3 files. The API review is still to come.
 - Matroska subtitle blocks carry their BlockDuration, so cue durations survive a remux. Files from FFmpeg, MKVToolNix and
   MP4Box read back to their source cues (tools/video/make-subtitle-tracks.py). ffprobe, mkvmerge and MP4Box read Egami's
   files cleanly (tools/video/check-subtitle-tracks.py).
+- egami-video `trim` keeps subtitle cues shown across the cut, clipped to it (ffmpeg's stream copy drops a cue that starts
+  before the cut and lets the last one run past it); `concat` keeps each clip's cues inside the clip; `timestamps --fix`
+  leaves cues that start together alone.
+- Conversions give FFmpeg's cues on a 50-conversion set (tools/video/make-subtitle-references.py); the guide lists the three
+  places where they differ. An ASS style's bold, italics, underline and strikeout show in SRT and WebVTT as tags, as in
+  FFmpeg; ASS comment events are left out of them and reported (API review Q1). Reading and writing is 8 to 12 times faster than FFmpeg's (tools/video/time-subtitles.py).
+- Fuzz targets `subs` and `subtrack`. Their first runs found times too late to hold, karaoke past them, an ASS file cut off
+  in its header saved with a line end added, ASS events after a changed format line, and bad UTF-8 in WebVTT read without a
+  report; all fixed, with tests.
 
 ## Egami.Video 0.5.0 (unreleased)
 

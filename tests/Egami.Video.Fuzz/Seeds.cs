@@ -34,6 +34,23 @@ internal static class Seeds
         }
     }
 
+    /// <summary>Subtitle seeds: the subtitle files of the corpus, and its files with subtitle tracks (tests/video/corpus/subtitles).</summary>
+    public static void WriteSubtitles(string directory)
+    {
+        string corpus = Path.Combine("tests", "video", "corpus", "subtitles");
+        string subs = Directory.CreateDirectory(Path.Combine(directory, "subs")).FullName;
+        string tracks = Directory.CreateDirectory(Path.Combine(directory, "subtrack")).FullName;
+        foreach (string file in Directory.GetFiles(corpus).Concat(Directory.GetFiles(Path.Combine(corpus, "tracks"), "*.vtt")))
+        {
+            File.Copy(file, Path.Combine(subs, Path.GetFileName(file)), overwrite: true);
+        }
+
+        foreach (string file in Directory.GetFiles(Path.Combine(corpus, "tracks")).Where(f => !f.EndsWith(".vtt", StringComparison.Ordinal)))
+        {
+            File.Copy(file, Path.Combine(tracks, Path.GetFileName(file)), overwrite: true);
+        }
+    }
+
     /// <summary>VP9 seeds cut from the corpus (tests/video/corpus/vp9): the first packets of a few clips, in files and as raw packets.</summary>
     public static void WriteVp9(string directory)
     {
@@ -126,6 +143,7 @@ internal static class Seeds
         WriteAv1(directory);
         WriteMp4(directory);
         WriteMp3(directory);
+        WriteSubtitles(directory);
         File.WriteAllBytes(Path.Combine(y4m, "420.y4m"), [.. "YUV4MPEG2 W4 H2 F25:1 Ip A1:1 C420jpeg XCOLORRANGE=FULL\n"u8, .. "FRAME\n"u8, .. new byte[12], .. "FRAME\n"u8, .. new byte[12]]);
         File.WriteAllBytes(Path.Combine(y4m, "444p10.y4m"), [.. "YUV4MPEG2 W2 H2 F30000:1001 It A4:3 C444p10\n"u8, .. "FRAME\n"u8, .. new byte[24]]);
 

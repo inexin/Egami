@@ -60,7 +60,8 @@ reader you changed is enough for a pull request.
 
 Egami.Video keeps its tools in `tools/video/`: `make-corpus.py`, `make-vp8-corpus.py` and `make-vp9-corpus.py` make the clips
 in `tests/video/corpus` and fetch the VP8 and VP9 test vectors into `.cache/video`; `fuzz-afl.py` fuzzes its readers and
-codecs; `profile-vp9.py` profiles VP9 against libvpx. Its gates against FFmpeg, libvpx and the Matroska tools live in the
+codecs; `profile-vp9.py` profiles VP9 against libvpx; `make-subtitle-tracks.py`, `check-subtitle-tracks.py`,
+`make-subtitle-references.py` and `time-subtitles.py` make and check the subtitle files against FFmpeg, MKVToolNix and MP4Box. Its gates against FFmpeg, libvpx and the Matroska tools live in the
 egami-compare repository (`video/`). Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Video.Benchmarks`.
 
 ## Repository layout

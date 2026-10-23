@@ -72,7 +72,8 @@ references use the full HTML table.
 Any document saves to any writable format. Alignment and positions carry across: a WebVTT cue placed with `line` and
 `position` percentages becomes an ASS `\an` and `\pos`, and an ASS alignment becomes WebVTT `line` and `align` settings.
 SRT keeps bold, italic, underline, colors and fonts as the common `<b>`, `<i>`, `<u>` and `<font>` tags and alignment as
-`{\an8}`. What a format cannot hold is left out and reported once per kind, such as ASS animation tags in SRT, or colors in
+`{\an8}`. An ASS style's bold, italics, underline and strikeout are part of its cues' spans, so they show in SRT and WebVTT
+as tags; ASS comment events are left out. What a format cannot hold is left out and reported once per kind, such as ASS animation tags in SRT, or colors in
 WebVTT.
 
 | Feature | SRT | WebVTT | ASS |
@@ -102,14 +103,32 @@ mov_text keeps bold, italic, underline, colors and font sizes; alignment, positi
 `Subtitle.Dropped`. Tracks written by FFmpeg, MKVToolNix and GPAC MP4Box read back to the cues of their source file, and
 those tools read the tracks Egami.Video writes.
 
+The egami-video command keeps subtitle tracks in step when it cuts: `trim` clips a cue shown across --from or --to to the cut,
+`concat` keeps each clip's cues inside that clip, and `timestamps --shift` moves cues with the other tracks.
+
 [!code-csharp[](../../../tests/Egami.DocSamples/Subtitles.cs#subtitles-tracks)]
 
 ## Encodings and diagnostics
 
 Files are read by their byte order mark (UTF-8, UTF-16 little or big-endian), then as UTF-8 when the bytes are valid UTF-8,
 then in `SubtitleReaderOptions.Encoding` when it is set. Without one, WebVTT is UTF-8 (as its spec says), and other files
-are read as UTF-16 when they look like it, or else as Windows-1252, with a `Subtitle.Encoding` warning. Output is always
-UTF-8. The warnings go to the `Diagnostics` handler of the `MediaContext`'s `Egami` context; see
+are read as UTF-16 when they look like it, or else as Windows-1252, with a `Subtitle.Encoding` warning. Bytes that are not
+valid in a file's own Unicode encoding are read as U+FFFD and reported the same way. Output is always UTF-8. The warnings go to the `Diagnostics` handler of the `MediaContext`'s `Egami` context; see
 [Diagnostics](../diagnostics.md).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Subtitles.cs#subtitles-encoding)]
+
+## Compared with FFmpeg
+
+Converting between SRT, WebVTT and ASS gives the same cues as FFmpeg's conversions, in times, text, bold, italics and
+underline, on a set of 50 conversions (tools/video/make-subtitle-references.py). Where they differ, FFmpeg loses or changes
+what the source says:
+
+| Source | FFmpeg | Egami.Video |
+| --- | --- | --- |
+| A no-break space, written as SRT | ASS's `\h` code | The character |
+| SRT text `< 3 >`, written as WebVTT | Copied, so it opens a tag and the text is lost | `&lt; 3 &gt;` |
+| A time past 9:59:59.99, written as ASS | Clipped to 9:59:59.99 | Written as it is, such as 10:00:00.00 |
+
+Reading a file of 20,000 cues and writing it as SRT takes Egami.Video 8 to 12 times less time than FFmpeg on an idle machine
+(tools/video/time-subtitles.py; FFmpeg's start-up is taken off its time).

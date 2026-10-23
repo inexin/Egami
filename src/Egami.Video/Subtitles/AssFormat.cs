@@ -64,6 +64,9 @@ internal static class AssFormat
         StringBuilder? extraSection = null;
         (string Name, bool Font, StringBuilder Data)? attachment = null;
         int leadingStart = 0, firstEvent = -1;
+
+        // The format line in force where the header ends: events written after an unchanged header must follow it.
+        string[]? headerFormat = null;
         string header = "";
 
         void EndAttachment()
@@ -157,7 +160,7 @@ internal static class AssFormat
                         break;
                     }
 
-                    if (ParseEvent(body, eventFormat, i, log) is not { } cue)
+                    if (ParseEvent(body, eventFormat, document.Styles, i, log) is not { } cue)
                     {
                         break;
                     }
@@ -168,6 +171,7 @@ internal static class AssFormat
                     if (firstEvent < 0)
                     {
                         (header, leading, firstEvent) = (leading, "", i);
+                        headerFormat = eventFormat;
                     }
 
                     cue.MarkRead(format, FieldText(body, eventFormat), text[blockStart..lines[i].Next], leading, document.Cues.Count);
@@ -198,7 +202,7 @@ internal static class AssFormat
         }
 
         document.MarkRead(format, header, text[leadingStart..], [.. extra]);
-        document.Source = document.Source! with { EventFormat = eventFormat };
+        document.Source = document.Source! with { EventFormat = headerFormat ?? eventFormat };
         return document;
     }
 
@@ -225,7 +229,7 @@ internal static class AssFormat
         return SplitFields(body, format.Length)[^1];
     }
 
-    private static SubtitleCue? ParseEvent(string body, string[] format, int line, SubtitleLog log)
+    private static SubtitleCue? ParseEvent(string body, string[] format, List<SubtitleStyle> styles, int line, SubtitleLog log)
     {
         string[] fields = SplitFields(body, format.Length);
         MediaTime start = default, end = default;
@@ -278,10 +282,23 @@ internal static class AssFormat
 
         cue.Start = start;
         cue.End = end;
-        cue.Spans.AddRange(AssTags.Parse(text, start, out SubtitleAlignment? alignment, out SubtitlePosition? position));
+        cue.Spans.AddRange(AssTags.Parse(text, start, name => LookOf(styles, name ?? cue.Style), out SubtitleAlignment? alignment, out SubtitlePosition? position));
         cue.Alignment = alignment;
         cue.Position = position;
         return cue;
+    }
+
+    /// <summary>
+    /// A style's bold, italic, underline and strikeout as a span: the named style, or Default when there is none by that name
+    /// (as players fall back), or plain text when the script has neither.
+    /// </summary>
+    internal static SubtitleSpan LookOf(List<SubtitleStyle> styles, string? name)
+    {
+        string wanted = (name ?? "Default").TrimStart('*');
+        SubtitleStyle? style = styles.Find(s => s.Name == wanted) ?? styles.Find(s => s.Name.Equals(wanted, StringComparison.OrdinalIgnoreCase))
+            ?? styles.Find(s => s.Name.Equals("Default", StringComparison.OrdinalIgnoreCase));
+        return style is null ? new SubtitleSpan("")
+            : new SubtitleSpan("") { Bold = style.Bold, Italic = style.Italic, Underline = style.Underline, Strikeout = style.Strikeout };
     }
 
     private static int Int(string value)
@@ -348,7 +365,12 @@ internal static class AssFormat
             return false;
         }
 
-        time = new MediaTime(checked((((((hours * 60) + minutes) * 60) + seconds) * 100) + centi), SubtitleText.Centiseconds);
+        if (!SubtitleText.TryTotal(hours, minutes, seconds, centi, 100, out long total))
+        {
+            return false;
+        }
+
+        time = new MediaTime(total, SubtitleText.Centiseconds);
         return true;
     }
 
@@ -486,8 +508,10 @@ internal static class AssFormat
     public static string Write(SubtitleDocument document, string newLine, SubtitleLog log)
     {
         StringBuilder output = new();
-        bool raw = document.HeaderUnchanged(SubtitleFormat.Ass);
-        string[] format = raw && document.Source!.EventFormat is { } own ? own : EventFields;
+        // An unchanged header is written as read, unless its event format lacks the fields a cue needs.
+        bool raw = document.HeaderUnchanged(SubtitleFormat.Ass) && (document.Source!.EventFormat is not { } own || Writable(own)
+            || document.Cues.All(c => c.Source is { Format: SubtitleFormat.Ass } && c.IsUnchanged(SubtitleFormat.Ass)));
+        string[] format = raw && document.Source!.EventFormat is { } kept ? kept : EventFields;
         if (raw)
         {
             output.Append(document.Source!.Header);
@@ -505,6 +529,11 @@ internal static class AssFormat
             {
                 SubtitleWriting.EnsureNewLine(output, newLine);
                 output.Append(source.Leading);
+                if (raw && FormatLine(source.Leading) is { } changed && Writable(changed))
+                {
+                    // A format line between events, kept with them, sets the fields of the events after it.
+                    format = changed;
+                }
             }
 
             if (source is not null && cue.IsUnchanged(SubtitleFormat.Ass))
@@ -516,7 +545,7 @@ internal static class AssFormat
             SubtitleWriting.EnsureNewLine(output, newLine);
             SubtitleWriting.CheckCue(document, cue, index, log, SubtitleFormat.Ass);
             output.Append(cue.IsComment ? "Comment: " : "Dialogue: ");
-            string text = cue.TextUnchanged(SubtitleFormat.Ass) ? cue.RawText! : AssTags.Write(cue, document.PlayRes);
+            string text = cue.TextUnchanged(SubtitleFormat.Ass) ? cue.RawText! : AssTags.Write(cue, document.PlayRes, name => LookOf(document.Styles, name ?? cue.Style));
             string actor = cue.Actor ?? cue.Spans.Select(s => s.Voice).FirstOrDefault(v => v is not null) ?? "";
             for (int f = 0; f < format.Length; f++)
             {
@@ -532,12 +561,12 @@ internal static class AssFormat
                     "start" => FormatTime(cue.Start),
                     "end" => FormatTime(cue.End),
                     "style" => (cue.Style ?? "Default").Replace(',', ';'),
-                    "name" => actor.Replace(',', ';').ReplaceLineEndings(" "),
+                    "name" => actor.Replace(',', ';').ReplaceLineBreaks(" "),
                     "marginl" => cue.MarginLeft.ToString(CultureInfo.InvariantCulture),
                     "marginr" => cue.MarginRight.ToString(CultureInfo.InvariantCulture),
                     "marginv" => cue.MarginVertical.ToString(CultureInfo.InvariantCulture),
                     "effect" => (cue.Effect ?? "").Replace(',', ';'),
-                    "text" => text.ReplaceLineEndings("\\N"),
+                    "text" => text.ReplaceLineBreaks("\\N"),
                     _ => "",
                 });
             }
@@ -545,13 +574,35 @@ internal static class AssFormat
             output.Append(newLine);
         }
 
-        if (raw)
+        if (raw && document.Source!.Trailing.Length > 0)
         {
             SubtitleWriting.EnsureNewLine(output, newLine);
-            output.Append(document.Source!.Trailing);
+            output.Append(document.Source.Trailing);
         }
 
         return output.ToString();
+    }
+
+    /// <summary>The fields of the last format line in some text, or <see langword="null"/> when it has none.</summary>
+    private static string[]? FormatLine(string text)
+    {
+        string[]? format = null;
+        foreach (string line in text.Split('\n'))
+        {
+            if (TryField(line.Trim(), "Format", out string fields))
+            {
+                format = [.. fields.Split(',').Select(f => f.Trim())];
+            }
+        }
+
+        return format;
+    }
+
+    /// <summary>Whether events can be written in a format line: it has the times, and the text last.</summary>
+    private static bool Writable(string[] format)
+    {
+        return format.Contains("Start", StringComparer.OrdinalIgnoreCase) && format.Contains("End", StringComparer.OrdinalIgnoreCase)
+            && format[^1].Equals("Text", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void WriteHeader(SubtitleDocument document, StringBuilder output, string newLine, SubtitleLog log)
@@ -566,14 +617,14 @@ internal static class AssFormat
 
         foreach (KeyValuePair<string, string> pair in document.ScriptInfo)
         {
-            output.Append(pair.Key).Append(": ").Append(pair.Value.ReplaceLineEndings(" ")).Append(newLine);
+            output.Append(pair.Key).Append(": ").Append(pair.Value.ReplaceLineBreaks(" ")).Append(newLine);
         }
 
         if (document.Source is { Format: SubtitleFormat.Ass or SubtitleFormat.Ssa } source)
         {
             foreach (string section in source.ExtraSections)
             {
-                output.Append(newLine).Append(section.ReplaceLineEndings(newLine)).Append(newLine);
+                output.Append(newLine).Append(section.ReplaceLineBreaks(newLine)).Append(newLine);
             }
         }
 

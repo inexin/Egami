@@ -138,6 +138,33 @@ public class SubtitleConversionTests
         return document;
     }
 
+    [Fact]
+    public void AssStylesShowInSrtAndWebVttAsTags()
+    {
+        // API review Q1: a bold or italic style shows as tags, as FFmpeg writes it; \b0 in a bold style turns it off.
+        const string Text = "[Script Info]\nScriptType: v4.00+\n\n[V4+ Styles]\n"
+            + "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
+            + "Style: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1\n"
+            + "Style: Sign,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,-1,0,0,100,100,0,0,1,2,2,2,10,10,10,1\n\n"
+            + "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
+            + "Dialogue: 0,0:00:01.00,0:00:02.00,Sign,,0,0,0,,Loud {\\b0}quiet{\\r}loud\n"
+            + "Comment: 0,0:00:02.00,0:00:03.00,Default,,0,0,0,,A note\n"
+            + "Dialogue: 0,0:00:03.00,0:00:04.00,Default,,0,0,0,,{\\rSign}Signed\n";
+        SubtitleDocument document = SubtitleDocument.Parse(Text, SubtitleFormat.Ass);
+        Assert.Equal("1\n00:00:01,000 --> 00:00:02,000\n<b><i>Loud </i></b><i>quiet</i><b><i>loud</i></b>\n\n2\n00:00:03,000 --> 00:00:04,000\n<b><i>Signed</i></b>\n\n",
+            document.ToText(SubtitleFormat.Srt, new SubtitleWriterOptions { NewLine = "\n" }));
+        Assert.Contains("<b><i>Signed</i></b>", document.ToText(SubtitleFormat.WebVtt), StringComparison.Ordinal);
+
+        // Written again as ASS, edited cues keep to their style: no tags for what the style already does.
+        document.Cues[0].Spans[0] = document.Cues[0].Spans[0] with { Text = "LOUD " };
+        document.Cues[2].Spans.Add(document.Cues[2].Spans[0] with { Text = " too", Bold = false, OtherTags = null });
+        string ass = document.ToText(SubtitleFormat.Ass);
+        Assert.Contains(",Sign,,0,0,0,,LOUD {\\b0}quiet{\\r}loud\n", ass, StringComparison.Ordinal);
+        Assert.Contains(",Default,,0,0,0,,{\\rSign}Signed{\\b0} too\n", ass, StringComparison.Ordinal);
+        SubtitleDocument back = SubtitleDocument.Parse(ass, SubtitleFormat.Ass);
+        Assert.Equal(document.Cues.Select(c => c.Spans.Select(s => (s.Text, s.Bold, s.Italic)).ToArray()), back.Cues.Select(c => c.Spans.Select(s => (s.Text, s.Bold, s.Italic)).ToArray()));
+    }
+
     private static SubtitleAlignment? Derived(SubtitleCue cue) => cue.WebVtt is null ? null : cue.WebVtt switch
     {
         { Line: 0, Align: WebVttAlign.Left } => SubtitleAlignment.TopLeft,

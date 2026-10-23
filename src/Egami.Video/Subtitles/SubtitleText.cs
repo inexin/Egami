@@ -34,17 +34,17 @@ internal static class SubtitleText
         byteOrderMark = true;
         if (data.StartsWith((ReadOnlySpan<byte>)[0xEF, 0xBB, 0xBF]))
         {
-            return Encoding.UTF8.GetString(data[3..]);
+            return Checked(Encoding.UTF8, data[3..], log);
         }
 
         if (data.StartsWith((ReadOnlySpan<byte>)[0xFF, 0xFE]))
         {
-            return Encoding.Unicode.GetString(data[2..]);
+            return Checked(Encoding.Unicode, data[2..], log);
         }
 
         if (data.StartsWith((ReadOnlySpan<byte>)[0xFE, 0xFF]))
         {
-            return Encoding.BigEndianUnicode.GetString(data[2..]);
+            return Checked(Encoding.BigEndianUnicode, data[2..], log);
         }
 
         byteOrderMark = false;
@@ -60,7 +60,7 @@ internal static class SubtitleText
 
         if (data.StartsWith("WEBVTT"u8))
         {
-            return Encoding.UTF8.GetString(data);
+            return Checked(Encoding.UTF8, data, log);
         }
 
         if (LooksLikeUtf16(data, out bool bigEndian))
@@ -71,6 +71,18 @@ internal static class SubtitleText
 
         log.Encoding("The file is not UTF-8 and has no byte order mark; it was read as Windows-1252. Set SubtitleReaderOptions.Encoding if it is another code page.");
         return DecodeWindows1252(data);
+    }
+
+    /// <summary>Decodes in a Unicode encoding, reporting bytes that are not valid in it, which become U+FFFD.</summary>
+    private static string Checked(Encoding encoding, ReadOnlySpan<byte> data, SubtitleLog log)
+    {
+        string text = encoding.GetString(data);
+        if (encoding.GetByteCount(text) != data.Length || !encoding.GetBytes(text).AsSpan().SequenceEqual(data))
+        {
+            log.Encoding($"The file is not valid {encoding.WebName.ToUpperInvariant()}; the bytes that are not were read as U+FFFD.");
+        }
+
+        return text;
     }
 
     public static string DecodeWindows1252(ReadOnlySpan<byte> data)
@@ -104,6 +116,35 @@ internal static class SubtitleText
         int pairs = sample / 2;
         bigEndian = evenZeros > oddZeros;
         return Math.Max(evenZeros, oddZeros) * 10 >= pairs * 7 && Math.Min(evenZeros, oddZeros) * 10 < pairs;
+    }
+
+    /// <summary>
+    /// Replaces each line break (CR LF, CR or LF, the ones subtitle formats know) with <paramref name="newLine"/>. Unlike
+    /// <see cref="string.ReplaceLineEndings(string)"/>, form feeds, NEL and the Unicode line and paragraph separators stay text.
+    /// </summary>
+    public static string ReplaceLineBreaks(this string text, string newLine)
+    {
+        if (text.AsSpan().IndexOfAny('\r', '\n') < 0)
+        {
+            return text;
+        }
+
+        StringBuilder output = new(text.Length);
+        for (int i = 0; i < text.Length; i++)
+        {
+            char c = text[i];
+            if (c is '\r' or '\n')
+            {
+                output.Append(newLine);
+                i += c == '\r' && i + 1 < text.Length && text[i + 1] == '\n' ? 1 : 0;
+            }
+            else
+            {
+                output.Append(c);
+            }
+        }
+
+        return output.ToString();
     }
 
     /// <summary>Splits text into lines at CR LF, CR or LF, keeping where each line's terminator ends.</summary>
@@ -152,6 +193,20 @@ internal static class SubtitleText
 
     /// <summary>Formats a number the shortest way that reads back the same: 50, 12.5, -1.</summary>
     public static string Number(double value) => value.ToString("R", CultureInfo.InvariantCulture);
+
+    /// <summary>The latest time a subtitle file may give, in hours (about 11,400 years); a later one is malformed.</summary>
+    public const long MaxHours = 100_000_000;
+
+    /// <summary>
+    /// Adds up a time given as hours, minutes, seconds and a fraction in <paramref name="perSecond"/> units, or returns
+    /// <see langword="false"/> when it is later than <see cref="MaxHours"/>, so retiming it later cannot overflow.
+    /// </summary>
+    public static bool TryTotal(long hours, long minutes, long seconds, long fraction, long perSecond, out long total)
+    {
+        Int128 sum = (((((Int128)hours * 60) + minutes) * 60) + seconds) * perSecond + fraction;
+        total = sum <= (Int128)MaxHours * 3600 * perSecond ? (long)sum : 0;
+        return sum <= (Int128)MaxHours * 3600 * perSecond;
+    }
 
     /// <summary>Reads digits from <paramref name="at"/>, returning their value (saturating) and how many there were.</summary>
     public static int Digits(ReadOnlySpan<char> s, ref int at, out long value)

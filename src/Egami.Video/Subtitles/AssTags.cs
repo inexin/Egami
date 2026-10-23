@@ -12,12 +12,20 @@ namespace Egami.Video.Subtitles;
 /// </summary>
 internal static class AssTags
 {
-    public static List<SubtitleSpan> Parse(string text, MediaTime start, out SubtitleAlignment? alignment, out SubtitlePosition? position)
+    /// <summary>The longest karaoke a cue can count, in centiseconds: up to the latest time a file may give.</summary>
+    private const long KaraokeLimit = SubtitleText.MaxHours * 360_000;
+
+    /// <summary>
+    /// Reads an event's text into spans. <paramref name="lookOf"/> gives a style's bold, italic, underline and strikeout as a
+    /// span (the event's own style for <see langword="null"/>): spans start from it, and <c>\r</c> goes back to it, so a span's
+    /// flags say how the text looks.
+    /// </summary>
+    public static List<SubtitleSpan> Parse(string text, MediaTime start, Func<string?, SubtitleSpan> lookOf, out SubtitleAlignment? alignment, out SubtitlePosition? position)
     {
         alignment = null;
         position = null;
         List<SubtitleSpan> spans = [];
-        SubtitleSpan look = new("");
+        SubtitleSpan look = lookOf(null);
         StringBuilder run = new();
         StringBuilder? other = null;
         MediaTime? timestamp = null;
@@ -58,12 +66,12 @@ internal static class AssTags
                 {
                     int end = TagEnd(block, at + 1);
                     string tag = block[(at + 1)..end].ToString();
-                    if (!Apply(tag, ref look, ref alignment, ref position, ref drawing))
+                    if (!Apply(tag, lookOf, ref look, ref alignment, ref position, ref drawing))
                     {
                         if (tag.Length > 1 && tag[0] == 'k' && long.TryParse(tag.AsSpan(1), NumberStyles.None, CultureInfo.InvariantCulture, out long centiseconds))
                         {
                             timestamp = start + new MediaTime(karaoke, SubtitleText.Centiseconds);
-                            karaoke += centiseconds;
+                            karaoke = Math.Min(karaoke + Math.Min(centiseconds, KaraokeLimit), KaraokeLimit);
                         }
                         else
                         {
@@ -120,7 +128,7 @@ internal static class AssTags
     }
 
     /// <summary>Applies a tag that has a field; returns false for the others.</summary>
-    private static bool Apply(string tag, ref SubtitleSpan look, ref SubtitleAlignment? alignment, ref SubtitlePosition? position, ref bool drawing)
+    private static bool Apply(string tag, Func<string?, SubtitleSpan> lookOf, ref SubtitleSpan look, ref SubtitleAlignment? alignment, ref SubtitlePosition? position, ref bool drawing)
     {
         if (tag.Length == 2 && tag[0] is 'b' or 'i' or 'u' or 's' && tag[1] is '0' or '1')
         {
@@ -206,15 +214,19 @@ internal static class AssTags
 
         if (tag.StartsWith('r') && !tag.StartsWith("rnd", StringComparison.Ordinal))
         {
-            look = new SubtitleSpan("");
+            // \r goes back to the event's style, \rName to that style.
+            look = lookOf(tag.Length > 1 ? tag[1..] : null);
             return false;
         }
 
         return false;
     }
 
-    /// <summary>Writes a cue's spans as ASS text: the cue's \an and \pos first, then each span's other tags and field changes.</summary>
-    public static string Write(SubtitleCue cue, (double Width, double Height) playRes)
+    /// <summary>
+    /// Writes a cue's spans as ASS text: the cue's \an and \pos first, then each span's other tags and the changes from the
+    /// look before it, starting from the style's (<paramref name="lookOf"/>, as for <see cref="Parse"/>).
+    /// </summary>
+    public static string Write(SubtitleCue cue, (double Width, double Height) playRes, Func<string?, SubtitleSpan> lookOf)
     {
         StringBuilder output = new();
         StringBuilder tags = new();
@@ -229,16 +241,16 @@ internal static class AssTags
             tags.Append(CultureInfo.InvariantCulture, $"\\pos({SubtitleText.Number(p.X)},{SubtitleText.Number(p.Y)})");
         }
 
-        SubtitleSpan state = new("");
+        SubtitleSpan state = lookOf(null);
         for (int s = 0; s < cue.Spans.Count; s++)
         {
             SubtitleSpan span = cue.Spans[s];
             if (span.OtherTags is { } other)
             {
                 tags.Append(other);
-                if (other.Contains("\\r", StringComparison.Ordinal))
+                if (LastReset(other) is { } name)
                 {
-                    state = new SubtitleSpan("");
+                    state = lookOf(name.Length > 0 ? name : null);
                 }
             }
 
@@ -284,6 +296,26 @@ internal static class AssTags
         }
 
         return output.ToString();
+    }
+
+    /// <summary>The style name of the last <c>\r</c> tag in some tags (empty for the event's own style), or <see langword="null"/>.</summary>
+    private static string? LastReset(string tags)
+    {
+        string? name = null;
+        int at = 0;
+        while ((at = tags.IndexOf("\\r", at, StringComparison.Ordinal)) >= 0)
+        {
+            int end = TagEnd(tags, at + 1);
+            string tag = tags[(at + 1)..end];
+            if (!tag.StartsWith("rnd", StringComparison.Ordinal))
+            {
+                name = tag[1..];
+            }
+
+            at = end;
+        }
+
+        return name;
     }
 
     private static void Toggle(StringBuilder tags, char tag, bool was, bool now)

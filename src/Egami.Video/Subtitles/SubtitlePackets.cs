@@ -73,7 +73,7 @@ internal static class SubtitlePackets
         SubtitleDocument document = new(SubtitleFormat.Srt);
         foreach ((MediaTime start, MediaTime end, byte[] data, _) in packets)
         {
-            string text = Text(data).ReplaceLineEndings("\n").TrimEnd('\n');
+            string text = Text(data).ReplaceLineBreaks("\n").TrimEnd('\n');
             List<SubtitleSpan> spans = SrtFormat.ParseText(text, out SubtitleAlignment? alignment);
             document.Cues.Add(new SubtitleCue(start, end, spans) { Alignment = alignment, Id = (document.Cues.Count + 1).ToString(CultureInfo.InvariantCulture) });
         }
@@ -92,7 +92,7 @@ internal static class SubtitlePackets
         List<(long Order, MediaTime Start, MediaTime End, string Fields)> lines = [];
         foreach ((MediaTime start, MediaTime end, byte[] data, _) in packets)
         {
-            string block = Text(data).ReplaceLineEndings("\\N");
+            string block = Text(data).ReplaceLineBreaks("\\N");
             int comma = block.IndexOf(',', StringComparison.Ordinal);
             long order = comma > 0 && long.TryParse(block.AsSpan(0, comma), NumberStyles.Integer, CultureInfo.InvariantCulture, out long o) ? o : lines.Count;
             string rest = comma >= 0 ? block[(comma + 1)..] : block;
@@ -127,7 +127,7 @@ internal static class SubtitlePackets
         List<(string? Id, string Settings, string Payload, MediaTime Start, MediaTime End)> cues = [];
         foreach ((MediaTime start, MediaTime end, byte[] data, PacketAddition[] additions) in packets)
         {
-            string text = Text(data).ReplaceLineEndings("\n");
+            string text = Text(data).ReplaceLineBreaks("\n");
             string? id = null, settings = "";
             if (webM)
             {
@@ -138,7 +138,7 @@ internal static class SubtitlePackets
             else if (additions.FirstOrDefault() is { } addition)
             {
                 // Matroska: a block addition with the settings line, then the identifier line.
-                string[] parts = Encoding.UTF8.GetString(addition.Data.Span).ReplaceLineEndings("\n").Split('\n', 3);
+                string[] parts = Encoding.UTF8.GetString(addition.Data.Span).ReplaceLineBreaks("\n").Split('\n', 3);
                 (settings, id) = (parts[0], parts.Length > 1 ? parts[1] : null);
             }
 
@@ -189,7 +189,7 @@ internal static class SubtitlePackets
     private static SubtitleDocument WebVttFromCues(string header, List<(string? Id, string Settings, string Payload, MediaTime Start, MediaTime End)> cues, SubtitleLog log)
     {
         StringBuilder text = new();
-        string head = header.ReplaceLineEndings("\n").TrimEnd('\n');
+        string head = header.ReplaceLineBreaks("\n").TrimEnd('\n');
         text.Append(head.StartsWith("WEBVTT", StringComparison.Ordinal) ? head : "WEBVTT").Append("\n\n");
         foreach ((string? id, string settings, string payload, MediaTime start, MediaTime end) in cues)
         {
@@ -205,7 +205,7 @@ internal static class SubtitlePackets
             }
 
             text.Append('\n');
-            string body = string.Join('\n', payload.ReplaceLineEndings("\n").Split('\n').Where(l => l.Length > 0)).Replace("-->", "--&gt;");
+            string body = string.Join('\n', payload.ReplaceLineBreaks("\n").Split('\n').Where(l => l.Length > 0)).Replace("-->", "--&gt;");
             if (body.Length > 0)
             {
                 text.Append(body).Append('\n');
@@ -488,7 +488,7 @@ internal static class SubtitlePackets
         List<EncodedPacket> packets = [];
         foreach ((SubtitleCue cue, int index) in Playable(document, log))
         {
-            string text = SrtFormat.WriteText(document, cue, index, log).ReplaceLineEndings("\n");
+            string text = SrtFormat.WriteText(document, cue, index, log).ReplaceLineBreaks("\n");
             packets.Add(Packet(track, text, Max0(cue.Start), Max0(cue.End)));
         }
 
@@ -556,7 +556,7 @@ internal static class SubtitlePackets
     /// <summary>Gets the settings after the end time on a cue's timing line.</summary>
     private static string SettingsOf(string block)
     {
-        foreach (string line in block.ReplaceLineEndings("\n").Split('\n'))
+        foreach (string line in block.ReplaceLineBreaks("\n").Split('\n'))
         {
             int arrow = line.IndexOf("-->", StringComparison.Ordinal);
             if (arrow < 0)
@@ -697,7 +697,7 @@ internal static class SubtitlePackets
                 foreach (SubtitleSpan span in cue.Spans.Where(s => !s.IsDrawing))
                 {
                     int from = RuneCount(text);
-                    text.Append(span.Text.ReplaceLineEndings("\n"));
+                    text.Append(span.Text.ReplaceLineBreaks("\n"));
                     MovTextFace face = (span.Bold ? MovTextFace.Bold : 0) | (span.Italic ? MovTextFace.Italic : 0) | (span.Underline ? MovTextFace.Underline : 0);
                     if (face != MovTextFace.None || span.Color is not null || span.FontSize is not null)
                     {
