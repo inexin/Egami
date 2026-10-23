@@ -146,7 +146,8 @@ which needs no .NET runtime.
 ## Egami.Video.Cli 0.5.0 (unreleased)
 
 A new package: the `egami-video` command-line tool (Video V1.1), a .NET tool built on Egami.Video's public API that carries
-Egami.Video's version. It ships with the next Egami.Video release, after a command review.
+Egami.Video's version. It ships with the next Egami.Video release. Command and tool review accepted 2026-10-23 (all as
+recommended).
 
 ### Commands
 
