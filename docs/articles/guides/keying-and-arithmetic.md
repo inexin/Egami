@@ -1,7 +1,8 @@
 # Keying and arithmetic
 
 Operations that ImageMagick users expect: making a color transparent, replacing a color, flood fill, arithmetic with a constant,
-and stacking several images. Each matches its ImageMagick option exactly at 8 and 16 bits.
+and stacking several images. Each matches its ImageMagick option exactly at 8 and 16 bits. For green and blue screens there is
+also a chroma key with spill removal.
 
 ## Color tolerance
 
@@ -17,6 +18,20 @@ Raise the tolerance until the screen is gone, then add softness for clean hair a
 
 `MakeTransparent` clears alpha where a pixel lies within the tolerance and keeps its color, as ImageMagick's -transparent does.
 `softness` ramps alpha back up over the next band of distance, for antialiased edges; with no softness the result is ImageMagick's.
+
+## Key out a green or blue screen
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Keying.cs#chroma-key)]
+
+`ChromaKey` compares chroma alone: the distance between the Rec. 709 Cb and Cr of each pixel and of the screen color, as a share
+of the largest such distance (green to magenta). Luma is left out, so lighter and darker patches of an unevenly lit screen stay
+closer to the key than they do by `MakeTransparent`'s RGB distance. `similarity` sets the distance that becomes fully
+transparent and `blend` the band over which alpha returns to full. Pixels keep their color and their alpha is scaled, so an
+already transparent pixel stays transparent. Types without alpha are left as they are.
+
+`Despill` removes the screen's colored cast from what remains. It holds green (or blue, with `DespillColor.Blue`) down to a
+limit taken from the other two channels: their average with `mix` 0, the larger of them with `mix` 1, which leaves neutral colors
+alone. `expand` lowers the limit further for heavy spill. Despill works on any raster, keyed or not.
 
 ## Replace a color
 

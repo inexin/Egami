@@ -5,6 +5,14 @@ changes that break code come only in a new major version.
 
 ## Egami 1.2.0 (unreleased)
 
+### Chroma key
+
+- `RasterOps.ChromaKey(color, similarity, blend)` keys out a green or blue screen by chroma: the distance between Rec. 709 Cb and
+  Cr, leaving luma out, so lighter and darker patches of an unevenly lit screen key with it. `blend` ramps alpha back up for
+  soft edges. `MakeTransparent` stays the RGB color key. As the `chroma-key` step in `egami run`.
+- `RasterOps.Despill(DespillColor, mix, expand)` takes a screen's green or blue cast off edges and see-through pixels by holding
+  that channel down to a limit from the other two. As the `despill` step.
+
 ### Command host
 
 - A new package, Egami.Cli.Host: the command host of `egami` as source with internal types, so other command-line tools of the
