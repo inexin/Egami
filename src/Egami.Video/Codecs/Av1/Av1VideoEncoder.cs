@@ -115,6 +115,7 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
                 Steps = Vp9.Vp9Tables.AcQLookup8,
                 StepFactors = [0.45, 1.0, 0.8, 0.7, 1.0],
                 PlanHiddenAhead = true,
+                InterFromKeyProbe = true,
                 FirstPass = options.RateControl == RateControlMode.Bitrate && options.FirstPassStats is { } stats ? FirstPassComplexities(stats) : null,
             },
         };
