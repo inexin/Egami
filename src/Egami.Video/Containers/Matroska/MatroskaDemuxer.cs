@@ -893,6 +893,16 @@ internal sealed class MatroskaDemuxer : IDemuxer
                 packet.Duration = new MediaTime(Math.Max(0, samples - cut), sample);
             }
 
+            else if (track.Track?.CodecId == CodecIds.Alac && frames == 1 && track.Track is AudioTrackInfo { SampleRate: > 0 } alac
+                && Audio.Codecs.Alac.AlacDecoder.SampleCount(payload, alac.CodecPrivate.Span) is { } alacSamples)
+            {
+                // ALAC frames say how long they are (the stream's frame length, or a partial frame's own count), which millisecond
+                // block times round.
+                Rational sample = new(1, alac.SampleRate);
+                long cut = discardPadding > 0 ? new MediaTime(discardPadding, Rational.Nanosecond).Rescale(sample).Ticks : 0;
+                packet.Duration = new MediaTime(Math.Max(0, alacSamples - cut), sample);
+            }
+
             else if (track.Track?.CodecId == CodecIds.Vorbis && frames == 1)
             {
                 // Vorbis packets add half of two blocks; DiscardPadding cuts the end as Ogg's last granule position does.

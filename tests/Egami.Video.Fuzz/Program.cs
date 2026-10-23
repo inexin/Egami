@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+
 using Egami;
 using Egami.Pixels;
 using Egami.Video;
@@ -81,6 +83,7 @@ static Action<Stream> Target(string name) => name switch
     "vorbisraw" => DecodeVorbisPackets,
     "mp3" => ReadMp3,
     "mp3raw" => DecodeMp3Packets,
+    "alac" => DecodeAlacPackets,
     "av1" => ReadAv1,
     "av1raw" => DecodeAv1Packets,
     "vp8enc" => EncodeVp8,
@@ -88,7 +91,7 @@ static Action<Stream> Target(string name) => name switch
     "subs" => ReadSubtitles,
     "subtrack" => ReadSubtitleTracks,
     "vp9enc" => EncodeVp9,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, opusenc, subs, subtrack, vp9enc."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, alac, opusenc, subs, subtrack, vp9enc."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -444,6 +447,67 @@ static void DecodeMp3Packets(Stream stream)
     while (decoder.TryReceive(out Egami.Video.Audio.AudioFrame? frame))
     {
         frame.Dispose();
+    }
+}
+
+// ALAC packets (V5.9 stage C), in the layout of tools/video/make-alac-references.py: the 24-byte ALACSpecificConfig, then each
+// packet as a little-endian 32-bit length and its bytes. A config the decoder refuses is fine; a packet must never throw.
+static void DecodeAlacPackets(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 24)
+    {
+        return;
+    }
+
+    MediaContext context = Context() with { Egami = Context().Egami with { Diagnostics = _ => { } } };
+    Egami.Video.AudioTrackInfo track = new()
+    {
+        Number = 1,
+        Kind = TrackKind.Audio,
+        CodecId = CodecIds.Alac,
+        CodecPrivate = data.AsMemory(0, 24),
+        TimeBase = new Rational(1, 44100),
+        SampleRate = 44100,
+        Channels = Math.Clamp((int)data[9], 1, 8),
+    };
+    Egami.Video.Audio.AudioDecoderOptions options = new() { Errors = (data[10] & 1) != 0 ? DecodeErrorMode.Skip : DecodeErrorMode.Conceal };
+    Egami.Video.Audio.IAudioDecoder decoder;
+    try
+    {
+        decoder = Egami.Video.Audio.Codecs.AlacCodec.Instance.CreateDecoder(track, options, context);
+    }
+    catch (UnsupportedFormatException)
+    {
+        return;
+    }
+
+    using (decoder)
+    {
+        int p = 24;
+        int n = 0;
+        while (p + 4 <= data.Length && n < 200)
+        {
+            int length = (int)Math.Min(BinaryPrimitives.ReadUInt32LittleEndian(data.AsSpan(p)), (uint)(data.Length - p - 4));
+            if (length == 0)
+            {
+                decoder.SendLoss(new MediaTime(4096, track.TimeBase));
+            }
+            else
+            {
+                using EncodedPacket packet = EncodedPacket.Rent(1, length, new MediaTime(n * 4096L, track.TimeBase));
+                data.AsSpan(p + 4, length).CopyTo(packet.GetWritableData().Span);
+                packet.Duration = n % 5 == 4 ? new MediaTime(1000, track.TimeBase) : null;
+                decoder.Send(packet);
+            }
+
+            p += 4 + length;
+            n++;
+            while (decoder.TryReceive(out Egami.Video.Audio.AudioFrame? frame))
+            {
+                frame.Dispose();
+            }
+        }
     }
 }
 

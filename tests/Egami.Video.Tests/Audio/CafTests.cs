@@ -18,7 +18,7 @@ public class CafTests
     private static readonly Dictionary<string, AudioCorpus.Reference> Manifest = AudioCorpus.Load(Path.Combine(Folder, "manifest.json"));
 
     public static IEnumerable<object[]> Lossless => Manifest
-        .Where(c => c.Value.Md5.Length > 0 && Decodable(c.Key))
+        .Where(c => c.Value.Md5.Length > 0)
         .Select(c => c.Key).Order(StringComparer.Ordinal).Select(n => new object[] { n });
 
     private static readonly string[] CompressedClips = ["caf-ac3-stereo.caf", "caf-alac-24-51.caf", "caf-alac-stereo.caf", "caf-mp3-stereo.caf", "caf-opus-stereo.caf"];
@@ -36,7 +36,11 @@ public class CafTests
         (string md5, long samples) = AudioCorpus.Hash(reader.ReadFrames(), expected.Bits, expected.IsFloat);
         Assert.Equal(expected.Samples, samples);
         Assert.Equal(expected.Md5, md5);
-        Assert.Equal(expected.Samples, MediaFile.Probe(Path.Combine(Folder, name)).Tracks[0].Duration!.Value.Ticks);
+        if (!name.Contains("alac", StringComparison.Ordinal))
+        {
+            // FFmpeg's pakt counts its last ALAC frame whole; only the frame's own header says it is short.
+            Assert.Equal(expected.Samples, MediaFile.Probe(Path.Combine(Folder, name)).Tracks[0].Duration!.Value.Ticks);
+        }
     }
 
     [Theory]
@@ -373,8 +377,6 @@ public class CafTests
         Assert.Throws<NotSupportedException>(() => CafFormat.Instance.CreateMuxer(new MemoryStream(), [pcm12], MediaContext.Default, leaveOpen: false));
         Assert.Throws<NotSupportedException>(() => CafFormat.Instance.CreateMuxer(new MemoryStream(), [vorbis, vorbis with { Number = 2 }], MediaContext.Default, leaveOpen: false));
     }
-
-    private static bool Decodable(string name) => !name.Contains("alac", StringComparison.Ordinal);
 
     private static long Count(AudioFrame frame)
     {

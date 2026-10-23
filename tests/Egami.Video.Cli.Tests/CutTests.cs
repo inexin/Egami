@@ -222,7 +222,7 @@ public sealed class CutTests
         string clip = Path.Combine(Tool.Corpus, "mkv-mjpeg-pcm.mkv");
         ToolRun neither = tool.Run("segment", clip, "-o", "out/");
         Assert.Equal(2, neither.Code);
-        Assert.Contains("--every or --at", neither.Error, StringComparison.Ordinal);
+        Assert.Contains("one of --every, --at and --scenes", neither.Error, StringComparison.Ordinal);
         Assert.Equal(2, tool.Run("segment", clip, "--every", "1", "--at", "1", "-o", "out/").Code);
         ToolRun noPart = tool.Run("segment", clip, "--every", "1", "-o", "one.mkv");
         Assert.Equal(2, noPart.Code);

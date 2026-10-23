@@ -66,15 +66,23 @@ internal static class PictureCommands
         PictureOptions options = new("shots/{name}-{scene:000}.jpg");
         Option<string> method = new("--method") { Description = "How changes are scored: adaptive (the default; ignores fast motion), content (a fixed threshold, as ffmpeg's scene value) or histogram.", HelpName = "adaptive|content|histogram", DefaultValueFactory = _ => "adaptive" };
         Option<double?> threshold = new("--threshold") { Description = "How sharp a change starts a scene, from 0 to 1; lower finds more cuts. Default 0.15 for adaptive, 0.4 for content and histogram.", HelpName = "0-1" };
-        Option<string> minGap = new("--min-gap") { Description = "The shortest scene: a cut closer than this to the last one is not taken.", HelpName = "time", DefaultValueFactory = _ => "0.6s" };
+        Option<string> minGap = new("--min-length", "--min-gap") { Description = "The shortest scene: a cut closer than this to the last one is not taken.", HelpName = "time", DefaultValueFactory = _ => "0.6s" };
+        Option<bool> fades = new("--fades") { Description = "Also find fades to and from black: a scene then starts in the middle of a fade, and the fades are listed." };
+        Option<string> flash = new("--flash") { Description = "What a flash (a frame or two of a different picture, as a camera flash) does: merge (the default) keeps it in its scene; suppress also ignores the change it ends with.", HelpName = "merge|suppress", DefaultValueFactory = _ => "merge" };
+        Option<string> frame = new("--frame") { Description = "Which frame of each scene -o writes: first (the default), middle or last. Middle and last need a file, not standard input.", HelpName = "first|middle|last", DefaultValueFactory = _ => "first" };
+        Option<string?> series = new("--series") { Description = "Also write every frame's change score to this CSV file.", HelpName = "file.csv" };
         Option<bool> json = new("--json") { Description = "Write the scenes as JSON." };
         Option<bool> csv = new("--csv") { Description = "Write the scenes as CSV, one row per scene." };
-        options.Output.Description = "Also write the first frame of each scene: a folder, or a template with {scene} (from 1, padded as {scene:000}), {name}, {dir} and {index}.";
+        options.Output.Description = "Also write a frame of each scene (the first, or as --frame says): a folder, or a template with {scene} (from 1, padded as {scene:000}), {name}, {dir} and {index}.";
         Command command = new("scenes", "Find the cuts between shots: list where each scene starts (frame, time and how sharp the cut is), and optionally write a frame of each.");
         options.AddTo(command);
         command.Options.Add(method);
         command.Options.Add(threshold);
         command.Options.Add(minGap);
+        command.Options.Add(fades);
+        command.Options.Add(flash);
+        command.Options.Add(frame);
+        command.Options.Add(series);
         command.Options.Add(json);
         command.Options.Add(csv);
         command.SetAction(result =>
@@ -98,11 +106,27 @@ internal static class PictureCommands
                 string other => throw new UsageException($"--method '{other}' is not adaptive, content or histogram."),
             };
 
-            TimeValue gap = TimeValue.Parse(result.GetValue(minGap)!, "--min-gap");
+            TimeValue gap = TimeValue.Parse(result.GetValue(minGap)!, "--min-length");
             if (gap.IsFrame || gap.Seconds < 0)
             {
-                throw new UsageException("--min-gap must be a length of time of 0 or more, such as 1s or 500ms.");
+                throw new UsageException("--min-length must be a length of time of 0 or more, such as 1s or 500ms.");
             }
+
+            FlashMode flashMode = result.GetValue(flash)!.ToLowerInvariant() switch
+            {
+                "merge" => FlashMode.Merge,
+                "suppress" => FlashMode.Suppress,
+                string other => throw new UsageException($"--flash '{other}' is not merge or suppress."),
+            };
+            ScenePosition position = result.GetValue(frame)!.ToLowerInvariant() switch
+            {
+                "first" => ScenePosition.First,
+                "middle" => ScenePosition.Middle,
+                "last" => ScenePosition.Last,
+                string other => throw new UsageException($"--frame '{other}' is not first, middle or last."),
+            };
+            bool withFades = result.GetValue(fades);
+            string? seriesPath = result.GetValue(series) is { } seriesText ? session.ResolvePath(seriesText) : null;
 
             BatchOptions batch = options.Media.Batch(session, result);
             List<InputFile> inputs = options.Media.ExpandInputs(session, result);
@@ -119,21 +143,43 @@ internal static class PictureCommands
             TrackSelection selection = options.Tracks(result);
             SaveSpec save = options.Save(result);
             string? format = result.GetValue(options.Format);
-            // Fades are left out so a fade through black stays one scene change at most, as before; cuts into and out of black count.
-            SceneOptions sceneOptions = new() { Method = scoring, Threshold = limit, MinSceneLength = MediaTime.FromSeconds(gap.Seconds), DetectFades = false };
-            IReadOnlyList<Scene>?[] found = new IReadOnlyList<Scene>?[inputs.Count];
+            // Without --fades a fade through black stays one scene change at most, as before; cuts into and out of black count.
+            SceneOptions sceneOptions = new()
+            {
+                Method = scoring,
+                Threshold = limit,
+                MinSceneLength = MediaTime.FromSeconds(gap.Seconds),
+                DetectFades = withFades,
+                Flash = flashMode,
+                KeepSeries = seriesPath is not null,
+            };
+            SceneDetector?[] found = new SceneDetector?[inputs.Count];
             int code = Batch.Run(session, inputs, batch, input =>
             {
                 List<string> written = [];
-                found[input.Index] = FindScenes(session, input, selection, sceneOptions, inputs.Count, output is null ? null : (number, image) =>
+                void Write(int number, Raster<Rgba8> image)
                 {
-                    PictureTarget target = PictureTarget.Resolve(session, input, output, format, "jpg", number);
+                    PictureTarget target = PictureTarget.Resolve(session, input, output!, format, "jpg", number);
                     target.Write(session, image, save);
                     written.Add(target.Path);
-                });
+                }
+
+                bool firstFrames = output is not null && position == ScenePosition.First;
+                SceneDetector detector = FindScenes(session, input, selection, sceneOptions, inputs.Count, firstFrames ? Write : null);
+                found[input.Index] = detector;
+                if (output is not null && !firstFrames)
+                {
+                    WriteSceneFrames(session, input, selection, detector.Scenes, position, Write);
+                }
+
                 return written;
             });
-            WriteScenes(session.Console.Text, inputs, found, result.GetValue(json), result.GetValue(csv));
+            WriteScenes(session.Console.Text, inputs, found, result.GetValue(json), result.GetValue(csv), withFades);
+            if (seriesPath is not null)
+            {
+                WriteSceneSeries(seriesPath, inputs, found);
+            }
+
             return code;
         });
         return command;
@@ -399,7 +445,7 @@ internal static class PictureCommands
     /// The detector settles a cut a few frames after it (its window and the flash test), so the frames since the oldest unsettled
     /// one are kept until then.
     /// </summary>
-    private static IReadOnlyList<Scene> FindScenes(VideoSession session, InputFile input, TrackSelection selection, SceneOptions options, int count, Action<int, Raster<Rgba8>>? start)
+    private static SceneDetector FindScenes(VideoSession session, InputFile input, TrackSelection selection, SceneOptions options, int count, Action<int, Raster<Rgba8>>? start)
     {
         using FrameSource source = FrameSource.Open(session, input, selection);
         JobProgress progress = Progress(session, input, source, count);
@@ -464,10 +510,54 @@ internal static class PictureCommands
 
         progress.Finish();
         session.Info($"{input.Display}: {detector.Cuts.Count} scenes");
-        return detector.Scenes;
+        return detector;
     }
 
-    private static void WriteScenes(TextWriter output, List<InputFile> inputs, IReadOnlyList<Scene>?[] found, bool json, bool csv)
+    /// <summary>Writes the middle or last frame of each scene, seeking to it in a second pass.</summary>
+    private static void WriteSceneFrames(VideoSession session, InputFile input, TrackSelection selection, IReadOnlyList<Scene> scenes, ScenePosition position, Action<int, Raster<Rgba8>> write)
+    {
+        if (input.Path is null)
+        {
+            throw new UsageException($"--frame {position.ToString().ToLowerInvariant()} reads the file again to find each frame, so it needs a file, not standard input.");
+        }
+
+        using FrameSource source = FrameSource.Open(session, input, selection);
+        foreach (SceneFrame found in SceneFrames.Read(source.Reader, scenes, position))
+        {
+            using YuvVideoFrame frame = found.Frame;
+            using Raster<Rgba8> image = FrameSource.ToImage(session, frame);
+            write(found.Scene.Number, image);
+        }
+    }
+
+    private static void WriteSceneSeries(string path, List<InputFile> inputs, SceneDetector?[] found)
+    {
+        List<ReportObject> rows = [];
+        for (int i = 0; i < inputs.Count; i++)
+        {
+            foreach (SceneScore score in found[i]?.Scores ?? [])
+            {
+                rows.Add(new ReportObject().Add("file", inputs[i].Display).Add("frame", score.Frame).Add("time", TimeValue.Format(score.Time))
+                    .Add("seconds", Math.Round(score.Time.Seconds, 6)).Add("score", Math.Round(score.Score, 6)).Add("luma", Math.Round(score.Luma, 6)));
+            }
+        }
+
+        if (System.IO.Path.GetDirectoryName(path) is { Length: > 0 } folder)
+        {
+            Directory.CreateDirectory(folder);
+        }
+
+        using StreamWriter writer = new(path, append: false, new System.Text.UTF8Encoding(false)) { NewLine = "\n" };
+        if (rows.Count == 0)
+        {
+            writer.Write("file,frame,time,seconds,score,luma\n");
+            return;
+        }
+
+        ReportWriter.Csv(writer, rows);
+    }
+
+    private static void WriteScenes(TextWriter output, List<InputFile> inputs, SceneDetector?[] found, bool json, bool csv, bool fades)
     {
         if (json)
         {
@@ -475,17 +565,28 @@ internal static class PictureCommands
             List<ReportObject> files = report.List("files");
             for (int i = 0; i < inputs.Count; i++)
             {
-                if (found[i] is not { } scenes)
+                if (found[i] is not { } detector)
                 {
                     continue;
                 }
 
                 ReportObject file = new ReportObject().Add("file", inputs[i].Display);
                 List<ReportObject> list = file.List("scenes");
-                foreach (Scene scene in scenes)
+                foreach (Scene scene in detector.Scenes)
                 {
-                    list.Add(new ReportObject().Add("scene", scene.Number).Add("frame", scene.StartFrame).Add("time", TimeValue.Format(scene.Start.Seconds))
-                        .Add("seconds", Math.Round(scene.Start.Seconds, 6)).Add("score", Math.Round(scene.Score, 4)));
+                    ReportObject item = new ReportObject().Add("scene", scene.Number).Add("frame", scene.StartFrame).Add("time", TimeValue.Format(scene.Start.Seconds))
+                        .Add("seconds", Math.Round(scene.Start.Seconds, 6)).Add("score", Math.Round(scene.Score, 4));
+                    list.Add(fades ? item.Add("kind", Kind(scene.StartKind)) : item);
+                }
+
+                if (fades)
+                {
+                    List<ReportObject> fadeList = file.List("fades");
+                    foreach (Fade fade in detector.Fades)
+                    {
+                        fadeList.Add(new ReportObject().Add("kind", fade.Kind.ToString().ToLowerInvariant()).Add("start", TimeValue.Format(fade.Start))
+                            .Add("end", TimeValue.Format(fade.End)).Add("startFrame", fade.StartFrame).Add("endFrame", fade.EndFrame));
+                    }
                 }
 
                 files.Add(file);
@@ -500,10 +601,11 @@ internal static class PictureCommands
             List<ReportObject> rows = [];
             for (int i = 0; i < inputs.Count; i++)
             {
-                foreach (Scene scene in found[i] ?? [])
+                foreach (Scene scene in found[i]?.Scenes ?? [])
                 {
-                    rows.Add(new ReportObject().Add("file", inputs[i].Display).Add("scene", scene.Number).Add("frame", scene.StartFrame)
-                        .Add("time", TimeValue.Format(scene.Start.Seconds)).Add("seconds", Math.Round(scene.Start.Seconds, 6)).Add("score", Math.Round(scene.Score, 4)));
+                    ReportObject row = new ReportObject().Add("file", inputs[i].Display).Add("scene", scene.Number).Add("frame", scene.StartFrame)
+                        .Add("time", TimeValue.Format(scene.Start.Seconds)).Add("seconds", Math.Round(scene.Start.Seconds, 6)).Add("score", Math.Round(scene.Score, 4));
+                    rows.Add(fades ? row.Add("kind", Kind(scene.StartKind)) : row);
                 }
             }
 
@@ -513,7 +615,7 @@ internal static class PictureCommands
 
         for (int i = 0; i < inputs.Count; i++)
         {
-            if (found[i] is not { } scenes)
+            if (found[i] is not { } detector)
             {
                 continue;
             }
@@ -523,13 +625,21 @@ internal static class PictureCommands
                 output.WriteLine($"{inputs[i].Display}:");
             }
 
-            output.WriteLine("scene   frame  time         score");
-            foreach (Scene scene in scenes)
+            output.WriteLine(fades ? "scene   frame  time         score  kind" : "scene   frame  time         score");
+            foreach (Scene scene in detector.Scenes)
             {
-                output.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{scene.Number,5}  {scene.StartFrame,6}  {TimeValue.Format(scene.Start.Seconds),-11}  {scene.Score:0.000}"));
+                string line = string.Create(CultureInfo.InvariantCulture, $"{scene.Number,5}  {scene.StartFrame,6}  {TimeValue.Format(scene.Start.Seconds),-11}  {scene.Score:0.000}");
+                output.WriteLine(fades ? $"{line}  {Kind(scene.StartKind)}" : line);
+            }
+
+            foreach (Fade fade in fades ? detector.Fades : [])
+            {
+                output.WriteLine($"fade {fade.Kind.ToString().ToLowerInvariant()}: {TimeValue.Format(fade.Start)} to {TimeValue.Format(fade.End)}");
             }
         }
     }
+
+    private static string Kind(SceneStart kind) => kind.ToString().ToLowerInvariant();
 
     private static (int Columns, int Rows) ParseGrid(string text)
     {

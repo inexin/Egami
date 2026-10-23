@@ -19,6 +19,8 @@ Usage, from the repo root:
   python tools/video/make-audio-corpus.py --aiff       V5.9: AIFF and AIFF-C clips, and G.711 in WAV and MOV, into
                                                        tests/video/corpus/audio/aiff (checked in) with FFmpeg's decode MD5 in
                                                        manifest.json. Add --local to run FFmpeg from the PATH instead of in Docker.
+  python tools/video/make-audio-corpus.py --alac       V5.9: FFmpeg's ALAC in MP4, QuickTime and Matroska, into
+                                                       tests/video/corpus/audio/alac-files (add --local to run FFmpeg here).
   python tools/video/make-audio-corpus.py --ac3        V5.9: raw AC-3 and E-AC-3, and both in MP4 and Matroska, into
                                                        tests/video/corpus/audio/ac3 (add --local to use the local ffmpeg).
   python tools/video/make-audio-corpus.py --caf        V5.9: CAF clips (PCM, G.711, FLAC, ALAC, Opus, MP3, AC-3) into
@@ -360,18 +362,38 @@ CAF_CLIPS = {
 }
 
 
+# V5.9 stage C: FFmpeg's ALAC in MP4, QuickTime (the cookie in a wave atom) and Matroska, with the MD5 of FFmpeg's decode.
+ALAC_OUT = os.path.join(OUT, "alac-files")
+ALAC_CLIPS = {
+    "m4a-alac-stereo.m4a": ("-sample_fmt s16p -c:a alac", 44100, 2, 16, False, True),
+    "m4a-alac-24-51.m4a": ("-sample_fmt s32p -c:a alac", 48000, 6, 24, False, True),
+    "m4a-alac-96k.m4a": ("-sample_fmt s32p -c:a alac", 96000, 2, 24, False, True),
+    "mov-alac-mono.mov": ("-sample_fmt s16p -c:a alac", 22050, 1, 16, False, True),
+    "mka-alac-stereo.mka": ("-sample_fmt s16p -c:a alac", 44100, 2, 16, False, True),
+    "mka-alac-24-61.mka": ("-sample_fmt s32p -c:a alac", 48000, 7, 24, False, True),
+}
+
+
 def make_caf(local):
-    os.makedirs(CAF_OUT, exist_ok=True)
+    make_decoded(CAF_OUT, CAF_CLIPS, local)
+
+
+def make_alac(local):
+    make_decoded(ALAC_OUT, ALAC_CLIPS, local)
+
+
+def make_decoded(out, clips, local):
+    os.makedirs(out, exist_ok=True)
 
     def output(command):
         if local:
-            return subprocess.run(["sh", "-c", command.replace("/work/", CAF_OUT + "/")], check=True, capture_output=True).stdout
-        return subprocess.run(["docker", "run", "--rm", "-v", f"{CAF_OUT}:/work", IMAGE, "sh", "-c", command], check=True,
+            return subprocess.run(["sh", "-c", command.replace("/work/", out + "/")], check=True, capture_output=True).stdout
+        return subprocess.run(["docker", "run", "--rm", "-v", f"{out}:/work", IMAGE, "sh", "-c", command], check=True,
                               capture_output=True).stdout
 
     manifest = {}
-    for name, (args, rate, channels, bits, is_float, lossless) in CAF_CLIPS.items():
-        path = os.path.join(CAF_OUT, name)
+    for name, (args, rate, channels, bits, is_float, lossless) in clips.items():
+        path = os.path.join(out, name)
         if os.path.exists(path):
             os.remove(path)
         output("ffmpeg -y -v error -bitexact " + source(rate, channels, 0.3) + f" {args} /work/{name}")
@@ -387,7 +409,7 @@ def make_caf(local):
             entry["decodes"] = False
         manifest[name] = entry
         print(name, os.path.getsize(path), entry)
-    with open(os.path.join(CAF_OUT, "manifest.json"), "w", newline="\n") as f:
+    with open(os.path.join(out, "manifest.json"), "w", newline="\n") as f:
         json.dump(manifest, f, indent=2)
         f.write("\n")
 
@@ -469,6 +491,9 @@ if __name__ == "__main__":
         sys.exit(0)
     if "--ac3" in sys.argv:
         make_ac3("--local" in sys.argv)
+        sys.exit(0)
+    if "--alac" in sys.argv:
+        make_alac("--local" in sys.argv)
         sys.exit(0)
     if "--aiff" in sys.argv:
         make_aiff("--local" in sys.argv)

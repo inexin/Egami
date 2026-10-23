@@ -197,6 +197,9 @@ public static class AudioCodecs
     /// <summary>Gets the FLAC codec.</summary>
     public static AudioCodec Flac => FlacCodec.Instance;
 
+    /// <summary>Gets the ALAC (Apple Lossless) codec.</summary>
+    public static AudioCodec Alac => AlacCodec.Instance;
+
     /// <summary>Gets the Opus codec.</summary>
     public static AudioCodec Opus => OpusCodec.Instance;
 
