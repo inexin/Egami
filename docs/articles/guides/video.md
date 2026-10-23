@@ -193,6 +193,23 @@ with a frame counter, solid colors, gradients, tones, white or pink noise (`Nois
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-test-sources)]
 
+More detectors run in the same pass, each keeping ffmpeg's documented measure and defaults with thresholds as fractions of
+the stream's range: `BlackDetector` (blackdetect) and `FreezeDetector` (freezedetect) return `DetectedRange`s,
+`CropDetector` (cropdetect) a `CropReport` with the rectangle that keeps every frame's picture, `InterlaceDetector` (idet)
+an `InterlaceReport` with field order counts, repeated fields and an `InterlaceVerdict` that spots 3:2 telecine, and
+`DuplicateDetector` (mpdecimate's test) runs of repeated frames. Each takes its own options record (`BlackOptions`,
+`FreezeOptions`, `CropOptions` with the runs of frames as `CropRun`s, `InterlaceOptions`, `DuplicateOptions`), and the black
+detector keeps every frame's ratio as a `FrameValue` series on request.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-video-detectors)]
+
+`SignalMeter` reports what signalstats and colordetect do: the lowest, 10 %, mean, 90 % and highest code values of each plane
+as `PlaneLevels`, saturation, the share of pixels outside broadcast range, the `SignalRange` the samples really use and the
+`AlphaUse` of an alpha plane. With `Blur` and `Blockiness` on it also scores edge width and coding blocks, and `KeepSeries`
+keeps a `SignalFrame` per frame.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-signal)]
+
 ## Limits and warnings
 
 A `MediaContext` holds the containers and codecs, the Egami context (memory, threads, safety limits), the `MediaLimits` for
