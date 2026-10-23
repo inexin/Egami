@@ -13,6 +13,14 @@ changes that break code come only in a new major version.
 - Exit code 130 (`ExitCodes.Cancelled`) for a run stopped with Ctrl+C, and progress from within one file for the MCP server's
   notifications, both for `egami-video`.
 
+### Animated cursors
+
+- Windows animated cursors (.ani) load: `AniFormat.Info` is registered in `EgamiContext.Default`. Load gives one animated raster
+  with a frame per step of the `seq ` list, each with its rate as `Delay` and its hotspot in `IcoDetails`, at one size for all
+  frames (the largest, or the smallest at least `MinimumSize`); LoadAll gives the animation at every size its frames hold, and
+  Probe lists steps and sizes without decoding. `AniDetails` has the title, artist, default delay, stored frames, steps and
+  sizes. Cursor, icon and raw-bitmap frames are read; damaged files load in lenient mode with `Ani.*` warnings.
+
 ### Planar YUV
 
 - `ChromaFormat.Yuv411` (chroma at a quarter of the luma width, as NTSC DV stores it) and `ChromaFormat.Yuv410` (a quarter of

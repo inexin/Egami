@@ -82,6 +82,20 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 
 | Id | Level | Meaning |
 | --- | --- | --- |
+| `Ani.ChunkPastEnd` | Warning | An animated cursor's chunk, or a frame in its `fram` list, runs past the end of the file or the list; the bytes that are there were read |
+| `Ani.ChunkRepeated` | Warning | An animated cursor has a second `anih` header or `fram` list; the first was used |
+| `Ani.FrameCount` | Warning | An animated cursor's header gives a frame count its `fram` list contradicts; the frames in the list were used |
+| `Ani.FrameDamaged` | Warning | A frame of an animated cursor cannot be read or decoded; the steps that show it were left out |
+| `Ani.HeaderSize` | Warning | An animated cursor's `anih` header is not 36 bytes, or says it is not; its first 36 bytes were read |
+| `Ani.IconInRawFile` | Warning | An animated cursor's header says its frames are raw bitmaps, but a frame is an icon; it was read as one |
+| `Ani.ListSize` | Warning | An animated cursor's `rate` or `seq ` chunk is not a whole number of 4-byte entries; the extra bytes were ignored |
+| `Ani.RateCount` | Warning | An animated cursor's `rate` chunk has a different number of entries than it has steps; steps without one use the default rate |
+| `Ani.RiffSize` | Warning | An animated cursor's RIFF header gives a size past the end of the file; the chunks that are there were read |
+| `Ani.SequenceFlag` | Warning | An animated cursor's header flag for a `seq ` chunk disagrees with whether there is one; the chunk, if any, was used |
+| `Ani.SequenceIndex` | Warning | A step of an animated cursor shows a frame the file does not store; the step was left out |
+| `Ani.SizeMissing` | Warning | A frame of an animated cursor has no image at the size loaded; its nearest image was resized, hotspot and all |
+| `Ani.StepCount` | Warning | An animated cursor's header gives a step count its `seq ` chunk or frames contradict; theirs was used |
+| `Ani.ZeroRate` | Warning | An animated cursor's default rate, or a step's rate, is 0; the step uses the default rate, or one jiffy (1/60 s) when that is 0 too |
 | `Avif.BaseLayerOnly` | Warning | An AVIF image is coded in layers whose later ones are inter frames, which Egami does not decode yet; its first layer was loaded |
 | `Avif.ExifDamaged` | Warning | An AVIF Exif item's TIFF header offset points past its end; the item was skipped |
 | `Avif.FramesDropped` | Warning | A frame of an AVIF sequence after the first cannot be decoded; a lenient load keeps the frames before it |

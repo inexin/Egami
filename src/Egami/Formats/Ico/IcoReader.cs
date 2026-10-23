@@ -139,12 +139,12 @@ internal sealed class IcoReader : IFormatReader, IRowSourceReader, IMultiImageRe
     }
 
     /// <summary>The options an entry's own reader gets: the caller's recovery and metadata choices, nothing that reshapes.</summary>
-    private static ReaderOptions Inner(ReaderOptions options)
+    internal static ReaderOptions Inner(ReaderOptions options)
     {
         return new ReaderOptions { Recovery = options.Recovery, ReadMetadata = options.ReadMetadata, Frames = ..1 };
     }
 
-    private static Raster<TPixel> Decode<TPixel>(EgamiInput input, ReadOnlyMemory<byte> bytes, IcoDirectory.Entry entry, ReaderOptions options)
+    internal static Raster<TPixel> Decode<TPixel>(EgamiInput input, ReadOnlyMemory<byte> bytes, IcoDirectory.Entry entry, ReaderOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         input.Limits.CheckFrameSize(entry.Width, entry.Height);
@@ -177,7 +177,7 @@ internal sealed class IcoReader : IFormatReader, IRowSourceReader, IMultiImageRe
     }
 
     /// <summary>Runs a reader over an entry's bytes as its own input.</summary>
-    private static T WithInput<T>(EgamiInput input, ReadOnlyMemory<byte> bytes, Func<EgamiInput, T> read)
+    internal static T WithInput<T>(EgamiInput input, ReadOnlyMemory<byte> bytes, Func<EgamiInput, T> read)
     {
         byte[] array = MemoryMarshal.TryGetArray(bytes, out ArraySegment<byte> segment) ? segment.Array! : bytes.ToArray();
         int offset = segment.Array is null ? 0 : segment.Offset;
@@ -197,7 +197,7 @@ internal sealed class IcoReader : IFormatReader, IRowSourceReader, IMultiImageRe
     /// Decodes a BMP entry: a 14-byte file header and the halved height make it a BMP file the BMP reader decodes, then the AND
     /// mask sets alpha where it applies.
     /// </summary>
-    private static Raster<Rgba8> DecodeBmp(EgamiInput input, ReadOnlySpan<byte> entry, DibLayout dib, ReaderOptions options)
+    internal static Raster<Rgba8> DecodeBmp(EgamiInput input, ReadOnlySpan<byte> entry, DibLayout dib, ReaderOptions options)
     {
         if (dib.HeaderSize == 40 && dib.Compression == 0 && dib.Bits is 24 or 32 && dib.PixelOffset + (dib.ColorStride * dib.Height) <= entry.Length)
         {
