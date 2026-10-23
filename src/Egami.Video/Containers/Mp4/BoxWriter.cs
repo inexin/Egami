@@ -92,6 +92,27 @@ internal sealed class BoxWriter : IDisposable
 
     public void Bytes(ReadOnlySpan<byte> bytes) => _buffer.Write(bytes);
 
+    /// <summary>Overwrites four bytes written earlier, at <paramref name="at"/> from the start.</summary>
+    public void Patch(long at, uint value) => BinaryPrimitives.WriteUInt32BigEndian(_buffer.GetBuffer().AsSpan((int)at, 4), value);
+
+    /// <summary>Empties the writer to build the next boxes in the same buffer.</summary>
+    public void Clear()
+    {
+        _open.Clear();
+        _buffer.SetLength(0);
+    }
+
+    /// <summary>Writes what was built to <paramref name="stream"/>, without copying it first.</summary>
+    public void WriteTo(Stream stream)
+    {
+        if (_open.Count > 0)
+        {
+            throw new InvalidOperationException("A box was left open.");
+        }
+
+        stream.Write(_buffer.GetBuffer().AsSpan(0, (int)_buffer.Length));
+    }
+
     public void Dispose() => _buffer.Dispose();
 
     public byte[] ToArray()

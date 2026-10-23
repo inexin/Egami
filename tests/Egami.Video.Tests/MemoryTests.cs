@@ -160,4 +160,74 @@ public class MemoryTests
         Assert.True(managedGrowth < 2L << 20, $"managed memory grew by {managedGrowth} bytes");
         Assert.Equal(0, pool.Usage.LiveBytes);
     }
+
+    [Fact]
+    public void AWriteOnlyStreamGetsTheFileWithMemoryUnderOneFragmentPlusAMegabyte()
+    {
+        // 30 frames a second of 64 KB each with a keyframe a second: two-second fragments of about 3.9 MB.
+        VideoTrackInfo track = new() { Number = 1, Kind = TrackKind.Video, CodecId = CodecIds.MotionJpeg, TimeBase = new Rational(1, 30), Width = 16, Height = 16 };
+        const int Frame = 64 << 10, Frames = 900;
+        long fragment = 60L * Frame;
+        CountingStream output = new();
+        byte[] data = new byte[Frame];
+        EncodedPacket[] packets = [.. Enumerable.Range(0, 30).Select(i => new EncodedPacket(1, data, default) { IsKeyframe = i == 0 })];
+        long baseline = GC.GetTotalMemory(forceFullCollection: true), peak = 0, allocated = 0;
+        using (IMuxer muxer = Mp4Format.Instance.CreateMuxer(output, [track], MediaContext.Default, leaveOpen: true))
+        {
+            for (int i = 0; i < Frames; i++)
+            {
+                EncodedPacket packet = packets[i % 30];
+                packet.Timestamp = new MediaTime(i, track.TimeBase);
+                long start = GC.GetAllocatedBytesForCurrentThread();
+                muxer.WritePacket(packet);
+                if (i >= 300)
+                {
+                    allocated += GC.GetAllocatedBytesForCurrentThread() - start;
+                }
+
+                if (i % 60 == 59)
+                {
+                    peak = Math.Max(peak, GC.GetTotalMemory(forceFullCollection: true) - baseline);
+                }
+            }
+        }
+
+        Assert.True(peak < fragment + (1 << 20), $"held {peak} bytes; a fragment is {fragment}");
+        Assert.True(allocated < 20 * 1024, $"{allocated} bytes allocated over 600 packets and 10 fragments in steady state");
+        Assert.True(output.Written > Frames * (long)Frame);
+        foreach (EncodedPacket packet in packets)
+        {
+            packet.Dispose();
+        }
+    }
+
+    /// <summary>A write-only stream that keeps nothing, counting the bytes.</summary>
+    private sealed class CountingStream : Stream
+    {
+        public long Written { get; private set; }
+
+        public override bool CanRead => false;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => true;
+
+        public override long Length => throw new NotSupportedException();
+
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+
+        public override void Flush()
+        {
+        }
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count) => Written += count;
+
+        public override void Write(ReadOnlySpan<byte> buffer) => Written += buffer.Length;
+    }
 }

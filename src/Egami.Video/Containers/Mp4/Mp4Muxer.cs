@@ -195,7 +195,7 @@ internal sealed class Mp4Muxer : IMuxer
         }
     }
 
-    private static bool IsCover(AttachmentInfo a) => a.IsCoverArt && a.MediaType is "image/jpeg" or "image/png";
+    internal static bool IsCover(AttachmentInfo a) => a.IsCoverArt && a.MediaType is "image/jpeg" or "image/png";
 
     private void Flush(TrackWriter track)
     {
@@ -312,17 +312,18 @@ internal sealed class Mp4Muxer : IMuxer
         }
 
         chapters?.WriteTrak(w, mediaData, MovieTimescale, movieDuration);
-        Udta(w);
+        Udta(w, _metadata);
         w.End();
         return w.ToArray();
     }
 
-    private void Udta(BoxWriter w)
+    /// <summary>Writes moov's udta: Nero chapters (chpl), and the tags and cover art as iTunes items.</summary>
+    internal static void Udta(BoxWriter w, MediaMetadata metadata)
     {
         const uint Freeform = 0x2D2D2D2D; // "----"
         List<(uint Type, string? Name, string Value)> items = [];
         Dictionary<string, uint> reverse = Mp4Metadata.ItemTags.GroupBy(p => p.Value).ToDictionary(g => g.Key, g => g.First().Key, StringComparer.Ordinal);
-        foreach ((string name, string value) in _metadata.Tags)
+        foreach ((string name, string value) in metadata.Tags)
         {
             if (name == "MAJOR_BRAND")
             {
@@ -332,17 +333,17 @@ internal sealed class Mp4Muxer : IMuxer
             items.Add(reverse.TryGetValue(name, out uint code) ? (code, null, value) : (Freeform, name, value));
         }
 
-        List<AttachmentInfo> covers = [.. _metadata.Attachments.Where(IsCover)];
-        if (items.Count == 0 && covers.Count == 0 && _metadata.Chapters.Count == 0)
+        List<AttachmentInfo> covers = [.. metadata.Attachments.Where(IsCover)];
+        if (items.Count == 0 && covers.Count == 0 && metadata.Chapters.Count == 0)
         {
             return;
         }
 
         w.Start("udta");
-        if (_metadata.Chapters.Count > 0)
+        if (metadata.Chapters.Count > 0)
         {
             // Nero chapters: start times in 100 ns units and Pascal titles.
-            List<ChapterInfo> chapters = [.. _metadata.Chapters.OrderBy(c => c.Start).Take(255)];
+            List<ChapterInfo> chapters = [.. metadata.Chapters.OrderBy(c => c.Start).Take(255)];
             w.StartFull("chpl", 1, 0);
             w.U32(0);
             w.U8(chapters.Count);
@@ -456,6 +457,11 @@ internal sealed class Mp4Muxer : IMuxer
         return ((code[0] - 0x60) << 10) | ((code[1] - 0x60) << 5) | (code[2] - 0x60);
     }
 
+    /// <summary>Gets a track's media timescale: the sample rate for audio (48 kHz for Opus), else its time base, else 90 kHz.</summary>
+    internal static uint TimescaleOf(TrackInfo input) => input is AudioTrackInfo audio && (audio.SampleRate > 0 || input.CodecId == CodecIds.Opus)
+        ? (uint)(input.CodecId == CodecIds.Opus ? 48000 : audio.SampleRate)
+        : input.TimeBase.Numerator == 1 && input.TimeBase.Denominator <= uint.MaxValue ? (uint)input.TimeBase.Denominator : 90000;
+
     /// <summary>The samples of one track, gathered as packets come, with its chunk being filled.</summary>
     private sealed class TrackWriter
     {
@@ -472,9 +478,7 @@ internal sealed class Mp4Muxer : IMuxer
             Input = input;
             Id = id;
             Output = input with { Number = id };
-            Timescale = input is AudioTrackInfo audio && (audio.SampleRate > 0 || input.CodecId == CodecIds.Opus)
-                ? (uint)(input.CodecId == CodecIds.Opus ? 48000 : audio.SampleRate)
-                : input.TimeBase.Numerator == 1 && input.TimeBase.Denominator <= uint.MaxValue ? (uint)input.TimeBase.Denominator : 90000;
+            Timescale = TimescaleOf(input);
             TimeBase = new Rational(1, Timescale);
         }
 
@@ -635,15 +639,7 @@ internal sealed class Mp4Muxer : IMuxer
             w.U16(PackLanguage(Input.Language));
             w.U16(0);
             w.End();
-            string handler = Mp4SampleEntries.HandlerOf(Input);
-            Hdlr(w, handler, Input.Tags.GetValueOrDefault("HANDLER_NAME") ?? handler switch
-            {
-                "vide" => "VideoHandler",
-                "soun" => "SoundHandler",
-                "sbtl" => "SubtitleHandler",
-                "tmcd" => "TimeCodeHandler",
-                _ => "DataHandler",
-            });
+            string handler = TrackHandler(w, Input);
             w.Start("minf");
             MediaHeader(w, handler);
             Dinf(w);
@@ -896,7 +892,22 @@ internal sealed class Mp4Muxer : IMuxer
         }
     }
 
-    private static void Hdlr(BoxWriter w, string handler, string name)
+    /// <summary>Writes a track's hdlr, named by its HANDLER_NAME tag or after its type; returns the handler type.</summary>
+    internal static string TrackHandler(BoxWriter w, TrackInfo track)
+    {
+        string handler = Mp4SampleEntries.HandlerOf(track);
+        Hdlr(w, handler, track.Tags.GetValueOrDefault("HANDLER_NAME") ?? handler switch
+        {
+            "vide" => "VideoHandler",
+            "soun" => "SoundHandler",
+            "sbtl" => "SubtitleHandler",
+            "tmcd" => "TimeCodeHandler",
+            _ => "DataHandler",
+        });
+        return handler;
+    }
+
+    internal static void Hdlr(BoxWriter w, string handler, string name)
     {
         w.StartFull("hdlr", 0, 0);
         w.U32(0);
@@ -907,7 +918,7 @@ internal sealed class Mp4Muxer : IMuxer
         w.End();
     }
 
-    private static void MediaHeader(BoxWriter w, string handler)
+    internal static void MediaHeader(BoxWriter w, string handler)
     {
         switch (handler)
         {
@@ -930,7 +941,7 @@ internal sealed class Mp4Muxer : IMuxer
         w.End();
     }
 
-    private static void Dinf(BoxWriter w)
+    internal static void Dinf(BoxWriter w)
     {
         w.Start("dinf");
         w.StartFull("dref", 0, 0);

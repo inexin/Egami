@@ -183,8 +183,9 @@ AAC or any other codec passed through, so a remux keeps them byte for byte. Open
   (Nero chpl or a QuickTime chapter track) are read, and written back.
 - `MovTextSample` reads and writes mov_text subtitles with their style runs (`MovTextStyle`: the characters each covers, `MovTextFace` bold, italic or underline, size and color).
 - Writing puts moov before the media, so the file plays while it downloads. On a stream that can seek and read the media is
-  moved forward at the end; otherwise it waits in a temporary file. `new Mp4Format { MoovAtEnd = true }` writes moov last,
-  straight to a seekable stream. A QuickTime file is written as MP4.
+  moved forward at the end; on any other stream the file is written fragmented (see [Streaming MP4](streaming-mp4.md), which
+  also covers HLS and DASH segments). `new Mp4Format { MoovAtEnd = true }` writes moov last, straight to a seekable stream. A
+  QuickTime file is written as MP4.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-mp4)]
 
@@ -192,7 +193,7 @@ Broken files are read up to the damage, with a warning through `MediaContext.War
 off), `mp4-bad-track`, `mp4-bad-box` and `mp4-bad-fragment` (broken boxes, skipped), `mp4-sample-table` (tables that disagree),
 `mp4-edit-list` (an edit list with several media edits or another rate, not applied), `mp4-sample-descriptions` (a track that
 changes its sample description), `mp4-fragment-track` and `mp4-track-id`. Writers report `mp4-timestamps` (a packet decoding
-before the one before it) and `metadata-dropped`. A file whose moov follows its media needs a stream that can seek.
+before the one before it), `metadata-dropped`, and for fragmented files `mp4-fragmented` and `mp4-chapter-track`. A file whose moov follows its media needs a stream that can seek.
 
 ## Containers
 

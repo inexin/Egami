@@ -327,7 +327,8 @@ public class ProgressTests
             Assert.False(reader.Disposed);
             Assert.False(writer.Disposed);
             Assert.Equal(written.Length, reports.Items[^1].BytesWritten);
-            Assert.Equal(PacketsOf(File.ReadAllBytes(expected)), PacketsOf(written.ToArray()));
+            // A forward-only stream gets fragmented MP4, which keeps each fragment's tracks apart, so compare track by track.
+            Assert.Equal(PacketsOf(File.ReadAllBytes(expected)).OrderBy(p => p.Item1), PacketsOf(written.ToArray()).OrderBy(p => p.Item1));
 
             // Without leaveOpen the job disposes both streams.
             using NonSeekableStream ownedReader = new(File.OpenRead(input));
