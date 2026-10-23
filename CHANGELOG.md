@@ -53,8 +53,10 @@ changes that break code come only in a new major version.
   sizes. Cursor, icon and raw-bitmap frames are read; damaged files load in lenient mode with `Ani.*` warnings.
 - Animated cursors save too, with `AniWriterOptions`: every frame is a step, repeated frames are stored once with a `seq ` list,
   each stored frame is a cursor at the raster's size or at `Sizes` (`AniWriterOptions.CursorSizes` is 32 to 128), hotspots come
-  from the options or each frame, delays are rounded to jiffies, and the title and artist go into the `INFO` list. A GIF
-  converts with `egami convert spinner.gif spinner.ani`.
+  from the options or each frame, delays are rounded to jiffies, and the title and artist go into the `INFO` list. With several
+  sizes every entry has one encoding, 32-bit BMP while each starts within the frame's first 64 KiB and PNG otherwise (so
+  `CursorSizes` are PNG), since Windows loads nothing past that and draws another size when BMP and PNG mix; an explicit BMP
+  that cannot fit warns with `Save.AniTooLarge`. A GIF converts with `egami convert spinner.gif spinner.ani`.
 
 ### Planar YUV
 

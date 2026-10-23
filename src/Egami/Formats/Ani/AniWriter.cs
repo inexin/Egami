@@ -26,6 +26,9 @@ internal sealed class AniWriter : IFormatWriter
     /// <summary>100 ms in jiffies.</summary>
     private const int ShortDelayJiffies = 6;
 
+    /// <summary>The last offset inside a frame at which Windows reads an entry (measured with LoadCursorFromFile).</summary>
+    private const long MaxEntryStart = ushort.MaxValue;
+
     private AniWriter()
     {
     }
@@ -48,7 +51,13 @@ internal sealed class AniWriter : IFormatWriter
             SaveLosses.Report(context, "Save.IcoFitted", $"ANI: the {raster.Width}×{raster.Height} raster is larger than a cursor entry's 256 × 256; it was fitted to {width}×{height}. Set AniWriterOptions.Sizes to choose the sizes.");
         }
 
-        SaveLosses.Report(new EncodeStart<TPixel>(raster.Width, raster.Height, raster.Metadata, ani, context, raster, seekable: false), "ANI", SaveKeeps.Alpha | SaveKeeps.Frames | SaveKeeps.Comment | (AnyPng(raster, ani) ? SaveKeeps.Icc | SaveKeeps.Resolution : SaveKeeps.None), s_textKeys);
+        (IcoEntryEncoding? encoding, bool tooLarge) = EntryEncoding(ani);
+        SaveLosses.Report(new EncodeStart<TPixel>(raster.Width, raster.Height, raster.Metadata, ani, context, raster, seekable: false), "ANI", SaveKeeps.Alpha | SaveKeeps.Frames | SaveKeeps.Comment | (AnyPng(raster, ani, encoding) ? SaveKeeps.Icc | SaveKeeps.Resolution : SaveKeeps.None), s_textKeys);
+        if (tooLarge)
+        {
+            SaveLosses.Report(context, "Save.AniTooLarge", $"ANI: BMP entries at sizes {string.Join(", ", ani.Sizes!)} do not all start within a frame's first 64 KiB, so Windows will not load the cursor; leave Encoding unset or use PNG.");
+        }
+
         if (raster.Metadata.LoopCount != 0 && raster.FrameCount > 1)
         {
             SaveLosses.Report(context, "Save.AniLoops", $"ANI animations always loop; the raster's LoopCount of {raster.Metadata.LoopCount} was not written.");
@@ -110,7 +119,7 @@ internal sealed class AniWriter : IFormatWriter
         IcoWriterOptions cursor = new()
         {
             Sizes = ani.Sizes,
-            Encoding = ani.Encoding,
+            Encoding = encoding,
             Filter = ani.Filter,
             StripMetadata = ani.StripMetadata,
             OmitSrgbProfile = ani.OmitSrgbProfile,
@@ -235,6 +244,30 @@ internal sealed class AniWriter : IFormatWriter
         }
     }
 
+    /// <summary>
+    /// Chooses one encoding for every entry of a frame with several sizes. Windows loads an animated cursor only when every entry of
+    /// every frame starts within the frame's first 64 KiB, and given BMP and PNG entries in one frame it may draw a BMP entry of
+    /// another size; so the entries are all 32-bit BMP while that fits, else all PNG (also when 256 is a size). An explicit BMP
+    /// encoding that cannot fit is kept, and <c>TooLarge</c> says so.
+    /// </summary>
+    private static (IcoEntryEncoding? Encoding, bool TooLarge) EntryEncoding(AniWriterOptions options)
+    {
+        if (options.Sizes is not IReadOnlyList<int> { Count: > 1 } sizes)
+        {
+            return (options.Encoding, false);
+        }
+
+        // The CUR writer stores the entries from the smallest up, after the directory, so the largest starts last.
+        long start = IcoDirectory.HeaderLength + ((long)IcoDirectory.EntryLength * sizes.Count);
+        foreach (int size in sizes.Order().SkipLast(1))
+        {
+            start += 40 + (((long)size * 4) + ((size + 31) / 32 * 4)) * size;
+        }
+
+        bool fits = start <= MaxEntryStart && !sizes.Contains(256);
+        return (options.Encoding ?? (fits ? IcoEntryEncoding.Bmp : IcoEntryEncoding.Png), options.Encoding == IcoEntryEncoding.Bmp && start > MaxEntryStart);
+    }
+
     /// <summary>Returns the raster's first text entry with <paramref name="key"/>, unless metadata is stripped.</summary>
     private static string? FromText(Raster raster, AniWriterOptions options, string key)
     {
@@ -242,9 +275,9 @@ internal sealed class AniWriter : IFormatWriter
     }
 
     /// <summary>Returns whether any entry may be written as PNG, which keeps the ICC profile and resolution.</summary>
-    private static bool AnyPng(Raster raster, AniWriterOptions options)
+    private static bool AnyPng(Raster raster, AniWriterOptions options, IcoEntryEncoding? encoding)
     {
-        return options.Encoding switch
+        return encoding switch
         {
             IcoEntryEncoding.Png => true,
             IcoEntryEncoding.Bmp => false,
