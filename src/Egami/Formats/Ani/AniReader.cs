@@ -43,7 +43,7 @@ internal sealed class AniReader : IFormatReader, IRowSourceReader, IMultiImageRe
                 FrameCount = length,
                 ImageCount = file.Sizes().Count,
                 LoopCount = 0,
-                HasMetadata = false,
+                HasMetadata = file.Title is not null || file.Artist is not null,
                 EstimatedBytes = (long)size.Width * size.Height * 4 * Math.Max(1, length),
             };
         });
@@ -189,6 +189,18 @@ internal sealed class AniReader : IFormatReader, IRowSourceReader, IMultiImageRe
                 Sizes = file.Sizes(),
                 RawBitmaps = file.RawBitmaps,
             };
+
+            // The keys PNG and TGA use, so the title and artist carry over when the cursor is saved in another format.
+            if (file.Title is not null)
+            {
+                raster.Metadata.Text.Add(new TextEntry("Title", file.Title));
+            }
+
+            if (file.Artist is not null)
+            {
+                raster.Metadata.Text.Add(new TextEntry("Author", file.Artist));
+            }
+
             raster.Metadata.WarningList.Prepend(file.Warnings);
             raster.Metadata.WarningList.AddRange(warnings);
             return raster;

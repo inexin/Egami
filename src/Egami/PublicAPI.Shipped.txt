@@ -55,6 +55,37 @@ Egami.EgamiDiagnostic.Source.get -> string!
 Egami.EgamiDiagnostic.Source.init -> void
 Egami.EgamiException
 Egami.EgamiException.EgamiException(string! message, System.Exception? innerException = null) -> void
+Egami.Formats.Ani.AniDetails
+Egami.Formats.Ani.AniDetails.AniDetails() -> void
+Egami.Formats.Ani.AniDetails.Artist.get -> string?
+Egami.Formats.Ani.AniDetails.Artist.set -> void
+Egami.Formats.Ani.AniDetails.DefaultDelay.get -> System.TimeSpan
+Egami.Formats.Ani.AniDetails.DefaultDelay.set -> void
+Egami.Formats.Ani.AniDetails.RawBitmaps.get -> bool
+Egami.Formats.Ani.AniDetails.RawBitmaps.set -> void
+Egami.Formats.Ani.AniDetails.Sizes.get -> System.Collections.Generic.IReadOnlyList<Egami.Size>!
+Egami.Formats.Ani.AniDetails.Sizes.set -> void
+Egami.Formats.Ani.AniDetails.Steps.get -> System.Collections.Generic.IReadOnlyList<int>!
+Egami.Formats.Ani.AniDetails.Steps.set -> void
+Egami.Formats.Ani.AniDetails.StoredFrames.get -> int
+Egami.Formats.Ani.AniDetails.StoredFrames.set -> void
+Egami.Formats.Ani.AniDetails.Title.get -> string?
+Egami.Formats.Ani.AniDetails.Title.set -> void
+Egami.Formats.Ani.AniFormat
+Egami.Formats.Ani.AniWriterOptions
+Egami.Formats.Ani.AniWriterOptions.AniWriterOptions() -> void
+Egami.Formats.Ani.AniWriterOptions.Artist.get -> string?
+Egami.Formats.Ani.AniWriterOptions.Artist.init -> void
+Egami.Formats.Ani.AniWriterOptions.Encoding.get -> Egami.Formats.Ico.IcoEntryEncoding?
+Egami.Formats.Ani.AniWriterOptions.Encoding.init -> void
+Egami.Formats.Ani.AniWriterOptions.Filter.get -> Egami.Operations.ResampleFilter
+Egami.Formats.Ani.AniWriterOptions.Filter.init -> void
+Egami.Formats.Ani.AniWriterOptions.Hotspot.get -> Egami.Point?
+Egami.Formats.Ani.AniWriterOptions.Hotspot.init -> void
+Egami.Formats.Ani.AniWriterOptions.Sizes.get -> System.Collections.Generic.IReadOnlyList<int>?
+Egami.Formats.Ani.AniWriterOptions.Sizes.init -> void
+Egami.Formats.Ani.AniWriterOptions.Title.get -> string?
+Egami.Formats.Ani.AniWriterOptions.Title.init -> void
 Egami.Formats.Bmp.BmpCompression
 Egami.Formats.Bmp.BmpCompression.AlphaBitfields = 5 -> Egami.Formats.Bmp.BmpCompression
 Egami.Formats.Bmp.BmpCompression.Bitfields = 4 -> Egami.Formats.Bmp.BmpCompression
@@ -980,6 +1011,7 @@ override Egami.EgamiContext.GetHashCode() -> int
 override Egami.EgamiContext.ToString() -> string!
 override Egami.EgamiDiagnostic.GetHashCode() -> int
 override Egami.EgamiDiagnostic.ToString() -> string!
+override Egami.Formats.Ani.AniDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Bmp.BmpDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.FormatInfo.Equals(object? obj) -> bool
 override Egami.Formats.FormatInfo.GetHashCode() -> int
@@ -1072,6 +1104,9 @@ static Egami.EgamiContext.operator ==(Egami.EgamiContext? left, Egami.EgamiConte
 static Egami.EgamiContext.SetDefault(Egami.EgamiContext! context) -> void
 static Egami.EgamiDiagnostic.operator !=(Egami.EgamiDiagnostic left, Egami.EgamiDiagnostic right) -> bool
 static Egami.EgamiDiagnostic.operator ==(Egami.EgamiDiagnostic left, Egami.EgamiDiagnostic right) -> bool
+static Egami.Formats.Ani.AniFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Ani.AniWriterOptions.CursorSizes.get -> System.Collections.Generic.IReadOnlyList<int>!
+static Egami.Formats.Ani.AniWriterOptions.Default.get -> Egami.Formats.Ani.AniWriterOptions!
 static Egami.Formats.Bmp.BmpFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Bmp.BmpWriterOptions.Default.get -> Egami.Formats.Bmp.BmpWriterOptions!
 static Egami.Formats.FormatInfo.operator !=(Egami.Formats.FormatInfo? left, Egami.Formats.FormatInfo? right) -> bool

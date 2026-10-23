@@ -1,6 +1,7 @@
 using Egami;
 using Egami.Colors;
 using Egami.Formats;
+using Egami.Formats.Ani;
 using Egami.Formats.Jpeg;
 using Egami.Metadata;
 using Egami.Pixels;
@@ -1646,6 +1647,16 @@ static void LoadAni(Stream stream)
             using Raster<RgbaF32> tail = Raster.Load<RgbaF32>(data, context, options with { Frames = 1.. });
             using RasterDecoder decoder = RasterDecoder.Open(data, context, options);
             using Raster rows = decoder.ReadAll();
+
+            // Whatever loads saves, and the saved cursor loads back with the same steps.
+            using MemoryStream saved = new();
+            animation.Save(saved, AniFormat.Info);
+            using Raster<Rgba8> again = Raster.Load<Rgba8>(saved.ToArray(), context, new ReaderOptions { Recovery = RecoveryMode.Strict });
+            bool fits = animation.Width <= 256 && animation.Height <= 256;
+            if (again.FrameCount != animation.FrameCount || (fits && (again.Width != animation.Width || again.Height != animation.Height)))
+            {
+                throw new InvalidOperationException("A saved cursor loads back differently.");
+            }
         }
         catch (EgamiException)
         {

@@ -46,6 +46,10 @@ changes that break code come only in a new major version.
   frames (the largest, or the smallest at least `MinimumSize`); LoadAll gives the animation at every size its frames hold, and
   Probe lists steps and sizes without decoding. `AniDetails` has the title, artist, default delay, stored frames, steps and
   sizes. Cursor, icon and raw-bitmap frames are read; damaged files load in lenient mode with `Ani.*` warnings.
+- Animated cursors save too, with `AniWriterOptions`: every frame is a step, repeated frames are stored once with a `seq ` list,
+  each stored frame is a cursor at the raster's size or at `Sizes` (`AniWriterOptions.CursorSizes` is 32 to 128), hotspots come
+  from the options or each frame, delays are rounded to jiffies, and the title and artist go into the `INFO` list. A GIF
+  converts with `egami convert spinner.gif spinner.ani`.
 
 ### Planar YUV
 

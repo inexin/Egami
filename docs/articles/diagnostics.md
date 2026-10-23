@@ -262,6 +262,8 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Qoi.RowsMissing` | Warning | The file ends early; the rows not decoded are transparent black |
 | `Radiance.RowsMissing` | Warning | The file ends early; the scanlines not decoded are black |
 | `Save.AlphaDropped` | Warning | The format, as written with these options, has no alpha; translucent pixels were written opaque |
+| `Save.AniDelayRaised` | Warning | ANI frames shown for less than 20 ms were written as 100 ms, as browsers play such GIF frames |
+| `Save.AniLoops` | Warning | The raster's LoopCount was not 0; ANI animations always loop, so it was not written |
 | `Save.ColorsQuantized` | Warning | The image has more colors than the palette holds; it was reduced |
 | `Save.ConvertedToRgb` | Warning | The format holds no CMYK; the inks were converted to RGB |
 | `Save.DepthReduced` | Warning | Samples deeper than the format holds were rounded, or floating-point samples clipped to integers |

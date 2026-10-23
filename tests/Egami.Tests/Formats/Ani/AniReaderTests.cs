@@ -338,7 +338,7 @@ public class AniReaderTests
         Assert.Equal((details.Title, details.StoredFrames, details.RawBitmaps, details.DefaultDelay), (copy.Title, copy.StoredFrames, copy.RawBitmaps, copy.DefaultDelay));
     }
 
-    private static bool SamePixels(Frame<Rgba8> expected, Frame<Rgba8> actual)
+    internal static bool SamePixels(Frame<Rgba8> expected, Frame<Rgba8> actual)
     {
         if (expected.Plane.Width != actual.Plane.Width || expected.Plane.Height != actual.Plane.Height)
         {
