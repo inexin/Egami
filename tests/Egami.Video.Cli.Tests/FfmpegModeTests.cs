@@ -1,5 +1,6 @@
 using System.Text;
 
+using Egami.Pixels;
 using Egami.Video.Cli.Commands;
 
 namespace Egami.Video.Cli.Tests;
@@ -148,6 +149,52 @@ public sealed class FfmpegModeTests
     }
 
     /// <summary>Splits a command line at spaces, keeping double-quoted words together without their quotes.</summary>
+    [Fact]
+    public void DetectionFiltersLogAsFfmpegDoes()
+    {
+        using Tool tool = new();
+        AnalyzeTests.WriteClip(tool.PathOf("clip.mkv"));
+
+        // The clip is black with silence from 1 to 3.4 s.
+        ToolRun run = tool.Run("ffmpeg", "-i", "clip.mkv", "-vf", "blackdetect=d=1", "-af", "silencedetect=d=1,volumedetect,ebur128", "-f", "null", "-");
+        Assert.True(run.Code == 0, run.Error);
+        Assert.Equal(string.Empty, run.Text);
+        string[] log = run.Error.Split('\n');
+
+        // -vf and -af are separate filter graphs, each numbered from 0.
+        Assert.Contains("[Parsed_blackdetect_0 @ egami] black_start:1 black_end:3.4 black_duration:2.4", log);
+        Assert.Contains("[Parsed_silencedetect_0 @ egami] silence_start: 1", log);
+        Assert.Contains(log, l => l.StartsWith("[Parsed_silencedetect_0 @ egami] silence_end: 3.4", StringComparison.Ordinal) && l.Contains(" | silence_duration: 2.4", StringComparison.Ordinal));
+        Assert.Contains("[Parsed_volumedetect_1 @ egami] max_volume: -18.0 dB", log);
+        Assert.Contains("[Parsed_ebur128_2 @ egami]     I:         -18.3 LUFS", log);
+
+        // The same as analyze with --ffmpeg-log.
+        ToolRun native = tool.Run("analyze", "clip.mkv", "-d", "black,silence,levels,loudness", "--black-min", "1", "--silence-min", "1",
+            "--ffmpeg-log", "blackdetect,silencedetect,volumedetect,ebur128");
+        Assert.Equal(run.Error.Split('\n').Where(l => l.StartsWith('[')), native.Error.Split('\n').Where(l => l.StartsWith('[')));
+        Assert.Equal(2, tool.Run("analyze", "clip.mkv", "-d", "black", "--ffmpeg-log", "blackdetect", "--json").Code);
+        Assert.Equal(2, tool.Run("analyze", "clip.mkv", "-d", "black", "--ffmpeg-log", "loudnorm").Code);
+    }
+
+    [Fact]
+    public void LavfiSourcesAndAudioPicturesRun()
+    {
+        using Tool tool = new();
+        ToolRun bars = tool.Run("ffmpeg", "-f", "lavfi", "-i", "smptebars=s=320x240:r=25", "-f", "lavfi", "-i", "sine=frequency=440", "-t", "1", "bars.mkv");
+        Assert.True(bars.Code == 0, bars.Error);
+        Assert.Equal([TrackKind.Video, TrackKind.Audio], MediaFile.Probe(tool.PathOf("bars.mkv")).Tracks.Select(t => t.Kind));
+
+        ToolRun open = tool.Run("ffmpeg", "-f", "lavfi", "-i", "testsrc2", "open.mkv");
+        Assert.Equal(2, open.Code);
+        Assert.Contains("give the length with -t", open.Error, StringComparison.Ordinal);
+
+        ToolRun wave = tool.Run("ffmpeg", "-i", "bars.mkv", "-filter_complex", "showwavespic=s=320x80", "-frames:v", "1", "wave.png");
+        Assert.True(wave.Code == 0, wave.Error);
+        using Raster<Rgba8> image = Raster.Load<Rgba8>(tool.PathOf("wave.png"));
+        Assert.Equal(320, image.Width);
+        Assert.Equal(80, image.Height);
+    }
+
     private static string[] Split(string line)
     {
         List<string> words = [];

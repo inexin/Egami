@@ -36,13 +36,17 @@ Commands:
   run <inputs-and-steps>        Run egami's steps over every frame of a video, separated by +, and encode it again: 'egami-video run in.mkv crop 0 60 1920 960 + resize 1280x + save out.mkv'. 'egami-video run --list' lists the steps; audio and subtitles are copied, and frames keep their times.
   thumbnail <inputs>            Write a representative frame of each video as an image: a typical frame of its opening, not a black or empty one, or the frame at --at.
   scenes <inputs>               Find the cuts between shots: list where each scene starts (frame, time and how sharp the cut is), and optionally write a frame of each.
+  analyze <inputs>              Look for black, frozen, silent, cropped, interlaced and duplicate stretches, scene cuts, signal levels and loudness in one pass, as ffmpeg's detection filters do.
+  waveform <inputs>             Draw the waveform of each file's audio as an image: the min to max outline of each column with the RMS level inside, as editors and podcast players show it.
+  spectrum <inputs>             Draw the spectrogram of each file's audio as an image: frequency up, time across, level as color.
+  generate <source> <file>      Write a test clip or sound: moving pattern with frame number and timecode, color bars, a solid color or a gradient, with or without a tone; or a sine, silence, noise or sweep on its own.
   sheet <inputs>                Make a contact sheet: a grid of evenly spaced frames, with their times and a title if asked.
   animate <inputs>              Make an animated GIF, WebP or PNG (APNG) from a stretch of video, at a frame rate and size of your choice.
   hash <inputs>                 Hash every decoded frame or packet of each track, in the layout of ffmpeg -f framemd5, to check that decoding matches.
   compare <reference> <inputs>  Measure PSNR and SSIM per plane between a reference clip and others, frame by frame in presentation order, as ffmpeg's psnr and ssim filters do.
   audio <inputs>                Decode audio to WAV, FLAC, Ogg FLAC, Opus, AIFF, CAF or ALAC in .m4a, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
   formats                       List the containers and codecs egami-video reads and writes, like ffmpeg -formats and -codecs.
-  ffmpeg <arguments>            Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -lavfi, -filter_complex (psnr, ssim), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; anything else stops with exit code 2.
+  ffmpeg <arguments>            Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
   ffprobe <arguments>           Run an ffprobe command line with egami-video: 'egami-video ffprobe -of json -show_streams in.mkv'. --explain prints the native command instead. Takes -i, -show_streams, -show_format, -show_packets, -show_frames, -show_chapters, -select_streams, -show_entries, -of, -print_format, -output_format (json, csv, compact, default, flat, xml), -v, -loglevel, -hide_banner, -pretty; anything else stops with exit code 2.
   mcp                           Serve egami-video's commands as tools to an AI assistant over the Model Context Protocol, on standard input and output. Tools read and write only inside the folders the assistant opened and those given with --allow, and never replace an input unless asked.
 ```
@@ -175,6 +179,10 @@ Options:
   --every <time>                 Split every so often, such as 10 or 1:00; each part starts at the first video keyframe at or after its split point.
   --at <times>                   Split at these times, separated by commas, such as 1:00,2:30 or #250,#500; each part starts at the first video keyframe at or after its split point.
   --keep-timestamps              Keep the input's timestamps in every part instead of starting each part at 0.
+  --scenes                       Split at scene changes, as the scenes command finds them; each part starts at the video keyframe at or before its scene's first frame, and the gap is reported.
+  --threshold <0-1>              With --scenes: how sharp a change starts a scene, from 0 to 1. Default 0.15.
+  --min-length <time>            With --scenes: the shortest scene. Default 0.6s.
+  --exact                        With --scenes: start every part on its scene's first frame. Needs smart cut (Video hub step V5.6), which is not built yet.
 ```
 
 ## timestamps
@@ -362,6 +370,7 @@ Options:
   -f, --format <container>       The output container (mkv, avi …), when the output's extension does not say.
   --codec <codec>                The video codec to encode with: mjpeg, vp8, vp9 or raw. The input's codec when Egami.Video can encode it, else mjpeg.
   --quality <1-100>              The encoder's quality from 1 to 100.
+  --crop <auto>                  auto finds the black bars of letterbox, pillarbox and windowbox video, as the analyze command's crop detector does, and crops them off before the other steps.
   --rate <fps>                   Frames per second of the output, dropping or repeating frames to match; frames keep their own times by default.
   -t, --track <track>            Which video track to run the steps over: v:1 for the second, or a track number; audio and subtitle tracks are copied.
   -an, --no-audio                Leave out the audio tracks.
@@ -418,7 +427,7 @@ Arguments:
   <inputs>  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
 
 Options:
-  -o, --output <path>                    Also write the first frame of each scene: a folder, or a template with {scene} (from 1, padded as {scene:000}), {name}, {dir} and {index}.
+  -o, --output <path>                    Also write a frame of each scene (the first, or as --frame says): a folder, or a template with {scene} (from 1, padded as {scene:000}), {name}, {dir} and {index}.
   -f, --format <format>                  The image format by name or extension (png, jpg, webp, gif …), when -o's extension does not say.
   -t, --track <track>                    Which video track: v:1 for the second, or a track number as info shows it; the first video track by default.
   --quality <0-100>                      Lossy quality from 0 to 100 for formats that have one.
@@ -429,9 +438,161 @@ Options:
   --fail-fast                            Stop at the first file that fails.
   --method <adaptive|content|histogram>  How changes are scored: adaptive (the default; ignores fast motion), content (a fixed threshold, as ffmpeg's scene value) or histogram. [default: adaptive]
   --threshold <0-1>                      How sharp a change starts a scene, from 0 to 1; lower finds more cuts. Default 0.15 for adaptive, 0.4 for content and histogram.
-  --min-gap <time>                       The shortest scene: a cut closer than this to the last one is not taken. [default: 0.6s]
+  --min-gap, --min-length <time>         The shortest scene: a cut closer than this to the last one is not taken. [default: 0.6s]
+  --fades                                Also find fades to and from black: a scene then starts in the middle of a fade, and the fades are listed.
+  --flash <merge|suppress>               What a flash (a frame or two of a different picture, as a camera flash) does: merge (the default) keeps it in its scene; suppress also ignores the change it ends with. [default: merge]
+  --frame <first|middle|last>            Which frame of each scene -o writes: first (the default), middle or last. Middle and last need a file, not standard input. [default: first]
+  --series <file.csv>                    Also write every frame's change score to this CSV file.
   --json                                 Write the scenes as JSON.
   --csv                                  Write the scenes as CSV, one row per scene.
+```
+
+## analyze
+
+```text
+Description:
+  Look for black, frozen, silent, cropped, interlaced and duplicate stretches, scene cuts, signal levels and loudness in one pass, as ffmpeg's detection filters do.
+
+Usage:
+  egami-video analyze <inputs>... [options]
+
+Arguments:
+  <inputs>  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -t, --track <track>            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                Leave out audio tracks.
+  -sn, --no-subtitles            Leave out subtitle tracks.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs <count>             How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast                    Stop at the first file that fails.
+  -d, --detect <detectors>       What to look for, separated by commas or repeated: scenes, black, freeze, crop, interlace, duplicates, signal, blur, blockiness, silence, levels, loudness.
+  --all                          Run every detector the file has a track for; blur and blockiness come with signal.
+  -ss, --start <time>            Start here instead of at the beginning.
+  --duration <time>              Look at this much and stop.
+  --series <file.csv>            Also write per-frame and per-100 ms values (scene scores, black share, signal levels, loudness) to this CSV file.
+  --json                         Write the findings as JSON.
+  --csv                          Write the findings as CSV, one row per range or value.
+  --ffmpeg-log <filters>         Instead of the report, print the findings on standard error in the shape these ffmpeg filters log them, for scripts that read ffmpeg's output: blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats, ebur128.
+  --scene-method <method>        How scene changes are scored: adaptive (the default), content or histogram.
+  --scene-threshold <0-1>        How sharp a change starts a scene, from 0 to 1. Default 0.15 for adaptive, 0.4 otherwise.
+  --scene-min <time>             The shortest scene. Default 0.6s.
+  --black-min <time>             The shortest black stretch reported, as blackdetect's d. Default 2s.
+  --black-ratio <0-1>            The share of black pixels that makes a frame black, as blackdetect's pic_th. Default 0.98.
+  --black-pixel <0-1>            How dark a pixel must be to count as black, as a share of the luma range, as blackdetect's pix_th. Default 0.10.
+  --freeze-min <time>            The shortest frozen stretch reported, as freezedetect's d. Default 2s.
+  --freeze-noise <level>         How much change still counts as frozen, as a ratio (0.001) or in dB (-60dB), as freezedetect's n. Default 0.001.
+  --silence-min <time>           The shortest silence reported, as silencedetect's d. Default 2s.
+  --silence-noise <level>        The level under which audio is silent, in dB (-50dB) or as a ratio (0.003), as silencedetect's n. Default -60dB.
+  --silence-per-channel          Also report each channel's silences, as silencedetect's mono.
+  --crop-limit <level>           The brightest a border may be, as a share of the range (0.094) or an 8-bit value (24), as cropdetect's limit. Default 24.
+  --crop-round <n>               Round the width and height down to a multiple of this, as cropdetect's round. Default 2.
+  --crop-skip <n>                Frames at the start not measured, as cropdetect's skip. Default 2.
+  --dup-hi <n>                   The block difference no 8x8 block may pass, as mpdecimate's hi. Default 768.
+  --dup-lo <n>                   The block difference only --dup-frac of blocks may pass, as mpdecimate's lo. Default 320.
+  --dup-frac <0-1>               The share of blocks that may pass --dup-lo, as mpdecimate's frac. Default 0.33.
+```
+
+## waveform
+
+```text
+Description:
+  Draw the waveform of each file's audio as an image: the min to max outline of each column with the RMS level inside, as editors and podcast players show it.
+
+Usage:
+  egami-video waveform <inputs>... [options]
+
+Arguments:
+  <inputs>  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output <path>            Where to write: a file, a folder, a template with {name}, {ext}, {dir} and {index}, or - for standard output.
+  -f, --format <format>          The image format by name or extension (png, jpg, webp, gif …), when -o's extension does not say.
+  -t, --track <track>            Which audio track: a:1 for the second, or a track number as info shows it; the first audio track by default.
+  --quality <0-100>              Lossy quality from 0 to 100 for formats that have one.
+  --set <fmt.key=value>          Writer settings as fmt.key=value, as egami takes them.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs <count>             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  -s, --size <WxH>               The picture's size, width x height. Default 1800x280. [default: 1800x280]
+  --channels <mixed|stacked>     mixed (the default) draws every channel in one strip; stacked gives each its own. [default: mixed]
+  --scale <linear|db>            linear (the default) or db, which shows quiet passages; --floor sets the lowest level. [default: linear]
+  --floor <dB>                   The lowest level --scale db shows, in dBFS. Default -60. [default: -60]
+  --color <color>                The outline color as #rrggbb or #rrggbbaa. Default a mid blue.
+  --rms-color <color|none>       The color of the RMS band inside the outline, or none. Default a light blue.
+  --background <color>           The background color. Default transparent, or dark gray with --legend.
+  --legend                       Add a time axis and level labels around the picture.
+```
+
+## spectrum
+
+```text
+Description:
+  Draw the spectrogram of each file's audio as an image: frequency up, time across, level as color.
+
+Usage:
+  egami-video spectrum <inputs>... [options]
+
+Arguments:
+  <inputs>  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output <path>            Where to write: a file, a folder, a template with {name}, {ext}, {dir} and {index}, or - for standard output.
+  -f, --format <format>          The image format by name or extension (png, jpg, webp, gif …), when -o's extension does not say.
+  -t, --track <track>            Which audio track: a:1 for the second, or a track number as info shows it; the first audio track by default.
+  --quality <0-100>              Lossy quality from 0 to 100 for formats that have one.
+  --set <fmt.key=value>          Writer settings as fmt.key=value, as egami takes them.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs <count>             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  -s, --size <WxH>               The picture's size, width x height. Default 1800x512. [default: 1800x512]
+  --window <samples>             The FFT window in samples, a power of two from 256 to 32768; longer resolves frequency finer and time coarser. Default 2048. [default: 2048]
+  --scale <linear|log>           The frequency axis: linear (the default) or log, which gives each octave the same height. [default: linear]
+  --min-frequency <Hz>           The lowest frequency on the log axis, in hertz. Default 20. [default: 20]
+  --floor <dB>                   The level drawn darkest, in dBFS. Default -120. [default: -120]
+  --ceiling <dB>                 The level drawn brightest, in dBFS, where a full-scale sine reads 0. Default 0. [default: 0]
+  --channels <mixed|stacked>     mixed (the default) shows the mix of every channel; stacked gives each its own strip. [default: mixed]
+  --colors <magma|gray>          The color map: magma (the default) or gray. [default: magma]
+  --legend                       Add a time axis and frequency labels around the picture.
+```
+
+## generate
+
+```text
+Description:
+  Write a test clip or sound: moving pattern with frame number and timecode, color bars, a solid color or a gradient, with or without a tone; or a sine, silence, noise or sweep on its own.
+
+Usage:
+  egami-video generate <source> [<file>] [options]
+
+Arguments:
+  <source>  What to make: pattern, bars, solid, gradient (pictures) or sine, silence, noise, sweep (sound).
+  <file>    The file to write; or give -o.
+
+Options:
+  -o, --output <path>            The file to write: the container comes from its extension or --format.
+  -f, --format <container>       The container by name or extension, when the file's extension does not say.
+  -t, --duration <time>          How long, in seconds or [HH:]MM:SS[.mmm]. Default 10. [default: 10]
+  -s, --size <WxH>               The picture size. Default 1280x720. [default: 1280x720]
+  -r, --rate <fps>               Frames per second, such as 25, 29.97 or 30000/1001. Default 30. [default: 30]
+  --color <color>                solid's color, and gradient's first, as #rrggbb. Default black for solid, black to white for gradient.
+  --to-color <color>             gradient's last color as #rrggbb.
+  --vertical                     Run gradient from top to bottom instead of left to right.
+  --bars <auto|hd|sd>            Which bars: auto (the default; SMPTE RP 219 for HD sizes, EG 1 for SD), hd or sd. [default: auto]
+  --tone                         Add a 1 kHz tone at -18 dBFS to a picture source: the same as --audio sine.
+  --audio <source>               Add a sound to a picture source: sine, silence, noise or sweep.
+  --frequency <Hz>               sine's frequency in hertz. Default 1000. [default: 1000]
+  --level <dB>                   The level of sine (its peak), noise (its RMS) and sweep in dBFS. Default -18. [default: -18]
+  --noise <white|pink>           noise's color: white (the default) or pink. [default: white]
+  --from <Hz>                    sweep's start frequency in hertz. Default 20. [default: 20]
+  --to <Hz>                      sweep's end frequency in hertz. Default just below half the sample rate.
+  -ar, --sample-rate <Hz>        The sample rate in hertz. Default 48000. [default: 48000]
+  -ac, --channels <layout>       A channel count or a layout (mono, stereo, 5.1 …). Default stereo. [default: stereo]
+  -c, --codec <codec>            The video codec: mjpeg (the default), vp8, vp9 or raw (the default for y4m).
+  --audio-codec <codec>          The audio codec: flac, pcm or opus; by default Opus in WebM and .opus, PCM in WAV and AVI, and FLAC otherwise.
+  --quality <0-100>              The video quality from 0 to 100.
 ```
 
 ## sheet
@@ -599,7 +760,7 @@ Options:
 
 ```text
 Description:
-  Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -lavfi, -filter_complex (psnr, ssim), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; anything else stops with exit code 2.
+  Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -af, -filter:a, -lavfi, -filter_complex (psnr, ssim, showwavespic, showspectrumpic), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; to -f null the detection filters blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect, volumedetect, astats and ebur128; -f lavfi sources testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc; anything else stops with exit code 2.
 
 Usage:
   egami-video ffmpeg [<arguments>...] [options] [[--] <additional arguments>...]]

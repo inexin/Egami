@@ -109,11 +109,42 @@
 => hash in.mkv --algorithm sha256 --track v | ffmpeg -i in.mkv -map 0:v -f framehash -
 => compare ref.mkv dist.mkv --metric psnr | ffmpeg -i dist.mkv -i ref.mkv -lavfi psnr -f null -
 => compare ref.mkv dist.mkv --metric ssim | ffmpeg -i dist.mkv -i ref.mkv -lavfi ssim -f null -
+=> analyze in.mkv --detect black --black-min 0.5 --black-ratio 0.98 --ffmpeg-log blackdetect | ffmpeg -i in.mkv -vf blackdetect=d=0.5:pic_th=0.98 -f null -
+=> analyze in.mkv --detect black,freeze --freeze-noise -60dB --freeze-min 2 --ffmpeg-log blackdetect,freezedetect | ffmpeg -i in.mkv -vf blackdetect,freezedetect=n=-60dB:d=2 -an -f null -
+=> analyze in.mkv --detect crop --crop-limit 24 --crop-round 16 --start 60 --duration 10 --ffmpeg-log cropdetect | ffmpeg -ss 60 -i in.mkv -vf cropdetect=limit=24:round=16 -t 10 -f null -
+=> analyze in.mkv --detect interlace --ffmpeg-log idet | ffmpeg -i in.mkv -vf idet -frames:v 500 -an -f null -
+=> analyze in.mkv --detect signal --ffmpeg-log signalstats | ffmpeg -i in.mkv -vf signalstats -f null /dev/null
+=> analyze in.mkv --detect blur,blockiness --ffmpeg-log blurdetect,blockdetect | ffmpeg -i in.mkv -vf blurdetect,blockdetect -f null -
+=> analyze in.mkv --detect silence --silence-noise -50dB --silence-min 1 --ffmpeg-log silencedetect | ffmpeg -i in.mkv -af silencedetect=noise=-50dB:d=1 -f null -
+=> analyze in.wav --detect silence --silence-noise 0.001 --silence-per-channel --ffmpeg-log silencedetect | ffmpeg -i in.wav -af silencedetect=n=0.001:mono=1 -f null -
+=> analyze in.mkv --detect levels --ffmpeg-log volumedetect | ffmpeg -i in.mkv -vn -af volumedetect -f null NUL
+=> analyze in.flac --detect levels --ffmpeg-log astats | ffmpeg -i in.flac -af astats -f null -
+=> analyze in.mkv --detect loudness --ffmpeg-log ebur128 | ffmpeg -nostats -i in.mkv -af ebur128=peak=true -f null -
+=> analyze in.mkv --detect black,silence --ffmpeg-log blackdetect,silencedetect | ffmpeg -i in.mkv -vf blackdetect -af silencedetect -f null -
+=> analyze in.mkv --detect loudness --track a:1 --ffmpeg-log ebur128 | ffmpeg -i in.mkv -map 0:a:1 -filter:a ebur128 -f null -
+=> generate pattern -o test.mkv --duration 5 --size 1280x720 --rate 30 | ffmpeg -f lavfi -i testsrc2=size=1280x720:rate=30:duration=5 test.mkv
+=> generate bars -o bars.mkv --duration 10 --bars hd --size 1920x1080 --frequency 1000 --audio sine | ffmpeg -f lavfi -i smptehdbars=s=1920x1080 -f lavfi -i sine=frequency=1000 -t 10 bars.mkv
+=> generate bars -o bars.webm --duration 3 --bars sd --codec vp8 --audio-codec opus | ffmpeg -f lavfi -i smptebars -t 3 -c:v libvpx -c:a libopus bars.webm
+=> generate solid -o red.mkv --duration 2 --color #ff0000 --size 320x240 | ffmpeg -f lavfi -i color=c=red:s=320x240:d=2 red.mkv
+=> generate sine -o tone.wav --duration 5 --frequency 440 --sample-rate 44100 | ffmpeg -f lavfi -i sine=f=440:r=44100:d=5 tone.wav
+=> generate silence -o silence.wav --duration 3 --sample-rate 48000 --channels stereo | ffmpeg -f lavfi -i anullsrc=r=48000:cl=stereo -t 3 silence.wav
+=> generate noise -o pink.flac --duration 4 --noise pink | ffmpeg -f lavfi -t 4 -i anoisesrc=color=pink pink.flac
+=> waveform in.mp3 -o waveform.png --size 1024x800 --channels stacked | ffmpeg -i in.mp3 -filter_complex showwavespic=split_channels=1:s=1024x800 -frames:v 1 waveform.png
+=> waveform in.flac -o wave.png --size 640x120 --color #2e6ec4 --scale db | ffmpeg -i in.flac -lavfi showwavespic=s=640x120:colors=0x2e6ec4:scale=log wave.png
+=> spectrum in.flac -o spectrogram.png --size 1024x1024 --legend | ffmpeg -i in.flac -lavfi showspectrumpic=s=1024x1024 spectrogram.png
+=> spectrum in.flac -o spec.png --channels stacked --scale log | ffmpeg -i in.flac -lavfi showspectrumpic=mode=separate:fscale=log:legend=0 spec.png
+!! -vf eq | ffmpeg -i in.mkv -vf eq=contrast=2,blackdetect -f null -
+!! -af loudnorm | ffmpeg -i in.mkv -af loudnorm=print_format=json -f null -
+!! blackdetect=0.5 | ffmpeg -i in.mkv -vf blackdetect=0.5 -f null -
+!! cropdetect option reset | ffmpeg -i in.mkv -vf cropdetect=reset=1 -f null -
+!! -f lavfi -i mandelbrot | ffmpeg -f lavfi -i mandelbrot -t 5 fractal.mkv
+!! anoisesrc color=brown | ffmpeg -f lavfi -i anoisesrc=color=brown:d=2 brown.wav
+!! showspectrumpic color=rainbow | ffmpeg -i in.flac -lavfi showspectrumpic=color=rainbow spec.png
 !! -b:v | ffmpeg -i in.mp4 -c:v mjpeg -b:v 2M out.mkv
 !! -crf | ffmpeg -i in.mp4 -c:v libx264 -crf 23 out.mp4
 !! -c:a aac | ffmpeg -i in.mp4 -c:v copy -c:a aac out.mp4
 !! -vf eq | ffmpeg -i in.mp4 -vf eq=brightness=0.1 -c:v mjpeg out.mkv
-!! -af | ffmpeg -i in.mp4 -af volume=2 out.wav
+!! -af volume | ffmpeg -i in.mp4 -af volume=2 out.wav
 !! -preset | ffmpeg -i in.mp4 -preset slow out.mkv
 !! -f hls | ffmpeg -i in.mp4 -c copy -f hls out.m3u8
 !! -movflags | ffmpeg -i in.mkv -c copy -movflags +faststart out.mp4

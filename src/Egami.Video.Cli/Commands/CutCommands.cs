@@ -1,6 +1,7 @@
 using System.CommandLine;
 using System.Globalization;
 
+using Egami.Video.Analysis;
 using Egami.Video.Cli.Host;
 
 namespace Egami.Video.Cli.Commands;
@@ -101,18 +102,55 @@ internal static class CutCommands
         Option<string?> every = new("--every") { Description = "Split every so often, such as 10 or 1:00; each part starts at the first video keyframe at or after its split point.", HelpName = "time" };
         Option<string?> at = new("--at") { Description = "Split at these times, separated by commas, such as 1:00,2:30 or #250,#500; each part starts at the first video keyframe at or after its split point.", HelpName = "times" };
         Option<bool> keepTimestamps = new("--keep-timestamps") { Description = "Keep the input's timestamps in every part instead of starting each part at 0." };
+        Option<bool> scenes = new("--scenes") { Description = "Split at scene changes, as the scenes command finds them; each part starts at the video keyframe at or before its scene's first frame, and the gap is reported." };
+        Option<double?> threshold = new("--threshold") { Description = "With --scenes: how sharp a change starts a scene, from 0 to 1. Default 0.15.", HelpName = "0-1" };
+        Option<string?> minLength = new("--min-length") { Description = "With --scenes: the shortest scene. Default 0.6s.", HelpName = "time" };
+        Option<bool> exact = new("--exact") { Description = "With --scenes: start every part on its scene's first frame. Needs smart cut (Video hub step V5.6), which is not built yet." };
         Command command = new("segment", "Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}.");
         options.AddTo(command);
         command.Options.Add(every);
         command.Options.Add(at);
         command.Options.Add(keepTimestamps);
+        command.Options.Add(scenes);
+        command.Options.Add(threshold);
+        command.Options.Add(minLength);
+        command.Options.Add(exact);
         command.SetAction(result =>
         {
             string? everyText = result.GetValue(every);
             string? atText = result.GetValue(at);
-            if ((everyText is null) == (atText is null))
+            bool byScene = result.GetValue(scenes);
+            if ((everyText is null ? 0 : 1) + (atText is null ? 0 : 1) + (byScene ? 1 : 0) != 1)
             {
-                throw new UsageException("segment needs --every or --at (not both), such as --every 10 or --at 1:00,2:30.");
+                throw new UsageException("segment needs one of --every, --at and --scenes, such as --every 10, --at 1:00,2:30 or --scenes.");
+            }
+
+            if (!byScene && (result.GetValue(threshold) is not null || result.GetValue(minLength) is not null || result.GetValue(exact)))
+            {
+                throw new UsageException("--threshold, --min-length and --exact go with --scenes.");
+            }
+
+            if (result.GetValue(exact))
+            {
+                throw new UsageException("--exact needs smart cut, which re-encodes only the head of each part (Video hub step V5.6, not built yet). Without --exact each part starts at the keyframe at or before its scene.");
+            }
+
+            SceneOptions? sceneOptions = null;
+            if (byScene)
+            {
+                sceneOptions = new SceneOptions();
+                if (result.GetValue(threshold) is { } limit)
+                {
+                    sceneOptions = limit is >= 0 and <= 1 ? sceneOptions with { Threshold = limit } : throw new UsageException("--threshold must be from 0 to 1.");
+                }
+
+                if (result.GetValue(minLength) is { } lengthText)
+                {
+                    TimeValue length = TimeValue.Parse(lengthText, "--min-length");
+                    sceneOptions = length.IsFrame || length.Seconds < 0
+                        ? throw new UsageException("--min-length must be a length of time of 0 or more, such as 1s or 500ms.")
+                        : sceneOptions with { MinSceneLength = MediaTime.FromSeconds(length.Seconds) };
+                }
             }
 
             TimeValue? interval = everyText is null ? null : TimeValue.ParseDuration(everyText, "--every", allowFrames: false);
@@ -141,7 +179,7 @@ internal static class CutCommands
             TrackSelection selection = options.Tracks(result);
             string? format = result.GetValue(options.Format);
             bool keep = result.GetValue(keepTimestamps);
-            return Batch.Run(session, inputs, batch, input => RunSegment(session, input, output, format, selection, interval, points, keep, inputs.Count));
+            return Batch.Run(session, inputs, batch, input => RunSegment(session, input, output, format, selection, interval, points, sceneOptions, keep, inputs.Count));
         });
         return command;
     }
@@ -705,6 +743,68 @@ internal static class CutCommands
         return end;
     }
 
+    /// <summary>
+    /// The split points of <c>segment --scenes</c>: the video keyframe at or before each scene's first frame. Says on standard error
+    /// where each part starts and how far before its scene, with a warning when that is over a second, and when two scenes share a
+    /// keyframe and so a part.
+    /// </summary>
+    private static List<MediaTime> SceneSplits(VideoSession session, InputFile input, TrackSelection selection, SceneOptions options, int count)
+    {
+        string path = input.Path ?? throw new UsageException("segment --scenes reads the file twice, so it needs a file, not standard input.");
+        TrackInfo video = selection.SelectOne(MediaIO.Probe(session, input).Tracks, TrackKind.Video, input.Display);
+        MediaAnalysisResult found = MediaAnalysis.Run(path, new MediaAnalysisOptions { Scenes = options, VideoTrack = video.Number },
+            session.Context, session.ProgressSink?.For(input, input.Index, count), session.Cancellation);
+
+        List<MediaTime> keyframes = [];
+        using (IDemuxer demuxer = MediaIO.OpenDemuxer(session, input))
+        {
+            while (demuxer.ReadPacket() is { } packet)
+            {
+                using (packet)
+                {
+                    if (packet.TrackNumber == video.Number && packet.IsKeyframe)
+                    {
+                        keyframes.Add(packet.Timestamp);
+                    }
+                }
+            }
+        }
+
+        keyframes.Sort();
+        List<MediaTime> splits = [];
+        foreach (Scene scene in found.Scenes.Skip(1))
+        {
+            int index = keyframes.BinarySearch(scene.Start);
+            index = index >= 0 ? index : ~index - 1;
+            if (index <= 0)
+            {
+                session.Warn($"{input.Display}: scene {scene.Number} at {TimeValue.Format(scene.Start)} has no keyframe before it but the first, so it stays in part 1");
+                continue;
+            }
+
+            MediaTime start = keyframes[index];
+            double gap = (scene.Start - start).Seconds;
+            if (splits.Count > 0 && splits[^1] == start)
+            {
+                session.Warn($"{input.Display}: scene {scene.Number} at {TimeValue.Format(scene.Start)} shares the keyframe at {TimeValue.Format(start)} with the scene before it, so the two are one part");
+                continue;
+            }
+
+            splits.Add(start);
+            string message = $"{input.Display}: scene {scene.Number} starts at {TimeValue.Format(scene.Start)}; its part starts at the keyframe at {TimeValue.Format(start)}, {Seconds(scene.Start - start)} s before";
+            if (gap > 1)
+            {
+                session.Warn(message + " (over a second of the scene before it)");
+            }
+            else
+            {
+                session.Info(message);
+            }
+        }
+
+        return splits;
+    }
+
     /// <summary>The split points of a segment job, in order, from --every or --at.</summary>
     private sealed class SplitPoints(long? every, List<MediaTime> at)
     {
@@ -758,13 +858,15 @@ internal static class CutCommands
         }
     }
 
-    private static List<string> RunSegment(VideoSession session, InputFile input, OutputTemplate output, string? format, TrackSelection selection, TimeValue? interval, TimeValue[] points, bool keep, int count)
+    private static List<string> RunSegment(VideoSession session, InputFile input, OutputTemplate output, string? format, TrackSelection selection, TimeValue? interval, TimeValue[] points, SceneOptions? scenes, bool keep, int count)
     {
         IReadOnlyList<MediaTime>? frames = null;
         IReadOnlyList<MediaTime> FrameTimes() => frames ??= input.IsStdin
             ? throw new UsageException("Frame numbers (#n) need a file, not standard input: give times such as 1:00,2:30.")
             : MediaIO.FrameTimes(session, input);
-        List<MediaTime> at = [.. points.Select(p => p.Resolve(FrameTimes, input.Display, "--at")).Distinct().Order()];
+        List<MediaTime> at = scenes is null
+            ? [.. points.Select(p => p.Resolve(FrameTimes, input.Display, "--at")).Distinct().Order()]
+            : SceneSplits(session, input, selection, scenes, count);
         SplitPoints splits = new(interval is { } every ? CutTimes.Nanoseconds(MediaTime.FromSeconds(every.Seconds)) : null, at);
 
         string extension = OutputExtension(session, input);

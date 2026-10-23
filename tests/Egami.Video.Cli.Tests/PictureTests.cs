@@ -119,7 +119,7 @@ public sealed class PictureTests
     [Theory]
     [InlineData("--json and --csv", "not both", "scenes", "a.mkv", "--json", "--csv")]
     [InlineData("threshold", "--threshold must be from 0 to 1", "scenes", "a.mkv", "--threshold", "1.5")]
-    [InlineData("gap", "--min-gap must be", "scenes", "a.mkv", "--min-gap", "#3")]
+    [InlineData("gap", "--min-length must be", "scenes", "a.mkv", "--min-gap", "#3")]
     [InlineData("one file", "would write every scene to one file", "scenes", "a.mkv", "-o", "shot.png")]
     [InlineData("thumbnail output", "No output", "thumbnail", "a.mkv")]
     [InlineData("past the end", "past the end", "thumbnail", "a.mkv", "-o", "t.jpg", "--at", "10")]
@@ -220,6 +220,18 @@ public sealed class PictureTests
         ToolRun run = tool.Run("thumbnail", "webm-vp8-opus.webm", "-o", "thumb.png", "--size", "120x");
         Assert.True(run.Code == 0, run.Error);
         AssertClose(Path.Combine(ReferenceFolder, "thumbnail-120.png"), tool.PathOf("thumb.png"));
+    }
+
+    [Theory]
+    [InlineData("waveform-legend", "waveform", "--size", "720x200", "--legend", "--scale", "db")]
+    [InlineData("spectrum-legend", "spectrum", "--size", "720x300", "--legend", "--scale", "log")]
+    public void AudioPictureMatchesItsReference(string reference, string command, params string[] options)
+    {
+        using Tool tool = new();
+        tool.Copy("webm-vp8-opus.webm");
+        ToolRun run = tool.Run([command, "webm-vp8-opus.webm", "-o", "picture.png", .. options]);
+        Assert.True(run.Code == 0, run.Error);
+        AssertClose(Path.Combine(ReferenceFolder, reference + ".png"), tool.PathOf("picture.png"));
     }
 
     [Fact]
