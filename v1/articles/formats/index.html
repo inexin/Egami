@@ -94,7 +94,7 @@ them. SVG and Windows metafiles (WMF, EMF) load through the separate <a href="..
 <a href="../guides/metafiles.html">Egami.Metafiles</a> packages. Every reader checks sizes against the safety limits before it allocates, and
 every reader has been fuzzed.</p>
 <p>Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
-through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.html"><code>Av1StreamDecoder</code></a>, VP8 frames encode through <a href="vp8.html#encoding"><code>Vp8StreamEncoder</code></a>, and the boxes of MP4, QuickTime and HEIF files can be walked with <a href="iso-boxes.html"><code>IsoBoxReader</code></a>. This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.</p>
+through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.html"><code>Av1StreamDecoder</code></a>, VP8 and AV1 frames encode through <a href="vp8.html#encoding"><code>Vp8StreamEncoder</code></a> and <a href="av1.html#encoding"><code>Av1StreamEncoder</code></a>, and the boxes of MP4, QuickTime and HEIF files can be walked with <a href="iso-boxes.html"><code>IsoBoxReader</code></a>. This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.</p>
 <h2 id="at-a-glance">At a glance</h2>
 <table>
 <thead>
@@ -211,7 +211,7 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <tr>
 <td><a href="avif.html">AVIF</a></td>
 <td>Still images: AV1 intra frames with every coding tool, equal to dav1d's decode and converted to RGB as libavif does; alpha, grids, overlays, clean aperture, orientation, ICC, CICP, HDR, gain maps, every item, and animated sequences</td>
-<td>Yes: lossy and lossless still images with alpha, 8, 10 and 12 bits, 4:2:0, 4:2:2, 4:4:4 and 4:0:0</td>
+<td>Yes: lossy and lossless still images and animations with alpha, 8, 10 and 12 bits, 4:2:0, 4:2:2, 4:4:4 and 4:0:0</td>
 <td>By bit depth: <code>Rgb8</code> or <code>Rgba8</code> for 8-bit files, <code>Rgb16</code> or <code>Rgba16</code> for 10 and 12 bits, <code>Gray8</code> or <code>Gray16</code> (with alpha, <code>GrayAlpha8</code> or <code>GrayAlpha16</code>) for monochrome</td>
 </tr>
 <tr>

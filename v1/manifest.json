@@ -5361,6 +5361,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Av1.Av1EncodedFrame.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Av1.Av1EncodedFrame.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Av1.Av1EncodedFrame",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Av1.Av1EncodedFrame.yml\" sourcestartlinenumber=\"1\">One frame <xref href=\"Egami.Formats.Av1.Av1StreamEncoder\" data-throw-if-not-resolved=\"false\"></xref> wrote, and what it cost.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Av1.Av1FrameInfo.yml",
       "output": {
         ".html": {
@@ -5389,6 +5403,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Av1.Av1FramePlan.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Av1.Av1FramePlan.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Av1.Av1FramePlan",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Av1.Av1FramePlan.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Formats.Av1.Av1StreamEncoder.Encode(Egami.YuvRaster%2cEgami.Formats.Av1.Av1FramePlan)\" data-throw-if-not-resolved=\"false\"></xref> codes one frame: its type, quality, and the reference slots it reads and refreshes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Av1.Av1References.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Av1.Av1References.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Av1.Av1References",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Av1.Av1References.yml\" sourcestartlinenumber=\"1\">The references an AV1 inter frame may predict from.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Av1.Av1SequenceOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Av1.Av1SequenceOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Av1.Av1SequenceOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Av1.Av1SequenceOptions.yml\" sourcestartlinenumber=\"1\">The sequence an <xref href=\"Egami.Formats.Av1.Av1StreamEncoder\" data-throw-if-not-resolved=\"false\"></xref> writes: frame size, bit depth, chroma format, color and level, every coding tool\non; or, from <xref href=\"Egami.Formats.Av1.Av1SequenceOptions.FromSequenceHeader(System.ReadOnlySpan%7bSystem.Byte%7d)\" data-throw-if-not-resolved=\"false\"></xref>, a given sequence header reproduced byte for byte, as a cut that joins an existing\nstream needs.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Av1.Av1StreamDecoder.yml",
       "output": {
         ".html": {
@@ -5400,6 +5456,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Av1.Av1StreamDecoder",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Av1.Av1StreamDecoder.yml\" sourcestartlinenumber=\"1\">Decodes an AV1 video stream (AV1 Bitstream and Decoding Process 1.0.0 with errata 1) a temporal unit at a time, as WebM, Matroska,\nMP4 and IVF files carry it: key, inter, intra-only and switch frames with every inter tool of the Main, High and Professional\nprofiles, 8 to 12 bits and 4:0:0 to 4:4:4, film grain, scaled references and scalable streams. The frames equal libaom's and\ndav1d's sample for sample. Containers are not read here: Egami.Video reads them and uses this decoder, and any other source of\nAV1 temporal units can too.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Av1.Av1StreamEncoder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Av1.Av1StreamEncoder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Av1.Av1StreamEncoder",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Av1.Av1StreamEncoder.yml\" sourcestartlinenumber=\"1\">Encodes an AV1 video stream (AV1 Bitstream and Decoding Process 1.0.0 with errata 1) a frame at a time: key, intra-only and\ninter frames, inter blocks predicted from up to seven references with every single and compound mode, inter-intra, overlapped\nand warped motion, and hidden frames shown later with show_existing_frame. Each frame's <xref href=\"Egami.Formats.Av1.Av1FramePlan\" data-throw-if-not-resolved=\"false\"></xref> says what it\nis (its type, whether it is shown), its quality or quantizer, and which reference slots it reads and refreshes, so rate control\nand group-of-frames planning stay with the caller: Egami.Video drives this encoder for its containers, and any other source of\nframes can too. The frames decode in libaom and dav1d exactly as in <xref href=\"Egami.Formats.Av1.Av1StreamDecoder\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",

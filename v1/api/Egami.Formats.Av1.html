@@ -100,12 +100,39 @@ Classes
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Av1.Av1EncodedFrame.html">Av1EncodedFrame</a></dt>
+      <dd><p>One frame <a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html">Av1StreamEncoder</a> wrote, and what it cost.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html">Av1FramePlan</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html#Egami_Formats_Av1_Av1StreamEncoder_Encode_Egami_YuvRaster_Egami_Formats_Av1_Av1FramePlan_">Encode(YuvRaster, Av1FramePlan)</a> codes one frame: its type, quality, and the reference slots it reads and refreshes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Av1.Av1SequenceOptions.html">Av1SequenceOptions</a></dt>
+      <dd><p>The sequence an <a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html">Av1StreamEncoder</a> writes: frame size, bit depth, chroma format, color and level, every coding tool
+on; or, from <a class="xref" href="Egami.Formats.Av1.Av1SequenceOptions.html#Egami_Formats_Av1_Av1SequenceOptions_FromSequenceHeader_System_ReadOnlySpan_System_Byte__">FromSequenceHeader(ReadOnlySpan&lt;byte&gt;)</a>, a given sequence header reproduced byte for byte, as a cut that joins an existing
+stream needs.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Av1.Av1StreamDecoder.html">Av1StreamDecoder</a></dt>
       <dd><p>Decodes an AV1 video stream (AV1 Bitstream and Decoding Process 1.0.0 with errata 1) a temporal unit at a time, as WebM, Matroska,
 MP4 and IVF files carry it: key, inter, intra-only and switch frames with every inter tool of the Main, High and Professional
 profiles, 8 to 12 bits and 4:0:0 to 4:4:4, film grain, scaled references and scalable streams. The frames equal libaom's and
 dav1d's sample for sample. Containers are not read here: Egami.Video reads them and uses this decoder, and any other source of
 AV1 temporal units can too.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html">Av1StreamEncoder</a></dt>
+      <dd><p>Encodes an AV1 video stream (AV1 Bitstream and Decoding Process 1.0.0 with errata 1) a frame at a time: key, intra-only and
+inter frames, inter blocks predicted from up to seven references with every single and compound mode, inter-intra, overlapped
+and warped motion, and hidden frames shown later with show_existing_frame. Each frame's <a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html">Av1FramePlan</a> says what it
+is (its type, whether it is shown), its quality or quantizer, and which reference slots it reads and refreshes, so rate control
+and group-of-frames planning stay with the caller: Egami.Video drives this encoder for its containers, and any other source of
+frames can too. The frames decode in libaom and dav1d exactly as in <a class="xref" href="Egami.Formats.Av1.Av1StreamDecoder.html">Av1StreamDecoder</a>.</p>
 </dd>
     </dl>
     <h3 id="structs">
@@ -122,6 +149,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Av1.Av1FrameKind.html">Av1FrameKind</a></dt>
       <dd><p>The type of an AV1 frame (frame_type).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Av1.Av1References.html">Av1References</a></dt>
+      <dd><p>The references an AV1 inter frame may predict from.</p>
 </dd>
     </dl>
 

@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Av1FramePlan | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Av1FramePlan | Egami ">
+      
+      <meta name="description" content="How  codes one frame: its type, quality, and the reference slots it reads and refreshes.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Av1_Av1FramePlan.md&amp;value=---%0Auid%3A%20Egami.Formats.Av1.Av1FramePlan%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Av1.Av1FramePlan">
+
+
+
+  <h1 id="Egami_Formats_Av1_Av1FramePlan" data-uid="Egami.Formats.Av1.Av1FramePlan" class="text-break">
+Class Av1FramePlan  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L570"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Av1.html">Av1</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>How <a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html#Egami_Formats_Av1_Av1StreamEncoder_Encode_Egami_YuvRaster_Egami_Formats_Av1_Av1FramePlan_">Encode(YuvRaster, Av1FramePlan)</a> codes one frame: its type, quality, and the reference slots it reads and refreshes.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record Av1FramePlan : IEquatable&lt;Av1FramePlan&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Av1FramePlan</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html">Av1FramePlan</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Av1_Av1FramePlan_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Pictures of one size, here decoded from a clip; Egami.Video writes WebM, MP4 and IVF and plans the frames for you.
+using Av1StreamEncoder encoder = new(new Av1SequenceOptions { Width = pictures[0].Width, Height = pictures[0].Height });
+units.Add(encoder.Encode(pictures[0], new Av1FramePlan { Kind = Av1FrameKind.Key, Quality = 60 }).Data.ToArray());
+
+// A hidden frame from four pictures ahead goes into slot 1; the three pictures between read it as ALTREF (from the future)
+// and the frame before as LAST, then the hidden frame is shown when its time comes.
+Av1FramePlan between = new() { Quality = 60, ReferenceSlots = [0, 0, 0, 0, 1, 1, 1] };
+encoder.Encode(pictures[4], new Av1FramePlan { Quality = 55, Show = false, OrderHint = 4, RefreshSlots = 0b10 });
+for (int i = 1; i &lt; 4; i++)
+{
+    Av1EncodedFrame frame = encoder.Encode(pictures[i], between); // the first unit also holds the hidden frame
+    units.Add(frame.Data.ToArray()); // an MP4 sample or a Matroska block; frame.LumaPsnr says how close it came
+}
+
+units.Add(encoder.ShowExisting(1).Data.ToArray());</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_Default_" data-uid="Egami.Formats.Av1.Av1FramePlan.Default*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_Default" data-uid="Egami.Formats.Av1.Av1FramePlan.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L581"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the plan of a shown inter frame that reads slots 0 to 6 as LAST to ALTREF and refreshes slot 0, at the default quality and effort.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Av1FramePlan Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html">Av1FramePlan</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_DeltaQuantizers_" data-uid="Egami.Formats.Av1.Av1FramePlan.DeltaQuantizers*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_DeltaQuantizers" data-uid="Egami.Formats.Av1.Av1FramePlan.DeltaQuantizers">
+  DeltaQuantizers
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L672"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether each superblock may have its own quantizer, finer where the picture is flat (Variance Boost). Defaults to true.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool DeltaQuantizers { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_Effort_" data-uid="Egami.Formats.Av1.Av1FramePlan.Effort*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_Effort" data-uid="Egami.Formats.Av1.Av1FramePlan.Effort">
+  Effort
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L611"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how hard the encoder works, 0 (fastest) to 10 (smallest frames), on AVIF's scale: how far it searches for motion, how
+many references and modes it tries, and from Effort 5, 6 and 7 the compound masks, overlapped and warped motion, dual filters
+and global motion. Defaults to 4.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Effort { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 10.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_ErrorResilient_" data-uid="Egami.Formats.Av1.Av1FramePlan.ErrorResilient*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_ErrorResilient" data-uid="Egami.Formats.Av1.Av1FramePlan.ErrorResilient">
+  ErrorResilient
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L669"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the frame decodes without the probabilities and vectors of earlier frames, as real-time streams want. Defaults to false.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ErrorResilient { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_Kind_" data-uid="Egami.Formats.Av1.Av1FramePlan.Kind*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_Kind" data-uid="Egami.Formats.Av1.Av1FramePlan.Kind">
+  Kind
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L587"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the frame's type: <a class="xref" href="Egami.Formats.Av1.Av1FrameKind.html#Egami_Formats_Av1_Av1FrameKind_Inter">Inter</a> (the default), <a class="xref" href="Egami.Formats.Av1.Av1FrameKind.html#Egami_Formats_Av1_Av1FrameKind_Key">Key</a> (decodes on its own
+and, shown, refreshes every slot) or <a class="xref" href="Egami.Formats.Av1.Av1FrameKind.html#Egami_Formats_Av1_Av1FrameKind_IntraOnly">IntraOnly</a> (intra, keeping the other slots).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Av1FrameKind Kind { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Av1.Av1FrameKind.html">Av1FrameKind</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_OrderHint_" data-uid="Egami.Formats.Av1.Av1FramePlan.OrderHint*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_OrderHint" data-uid="Egami.Formats.Av1.Av1FramePlan.OrderHint">
+  OrderHint
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L628"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the frame's order hint, its place in display order, 0 to 127 (higher values wrap); null (the default) for the number
+of frames shown so far. A hidden frame shown later sets the place it will show at.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? OrderHint { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is negative.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_PrimaryReference_" data-uid="Egami.Formats.Av1.Av1FramePlan.PrimaryReference*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_PrimaryReference" data-uid="Egami.Formats.Av1.Av1FramePlan.PrimaryReference">
+  PrimaryReference
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L662"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the reference, 0 (LAST) to 6 (ALTREF), whose probabilities and state an inter frame starts from; null (the default) for
+LAST. Ignored in error resilient frames, which start from the defaults.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? PrimaryReference { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 6.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_QIndex_" data-uid="Egami.Formats.Av1.Av1FramePlan.QIndex*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_QIndex" data-uid="Egami.Formats.Av1.Av1FramePlan.QIndex">
+  QIndex
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L599"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets base_q_idx, 0 (lossless) to 255, which rate control sets to replace <a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Quality">Quality</a>; null (the default) to use the quality.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? QIndex { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 255.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_Quality_" data-uid="Egami.Formats.Av1.Av1FramePlan.Quality*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_Quality" data-uid="Egami.Formats.Av1.Av1FramePlan.Quality">
+  Quality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L591"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the quality, 0 (smallest) to 100 (best), on AVIF's scale (<a class="xref" href="Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Quality">Quality</a>). Defaults to 75. Ignored when <a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_QIndex">QIndex</a> is set.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Quality { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_ReferenceSlots_" data-uid="Egami.Formats.Av1.Av1FramePlan.ReferenceSlots*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_ReferenceSlots" data-uid="Egami.Formats.Av1.Av1FramePlan.ReferenceSlots">
+  ReferenceSlots
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L636"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the slots, 0 to 7, that LAST, LAST2, LAST3, GOLDEN, BWDREF, ALTREF2 and ALTREF read, in that order. Defaults to 0 to 6.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;int&gt; ReferenceSlots { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The list does not have seven slots of 0 to 7.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_References_" data-uid="Egami.Formats.Av1.Av1FramePlan.References*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_References" data-uid="Egami.Formats.Av1.Av1FramePlan.References">
+  References
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L647"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets which references inter blocks may predict from. Defaults to all; references that read the same frame are searched once.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Av1References References { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Av1.Av1References.html">Av1References</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_RefreshSlots_" data-uid="Egami.Formats.Av1.Av1FramePlan.RefreshSlots*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_RefreshSlots" data-uid="Egami.Formats.Av1.Av1FramePlan.RefreshSlots">
+  RefreshSlots
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L651"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the slots the frame refreshes, one bit per slot. Defaults to 1, slot 0; a shown key frame refreshes all.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int RefreshSlots { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 255.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_ScreenContent_" data-uid="Egami.Formats.Av1.Av1FramePlan.ScreenContent*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_ScreenContent" data-uid="Egami.Formats.Av1.Av1FramePlan.ScreenContent">
+  ScreenContent
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L675"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether screen content tools (palettes, and intra block copy in intra frames) are on; null (the default) detects screen content.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool? ScreenContent { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_Show_" data-uid="Egami.Formats.Av1.Av1FramePlan.Show*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_Show" data-uid="Egami.Formats.Av1.Av1FramePlan.Show">
+  Show
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L618"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the frame is shown. A hidden frame, such as an alternate reference shown later with <a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html#Egami_Formats_Av1_Av1StreamEncoder_ShowExisting_System_Int32_">ShowExisting(int)</a>, only fills slots. Defaults to true.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Show { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_Showable_" data-uid="Egami.Formats.Av1.Av1FramePlan.Showable*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_Showable" data-uid="Egami.Formats.Av1.Av1FramePlan.Showable">
+  Showable
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L621"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether a hidden frame may be shown later with show_existing_frame. Defaults to true.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Showable { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L570" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

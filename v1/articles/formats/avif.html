@@ -157,7 +157,18 @@ profile is written only when the colors have no code points and it is not plain 
 image is written as a grid of equal cells, or of the <code>GridTileSize</code> you choose, coded in parallel too. The file is the same
 whatever the number of threads.</p>
 <p>Every file Egami writes decodes in dav1d and libavif to the same pixels as in Egami; <code>tools/check-avif-interop.py</code> checks this.</p>
-<h2 id="hdr">HDR</h2>
+<h3 id="animated-avif">Animated AVIF</h3>
+<p>A raster with more than one frame saves as an image sequence (the avis brand), as libavif writes one: the frames as one AV1 stream of
+a key frame and inter frames in a track, each with its delay, and the loop count in the edit list. When any frame has transparency
+the alpha goes into a second, monochrome track; it is exact unless <code>AlphaQuality</code> is below 100. The first frame is also the file's
+primary image, so readers of stills show it. <code>Quality</code>, <code>Effort</code>, <code>Lossless</code>, <code>Chroma</code> and <code>BitDepth</code> apply to every frame; gain
+maps and grids are for stills only. avifdec decodes every frame exactly as Egami does.</p>
+<pre><code class="lang-csharp">// A raster with several frames saves as an animated AVIF: one AV1 stream of a key frame and inter frames, each frame's
+// delay, the loop count (0 plays forever) and, when any frame is transparent, an alpha track.
+using Raster&lt;Rgba8&gt; pan = Raster.Load&lt;Rgba8&gt;(&quot;pan.gif&quot;);
+pan.Metadata.LoopCount = 0;
+pan.Save(&quot;pan.avif&quot;, new AvifWriterOptions { Quality = 70 });
+</code></pre><h2 id="hdr">HDR</h2>
 <p>PQ and HLG files keep their curve; converting to sRGB as they load tone maps them, the peak taken from the file's clli box:</p>
 <pre><code class="lang-csharp">// An HDR (PQ or HLG) AVIF, tone mapped into sRGB as it loads; the peak comes from the file's clli box when it has one.
 using Raster&lt;Rgb8&gt; sdr = Raster.Load&lt;Rgb8&gt;(&quot;hdr.avif&quot;, options: new ReaderOptions { ConvertColorTo = Egami.Colors.ColorProfile.Srgb });
