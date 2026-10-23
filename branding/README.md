@@ -19,5 +19,8 @@ own color, with a white line glyph. The wordmark is lowercase Bricolage Grotesqu
 | Egami.Heic | `#e5397a` |
 | Egami.Video | `#e0458f` |
 | Egami.Barcodes | `#3d4656` |
+| Egami.Cli | `#4f5bd5` |
+| Egami.Video.Cli | `#b03ea8` |
+| Egami.Cli.Host | `#5f7183` |
 
 A new package gets a new bright color and a glyph drawn with the same 5-unit round stroke, and its PNG goes in `nuget/`.
