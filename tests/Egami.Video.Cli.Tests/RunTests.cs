@@ -208,7 +208,7 @@ public sealed class RunTests
     [InlineData("No inputs", "run", "invert", "-o", "out.mkv")]
     [InlineData("one save", "run", "{clip}", "invert", "+", "save", "a.mkv", "+", "save", "b.mkv")]
     [InlineData("one save", "run", "{clip}", "save", "a.mkv", "+", "invert")]
-    [InlineData("cannot encode VP9", "run", "{clip}", "invert", "-o", "out.mkv", "--codec", "vp9")]
+    [InlineData("cannot encode AV1", "run", "{clip}", "invert", "-o", "out.mkv", "--codec", "av1")]
     [InlineData("not a video codec", "run", "{clip}", "invert", "-o", "out.mkv", "--codec", "h265")]
     [InlineData("not a frame rate", "run", "{clip}", "invert", "-o", "out.mkv", "--rate", "fast")]
     [InlineData("run takes no --to", "run", "{clip}", "invert", "-o", "out.mkv", "--to", "srgb")]

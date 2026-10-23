@@ -410,6 +410,8 @@ V5.3: VP9 encoding. API review pending (combined encoders review).
 - Profiles 0 to 3: 8, 10 and 12 bits, 4:2:0, 4:2:2 and 4:4:4, from the frames' planes or `Vp9EncoderOptions.BitDepth`; the
   frames' color code points and static HDR metadata go into the track (WebM and Matroska Colour, MP4 colr, mdcv and clli).
   Frames with alpha get a second VP9 stream in each packet's addition 1, as WebM carries it.
+- `egami-video encode --codec vp9` (with `--effort` and `--bitrate`), `run` keeps VP9 sources VP9, and `egami-video ffmpeg`
+  takes `-c:v libvpx-vp9`.
 - `Vp9EncoderOptions` (`VideoEncoderOptions.Vp9`, `VideoWriterOptions.Vp9`): quantizer limits, alternate references, golden
   frame spacing, temporal filter, tile columns, adaptive quantization, error resilience, bit depth and alpha.
 - The output is the same at any thread count and with or without hardware intrinsics: tile columns depend only on the width
