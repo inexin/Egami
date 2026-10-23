@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- OCR engine adapters as samples, never shipped (Egap 5.7 design, question 9): Tesseract through its program and Azure AI
+       Document Intelligence through its REST API. The Windows OCR adapter needs a Windows target, so it is samples/OcrWindows. -->
+  <ItemGroup>
+    <ProjectReference Include="../../src/Egami.Drawing/Egami.Drawing.csproj" />
+    <ProjectReference Include="../../src/Egami.Fonts/Egami.Fonts.csproj" />
+    <None Include="../../tests/fonts/NotoSans-Regular.ttf" Link="fonts/NotoSans-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

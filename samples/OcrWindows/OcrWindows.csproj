@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The Windows OCR adapter sample (Egap 5.7 design, question 9): Windows.Media.Ocr through the Windows SDK projection that a
+       Windows target brings. It builds on any OS and runs on Windows 10 and 11. Never shipped. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+</Project>

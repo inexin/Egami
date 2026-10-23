@@ -16,6 +16,8 @@
     <Project Path="samples/Jpeg/Jpeg.csproj" />
     <Project Path="samples/MemoryAndThreading/MemoryAndThreading.csproj" />
     <Project Path="samples/Metadata/Metadata.csproj" />
+    <Project Path="samples/Ocr/Ocr.csproj" />
+    <Project Path="samples/OcrWindows/OcrWindows.csproj" />
     <Project Path="samples/PixelTypes/PixelTypes.csproj" />
     <Project Path="samples/Security/Security.csproj" />
   </Folder>

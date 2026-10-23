@@ -2081,6 +2081,128 @@ Egami.MipChain.Dispose() -> void
 Egami.MipChain.Fit(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic, bool enlarge = true) -> Egami.Raster!
 Egami.MipChain.Levels.get -> System.Collections.Generic.IReadOnlyList<Egami.Raster!>!
 Egami.MipChain.Resize(int width, int height, Egami.Operations.ResampleFilter filter = Egami.Operations.ResampleFilter.Bicubic) -> Egami.Raster!
+Egami.Ocr.Alto
+Egami.Ocr.CommandOcrEngine
+Egami.Ocr.CommandOcrEngine.CommandOcrEngine(string! command, Egami.Ocr.CommandOcrOptions? options = null) -> void
+Egami.Ocr.CommandOcrEngine.Info.get -> Egami.Ocr.OcrEngineInfo!
+Egami.Ocr.CommandOcrEngine.RecognizeAsync(Egami.Ocr.OcrRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Ocr.OcrResult!>!
+Egami.Ocr.CommandOcrOptions
+Egami.Ocr.CommandOcrOptions.<Clone>$() -> Egami.Ocr.CommandOcrOptions!
+Egami.Ocr.CommandOcrOptions.CommandOcrOptions() -> void
+Egami.Ocr.CommandOcrOptions.Equals(Egami.Ocr.CommandOcrOptions? other) -> bool
+Egami.Ocr.CommandOcrOptions.Languages.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Ocr.CommandOcrOptions.Languages.init -> void
+Egami.Ocr.CommandOcrOptions.Name.get -> string?
+Egami.Ocr.CommandOcrOptions.Name.init -> void
+Egami.Ocr.CommandOcrOptions.Output.get -> Egami.Ocr.OcrOutputFormat
+Egami.Ocr.CommandOcrOptions.Output.init -> void
+Egami.Ocr.CommandOcrOptions.Read.get -> Egami.Ocr.OcrReadOptions!
+Egami.Ocr.CommandOcrOptions.Read.init -> void
+Egami.Ocr.CommandOcrOptions.Timeout.get -> System.TimeSpan
+Egami.Ocr.CommandOcrOptions.Timeout.init -> void
+Egami.Ocr.CommandOcrOptions.WorkingDirectory.get -> string?
+Egami.Ocr.CommandOcrOptions.WorkingDirectory.init -> void
+Egami.Ocr.Hocr
+Egami.Ocr.IOcrEngine
+Egami.Ocr.IOcrEngine.Info.get -> Egami.Ocr.OcrEngineInfo!
+Egami.Ocr.IOcrEngine.RecognizeAsync(Egami.Ocr.OcrRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Ocr.OcrResult!>!
+Egami.Ocr.OcrEngineException
+Egami.Ocr.OcrEngineException.ErrorOutput.get -> string?
+Egami.Ocr.OcrEngineException.ExitCode.get -> int?
+Egami.Ocr.OcrEngineException.OcrEngineException(string! message, int? exitCode = null, string? errorOutput = null, System.Exception? innerException = null) -> void
+Egami.Ocr.OcrEngineInfo
+Egami.Ocr.OcrEngineInfo.<Clone>$() -> Egami.Ocr.OcrEngineInfo!
+Egami.Ocr.OcrEngineInfo.Deconstruct(out string! Name) -> void
+Egami.Ocr.OcrEngineInfo.Equals(Egami.Ocr.OcrEngineInfo? other) -> bool
+Egami.Ocr.OcrEngineInfo.FindsOrientation.get -> bool
+Egami.Ocr.OcrEngineInfo.FindsOrientation.init -> void
+Egami.Ocr.OcrEngineInfo.IsThreadSafe.get -> bool
+Egami.Ocr.OcrEngineInfo.IsThreadSafe.init -> void
+Egami.Ocr.OcrEngineInfo.Languages.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Ocr.OcrEngineInfo.Languages.init -> void
+Egami.Ocr.OcrEngineInfo.MaxImageDimension.get -> int?
+Egami.Ocr.OcrEngineInfo.MaxImageDimension.init -> void
+Egami.Ocr.OcrEngineInfo.Name.get -> string!
+Egami.Ocr.OcrEngineInfo.Name.init -> void
+Egami.Ocr.OcrEngineInfo.OcrEngineInfo(string! Name) -> void
+Egami.Ocr.OcrLine
+Egami.Ocr.OcrLine.<Clone>$() -> Egami.Ocr.OcrLine!
+Egami.Ocr.OcrLine.Bounds.get -> Egami.Rect
+Egami.Ocr.OcrLine.Deconstruct(out System.Collections.Generic.IReadOnlyList<Egami.Ocr.OcrWord!>! Words) -> void
+Egami.Ocr.OcrLine.Equals(Egami.Ocr.OcrLine? other) -> bool
+Egami.Ocr.OcrLine.OcrLine(System.Collections.Generic.IReadOnlyList<Egami.Ocr.OcrWord!>! Words) -> void
+Egami.Ocr.OcrLine.Text.get -> string!
+Egami.Ocr.OcrLine.Words.get -> System.Collections.Generic.IReadOnlyList<Egami.Ocr.OcrWord!>!
+Egami.Ocr.OcrLine.Words.init -> void
+Egami.Ocr.OcrOutputFormat
+Egami.Ocr.OcrOutputFormat.Alto = 2 -> Egami.Ocr.OcrOutputFormat
+Egami.Ocr.OcrOutputFormat.Auto = 0 -> Egami.Ocr.OcrOutputFormat
+Egami.Ocr.OcrOutputFormat.Hocr = 1 -> Egami.Ocr.OcrOutputFormat
+Egami.Ocr.OcrQuad
+Egami.Ocr.OcrQuad.Angle.get -> float
+Egami.Ocr.OcrQuad.BottomLeft.get -> System.Numerics.Vector2
+Egami.Ocr.OcrQuad.BottomLeft.init -> void
+Egami.Ocr.OcrQuad.BottomRight.get -> System.Numerics.Vector2
+Egami.Ocr.OcrQuad.BottomRight.init -> void
+Egami.Ocr.OcrQuad.Bounds.get -> Egami.Rect
+Egami.Ocr.OcrQuad.Deconstruct(out System.Numerics.Vector2 TopLeft, out System.Numerics.Vector2 TopRight, out System.Numerics.Vector2 BottomRight, out System.Numerics.Vector2 BottomLeft) -> void
+Egami.Ocr.OcrQuad.Equals(Egami.Ocr.OcrQuad other) -> bool
+Egami.Ocr.OcrQuad.OcrQuad() -> void
+Egami.Ocr.OcrQuad.OcrQuad(System.Numerics.Vector2 TopLeft, System.Numerics.Vector2 TopRight, System.Numerics.Vector2 BottomRight, System.Numerics.Vector2 BottomLeft) -> void
+Egami.Ocr.OcrQuad.TopLeft.get -> System.Numerics.Vector2
+Egami.Ocr.OcrQuad.TopLeft.init -> void
+Egami.Ocr.OcrQuad.TopRight.get -> System.Numerics.Vector2
+Egami.Ocr.OcrQuad.TopRight.init -> void
+Egami.Ocr.OcrQuad.Transform(System.Numerics.Matrix3x2 matrix) -> Egami.Ocr.OcrQuad
+Egami.Ocr.OcrReadOptions
+Egami.Ocr.OcrReadOptions.<Clone>$() -> Egami.Ocr.OcrReadOptions!
+Egami.Ocr.OcrReadOptions.Dpi.get -> double
+Egami.Ocr.OcrReadOptions.Dpi.init -> void
+Egami.Ocr.OcrReadOptions.Equals(Egami.Ocr.OcrReadOptions? other) -> bool
+Egami.Ocr.OcrReadOptions.MaxBytes.get -> long
+Egami.Ocr.OcrReadOptions.MaxBytes.init -> void
+Egami.Ocr.OcrReadOptions.MaxWords.get -> int
+Egami.Ocr.OcrReadOptions.MaxWords.init -> void
+Egami.Ocr.OcrReadOptions.OcrReadOptions() -> void
+Egami.Ocr.OcrRequest
+Egami.Ocr.OcrRequest.<Clone>$() -> Egami.Ocr.OcrRequest!
+Egami.Ocr.OcrRequest.Deconstruct(out Egami.Raster<Egami.Pixels.Rgba8>! Image) -> void
+Egami.Ocr.OcrRequest.Dpi.get -> double
+Egami.Ocr.OcrRequest.Dpi.init -> void
+Egami.Ocr.OcrRequest.Equals(Egami.Ocr.OcrRequest? other) -> bool
+Egami.Ocr.OcrRequest.Image.get -> Egami.Raster<Egami.Pixels.Rgba8>!
+Egami.Ocr.OcrRequest.Image.init -> void
+Egami.Ocr.OcrRequest.Languages.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Ocr.OcrRequest.Languages.init -> void
+Egami.Ocr.OcrRequest.OcrRequest(Egami.Raster<Egami.Pixels.Rgba8>! Image) -> void
+Egami.Ocr.OcrRequest.PageIndex.get -> int
+Egami.Ocr.OcrRequest.PageIndex.init -> void
+Egami.Ocr.OcrResult
+Egami.Ocr.OcrResult.<Clone>$() -> Egami.Ocr.OcrResult!
+Egami.Ocr.OcrResult.Deconstruct(out System.Collections.Generic.IReadOnlyList<Egami.Ocr.OcrLine!>! Lines) -> void
+Egami.Ocr.OcrResult.Equals(Egami.Ocr.OcrResult? other) -> bool
+Egami.Ocr.OcrResult.ImageSize.get -> Egami.Size
+Egami.Ocr.OcrResult.ImageSize.init -> void
+Egami.Ocr.OcrResult.Lines.get -> System.Collections.Generic.IReadOnlyList<Egami.Ocr.OcrLine!>!
+Egami.Ocr.OcrResult.Lines.init -> void
+Egami.Ocr.OcrResult.OcrResult(System.Collections.Generic.IReadOnlyList<Egami.Ocr.OcrLine!>! Lines) -> void
+Egami.Ocr.OcrResult.Rotation.get -> int
+Egami.Ocr.OcrResult.Rotation.init -> void
+Egami.Ocr.OcrResult.Text.get -> string!
+Egami.Ocr.OcrResult.Words.get -> System.Collections.Generic.IEnumerable<Egami.Ocr.OcrWord!>!
+Egami.Ocr.OcrWord
+Egami.Ocr.OcrWord.<Clone>$() -> Egami.Ocr.OcrWord!
+Egami.Ocr.OcrWord.Box.get -> Egami.Ocr.OcrQuad
+Egami.Ocr.OcrWord.Box.init -> void
+Egami.Ocr.OcrWord.Confidence.get -> double?
+Egami.Ocr.OcrWord.Confidence.init -> void
+Egami.Ocr.OcrWord.Deconstruct(out string! Text, out Egami.Ocr.OcrQuad Box, out double? Confidence, out string? Language) -> void
+Egami.Ocr.OcrWord.Equals(Egami.Ocr.OcrWord? other) -> bool
+Egami.Ocr.OcrWord.Language.get -> string?
+Egami.Ocr.OcrWord.Language.init -> void
+Egami.Ocr.OcrWord.OcrWord(string! Text, Egami.Ocr.OcrQuad Box, double? Confidence = null, string? Language = null) -> void
+Egami.Ocr.OcrWord.Text.get -> string!
+Egami.Ocr.OcrWord.Text.init -> void
 Egami.Operations.AnimationOverlayOptions
 Egami.Operations.AnimationOverlayOptions.<Clone>$() -> Egami.Operations.AnimationOverlayOptions!
 Egami.Operations.AnimationOverlayOptions.AnimationOverlayOptions() -> void
@@ -3069,6 +3191,28 @@ override Egami.Metadata.IptcKey.GetHashCode() -> int
 override Egami.Metadata.IptcKey.ToString() -> string!
 override Egami.Metadata.XmpName.GetHashCode() -> int
 override Egami.Metadata.XmpName.ToString() -> string!
+override Egami.Ocr.CommandOcrOptions.Equals(object? obj) -> bool
+override Egami.Ocr.CommandOcrOptions.GetHashCode() -> int
+override Egami.Ocr.CommandOcrOptions.ToString() -> string!
+override Egami.Ocr.OcrEngineInfo.Equals(object? obj) -> bool
+override Egami.Ocr.OcrEngineInfo.GetHashCode() -> int
+override Egami.Ocr.OcrEngineInfo.ToString() -> string!
+override Egami.Ocr.OcrLine.Equals(object? obj) -> bool
+override Egami.Ocr.OcrLine.GetHashCode() -> int
+override Egami.Ocr.OcrLine.ToString() -> string!
+override Egami.Ocr.OcrQuad.GetHashCode() -> int
+override Egami.Ocr.OcrReadOptions.Equals(object? obj) -> bool
+override Egami.Ocr.OcrReadOptions.GetHashCode() -> int
+override Egami.Ocr.OcrReadOptions.ToString() -> string!
+override Egami.Ocr.OcrRequest.Equals(object? obj) -> bool
+override Egami.Ocr.OcrRequest.GetHashCode() -> int
+override Egami.Ocr.OcrRequest.ToString() -> string!
+override Egami.Ocr.OcrResult.Equals(object? obj) -> bool
+override Egami.Ocr.OcrResult.GetHashCode() -> int
+override Egami.Ocr.OcrResult.ToString() -> string!
+override Egami.Ocr.OcrWord.Equals(object? obj) -> bool
+override Egami.Ocr.OcrWord.GetHashCode() -> int
+override Egami.Ocr.OcrWord.ToString() -> string!
 override Egami.Operations.AnimationOverlayOptions.Equals(object? obj) -> bool
 override Egami.Operations.AnimationOverlayOptions.GetHashCode() -> int
 override Egami.Operations.AnimationOverlayOptions.ToString() -> string!
@@ -3468,6 +3612,33 @@ static Egami.Metadata.XmpData.Parse(System.ReadOnlySpan<byte> packet, Egami.Safe
 static Egami.Metadata.XmpName.operator !=(Egami.Metadata.XmpName left, Egami.Metadata.XmpName right) -> bool
 static Egami.Metadata.XmpName.operator ==(Egami.Metadata.XmpName left, Egami.Metadata.XmpName right) -> bool
 static Egami.MipChain.Build(Egami.Raster! source, Egami.Operations.ColorSpace colorSpace = Egami.Operations.ColorSpace.Encoded) -> Egami.MipChain!
+static Egami.Ocr.Alto.Parse(string! alto, Egami.Ocr.OcrReadOptions? options = null) -> System.Collections.Generic.IReadOnlyList<Egami.Ocr.OcrResult!>!
+static Egami.Ocr.Alto.Read(System.IO.Stream! stream, Egami.Ocr.OcrReadOptions? options = null) -> System.Collections.Generic.IReadOnlyList<Egami.Ocr.OcrResult!>!
+static Egami.Ocr.Alto.Write(System.IO.Stream! stream, System.Collections.Generic.IEnumerable<Egami.Ocr.OcrResult!>! pages) -> void
+static Egami.Ocr.CommandOcrOptions.Default.get -> Egami.Ocr.CommandOcrOptions!
+static Egami.Ocr.CommandOcrOptions.operator !=(Egami.Ocr.CommandOcrOptions? left, Egami.Ocr.CommandOcrOptions? right) -> bool
+static Egami.Ocr.CommandOcrOptions.operator ==(Egami.Ocr.CommandOcrOptions? left, Egami.Ocr.CommandOcrOptions? right) -> bool
+static Egami.Ocr.Hocr.Parse(string! hocr, Egami.Ocr.OcrReadOptions? options = null) -> System.Collections.Generic.IReadOnlyList<Egami.Ocr.OcrResult!>!
+static Egami.Ocr.Hocr.Read(System.IO.Stream! stream, Egami.Ocr.OcrReadOptions? options = null) -> System.Collections.Generic.IReadOnlyList<Egami.Ocr.OcrResult!>!
+static Egami.Ocr.Hocr.Write(System.IO.Stream! stream, System.Collections.Generic.IEnumerable<Egami.Ocr.OcrResult!>! pages) -> void
+static Egami.Ocr.OcrEngineInfo.operator !=(Egami.Ocr.OcrEngineInfo? left, Egami.Ocr.OcrEngineInfo? right) -> bool
+static Egami.Ocr.OcrEngineInfo.operator ==(Egami.Ocr.OcrEngineInfo? left, Egami.Ocr.OcrEngineInfo? right) -> bool
+static Egami.Ocr.OcrLine.operator !=(Egami.Ocr.OcrLine? left, Egami.Ocr.OcrLine? right) -> bool
+static Egami.Ocr.OcrLine.operator ==(Egami.Ocr.OcrLine? left, Egami.Ocr.OcrLine? right) -> bool
+static Egami.Ocr.OcrQuad.FromBounds(float x, float y, float width, float height) -> Egami.Ocr.OcrQuad
+static Egami.Ocr.OcrQuad.FromBounds(float x, float y, float width, float height, int angle) -> Egami.Ocr.OcrQuad
+static Egami.Ocr.OcrQuad.operator !=(Egami.Ocr.OcrQuad left, Egami.Ocr.OcrQuad right) -> bool
+static Egami.Ocr.OcrQuad.operator ==(Egami.Ocr.OcrQuad left, Egami.Ocr.OcrQuad right) -> bool
+static Egami.Ocr.OcrReadOptions.Default.get -> Egami.Ocr.OcrReadOptions!
+static Egami.Ocr.OcrReadOptions.operator !=(Egami.Ocr.OcrReadOptions? left, Egami.Ocr.OcrReadOptions? right) -> bool
+static Egami.Ocr.OcrReadOptions.operator ==(Egami.Ocr.OcrReadOptions? left, Egami.Ocr.OcrReadOptions? right) -> bool
+static Egami.Ocr.OcrRequest.operator !=(Egami.Ocr.OcrRequest? left, Egami.Ocr.OcrRequest? right) -> bool
+static Egami.Ocr.OcrRequest.operator ==(Egami.Ocr.OcrRequest? left, Egami.Ocr.OcrRequest? right) -> bool
+static Egami.Ocr.OcrResult.Empty.get -> Egami.Ocr.OcrResult!
+static Egami.Ocr.OcrResult.operator !=(Egami.Ocr.OcrResult? left, Egami.Ocr.OcrResult? right) -> bool
+static Egami.Ocr.OcrResult.operator ==(Egami.Ocr.OcrResult? left, Egami.Ocr.OcrResult? right) -> bool
+static Egami.Ocr.OcrWord.operator !=(Egami.Ocr.OcrWord? left, Egami.Ocr.OcrWord? right) -> bool
+static Egami.Ocr.OcrWord.operator ==(Egami.Ocr.OcrWord? left, Egami.Ocr.OcrWord? right) -> bool
 static Egami.Operations.AnimationOverlayOptions.Default.get -> Egami.Operations.AnimationOverlayOptions!
 static Egami.Operations.AnimationOverlayOptions.operator !=(Egami.Operations.AnimationOverlayOptions? left, Egami.Operations.AnimationOverlayOptions? right) -> bool
 static Egami.Operations.AnimationOverlayOptions.operator ==(Egami.Operations.AnimationOverlayOptions? left, Egami.Operations.AnimationOverlayOptions? right) -> bool
@@ -3838,6 +4009,8 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Formats.Webp.Vp8FrameInfo.ToString() -> string
 ~override Egami.Metadata.IptcKey.Equals(object obj) -> bool
 ~override Egami.Metadata.XmpName.Equals(object obj) -> bool
+~override Egami.Ocr.OcrQuad.Equals(object obj) -> bool
+~override Egami.Ocr.OcrQuad.ToString() -> string
 ~override Egami.Operations.LightingModel.Equals(object obj) -> bool
 ~override Egami.Operations.LightingModel.ToString() -> string
 ~override Egami.Operations.Mask.Equals(object obj) -> bool

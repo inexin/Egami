@@ -28,6 +28,8 @@
     <None Include="../video/corpus/audio/vorbis/q6-stereo-48k.ogg" Link="images/song.ogg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/audio/opus/webm-opus.webm" Link="images/music.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ops/egret.png" Link="images/egret.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/ocr/tesseract-style.hocr" Link="images/page.hocr" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/ocr/abbyy-style.xml" Link="images/page.xml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/radiance/desk-rle.hdr" Link="images/desk.hdr" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/mpf/uhdr-default.jpg" Link="images/ultrahdr.jpg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/exr/layers.exr" Link="images/render.exr" CopyToOutputDirectory="PreserveNewest" />

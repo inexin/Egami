@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Hand-written test file in the style of ABBYY FineReader ALTO 2 output, in 1/10 mm. -->
+<alto xmlns="http://www.loc.gov/standards/alto/ns-v2#" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <Description>
+    <MeasurementUnit>mm10</MeasurementUnit>
+    <sourceImageInformation><fileName>page-0001.tif</fileName></sourceImageInformation>
+  </Description>
+  <Styles><TextStyle ID="font0" FONTFAMILY="Times New Roman" FONTSIZE="12"/></Styles>
+  <Layout>
+    <Page ID="Page1" PHYSICAL_IMG_NR="1" HEIGHT="2970" WIDTH="2100">
+      <PrintSpace HPOS="0" VPOS="0" WIDTH="2100" HEIGHT="2970">
+        <TextBlock ID="Block1" HPOS="254" VPOS="254" WIDTH="1000" HEIGHT="100" LANG="de">
+          <TextLine ID="Line1" HPOS="254" VPOS="254" WIDTH="1000" HEIGHT="50" STYLEREFS="font0">
+            <String ID="S1" HPOS="254" VPOS="254" WIDTH="300" HEIGHT="50" WC="0.95" CONTENT="Straßen"/>
+            <SP WIDTH="20" HPOS="554" VPOS="254"/>
+            <String ID="S2" HPOS="574" VPOS="254" WIDTH="400" HEIGHT="50" WC="0.82" CONTENT="bahn" LANG="en"/>
+            <HYP CONTENT="-"/>
+          </TextLine>
+          <TextLine ID="Line2" HPOS="254" VPOS="320" WIDTH="500" HEIGHT="50">
+            <String ID="S3" HPOS="254" VPOS="320" WIDTH="500" HEIGHT="50" CONTENT="haltestelle"/>
+          </TextLine>
+        </TextBlock>
+      </PrintSpace>
+    </Page>
+    <Page ID="Page2" PHYSICAL_IMG_NR="2" HEIGHT="2970" WIDTH="2100"/>
+  </Layout>
+</alto>
