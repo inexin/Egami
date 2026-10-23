@@ -95,8 +95,91 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.BlackDetector.html">BlackDetector</a></dt>
+      <dd><p>Finds black stretches: runs of frames where nearly every luma sample is near black, lasting at least
+<a class="xref" href="Egami.Video.Analysis.BlackOptions.html#Egami_Video_Analysis_BlackOptions_MinDuration">MinDuration</a>. It keeps ffmpeg's blackdetect measure and defaults, with the pixel threshold a fraction
+of the stream's own range so 8-bit and 10-bit files behave alike.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.BlackOptions.html">BlackOptions</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Analysis.BlackDetector.html">BlackDetector</a> counts as black. The defaults are ffmpeg blackdetect's.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.CropDetector.html">CropDetector</a></dt>
+      <dd><p>Finds black borders: the rectangle inside letterbox, pillarbox or windowbox bars, as ffmpeg's cropdetect does in its black mode.
+Rows and columns whose mean luma is at or under <a class="xref" href="Egami.Video.Analysis.CropOptions.html#Egami_Video_Analysis_CropOptions_Limit">Limit</a> count as border. Each frame's rectangle is
+rounded to <a class="xref" href="Egami.Video.Analysis.CropOptions.html#Egami_Video_Analysis_CropOptions_Round">Round</a>; <a class="xref" href="Egami.Video.Analysis.CropDetector.html#Egami_Video_Analysis_CropDetector_Report">Report</a> gives the rectangle that keeps every frame's picture, the most
+common one, and the runs of frames that share one.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.CropOptions.html">CropOptions</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Analysis.CropDetector.html">CropDetector</a> counts as a border. The defaults follow ffmpeg cropdetect.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.CropReport.html">CropReport</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Analysis.CropDetector.html">CropDetector</a> found.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.CropRun.html">CropRun</a></dt>
+      <dd><p>A run of frames that share one crop rectangle.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.DetectedRange.html">DetectedRange</a></dt>
+      <dd><p>A stretch of time a detector found: black, frozen, duplicated or silent.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.DuplicateDetector.html">DuplicateDetector</a></dt>
+      <dd><p>Finds repeated frames with ffmpeg mpdecimate's test, without dropping anything: a frame repeats the last kept frame when none
+of its 8 by 8 luma blocks differs by more than <a class="xref" href="Egami.Video.Analysis.DuplicateOptions.html#Egami_Video_Analysis_DuplicateOptions_High">High</a> and no more than
+<a class="xref" href="Egami.Video.Analysis.DuplicateOptions.html#Egami_Video_Analysis_DuplicateOptions_Fraction">Fraction</a> of them differ by more than <a class="xref" href="Egami.Video.Analysis.DuplicateOptions.html#Egami_Video_Analysis_DuplicateOptions_Low">Low</a>. Block differences are
+sums of absolute differences on the 8-bit scale, so the thresholds mean the same at every bit depth.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.DuplicateOptions.html">DuplicateOptions</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Analysis.DuplicateDetector.html">DuplicateDetector</a> counts as a repeat. The defaults are ffmpeg mpdecimate's.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Analysis.Fade.html">Fade</a></dt>
       <dd><p>A fade to or from black (or white, when asked for) that <a class="xref" href="Egami.Video.Analysis.SceneDetector.html">SceneDetector</a> found.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.FreezeDetector.html">FreezeDetector</a></dt>
+      <dd><p>Finds frozen stretches: runs of frames that stay within <a class="xref" href="Egami.Video.Analysis.FreezeOptions.html#Egami_Video_Analysis_FreezeOptions_Noise">Noise</a> of the frame that starts them, lasting
+at least <a class="xref" href="Egami.Video.Analysis.FreezeOptions.html#Egami_Video_Analysis_FreezeOptions_MinDuration">MinDuration</a>. The measure is ffmpeg freezedetect's: the mean absolute difference over the Y,
+Cb and Cr planes as a fraction of the largest code value, against the same -60 dB noise floor.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.FreezeOptions.html">FreezeOptions</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Analysis.FreezeDetector.html">FreezeDetector</a> counts as frozen. The defaults are ffmpeg freezedetect's.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.InterlaceDetector.html">InterlaceDetector</a></dt>
+      <dd><p>Tells progressive, interlaced and telecined video apart, as ffmpeg's idet does. Each frame's fields are woven three ways (with
+each other, and each with the other field of the frame before) and the combing of each weave compared: the weave of fields
+closest in time combs least. Fields that repeat the frame before's are counted, and repeats in a five-frame pattern mark 3:2
+telecine. Motion is needed to decide; frames without it count as undetermined.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.InterlaceOptions.html">InterlaceOptions</a></dt>
+      <dd><p>How sure <a class="xref" href="Egami.Video.Analysis.InterlaceDetector.html">InterlaceDetector</a> must be before it decides. The defaults are ffmpeg idet's.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.InterlaceReport.html">InterlaceReport</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Analysis.InterlaceDetector.html">InterlaceDetector</a> counted.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -146,6 +229,30 @@ is set.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.SignalFrame.html">SignalFrame</a></dt>
+      <dd><p>One frame's measures from <a class="xref" href="Egami.Video.Analysis.SignalMeter.html">SignalMeter</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.SignalMeter.html">SignalMeter</a></dt>
+      <dd><p>Measures the signal, as ffmpeg's signalstats and colordetect do: the lowest, 10th percentile, mean, 90th percentile and highest
+code values of Y, Cb and Cr; chroma saturation; the share of pixels outside broadcast range (16 to 235 for luma, 16 to 240 for
+chroma, scaled to the bit depth); which range the samples really use; and whether an alpha plane is used and how. With
+<a class="xref" href="Egami.Video.Analysis.SignalOptions.html#Egami_Video_Analysis_SignalOptions_Blur">Blur</a> and <a class="xref" href="Egami.Video.Analysis.SignalOptions.html#Egami_Video_Analysis_SignalOptions_Blockiness">Blockiness</a> it also scores sharpness and coding blocks, as
+blurdetect and blockdetect do.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.SignalOptions.html">SignalOptions</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Analysis.SignalMeter.html">SignalMeter</a> measures besides levels. The blur and blockiness settings follow ffmpeg's blurdetect and blockdetect.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.SignalReport.html">SignalReport</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Analysis.SignalMeter.html">SignalMeter</a> measured over every frame.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Analysis.TestAudioFormat.html">TestAudioFormat</a></dt>
       <dd><p>The rate, channels and frame size of the audio <a class="xref" href="Egami.Video.Analysis.TestSources.html">TestSources</a> generates.</p>
 </dd>
@@ -166,6 +273,16 @@ to a detector. Dispose each frame.</p>
     <h3 id="structs">
 Structs
 </h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.FrameValue.html">FrameValue</a></dt>
+      <dd><p>One frame's value in a detector's series, kept when the detector's options ask for it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.PlaneLevels.html">PlaneLevels</a></dt>
+      <dd><p>The spread of one plane's code values.</p>
+</dd>
+    </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Analysis.SceneFrame.html">SceneFrame</a></dt>
       <dd><p>A scene and a frame of it, from <a class="xref" href="Egami.Video.Analysis.SceneFrames.html#Egami_Video_Analysis_SceneFrames_Read_Egami_Video_VideoReader_System_Collections_Generic_IEnumerable_Egami_Video_Analysis_Scene__Egami_Video_Analysis_ScenePosition_">Read(VideoReader, IEnumerable&lt;Scene&gt;, ScenePosition)</a>. Dispose the frame.</p>
@@ -198,6 +315,11 @@ while <a class="xref" href="Egami.Video.Analysis.IVideoDetector.html#Egami_Video
 Enums
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.AlphaUse.html">AlphaUse</a></dt>
+      <dd><p>How a video's alpha plane is used.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Analysis.ColorBarsStyle.html">ColorBarsStyle</a></dt>
       <dd><p>Which color bar layout <a class="xref" href="Egami.Video.Analysis.TestSources.html#Egami_Video_Analysis_TestSources_ColorBars_Egami_Video_Analysis_TestVideoFormat_Egami_Video_MediaTime_Egami_Video_Analysis_ColorBarsStyle_">ColorBars(TestVideoFormat?, MediaTime, ColorBarsStyle)</a> draws.</p>
 </dd>
@@ -208,8 +330,18 @@ Enums
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.FieldOrder.html">FieldOrder</a></dt>
+      <dd><p>One frame's field order, as <a class="xref" href="Egami.Video.Analysis.InterlaceDetector.html">InterlaceDetector</a> judged it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Analysis.FlashMode.html">FlashMode</a></dt>
       <dd><p>What <a class="xref" href="Egami.Video.Analysis.SceneDetector.html">SceneDetector</a> does with a cut that comes back within the minimum scene length, as a camera flash does.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.InterlaceVerdict.html">InterlaceVerdict</a></dt>
+      <dd><p>What a video is, by <a class="xref" href="Egami.Video.Analysis.InterlaceDetector.html">InterlaceDetector</a>'s counts.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -230,6 +362,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Analysis.SceneStart.html">SceneStart</a></dt>
       <dd><p>How a scene starts.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.SignalRange.html">SignalRange</a></dt>
+      <dd><p>Which range a video's samples really use.</p>
 </dd>
     </dl>
 

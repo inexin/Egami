@@ -11241,6 +11241,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.AlphaUse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.AlphaUse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.AlphaUse",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.AlphaUse.yml\" sourcestartlinenumber=\"1\">How a video's alpha plane is used.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.BlackDetector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.BlackDetector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.BlackDetector",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.BlackDetector.yml\" sourcestartlinenumber=\"1\">Finds black stretches: runs of frames where nearly every luma sample is near black, lasting at least\n<xref href=\"Egami.Video.Analysis.BlackOptions.MinDuration\" data-throw-if-not-resolved=\"false\"></xref>. It keeps ffmpeg's blackdetect measure and defaults, with the pixel threshold a fraction\nof the stream's own range so 8-bit and 10-bit files behave alike.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.BlackOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.BlackOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.BlackOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.BlackOptions.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.BlackDetector\" data-throw-if-not-resolved=\"false\"></xref> counts as black. The defaults are ffmpeg blackdetect's.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Analysis.ColorBarsStyle.yml",
       "output": {
         ".html": {
@@ -11252,6 +11294,104 @@
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.ColorBarsStyle",
       "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.ColorBarsStyle.yml\" sourcestartlinenumber=\"1\">Which color bar layout <xref href=\"Egami.Video.Analysis.TestSources.ColorBars(Egami.Video.Analysis.TestVideoFormat%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.ColorBarsStyle)\" data-throw-if-not-resolved=\"false\"></xref> draws.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.CropDetector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.CropDetector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.CropDetector",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.CropDetector.yml\" sourcestartlinenumber=\"1\">Finds black borders: the rectangle inside letterbox, pillarbox or windowbox bars, as ffmpeg's cropdetect does in its black mode.\nRows and columns whose mean luma is at or under <xref href=\"Egami.Video.Analysis.CropOptions.Limit\" data-throw-if-not-resolved=\"false\"></xref> count as border. Each frame's rectangle is\nrounded to <xref href=\"Egami.Video.Analysis.CropOptions.Round\" data-throw-if-not-resolved=\"false\"></xref>; <xref href=\"Egami.Video.Analysis.CropDetector.Report\" data-throw-if-not-resolved=\"false\"></xref> gives the rectangle that keeps every frame's picture, the most\ncommon one, and the runs of frames that share one.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.CropOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.CropOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.CropOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.CropOptions.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.CropDetector\" data-throw-if-not-resolved=\"false\"></xref> counts as a border. The defaults follow ffmpeg cropdetect.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.CropReport.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.CropReport.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.CropReport",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.CropReport.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.CropDetector\" data-throw-if-not-resolved=\"false\"></xref> found.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.CropRun.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.CropRun.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.CropRun",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.CropRun.yml\" sourcestartlinenumber=\"1\">A run of frames that share one crop rectangle.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.DetectedRange.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.DetectedRange.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.DetectedRange",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.DetectedRange.yml\" sourcestartlinenumber=\"1\">A stretch of time a detector found: black, frozen, duplicated or silent.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.DuplicateDetector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.DuplicateDetector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.DuplicateDetector",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.DuplicateDetector.yml\" sourcestartlinenumber=\"1\">Finds repeated frames with ffmpeg mpdecimate's test, without dropping anything: a frame repeats the last kept frame when none\nof its 8 by 8 luma blocks differs by more than <xref href=\"Egami.Video.Analysis.DuplicateOptions.High\" data-throw-if-not-resolved=\"false\"></xref> and no more than\n<xref href=\"Egami.Video.Analysis.DuplicateOptions.Fraction\" data-throw-if-not-resolved=\"false\"></xref> of them differ by more than <xref href=\"Egami.Video.Analysis.DuplicateOptions.Low\" data-throw-if-not-resolved=\"false\"></xref>. Block differences are\nsums of absolute differences on the 8-bit scale, so the thresholds mean the same at every bit depth.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.DuplicateOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.DuplicateOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.DuplicateOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.DuplicateOptions.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.DuplicateDetector\" data-throw-if-not-resolved=\"false\"></xref> counts as a repeat. The defaults are ffmpeg mpdecimate's.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11283,6 +11423,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.FieldOrder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.FieldOrder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.FieldOrder",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.FieldOrder.yml\" sourcestartlinenumber=\"1\">One frame's field order, as <xref href=\"Egami.Video.Analysis.InterlaceDetector\" data-throw-if-not-resolved=\"false\"></xref> judged it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Analysis.FlashMode.yml",
       "output": {
         ".html": {
@@ -11294,6 +11448,48 @@
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.FlashMode",
       "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.FlashMode.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.SceneDetector\" data-throw-if-not-resolved=\"false\"></xref> does with a cut that comes back within the minimum scene length, as a camera flash does.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.FrameValue.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.FrameValue.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.FrameValue",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.FrameValue.yml\" sourcestartlinenumber=\"1\">One frame's value in a detector's series, kept when the detector's options ask for it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.FreezeDetector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.FreezeDetector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.FreezeDetector",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.FreezeDetector.yml\" sourcestartlinenumber=\"1\">Finds frozen stretches: runs of frames that stay within <xref href=\"Egami.Video.Analysis.FreezeOptions.Noise\" data-throw-if-not-resolved=\"false\"></xref> of the frame that starts them, lasting\nat least <xref href=\"Egami.Video.Analysis.FreezeOptions.MinDuration\" data-throw-if-not-resolved=\"false\"></xref>. The measure is ffmpeg freezedetect's: the mean absolute difference over the Y,\nCb and Cr planes as a fraction of the largest code value, against the same -60 dB noise floor.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.FreezeOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.FreezeOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.FreezeOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.FreezeOptions.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.FreezeDetector\" data-throw-if-not-resolved=\"false\"></xref> counts as frozen. The defaults are ffmpeg freezedetect's.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11322,6 +11518,62 @@
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.IVideoDetector",
       "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.IVideoDetector.yml\" sourcestartlinenumber=\"1\">A detector that looks at decoded pictures one at a time, such as <xref href=\"Egami.Video.Analysis.SceneDetector\" data-throw-if-not-resolved=\"false\"></xref>. Feed it every frame in\npresentation order with <xref href=\"Egami.Video.Analysis.IVideoDetector.Add(Egami.Video.YuvVideoFrame)\" data-throw-if-not-resolved=\"false\"></xref>, then call <xref href=\"Egami.Video.Analysis.IVideoDetector.Complete(Egami.Video.MediaTime)\" data-throw-if-not-resolved=\"false\"></xref> once at the end; <xref href=\"Egami.Video.Analysis.MediaAnalysis.Run(System.String%2cEgami.Video.Analysis.MediaAnalysisOptions%2cEgami.Video.MediaContext%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref>\ndoes both for every detector from one decode, and an app with its own decode loop can do the same. A detector reads the frame\nwhile <xref href=\"Egami.Video.Analysis.IVideoDetector.Add(Egami.Video.YuvVideoFrame)\" data-throw-if-not-resolved=\"false\"></xref> runs and keeps no reference to it, so the caller may dispose the frame right after.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.InterlaceDetector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.InterlaceDetector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.InterlaceDetector",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.InterlaceDetector.yml\" sourcestartlinenumber=\"1\">Tells progressive, interlaced and telecined video apart, as ffmpeg's idet does. Each frame's fields are woven three ways (with\neach other, and each with the other field of the frame before) and the combing of each weave compared: the weave of fields\nclosest in time combs least. Fields that repeat the frame before's are counted, and repeats in a five-frame pattern mark 3:2\ntelecine. Motion is needed to decide; frames without it count as undetermined.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.InterlaceOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.InterlaceOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.InterlaceOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.InterlaceOptions.yml\" sourcestartlinenumber=\"1\">How sure <xref href=\"Egami.Video.Analysis.InterlaceDetector\" data-throw-if-not-resolved=\"false\"></xref> must be before it decides. The defaults are ffmpeg idet's.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.InterlaceReport.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.InterlaceReport.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.InterlaceReport",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.InterlaceReport.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.InterlaceDetector\" data-throw-if-not-resolved=\"false\"></xref> counted.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.InterlaceVerdict.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.InterlaceVerdict.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.InterlaceVerdict",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.InterlaceVerdict.yml\" sourcestartlinenumber=\"1\">What a video is, by <xref href=\"Egami.Video.Analysis.InterlaceDetector\" data-throw-if-not-resolved=\"false\"></xref>'s counts.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11378,6 +11630,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.NoiseColor",
       "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.NoiseColor.yml\" sourcestartlinenumber=\"1\">The spectrum of <xref href=\"Egami.Video.Analysis.TestSources.Noise(Egami.Video.Analysis.TestAudioFormat%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.NoiseColor%2cSystem.Double%2cSystem.Int32)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.PlaneLevels.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.PlaneLevels.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.PlaneLevels",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.PlaneLevels.yml\" sourcestartlinenumber=\"1\">The spread of one plane's code values.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11518,6 +11784,76 @@
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.SceneStart",
       "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SceneStart.yml\" sourcestartlinenumber=\"1\">How a scene starts.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SignalFrame.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SignalFrame.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SignalFrame",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SignalFrame.yml\" sourcestartlinenumber=\"1\">One frame's measures from <xref href=\"Egami.Video.Analysis.SignalMeter\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SignalMeter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SignalMeter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SignalMeter",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SignalMeter.yml\" sourcestartlinenumber=\"1\">Measures the signal, as ffmpeg's signalstats and colordetect do: the lowest, 10th percentile, mean, 90th percentile and highest\ncode values of Y, Cb and Cr; chroma saturation; the share of pixels outside broadcast range (16 to 235 for luma, 16 to 240 for\nchroma, scaled to the bit depth); which range the samples really use; and whether an alpha plane is used and how. With\n<xref href=\"Egami.Video.Analysis.SignalOptions.Blur\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Video.Analysis.SignalOptions.Blockiness\" data-throw-if-not-resolved=\"false\"></xref> it also scores sharpness and coding blocks, as\nblurdetect and blockdetect do.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SignalOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SignalOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SignalOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SignalOptions.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.SignalMeter\" data-throw-if-not-resolved=\"false\"></xref> measures besides levels. The blur and blockiness settings follow ffmpeg's blurdetect and blockdetect.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SignalRange.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SignalRange.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SignalRange",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SignalRange.yml\" sourcestartlinenumber=\"1\">Which range a video's samples really use.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SignalReport.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SignalReport.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SignalReport",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SignalReport.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.SignalMeter\" data-throw-if-not-resolved=\"false\"></xref> measured over every frame.</p>\n"
     },
     {
       "type": "ManagedReference",

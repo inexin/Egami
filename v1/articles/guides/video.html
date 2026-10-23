@@ -571,6 +571,42 @@ foreach (AudioFrame block in TestSources.Sine(null, MediaTime.FromSeconds(3), fr
         writer.WriteAudio(block);
     }
 }
+</code></pre>
+<p>More detectors run in the same pass, each keeping ffmpeg's documented measure and defaults with thresholds as fractions of
+the stream's range: <code>BlackDetector</code> (blackdetect) and <code>FreezeDetector</code> (freezedetect) return <code>DetectedRange</code>s,
+<code>CropDetector</code> (cropdetect) a <code>CropReport</code> with the rectangle that keeps every frame's picture, <code>InterlaceDetector</code> (idet)
+an <code>InterlaceReport</code> with field order counts, repeated fields and an <code>InterlaceVerdict</code> that spots 3:2 telecine, and
+<code>DuplicateDetector</code> (mpdecimate's test) runs of repeated frames. Each takes its own options record (<code>BlackOptions</code>,
+<code>FreezeOptions</code>, <code>CropOptions</code> with the runs of frames as <code>CropRun</code>s, <code>InterlaceOptions</code>, <code>DuplicateOptions</code>), and the black
+detector keeps every frame's ratio as a <code>FrameValue</code> series on request.</p>
+<pre><code class="lang-csharp">// ffmpeg's detection filters as detectors, with their documented defaults: black and frozen stretches, black borders,
+// field order and repeated frames, all from one decode.
+BlackDetector black = new(new BlackOptions { MinDuration = MediaTime.FromSeconds(0.5) });
+using FreezeDetector freeze = new(new FreezeOptions { MinDuration = MediaTime.FromSeconds(0.5) });
+CropDetector crop = new();
+InterlaceDetector fields = new();
+DuplicateDetector duplicates = new();
+MediaAnalysis.Run(&quot;shots.mkv&quot;, new MediaAnalysisOptions { VideoDetectors = [black, freeze, crop, fields, duplicates] });
+
+foreach (DetectedRange range in freeze.Ranges)
+{
+    Console.WriteLine($&quot;Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}&quot;);
+}
+
+Console.WriteLine($&quot;{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}&quot;);
+Console.WriteLine($&quot;{duplicates.DuplicateCount} repeated frames&quot;);
+</code></pre>
+<p><code>SignalMeter</code> reports what signalstats and colordetect do: the lowest, 10 %, mean, 90 % and highest code values of each plane
+as <code>PlaneLevels</code>, saturation, the share of pixels outside broadcast range, the <code>SignalRange</code> the samples really use and the
+<code>AlphaUse</code> of an alpha plane. With <code>Blur</code> and <code>Blockiness</code> on it also scores edge width and coding blocks, and <code>KeepSeries</code>
+keeps a <code>SignalFrame</code> per frame.</p>
+<pre><code class="lang-csharp">// Levels, saturation and broadcast range as signalstats gives them, the range really used, and optional blur and
+// blockiness scores.
+SignalMeter meter = new(new SignalOptions { Blur = true, Blockiness = true });
+MediaAnalysis.Run(&quot;shots.mkv&quot;, new MediaAnalysisOptions { Scenes = null, VideoDetectors = [meter] });
+SignalReport report = meter.Report;
+Console.WriteLine($&quot;Y {report.Y.Min}..{report.Y.Max} (mean {report.Y.Mean:0.0}), {report.OutOfRange:P1} out of range, {report.Range} range&quot;);
+Console.WriteLine($&quot;Edges {report.Blur:0.00} px wide, blockiness {report.Blockiness:0.00}&quot;);
 </code></pre><h2 id="limits-and-warnings">Limits and warnings</h2>
 <p>A <code>MediaContext</code> holds the containers and codecs, the Egami context (memory, threads, safety limits), the <code>MediaLimits</code> for
 files from outside (packet, header and index sizes, tracks, nesting) and a handler for <code>MediaWarning</code>s: what a reader
