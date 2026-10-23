@@ -541,15 +541,16 @@ internal sealed partial class H264SliceDecoder
         ref byte sig = ref _ctx[sigBase];
         ref byte lastCtx = ref _ctx[lastBase];
         CabacEngine engine = _engine;
+        CabacEngine.State st = engine.Save();
         if (cat == 5)
         {
             ReadOnlySpan<byte> sigInc = H264Tables.Significant8x8, lastInc = H264Tables.Last8x8;
             for (int i = 0; i < 63; i++)
             {
-                if (engine.Decode(ref Unsafe.Add(ref sig, sigInc[i])) != 0)
+                if (engine.Decode(ref st, ref Unsafe.Add(ref sig, sigInc[i])) != 0)
                 {
                     significant[count++] = (byte)i;
-                    if (engine.Decode(ref Unsafe.Add(ref lastCtx, lastInc[i])) != 0)
+                    if (engine.Decode(ref st, ref Unsafe.Add(ref lastCtx, lastInc[i])) != 0)
                     {
                         last = true;
                         break;
@@ -562,10 +563,10 @@ internal sealed partial class H264SliceDecoder
             for (int i = 0; i < numCoeff - 1; i++)
             {
                 int inc = Math.Min(i / numC8x8, 2);
-                if (engine.Decode(ref Unsafe.Add(ref sig, inc)) != 0)
+                if (engine.Decode(ref st, ref Unsafe.Add(ref sig, inc)) != 0)
                 {
                     significant[count++] = (byte)i;
-                    if (engine.Decode(ref Unsafe.Add(ref lastCtx, inc)) != 0)
+                    if (engine.Decode(ref st, ref Unsafe.Add(ref lastCtx, inc)) != 0)
                     {
                         last = true;
                         break;
@@ -577,10 +578,10 @@ internal sealed partial class H264SliceDecoder
         {
             for (int i = 0; i < numCoeff - 1; i++)
             {
-                if (engine.Decode(ref Unsafe.Add(ref sig, i)) != 0)
+                if (engine.Decode(ref st, ref Unsafe.Add(ref sig, i)) != 0)
                 {
                     significant[count++] = (byte)i;
-                    if (engine.Decode(ref Unsafe.Add(ref lastCtx, i)) != 0)
+                    if (engine.Decode(ref st, ref Unsafe.Add(ref lastCtx, i)) != 0)
                     {
                         last = true;
                         break;
@@ -602,7 +603,7 @@ internal sealed partial class H264SliceDecoder
         {
             int inc = gt1 != 0 ? 0 : Math.Min(4, 1 + eq1);
             int value;
-            if (engine.Decode(ref Unsafe.Add(ref abs, inc)) == 0)
+            if (engine.Decode(ref st, ref Unsafe.Add(ref abs, inc)) == 0)
             {
                 value = 1;
             }
@@ -610,7 +611,7 @@ internal sealed partial class H264SliceDecoder
             {
                 ref byte ctx = ref Unsafe.Add(ref abs, 5 + Math.Min(maxGt1Inc, gt1));
                 int prefix = 1;
-                while (prefix < 14 && engine.Decode(ref ctx) != 0)
+                while (prefix < 14 && engine.Decode(ref st, ref ctx) != 0)
                 {
                     prefix++;
                 }
@@ -621,7 +622,7 @@ internal sealed partial class H264SliceDecoder
                     // Exp-Golomb suffix, k = 0.
                     int k0 = 0;
                     int suffix = 0;
-                    while (_engine.Bypass() != 0)
+                    while (engine.Bypass(ref st) != 0)
                     {
                         suffix += 1 << k0;
                         if (++k0 > 24)
@@ -630,7 +631,10 @@ internal sealed partial class H264SliceDecoder
                         }
                     }
 
-                    suffix += (int)_engine.Bypass(k0);
+                    for (int i = 0; i < k0; i++)
+                    {
+                        suffix += engine.Bypass(ref st) << (k0 - 1 - i);
+                    }
                     value += suffix;
                 }
             }
@@ -644,9 +648,10 @@ internal sealed partial class H264SliceDecoder
                 gt1++;
             }
 
-            levels[significant[k]] = _engine.Bypass() != 0 ? -value : value;
+            levels[significant[k]] = engine.Bypass(ref st) != 0 ? -value : value;
         }
 
+        engine.Restore(st);
         return count;
     }
 }

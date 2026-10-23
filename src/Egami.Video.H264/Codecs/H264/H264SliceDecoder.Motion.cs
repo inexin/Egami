@@ -347,10 +347,12 @@ internal sealed partial class H264SliceDecoder
 
         H264Picture col = _list1[0];
         bool colShortTerm = !col.IsLongTermReference;
+        bool inferred = _sps.Direct8x8Inference;
+        int colZero8 = 0;
         for (int blk = 0; blk < 16; blk++)
         {
-            int bx = blk & 3, by = blk >> 2;
-            if ((mask & (1 << (((by >> 1) * 2) + (bx >> 1)))) == 0)
+            int bx = blk & 3, by = blk >> 2, quarter = ((by >> 1) * 2) + (bx >> 1);
+            if ((mask & (1 << quarter)) == 0)
             {
                 continue;
             }
@@ -358,8 +360,17 @@ internal sealed partial class H264SliceDecoder
             bool colZero = false;
             if (colShortTerm && !zero)
             {
-                ColocatedMotion(bx, by, out int refCol, out int mvCol, out _);
-                colZero = refCol == 0 && MvX(mvCol) is >= -1 and <= 1 && MvY(mvCol) is >= -1 and <= 1;
+                // With direct_8x8_inference the four blocks of an 8x8 share their co-located block.
+                if (inferred && ((bx | by) & 1) != 0)
+                {
+                    colZero = (colZero8 & (1 << quarter)) != 0;
+                }
+                else
+                {
+                    ColocatedMotion(bx, by, out int refCol, out int mvCol, out _);
+                    colZero = refCol == 0 && MvX(mvCol) is >= -1 and <= 1 && MvY(mvCol) is >= -1 and <= 1;
+                    colZero8 |= colZero ? 1 << quarter : 0;
+                }
             }
 
             for (int list = 0; list < 2; list++)

@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Nal;
 
@@ -68,7 +69,7 @@ internal sealed class CabacEngine
     internal int Decode(ref byte state)
     {
         int s = state;
-        uint lps = RangeLps[((s >> 1) << 2) + (int)((_range >> 6) - 4)];
+        uint lps = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(RangeLps), ((s >> 1) << 2) + (int)((_range >> 6) & 3));
         _range -= lps;
         uint scaledRange = _range << 7;
         int bin;
@@ -91,7 +92,7 @@ internal sealed class CabacEngine
         {
             bin = (s & 1) ^ 1;
             int p = s >> 1;
-            state = (byte)((TransitionLps[p] << 1) | (p == 0 ? bin : s & 1));
+            state = (byte)((Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(TransitionLps), p) << 1) | (p == 0 ? bin : s & 1));
             int shift = System.Numerics.BitOperations.LeadingZeroCount(lps) - 23;
             _value = (_value - scaledRange) << shift;
             _range = lps << shift;
@@ -104,6 +105,85 @@ internal sealed class CabacEngine
         }
 
         return bin;
+    }
+
+    /// <summary>
+    /// Gets the engine's state, for a hot loop that decodes bins with <see cref="Decode(ref State, ref byte)"/> and
+    /// <see cref="Bypass(ref State)"/>, whose state the JIT keeps in registers; <see cref="Restore"/> gives it back.
+    /// </summary>
+    internal State Save() => new() { Range = _range, Value = _value, BitsNeeded = _bitsNeeded, Position = _position };
+
+    /// <summary>Takes back the state <see cref="Save"/> gave.</summary>
+    internal void Restore(in State state)
+    {
+        _range = state.Range;
+        _value = state.Value;
+        _bitsNeeded = state.BitsNeeded;
+        _position = state.Position;
+    }
+
+    /// <summary><see cref="Decode(ref byte)"/> on a saved state.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal int Decode(ref State e, ref byte state)
+    {
+        int s = state;
+        uint lps = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(RangeLps), ((s >> 1) << 2) + (int)((e.Range >> 6) & 3));
+        e.Range -= lps;
+        uint scaledRange = e.Range << 7;
+        int bin;
+        if (e.Value < scaledRange)
+        {
+            bin = s & 1;
+            state = (byte)(s < 124 ? s + 2 : s);
+            if (scaledRange < (256 << 7))
+            {
+                e.Range = scaledRange >> 6;
+                e.Value <<= 1;
+                if (++e.BitsNeeded == 0)
+                {
+                    e.BitsNeeded = -8;
+                    e.Value |= (uint)ReadByte(ref e.Position);
+                }
+            }
+        }
+        else
+        {
+            bin = (s & 1) ^ 1;
+            int p = s >> 1;
+            state = (byte)((Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(TransitionLps), p) << 1) | (p == 0 ? bin : s & 1));
+            int shift = System.Numerics.BitOperations.LeadingZeroCount(lps) - 23;
+            e.Value = (e.Value - scaledRange) << shift;
+            e.Range = lps << shift;
+            e.BitsNeeded += shift;
+            if (e.BitsNeeded >= 0)
+            {
+                e.Value |= (uint)ReadByte(ref e.Position) << e.BitsNeeded;
+                e.BitsNeeded -= 8;
+            }
+        }
+
+        return bin;
+    }
+
+    /// <summary><see cref="Bypass()"/> on a saved state.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal int Bypass(ref State e)
+    {
+        e.Value <<= 1;
+        if (++e.BitsNeeded >= 0)
+        {
+            e.BitsNeeded = -8;
+            e.Value |= (uint)ReadByte(ref e.Position);
+        }
+
+        uint scaledRange = e.Range << 7;
+        if (e.Value >= scaledRange)
+        {
+            e.Value -= scaledRange;
+            return 1;
+        }
+
+        return 0;
     }
 
     /// <summary>Decodes a bypass bin (H.265 9.3.4.3.4, H.264 9.3.3.2.3).</summary>
@@ -184,6 +264,27 @@ internal sealed class CabacEngine
 
         /// <summary>Gets the byte after the bits read, rounded up.</summary>
         internal int BytePosition => (int)((_bit + 7) >> 3);
+    }
+
+    /// <summary>The engine's state as <see cref="Save"/> gives it.</summary>
+    internal struct State
+    {
+        internal uint Range;
+        internal uint Value;
+        internal int BitsNeeded;
+        internal int Position;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int ReadByte(ref int position)
+    {
+        if (position < _end)
+        {
+            return _data[position++];
+        }
+
+        position++;
+        return 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
