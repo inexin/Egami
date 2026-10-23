@@ -154,10 +154,32 @@ internal sealed partial class H264SliceDecoder
         int b = Block(bx, by);
         sbyte[] refIdxs = _pic.RefIdx[list];
         int[] ids = _pic.RefPicId[list];
+        if (b < 0 || b + ((h - 1) * w4) + w > Math.Min(refIdxs.Length, ids.Length))
+        {
+            throw H264Errors.Corrupt("A macroblock lies outside the picture.");
+        }
+
+        // Rows of one, two or four blocks, each written at once.
+        ref byte r = ref Unsafe.As<sbyte, byte>(ref MemoryMarshal.GetArrayDataReference(refIdxs));
+        ref int d = ref MemoryMarshal.GetArrayDataReference(ids);
+        uint refs = (byte)refIdx * 0x01010101u;
         for (int y = 0; y < h; y++, b += w4)
         {
-            refIdxs.AsSpan(b, w).Fill((sbyte)refIdx);
-            ids.AsSpan(b, w).Fill(id);
+            switch (w)
+            {
+                case 4:
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref r, b), refs);
+                    Vector128.Create(id).StoreUnsafe(ref d, (nuint)b);
+                    break;
+                case 2:
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref r, b), (ushort)refs);
+                    Unsafe.WriteUnaligned(ref Unsafe.As<int, byte>(ref Unsafe.Add(ref d, b)), ((ulong)(uint)id << 32) | (uint)id);
+                    break;
+                default:
+                    Unsafe.Add(ref r, b) = (byte)refIdx;
+                    Unsafe.Add(ref d, b) = id;
+                    break;
+            }
         }
     }
 
@@ -168,13 +190,34 @@ internal sealed partial class H264SliceDecoder
         int b = Block(bx, by);
         int[] mvs = _pic.Mv[list];
         byte[] mvds = _mb.Mvd[list];
+        if (b < 0 || b + ((h - 1) * w4) + w > Math.Min(mvs.Length, mvds.Length / 2))
+        {
+            throw H264Errors.Corrupt("A macroblock lies outside the picture.");
+        }
+
+        // x in the low byte, y in the high one: a little-endian 16-bit value per block.
+        uint mvd16 = BitConverter.IsLittleEndian ? (ushort)mvd : (ushort)((mvd >> 8) | (mvd << 8));
+        ref int m = ref MemoryMarshal.GetArrayDataReference(mvs);
+        ref byte dm = ref MemoryMarshal.GetArrayDataReference(mvds);
         int row = ((1 << w) - 1) << (bx + (by * 4));
         for (int y = 0; y < h; y++, b += w4, row <<= 4)
         {
-            mvs.AsSpan(b, w).Fill(mv);
+            switch (w)
+            {
+                case 4:
+                    Vector128.Create(mv).StoreUnsafe(ref m, (nuint)b);
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref dm, b * 2), mvd16 * 0x0001000100010001ul);
+                    break;
+                case 2:
+                    Unsafe.WriteUnaligned(ref Unsafe.As<int, byte>(ref Unsafe.Add(ref m, b)), ((ulong)(uint)mv << 32) | (uint)mv);
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref dm, b * 2), mvd16 * 0x00010001u);
+                    break;
+                default:
+                    Unsafe.Add(ref m, b) = mv;
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref dm, b * 2), (ushort)mvd16);
+                    break;
+            }
 
-            // x in the low byte, y in the high one: a little-endian 16-bit value per block.
-            MemoryMarshal.Cast<byte, ushort>(mvds.AsSpan(b * 2, w * 2)).Fill(BitConverter.IsLittleEndian ? (ushort)mvd : (ushort)((mvd >> 8) | (mvd << 8)));
             _decodedMask |= row;
         }
     }
@@ -272,7 +315,18 @@ internal sealed partial class H264SliceDecoder
         _decodedMask = 0;
         bool availableA = Neighbor(0, -1, 0, out int refA, out int mvA);
         bool availableB = Neighbor(0, 0, -1, out int refB, out int mvB);
-        int mv = !availableA || !availableB || (refA == 0 && mvA == 0) || (refB == 0 && mvB == 0) ? 0 : PredictMv(0, 0, 0, 4, 4, 0);
+        int mv = 0;
+        if (availableA && availableB && !(refA == 0 && mvA == 0) && !(refB == 0 && mvB == 0))
+        {
+            // The median of a 16x16 partition (8-212) from the same A and B, and C or D.
+            bool availableC = Neighbor(0, 4, -1, out int refC, out int mvC);
+            if (!availableC)
+            {
+                availableC = Neighbor(0, -1, -1, out refC, out mvC);
+            }
+
+            mv = Median(availableA, availableB, availableC, refA, refB, refC, mvA, mvB, mvC, 0);
+        }
         FillMv(0, 0, 0, 4, 4, mv, 0);
     }
 
