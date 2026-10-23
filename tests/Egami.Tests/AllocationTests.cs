@@ -1,5 +1,6 @@
 using Egami.Formats.Png;
 using Egami.Pixels;
+using Egami.Tests.Formats.Ani;
 using Egami.Tests.Memory;
 
 namespace Egami.Tests;
@@ -32,6 +33,24 @@ public class AllocationTests
         long loadSmall = Allocated(() => Raster.Load(smallFile).Dispose());
         long loadLarge = Allocated(() => Raster.Load(largeFile).Dispose());
         Assert.True(loadLarge - loadSmall < 1024, $"Loading 3,000 rows allocated {loadLarge:N0} bytes against {loadSmall:N0} for 10 rows.");
+    }
+
+    [Fact]
+    public void AniStepsThatRepeatAFrameAllocateLittleEach()
+    {
+        AllocationMeter.SkipUnlessOnDemand();
+        byte[] cursor = AniBuilder.Cursor(1, new Point(4, 4), 48);
+        AniBuilder few = new() { Sequence = [.. Enumerable.Repeat(0, 4)] };
+        AniBuilder many = new() { Sequence = [.. Enumerable.Repeat(0, 64)] };
+        few.Frames.Add(cursor);
+        many.Frames.Add(cursor);
+        byte[] fewFile = few.Build();
+        byte[] manyFile = many.Build();
+
+        // The frame is decoded once; each further step costs its frame's metadata, not a decode or a managed pixel buffer.
+        long loadFew = Allocated(() => Raster.Load(fewFile).Dispose());
+        long loadMany = Allocated(() => Raster.Load(manyFile).Dispose());
+        Assert.True((loadMany - loadFew) / 60 < 1024, $"64 steps allocated {loadMany:N0} bytes against {loadFew:N0} for 4.");
     }
 
     /// <summary>The fewest bytes one call allocated over several tries; see <see cref="AllocationMeter"/>.</summary>

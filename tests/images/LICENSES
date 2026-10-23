@@ -84,6 +84,10 @@ fuzz/detect-seeds/
   Copies of one file of each format from the folders above, as seeds for the detect fuzz target. Same licenses as the files
   they copy.
 
+fuzz/ani-seeds/
+  Animated cursors written byte by byte for the ani fuzz target, around ico/cursor.cur, ico/cursor-set.cur and ico/bmp4.ico
+  and a few raw-bitmap frames of made-up bytes. Public domain, as the files they hold.
+
 fuzz/avif-seeds/, fuzz/avifbox-seeds/, fuzz/av1-seeds/
   Seeds for the AVIF fuzz targets: copies of small files of avif/ (avif-seeds), the same files with their ftyp box taken out
   (avifbox-seeds), and the AV1 data of their primary items (av1-seeds). Same licenses as the files they come from.

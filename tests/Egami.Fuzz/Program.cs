@@ -177,6 +177,7 @@ static Action<Stream> Target(string name) => name switch
     "svgpath" => ParseSvgPath,
     "ico" => LoadIco,
     "icoentry" => LoadIcoEntry,
+    "ani" => LoadAni,
     "psdfile" => LoadPsd,
     "psddata" => LoadPsdData,
     "egdr" => LoadDrawing,
@@ -1611,6 +1612,41 @@ static void LoadIcoEntry(Stream stream)
     System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(18), 22);
     entry.CopyTo(data, 22);
     IcoEvery(data);
+}
+
+// Phase 2.3.9: ANI animated cursors, leniently and strictly: Probe, Load, LoadAll, a smaller size, a frame range and the row
+// decoder. Probe's size and image count must match what loads.
+static void LoadAni(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    EgamiContext context = Context();
+    foreach (RecoveryMode recovery in new[] { RecoveryMode.Lenient, RecoveryMode.Strict })
+    {
+        ReaderOptions options = new() { Recovery = recovery };
+        try
+        {
+            RasterInfo info = Raster.Probe(data, context, options);
+            using Raster<Rgba8> animation = Raster.Load<Rgba8>(data, context, options);
+            if (info.Width != animation.Width || info.Height != animation.Height || animation.FrameCount > info.FrameCount)
+            {
+                throw new InvalidOperationException("Probe and Load disagree.");
+            }
+
+            using RasterList sizes = Raster.LoadAll<Rgba8>(data, context, options);
+            if (sizes.Count != info.ImageCount)
+            {
+                throw new InvalidOperationException("Probe and LoadAll disagree.");
+            }
+
+            using Raster<Rgba8> small = Raster.Load<Rgba8>(data, context, options with { MinimumSize = new Size(Math.Max(1, info.Width / 2), 1) });
+            using Raster<RgbaF32> tail = Raster.Load<RgbaF32>(data, context, options with { Frames = 1.. });
+            using RasterDecoder decoder = RasterDecoder.Open(data, context, options);
+            using Raster rows = decoder.ReadAll();
+        }
+        catch (EgamiException)
+        {
+        }
+    }
 }
 
 // Phase 2.3.3: PSD and PSB loaded every way; a seekable and a forward-only load must give the same pixels.

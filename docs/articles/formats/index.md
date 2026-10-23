@@ -1,11 +1,11 @@
 # Formats
 
 Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float
-map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors, and reads JBIG2, raw CCITT fax data, JPEG 2000
-and Photoshop's PSD and PSB. HEIC phone photos load through the separate, opt-in Egami.Heic package; core Egami detects and probes
-them. SVG and Windows metafiles (WMF, EMF) load through the separate [Egami.Svg](../guides/svg.md) and
-[Egami.Metafiles](../guides/metafiles.md) packages. Every reader checks sizes against the safety limits before it allocates, and
-every reader has been fuzzed.
+map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors, and reads JBIG2, raw CCITT fax data, JPEG
+2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB. HEIC phone photos load through the separate, opt-in Egami.Heic
+package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
+[Egami.Svg](../guides/svg.md) and [Egami.Metafiles](../guides/metafiles.md) packages. Every reader checks sizes against the
+safety limits before it allocates, and every reader has been fuzzed.
 
 Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
 through [`Vp8StreamDecoder`](vp8.md) and [`Av1StreamDecoder`](av1.md), VP8 and AV1 frames encode through [`Vp8StreamEncoder`](vp8.md#encoding) and [`Av1StreamEncoder`](av1.md#encoding), and the boxes of MP4, QuickTime and HEIF files can be walked with [`IsoBoxReader`](iso-boxes.md). This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.
@@ -27,6 +27,7 @@ through [`Vp8StreamDecoder`](vp8.md) and [`Av1StreamDecoder`](av1.md), VP8 and A
 | [JBIG2](jbig2.md) | Every T.88 region and dictionary but the colour extension; standalone files (sequential and random-access, many pages) and the embedded form a PDF holds, with its globals | No | `Gray8`, black 0 and white 255 |
 | [JPEG 2000](jpeg2000.md) | All of Part 1 (T.800): every progression order, code-block style, tiling and precinct size, reversible and irreversible; JP2 and JPX boxes, palettes, channel definitions, sYCC, CIELab, ICC; reduced and region decodes | No | `Gray8`, `Rgb8`, `Rgba8`, `Cmyk8` or their 16-bit forms, by depth and color space |
 | [ICO, CUR](ico.md) | Every entry: PNG, and BMP at 1 to 32 bits with the AND mask; the best entry, or one by `MinimumSize` or index; cursor hotspots | One entry a raster, or sets resized to favicon or Windows sizes; PNG at 256 and 32-bit BMP below; hotspots | `Rgba8` |
+| [ANI](ani.md) | Animated cursors: every step as a frame with its delay, one size for all frames or every size with LoadAll; cursor, icon and raw-bitmap frames; hotspots, title and artist | No | `Rgba8` |
 | [PSD, PSB](psd.md) | The flattened image in every color mode (bitmap, gray, indexed, RGB, CMYK, Lab, duotone, multichannel) at 1 to 32 bits, raw, PackBits and Deflate; layer records and resources as metadata | No | By mode and depth: `Gray8`, `Rgb8`, `Rgba8`, `Cmyk8`, their 16-bit forms, float types |
 | [Radiance](radiance.md) | RGBE and XYZE, every scan order, flat, old repeat-pixel and per-channel run-length scanlines | RGBE, run-length encoded or flat, optional EXPOSURE line | `RgbF32`, linear |
 | [OpenEXR](openexr.md) | Scanline and tiled, single and multi-part, every OpenEXR 3 compression but HTJ2K, half, float and uint channels, luminance-chroma; any part, layer or channel | One scanline part, R, G, B and A, ZIP, ZIPS, RLE, PIZ or none, in half or float | `RgbaF16` when the channels are half, `RgbaF32` otherwise, `GrayF32` for luminance alone; linear |
@@ -42,7 +43,7 @@ through [`Vp8StreamDecoder`](vp8.md) and [`Av1StreamDecoder`](av1.md), VP8 and A
 ## Detection
 
 Loading never trusts the file extension: the format comes from the first bytes, in the order PNG, JPEG, GIF, WebP, BMP, QOI, PNM,
-TIFF, JBIG2, JPEG 2000, ICO, CUR, PSD, Radiance, OpenEXR, JPEG XL (FF 0A or its signature box), AVIF (an ftyp box with the avif or avis brand), HEIC (an ftyp box with a HEVC brand such as heic or heix), then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
+TIFF, JBIG2, JPEG 2000, ICO, CUR, ANI, PSD, Radiance, OpenEXR, JPEG XL (FF 0A or its signature box), AVIF (an ftyp box with the avif or avis brand), HEIC (an ftyp box with a HEVC brand such as heic or heix), then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
 Egami's test corpora is taken for TGA, and neither is any of a million random headers. When you know the format, register only
 that one:
 
