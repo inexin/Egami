@@ -19,6 +19,8 @@ Usage, from the repo root:
   python tools/video/make-audio-corpus.py --aiff       V5.9: AIFF and AIFF-C clips, and G.711 in WAV and MOV, into
                                                        tests/video/corpus/audio/aiff (checked in) with FFmpeg's decode MD5 in
                                                        manifest.json. Add --local to run FFmpeg from the PATH instead of in Docker.
+  python tools/video/make-audio-corpus.py --ac3        V5.9: raw AC-3 and E-AC-3, and both in MP4 and Matroska, into
+                                                       tests/video/corpus/audio/ac3 (add --local to use the local ffmpeg).
   python tools/video/make-audio-corpus.py --caf        V5.9: CAF clips (PCM, G.711, FLAC, ALAC, Opus, MP3, AC-3) into
                                                        tests/video/corpus/audio/caf (checked in) with FFmpeg's decode MD5 for the
                                                        lossless ones and ffprobe's packet count for every clip. Add --local to run
@@ -390,6 +392,48 @@ def make_caf(local):
         f.write("\n")
 
 
+# name: (FFmpeg arguments after the source, rate, channels, elementary stream format). Each clip gets ffprobe's packet count and
+# the MD5 of its frames copied out as a raw stream, so that every container's packets can be checked against the same bytes.
+AC3_OUT = os.path.join(OUT, "ac3")
+AC3_CLIPS = {
+    "ac3-stereo-48k.ac3": ("-c:a ac3 -b:a 192k", 48000, 2, "ac3"),
+    "ac3-51-48k.ac3": ("-c:a ac3 -b:a 448k", 48000, 6, "ac3"),
+    "ac3-mono-44k.ac3": ("-c:a ac3 -b:a 96k", 44100, 1, "ac3"),
+    "ac3-stereo-32k.ac3": ("-c:a ac3 -b:a 128k", 32000, 2, "ac3"),
+    "eac3-stereo-48k.eac3": ("-c:a eac3 -b:a 128k", 48000, 2, "eac3"),
+    "eac3-51-48k.eac3": ("-c:a eac3 -b:a 384k", 48000, 6, "eac3"),
+    "mp4-ac3-51.mp4": ("-c:a ac3 -b:a 448k", 48000, 6, "ac3"),
+    "mp4-eac3-stereo.mp4": ("-c:a eac3 -b:a 128k", 48000, 2, "eac3"),
+    "mka-ac3-stereo.mka": ("-c:a ac3 -b:a 192k", 48000, 2, "ac3"),
+    "mka-eac3-51.mka": ("-c:a eac3 -b:a 384k", 48000, 6, "eac3"),
+}
+
+
+def make_ac3(local):
+    os.makedirs(AC3_OUT, exist_ok=True)
+
+    def output(command):
+        if local:
+            return subprocess.run(["sh", "-c", command.replace("/work/", AC3_OUT + "/")], check=True, capture_output=True).stdout
+        return subprocess.run(["docker", "run", "--rm", "-v", f"{AC3_OUT}:/work", IMAGE, "sh", "-c", command], check=True,
+                              capture_output=True).stdout
+
+    manifest = {}
+    for name, (args, rate, channels, fmt) in AC3_CLIPS.items():
+        path = os.path.join(AC3_OUT, name)
+        if os.path.exists(path):
+            os.remove(path)
+        output("ffmpeg -y -v error -bitexact " + source(rate, channels, 0.5) + f" {args} /work/{name}")
+        probe = json.loads(output(f"ffprobe -v error -count_packets -show_streams -of json /work/{name}"))["streams"][0]
+        raw = output(f"ffmpeg -v error -i /work/{name} -c:a copy -f {fmt} -")
+        manifest[name] = {"packets": int(probe["nb_read_packets"]), "rate": rate, "channels": channels, "eac3": fmt == "eac3",
+                          "bytes": len(raw), "md5": hashlib.md5(raw).hexdigest()}
+        print(name, os.path.getsize(path), manifest[name])
+    with open(os.path.join(AC3_OUT, "manifest.json"), "w", newline="\n") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+
+
 def gates():
     """Compares .cache/audio/gates/L<n> (Egami.Video's FLAC) with libFLAC at the same level; prints sizes and flac -d's time."""
     gates_dir = os.path.join(CACHE, "gates")
@@ -422,6 +466,9 @@ if __name__ == "__main__":
         sys.exit(0)
     if "--caf" in sys.argv:
         make_caf("--local" in sys.argv)
+        sys.exit(0)
+    if "--ac3" in sys.argv:
+        make_ac3("--local" in sys.argv)
         sys.exit(0)
     if "--aiff" in sys.argv:
         make_aiff("--local" in sys.argv)

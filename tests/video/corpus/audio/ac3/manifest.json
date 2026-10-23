@@ -1,0 +1,82 @@
+{
+  "ac3-stereo-48k.ac3": {
+    "packets": 16,
+    "rate": 48000,
+    "channels": 2,
+    "eac3": false,
+    "bytes": 12288,
+    "md5": "205e5aa145eb409e9f3ec767ebf5636f"
+  },
+  "ac3-51-48k.ac3": {
+    "packets": 16,
+    "rate": 48000,
+    "channels": 6,
+    "eac3": false,
+    "bytes": 28672,
+    "md5": "91ac0a3310454b4b7cb3bcdb2cad586d"
+  },
+  "ac3-mono-44k.ac3": {
+    "packets": 15,
+    "rate": 44100,
+    "channels": 1,
+    "eac3": false,
+    "bytes": 6268,
+    "md5": "1717351b8055b68c2449142b0455b18c"
+  },
+  "ac3-stereo-32k.ac3": {
+    "packets": 11,
+    "rate": 32000,
+    "channels": 2,
+    "eac3": false,
+    "bytes": 8448,
+    "md5": "289d3f60c3bf6929a0a653e51da125a9"
+  },
+  "eac3-stereo-48k.eac3": {
+    "packets": 16,
+    "rate": 48000,
+    "channels": 2,
+    "eac3": true,
+    "bytes": 8192,
+    "md5": "086e769b359df56a8181296795103dff"
+  },
+  "eac3-51-48k.eac3": {
+    "packets": 16,
+    "rate": 48000,
+    "channels": 6,
+    "eac3": true,
+    "bytes": 24576,
+    "md5": "bb01f7be1e1aa799e10633dc5920d2a8"
+  },
+  "mp4-ac3-51.mp4": {
+    "packets": 16,
+    "rate": 48000,
+    "channels": 6,
+    "eac3": false,
+    "bytes": 28672,
+    "md5": "91ac0a3310454b4b7cb3bcdb2cad586d"
+  },
+  "mp4-eac3-stereo.mp4": {
+    "packets": 16,
+    "rate": 48000,
+    "channels": 2,
+    "eac3": true,
+    "bytes": 8192,
+    "md5": "086e769b359df56a8181296795103dff"
+  },
+  "mka-ac3-stereo.mka": {
+    "packets": 16,
+    "rate": 48000,
+    "channels": 2,
+    "eac3": false,
+    "bytes": 12288,
+    "md5": "205e5aa145eb409e9f3ec767ebf5636f"
+  },
+  "mka-eac3-51.mka": {
+    "packets": 16,
+    "rate": 48000,
+    "channels": 6,
+    "eac3": true,
+    "bytes": 24576,
+    "md5": "bb01f7be1e1aa799e10633dc5920d2a8"
+  }
+}

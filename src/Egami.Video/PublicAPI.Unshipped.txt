@@ -1787,6 +1787,16 @@ static Egami.Video.Audio.LoudnessValue.operator !=(Egami.Video.Audio.LoudnessVal
 static Egami.Video.Audio.LoudnessValue.operator ==(Egami.Video.Audio.LoudnessValue left, Egami.Video.Audio.LoudnessValue right) -> bool
 ~override Egami.Video.Audio.LoudnessValue.Equals(object obj) -> bool
 ~override Egami.Video.Audio.LoudnessValue.ToString() -> string
+const Egami.Video.CodecIds.EAc3 = "A_EAC3" -> string!
+Egami.Video.Containers.Ac3Format
+override Egami.Video.Containers.Ac3Format.CanMux.get -> bool
+override Egami.Video.Containers.Ac3Format.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+override Egami.Video.Containers.Ac3Format.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.Ac3Format.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.Ac3Format.Name.get -> string!
+override Egami.Video.Containers.Ac3Format.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.Ac3Format.SignatureLength.get -> int
+static Egami.Video.Containers.Ac3Format.Instance.get -> Egami.Video.Containers.Ac3Format!
 Egami.Video.Analysis.AudioPictureChannels
 Egami.Video.Analysis.AudioPictureChannels.Mixed = 0 -> Egami.Video.Analysis.AudioPictureChannels
 Egami.Video.Analysis.AudioPictureChannels.Stacked = 1 -> Egami.Video.Analysis.AudioPictureChannels
