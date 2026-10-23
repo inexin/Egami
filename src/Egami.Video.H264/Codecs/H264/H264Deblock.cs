@@ -203,8 +203,8 @@ internal sealed class H264Deblock
                 }
 
                 Vector256<short> bs16 = Vector256.Create(
-                    Vector128.Create(Vector64.Create((short)b4.GetElement(0)), Vector64.Create((short)b4.GetElement(1))),
-                    Vector128.Create(Vector64.Create((short)b4.GetElement(2)), Vector64.Create((short)b4.GetElement(3))));
+                    Vector128.Shuffle(b4.AsByte(), Vector128.Create((byte)0, 16, 0, 16, 0, 16, 0, 16, 4, 16, 4, 16, 4, 16, 4, 16)).AsInt16(),
+                    Vector128.Shuffle(b4.AsByte(), Vector128.Create((byte)8, 16, 8, 16, 8, 16, 8, 16, 12, 16, 12, 16, 12, 16, 12, 16)).AsInt16());
                 Vector256<short> tc0 = TcLanes(bs16, indexA, scaleY);
                 if (dir == 1)
                 {
@@ -306,8 +306,7 @@ internal sealed class H264Deblock
                 int pAddr = ce != 0 ? addr : dir == 0 ? addr - 1 : addr - _widthMbs;
                 (int alphaCb, int betaCb, int indexCb) = Thresholds((qpCb[pAddr] + qpCb[addr] + 1) >> 1, p, scale);
                 (int alphaCr, int betaCr, int indexCr) = Thresholds((qpCr[pAddr] + qpCr[addr] + 1) >> 1, p, scale);
-                Vector128<short> bs8 = Vector128.Create((short)b4.GetElement(0), (short)b4.GetElement(0), (short)b4.GetElement(1), (short)b4.GetElement(1),
-                    (short)b4.GetElement(2), (short)b4.GetElement(2), (short)b4.GetElement(3), (short)b4.GetElement(3));
+                Vector128<short> bs8 = Vector128.Shuffle(b4.AsByte(), Vector128.Create((byte)0, 16, 0, 16, 4, 16, 4, 16, 8, 16, 8, 16, 12, 16, 12, 16)).AsInt16();
                 Vector128<short> bsCb = alphaCb == 0 || betaCb == 0 ? Vector128<short>.Zero : bs8;
                 Vector128<short> bsCr = alphaCr == 0 || betaCr == 0 ? Vector128<short>.Zero : bs8;
                 if ((bsCb | bsCr) == Vector128<short>.Zero)
