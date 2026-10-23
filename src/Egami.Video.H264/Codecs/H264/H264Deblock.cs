@@ -222,39 +222,24 @@ internal sealed class H264Deblock
                 }
                 else
                 {
-                    // Sixteen rows of eight samples across the edge, transposed in two halves into eight columns of sixteen.
+                    // Sixteen rows of eight samples across the edge: rows k and k + 8 share a vector, and the transpose within
+                    // each 128-bit half turns the rows into eight columns of sixteen.
                     ref T r = ref Unsafe.Add(ref y0, (edge * 4) - 4);
                     ref T s = ref Unsafe.Add(ref r, 8 * stride);
-                    Vector128<short> a0 = Row(ref r, 0), a1 = Row(ref r, stride), a2 = Row(ref r, 2 * stride), a3 = Row(ref r, 3 * stride),
-                        a4 = Row(ref r, 4 * stride), a5 = Row(ref r, 5 * stride), a6 = Row(ref r, 6 * stride), a7 = Row(ref r, 7 * stride);
-                    Vector128<short> c0 = Row(ref s, 0), c1 = Row(ref s, stride), c2 = Row(ref s, 2 * stride), c3 = Row(ref s, 3 * stride),
-                        c4 = Row(ref s, 4 * stride), c5 = Row(ref s, 5 * stride), c6 = Row(ref s, 6 * stride), c7 = Row(ref s, 7 * stride);
-                    Transpose(ref a0, ref a1, ref a2, ref a3, ref a4, ref a5, ref a6, ref a7);
-                    Transpose(ref c0, ref c1, ref c2, ref c3, ref c4, ref c5, ref c6, ref c7);
-                    Vector256<short> p3 = Vector256.Create(a0, c0), p2 = Vector256.Create(a1, c1), p1 = Vector256.Create(a2, c2),
-                        p0 = Vector256.Create(a3, c3), q0 = Vector256.Create(a4, c4), q1 = Vector256.Create(a5, c5),
-                        q2 = Vector256.Create(a6, c6), q3 = Vector256.Create(a7, c7);
+                    Vector256<short> p3 = Pair(ref r, ref s, 0), p2 = Pair(ref r, ref s, stride), p1 = Pair(ref r, ref s, 2 * stride),
+                        p0 = Pair(ref r, ref s, 3 * stride), q0 = Pair(ref r, ref s, 4 * stride), q1 = Pair(ref r, ref s, 5 * stride),
+                        q2 = Pair(ref r, ref s, 6 * stride), q3 = Pair(ref r, ref s, 7 * stride);
+                    Transpose(ref p3, ref p2, ref p1, ref p0, ref q0, ref q1, ref q2, ref q3);
                     FilterLuma(p3, ref p2, ref p1, ref p0, ref q0, ref q1, ref q2, q3, bs16, tc0, Vector256.Create((short)alpha), Vector256.Create((short)beta), maxY);
-                    a0 = p3.GetLower();
-                    a1 = p2.GetLower();
-                    a2 = p1.GetLower();
-                    a3 = p0.GetLower();
-                    a4 = q0.GetLower();
-                    a5 = q1.GetLower();
-                    a6 = q2.GetLower();
-                    a7 = q3.GetLower();
-                    c0 = p3.GetUpper();
-                    c1 = p2.GetUpper();
-                    c2 = p1.GetUpper();
-                    c3 = p0.GetUpper();
-                    c4 = q0.GetUpper();
-                    c5 = q1.GetUpper();
-                    c6 = q2.GetUpper();
-                    c7 = q3.GetUpper();
-                    Transpose(ref a0, ref a1, ref a2, ref a3, ref a4, ref a5, ref a6, ref a7);
-                    Transpose(ref c0, ref c1, ref c2, ref c3, ref c4, ref c5, ref c6, ref c7);
-                    StoreRows(ref r, stride, a0, a1, a2, a3, a4, a5, a6, a7);
-                    StoreRows(ref s, stride, c0, c1, c2, c3, c4, c5, c6, c7);
+                    Transpose(ref p3, ref p2, ref p1, ref p0, ref q0, ref q1, ref q2, ref q3);
+                    Unpair(ref r, ref s, 0, p3);
+                    Unpair(ref r, ref s, stride, p2);
+                    Unpair(ref r, ref s, 2 * stride, p1);
+                    Unpair(ref r, ref s, 3 * stride, p0);
+                    Unpair(ref r, ref s, 4 * stride, q0);
+                    Unpair(ref r, ref s, 5 * stride, q1);
+                    Unpair(ref r, ref s, 6 * stride, q2);
+                    Unpair(ref r, ref s, 7 * stride, q3);
                 }
             }
         }
@@ -334,22 +319,20 @@ internal sealed class H264Deblock
                 else
                 {
                     ref T rb = ref Unsafe.Add(ref cb0, (ce * 4) - 4), rr = ref Unsafe.Add(ref cr0, (ce * 4) - 4);
-                    Vector128<short> a0 = Row(ref rb, 0), a1 = Row(ref rb, stride), a2 = Row(ref rb, 2 * stride), a3 = Row(ref rb, 3 * stride),
-                        a4 = Row(ref rb, 4 * stride), a5 = Row(ref rb, 5 * stride), a6 = Row(ref rb, 6 * stride), a7 = Row(ref rb, 7 * stride);
-                    Vector128<short> c0 = Row(ref rr, 0), c1 = Row(ref rr, stride), c2 = Row(ref rr, 2 * stride), c3 = Row(ref rr, 3 * stride),
-                        c4 = Row(ref rr, 4 * stride), c5 = Row(ref rr, 5 * stride), c6 = Row(ref rr, 6 * stride), c7 = Row(ref rr, 7 * stride);
+                    Vector256<short> a0 = Pair(ref rb, ref rr, 0), a1 = Pair(ref rb, ref rr, stride), a2 = Pair(ref rb, ref rr, 2 * stride),
+                        a3 = Pair(ref rb, ref rr, 3 * stride), a4 = Pair(ref rb, ref rr, 4 * stride), a5 = Pair(ref rb, ref rr, 5 * stride),
+                        a6 = Pair(ref rb, ref rr, 6 * stride), a7 = Pair(ref rb, ref rr, 7 * stride);
                     Transpose(ref a0, ref a1, ref a2, ref a3, ref a4, ref a5, ref a6, ref a7);
-                    Transpose(ref c0, ref c1, ref c2, ref c3, ref c4, ref c5, ref c6, ref c7);
-                    Vector256<short> p0 = Vector256.Create(a3, c3), q0 = Vector256.Create(a4, c4);
-                    FilterChroma(Vector256.Create(a2, c2), ref p0, ref q0, Vector256.Create(a5, c5), bs16, tc0, alpha, beta, max);
-                    a3 = p0.GetLower();
-                    a4 = q0.GetLower();
-                    c3 = p0.GetUpper();
-                    c4 = q0.GetUpper();
+                    FilterChroma(a2, ref a3, ref a4, a5, bs16, tc0, alpha, beta, max);
                     Transpose(ref a0, ref a1, ref a2, ref a3, ref a4, ref a5, ref a6, ref a7);
-                    Transpose(ref c0, ref c1, ref c2, ref c3, ref c4, ref c5, ref c6, ref c7);
-                    StoreRows(ref rb, stride, a0, a1, a2, a3, a4, a5, a6, a7);
-                    StoreRows(ref rr, stride, c0, c1, c2, c3, c4, c5, c6, c7);
+                    Unpair(ref rb, ref rr, 0, a0);
+                    Unpair(ref rb, ref rr, stride, a1);
+                    Unpair(ref rb, ref rr, 2 * stride, a2);
+                    Unpair(ref rb, ref rr, 3 * stride, a3);
+                    Unpair(ref rb, ref rr, 4 * stride, a4);
+                    Unpair(ref rb, ref rr, 5 * stride, a5);
+                    Unpair(ref rb, ref rr, 6 * stride, a6);
+                    Unpair(ref rb, ref rr, 7 * stride, a7);
                 }
             }
         }
@@ -372,6 +355,41 @@ internal sealed class H264Deblock
             | (Vector256.Equals(bs, Vector256.Create((short)3)) & Vector256.Create((short)(tc[(indexA * 3) + 2] * scale)));
     }
 
+    /// <summary>Loads eight samples of two rows into the halves of one vector.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Pair<T>(ref T low, ref T high, int offset)
+        where T : unmanaged => Vector256.Create(H264Samples.Load8(ref low, offset), H264Samples.Load8(ref high, offset));
+
+    /// <summary>Stores the halves of a vector as eight samples of two rows.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Unpair<T>(ref T low, ref T high, int offset, Vector256<short> v)
+        where T : unmanaged
+    {
+        H264Samples.Store8(ref low, offset, v.GetLower());
+        H264Samples.Store8(ref high, offset, v.GetUpper());
+    }
+
+    /// <summary>Transposes the 8 by 8 blocks of 16-bit samples in both 128-bit halves of eight vectors at once.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Transpose(ref Vector256<short> a0, ref Vector256<short> a1, ref Vector256<short> a2, ref Vector256<short> a3,
+        ref Vector256<short> a4, ref Vector256<short> a5, ref Vector256<short> a6, ref Vector256<short> a7)
+    {
+        Vector256<short> b0 = Avx2.UnpackLow(a0, a1), b1 = Avx2.UnpackHigh(a0, a1), b2 = Avx2.UnpackLow(a2, a3), b3 = Avx2.UnpackHigh(a2, a3);
+        Vector256<short> b4 = Avx2.UnpackLow(a4, a5), b5 = Avx2.UnpackHigh(a4, a5), b6 = Avx2.UnpackLow(a6, a7), b7 = Avx2.UnpackHigh(a6, a7);
+        Vector256<int> c0 = Avx2.UnpackLow(b0.AsInt32(), b2.AsInt32()), c1 = Avx2.UnpackHigh(b0.AsInt32(), b2.AsInt32());
+        Vector256<int> c2 = Avx2.UnpackLow(b1.AsInt32(), b3.AsInt32()), c3 = Avx2.UnpackHigh(b1.AsInt32(), b3.AsInt32());
+        Vector256<int> c4 = Avx2.UnpackLow(b4.AsInt32(), b6.AsInt32()), c5 = Avx2.UnpackHigh(b4.AsInt32(), b6.AsInt32());
+        Vector256<int> c6 = Avx2.UnpackLow(b5.AsInt32(), b7.AsInt32()), c7 = Avx2.UnpackHigh(b5.AsInt32(), b7.AsInt32());
+        a0 = Avx2.UnpackLow(c0.AsInt64(), c4.AsInt64()).AsInt16();
+        a1 = Avx2.UnpackHigh(c0.AsInt64(), c4.AsInt64()).AsInt16();
+        a2 = Avx2.UnpackLow(c1.AsInt64(), c5.AsInt64()).AsInt16();
+        a3 = Avx2.UnpackHigh(c1.AsInt64(), c5.AsInt64()).AsInt16();
+        a4 = Avx2.UnpackLow(c2.AsInt64(), c6.AsInt64()).AsInt16();
+        a5 = Avx2.UnpackHigh(c2.AsInt64(), c6.AsInt64()).AsInt16();
+        a6 = Avx2.UnpackLow(c3.AsInt64(), c7.AsInt64()).AsInt16();
+        a7 = Avx2.UnpackHigh(c3.AsInt64(), c7.AsInt64()).AsInt16();
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector256<short> Row256<T>(ref T at, int offset)
         where T : unmanaged => H264Samples.Load16(ref at, offset);
@@ -379,21 +397,6 @@ internal sealed class H264Deblock
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Store256<T>(Vector256<short> v, ref T at, int offset)
         where T : unmanaged => H264Samples.Store16(ref at, offset, v);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void StoreRows<T>(ref T r, int stride, Vector128<short> a0, Vector128<short> a1, Vector128<short> a2, Vector128<short> a3,
-        Vector128<short> a4, Vector128<short> a5, Vector128<short> a6, Vector128<short> a7)
-        where T : unmanaged
-    {
-        Store(a0, ref r, 0);
-        Store(a1, ref r, stride);
-        Store(a2, ref r, 2 * stride);
-        Store(a3, ref r, 3 * stride);
-        Store(a4, ref r, 4 * stride);
-        Store(a5, ref r, 5 * stride);
-        Store(a6, ref r, 6 * stride);
-        Store(a7, ref r, 7 * stride);
-    }
 
     /// <summary><see cref="FilterLuma(Vector128{short}, ref Vector128{short}, ref Vector128{short}, ref Vector128{short}, ref Vector128{short}, ref Vector128{short}, ref Vector128{short}, Vector128{short}, Vector128{short}, Vector128{short}, int, int, int)"/> for sixteen lanes.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
