@@ -19,6 +19,9 @@ internal sealed class H264Inter
     private const int PredStride = 16;
     private const int EdgeStride = 32;
 
+    // Where a 4:2:0 Cr prediction starts in the prediction buffers: after Cb's eight rows.
+    private const int CrRows = PredStride * 8;
+
     private readonly ushort[] _pred0 = new ushort[(PredStride * 16) + PredStride];
     private readonly ushort[] _pred1 = new ushort[(PredStride * 16) + PredStride];
     private readonly ushort[] _temp = new ushort[(PredStride * 16) + PredStride];
@@ -119,27 +122,86 @@ internal sealed class H264Inter
             Luma(p1, x, y, w, h, mv1, _pred1);
         }
 
-        Combine(_pic.Y, _pic.Origin + (y * _pic.Stride) + x, _pic.Stride, w, h, r0, r1, 0, _maxY, _shiftY);
+        Combine(_pic.Y, _pic.Origin + (y * _pic.Stride) + x, _pic.Stride, w, h, r0, r1, 0, _maxY, _shiftY, 0);
         if (_chroma == 0)
         {
             return;
         }
 
         int cw = w / 2, ch = _chroma == 1 ? h / 2 : h, cx = x / 2, cy = _chroma == 1 ? y / 2 : y;
-        for (int c = 0; c < 2; c++)
+        if (_chroma == 1)
         {
+            // 4:2:0 blocks are at most 8 rows: Cb's prediction takes rows 0 to 7 of the buffers and Cr's rows 8 to 15.
             if (p0 is not null)
             {
-                Chroma(c == 0 ? p0.Cb : p0.Cr, p0, cx, cy, cw, ch, mv0, _pred0);
+                ChromaPair(p0, cx, cy, cw, ch, mv0, _pred0);
             }
 
             if (p1 is not null)
             {
-                Chroma(c == 0 ? p1.Cb : p1.Cr, p1, cx, cy, cw, ch, mv1, _pred1);
+                ChromaPair(p1, cx, cy, cw, ch, mv1, _pred1);
+            }
+
+            int at = _pic.ChromaOrigin + (cy * _pic.ChromaStride) + cx;
+            Combine(_pic.Cb, at, _pic.ChromaStride, cw, ch, r0, r1, 1, _maxC, _shiftC, 0);
+            Combine(_pic.Cr, at, _pic.ChromaStride, cw, ch, r0, r1, 2, _maxC, _shiftC, CrRows);
+            return;
+        }
+
+        for (int c = 0; c < 2; c++)
+        {
+            if (p0 is not null)
+            {
+                Chroma(c == 0 ? p0.Cb : p0.Cr, p0, cx, cy, cw, ch, mv0, _pred0, 0);
+            }
+
+            if (p1 is not null)
+            {
+                Chroma(c == 0 ? p1.Cb : p1.Cr, p1, cx, cy, cw, ch, mv1, _pred1, 0);
             }
 
             ushort[] plane = c == 0 ? _pic.Cb : _pic.Cr;
-            Combine(plane, _pic.ChromaOrigin + (cy * _pic.ChromaStride) + cx, _pic.ChromaStride, cw, ch, r0, r1, 1 + c, _maxC, _shiftC);
+            Combine(plane, _pic.ChromaOrigin + (cy * _pic.ChromaStride) + cx, _pic.ChromaStride, cw, ch, r0, r1, 1 + c, _maxC, _shiftC, 0);
+        }
+    }
+
+    /// <summary>
+    /// Predicts a 4:2:0 chroma block of both planes from one reference, Cb at the start of pred and Cr <see cref="CrRows"/> after
+    /// it; eight-wide blocks interpolate a row of each plane in one 256-bit vector.
+    /// </summary>
+    private void ChromaPair(H264Picture refPic, int x, int y, int w, int h, int mv, ushort[] pred)
+    {
+        int mvx = H264SliceDecoder.MvX(mv), mvy = H264SliceDecoder.MvY(mv);
+        int xInt = x + (mvx >> 3), xFrac = mvx & 7, yInt = y + (mvy >> 3), yFrac = mvy & 7;
+        int pad = H264Picture.Pad, stride = refPic.ChromaStride;
+        int at = refPic.ChromaOrigin + (yInt * stride) + xInt;
+        if (w != 8 || !UseVectors || !Avx2.IsSupported
+            || xInt < -pad || yInt < -pad || xInt + w + 1 > refPic.ChromaWidth + pad || yInt + h + 1 > refPic.ChromaHeight + pad
+            || at < 0 || at + (h * stride) + 24 > Math.Min(refPic.Cb.Length, refPic.Cr.Length))
+        {
+            Chroma(refPic.Cb, refPic, x, y, w, h, mv, pred, 0);
+            Chroma(refPic.Cr, refPic, x, y, w, h, mv, pred, CrRows);
+            return;
+        }
+
+        // Each row is first interpolated across, (8 - xFrac) a + xFrac b, then two rows down, which is the four-weight sum of
+        // 8-266 exactly: no rounding comes between. The sums stay below 65536 at up to 10 bits.
+        ref ushort cb = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(refPic.Cb), at);
+        ref ushort cr = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(refPic.Cr), at);
+        ref ushort d = ref MemoryMarshal.GetArrayDataReference(pred);
+        Vector256<ushort> wa = Vector256.Create((ushort)(8 - xFrac)), wb = Vector256.Create((ushort)xFrac);
+        Vector256<ushort> wTop = Vector256.Create((ushort)(8 - yFrac)), wBottom = Vector256.Create((ushort)yFrac), round = Vector256.Create((ushort)32);
+        Vector256<ushort> above = (wa * Vector256.Create(Vector128.LoadUnsafe(ref cb), Vector128.LoadUnsafe(ref cr)))
+            + (wb * Vector256.Create(Vector128.LoadUnsafe(ref cb, 1), Vector128.LoadUnsafe(ref cr, 1)));
+        for (int j = 0; j < h; j++)
+        {
+            nuint next = (nuint)((j + 1) * stride);
+            Vector256<ushort> below = (wa * Vector256.Create(Vector128.LoadUnsafe(ref cb, next), Vector128.LoadUnsafe(ref cr, next)))
+                + (wb * Vector256.Create(Vector128.LoadUnsafe(ref cb, next + 1), Vector128.LoadUnsafe(ref cr, next + 1)));
+            Vector256<ushort> v = ((wTop * above) + (wBottom * below) + round) >>> 6;
+            v.GetLower().StoreUnsafe(ref d, (nuint)(j * PredStride));
+            v.GetUpper().StoreUnsafe(ref d, (nuint)((j * PredStride) + CrRows));
+            above = below;
         }
     }
 
@@ -182,7 +244,7 @@ internal sealed class H264Inter
     private static unsafe void Prefetch(ref ushort at) => Sse.Prefetch0(Unsafe.AsPointer(ref at));
 
     /// <summary>Weighted sample prediction (8.4.2.3): default, explicit or implicit, into the picture.</summary>
-    private void Combine(ushort[] plane, int at, int stride, int w, int h, int r0, int r1, int component, int max, int bitShift)
+    private void Combine(ushort[] plane, int at, int stride, int w, int h, int r0, int r1, int component, int max, int bitShift, int po)
     {
         bool bi = r0 >= 0 && r1 >= 0;
         if (_explicit)
@@ -193,7 +255,7 @@ internal sealed class H264Inter
             {
                 int w0 = wt0[(r0 * 6) + (component * 2)], o0 = wt0[(r0 * 6) + (component * 2) + 1] << bitShift;
                 int w1 = wt1[(r1 * 6) + (component * 2)], o1 = wt1[(r1 * 6) + (component * 2) + 1] << bitShift;
-                Weighted(plane, at, stride, w, h, w0, w1, 1 << logWD, logWD + 1, (o0 + o1 + 1) >> 1, max);
+                Weighted(plane, at, stride, w, h, w0, w1, 1 << logWD, logWD + 1, (o0 + o1 + 1) >> 1, max, po);
             }
             else
             {
@@ -205,7 +267,7 @@ internal sealed class H264Inter
                     _pred1.AsSpan().CopyTo(_pred0);
                 }
 
-                Weighted(plane, at, stride, w, h, wgt, 0, logWD >= 1 ? 1 << (logWD - 1) : 0, logWD, o, max);
+                Weighted(plane, at, stride, w, h, wgt, 0, logWD >= 1 ? 1 << (logWD - 1) : 0, logWD, o, max, po);
             }
 
             return;
@@ -214,24 +276,24 @@ internal sealed class H264Inter
         if (bi && _implicitMode)
         {
             int w0 = _implicit[(r0 * 32) + r1];
-            Weighted(plane, at, stride, w, h, w0, 64 - w0, 32, 6, 0, max);
+            Weighted(plane, at, stride, w, h, w0, 64 - w0, 32, 6, 0, max, po);
             return;
         }
 
         ushort[] first = r0 >= 0 ? _pred0 : _pred1;
         if (bi)
         {
-            Average(_pred0, _pred1, w, h);
+            Average(_pred0, _pred1, w, h, po);
         }
 
-        Store(first, plane, at, stride, w, h);
+        Store(first, plane, at, stride, w, h, po);
     }
 
     /// <summary>
     /// The weighted forms (8-270 to 8-301) in one: ((pred0 × w0 + pred1 × w1 + round) &gt;&gt; shift) + offset, clipped, into the
     /// picture; one-list prediction has w1 0. The products need 32-bit lanes, four samples to a vector.
     /// </summary>
-    private void Weighted(ushort[] plane, int at, int stride, int w, int h, int w0, int w1, int round, int shift, int offset, int max)
+    private void Weighted(ushort[] plane, int at, int stride, int w, int h, int w0, int w1, int round, int shift, int offset, int max, int po)
     {
         if (at < 0 || at + ((h - 1) * stride) + w > plane.Length)
         {
@@ -244,7 +306,7 @@ internal sealed class H264Inter
             {
                 for (int x = 0; x < w; x++)
                 {
-                    int v = (((_pred0[(y * PredStride) + x] * w0) + (_pred1[(y * PredStride) + x] * w1) + round) >> shift) + offset;
+                    int v = (((_pred0[(y * PredStride) + x + po] * w0) + (_pred1[(y * PredStride) + x + po] * w1) + round) >> shift) + offset;
                     plane[at + (y * stride) + x] = (ushort)Math.Clamp(v, 0, max);
                 }
             }
@@ -252,8 +314,8 @@ internal sealed class H264Inter
             return;
         }
 
-        ref ushort a = ref MemoryMarshal.GetArrayDataReference(_pred0);
-        ref ushort b = ref MemoryMarshal.GetArrayDataReference(_pred1);
+        ref ushort a = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_pred0), po);
+        ref ushort b = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_pred1), po);
         ref ushort d = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(plane), at);
         if (max == 255 && Math.Max(w0, 0) + Math.Max(w1, 0) <= 128 && Math.Max(-w0, 0) + Math.Max(-w1, 0) <= 128 && round <= 64)
         {
@@ -353,14 +415,14 @@ internal sealed class H264Inter
     }
 
     /// <summary>Writes a w by h prediction into the picture.</summary>
-    private static void Store(ushort[] pred, ushort[] plane, int at, int stride, int w, int h)
+    private static void Store(ushort[] pred, ushort[] plane, int at, int stride, int w, int h, int po)
     {
         if (at < 0 || at + ((h - 1) * stride) + w > plane.Length)
         {
             throw H264Errors.Corrupt("A prediction block lies outside the picture.");
         }
 
-        ref ushort p = ref MemoryMarshal.GetArrayDataReference(pred);
+        ref ushort p = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(pred), po);
         ref ushort d = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(plane), at);
         for (int y = 0; y < h; y++)
         {
@@ -389,12 +451,12 @@ internal sealed class H264Inter
     }
 
     /// <summary>Rounds the average of two predictions into the first: (a + b + 1) >> 1, which fits 16 bits at up to 15 bits.</summary>
-    private static void Average(ushort[] into, ushort[] other, int w, int h)
+    private static void Average(ushort[] into, ushort[] other, int w, int h, int po = 0)
     {
         if (UseVectors)
         {
-            ref ushort a = ref MemoryMarshal.GetArrayDataReference(into);
-            ref ushort b = ref MemoryMarshal.GetArrayDataReference(other);
+            ref ushort a = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(into), po);
+            ref ushort b = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(other), po);
             Vector128<ushort> one = Vector128<ushort>.One;
             for (int y = 0; y < h; y++)
             {
@@ -413,7 +475,7 @@ internal sealed class H264Inter
         {
             for (int x = 0; x < w; x++)
             {
-                int i = (y * PredStride) + x;
+                int i = (y * PredStride) + x + po;
                 into[i] = (ushort)((into[i] + other[i] + 1) >> 1);
             }
         }
@@ -724,7 +786,7 @@ internal sealed class H264Inter
     }
 
     /// <summary>Chroma sample interpolation (8.4.2.2.2) of a w by h chroma block at (x, y).</summary>
-    private void Chroma(ushort[] plane, H264Picture refPic, int x, int y, int w, int h, int mv, ushort[] pred)
+    private void Chroma(ushort[] plane, H264Picture refPic, int x, int y, int w, int h, int mv, ushort[] pred, int po)
     {
         int mvx = H264SliceDecoder.MvX(mv), mvy = H264SliceDecoder.MvY(mv);
         int xInt = x + (mvx >> 3), xFrac = mvx & 7;
@@ -769,7 +831,7 @@ internal sealed class H264Inter
                 ref ushort s = ref Unsafe.Add(ref s0, j * stride);
                 Vector128<ushort> v = (va * Vector128.LoadUnsafe(ref s)) + (vb * Vector128.LoadUnsafe(ref s, 1))
                     + (vc * Vector128.LoadUnsafe(ref s, (nuint)stride)) + (vd * Vector128.LoadUnsafe(ref s, (nuint)stride + 1)) + round;
-                (v >>> 6).StoreUnsafe(ref d, (nuint)(j * PredStride));
+                (v >>> 6).StoreUnsafe(ref d, (nuint)((j * PredStride) + po));
             }
 
             return;
@@ -780,7 +842,7 @@ internal sealed class H264Inter
             for (int i = 0; i < w; i++)
             {
                 int s = at + (j * stride) + i;
-                pred[(j * PredStride) + i] = (ushort)(((wa * src[s]) + (wb * src[s + 1]) + (wc * src[s + stride]) + (wd * src[s + stride + 1]) + 32) >> 6);
+                pred[(j * PredStride) + i + po] = (ushort)(((wa * src[s]) + (wb * src[s + 1]) + (wc * src[s + stride]) + (wd * src[s + stride + 1]) + 32) >> 6);
             }
         }
     }
