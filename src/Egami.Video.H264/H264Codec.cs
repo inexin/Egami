@@ -8,7 +8,7 @@ namespace Egami.Video.Codecs;
 /// H.264 (AVC), as MP4, MOV, Matroska, AVI and raw .h264 files carry it, decoded in the progressive Constrained Baseline, Main,
 /// High, High 10 and High 4:2:2 profiles and their Intra profiles: 4:2:0, 4:2:2 and monochrome, 8 to 10 bits. Frames come out in
 /// presentation order at the stream's cropped size, as 8-bit planes, or 16-bit planes holding 9 or 10 bits; monochrome streams
-/// give gray chroma planes. Register it with <see cref="H264MediaContextExtensions.WithH264"/>. Decode only.
+/// give a luma plane only (<see cref="Egami.Pixels.ChromaFormat.Yuv400"/>). Register it with <see cref="H264MediaContextExtensions.WithH264"/>. Decode only.
 /// </summary>
 /// <remarks>
 /// <para>
