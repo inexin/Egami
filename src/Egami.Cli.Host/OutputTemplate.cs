@@ -1,9 +1,7 @@
 using System.Globalization;
 using System.Text;
 
-using Egami.Cli.Host;
-
-namespace Egami.Cli.Pipeline;
+namespace Egami.Cli.Hosting;
 
 /// <summary>One input of a command: a file, or standard input.</summary>
 /// <param name="Path">The full path, or <see langword="null"/> for standard input.</param>
@@ -25,19 +23,19 @@ internal sealed record InputFile(string? Path, string Display, string Directory,
 /// <summary>
 /// An output path that may hold placeholders: <c>{name}</c> (the input's file name without extension), <c>{ext}</c> (its
 /// extension), <c>{dir}</c> (its folder below the glob's start), <c>{index}</c> (its position from 0, with an optional zero
-/// pad such as <c>{index:000}</c>), <c>{frame}</c> (the frame number, for <c>frames split</c>) and <c>{format}</c> (the output
-/// format's extension). <c>{{</c> and <c>}}</c> write braces.
+/// pad such as <c>{index:000}</c>), a part number named by the tool (<c>{frame}</c> for egami's <c>frames split</c>,
+/// <c>{page}</c> for a split of pages) and <c>{format}</c> (the output format's extension). <c>{{</c> and <c>}}</c> write braces.
 /// </summary>
 internal sealed class OutputTemplate
 {
-    private static readonly string[] Placeholders = ["name", "ext", "dir", "index", "frame", "format"];
-
     private readonly List<(string? Literal, string? Name, string? Pad)> _parts;
+    private readonly string _part;
 
-    private OutputTemplate(string text, List<(string? Literal, string? Name, string? Pad)> parts)
+    private OutputTemplate(string text, List<(string? Literal, string? Name, string? Pad)> parts, string part)
     {
         Text = text;
         _parts = parts;
+        _part = part;
     }
 
     /// <summary>Gets the template as written.</summary>
@@ -52,13 +50,17 @@ internal sealed class OutputTemplate
     /// <summary>Gets a value indicating whether the template differs per input (it names the input or its index).</summary>
     public bool IsPerInput => _parts.Any(p => p.Name is "name" or "index" or "dir");
 
-    /// <summary>Gets a value indicating whether the template uses <c>{frame}</c> or <c>{index}</c>, so it names one file per frame.</summary>
-    public bool NamesFrames => _parts.Any(p => p.Name is "frame" or "index");
+    /// <summary>Gets a value indicating whether the template uses the part placeholder or <c>{index}</c>, so it names one file per part.</summary>
+    public bool NamesFrames => _parts.Any(p => p.Name == _part || p.Name == "index");
 
-    /// <summary>Parses a template; throws <see cref="UsageException"/> on an unknown placeholder or an unclosed brace.</summary>
-    public static OutputTemplate Parse(string text)
+    /// <summary>
+    /// Parses a template whose part placeholder is <paramref name="part"/>; throws <see cref="UsageException"/> on an unknown
+    /// placeholder or an unclosed brace.
+    /// </summary>
+    public static OutputTemplate Parse(string text, string part = "frame")
     {
         ArgumentNullException.ThrowIfNull(text);
+        string[] placeholders = ["name", "ext", "dir", "index", part, "format"];
         List<(string?, string?, string?)> parts = [];
         StringBuilder literal = new();
         for (int i = 0; i < text.Length; i++)
@@ -86,14 +88,14 @@ internal sealed class OutputTemplate
                 int colon = inner.IndexOf(':', StringComparison.Ordinal);
                 string name = (colon < 0 ? inner : inner[..colon]).Trim().ToLowerInvariant();
                 string? pad = colon < 0 ? null : inner[(colon + 1)..];
-                if (!Placeholders.Contains(name))
+                if (!placeholders.Contains(name))
                 {
-                    throw new UsageException($"The output '{text}' has an unknown placeholder {{{inner}}}; use {string.Join(", ", Placeholders.Select(p => "{" + p + "}"))}.");
+                    throw new UsageException($"The output '{text}' has an unknown placeholder {{{inner}}}; use {string.Join(", ", placeholders.Select(p => "{" + p + "}"))}.");
                 }
 
-                if (pad is not null && (name is not ("index" or "frame") || pad.Length == 0 || pad.Length > 9 || pad.Any(ch => ch != '0')))
+                if (pad is not null && ((name != "index" && name != part) || pad.Length == 0 || pad.Length > 9 || pad.Any(ch => ch != '0')))
                 {
-                    throw new UsageException($"The output '{text}' pads {{{inner}}} wrongly; only {{index}} and {{frame}} take a pad of zeros, such as {{index:000}}.");
+                    throw new UsageException($"The output '{text}' pads {{{inner}}} wrongly; only {{index}} and {{{part}}} take a pad of zeros, such as {{index:000}}.");
                 }
 
                 if (literal.Length > 0)
@@ -120,11 +122,11 @@ internal sealed class OutputTemplate
             parts.Add((literal.ToString(), null, null));
         }
 
-        return new OutputTemplate(text, parts);
+        return new OutputTemplate(text, parts, part);
     }
 
-    /// <summary>The path for one input (and frame), with the output format's extension for <c>{format}</c>.</summary>
-    public string Resolve(InputFile input, string formatExtension, int frame = 0)
+    /// <summary>The path for one input (and part), with the output format's extension for <c>{format}</c>.</summary>
+    public string Resolve(InputFile input, string formatExtension, int part = 0)
     {
         StringBuilder text = new();
         bool emptyDir = false;
@@ -146,7 +148,7 @@ internal sealed class OutputTemplate
                 case "dir": text.Append(input.Directory); break;
                 case "format": text.Append(formatExtension); break;
                 case "index": text.Append(input.Index.ToString(pad is null ? "0" : pad, CultureInfo.InvariantCulture)); break;
-                default: text.Append(frame.ToString(pad is null ? "0" : pad, CultureInfo.InvariantCulture)); break;
+                default: text.Append(part.ToString(pad is null ? "0" : pad, CultureInfo.InvariantCulture)); break;
             }
         }
 

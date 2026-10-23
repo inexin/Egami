@@ -19,9 +19,9 @@
     <RepositoryType>git</RepositoryType>
     <!-- Tags every package shares; each package adds its own in its project file. -->
     <EgamiPackageTags>egami;imaging;graphics;managed;dotnet</EgamiPackageTags>
-    <!-- The shared version of the Egami release train: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic and
-         Egami.Cli. They release together on the tag v<version>. Egami.Heic depends on exactly this version of Egami. The other
-         packages (Barcodes, Metafiles, Fonts.Substitutes, Video) set their own version in their project file. -->
+    <!-- The shared version of the Egami release train: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic,
+         Egami.Cli and Egami.Cli.Host. They release together on the tag v<version>. Egami.Heic depends on exactly this version of
+         Egami. The other packages (Barcodes, Metafiles, Fonts.Substitutes, Video) set their own version in their project file. -->
     <EgamiVersion>1.1.0</EgamiVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

@@ -64,6 +64,12 @@
     <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/" />
   </ItemGroup>
 
+  <!-- The shared command host (src/Egami.Cli.Host), compiled in as other tools compile its package. -->
+  <ItemGroup>
+    <Compile Include="..\Egami.Cli.Host\**\*.cs" Exclude="..\Egami.Cli.Host\bin\**;..\Egami.Cli.Host\obj\**" Link="Hosting\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Using Include="Egami.Cli.Hosting" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Egami.Cli.Tests" />
     <InternalsVisibleTo Include="Egami.Fuzz" />

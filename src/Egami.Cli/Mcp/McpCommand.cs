@@ -1,6 +1,7 @@
 using System.CommandLine;
 
 using Egami.Cli.Host;
+using Egami.Cli.Hosting.Mcp;
 
 namespace Egami.Cli.Mcp;
 
@@ -34,7 +35,7 @@ internal static class McpCommand
         {
             GlobalOptions.Configure(session, result);
             string? limit = session.Globals is { } globals ? result.GetValue(globals.Limit) : null;
-            return McpHost.Run(session, result.GetValue(allow) ?? [], result.GetValue(maxInputs), limit);
+            return McpServerHost.Run(session, EgamiTools.Catalog, result.GetValue(allow) ?? [], result.GetValue(maxInputs), limit);
         });
         return command;
     }

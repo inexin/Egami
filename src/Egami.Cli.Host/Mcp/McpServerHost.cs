@@ -1,20 +1,17 @@
-using System.Reflection;
-
-using Egami.Cli.Host;
-
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
-namespace Egami.Cli.Mcp;
+namespace Egami.Cli.Hosting.Mcp;
 
 /// <summary>
-/// The server behind <c>egami mcp</c>: the official SDK's protocol over standard input and output (MCP design Q1), the tools of
-/// <see cref="ToolCatalog"/>, and the folders calls may use, from the client's roots and <c>--allow</c> (Q4).
+/// The server behind a tool's <c>mcp</c> command: the official SDK's protocol over standard input and output, the tools of an
+/// <see cref="McpCatalog"/>, and the folders calls may use, from the client's roots and <c>--allow</c>.
 /// </summary>
-internal sealed class McpHost : IDisposable
+internal sealed class McpServerHost : IDisposable
 {
-    private readonly CliSession _session;
+    private readonly CliHostSession _session;
+    private readonly McpCatalog _catalog;
     private readonly IReadOnlyList<string> _allow;
     private readonly int _maxInputs;
     private readonly string? _limit;
@@ -22,9 +19,10 @@ internal sealed class McpHost : IDisposable
     private PathPolicy? _policy;
     private McpServer? _server;
 
-    private McpHost(CliSession session, IReadOnlyList<string> allow, int maxInputs, string? limit)
+    private McpServerHost(CliHostSession session, McpCatalog catalog, IReadOnlyList<string> allow, int maxInputs, string? limit)
     {
         _session = session;
+        _catalog = catalog;
         _allow = allow;
         _maxInputs = maxInputs;
         _limit = limit;
@@ -32,36 +30,30 @@ internal sealed class McpHost : IDisposable
 
     public void Dispose() => _rootsLock.Dispose();
 
-    /// <summary>Gets the tool's version, as the server tells the client.</summary>
-    internal static string Version { get; } = (typeof(McpHost).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0").Split('+')[0];
-
     /// <summary>Serves until the client closes standard input; returns the exit code.</summary>
-    public static int Run(CliSession session, IReadOnlyList<string> allow, int maxInputs, string? limit)
+    public static int Run(CliHostSession session, McpCatalog catalog, IReadOnlyList<string> allow, int maxInputs, string? limit)
     {
         if (maxInputs < 1)
         {
             throw new UsageException("--max-inputs must be 1 or more.");
         }
 
-        using McpHost host = new(session, allow, maxInputs, limit);
+        using McpServerHost host = new(session, catalog, allow, maxInputs, limit);
         host.ServeAsync().GetAwaiter().GetResult();
         return ExitCodes.Success;
     }
 
     private async Task ServeAsync()
     {
+        McpToolSet set = _catalog.Set;
         McpServerOptions options = new()
         {
-            ServerInfo = new Implementation { Name = "egami", Title = "Egami", Version = Version, WebsiteUrl = "https://inexin.github.io/Egami/" },
-            ServerInstructions = "egami converts, inspects, resizes and edits image files on this computer with Egami, a fully managed .NET imaging library. "
-                + "Every tool is an egami command; paths are files, globs or folders inside the folders the user allowed, and outputs never replace inputs unless in_place is true. "
-                + "Start with info; formats lists what can be read and written and each format's settings; run takes any chain of steps as a workflow object (list_steps lists them). "
-                + "Every result is an object: exitCode (0 success, 1 a file failed or compare found a difference, 2 a usage error, 3 a safety limit), "
-                + "written (the files written), output (the command's JSON or text) and messages (warnings and errors).",
+            ServerInfo = new Implementation { Name = set.Name, Title = set.Title, Version = McpToolSet.Version, WebsiteUrl = set.WebsiteUrl },
+            ServerInstructions = set.Instructions,
             Capabilities = new ServerCapabilities { Tools = new ToolsCapability() },
             Handlers = new McpServerHandlers
             {
-                ListToolsHandler = (_, _) => ValueTask.FromResult(new ListToolsResult { Tools = [.. ToolCatalog.Tools.Select(ToolCatalog.Describe)] }),
+                ListToolsHandler = (_, _) => ValueTask.FromResult(new ListToolsResult { Tools = [.. _catalog.Tools.Select(_catalog.Describe)] }),
                 CallToolHandler = CallAsync,
 #pragma warning disable MCP9005 // Roots: see PolicyAsync.
                 NotificationHandlers =
@@ -78,18 +70,18 @@ internal sealed class McpHost : IDisposable
 
         Stream input = _session.Console.In();
         Stream output = _session.Console.Out();
-        await using StreamServerTransport transport = new(input, output, "egami");
+        await using StreamServerTransport transport = new(input, output, set.Name);
         await using McpServer server = McpServer.Create(transport, options);
         _server = server;
-        _session.Info($"egami mcp {Version}: serving {ToolCatalog.Tools.Count} tools on standard input and output");
+        _session.Info($"{set.Name} mcp {McpToolSet.Version}: serving {_catalog.Tools.Count} tools on standard input and output");
         await server.RunAsync().ConfigureAwait(false);
     }
 
     private async ValueTask<CallToolResult> CallAsync(RequestContext<CallToolRequestParams> context, CancellationToken cancellationToken)
     {
         CallToolRequestParams request = context.Params ?? throw new McpProtocolException("A tool call needs parameters.", McpErrorCode.InvalidParams);
-        ToolInfo tool = ToolCatalog.Find(request.Name)
-            ?? throw new McpProtocolException($"egami has no tool '{request.Name}'.", McpErrorCode.InvalidParams);
+        ToolInfo tool = _catalog.Find(request.Name)
+            ?? throw new McpProtocolException($"{_catalog.Set.Name} has no tool '{request.Name}'.", McpErrorCode.InvalidParams);
         PathPolicy policy = await PolicyAsync(cancellationToken).ConfigureAwait(false);
         string working = policy.Allows(_session.WorkingDirectory) ? _session.WorkingDirectory : policy.Folders[0];
         Action<int, int>? progress = null;
@@ -108,7 +100,7 @@ internal sealed class McpHost : IDisposable
 
         CallScope scope = new(policy, working, _session.Environment, _maxInputs, _limit, progress);
         _session.Info($"{tool.Name}: {request.Arguments?.Count ?? 0} arguments");
-        CallToolResult result = await ToolCall.InvokeAsync(tool, request.Arguments, scope, cancellationToken).ConfigureAwait(false);
+        CallToolResult result = await McpCall.InvokeAsync(_catalog.Set, tool, request.Arguments, scope, cancellationToken).ConfigureAwait(false);
 
         // Progress goes out before the result, or the client has stopped listening for it.
         Task[] pending;
@@ -175,13 +167,13 @@ internal sealed class McpHost : IDisposable
                 // Some assistants start servers in the root of the disk; that is never a folder to hand over silently.
                 if (string.Equals(Path.GetPathRoot(_session.WorkingDirectory), _session.WorkingDirectory, StringComparison.OrdinalIgnoreCase))
                 {
-                    throw new McpException("egami mcp has no folder to work in: the assistant opened none and the working folder is the root of the disk. Start it with --allow <folder>.");
+                    throw new McpException($"{_catalog.Set.Name} mcp has no folder to work in: the assistant opened none and the working folder is the root of the disk. Start it with --allow <folder>.");
                 }
 
                 folders.Add(_session.WorkingDirectory);
             }
 
-            PathPolicy policy = new(folders, _session.WorkingDirectory);
+            PathPolicy policy = new(folders, _session.WorkingDirectory, _catalog.Set.Name);
             _session.Info($"allowed folders: {string.Join(", ", policy.Folders)}");
             _policy = policy;
             return policy;

@@ -2,8 +2,8 @@
 
 Egami is a family of packages. Each is fully managed C# with no dependencies outside the family, and you add only the ones you
 use. Packages at 1.0 or above keep their public API compatible within the major version; packages at 0.x may still change.
-Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic and Egami.Cli share one version and release together;
-the other packages have versions of their own.
+Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Cli and Egami.Cli.Host share one version and
+release together; the other packages have versions of their own.
 
 | Package | Version | What it does | Needs | Docs |
 | --- | --- | --- | --- | --- |
@@ -17,6 +17,7 @@ the other packages have versions of their own.
 | Egami.Barcodes | 1.0 | Writes and reads 1D and 2D barcodes | Egami, Egami.Drawing, Egami.Fonts | [Barcodes](guides/barcodes.md), [Reading barcodes](guides/barcode-reading.md) |
 | Egami.Video | 0.3 (preview) | Reads and writes video with Egami rasters as frames: WebM, Matroska, AVI, IVF and YUV4MPEG2; AV1, VP9, VP8 and Motion JPEG decode, Motion JPEG encode | Egami | [Video](guides/video.md) |
 | Egami.Cli | 1.1 (in progress) | The `egami` command: convert, inspect, resize and edit images from a shell, chain steps, run workflow files and batches. A .NET tool, not a library, and the one package with a dependency outside the family: System.CommandLine | Egami, Egami.Drawing, Egami.Fonts, Egami.Fonts.Substitutes, Egami.Svg, Egami.Css, Egami.Metafiles | [The egami command](cli/index.md) |
+| Egami.Cli.Host | 1.2 (in progress) | The command host of Egami's command-line tools as source: exit codes, globs, output templates, batches and an MCP server, compiled into a tool with internal types only. For tool authors, not for apps | System.CommandLine, ModelContextProtocol.Core | [Source on GitHub](https://github.com/inexin/Egami/tree/main/src/Egami.Cli.Host) |
 | Egami.Heic | 1.1 (in progress) | Reads HEIC phone photos (HEVC-coded HEIF), opt-in because HEVC is covered by patents | Egami, the same version | [HEIC](formats/heic.md) |
 
 The [changelog](https://github.com/inexin/Egami/blob/main/CHANGELOG.md) lists what each version adds.

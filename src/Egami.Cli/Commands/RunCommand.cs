@@ -185,7 +185,7 @@ internal static class RunCommand
         }
 
         BatchOptions batch = new(jobs, parsed.Flags.Contains("--fail-fast"), session.InPlace);
-        return Batch.Run(session, inputs, batch, input => Runner.Run(session, input, plan, output));
+        return Batch.Run(session, inputs, batch, InputSource.Each(input => Runner.Run(session, input, plan, output)));
     }
 
     /// <summary>Binds one parsed step.</summary>

@@ -2,18 +2,14 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
-using Egami.Cli.Commands;
-using Egami.Cli.Host;
-using Egami.Formats;
-
 using ModelContextProtocol.Protocol;
 
-namespace Egami.Cli.Mcp;
+namespace Egami.Cli.Hosting.Mcp;
 
 /// <summary>What a call may touch and how it reports back, set by the server for every call.</summary>
 /// <param name="Paths">The folders the call may read and write.</param>
 /// <param name="WorkingDirectory">The folder relative paths start from.</param>
-/// <param name="Environment">The environment variable reader (<c>EGAMI_LIMITS</c>).</param>
+/// <param name="Environment">The environment variable reader (for the tool's limits variable).</param>
 /// <param name="MaxInputs">The most inputs one call may take.</param>
 /// <param name="Limit">The server's <c>--limit</c>, passed on to every call.</param>
 /// <param name="Progress">Hears of each finished file of a batch, or <see langword="null"/>.</param>
@@ -23,43 +19,44 @@ internal sealed record CallScope(PathPolicy Paths, string WorkingDirectory, Func
 /// <param name="ExitCode">The command line's exit code.</param>
 /// <param name="Written">The files written.</param>
 /// <param name="Output">What the command printed: its JSON, its text, or nothing.</param>
-/// <param name="Messages">Warnings and errors, without the <c>egami:</c> prefix.</param>
+/// <param name="Messages">Warnings and errors, without the tool's name in front.</param>
 /// <param name="IsError">Whether the call failed.</param>
 internal sealed record CallOutcome(int ExitCode, IReadOnlyList<string> Written, JsonElement? Output, IReadOnlyList<string> Messages, bool IsError);
 
 /// <summary>
-/// Runs one tool call (MCP design Q2, Q4, Q5): its JSON arguments become the same words the command line takes, run in this
-/// process through <see cref="Cli.Run"/> with the console captured, so a call does exactly what the command does.
+/// Runs one tool call: its JSON arguments become the same words the command line takes, run in this process through the tool
+/// set's runner with the console captured, so a call does exactly what the command does.
 /// </summary>
-internal static class ToolCall
+internal static class McpCall
 {
     private static readonly JsonWriterOptions Compact = new() { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     /// <summary>Runs a call and returns the protocol's result; mistakes in the arguments come back as a failed call, so the assistant can fix them.</summary>
-    public static async Task<CallToolResult> InvokeAsync(ToolInfo tool, IDictionary<string, JsonElement>? arguments, CallScope scope, CancellationToken cancellationToken)
+    public static async Task<CallToolResult> InvokeAsync(McpToolSet set, ToolInfo tool, IDictionary<string, JsonElement>? arguments, CallScope scope, CancellationToken cancellationToken)
     {
         string[] words;
-        RunRequest? run;
+        object? run;
         bool preview;
         try
         {
-            (words, run, preview) = Words(tool, arguments, scope.Limit);
+            (words, run, preview) = Words(set, tool, arguments, scope.Limit);
         }
         catch (UsageException error)
         {
             return Result(new CallOutcome(ExitCodes.Usage, [], null, [$"error: {error.Message}"], true), null);
         }
 
-        CallOutcome outcome = await Task.Run(() => Run(tool, words, run, scope, cancellationToken), cancellationToken).ConfigureAwait(false);
+        CallOutcome outcome = await Task.Run(() => Run(set, tool, words, run, scope, cancellationToken), cancellationToken).ConfigureAwait(false);
         ImageContentBlock? picture = null;
         List<string> messages = [.. outcome.Messages];
-        if (preview && !outcome.IsError && outcome.Written.Count > 0)
+        if (preview && set.Preview is { } makePreview && !outcome.IsError && outcome.Written.Count > 0)
         {
             try
             {
-                picture = Preview(outcome.Written[0], scope);
+                scope.Paths.Check(outcome.Written[0]);
+                picture = makePreview(outcome.Written[0]);
             }
-            catch (Exception error) when (Pipeline.Batch.Failure(error) is not null || error is UsageException)
+            catch (Exception error) when (set.Failure(error) is not null || error is UsageException)
             {
                 messages.Add($"warning: no preview of {outcome.Written[0]}: {error.Message}");
             }
@@ -69,7 +66,7 @@ internal static class ToolCall
     }
 
     /// <summary>The words a call stands for, the inputs and steps of a <c>run</c>, and whether a preview was asked for.</summary>
-    internal static (string[] Words, RunRequest? Run, bool Preview) Words(ToolInfo tool, IDictionary<string, JsonElement>? arguments, string? limit)
+    internal static (string[] Words, object? Run, bool Preview) Words(McpToolSet set, ToolInfo tool, IDictionary<string, JsonElement>? arguments, string? limit)
     {
         arguments ??= new Dictionary<string, JsonElement>();
         bool preview = false;
@@ -79,24 +76,24 @@ internal static class ToolCall
         JsonElement? workflow = null;
         foreach ((string name, JsonElement value) in arguments)
         {
-            if (name == "preview" && tool.Writes)
+            if (name == "preview" && tool.Writes && set.Preview is not null)
             {
                 preview = Flag(name, value);
                 continue;
             }
 
             ToolParameter parameter = tool.Parameters.FirstOrDefault(p => p.Name == name)
-                ?? throw new UsageException($"{tool.Name} has no argument '{name}'. It takes {string.Join(", ", tool.Parameters.Select(p => p.Name))}{(tool.Writes ? " and preview" : string.Empty)}.");
+                ?? throw new UsageException($"{tool.Name} has no argument '{name}'. It takes {string.Join(", ", tool.Parameters.Select(p => p.Name))}{(tool.Writes && set.Preview is not null ? " and preview" : string.Empty)}.");
             if (value.ValueKind == JsonValueKind.Null)
             {
                 continue;
             }
 
-            if (tool.Name == "run" && parameter.Token is null)
+            if (tool.Name == "run" && set.Workflow is not null && parameter.Token is null)
             {
                 if (name == "workflow")
                 {
-                    workflow = value.ValueKind == JsonValueKind.Object ? value : throw new UsageException("workflow must be an object: { \"egami\": 1, \"steps\": [ ... ] }.");
+                    workflow = value.ValueKind == JsonValueKind.Object ? value : throw new UsageException($"workflow must be an object: {{ \"{set.Name}\": 1, \"steps\": [ ... ] }}.");
                 }
                 else
                 {
@@ -161,7 +158,7 @@ internal static class ToolCall
             options.Add(limit);
         }
 
-        if (tool.Name == "run")
+        if (tool.Name == "run" && set.Workflow is { } workflowTool)
         {
             if (options.Contains("--list"))
             {
@@ -170,12 +167,12 @@ internal static class ToolCall
 
             if (workflow is not { } steps)
             {
-                throw new UsageException("run needs a workflow: { \"egami\": 1, \"steps\": [ { \"op\": \"resize\", \"size\": \"800x\" }, { \"op\": \"save\", \"path\": \"out.webp\" } ] }.");
+                throw new UsageException($"run needs a workflow: {workflowTool.Example}.");
             }
 
             // The raw bytes, as a workflow file would give them: the workflow reader deals with text that is not valid UTF-8.
             byte[] json = System.Runtime.InteropServices.JsonMarshal.GetRawUtf8Value(steps).ToArray();
-            return (["run", .. options], new RunRequest(inputs ?? [], Workflow.Parse(json, "workflow")), preview);
+            return (["run", .. options], workflowTool.Parse(inputs ?? [], json), preview);
         }
 
         if (tool.Json)
@@ -187,61 +184,38 @@ internal static class ToolCall
         return ([.. tool.Words, .. options, "--", .. positional], null, preview);
     }
 
-    private static CallOutcome Run(ToolInfo tool, string[] words, RunRequest? run, CallScope scope, CancellationToken cancellationToken)
+    private static CallOutcome Run(McpToolSet set, ToolInfo tool, string[] words, object? run, CallScope scope, CancellationToken cancellationToken)
     {
         StringWriter text = new() { NewLine = "\n" };
         StringWriter error = new() { NewLine = "\n" };
         static Stream NoStream() => throw new UsageException("Standard input and output carry the protocol here; give files instead of -.");
         CliConsole console = new(NoStream, NoStream, text, TextWriter.Synchronized(error));
-        CliSession? session = null;
+        CliHostSession? session = null;
         int code;
         try
         {
-            code = Cli.Run(words, console, scope.WorkingDirectory, scope.Environment, s =>
+            code = set.Run(words, console, scope.WorkingDirectory, scope.Environment, s =>
             {
                 session = s;
                 s.Paths = scope.Paths;
                 s.MaxInputs = scope.MaxInputs;
                 s.Cancellation = cancellationToken;
                 s.Progress = scope.Progress;
-                s.Run = run;
+                if (run is not null)
+                {
+                    set.Workflow?.Attach(s, run);
+                }
             });
         }
         catch (OperationCanceledException)
         {
-            return new CallOutcome(ExitCodes.Failed, [.. session?.Written ?? []], null, [.. Lines(error.ToString()), "error: cancelled"], true);
+            return new CallOutcome(ExitCodes.Failed, [.. session?.Written ?? []], null, [.. Lines(set, error.ToString()), "error: cancelled"], true);
         }
 
-        List<string> messages = Lines(error.ToString());
+        List<string> messages = Lines(set, error.ToString());
         bool failed = code is ExitCodes.Usage or ExitCodes.Limit
-            || (code == ExitCodes.Failed && (tool.Name != "compare" || messages.Any(m => m.StartsWith("error:", StringComparison.Ordinal))));
+            || (code == ExitCodes.Failed && (!set.Checks.Contains(tool.Name) || messages.Any(m => m.StartsWith("error:", StringComparison.Ordinal))));
         return new CallOutcome(code, [.. session?.Written ?? []], Output(text.ToString()), messages, failed);
-    }
-
-    /// <summary>The first frame of a written file, scaled to fit 1024 pixels, as PNG.</summary>
-    private static ImageContentBlock Preview(string path, CallScope scope)
-    {
-        const int Fit = 1024;
-        scope.Paths.Check(path);
-        EgamiContext context = EgamiContext.Default.WithFormat(Svg.SvgFormat.Info).WithFormat(Metafiles.MetafileFormat.Info);
-        RasterInfo info = Raster.Probe(path, context);
-        double scale = Math.Min(1, (double)Fit / Math.Max(info.Width, info.Height));
-        int width = Math.Max(1, (int)Math.Round(info.Width * scale)), height = Math.Max(1, (int)Math.Round(info.Height * scale));
-        using Raster image = Raster.Load(path, context, new ReaderOptions { Frames = ..1, MinimumSize = new Size(width, height) });
-        Raster small = image.Width == width && image.Height == height ? image : image.Derive(ops => ops.Resize(width, height));
-        try
-        {
-            using MemoryStream png = new();
-            small.Save(png, "png");
-            return ImageContentBlock.FromBytes(png.ToArray(), "image/png");
-        }
-        finally
-        {
-            if (!ReferenceEquals(small, image))
-            {
-                small.Dispose();
-            }
-        }
     }
 
     private static CallToolResult Result(CallOutcome outcome, ImageContentBlock? picture)
@@ -312,10 +286,11 @@ internal static class ToolCall
         return JsonDocument.Parse(buffer.ToArray()).RootElement.Clone();
     }
 
-    private static List<string> Lines(string text)
+    private static List<string> Lines(McpToolSet set, string text)
     {
+        string prefix = set.Name + ": ";
         return [.. text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(line => line.StartsWith("egami: ", StringComparison.Ordinal) ? line["egami: ".Length..] : line)];
+            .Select(line => line.StartsWith(prefix, StringComparison.Ordinal) ? line[prefix.Length..] : line)];
     }
 
     private static bool Flag(string name, JsonElement value)

@@ -1,13 +1,11 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-using Egami.Cli.Host;
-
-namespace Egami.Cli.Pipeline;
+namespace Egami.Cli.Hosting;
 
 /// <summary>
-/// Expands inputs the same way in every shell (CLI design Q11): <c>*</c> and <c>?</c> within a name, <c>[abc]</c> sets and
-/// <c>**</c> for any depth of folders; a folder with <c>--recursive</c> means every image below it. Results come sorted, so
+/// Expands inputs the same way in every shell: <c>*</c> and <c>?</c> within a name, <c>[abc]</c> sets and <c>**</c> for any
+/// depth of folders; a folder with <c>--recursive</c> means every input below it the tool reads. Results come sorted, so
 /// <c>{index}</c> and the batch order never depend on the file system. <c>-</c> is standard input.
 /// </summary>
 internal static class Globber
@@ -15,7 +13,7 @@ internal static class Globber
     private static readonly StringComparison PathComparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
     /// <summary>Expands the inputs; throws <see cref="UsageException"/> for a pattern that matches nothing or a missing file.</summary>
-    public static List<InputFile> Expand(CliSession session, IReadOnlyList<string> patterns, bool recursive)
+    public static List<InputFile> Expand(CliHostSession session, IReadOnlyList<string> patterns, bool recursive)
     {
         List<InputFile> files = [];
         HashSet<string> seen = new(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
@@ -35,12 +33,12 @@ internal static class Globber
                 {
                     if (!recursive)
                     {
-                        throw new UsageException($"'{pattern}' is a folder; add --recursive to take every image in it, or give a pattern such as '{pattern.TrimEnd('/', '\\')}/*.jpg'.");
+                        throw new UsageException($"'{pattern}' is a folder; add --recursive to take every {session.InputNoun} in it, or give a pattern such as '{pattern.TrimEnd('/', '\\')}/{session.PatternExample}'.");
                     }
 
                     foreach (string file in Directory.EnumerateFiles(full, "*", SearchOption.AllDirectories))
                     {
-                        if (IsImage(session, file))
+                        if (session.IsInput(file))
                         {
                             found.Add((file, Relative(full, Path.GetDirectoryName(file)!)));
                         }
@@ -74,7 +72,7 @@ internal static class Globber
             {
                 if (seen.Add(path))
                 {
-                    // A link inside an allowed folder may point out of it (egami mcp).
+                    // A link inside an allowed folder may point out of it (mcp).
                     session.Paths?.Check(path);
                     files.Add(new InputFile(path, Display(session, path), directory, files.Count));
                 }
@@ -82,7 +80,7 @@ internal static class Globber
 
             if (session.MaxInputs is { } max && files.Count > max)
             {
-                throw new UsageException($"The inputs come to more than {max} files, the most one call takes; narrow the pattern, or start egami mcp with a larger --max-inputs.");
+                throw new UsageException($"The inputs come to more than {max} files, the most one call takes; narrow the pattern, or start {session.ToolName} mcp with a larger --max-inputs.");
             }
         }
 
@@ -92,13 +90,7 @@ internal static class Globber
     /// <summary>Whether text holds a glob wildcard.</summary>
     public static bool HasWildcard(string text) => text.AsSpan().IndexOfAny("*?[") >= 0;
 
-    private static bool IsImage(CliSession session, string path)
-    {
-        string extension = Path.GetExtension(path).TrimStart('.');
-        return extension.Length > 0 && session.Formats.Any(f => f.Reader is not null && f.Extensions.Any(e => e.Equals(extension, StringComparison.OrdinalIgnoreCase)));
-    }
-
-    private static (string Root, string[] Segments) Split(CliSession session, string pattern)
+    private static (string Root, string[] Segments) Split(CliHostSession session, string pattern)
     {
         string[] parts = pattern.Replace('\\', '/').Split('/');
         int first = Array.FindIndex(parts, HasWildcard);
@@ -216,7 +208,7 @@ internal static class Globber
         return relative == "." ? string.Empty : relative;
     }
 
-    private static string Display(CliSession session, string path)
+    private static string Display(CliHostSession session, string path)
     {
         string relative = Path.GetRelativePath(session.WorkingDirectory, path);
         return relative.StartsWith("..", PathComparison) ? path : relative.Replace('\\', '/');

@@ -83,7 +83,7 @@ public class ParsingTests
         InputFile input = new(Path.Combine("photos", "2026", "beach.jpg"), "photos/2026/beach.jpg", "2026", 7);
         Assert.Equal("web/2026/beach.webp", OutputTemplate.Parse("web/{dir}/{name}.{format}").Resolve(input, "webp"));
         Assert.Equal("beach-jpg-007.png", OutputTemplate.Parse("{name}-{ext}-{index:000}.png").Resolve(input, "png"));
-        Assert.Equal("f/{x}-0004.png", OutputTemplate.Parse("f/{{x}}-{frame:0000}.png").Resolve(input, "png", frame: 4));
+        Assert.Equal("f/{x}-0004.png", OutputTemplate.Parse("f/{{x}}-{frame:0000}.png").Resolve(input, "png", part: 4));
         InputFile top = input with { Directory = string.Empty };
         Assert.Equal("web/beach.webp", OutputTemplate.Parse("web/{dir}/{name}.webp").Resolve(top, "webp"));
         Assert.Equal("beach.webp", OutputTemplate.Parse("{dir}/{name}.webp").Resolve(top, "webp"));

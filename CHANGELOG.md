@@ -5,6 +5,12 @@ changes that break code come only in a new major version.
 
 ## Egami 1.2.0 (unreleased)
 
+### Command host
+
+- A new package, Egami.Cli.Host: the command host of `egami` as source with internal types, so other command-line tools of the
+  family (Egap's `egap`) build on the same exit codes, glob expansion, output templates, batches, folder policy and MCP server.
+  It adds no public API and no assembly. `egami` now compiles it in and behaves as before.
+
 ### Planar YUV
 
 - `ChromaFormat.Yuv411` (chroma at a quarter of the luma width, as NTSC DV stores it) and `ChromaFormat.Yuv410` (a quarter of

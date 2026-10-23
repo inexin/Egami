@@ -1,12 +1,12 @@
-namespace Egami.Cli.Host;
+namespace Egami.Cli.Hosting;
 
-/// <summary>The tool's exit codes (CLI design Q13).</summary>
+/// <summary>The exit codes every tool of the family uses.</summary>
 internal static class ExitCodes
 {
     /// <summary>Everything worked.</summary>
     public const int Success = 0;
 
-    /// <summary>A file failed (unreadable, corrupt, unwritable), or <c>compare</c> found a difference above the threshold.</summary>
+    /// <summary>A file failed (unreadable, corrupt, unwritable), or a check such as <c>compare</c> found a problem.</summary>
     public const int Failed = 1;
 
     /// <summary>The command line is wrong: an unknown command, option or value.</summary>

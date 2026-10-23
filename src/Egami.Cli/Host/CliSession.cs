@@ -1,71 +1,23 @@
-using System.Collections.Concurrent;
-
+using Egami.Cli.Hosting;
 using Egami.Formats;
 using Egami.Metafiles;
 using Egami.Svg;
 
 namespace Egami.Cli.Host;
 
-/// <summary>How much the tool writes to standard error (CLI design Q13).</summary>
-internal enum Verbosity
-{
-    /// <summary>Errors only (<c>-q</c>).</summary>
-    Quiet,
-
-    /// <summary>Errors and warnings, the default.</summary>
-    Normal,
-
-    /// <summary>Also information (<c>-v</c>).</summary>
-    Verbose,
-
-    /// <summary>Also debugging detail (<c>-vv</c>).</summary>
-    Debug,
-}
-
-/// <summary>Standard input, output and error, swapped for buffers in tests.</summary>
-/// <param name="In">Standard input, for <c>-</c> as an input.</param>
-/// <param name="Out">Standard output as bytes, for <c>-o -</c>.</param>
-/// <param name="Text">Standard output as text.</param>
-/// <param name="Error">Standard error.</param>
-internal sealed record CliConsole(Func<Stream> In, Func<Stream> Out, TextWriter Text, TextWriter Error)
-{
-    /// <summary>Gets the process's own standard streams.</summary>
-    public static CliConsole System { get; } = new(
-        Console.OpenStandardInput,
-        Console.OpenStandardOutput,
-        Console.Out,
-        TextWriter.Synchronized(Console.Error));
-}
-
 /// <summary>
 /// One run of the tool: its console, working folder, verbosity, safety limits and the Egami context every command reads and
 /// writes through, with SVG and metafiles registered (CLI design Q2) and diagnostics going to standard error.
 /// </summary>
-internal sealed class CliSession
+internal sealed class CliSession : CliHostSession
 {
     private static readonly EgamiContext Base = EgamiContext.Default.WithFormat(SvgFormat.Info).WithFormat(MetafileFormat.Info);
 
-    private int _warnings;
-
     public CliSession(CliConsole console, string workingDirectory, Func<string, string?> environment)
+        : base("egami", console, workingDirectory, environment)
     {
-        Console = console;
-        WorkingDirectory = workingDirectory;
-        Environment = environment;
         Context = Base;
     }
-
-    /// <summary>Gets the console.</summary>
-    public CliConsole Console { get; }
-
-    /// <summary>Gets the folder relative paths start from.</summary>
-    public string WorkingDirectory { get; }
-
-    /// <summary>Gets the environment variable reader.</summary>
-    public Func<string, string?> Environment { get; }
-
-    /// <summary>Gets how much goes to standard error.</summary>
-    public Verbosity Verbosity { get; private set; } = Verbosity.Normal;
 
     /// <summary>Gets the safety limits in force.</summary>
     public SafetyLimits Limits { get; private set; } = SafetyLimits.Default;
@@ -76,29 +28,8 @@ internal sealed class CliSession
     /// <summary>Gets or sets the shared options of the command tree.</summary>
     public GlobalOptions? Globals { get; set; }
 
-    /// <summary>Gets or sets a value indicating whether an output may replace its input (<c>--in-place</c>).</summary>
-    public bool InPlace { get; set; }
-
-    /// <summary>Gets the number of warnings written.</summary>
-    public int Warnings => _warnings;
-
-    /// <summary>Gets or sets the folders every path must stay inside, or <see langword="null"/> for any path (MCP design Q4).</summary>
-    public PathPolicy? Paths { get; set; }
-
-    /// <summary>Gets or sets the most inputs one command may take, or <see langword="null"/> for no limit (MCP design Q6).</summary>
-    public int? MaxInputs { get; set; }
-
-    /// <summary>Gets or sets the token that stops a batch between files.</summary>
-    public CancellationToken Cancellation { get; set; }
-
-    /// <summary>Gets or sets what hears of each finished file of a batch: files done so far, and the batch's size.</summary>
-    public Action<int, int>? Progress { get; set; }
-
     /// <summary>Gets or sets the inputs and steps of a <c>run</c> given as values rather than words (<c>egami mcp</c>'s run tool).</summary>
     public RunRequest? Run { get; set; }
-
-    /// <summary>Gets the files written, in the order they were finished.</summary>
-    public ConcurrentQueue<string> Written { get; } = new();
 
     /// <summary>Gets the formats the tool reads and writes.</summary>
     public IReadOnlyList<FormatInfo> Formats => Context.Formats;
@@ -123,44 +54,52 @@ internal sealed class CliSession
         };
     }
 
-    /// <summary>A path made absolute against the working folder, and checked against <see cref="Paths"/>.</summary>
-    public string ResolvePath(string path)
-    {
-        string full = Path.GetFullPath(path, WorkingDirectory);
-        Paths?.Check(full);
-        return full;
-    }
-
     /// <summary>Loads an image named on the command line, such as an overlay or a displacement map.</summary>
     public Raster LoadImage(string path) => Raster.Load(ResolvePath(path), Context);
 
-    /// <summary>Writes a warning, unless quiet.</summary>
-    public void Warn(string message)
+    /// <inheritdoc/>
+    public override string InputNoun => "image";
+
+    /// <inheritdoc/>
+    public override string PatternExample => "*.jpg";
+
+    /// <inheritdoc/>
+    public override bool IsInput(string path)
     {
-        Interlocked.Increment(ref _warnings);
-        if (Verbosity != Verbosity.Quiet)
-        {
-            Console.Error.WriteLine($"egami: warning: {message}");
-        }
+        string extension = Path.GetExtension(path).TrimStart('.');
+        return extension.Length > 0 && Formats.Any(f => f.Reader is not null && f.Extensions.Any(e => e.Equals(extension, StringComparison.OrdinalIgnoreCase)));
     }
 
-    /// <summary>Writes information with <c>-v</c>.</summary>
-    public void Info(string message)
+    /// <inheritdoc/>
+    public override int? Failure(Exception error) => FailureOf(error);
+
+    /// <inheritdoc/>
+    public override string Message(Exception error)
     {
-        if (Verbosity >= Verbosity.Verbose)
+        return error switch
         {
-            Console.Error.WriteLine($"egami: {message}");
-        }
+            LimitExceededException limit => $"exceeds a safety limit: {limit.Message} Raise it with --limit if you trust the file.",
+            FileNotFoundException missing => missing.Message,
+            _ => error.Message,
+        };
     }
 
-    /// <summary>Writes an error; always shown.</summary>
-    public void Error(string message) => Console.Error.WriteLine($"egami: error: {message}");
+    /// <summary>The exit code an exception from one file maps to, or <see langword="null"/> for a bug, which is not caught.</summary>
+    public static int? FailureOf(Exception error)
+    {
+        return error switch
+        {
+            LimitExceededException => ExitCodes.Limit,
+            EgamiException or IOException or UnauthorizedAccessException or NotSupportedException or InvalidOperationException or ArgumentException => ExitCodes.Failed,
+            _ => null,
+        };
+    }
 
     private void Report(EgamiDiagnostic diagnostic)
     {
         if (diagnostic.Level == DiagnosticLevel.Warning)
         {
-            Interlocked.Increment(ref _warnings);
+            CountWarning();
         }
 
         string where = diagnostic.Frame is { } frame ? $" (frame {frame})" : string.Empty;

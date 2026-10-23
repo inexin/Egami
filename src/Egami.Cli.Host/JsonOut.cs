@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
-namespace Egami.Cli.Host;
+namespace Egami.Cli.Hosting;
 
 /// <summary>Writes indented JSON to standard output with <see cref="Utf8JsonWriter"/>, so no reflection is needed.</summary>
 internal static class JsonOut

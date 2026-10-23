@@ -1,5 +1,7 @@
 using System.Globalization;
 
+using Egami.Cli.Hosting;
+
 namespace Egami.Cli.Host;
 
 /// <summary>
@@ -33,11 +35,11 @@ internal static class LimitSpec
             limits = name switch
             {
                 "pixels" => limits with { MaxPixels = Pixels(value, source) },
-                "width" => limits with { MaxWidth = (int)Math.Min(int.MaxValue, Count(value, source)) },
-                "height" => limits with { MaxHeight = (int)Math.Min(int.MaxValue, Count(value, source)) },
-                "frames" => limits with { MaxFrames = (int)Math.Min(int.MaxValue, Count(value, source)) },
-                "memory" => limits with { MaxTotalBytes = Bytes(value, source) },
-                "metadata" => limits with { MaxMetadataBytes = Bytes(value, source) },
+                "width" => limits with { MaxWidth = (int)Math.Min(int.MaxValue, LimitText.Count(value, source)) },
+                "height" => limits with { MaxHeight = (int)Math.Min(int.MaxValue, LimitText.Count(value, source)) },
+                "frames" => limits with { MaxFrames = (int)Math.Min(int.MaxValue, LimitText.Count(value, source)) },
+                "memory" => limits with { MaxTotalBytes = LimitText.Bytes(value, source) },
+                "metadata" => limits with { MaxMetadataBytes = LimitText.Bytes(value, source) },
                 _ => throw new UsageException($"{source}: unknown limit '{name}'; names are {string.Join(", ", Names)}."),
             };
         }
@@ -54,40 +56,6 @@ internal static class LimitSpec
             return checked(w * h);
         }
 
-        return Count(value, source);
-    }
-
-    /// <summary>A positive count with an optional k, M or G (thousands, millions, billions).</summary>
-    private static long Count(string value, string source)
-    {
-        (string number, long scale) = value.Length > 0 && char.ToUpperInvariant(value[^1]) is 'K' or 'M' or 'G'
-            ? (value[..^1], char.ToUpperInvariant(value[^1]) switch { 'K' => 1_000L, 'M' => 1_000_000L, _ => 1_000_000_000L })
-            : (value, 1L);
-        if (!double.TryParse(number, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out double count) || count < 1 || count * scale > long.MaxValue)
-        {
-            throw new UsageException($"{source}: '{value}' is not a positive count.");
-        }
-
-        return (long)(count * scale);
-    }
-
-    /// <summary>A positive byte count with an optional KB, MB or GB (or K, M, G), counted in 1024s.</summary>
-    private static long Bytes(string value, string source)
-    {
-        string text = value.ToUpperInvariant();
-        if (text.EndsWith('B'))
-        {
-            text = text[..^1];
-        }
-
-        (string number, long scale) = text.Length > 0 && text[^1] is 'K' or 'M' or 'G'
-            ? (text[..^1], text[^1] switch { 'K' => 1L << 10, 'M' => 1L << 20, _ => 1L << 30 })
-            : (text, 1L);
-        if (!double.TryParse(number, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out double count) || count < 1 || count * scale > long.MaxValue)
-        {
-            throw new UsageException($"{source}: '{value}' is not a size in bytes, such as 512MB.");
-        }
-
-        return (long)(count * scale);
+        return LimitText.Count(value, source);
     }
 }
