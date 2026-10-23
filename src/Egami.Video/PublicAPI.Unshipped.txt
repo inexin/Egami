@@ -466,3 +466,15 @@ virtual Egami.Video.Audio.AudioCodec.CreateEncoder(Egami.Video.Audio.AudioEncode
 ~override Egami.Video.MediaProgress.Equals(object obj) -> bool
 ~override Egami.Video.MediaProgress.ToString() -> string
 const Egami.Video.CodecIds.Mp1 = "A_MPEG/L1" -> string!
+Egami.Video.Containers.Mp3Format
+Egami.Video.Containers.Mp3Format.Mp3Format() -> void
+static Egami.Video.Containers.Mp3Format.Instance.get -> Egami.Video.Containers.Mp3Format!
+override Egami.Video.Containers.Mp3Format.Name.get -> string!
+override Egami.Video.Containers.Mp3Format.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.Mp3Format.SignatureLength.get -> int
+override Egami.Video.Containers.Mp3Format.CanMux.get -> bool
+Egami.Video.Containers.Mp3Format.FastSeek.get -> bool
+Egami.Video.Containers.Mp3Format.FastSeek.init -> void
+override Egami.Video.Containers.Mp3Format.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.Mp3Format.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.Mp3Format.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!

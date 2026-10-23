@@ -197,13 +197,15 @@ MP3_CLIPS = {
     "mp3-mpeg25-8k.mp3": "ffmpeg -v error -i /tmp/e.wav -c:a libmp3lame -b:a 16k {out}",
     "mp3-id3v23-cover-chapters.mp3": "ffmpeg -v error -i /tmp/a.wav -i /tmp/cover.png -i /tmp/chapters.txt -map 0:a -map 1:v -map_metadata 2"
                                      " -map_chapters 2 -c:a libmp3lame -b:a 96k -c:v copy -disposition:v attached_pic -id3v2_version 3 {out}",
-    "mp3-id3v1-noxing.mp3": "ffmpeg -v error -i /tmp/a.wav -c:a libmp3lame -b:a 112k -write_xing 0 -id3v2_version 0 -write_id3v1 1"
-                            " -metadata title='Corpus tone' {out}",
+    "mp3-id3v1-noxing.mp3": "ffmpeg -v error -i /tmp/a.wav -c:a libmp3lame -b:a 112k -write_xing 0 -id3v2_version 0 {out}",
     "mp2-stereo.mp2": "ffmpeg -v error -i /tmp/b.wav -c:a mp2 -b:a 192k {out}",
     "mp2-crc-mono.mp2": "ffmpeg -v error -i /tmp/m.wav -c:a libtwolame -b:a 64k -error_protection 1 {out}",
     "mka-mp3.mka": "ffmpeg -v error -i /tmp/a.wav -c:a libmp3lame -b:a 128k -y /tmp/x.mp3 && ffmpeg -v error -i /tmp/x.mp3 -c:a copy {out}",
     "m4a-mp3.m4a": "ffmpeg -v error -i /tmp/a.wav -c:a libmp3lame -b:a 128k -y /tmp/x.mp3 && ffmpeg -v error -i /tmp/x.mp3 -c:a copy -f mp4 {out}",
 }
+
+# Clips that get an ID3v1.1 tag appended: title, artist, track number and genre index.
+MP3_ID3V1 = {"mp3-id3v1-noxing.mp3": ("Corpus tone", "Egami", 7, 13)}
 
 MP3_SOURCES = ("ffmpeg -v error -y " + source(44100, 2, 0.3) + " -c:a pcm_s16le /tmp/a.wav && ffmpeg -v error -y " + source(48000, 2, 0.3)
                + " -c:a pcm_s16le /tmp/b.wav && ffmpeg -v error -y " + source(22050, 1, 0.3) + " -c:a pcm_s16le /tmp/m.wav && ffmpeg -v error -y "
@@ -242,6 +244,13 @@ def make_mp3(local):
         if os.path.exists(path):
             os.remove(path)
         run(MP3_SOURCES + " && " + command.format(out=f"/work/{name}"))
+        if name in MP3_ID3V1:
+            # FFmpeg 6.1's -write_id3v1 writes nothing here, so the 128-byte ID3v1.1 tag is appended by hand.
+            title, artist, track, genre = MP3_ID3V1[name]
+            tag = b"TAG" + title.encode("latin-1").ljust(30, b"\0") + artist.encode("latin-1").ljust(30, b"\0") + b"\0" * 30
+            tag += b"2026" + b"\0" * 28 + bytes([0, track, genre])
+            with open(path, "ab") as f:
+                f.write(tag)
         # FFmpeg's float decode with its gapless trimming (the LAME tag's delay and padding, MP4 edit lists).
         raw = output(f"ffmpeg -v error -i /work/{name} -map 0:a -c:a pcm_f32le -f f32le -")
         with gzip.GzipFile(path + ".f32.gz", "wb", 9, mtime=0) as f:

@@ -26,6 +26,7 @@ internal sealed class Mp3Decoder : IAudioDecoder
     private DiagnosticReporter? _diagnostics;
     private MediaTime? _next;
     private MediaTime? _packetEnd;
+    private Rational _packetTick = new(1, 1000000);
     private bool _synced;
     private int _packet = -1;
 
@@ -43,12 +44,15 @@ internal sealed class Mp3Decoder : IAudioDecoder
         ArgumentNullException.ThrowIfNull(packet);
         _packet++;
         ReadOnlySpan<byte> data = packet.Data.Span;
+        MediaTime start = Snap(packet.Timestamp);
         if (_pendingLength == 0)
         {
-            _next = Snap(packet.Timestamp);
+            _next = start;
         }
 
-        _packetEnd = !_options.KeepPadding && packet.Duration is { } duration ? packet.Timestamp + duration : null;
+        // From the snapped start, so a container's rounded timestamp does not cut samples off the end.
+        _packetEnd = !_options.KeepPadding && packet.Duration is { } duration ? start + duration : null;
+        _packetTick = packet.Timestamp.TimeBase;
         Append(data);
         Decode(atEnd: false);
     }
@@ -270,9 +274,11 @@ internal sealed class Mp3Decoder : IAudioDecoder
             }
         }
 
-        if (_packetEnd is { } end && _next > end)
+        // Timestamps coarser than a sample (Matroska's milliseconds) may round the end up to one tick early.
+        bool coarse = _packetTick.Numerator * rate > _packetTick.Denominator;
+        if (_packetEnd is { } end && _next > (coarse ? end + new MediaTime(1, _packetTick) : end))
         {
-            // The container says the stream ends inside this frame: the rest is the encoder's padding.
+            // The container says the stream ends inside this frame (by more than its timestamps' rounding): the rest is the encoder's padding.
             long keep = Math.Max(0, end.Rescale(sampleTime).Ticks - time.Ticks);
             if (keep < samples)
             {

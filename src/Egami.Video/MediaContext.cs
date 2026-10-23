@@ -25,7 +25,7 @@ public sealed record MediaContext
     private static MediaContext? s_default;
 
     /// <summary>Gets the containers, tried in order when detecting a file's format.</summary>
-    public IReadOnlyList<ContainerFormat> Containers { get; init; } = [AviFormat.Instance, MatroskaFormat.Instance, MatroskaFormat.WebM, Y4mFormat.Instance, IvfFormat.Instance, Mp4Format.Instance, WavFormat.Instance, WavFormat.Wave64, FlacFormat.Instance, OggFormat.Instance, Av1ObuFormat.Instance, Av1AnnexBFormat.Instance];
+    public IReadOnlyList<ContainerFormat> Containers { get; init; } = [AviFormat.Instance, MatroskaFormat.Instance, MatroskaFormat.WebM, Y4mFormat.Instance, IvfFormat.Instance, Mp4Format.Instance, WavFormat.Instance, WavFormat.Wave64, FlacFormat.Instance, OggFormat.Instance, Av1ObuFormat.Instance, Av1AnnexBFormat.Instance, Mp3Format.Instance];
 
     /// <summary>Gets the video codecs.</summary>
     public IReadOnlyList<VideoCodec> Codecs { get; init; } = [MotionJpegCodec.Instance, Vp8Codec.Instance, Vp9Codec.Instance, Av1Codec.Instance, RawVideoCodec.Instance];
