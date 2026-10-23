@@ -39,7 +39,7 @@ internal static class VideoTools
             Failure = VideoSession.FailureOf,
             Excluded = new HashSet<string>(McpToolSet.DefaultExcluded, StringComparer.Ordinal) { "--progress", "--progress-format" },
             NotTools = new HashSet<string>(StringComparer.Ordinal) { "mcp", "ffmpeg", "ffprobe" },
-            ReadOnly = new HashSet<string>(StringComparer.Ordinal) { "info", "formats", "hash", "compare", "scenes" },
+            ReadOnly = new HashSet<string>(StringComparer.Ordinal) { "info", "formats", "hash", "compare", "scenes", "analyze" },
             Needed = new HashSet<(string, string)> { ("compare", "reference") },
             Checks = new HashSet<string>(StringComparer.Ordinal) { "compare" },
             Preview = Preview,

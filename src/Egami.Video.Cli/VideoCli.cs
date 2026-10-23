@@ -123,6 +123,10 @@ internal static class VideoCli
         root.Subcommands.Add(RunVideoCommand.Create(session));
         root.Subcommands.Add(PictureCommands.Thumbnail(session));
         root.Subcommands.Add(PictureCommands.Scenes(session));
+        root.Subcommands.Add(AnalyzeCommand.Create(session));
+        root.Subcommands.Add(AudioPictureCommands.Waveform(session));
+        root.Subcommands.Add(AudioPictureCommands.Spectrum(session));
+        root.Subcommands.Add(GenerateCommand.Create(session));
         root.Subcommands.Add(PictureCommands.Sheet(session));
         root.Subcommands.Add(PictureCommands.Animate(session));
         root.Subcommands.Add(CheckCommands.Hash(session));

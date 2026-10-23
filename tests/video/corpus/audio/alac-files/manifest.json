@@ -1,0 +1,56 @@
+{
+  "m4a-alac-stereo.m4a": {
+    "packets": 4,
+    "rate": 44100,
+    "channels": 2,
+    "samples": 13230,
+    "bits": 16,
+    "float": false,
+    "md5": "cf612b26732b7c58c70fceb1fc52b0aa"
+  },
+  "m4a-alac-24-51.m4a": {
+    "packets": 4,
+    "rate": 48000,
+    "channels": 6,
+    "samples": 14400,
+    "bits": 24,
+    "float": false,
+    "md5": "5a234b0f6ed5cf218e8399c2102c7ab4"
+  },
+  "m4a-alac-96k.m4a": {
+    "packets": 8,
+    "rate": 96000,
+    "channels": 2,
+    "samples": 28800,
+    "bits": 24,
+    "float": false,
+    "md5": "9d2de3a485459520b5e7174847425071"
+  },
+  "mov-alac-mono.mov": {
+    "packets": 2,
+    "rate": 22050,
+    "channels": 1,
+    "samples": 6615,
+    "bits": 16,
+    "float": false,
+    "md5": "8245cc709b8631cec195521e876b507e"
+  },
+  "mka-alac-stereo.mka": {
+    "packets": 4,
+    "rate": 44100,
+    "channels": 2,
+    "samples": 13230,
+    "bits": 16,
+    "float": false,
+    "md5": "cf612b26732b7c58c70fceb1fc52b0aa"
+  },
+  "mka-alac-24-61.mka": {
+    "packets": 4,
+    "rate": 48000,
+    "channels": 7,
+    "samples": 14400,
+    "bits": 24,
+    "float": false,
+    "md5": "bb22951226c758d60e56051374431da0"
+  }
+}

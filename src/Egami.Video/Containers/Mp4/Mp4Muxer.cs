@@ -1,6 +1,7 @@
 using System.Text;
 
 using Egami.Metadata;
+using Egami.Video.Audio.Codecs.Ac3;
 
 namespace Egami.Video.Containers.Mp4;
 
@@ -482,7 +483,7 @@ internal sealed class Mp4Muxer : IMuxer
             TimeBase = new Rational(1, Timescale);
         }
 
-        public TrackInfo Input { get; }
+        public TrackInfo Input { get; private set; }
 
         public TrackInfo Output { get; }
 
@@ -515,6 +516,14 @@ internal sealed class Mp4Muxer : IMuxer
             if (_decodeTimes.Count >= int.MaxValue - 1)
             {
                 throw new NotSupportedException("A track holds at most 2^31 samples.");
+            }
+
+            if (_sizes.Count == 0 && Input.CodecPrivate.IsEmpty && Input is AudioTrackInfo { CodecId: CodecIds.Ac3 or CodecIds.EAc3 } audio)
+            {
+                // dac3 and dec3 describe the stream as its frames do: take them from the first packet.
+                ReadOnlySpan<byte> data = packet.Data.Span;
+                byte[] config = audio.CodecId == CodecIds.EAc3 ? Ac3Config.Dec3(data) : Ac3Header.TryRead(data, out Ac3Header h) && !h.IsEac3 ? Ac3Config.Dac3(h) : [];
+                Input = audio with { CodecPrivate = config };
             }
 
             long composition = Math.Clamp(pts - dts, int.MinValue, int.MaxValue);

@@ -435,6 +435,33 @@ V1.4 stage C: audio detectors and the loudness meter.
   faster than real time on 48 kHz stereo, and is the meter V9.1's loudness normalization will use.
 - No detector allocates memory per frame once running.
 
+V1.4 stage D: audio pictures.
+
+- `AudioPictures.Waveform` draws each column's min-to-max outline with the RMS level shaded inside, linear or in dB, with the
+  channels together or stacked (`WaveformOptions`); about 800 times faster than real time on 48 kHz stereo.
+- `AudioPictures.Spectrogram` draws a Hann-windowed FFT per column (2048 samples by default) from -120 to 0 dBFS in magma or
+  grayscale, on a linear or logarithmic frequency axis, mixed or per channel (`SpectrogramOptions`); a row that spans several
+  bins shows the strongest, so pure tones never fall between rows. About 400 times faster than real time at 1800 x 512.
+- Both read a file or any run of `AudioFrame`s once with constant memory: three hours of audio cost no more than three
+  seconds. The pictures carry no text; the CLI adds axes and legends.
+
+V1.4 stage E: the command line.
+
+- `egami-video analyze`: every detector in one pass (`--detect` or `--all`: scenes, black, freeze, crop, interlace, duplicates,
+  signal, blur, blockiness, silence, levels, loudness), with each ffmpeg filter's settings under its own names
+  (`--black-min`, `--silence-noise -50dB`, `--crop-limit` …), `--start` and `--duration`, text, `--json` or `--csv`, and
+  `--series` for per-frame and per-100 ms values. It is a read-only tool in `egami-video mcp`.
+- `scenes`: `--min-length` (`--min-gap` still works), `--fades`, `--flash merge|suppress`, `--frame first|middle|last` and
+  `--series`.
+- `waveform` and `spectrum` draw audio pictures, with `--legend` for a time axis and level or frequency labels;
+  `generate` writes test clips and sounds (pattern, bars, solid, gradient; sine, silence, noise, sweep).
+- `segment --scenes` splits at scene changes, each part from the keyframe at or before its scene, reporting the gap and
+  warning past a second; `--exact` waits for smart cut (V5.6). `run --crop auto` crops black bars off before the steps.
+- `egami-video ffmpeg`: blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect,
+  volumedetect, astats and ebur128 with `-f null -` run `analyze` and print ffmpeg's log lines (`analyze --ffmpeg-log`);
+  `-f lavfi` testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc run `generate`; showwavespic and
+  showspectrumpic run `waveform` and `spectrum`. `-af` is parsed; filters outside these stop with exit code 2.
+
 V5.3: VP9 encoding. API review pending (combined encoders review).
 
 ### VP9 encoding
@@ -501,6 +528,36 @@ V5.9 stage B: CAF.
   ffmpeg reads the files with their tags and layout. `CodecIds.Alac` names ALAC tracks (decoding comes in stage C).
 - Fuzz target `caf`; `tools/video/fuzz-afl.py` now knows the `aiff` and `caf` targets. A CHAN or chan chunk whose bitmap names
   more or fewer speakers than the file has channels is now ignored instead of throwing (AIFF-C too).
+
+V5.9 stage C: ALAC.
+
+### ALAC
+
+- `AlacCodec` (`AudioCodecs.Alac`): Apple Lossless decoding and encoding, translated from Apple's Apache-2.0 reference codec.
+  16, 20, 24 and 32 bits, 1 to 8 channels in ALAC's layouts, partial last frames. The encoder's packets equal Apple's byte for
+  byte at level 1 (the default, full stereo and predictor search) and level 0 (Apple's fast mode), with 4096 samples per
+  packet unless `FrameSize` is set; the track's `CodecPrivate` is the 24-byte ALACSpecificConfig with the largest packet and
+  average bit rate filled in. `tools/video/alacref` builds Apple's code as the reference, and
+  `tools/video/make-alac-references.py` makes the gate streams.
+- MP4 reads and writes the `alac` sample entry and box, and reads QuickTime's `wave` atom; the rate, channels and bit depth come
+  from the config (so 96 kHz and up work). Matroska `A_ALAC` and CAF (already in stage B) decode too. FFmpeg's ALAC files in
+  all four decode to FFmpeg's samples.
+- `AudioWriter` keeps 20-bit samples at 20 bits for ALAC and writes float as 24-bit ALAC. A track with no layout gets ALAC's
+  layout for its channel count. The CLI extracts ALAC tracks to .m4a. ALAC decoding trims a packet to its duration, so
+  Matroska DiscardPadding and CAF remainder frames apply, and stays sample exact across Matroska's millisecond block times.
+- Fuzz target `alac`.
+
+V5.9 stage D (container part): AC-3 and E-AC-3.
+
+### AC-3 and E-AC-3
+
+- `Ac3Format`: raw AC-3 and E-AC-3 streams (.ac3, .eac3, .ec3). Each packet is one AC-3 frame, or an E-AC-3 independent frame
+  with its dependent substreams; rate, channels and layout from the first frame; junk between frames is skipped (a frame found
+  after junk must be followed by another); duration from the frame size and seeking through a frame index. Writes the packets
+  back to back. New `CodecIds.EAc3` (`A_EAC3`), passed through.
+- MP4 reads ac-3 and ec-3 sample entries as `CodecIds.Ac3` and `CodecIds.EAc3` (they used to come through as `A_QUICKTIME`)
+  and writes them, with a dac3 or dec3 box made from the first packet's headers; the boxes match FFmpeg's. CAF maps ec-3 too.
+- Fuzz target `ac3`.
 
 ## Egami.Video 0.5.0 (unreleased)
 

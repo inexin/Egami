@@ -22,6 +22,7 @@ SEEDS = {"avi": "tests/video/fuzz-seeds/avi/*", "mkv": "tests/video/fuzz-seeds/m
          "mp4": "tests/video/fuzz-seeds/mp4/*", "mp4mux": "tests/video/fuzz-seeds/mp4/*",
          "wav": "tests/video/fuzz-seeds/wav/*", "flac": "tests/video/fuzz-seeds/flac/*",
          "ogg": "tests/video/fuzz-seeds/ogg/*", "aiff": "tests/video/fuzz-seeds/aiff/*", "caf": "tests/video/fuzz-seeds/caf/*",
+         "ac3": "tests/video/fuzz-seeds/ac3/*", "alac": "tests/video/fuzz-seeds/alac/*",
          "opusraw": "tests/video/fuzz-seeds/opusraw/*",
          "vorbisraw": "tests/video/fuzz-seeds/vorbisraw/*", "vp8enc": "tests/video/fuzz-seeds/vp8enc/*", "mp3": "tests/video/fuzz-seeds/mp3/*",
          "mp3raw": "tests/video/fuzz-seeds/mp3raw/*", "opusenc": "tests/video/fuzz-seeds/opusenc/*",

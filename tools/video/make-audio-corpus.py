@@ -19,6 +19,10 @@ Usage, from the repo root:
   python tools/video/make-audio-corpus.py --aiff       V5.9: AIFF and AIFF-C clips, and G.711 in WAV and MOV, into
                                                        tests/video/corpus/audio/aiff (checked in) with FFmpeg's decode MD5 in
                                                        manifest.json. Add --local to run FFmpeg from the PATH instead of in Docker.
+  python tools/video/make-audio-corpus.py --alac       V5.9: FFmpeg's ALAC in MP4, QuickTime and Matroska, into
+                                                       tests/video/corpus/audio/alac-files (add --local to run FFmpeg here).
+  python tools/video/make-audio-corpus.py --ac3        V5.9: raw AC-3 and E-AC-3, and both in MP4 and Matroska, into
+                                                       tests/video/corpus/audio/ac3 (add --local to use the local ffmpeg).
   python tools/video/make-audio-corpus.py --caf        V5.9: CAF clips (PCM, G.711, FLAC, ALAC, Opus, MP3, AC-3) into
                                                        tests/video/corpus/audio/caf (checked in) with FFmpeg's decode MD5 for the
                                                        lossless ones and ffprobe's packet count for every clip. Add --local to run
@@ -358,18 +362,38 @@ CAF_CLIPS = {
 }
 
 
+# V5.9 stage C: FFmpeg's ALAC in MP4, QuickTime (the cookie in a wave atom) and Matroska, with the MD5 of FFmpeg's decode.
+ALAC_OUT = os.path.join(OUT, "alac-files")
+ALAC_CLIPS = {
+    "m4a-alac-stereo.m4a": ("-sample_fmt s16p -c:a alac", 44100, 2, 16, False, True),
+    "m4a-alac-24-51.m4a": ("-sample_fmt s32p -c:a alac", 48000, 6, 24, False, True),
+    "m4a-alac-96k.m4a": ("-sample_fmt s32p -c:a alac", 96000, 2, 24, False, True),
+    "mov-alac-mono.mov": ("-sample_fmt s16p -c:a alac", 22050, 1, 16, False, True),
+    "mka-alac-stereo.mka": ("-sample_fmt s16p -c:a alac", 44100, 2, 16, False, True),
+    "mka-alac-24-61.mka": ("-sample_fmt s32p -c:a alac", 48000, 7, 24, False, True),
+}
+
+
 def make_caf(local):
-    os.makedirs(CAF_OUT, exist_ok=True)
+    make_decoded(CAF_OUT, CAF_CLIPS, local)
+
+
+def make_alac(local):
+    make_decoded(ALAC_OUT, ALAC_CLIPS, local)
+
+
+def make_decoded(out, clips, local):
+    os.makedirs(out, exist_ok=True)
 
     def output(command):
         if local:
-            return subprocess.run(["sh", "-c", command.replace("/work/", CAF_OUT + "/")], check=True, capture_output=True).stdout
-        return subprocess.run(["docker", "run", "--rm", "-v", f"{CAF_OUT}:/work", IMAGE, "sh", "-c", command], check=True,
+            return subprocess.run(["sh", "-c", command.replace("/work/", out + "/")], check=True, capture_output=True).stdout
+        return subprocess.run(["docker", "run", "--rm", "-v", f"{out}:/work", IMAGE, "sh", "-c", command], check=True,
                               capture_output=True).stdout
 
     manifest = {}
-    for name, (args, rate, channels, bits, is_float, lossless) in CAF_CLIPS.items():
-        path = os.path.join(CAF_OUT, name)
+    for name, (args, rate, channels, bits, is_float, lossless) in clips.items():
+        path = os.path.join(out, name)
         if os.path.exists(path):
             os.remove(path)
         output("ffmpeg -y -v error -bitexact " + source(rate, channels, 0.3) + f" {args} /work/{name}")
@@ -385,7 +409,49 @@ def make_caf(local):
             entry["decodes"] = False
         manifest[name] = entry
         print(name, os.path.getsize(path), entry)
-    with open(os.path.join(CAF_OUT, "manifest.json"), "w", newline="\n") as f:
+    with open(os.path.join(out, "manifest.json"), "w", newline="\n") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+
+
+# name: (FFmpeg arguments after the source, rate, channels, elementary stream format). Each clip gets ffprobe's packet count and
+# the MD5 of its frames copied out as a raw stream, so that every container's packets can be checked against the same bytes.
+AC3_OUT = os.path.join(OUT, "ac3")
+AC3_CLIPS = {
+    "ac3-stereo-48k.ac3": ("-c:a ac3 -b:a 192k", 48000, 2, "ac3"),
+    "ac3-51-48k.ac3": ("-c:a ac3 -b:a 448k", 48000, 6, "ac3"),
+    "ac3-mono-44k.ac3": ("-c:a ac3 -b:a 96k", 44100, 1, "ac3"),
+    "ac3-stereo-32k.ac3": ("-c:a ac3 -b:a 128k", 32000, 2, "ac3"),
+    "eac3-stereo-48k.eac3": ("-c:a eac3 -b:a 128k", 48000, 2, "eac3"),
+    "eac3-51-48k.eac3": ("-c:a eac3 -b:a 384k", 48000, 6, "eac3"),
+    "mp4-ac3-51.mp4": ("-c:a ac3 -b:a 448k", 48000, 6, "ac3"),
+    "mp4-eac3-stereo.mp4": ("-c:a eac3 -b:a 128k", 48000, 2, "eac3"),
+    "mka-ac3-stereo.mka": ("-c:a ac3 -b:a 192k", 48000, 2, "ac3"),
+    "mka-eac3-51.mka": ("-c:a eac3 -b:a 384k", 48000, 6, "eac3"),
+}
+
+
+def make_ac3(local):
+    os.makedirs(AC3_OUT, exist_ok=True)
+
+    def output(command):
+        if local:
+            return subprocess.run(["sh", "-c", command.replace("/work/", AC3_OUT + "/")], check=True, capture_output=True).stdout
+        return subprocess.run(["docker", "run", "--rm", "-v", f"{AC3_OUT}:/work", IMAGE, "sh", "-c", command], check=True,
+                              capture_output=True).stdout
+
+    manifest = {}
+    for name, (args, rate, channels, fmt) in AC3_CLIPS.items():
+        path = os.path.join(AC3_OUT, name)
+        if os.path.exists(path):
+            os.remove(path)
+        output("ffmpeg -y -v error -bitexact " + source(rate, channels, 0.5) + f" {args} /work/{name}")
+        probe = json.loads(output(f"ffprobe -v error -count_packets -show_streams -of json /work/{name}"))["streams"][0]
+        raw = output(f"ffmpeg -v error -i /work/{name} -c:a copy -f {fmt} -")
+        manifest[name] = {"packets": int(probe["nb_read_packets"]), "rate": rate, "channels": channels, "eac3": fmt == "eac3",
+                          "bytes": len(raw), "md5": hashlib.md5(raw).hexdigest()}
+        print(name, os.path.getsize(path), manifest[name])
+    with open(os.path.join(AC3_OUT, "manifest.json"), "w", newline="\n") as f:
         json.dump(manifest, f, indent=2)
         f.write("\n")
 
@@ -422,6 +488,12 @@ if __name__ == "__main__":
         sys.exit(0)
     if "--caf" in sys.argv:
         make_caf("--local" in sys.argv)
+        sys.exit(0)
+    if "--ac3" in sys.argv:
+        make_ac3("--local" in sys.argv)
+        sys.exit(0)
+    if "--alac" in sys.argv:
+        make_alac("--local" in sys.argv)
         sys.exit(0)
     if "--aiff" in sys.argv:
         make_aiff("--local" in sys.argv)

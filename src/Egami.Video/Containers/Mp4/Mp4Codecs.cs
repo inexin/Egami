@@ -4,6 +4,7 @@ using Egami.Colors;
 using Egami.Formats.Iso;
 using Egami.Metadata;
 using Egami.Pixels;
+using Egami.Video.Audio.Codecs.Alac;
 
 namespace Egami.Video.Containers.Mp4;
 
@@ -261,6 +262,28 @@ internal static class Mp4Codecs
                         _ => (codecId, codecPrivate),
                     };
                     break;
+                case "dac3" when type == "ac-3":
+                    codecId = CodecIds.Ac3;
+                    codecPrivate = ReadOnlyMemory<byte>.Empty;
+                    break;
+                case "dec3" when type == "ec-3":
+                    // Kept, so that an E-AC-3 track with dependent substreams goes back into MP4 with its channel locations.
+                    codecId = CodecIds.EAc3;
+                    codecPrivate = content.ToArray();
+                    break;
+                case "alac" when type == "alac" && c.Length >= 4 + AlacSpecificConfig.Size:
+                case "wave" when type == "alac":
+                    // MP4 puts ALACSpecificConfig in an alac full box; QuickTime puts it in a wave atom, after frma, in an alac atom.
+                    if (AlacSpecificConfig.Read(childType.ToString() == "alac" ? c[4..] : c) is { } alac)
+                    {
+                        codecId = CodecIds.Alac;
+                        codecPrivate = alac.Write();
+                        rate = (int)Math.Min(alac.SampleRate, int.MaxValue);
+                        channels = alac.Channels;
+                        bits = alac.BitDepth;
+                    }
+
+                    break;
                 case "pcmC" when type is "ipcm" or "fpcm" && c.Length >= 6:
                     bigEndian = (c[4] & 1) == 0;
                     bits = c[5];
@@ -287,6 +310,14 @@ internal static class Mp4Codecs
                 codecPrivate = ReadOnlyMemory<byte>.Empty;
                 _ = signed;
                 break;
+            case "ac-3" when codecId == CodecIds.QuickTimeAudio:
+                codecId = CodecIds.Ac3;
+                codecPrivate = ReadOnlyMemory<byte>.Empty;
+                break;
+            case "ec-3" when codecId == CodecIds.QuickTimeAudio:
+                codecId = CodecIds.EAc3;
+                codecPrivate = ReadOnlyMemory<byte>.Empty;
+                break;
             case "ulaw" or "alaw":
                 codecId = type == "ulaw" ? CodecIds.G711MuLaw : CodecIds.G711ALaw;
                 bits = 8;
@@ -299,7 +330,7 @@ internal static class Mp4Codecs
                 break;
         }
 
-        bool compressed = codecId is CodecIds.Opus or CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis or CodecIds.QuickTimeAudio;
+        bool compressed = codecId is CodecIds.Opus or CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis or CodecIds.Ac3 or CodecIds.EAc3 or CodecIds.QuickTimeAudio;
         return new AudioTrackInfo
         {
             Number = number,

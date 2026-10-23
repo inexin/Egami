@@ -290,6 +290,58 @@ public class Audio
     }
 
     [Fact]
+    public void Alac()
+    {
+        using SampleFiles files = new();
+        using AudioFrame tone = Tone();
+
+        #region audio-alac
+        // Apple Lossless in an .m4a file (also .mov, .mka and .caf): level 1 (the default) or 0, Apple's fast mode.
+        using (AudioWriter writer = AudioWriter.Create("tone.m4a", new AudioWriterOptions { Codec = AlacCodec.Instance, BitsPerSample = 24 }))
+        {
+            writer.Write(tone);
+        }
+
+        // Decoding gives the 24-bit samples back exactly.
+        using AudioReader reader = AudioReader.Open("tone.m4a", new AudioReaderOptions { SampleFormat = null });
+        Console.WriteLine($"{reader.Track.CodecId}, {reader.Track.BitsPerSample} bits");
+        #endregion
+
+        Assert.Equal(CodecIds.Alac, reader.Track.CodecId);
+        Assert.Equal(24, reader.Track.BitsPerSample);
+        long samples = 0;
+        foreach (AudioFrame frame in reader.ReadFrames())
+        {
+            using (frame)
+            {
+                samples += frame.SampleCount;
+            }
+        }
+
+        Assert.Equal(tone.SampleCount, samples);
+    }
+
+    [Fact]
+    public void Ac3()
+    {
+        using SampleFiles files = new();
+
+        #region audio-ac3
+        // A raw .ac3 or .eac3 stream: each packet is one sync frame (E-AC-3: an independent frame and its substreams).
+        MediaInfo info = MediaFile.Probe("surround.ac3");
+        AudioTrackInfo track = (AudioTrackInfo)info.Tracks[0];
+        Console.WriteLine($"{track.CodecId}: {track.SampleRate} Hz, {track.Channels} channels, {info.Duration}");
+
+        // Into MP4 (an ac-3 sample entry with its dac3 box), Matroska or CAF without decoding.
+        MediaFile.Remux("surround.ac3", "surround.mp4");
+        #endregion
+
+        Assert.Equal(CodecIds.Ac3, track.CodecId);
+        Assert.Equal(6, track.Channels);
+        Assert.Equal(CodecIds.Ac3, MediaFile.Probe("surround.mp4").Tracks[0].CodecId);
+    }
+
+    [Fact]
     public void VideoWithAudio()
     {
         using SampleFiles files = new();
