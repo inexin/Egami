@@ -2092,7 +2092,7 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = banner.CreateCanvas())
 
   <h3 id="Egami_Drawing_Canvas_DrawText_Egami_Fonts_Layout_RichText_Egami_Drawing_RectF_Egami_Fonts_Layout_ParagraphStyle_Egami_Drawing_VerticalAlign_" data-uid="Egami.Drawing.Canvas.DrawText(Egami.Fonts.Layout.RichText,Egami.Drawing.RectF,Egami.Fonts.Layout.ParagraphStyle,Egami.Drawing.VerticalAlign)">
   DrawText(RichText, RectF, ParagraphStyle, VerticalAlign)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.TextLayout.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.TextLayout.cs/#L112"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Lays rich text out to the width of <code class="paramref">rect</code> (its height for vertical lines) and draws it there, placed across
@@ -2151,7 +2151,7 @@ the lines by <code class="paramref">verticalAlign</code>: the same as <a class="
 
   <h3 id="Egami_Drawing_Canvas_DrawText_System_String_Egami_Drawing_RectF_Egami_Fonts_Layout_ParagraphStyle_Egami_Drawing_VerticalAlign_" data-uid="Egami.Drawing.Canvas.DrawText(System.String,Egami.Drawing.RectF,Egami.Fonts.Layout.ParagraphStyle,Egami.Drawing.VerticalAlign)">
   DrawText(string, RectF, ParagraphStyle, VerticalAlign)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.TextLayout.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.TextLayout.cs/#L94"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Lays text out to the width of <code class="paramref">rect</code> (its height for vertical lines) and draws it there, placed across the
@@ -2304,7 +2304,7 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = photo.CreateCanvas())
 
   <h3 id="Egami_Drawing_Canvas_DrawTextLayout_Egami_Fonts_Layout_TextLayout_System_Numerics_Vector2_System_Nullable_Egami_Drawing_RectF__Egami_Drawing_PlaceholderPainter_" data-uid="Egami.Drawing.Canvas.DrawTextLayout(Egami.Fonts.Layout.TextLayout,System.Numerics.Vector2,System.Nullable{Egami.Drawing.RectF},Egami.Drawing.PlaceholderPainter)">
   DrawTextLayout(TextLayout, Vector2, RectF?, PlaceholderPainter?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.TextLayout.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.TextLayout.cs/#L56"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws a laid-out paragraph with its top-left corner at <code class="paramref">origin</code>, line by line in CSS's order: text shadows
@@ -2312,7 +2312,8 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = photo.CreateCanvas())
 then line-throughs. Each run uses its style's <a class="xref" href="Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_Paint">Paint</a> or <a class="xref" href="Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_Color">Color</a> (black when
 neither is set), each decoration its own paint or color. Lines outside <code class="paramref">visibleRect</code> and the clip are
 skipped. An ellipsis is drawn as marked content whose ActualText is the text it stands for on its line, and a soft
-hyphen's hyphen as one whose ActualText is the soft hyphen, so text extracted from a PDF stays the paragraph's.</p>
+hyphen's hyphen as one whose ActualText is the soft hyphen, and the tatweels <a class="xref" href="Egami.Fonts.Layout.TextJustify.html#Egami_Fonts_Layout_TextJustify_Kashida">Kashida</a> put in as one
+whose ActualText is empty, so text extracted from a PDF stays the paragraph's.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 

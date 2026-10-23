@@ -4115,6 +4115,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.KashidaLevel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.KashidaLevel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.KashidaLevel",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.KashidaLevel.yml\" sourcestartlinenumber=\"1\">How far <xref href=\"Egami.Fonts.Layout.TextJustify.Kashida\" data-throw-if-not-resolved=\"false\"></xref> lengthens a word, as Word's three kashida justifications.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Fonts.Layout.LayoutRun.yml",
       "output": {
         ".html": {

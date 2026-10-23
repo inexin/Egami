@@ -123,6 +123,12 @@ public enum GlyphFlags</code></pre>
   
   <dd><p>The text can be broken before this glyph's cluster without shaping again.</p>
 </dd>
+    <dt id="Egami_Fonts_Shaping_GlyphFlags_SafeToInsertTatweel"><code>SafeToInsertTatweel = 4</code></dt>
+  
+  <dd><p>A tatweel (U+0640) can go before this glyph's cluster to lengthen the word without changing the shaping around it,
+as kashida justification needs; only set when <a class="xref" href="Egami.Fonts.Shaping.ShapingOptions.html#Egami_Fonts_Shaping_ShapingOptions_ProduceSafeToInsertTatweel">ProduceSafeToInsertTatweel</a> or
+<a class="xref" href="Egami.Fonts.Shaping.RunProperties.html#Egami_Fonts_Shaping_RunProperties_ProduceSafeToInsertTatweel">ProduceSafeToInsertTatweel</a> asks for it. Where it is set, <a class="xref" href="Egami.Fonts.Shaping.GlyphFlags.html#Egami_Fonts_Shaping_GlyphFlags_UnsafeToBreak">UnsafeToBreak</a> is too.</p>
+</dd>
     <dt id="Egami_Fonts_Shaping_GlyphFlags_UnsafeToBreak"><code>UnsafeToBreak = 1</code></dt>
   
   <dd><p>Breaking the text before this glyph's cluster changes the shaping: shape the pieces again.</p>

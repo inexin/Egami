@@ -27243,6 +27243,30 @@ references:
   commentId: T:Egami.Fonts.Layout.ITextPaint
   fullName: Egami.Fonts.Layout.ITextPaint
   nameWithType: ITextPaint
+- uid: Egami.Fonts.Layout.KashidaLevel
+  name: KashidaLevel
+  href: api/Egami.Fonts.Layout.KashidaLevel.html
+  commentId: T:Egami.Fonts.Layout.KashidaLevel
+  fullName: Egami.Fonts.Layout.KashidaLevel
+  nameWithType: KashidaLevel
+- uid: Egami.Fonts.Layout.KashidaLevel.High
+  name: High
+  href: api/Egami.Fonts.Layout.KashidaLevel.html#Egami_Fonts_Layout_KashidaLevel_High
+  commentId: F:Egami.Fonts.Layout.KashidaLevel.High
+  fullName: Egami.Fonts.Layout.KashidaLevel.High
+  nameWithType: KashidaLevel.High
+- uid: Egami.Fonts.Layout.KashidaLevel.Low
+  name: Low
+  href: api/Egami.Fonts.Layout.KashidaLevel.html#Egami_Fonts_Layout_KashidaLevel_Low
+  commentId: F:Egami.Fonts.Layout.KashidaLevel.Low
+  fullName: Egami.Fonts.Layout.KashidaLevel.Low
+  nameWithType: KashidaLevel.Low
+- uid: Egami.Fonts.Layout.KashidaLevel.Medium
+  name: Medium
+  href: api/Egami.Fonts.Layout.KashidaLevel.html#Egami_Fonts_Layout_KashidaLevel_Medium
+  commentId: F:Egami.Fonts.Layout.KashidaLevel.Medium
+  fullName: Egami.Fonts.Layout.KashidaLevel.Medium
+  nameWithType: KashidaLevel.Medium
 - uid: Egami.Fonts.Layout.LayoutRun
   name: LayoutRun
   href: api/Egami.Fonts.Layout.LayoutRun.html
@@ -28108,6 +28132,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.ParagraphStyle.Justify
   nameWithType: ParagraphStyle.Justify
+- uid: Egami.Fonts.Layout.ParagraphStyle.Kashida
+  name: Kashida
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Kashida
+  commentId: P:Egami.Fonts.Layout.ParagraphStyle.Kashida
+  fullName: Egami.Fonts.Layout.ParagraphStyle.Kashida
+  nameWithType: ParagraphStyle.Kashida
+- uid: Egami.Fonts.Layout.ParagraphStyle.Kashida*
+  name: Kashida
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Kashida_
+  commentId: Overload:Egami.Fonts.Layout.ParagraphStyle.Kashida
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.ParagraphStyle.Kashida
+  nameWithType: ParagraphStyle.Kashida
 - uid: Egami.Fonts.Layout.ParagraphStyle.LineBreaking
   name: LineBreaking
   href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_LineBreaking
@@ -29090,6 +29127,12 @@ references:
   commentId: F:Egami.Fonts.Layout.TextJustify.InterWord
   fullName: Egami.Fonts.Layout.TextJustify.InterWord
   nameWithType: TextJustify.InterWord
+- uid: Egami.Fonts.Layout.TextJustify.Kashida
+  name: Kashida
+  href: api/Egami.Fonts.Layout.TextJustify.html#Egami_Fonts_Layout_TextJustify_Kashida
+  commentId: F:Egami.Fonts.Layout.TextJustify.Kashida
+  fullName: Egami.Fonts.Layout.TextJustify.Kashida
+  nameWithType: TextJustify.Kashida
 - uid: Egami.Fonts.Layout.TextJustify.None
   name: None
   href: api/Egami.Fonts.Layout.TextJustify.html#Egami_Fonts_Layout_TextJustify_None
@@ -30563,6 +30606,12 @@ references:
   commentId: F:Egami.Fonts.Shaping.GlyphFlags.None
   fullName: Egami.Fonts.Shaping.GlyphFlags.None
   nameWithType: GlyphFlags.None
+- uid: Egami.Fonts.Shaping.GlyphFlags.SafeToInsertTatweel
+  name: SafeToInsertTatweel
+  href: api/Egami.Fonts.Shaping.GlyphFlags.html#Egami_Fonts_Shaping_GlyphFlags_SafeToInsertTatweel
+  commentId: F:Egami.Fonts.Shaping.GlyphFlags.SafeToInsertTatweel
+  fullName: Egami.Fonts.Shaping.GlyphFlags.SafeToInsertTatweel
+  nameWithType: GlyphFlags.SafeToInsertTatweel
 - uid: Egami.Fonts.Shaping.GlyphFlags.UnsafeToBreak
   name: UnsafeToBreak
   href: api/Egami.Fonts.Shaping.GlyphFlags.html#Egami_Fonts_Shaping_GlyphFlags_UnsafeToBreak
@@ -30858,6 +30907,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Shaping.RunProperties.Language
   nameWithType: RunProperties.Language
+- uid: Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel
+  name: ProduceSafeToInsertTatweel
+  href: api/Egami.Fonts.Shaping.RunProperties.html#Egami_Fonts_Shaping_RunProperties_ProduceSafeToInsertTatweel
+  commentId: P:Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel
+  fullName: Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel
+  nameWithType: RunProperties.ProduceSafeToInsertTatweel
+- uid: Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel*
+  name: ProduceSafeToInsertTatweel
+  href: api/Egami.Fonts.Shaping.RunProperties.html#Egami_Fonts_Shaping_RunProperties_ProduceSafeToInsertTatweel_
+  commentId: Overload:Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel
+  isSpec: "True"
+  fullName: Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel
+  nameWithType: RunProperties.ProduceSafeToInsertTatweel
 - uid: Egami.Fonts.Shaping.RunProperties.Script
   name: Script
   href: api/Egami.Fonts.Shaping.RunProperties.html#Egami_Fonts_Shaping_RunProperties_Script
@@ -31262,6 +31324,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Shaping.ShapingOptions.Language
   nameWithType: ShapingOptions.Language
+- uid: Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel
+  name: ProduceSafeToInsertTatweel
+  href: api/Egami.Fonts.Shaping.ShapingOptions.html#Egami_Fonts_Shaping_ShapingOptions_ProduceSafeToInsertTatweel
+  commentId: P:Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel
+  fullName: Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel
+  nameWithType: ShapingOptions.ProduceSafeToInsertTatweel
+- uid: Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel*
+  name: ProduceSafeToInsertTatweel
+  href: api/Egami.Fonts.Shaping.ShapingOptions.html#Egami_Fonts_Shaping_ShapingOptions_ProduceSafeToInsertTatweel_
+  commentId: Overload:Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel
+  isSpec: "True"
+  fullName: Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel
+  nameWithType: ShapingOptions.ProduceSafeToInsertTatweel
 - uid: Egami.Fonts.Shaping.ShapingOptions.Script
   name: Script
   href: api/Egami.Fonts.Shaping.ShapingOptions.html#Egami_Fonts_Shaping_ShapingOptions_Script

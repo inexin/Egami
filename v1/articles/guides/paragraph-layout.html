@@ -241,9 +241,25 @@ glyph positions equal its within 0.01 once its 1/64 layout unit is allowed for.<
 is the start for justified paragraphs. Trailing spaces hang past the line's end and never count for alignment.</p>
 <p><code>TextJustify</code> says where justified lines stretch: <code>InterWord</code> at word separators, <code>InterCharacter</code> between any two grapheme
 clusters except inside cursive scripts such as Arabic, and <code>Auto</code> (the default) at word separators and around Chinese,
-Japanese and Korean characters, as browsers justify. <code>None</code> leaves justified lines at the start. Arabic is justified at its
-word spaces; kashida stretching waits for real demand.</p>
-<h3 id="line-limits-and-the-ellipsis">Line limits and the ellipsis</h3>
+Japanese and Korean characters, as browsers justify. <code>None</code> leaves justified lines at the start.</p>
+<p><code>Kashida</code> justifies Arabic the way Word and Arabic typesetting do: words grow with tatweels (U+0640, kashida) before the
+spaces widen. Each word gets one point, the best one the shaping marks safe for a tatweel (after Seen or Sad, before a final
+Heh, Alef or Lam, and so on), and whole tatweel glyphs of the run's font go there; <code>ParagraphStyle.Kashida</code> caps them at one
+(<code>Low</code>), two (<code>Medium</code>, the default) or four (<code>High</code>) per word, and word spaces take the rest. Lines break as they would
+without kashida, text in other scripts and fonts without a tatweel justify at spaces, and vertical lines never get kashida.
+The tatweels join the character before them, so carets, selections and hit tests stay on character boundaries, and
+<code>DrawTextLayout</code> marks them with an empty ActualText so extracted text keeps the paragraph's words.</p>
+<pre><code class="lang-csharp">// Justified Arabic lengthens words with tatweels (kashida) before it widens spaces, as Word does.
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [arabic], Size = 16 },
+    Align = TextAlign.Justify,
+    Justify = TextJustify.Kashida,
+    Kashida = KashidaLevel.Medium,             // up to two tatweels a word; Low one, High four
+};
+TextLayout layout = Paragraph.Create(text, style).Layout(260);
+canvas.DrawTextLayout(layout, new System.Numerics.Vector2(20, 10));
+</code></pre><h3 id="line-limits-and-the-ellipsis">Line limits and the ellipsis</h3>
 <p><code>MaxLines</code> and <code>MaxHeight</code> stop the lines: at the limit, or before the line whose bottom would pass the height. When text is
 cut, <code>TextLayout.DidExceed</code> is true and <code>HiddenRange</code> says what was hidden; the last kept line drops whole grapheme clusters
 from its end until its text and the <code>Ellipsis</code> (U+2026 by default, shaped in the style of the last kept character) fit, and
