@@ -216,6 +216,20 @@ V4.3: fragmented MP4 writing, and HLS and DASH segments. API reviewed and accept
   fragment in steady state; Chromium and Chrome (Media Source Extensions), hls.js, dash.js, ffprobe, MP4Box and Bento4 read
   the files (egami-compare).
 
+### Text subtitles (V1.2)
+
+- `SubtitleDocument` in `Egami.Video.Subtitles` reads and writes SRT, WebVTT and ASS, and reads SSA v4: `Load`, `Parse`,
+  `Save`, `ToText` and `DetectFormat`. Cues (`SubtitleCue`) are spans of styled text (`SubtitleSpan`) with exact `MediaTime`
+  times, a keypad `SubtitleAlignment` and an exact `SubtitlePosition`; ASS styles, layers, margins, embedded fonts and every
+  override tag are kept, and WebVTT cue settings, regions, voices, classes, ruby and karaoke timestamps.
+- An unchanged file saved in its own format gives back the same bytes. Reading is lenient, with `Subtitle.Repaired` warnings
+  (`SubtitleReaderOptions.Strict` throws instead); encodings are found from the byte order mark and UTF-8, then
+  `SubtitleReaderOptions.Encoding`, then a reported guess (`Subtitle.Encoding`). Converting reports what the target cannot
+  hold as `Subtitle.Dropped`, once per kind.
+- WebVTT is parsed as the W3C spec says and passes the web-platform-tests parsing suite (pinned to a commit by
+  tools/video/fetch-webvtt-tests.py), with the full HTML named character references.
+- `Shift`, `Scale`, `Sync`, `Clip`, `Sort` and `FixOverlaps` retime without rounding; times are rounded only when written.
+
 ## Egami.Video 0.5.0 (unreleased)
 
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;

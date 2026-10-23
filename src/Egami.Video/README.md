@@ -14,7 +14,8 @@ Version 0.1 (V1) covers:
 Version 0.2 (V2) adds VP8 decode, WebM alpha, IVF and exact seeking. Version 0.3 (V3) adds VP9 decode in all four profiles
 (8, 10 and 12 bit; 4:2:0, 4:2:2, 4:4:4 and RGB), equal to libvpx frame for frame, from WebM, Matroska and IVF. Version 0.4
 (V4.1) adds MP4 and QuickTime. Version 0.5 (V4.2) adds AV1 decode (8, 10 and 12 bit, 4:0:0 to 4:4:4, film grain), equal to
-libaom frame for frame, from WebM, Matroska, MP4 and IVF.
+libaom frame for frame, from WebM, Matroska, MP4 and IVF. Version 0.6 adds fragmented MP4 writing and SRT, WebVTT and ASS
+subtitle files (`SubtitleDocument`): read, edit, retime and convert.
 
 Royalty-free codecs only: Opus follows in a later step. No native code, no wrapped C or C++ libraries.
 

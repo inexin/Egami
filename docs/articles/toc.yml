@@ -144,6 +144,8 @@
       href: guides/streaming-mp4.md
     - name: Audio
       href: guides/audio.md
+    - name: Subtitles
+      href: guides/subtitles.md
 - name: Egami.Video.Cli
   items:
     - name: The egami-video command
