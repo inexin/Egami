@@ -1206,3 +1206,358 @@ Egami.Video.Containers.Mp3Format.FastSeek.init -> void
 override Egami.Video.Containers.Mp3Format.IsMatch(System.ReadOnlySpan<byte> header) -> bool
 override Egami.Video.Containers.Mp3Format.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
 override Egami.Video.Containers.Mp3Format.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+Egami.Video.Analysis.AlphaUse
+Egami.Video.Analysis.AlphaUse.None = 0 -> Egami.Video.Analysis.AlphaUse
+Egami.Video.Analysis.AlphaUse.Opaque = 1 -> Egami.Video.Analysis.AlphaUse
+Egami.Video.Analysis.AlphaUse.Premultiplied = 3 -> Egami.Video.Analysis.AlphaUse
+Egami.Video.Analysis.AlphaUse.Straight = 2 -> Egami.Video.Analysis.AlphaUse
+Egami.Video.Analysis.BlackDetector
+Egami.Video.Analysis.BlackDetector.Add(Egami.Video.YuvVideoFrame! frame) -> void
+Egami.Video.Analysis.BlackDetector.BlackDetector(Egami.Video.Analysis.BlackOptions? options = null) -> void
+Egami.Video.Analysis.BlackDetector.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Analysis.BlackDetector.FrameCount.get -> long
+Egami.Video.Analysis.BlackDetector.LastRatio.get -> double
+Egami.Video.Analysis.BlackDetector.Options.get -> Egami.Video.Analysis.BlackOptions!
+Egami.Video.Analysis.BlackDetector.Ranges.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.DetectedRange!>!
+Egami.Video.Analysis.BlackDetector.Series.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.FrameValue>!
+Egami.Video.Analysis.BlackOptions
+Egami.Video.Analysis.BlackOptions.<Clone>$() -> Egami.Video.Analysis.BlackOptions!
+Egami.Video.Analysis.BlackOptions.BlackOptions() -> void
+Egami.Video.Analysis.BlackOptions.Equals(Egami.Video.Analysis.BlackOptions? other) -> bool
+Egami.Video.Analysis.BlackOptions.KeepSeries.get -> bool
+Egami.Video.Analysis.BlackOptions.KeepSeries.init -> void
+Egami.Video.Analysis.BlackOptions.MinDuration.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.BlackOptions.MinDuration.init -> void
+Egami.Video.Analysis.BlackOptions.PictureRatio.get -> double
+Egami.Video.Analysis.BlackOptions.PictureRatio.init -> void
+Egami.Video.Analysis.BlackOptions.PixelThreshold.get -> double
+Egami.Video.Analysis.BlackOptions.PixelThreshold.init -> void
+Egami.Video.Analysis.CropDetector
+Egami.Video.Analysis.CropDetector.Add(Egami.Video.YuvVideoFrame! frame) -> void
+Egami.Video.Analysis.CropDetector.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Analysis.CropDetector.CropDetector(Egami.Video.Analysis.CropOptions? options = null) -> void
+Egami.Video.Analysis.CropDetector.FrameCount.get -> long
+Egami.Video.Analysis.CropDetector.LastRectangle.get -> Egami.Rect?
+Egami.Video.Analysis.CropDetector.Options.get -> Egami.Video.Analysis.CropOptions!
+Egami.Video.Analysis.CropDetector.Report.get -> Egami.Video.Analysis.CropReport!
+Egami.Video.Analysis.CropOptions
+Egami.Video.Analysis.CropOptions.<Clone>$() -> Egami.Video.Analysis.CropOptions!
+Egami.Video.Analysis.CropOptions.CropOptions() -> void
+Egami.Video.Analysis.CropOptions.Equals(Egami.Video.Analysis.CropOptions? other) -> bool
+Egami.Video.Analysis.CropOptions.Limit.get -> double
+Egami.Video.Analysis.CropOptions.Limit.init -> void
+Egami.Video.Analysis.CropOptions.Round.get -> int
+Egami.Video.Analysis.CropOptions.Round.init -> void
+Egami.Video.Analysis.CropOptions.Skip.get -> int
+Egami.Video.Analysis.CropOptions.Skip.init -> void
+Egami.Video.Analysis.CropReport
+Egami.Video.Analysis.CropReport.<Clone>$() -> Egami.Video.Analysis.CropReport!
+Egami.Video.Analysis.CropReport.Crop.get -> Egami.Rect
+Egami.Video.Analysis.CropReport.Crop.init -> void
+Egami.Video.Analysis.CropReport.CropReport(Egami.Rect Crop, Egami.Rect MostCommon, Egami.Size FrameSize, long Frames, System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.CropRun!>! Runs) -> void
+Egami.Video.Analysis.CropReport.Deconstruct(out Egami.Rect Crop, out Egami.Rect MostCommon, out Egami.Size FrameSize, out long Frames, out System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.CropRun!>! Runs) -> void
+Egami.Video.Analysis.CropReport.Equals(Egami.Video.Analysis.CropReport? other) -> bool
+Egami.Video.Analysis.CropReport.Frames.get -> long
+Egami.Video.Analysis.CropReport.Frames.init -> void
+Egami.Video.Analysis.CropReport.FrameSize.get -> Egami.Size
+Egami.Video.Analysis.CropReport.FrameSize.init -> void
+Egami.Video.Analysis.CropReport.HasBorders.get -> bool
+Egami.Video.Analysis.CropReport.MostCommon.get -> Egami.Rect
+Egami.Video.Analysis.CropReport.MostCommon.init -> void
+Egami.Video.Analysis.CropReport.Runs.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.CropRun!>!
+Egami.Video.Analysis.CropReport.Runs.init -> void
+Egami.Video.Analysis.CropRun
+Egami.Video.Analysis.CropRun.<Clone>$() -> Egami.Video.Analysis.CropRun!
+Egami.Video.Analysis.CropRun.Crop.get -> Egami.Rect
+Egami.Video.Analysis.CropRun.Crop.init -> void
+Egami.Video.Analysis.CropRun.CropRun(Egami.Video.MediaTime Start, Egami.Video.MediaTime End, Egami.Rect Crop, long Frames) -> void
+Egami.Video.Analysis.CropRun.Deconstruct(out Egami.Video.MediaTime Start, out Egami.Video.MediaTime End, out Egami.Rect Crop, out long Frames) -> void
+Egami.Video.Analysis.CropRun.End.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.CropRun.End.init -> void
+Egami.Video.Analysis.CropRun.Equals(Egami.Video.Analysis.CropRun? other) -> bool
+Egami.Video.Analysis.CropRun.Frames.get -> long
+Egami.Video.Analysis.CropRun.Frames.init -> void
+Egami.Video.Analysis.CropRun.Start.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.CropRun.Start.init -> void
+Egami.Video.Analysis.DetectedRange
+Egami.Video.Analysis.DetectedRange.<Clone>$() -> Egami.Video.Analysis.DetectedRange!
+Egami.Video.Analysis.DetectedRange.Deconstruct(out Egami.Video.MediaTime Start, out Egami.Video.MediaTime End, out double Value) -> void
+Egami.Video.Analysis.DetectedRange.DetectedRange(Egami.Video.MediaTime Start, Egami.Video.MediaTime End, double Value) -> void
+Egami.Video.Analysis.DetectedRange.Duration.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.DetectedRange.End.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.DetectedRange.End.init -> void
+Egami.Video.Analysis.DetectedRange.Equals(Egami.Video.Analysis.DetectedRange? other) -> bool
+Egami.Video.Analysis.DetectedRange.Start.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.DetectedRange.Start.init -> void
+Egami.Video.Analysis.DetectedRange.Value.get -> double
+Egami.Video.Analysis.DetectedRange.Value.init -> void
+Egami.Video.Analysis.DuplicateDetector
+Egami.Video.Analysis.DuplicateDetector.Add(Egami.Video.YuvVideoFrame! frame) -> void
+Egami.Video.Analysis.DuplicateDetector.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Analysis.DuplicateDetector.DuplicateCount.get -> long
+Egami.Video.Analysis.DuplicateDetector.DuplicateDetector(Egami.Video.Analysis.DuplicateOptions? options = null) -> void
+Egami.Video.Analysis.DuplicateDetector.FrameCount.get -> long
+Egami.Video.Analysis.DuplicateDetector.LastWasDuplicate.get -> bool
+Egami.Video.Analysis.DuplicateDetector.Options.get -> Egami.Video.Analysis.DuplicateOptions!
+Egami.Video.Analysis.DuplicateDetector.Ranges.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.DetectedRange!>!
+Egami.Video.Analysis.DuplicateOptions
+Egami.Video.Analysis.DuplicateOptions.<Clone>$() -> Egami.Video.Analysis.DuplicateOptions!
+Egami.Video.Analysis.DuplicateOptions.DuplicateOptions() -> void
+Egami.Video.Analysis.DuplicateOptions.Equals(Egami.Video.Analysis.DuplicateOptions? other) -> bool
+Egami.Video.Analysis.DuplicateOptions.Fraction.get -> double
+Egami.Video.Analysis.DuplicateOptions.Fraction.init -> void
+Egami.Video.Analysis.DuplicateOptions.High.get -> int
+Egami.Video.Analysis.DuplicateOptions.High.init -> void
+Egami.Video.Analysis.DuplicateOptions.Low.get -> int
+Egami.Video.Analysis.DuplicateOptions.Low.init -> void
+Egami.Video.Analysis.FieldOrder
+Egami.Video.Analysis.FieldOrder.BottomFieldFirst = 3 -> Egami.Video.Analysis.FieldOrder
+Egami.Video.Analysis.FieldOrder.Progressive = 1 -> Egami.Video.Analysis.FieldOrder
+Egami.Video.Analysis.FieldOrder.TopFieldFirst = 2 -> Egami.Video.Analysis.FieldOrder
+Egami.Video.Analysis.FieldOrder.Undetermined = 0 -> Egami.Video.Analysis.FieldOrder
+Egami.Video.Analysis.FrameValue
+Egami.Video.Analysis.FrameValue.Deconstruct(out long Frame, out Egami.Video.MediaTime Time, out double Value) -> void
+Egami.Video.Analysis.FrameValue.Equals(Egami.Video.Analysis.FrameValue other) -> bool
+Egami.Video.Analysis.FrameValue.Frame.get -> long
+Egami.Video.Analysis.FrameValue.Frame.init -> void
+Egami.Video.Analysis.FrameValue.FrameValue() -> void
+Egami.Video.Analysis.FrameValue.FrameValue(long Frame, Egami.Video.MediaTime Time, double Value) -> void
+Egami.Video.Analysis.FrameValue.Time.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.FrameValue.Time.init -> void
+Egami.Video.Analysis.FrameValue.Value.get -> double
+Egami.Video.Analysis.FrameValue.Value.init -> void
+Egami.Video.Analysis.FreezeDetector
+Egami.Video.Analysis.FreezeDetector.Add(Egami.Video.YuvVideoFrame! frame) -> void
+Egami.Video.Analysis.FreezeDetector.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Analysis.FreezeDetector.Dispose() -> void
+Egami.Video.Analysis.FreezeDetector.FrameCount.get -> long
+Egami.Video.Analysis.FreezeDetector.FreezeDetector(Egami.Video.Analysis.FreezeOptions? options = null) -> void
+Egami.Video.Analysis.FreezeDetector.LastDifference.get -> double
+Egami.Video.Analysis.FreezeDetector.Options.get -> Egami.Video.Analysis.FreezeOptions!
+Egami.Video.Analysis.FreezeDetector.Ranges.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.DetectedRange!>!
+Egami.Video.Analysis.FreezeOptions
+Egami.Video.Analysis.FreezeOptions.<Clone>$() -> Egami.Video.Analysis.FreezeOptions!
+Egami.Video.Analysis.FreezeOptions.Equals(Egami.Video.Analysis.FreezeOptions? other) -> bool
+Egami.Video.Analysis.FreezeOptions.FreezeOptions() -> void
+Egami.Video.Analysis.FreezeOptions.MinDuration.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.FreezeOptions.MinDuration.init -> void
+Egami.Video.Analysis.FreezeOptions.Noise.get -> double
+Egami.Video.Analysis.FreezeOptions.Noise.init -> void
+Egami.Video.Analysis.InterlaceDetector
+Egami.Video.Analysis.InterlaceDetector.Add(Egami.Video.YuvVideoFrame! frame) -> void
+Egami.Video.Analysis.InterlaceDetector.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Analysis.InterlaceDetector.FrameCount.get -> long
+Egami.Video.Analysis.InterlaceDetector.InterlaceDetector(Egami.Video.Analysis.InterlaceOptions? options = null) -> void
+Egami.Video.Analysis.InterlaceDetector.LastFrame.get -> Egami.Video.Analysis.FieldOrder
+Egami.Video.Analysis.InterlaceDetector.Options.get -> Egami.Video.Analysis.InterlaceOptions!
+Egami.Video.Analysis.InterlaceDetector.Report.get -> Egami.Video.Analysis.InterlaceReport!
+Egami.Video.Analysis.InterlaceOptions
+Egami.Video.Analysis.InterlaceOptions.<Clone>$() -> Egami.Video.Analysis.InterlaceOptions!
+Egami.Video.Analysis.InterlaceOptions.Equals(Egami.Video.Analysis.InterlaceOptions? other) -> bool
+Egami.Video.Analysis.InterlaceOptions.InterlaceOptions() -> void
+Egami.Video.Analysis.InterlaceOptions.InterlaceRatio.get -> double
+Egami.Video.Analysis.InterlaceOptions.InterlaceRatio.init -> void
+Egami.Video.Analysis.InterlaceOptions.ProgressiveRatio.get -> double
+Egami.Video.Analysis.InterlaceOptions.ProgressiveRatio.init -> void
+Egami.Video.Analysis.InterlaceOptions.RepeatRatio.get -> double
+Egami.Video.Analysis.InterlaceOptions.RepeatRatio.init -> void
+Egami.Video.Analysis.InterlaceReport
+Egami.Video.Analysis.InterlaceReport.<Clone>$() -> Egami.Video.Analysis.InterlaceReport!
+Egami.Video.Analysis.InterlaceReport.BottomFieldFirst.get -> long
+Egami.Video.Analysis.InterlaceReport.BottomFieldFirst.init -> void
+Egami.Video.Analysis.InterlaceReport.Deconstruct(out long TopFieldFirst, out long BottomFieldFirst, out long Progressive, out long Undetermined, out long RepeatedTop, out long RepeatedBottom, out long NotRepeated, out Egami.Video.Analysis.InterlaceVerdict Verdict) -> void
+Egami.Video.Analysis.InterlaceReport.Equals(Egami.Video.Analysis.InterlaceReport? other) -> bool
+Egami.Video.Analysis.InterlaceReport.InterlaceReport(long TopFieldFirst, long BottomFieldFirst, long Progressive, long Undetermined, long RepeatedTop, long RepeatedBottom, long NotRepeated, Egami.Video.Analysis.InterlaceVerdict Verdict) -> void
+Egami.Video.Analysis.InterlaceReport.NotRepeated.get -> long
+Egami.Video.Analysis.InterlaceReport.NotRepeated.init -> void
+Egami.Video.Analysis.InterlaceReport.Progressive.get -> long
+Egami.Video.Analysis.InterlaceReport.Progressive.init -> void
+Egami.Video.Analysis.InterlaceReport.RepeatedBottom.get -> long
+Egami.Video.Analysis.InterlaceReport.RepeatedBottom.init -> void
+Egami.Video.Analysis.InterlaceReport.RepeatedTop.get -> long
+Egami.Video.Analysis.InterlaceReport.RepeatedTop.init -> void
+Egami.Video.Analysis.InterlaceReport.TopFieldFirst.get -> long
+Egami.Video.Analysis.InterlaceReport.TopFieldFirst.init -> void
+Egami.Video.Analysis.InterlaceReport.Undetermined.get -> long
+Egami.Video.Analysis.InterlaceReport.Undetermined.init -> void
+Egami.Video.Analysis.InterlaceReport.Verdict.get -> Egami.Video.Analysis.InterlaceVerdict
+Egami.Video.Analysis.InterlaceReport.Verdict.init -> void
+Egami.Video.Analysis.InterlaceVerdict
+Egami.Video.Analysis.InterlaceVerdict.InterlacedBottomFirst = 3 -> Egami.Video.Analysis.InterlaceVerdict
+Egami.Video.Analysis.InterlaceVerdict.InterlacedTopFirst = 2 -> Egami.Video.Analysis.InterlaceVerdict
+Egami.Video.Analysis.InterlaceVerdict.Mixed = 5 -> Egami.Video.Analysis.InterlaceVerdict
+Egami.Video.Analysis.InterlaceVerdict.Progressive = 1 -> Egami.Video.Analysis.InterlaceVerdict
+Egami.Video.Analysis.InterlaceVerdict.Telecined = 4 -> Egami.Video.Analysis.InterlaceVerdict
+Egami.Video.Analysis.InterlaceVerdict.Unknown = 0 -> Egami.Video.Analysis.InterlaceVerdict
+Egami.Video.Analysis.PlaneLevels
+Egami.Video.Analysis.PlaneLevels.Deconstruct(out double Min, out double Low, out double Mean, out double High, out double Max) -> void
+Egami.Video.Analysis.PlaneLevels.Equals(Egami.Video.Analysis.PlaneLevels other) -> bool
+Egami.Video.Analysis.PlaneLevels.High.get -> double
+Egami.Video.Analysis.PlaneLevels.High.init -> void
+Egami.Video.Analysis.PlaneLevels.Low.get -> double
+Egami.Video.Analysis.PlaneLevels.Low.init -> void
+Egami.Video.Analysis.PlaneLevels.Max.get -> double
+Egami.Video.Analysis.PlaneLevels.Max.init -> void
+Egami.Video.Analysis.PlaneLevels.Mean.get -> double
+Egami.Video.Analysis.PlaneLevels.Mean.init -> void
+Egami.Video.Analysis.PlaneLevels.Min.get -> double
+Egami.Video.Analysis.PlaneLevels.Min.init -> void
+Egami.Video.Analysis.PlaneLevels.PlaneLevels() -> void
+Egami.Video.Analysis.PlaneLevels.PlaneLevels(double Min, double Low, double Mean, double High, double Max) -> void
+Egami.Video.Analysis.SignalFrame
+Egami.Video.Analysis.SignalFrame.<Clone>$() -> Egami.Video.Analysis.SignalFrame!
+Egami.Video.Analysis.SignalFrame.Blockiness.get -> double?
+Egami.Video.Analysis.SignalFrame.Blockiness.init -> void
+Egami.Video.Analysis.SignalFrame.Blur.get -> double?
+Egami.Video.Analysis.SignalFrame.Blur.init -> void
+Egami.Video.Analysis.SignalFrame.Cb.get -> Egami.Video.Analysis.PlaneLevels
+Egami.Video.Analysis.SignalFrame.Cb.init -> void
+Egami.Video.Analysis.SignalFrame.Cr.get -> Egami.Video.Analysis.PlaneLevels
+Egami.Video.Analysis.SignalFrame.Cr.init -> void
+Egami.Video.Analysis.SignalFrame.Deconstruct(out long Frame, out Egami.Video.MediaTime Time, out Egami.Video.Analysis.PlaneLevels Y, out Egami.Video.Analysis.PlaneLevels Cb, out Egami.Video.Analysis.PlaneLevels Cr, out Egami.Video.Analysis.PlaneLevels Saturation, out double OutOfRange, out double? Blur, out double? Blockiness) -> void
+Egami.Video.Analysis.SignalFrame.Equals(Egami.Video.Analysis.SignalFrame? other) -> bool
+Egami.Video.Analysis.SignalFrame.Frame.get -> long
+Egami.Video.Analysis.SignalFrame.Frame.init -> void
+Egami.Video.Analysis.SignalFrame.OutOfRange.get -> double
+Egami.Video.Analysis.SignalFrame.OutOfRange.init -> void
+Egami.Video.Analysis.SignalFrame.Saturation.get -> Egami.Video.Analysis.PlaneLevels
+Egami.Video.Analysis.SignalFrame.Saturation.init -> void
+Egami.Video.Analysis.SignalFrame.SignalFrame(long Frame, Egami.Video.MediaTime Time, Egami.Video.Analysis.PlaneLevels Y, Egami.Video.Analysis.PlaneLevels Cb, Egami.Video.Analysis.PlaneLevels Cr, Egami.Video.Analysis.PlaneLevels Saturation, double OutOfRange, double? Blur, double? Blockiness) -> void
+Egami.Video.Analysis.SignalFrame.Time.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.SignalFrame.Time.init -> void
+Egami.Video.Analysis.SignalFrame.Y.get -> Egami.Video.Analysis.PlaneLevels
+Egami.Video.Analysis.SignalFrame.Y.init -> void
+Egami.Video.Analysis.SignalMeter
+Egami.Video.Analysis.SignalMeter.Add(Egami.Video.YuvVideoFrame! frame) -> void
+Egami.Video.Analysis.SignalMeter.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Analysis.SignalMeter.FrameCount.get -> long
+Egami.Video.Analysis.SignalMeter.Options.get -> Egami.Video.Analysis.SignalOptions!
+Egami.Video.Analysis.SignalMeter.Report.get -> Egami.Video.Analysis.SignalReport!
+Egami.Video.Analysis.SignalMeter.Series.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.SignalFrame!>!
+Egami.Video.Analysis.SignalMeter.SignalMeter(Egami.Video.Analysis.SignalOptions? options = null) -> void
+Egami.Video.Analysis.SignalOptions
+Egami.Video.Analysis.SignalOptions.<Clone>$() -> Egami.Video.Analysis.SignalOptions!
+Egami.Video.Analysis.SignalOptions.Blockiness.get -> bool
+Egami.Video.Analysis.SignalOptions.Blockiness.init -> void
+Egami.Video.Analysis.SignalOptions.BlockPeriodMax.get -> int
+Egami.Video.Analysis.SignalOptions.BlockPeriodMax.init -> void
+Egami.Video.Analysis.SignalOptions.BlockPeriodMin.get -> int
+Egami.Video.Analysis.SignalOptions.BlockPeriodMin.init -> void
+Egami.Video.Analysis.SignalOptions.Blur.get -> bool
+Egami.Video.Analysis.SignalOptions.Blur.init -> void
+Egami.Video.Analysis.SignalOptions.BlurBlockShare.get -> double
+Egami.Video.Analysis.SignalOptions.BlurBlockShare.init -> void
+Egami.Video.Analysis.SignalOptions.BlurHigh.get -> double
+Egami.Video.Analysis.SignalOptions.BlurHigh.init -> void
+Egami.Video.Analysis.SignalOptions.BlurLow.get -> double
+Egami.Video.Analysis.SignalOptions.BlurLow.init -> void
+Egami.Video.Analysis.SignalOptions.Equals(Egami.Video.Analysis.SignalOptions? other) -> bool
+Egami.Video.Analysis.SignalOptions.KeepSeries.get -> bool
+Egami.Video.Analysis.SignalOptions.KeepSeries.init -> void
+Egami.Video.Analysis.SignalOptions.SignalOptions() -> void
+Egami.Video.Analysis.SignalRange
+Egami.Video.Analysis.SignalRange.Full = 1 -> Egami.Video.Analysis.SignalRange
+Egami.Video.Analysis.SignalRange.Limited = 0 -> Egami.Video.Analysis.SignalRange
+Egami.Video.Analysis.SignalReport
+Egami.Video.Analysis.SignalReport.<Clone>$() -> Egami.Video.Analysis.SignalReport!
+Egami.Video.Analysis.SignalReport.Alpha.get -> Egami.Video.Analysis.AlphaUse
+Egami.Video.Analysis.SignalReport.Alpha.init -> void
+Egami.Video.Analysis.SignalReport.BitDepth.get -> int
+Egami.Video.Analysis.SignalReport.BitDepth.init -> void
+Egami.Video.Analysis.SignalReport.Blockiness.get -> double?
+Egami.Video.Analysis.SignalReport.Blockiness.init -> void
+Egami.Video.Analysis.SignalReport.Blur.get -> double?
+Egami.Video.Analysis.SignalReport.Blur.init -> void
+Egami.Video.Analysis.SignalReport.Cb.get -> Egami.Video.Analysis.PlaneLevels
+Egami.Video.Analysis.SignalReport.Cb.init -> void
+Egami.Video.Analysis.SignalReport.Cr.get -> Egami.Video.Analysis.PlaneLevels
+Egami.Video.Analysis.SignalReport.Cr.init -> void
+Egami.Video.Analysis.SignalReport.Deconstruct(out long Frames, out int BitDepth, out Egami.Video.Analysis.PlaneLevels Y, out Egami.Video.Analysis.PlaneLevels Cb, out Egami.Video.Analysis.PlaneLevels Cr, out Egami.Video.Analysis.PlaneLevels Saturation, out double OutOfRange, out Egami.Video.Analysis.SignalRange Range, out Egami.Video.Analysis.AlphaUse Alpha, out double? Blur, out double? Blockiness) -> void
+Egami.Video.Analysis.SignalReport.Equals(Egami.Video.Analysis.SignalReport? other) -> bool
+Egami.Video.Analysis.SignalReport.Frames.get -> long
+Egami.Video.Analysis.SignalReport.Frames.init -> void
+Egami.Video.Analysis.SignalReport.OutOfRange.get -> double
+Egami.Video.Analysis.SignalReport.OutOfRange.init -> void
+Egami.Video.Analysis.SignalReport.Range.get -> Egami.Video.Analysis.SignalRange
+Egami.Video.Analysis.SignalReport.Range.init -> void
+Egami.Video.Analysis.SignalReport.Saturation.get -> Egami.Video.Analysis.PlaneLevels
+Egami.Video.Analysis.SignalReport.Saturation.init -> void
+Egami.Video.Analysis.SignalReport.SignalReport(long Frames, int BitDepth, Egami.Video.Analysis.PlaneLevels Y, Egami.Video.Analysis.PlaneLevels Cb, Egami.Video.Analysis.PlaneLevels Cr, Egami.Video.Analysis.PlaneLevels Saturation, double OutOfRange, Egami.Video.Analysis.SignalRange Range, Egami.Video.Analysis.AlphaUse Alpha, double? Blur, double? Blockiness) -> void
+Egami.Video.Analysis.SignalReport.Y.get -> Egami.Video.Analysis.PlaneLevels
+Egami.Video.Analysis.SignalReport.Y.init -> void
+override Egami.Video.Analysis.BlackOptions.Equals(object? obj) -> bool
+override Egami.Video.Analysis.BlackOptions.GetHashCode() -> int
+override Egami.Video.Analysis.BlackOptions.ToString() -> string!
+override Egami.Video.Analysis.CropOptions.Equals(object? obj) -> bool
+override Egami.Video.Analysis.CropOptions.GetHashCode() -> int
+override Egami.Video.Analysis.CropOptions.ToString() -> string!
+override Egami.Video.Analysis.CropReport.Equals(object? obj) -> bool
+override Egami.Video.Analysis.CropReport.GetHashCode() -> int
+override Egami.Video.Analysis.CropReport.ToString() -> string!
+override Egami.Video.Analysis.CropRun.Equals(object? obj) -> bool
+override Egami.Video.Analysis.CropRun.GetHashCode() -> int
+override Egami.Video.Analysis.CropRun.ToString() -> string!
+override Egami.Video.Analysis.DetectedRange.Equals(object? obj) -> bool
+override Egami.Video.Analysis.DetectedRange.GetHashCode() -> int
+override Egami.Video.Analysis.DetectedRange.ToString() -> string!
+override Egami.Video.Analysis.DuplicateOptions.Equals(object? obj) -> bool
+override Egami.Video.Analysis.DuplicateOptions.GetHashCode() -> int
+override Egami.Video.Analysis.DuplicateOptions.ToString() -> string!
+override Egami.Video.Analysis.FrameValue.GetHashCode() -> int
+override Egami.Video.Analysis.FreezeOptions.Equals(object? obj) -> bool
+override Egami.Video.Analysis.FreezeOptions.GetHashCode() -> int
+override Egami.Video.Analysis.FreezeOptions.ToString() -> string!
+override Egami.Video.Analysis.InterlaceOptions.Equals(object? obj) -> bool
+override Egami.Video.Analysis.InterlaceOptions.GetHashCode() -> int
+override Egami.Video.Analysis.InterlaceOptions.ToString() -> string!
+override Egami.Video.Analysis.InterlaceReport.Equals(object? obj) -> bool
+override Egami.Video.Analysis.InterlaceReport.GetHashCode() -> int
+override Egami.Video.Analysis.InterlaceReport.ToString() -> string!
+override Egami.Video.Analysis.PlaneLevels.GetHashCode() -> int
+override Egami.Video.Analysis.SignalFrame.Equals(object? obj) -> bool
+override Egami.Video.Analysis.SignalFrame.GetHashCode() -> int
+override Egami.Video.Analysis.SignalFrame.ToString() -> string!
+override Egami.Video.Analysis.SignalOptions.Equals(object? obj) -> bool
+override Egami.Video.Analysis.SignalOptions.GetHashCode() -> int
+override Egami.Video.Analysis.SignalOptions.ToString() -> string!
+override Egami.Video.Analysis.SignalReport.Equals(object? obj) -> bool
+override Egami.Video.Analysis.SignalReport.GetHashCode() -> int
+override Egami.Video.Analysis.SignalReport.ToString() -> string!
+static Egami.Video.Analysis.BlackOptions.Default.get -> Egami.Video.Analysis.BlackOptions!
+static Egami.Video.Analysis.BlackOptions.operator !=(Egami.Video.Analysis.BlackOptions? left, Egami.Video.Analysis.BlackOptions? right) -> bool
+static Egami.Video.Analysis.BlackOptions.operator ==(Egami.Video.Analysis.BlackOptions? left, Egami.Video.Analysis.BlackOptions? right) -> bool
+static Egami.Video.Analysis.CropOptions.Default.get -> Egami.Video.Analysis.CropOptions!
+static Egami.Video.Analysis.CropOptions.operator !=(Egami.Video.Analysis.CropOptions? left, Egami.Video.Analysis.CropOptions? right) -> bool
+static Egami.Video.Analysis.CropOptions.operator ==(Egami.Video.Analysis.CropOptions? left, Egami.Video.Analysis.CropOptions? right) -> bool
+static Egami.Video.Analysis.CropReport.operator !=(Egami.Video.Analysis.CropReport? left, Egami.Video.Analysis.CropReport? right) -> bool
+static Egami.Video.Analysis.CropReport.operator ==(Egami.Video.Analysis.CropReport? left, Egami.Video.Analysis.CropReport? right) -> bool
+static Egami.Video.Analysis.CropRun.operator !=(Egami.Video.Analysis.CropRun? left, Egami.Video.Analysis.CropRun? right) -> bool
+static Egami.Video.Analysis.CropRun.operator ==(Egami.Video.Analysis.CropRun? left, Egami.Video.Analysis.CropRun? right) -> bool
+static Egami.Video.Analysis.DetectedRange.operator !=(Egami.Video.Analysis.DetectedRange? left, Egami.Video.Analysis.DetectedRange? right) -> bool
+static Egami.Video.Analysis.DetectedRange.operator ==(Egami.Video.Analysis.DetectedRange? left, Egami.Video.Analysis.DetectedRange? right) -> bool
+static Egami.Video.Analysis.DuplicateOptions.Default.get -> Egami.Video.Analysis.DuplicateOptions!
+static Egami.Video.Analysis.DuplicateOptions.operator !=(Egami.Video.Analysis.DuplicateOptions? left, Egami.Video.Analysis.DuplicateOptions? right) -> bool
+static Egami.Video.Analysis.DuplicateOptions.operator ==(Egami.Video.Analysis.DuplicateOptions? left, Egami.Video.Analysis.DuplicateOptions? right) -> bool
+static Egami.Video.Analysis.FrameValue.operator !=(Egami.Video.Analysis.FrameValue left, Egami.Video.Analysis.FrameValue right) -> bool
+static Egami.Video.Analysis.FrameValue.operator ==(Egami.Video.Analysis.FrameValue left, Egami.Video.Analysis.FrameValue right) -> bool
+static Egami.Video.Analysis.FreezeOptions.Default.get -> Egami.Video.Analysis.FreezeOptions!
+static Egami.Video.Analysis.FreezeOptions.operator !=(Egami.Video.Analysis.FreezeOptions? left, Egami.Video.Analysis.FreezeOptions? right) -> bool
+static Egami.Video.Analysis.FreezeOptions.operator ==(Egami.Video.Analysis.FreezeOptions? left, Egami.Video.Analysis.FreezeOptions? right) -> bool
+static Egami.Video.Analysis.InterlaceOptions.Default.get -> Egami.Video.Analysis.InterlaceOptions!
+static Egami.Video.Analysis.InterlaceOptions.operator !=(Egami.Video.Analysis.InterlaceOptions? left, Egami.Video.Analysis.InterlaceOptions? right) -> bool
+static Egami.Video.Analysis.InterlaceOptions.operator ==(Egami.Video.Analysis.InterlaceOptions? left, Egami.Video.Analysis.InterlaceOptions? right) -> bool
+static Egami.Video.Analysis.InterlaceReport.operator !=(Egami.Video.Analysis.InterlaceReport? left, Egami.Video.Analysis.InterlaceReport? right) -> bool
+static Egami.Video.Analysis.InterlaceReport.operator ==(Egami.Video.Analysis.InterlaceReport? left, Egami.Video.Analysis.InterlaceReport? right) -> bool
+static Egami.Video.Analysis.PlaneLevels.operator !=(Egami.Video.Analysis.PlaneLevels left, Egami.Video.Analysis.PlaneLevels right) -> bool
+static Egami.Video.Analysis.PlaneLevels.operator ==(Egami.Video.Analysis.PlaneLevels left, Egami.Video.Analysis.PlaneLevels right) -> bool
+static Egami.Video.Analysis.SignalFrame.operator !=(Egami.Video.Analysis.SignalFrame? left, Egami.Video.Analysis.SignalFrame? right) -> bool
+static Egami.Video.Analysis.SignalFrame.operator ==(Egami.Video.Analysis.SignalFrame? left, Egami.Video.Analysis.SignalFrame? right) -> bool
+static Egami.Video.Analysis.SignalOptions.Default.get -> Egami.Video.Analysis.SignalOptions!
+static Egami.Video.Analysis.SignalOptions.operator !=(Egami.Video.Analysis.SignalOptions? left, Egami.Video.Analysis.SignalOptions? right) -> bool
+static Egami.Video.Analysis.SignalOptions.operator ==(Egami.Video.Analysis.SignalOptions? left, Egami.Video.Analysis.SignalOptions? right) -> bool
+static Egami.Video.Analysis.SignalReport.operator !=(Egami.Video.Analysis.SignalReport? left, Egami.Video.Analysis.SignalReport? right) -> bool
+static Egami.Video.Analysis.SignalReport.operator ==(Egami.Video.Analysis.SignalReport? left, Egami.Video.Analysis.SignalReport? right) -> bool
+~override Egami.Video.Analysis.FrameValue.Equals(object obj) -> bool
+~override Egami.Video.Analysis.FrameValue.ToString() -> string
+~override Egami.Video.Analysis.PlaneLevels.Equals(object obj) -> bool
+~override Egami.Video.Analysis.PlaneLevels.ToString() -> string
