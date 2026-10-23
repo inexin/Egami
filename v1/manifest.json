@@ -11787,6 +11787,62 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.Mp4FragmentOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.Mp4FragmentOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.Mp4FragmentOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.Mp4FragmentOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Containers.Mp4Format\" data-throw-if-not-resolved=\"false\"></xref> writes fragmented MP4 (ISO/IEC 14496-12 8.8, V4.3 Design Q1 and Q3): moov holds only the track\nsetup, and the media follows as moof and mdat pairs, so nothing is written back and nothing waits in a temporary file. A\nfragment starts at the first video keyframe after <xref href=\"Egami.Video.Containers.Mp4FragmentOptions.Duration\" data-throw-if-not-resolved=\"false\"></xref>; audio-only files cut every <xref href=\"Egami.Video.Containers.Mp4FragmentOptions.Duration\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.Mp4NonSeekableLayout.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.Mp4NonSeekableLayout.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.Mp4NonSeekableLayout",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.Mp4NonSeekableLayout.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Containers.Mp4Format\" data-throw-if-not-resolved=\"false\"></xref> writes to a stream that cannot seek and read back (V4.3 Design Q2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.Mp4SegmentOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.Mp4SegmentOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.Mp4SegmentOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.Mp4SegmentOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Containers.Mp4SegmentWriter\" data-throw-if-not-resolved=\"false\"></xref> cuts segments and which playlists it writes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.Mp4SegmentWriter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.Mp4SegmentWriter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.Mp4SegmentWriter",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.Mp4SegmentWriter.yml\" sourcestartlinenumber=\"1\">Writes a file as segments for HLS and DASH (V4.3 Design Q6 and Q7): for each track a CMAF init segment (ftyp and moov) and\nnumbered media segments (styp, sidx, moof and mdat), cut at the first video keyframe after\n<xref href=\"Egami.Video.Containers.Mp4SegmentOptions.SegmentDuration\" data-throw-if-not-resolved=\"false\"></xref> so every segment starts with one, plus an HLS multivariant playlist with a\nmedia playlist a track and a static DASH MPD. Each segment, read after its track's init segment, is valid fragmented MP4.\nA track is named after its kind and number: video1-init.mp4, video1-00001.m4s, video1.m3u8; the playlists are master.m3u8\nand manifest.mpd. Holds the audio and video codecs <xref href=\"Egami.Video.Containers.Mp4Format\" data-throw-if-not-resolved=\"false\"></xref> writes, one rendition: bitrate ladders, live\nplaylists and encryption are not written (Q8, Q9).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Containers.OggFormat.yml",
       "output": {
         ".html": {
@@ -11812,6 +11868,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Containers.RawVideo",
       "Summary": "<p sourcefile=\"api/Egami.Video.Containers.RawVideo.yml\" sourcestartlinenumber=\"1\">Headerless raw video (&quot;rawvideo&quot;): frames of one uncompressed layout back to back, as FFmpeg's <code>-f rawvideo</code> reads and\nwrites them. Nothing in the file says the size or layout, so the caller gives them as a track.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.SegmentPlaylists.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.SegmentPlaylists.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.SegmentPlaylists",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.SegmentPlaylists.yml\" sourcestartlinenumber=\"1\">Which playlists <xref href=\"Egami.Video.Containers.Mp4SegmentWriter\" data-throw-if-not-resolved=\"false\"></xref> writes with its segments (V4.3 Design Q7).</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -13010,6 +13080,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/security.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/streaming-mp4.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/streaming-mp4.html"
         }
       },
       "version": ""

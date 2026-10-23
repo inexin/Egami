@@ -499,8 +499,9 @@ gives the media's own times.</li>
 (Nero chpl or a QuickTime chapter track) are read, and written back.</li>
 <li><code>MovTextSample</code> reads and writes mov_text subtitles with their style runs (<code>MovTextStyle</code>: the characters each covers, <code>MovTextFace</code> bold, italic or underline, size and color).</li>
 <li>Writing puts moov before the media, so the file plays while it downloads. On a stream that can seek and read the media is
-moved forward at the end; otherwise it waits in a temporary file. <code>new Mp4Format { MoovAtEnd = true }</code> writes moov last,
-straight to a seekable stream. A QuickTime file is written as MP4.</li>
+moved forward at the end; on any other stream the file is written fragmented (see <a href="streaming-mp4.html">Streaming MP4</a>, which
+also covers HLS and DASH segments). <code>new Mp4Format { MoovAtEnd = true }</code> writes moov last, straight to a seekable stream. A
+QuickTime file is written as MP4.</li>
 </ul>
 <pre><code class="lang-csharp">// MP4 and QuickTime files read like any other: rotation from the display matrix, the start timecode, edit lists applied.
 MediaInfo phone = MediaFile.Probe(&quot;phone.mov&quot;);
@@ -537,7 +538,7 @@ while (demuxer.ReadPacket() is { } packet)
 off), <code>mp4-bad-track</code>, <code>mp4-bad-box</code> and <code>mp4-bad-fragment</code> (broken boxes, skipped), <code>mp4-sample-table</code> (tables that disagree),
 <code>mp4-edit-list</code> (an edit list with several media edits or another rate, not applied), <code>mp4-sample-descriptions</code> (a track that
 changes its sample description), <code>mp4-fragment-track</code> and <code>mp4-track-id</code>. Writers report <code>mp4-timestamps</code> (a packet decoding
-before the one before it) and <code>metadata-dropped</code>. A file whose moov follows its media needs a stream that can seek.</p>
+before the one before it), <code>metadata-dropped</code>, and for fragmented files <code>mp4-fragmented</code> and <code>mp4-chapter-track</code>. A file whose moov follows its media needs a stream that can seek.</p>
 <h2 id="containers">Containers</h2>
 <p>Each container is a <code>ContainerFormat</code>: <code>MatroskaFormat</code> (WebM and Matroska), <code>Mp4Format</code> (MP4 and QuickTime), <code>AviFormat</code>,
 <code>IvfFormat</code>, <code>Y4mFormat</code>, <code>Av1ObuFormat</code> and <code>Av1AnnexBFormat</code> for raw AV1, and for audio <code>WavFormat</code> and <code>FlacFormat</code>.

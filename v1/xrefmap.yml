@@ -78090,6 +78090,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Containers.Mp4Format.Extensions
   nameWithType: Mp4Format.Extensions
+- uid: Egami.Video.Containers.Mp4Format.Fragments
+  name: Fragments
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_Fragments
+  commentId: P:Egami.Video.Containers.Mp4Format.Fragments
+  fullName: Egami.Video.Containers.Mp4Format.Fragments
+  nameWithType: Mp4Format.Fragments
+- uid: Egami.Video.Containers.Mp4Format.Fragments*
+  name: Fragments
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_Fragments_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.Fragments
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.Fragments
+  nameWithType: Mp4Format.Fragments
 - uid: Egami.Video.Containers.Mp4Format.IgnoreEditLists
   name: IgnoreEditLists
   href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_IgnoreEditLists
@@ -78158,6 +78171,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Containers.Mp4Format.Name
   nameWithType: Mp4Format.Name
+- uid: Egami.Video.Containers.Mp4Format.NonSeekable
+  name: NonSeekable
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_NonSeekable
+  commentId: P:Egami.Video.Containers.Mp4Format.NonSeekable
+  fullName: Egami.Video.Containers.Mp4Format.NonSeekable
+  nameWithType: Mp4Format.NonSeekable
+- uid: Egami.Video.Containers.Mp4Format.NonSeekable*
+  name: NonSeekable
+  href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_NonSeekable_
+  commentId: Overload:Egami.Video.Containers.Mp4Format.NonSeekable
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4Format.NonSeekable
+  nameWithType: Mp4Format.NonSeekable
 - uid: Egami.Video.Containers.Mp4Format.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
   name: OpenDemuxer(Stream, MediaContext, bool)
   href: api/Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_
@@ -78187,6 +78213,174 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Containers.Mp4Format.SignatureLength
   nameWithType: Mp4Format.SignatureLength
+- uid: Egami.Video.Containers.Mp4FragmentOptions
+  name: Mp4FragmentOptions
+  href: api/Egami.Video.Containers.Mp4FragmentOptions.html
+  commentId: T:Egami.Video.Containers.Mp4FragmentOptions
+  fullName: Egami.Video.Containers.Mp4FragmentOptions
+  nameWithType: Mp4FragmentOptions
+- uid: Egami.Video.Containers.Mp4FragmentOptions.Duration
+  name: Duration
+  href: api/Egami.Video.Containers.Mp4FragmentOptions.html#Egami_Video_Containers_Mp4FragmentOptions_Duration
+  commentId: P:Egami.Video.Containers.Mp4FragmentOptions.Duration
+  fullName: Egami.Video.Containers.Mp4FragmentOptions.Duration
+  nameWithType: Mp4FragmentOptions.Duration
+- uid: Egami.Video.Containers.Mp4FragmentOptions.Duration*
+  name: Duration
+  href: api/Egami.Video.Containers.Mp4FragmentOptions.html#Egami_Video_Containers_Mp4FragmentOptions_Duration_
+  commentId: Overload:Egami.Video.Containers.Mp4FragmentOptions.Duration
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4FragmentOptions.Duration
+  nameWithType: Mp4FragmentOptions.Duration
+- uid: Egami.Video.Containers.Mp4FragmentOptions.MaxBytes
+  name: MaxBytes
+  href: api/Egami.Video.Containers.Mp4FragmentOptions.html#Egami_Video_Containers_Mp4FragmentOptions_MaxBytes
+  commentId: P:Egami.Video.Containers.Mp4FragmentOptions.MaxBytes
+  fullName: Egami.Video.Containers.Mp4FragmentOptions.MaxBytes
+  nameWithType: Mp4FragmentOptions.MaxBytes
+- uid: Egami.Video.Containers.Mp4FragmentOptions.MaxBytes*
+  name: MaxBytes
+  href: api/Egami.Video.Containers.Mp4FragmentOptions.html#Egami_Video_Containers_Mp4FragmentOptions_MaxBytes_
+  commentId: Overload:Egami.Video.Containers.Mp4FragmentOptions.MaxBytes
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4FragmentOptions.MaxBytes
+  nameWithType: Mp4FragmentOptions.MaxBytes
+- uid: Egami.Video.Containers.Mp4NonSeekableLayout
+  name: Mp4NonSeekableLayout
+  href: api/Egami.Video.Containers.Mp4NonSeekableLayout.html
+  commentId: T:Egami.Video.Containers.Mp4NonSeekableLayout
+  fullName: Egami.Video.Containers.Mp4NonSeekableLayout
+  nameWithType: Mp4NonSeekableLayout
+- uid: Egami.Video.Containers.Mp4NonSeekableLayout.Fragment
+  name: Fragment
+  href: api/Egami.Video.Containers.Mp4NonSeekableLayout.html#Egami_Video_Containers_Mp4NonSeekableLayout_Fragment
+  commentId: F:Egami.Video.Containers.Mp4NonSeekableLayout.Fragment
+  fullName: Egami.Video.Containers.Mp4NonSeekableLayout.Fragment
+  nameWithType: Mp4NonSeekableLayout.Fragment
+- uid: Egami.Video.Containers.Mp4NonSeekableLayout.TempFile
+  name: TempFile
+  href: api/Egami.Video.Containers.Mp4NonSeekableLayout.html#Egami_Video_Containers_Mp4NonSeekableLayout_TempFile
+  commentId: F:Egami.Video.Containers.Mp4NonSeekableLayout.TempFile
+  fullName: Egami.Video.Containers.Mp4NonSeekableLayout.TempFile
+  nameWithType: Mp4NonSeekableLayout.TempFile
+- uid: Egami.Video.Containers.Mp4SegmentOptions
+  name: Mp4SegmentOptions
+  href: api/Egami.Video.Containers.Mp4SegmentOptions.html
+  commentId: T:Egami.Video.Containers.Mp4SegmentOptions
+  fullName: Egami.Video.Containers.Mp4SegmentOptions
+  nameWithType: Mp4SegmentOptions
+- uid: Egami.Video.Containers.Mp4SegmentOptions.Playlists
+  name: Playlists
+  href: api/Egami.Video.Containers.Mp4SegmentOptions.html#Egami_Video_Containers_Mp4SegmentOptions_Playlists
+  commentId: P:Egami.Video.Containers.Mp4SegmentOptions.Playlists
+  fullName: Egami.Video.Containers.Mp4SegmentOptions.Playlists
+  nameWithType: Mp4SegmentOptions.Playlists
+- uid: Egami.Video.Containers.Mp4SegmentOptions.Playlists*
+  name: Playlists
+  href: api/Egami.Video.Containers.Mp4SegmentOptions.html#Egami_Video_Containers_Mp4SegmentOptions_Playlists_
+  commentId: Overload:Egami.Video.Containers.Mp4SegmentOptions.Playlists
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4SegmentOptions.Playlists
+  nameWithType: Mp4SegmentOptions.Playlists
+- uid: Egami.Video.Containers.Mp4SegmentOptions.SegmentDuration
+  name: SegmentDuration
+  href: api/Egami.Video.Containers.Mp4SegmentOptions.html#Egami_Video_Containers_Mp4SegmentOptions_SegmentDuration
+  commentId: P:Egami.Video.Containers.Mp4SegmentOptions.SegmentDuration
+  fullName: Egami.Video.Containers.Mp4SegmentOptions.SegmentDuration
+  nameWithType: Mp4SegmentOptions.SegmentDuration
+- uid: Egami.Video.Containers.Mp4SegmentOptions.SegmentDuration*
+  name: SegmentDuration
+  href: api/Egami.Video.Containers.Mp4SegmentOptions.html#Egami_Video_Containers_Mp4SegmentOptions_SegmentDuration_
+  commentId: Overload:Egami.Video.Containers.Mp4SegmentOptions.SegmentDuration
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4SegmentOptions.SegmentDuration
+  nameWithType: Mp4SegmentOptions.SegmentDuration
+- uid: Egami.Video.Containers.Mp4SegmentWriter
+  name: Mp4SegmentWriter
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html
+  commentId: T:Egami.Video.Containers.Mp4SegmentWriter
+  fullName: Egami.Video.Containers.Mp4SegmentWriter
+  nameWithType: Mp4SegmentWriter
+- uid: Egami.Video.Containers.Mp4SegmentWriter.#ctor(System.Func{System.String,System.IO.Stream},System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.Containers.Mp4SegmentOptions,Egami.Video.MediaContext)
+  name: Mp4SegmentWriter(Func<string, Stream>, IReadOnlyList<TrackInfo>, MediaMetadata?, Mp4SegmentOptions?, MediaContext?)
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter__ctor_System_Func_System_String_System_IO_Stream__System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_Containers_Mp4SegmentOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Containers.Mp4SegmentWriter.#ctor(System.Func{System.String,System.IO.Stream},System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.Containers.Mp4SegmentOptions,Egami.Video.MediaContext)
+  name.vb: New(Func(Of String, Stream), IReadOnlyList(Of TrackInfo), MediaMetadata, Mp4SegmentOptions, MediaContext)
+  fullName: Egami.Video.Containers.Mp4SegmentWriter.Mp4SegmentWriter(System.Func<string, System.IO.Stream>, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo>, Egami.Video.MediaMetadata?, Egami.Video.Containers.Mp4SegmentOptions?, Egami.Video.MediaContext?)
+  fullName.vb: Egami.Video.Containers.Mp4SegmentWriter.New(System.Func(Of String, System.IO.Stream), System.Collections.Generic.IReadOnlyList(Of Egami.Video.TrackInfo), Egami.Video.MediaMetadata, Egami.Video.Containers.Mp4SegmentOptions, Egami.Video.MediaContext)
+  nameWithType: Mp4SegmentWriter.Mp4SegmentWriter(Func<string, Stream>, IReadOnlyList<TrackInfo>, MediaMetadata?, Mp4SegmentOptions?, MediaContext?)
+  nameWithType.vb: Mp4SegmentWriter.New(Func(Of String, Stream), IReadOnlyList(Of TrackInfo), MediaMetadata, Mp4SegmentOptions, MediaContext)
+- uid: Egami.Video.Containers.Mp4SegmentWriter.#ctor(System.String,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.Containers.Mp4SegmentOptions,Egami.Video.MediaContext)
+  name: Mp4SegmentWriter(string, IReadOnlyList<TrackInfo>, MediaMetadata?, Mp4SegmentOptions?, MediaContext?)
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter__ctor_System_String_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_Containers_Mp4SegmentOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Containers.Mp4SegmentWriter.#ctor(System.String,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.Containers.Mp4SegmentOptions,Egami.Video.MediaContext)
+  name.vb: New(String, IReadOnlyList(Of TrackInfo), MediaMetadata, Mp4SegmentOptions, MediaContext)
+  fullName: Egami.Video.Containers.Mp4SegmentWriter.Mp4SegmentWriter(string, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo>, Egami.Video.MediaMetadata?, Egami.Video.Containers.Mp4SegmentOptions?, Egami.Video.MediaContext?)
+  fullName.vb: Egami.Video.Containers.Mp4SegmentWriter.New(String, System.Collections.Generic.IReadOnlyList(Of Egami.Video.TrackInfo), Egami.Video.MediaMetadata, Egami.Video.Containers.Mp4SegmentOptions, Egami.Video.MediaContext)
+  nameWithType: Mp4SegmentWriter.Mp4SegmentWriter(string, IReadOnlyList<TrackInfo>, MediaMetadata?, Mp4SegmentOptions?, MediaContext?)
+  nameWithType.vb: Mp4SegmentWriter.New(String, IReadOnlyList(Of TrackInfo), MediaMetadata, Mp4SegmentOptions, MediaContext)
+- uid: Egami.Video.Containers.Mp4SegmentWriter.#ctor*
+  name: Mp4SegmentWriter
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter__ctor_
+  commentId: Overload:Egami.Video.Containers.Mp4SegmentWriter.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Video.Containers.Mp4SegmentWriter.Mp4SegmentWriter
+  fullName.vb: Egami.Video.Containers.Mp4SegmentWriter.New
+  nameWithType: Mp4SegmentWriter.Mp4SegmentWriter
+  nameWithType.vb: Mp4SegmentWriter.New
+- uid: Egami.Video.Containers.Mp4SegmentWriter.Dispose
+  name: Dispose()
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter_Dispose
+  commentId: M:Egami.Video.Containers.Mp4SegmentWriter.Dispose
+  fullName: Egami.Video.Containers.Mp4SegmentWriter.Dispose()
+  nameWithType: Mp4SegmentWriter.Dispose()
+- uid: Egami.Video.Containers.Mp4SegmentWriter.Dispose*
+  name: Dispose
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter_Dispose_
+  commentId: Overload:Egami.Video.Containers.Mp4SegmentWriter.Dispose
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4SegmentWriter.Dispose
+  nameWithType: Mp4SegmentWriter.Dispose
+- uid: Egami.Video.Containers.Mp4SegmentWriter.Finish
+  name: Finish()
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter_Finish
+  commentId: M:Egami.Video.Containers.Mp4SegmentWriter.Finish
+  fullName: Egami.Video.Containers.Mp4SegmentWriter.Finish()
+  nameWithType: Mp4SegmentWriter.Finish()
+- uid: Egami.Video.Containers.Mp4SegmentWriter.Finish*
+  name: Finish
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter_Finish_
+  commentId: Overload:Egami.Video.Containers.Mp4SegmentWriter.Finish
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4SegmentWriter.Finish
+  nameWithType: Mp4SegmentWriter.Finish
+- uid: Egami.Video.Containers.Mp4SegmentWriter.Tracks
+  name: Tracks
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter_Tracks
+  commentId: P:Egami.Video.Containers.Mp4SegmentWriter.Tracks
+  fullName: Egami.Video.Containers.Mp4SegmentWriter.Tracks
+  nameWithType: Mp4SegmentWriter.Tracks
+- uid: Egami.Video.Containers.Mp4SegmentWriter.Tracks*
+  name: Tracks
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter_Tracks_
+  commentId: Overload:Egami.Video.Containers.Mp4SegmentWriter.Tracks
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4SegmentWriter.Tracks
+  nameWithType: Mp4SegmentWriter.Tracks
+- uid: Egami.Video.Containers.Mp4SegmentWriter.WritePacket(Egami.Video.EncodedPacket)
+  name: WritePacket(EncodedPacket)
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter_WritePacket_Egami_Video_EncodedPacket_
+  commentId: M:Egami.Video.Containers.Mp4SegmentWriter.WritePacket(Egami.Video.EncodedPacket)
+  fullName: Egami.Video.Containers.Mp4SegmentWriter.WritePacket(Egami.Video.EncodedPacket)
+  nameWithType: Mp4SegmentWriter.WritePacket(EncodedPacket)
+- uid: Egami.Video.Containers.Mp4SegmentWriter.WritePacket*
+  name: WritePacket
+  href: api/Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter_WritePacket_
+  commentId: Overload:Egami.Video.Containers.Mp4SegmentWriter.WritePacket
+  isSpec: "True"
+  fullName: Egami.Video.Containers.Mp4SegmentWriter.WritePacket
+  nameWithType: Mp4SegmentWriter.WritePacket
 - uid: Egami.Video.Containers.OggFormat
   name: OggFormat
   href: api/Egami.Video.Containers.OggFormat.html
@@ -78344,6 +78538,30 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Containers.RawVideo.OpenDemuxer
   nameWithType: RawVideo.OpenDemuxer
+- uid: Egami.Video.Containers.SegmentPlaylists
+  name: SegmentPlaylists
+  href: api/Egami.Video.Containers.SegmentPlaylists.html
+  commentId: T:Egami.Video.Containers.SegmentPlaylists
+  fullName: Egami.Video.Containers.SegmentPlaylists
+  nameWithType: SegmentPlaylists
+- uid: Egami.Video.Containers.SegmentPlaylists.Dash
+  name: Dash
+  href: api/Egami.Video.Containers.SegmentPlaylists.html#Egami_Video_Containers_SegmentPlaylists_Dash
+  commentId: F:Egami.Video.Containers.SegmentPlaylists.Dash
+  fullName: Egami.Video.Containers.SegmentPlaylists.Dash
+  nameWithType: SegmentPlaylists.Dash
+- uid: Egami.Video.Containers.SegmentPlaylists.Hls
+  name: Hls
+  href: api/Egami.Video.Containers.SegmentPlaylists.html#Egami_Video_Containers_SegmentPlaylists_Hls
+  commentId: F:Egami.Video.Containers.SegmentPlaylists.Hls
+  fullName: Egami.Video.Containers.SegmentPlaylists.Hls
+  nameWithType: SegmentPlaylists.Hls
+- uid: Egami.Video.Containers.SegmentPlaylists.None
+  name: None
+  href: api/Egami.Video.Containers.SegmentPlaylists.html#Egami_Video_Containers_SegmentPlaylists_None
+  commentId: F:Egami.Video.Containers.SegmentPlaylists.None
+  fullName: Egami.Video.Containers.SegmentPlaylists.None
+  nameWithType: SegmentPlaylists.None
 - uid: Egami.Video.Containers.WavFormat
   name: WavFormat
   href: api/Egami.Video.Containers.WavFormat.html

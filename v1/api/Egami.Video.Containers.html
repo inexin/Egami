@@ -159,6 +159,29 @@ display matrix becomes <a class="xref" href="Egami.Video.VideoTrackInfo.html#Ega
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.Mp4FragmentOptions.html">Mp4FragmentOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Video.Containers.Mp4Format.html">Mp4Format</a> writes fragmented MP4 (ISO/IEC 14496-12 8.8, V4.3 Design Q1 and Q3): moov holds only the track
+setup, and the media follows as moof and mdat pairs, so nothing is written back and nothing waits in a temporary file. A
+fragment starts at the first video keyframe after <a class="xref" href="Egami.Video.Containers.Mp4FragmentOptions.html#Egami_Video_Containers_Mp4FragmentOptions_Duration">Duration</a>; audio-only files cut every <a class="xref" href="Egami.Video.Containers.Mp4FragmentOptions.html#Egami_Video_Containers_Mp4FragmentOptions_Duration">Duration</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.Mp4SegmentOptions.html">Mp4SegmentOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Video.Containers.Mp4SegmentWriter.html">Mp4SegmentWriter</a> cuts segments and which playlists it writes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.Mp4SegmentWriter.html">Mp4SegmentWriter</a></dt>
+      <dd><p>Writes a file as segments for HLS and DASH (V4.3 Design Q6 and Q7): for each track a CMAF init segment (ftyp and moov) and
+numbered media segments (styp, sidx, moof and mdat), cut at the first video keyframe after
+<a class="xref" href="Egami.Video.Containers.Mp4SegmentOptions.html#Egami_Video_Containers_Mp4SegmentOptions_SegmentDuration">SegmentDuration</a> so every segment starts with one, plus an HLS multivariant playlist with a
+media playlist a track and a static DASH MPD. Each segment, read after its track's init segment, is valid fragmented MP4.
+A track is named after its kind and number: video1-init.mp4, video1-00001.m4s, video1.m3u8; the playlists are master.m3u8
+and manifest.mpd. Holds the audio and video codecs <a class="xref" href="Egami.Video.Containers.Mp4Format.html">Mp4Format</a> writes, one rendition: bitrate ladders, live
+playlists and encryption are not written (Q8, Q9).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Containers.OggFormat.html">OggFormat</a></dt>
       <dd><p>Ogg (.ogg, .opus, .oga), RFC 3533, with the Opus (RFC 7845), Vorbis and FLAC mappings. Pages are CRC-checked and packets
 rebuilt across them; timestamps come from granule positions, with Opus's pre-skip as the track's codec delay and the last
@@ -203,6 +226,19 @@ Interfaces
       <dt><a class="xref" href="Egami.Video.Containers.IMuxer.html">IMuxer</a></dt>
       <dd><p>Writes packets into a container. Packets should come in timestamp order across tracks, as a demuxer returns them.
 <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable.dispose">Dispose()</a> finishes the file if <a class="xref" href="Egami.Video.Containers.IMuxer.html#Egami_Video_Containers_IMuxer_Finish">Finish()</a> was not called.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.Mp4NonSeekableLayout.html">Mp4NonSeekableLayout</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Containers.Mp4Format.html">Mp4Format</a> writes to a stream that cannot seek and read back (V4.3 Design Q2).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.SegmentPlaylists.html">SegmentPlaylists</a></dt>
+      <dd><p>Which playlists <a class="xref" href="Egami.Video.Containers.Mp4SegmentWriter.html">Mp4SegmentWriter</a> writes with its segments (V4.3 Design Q7).</p>
 </dd>
     </dl>
 

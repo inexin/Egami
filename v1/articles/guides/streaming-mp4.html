@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Streaming MP4 | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Streaming MP4 | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/streaming-mp4.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="streaming-mp4">Streaming MP4</h1>
+
+<p>Flat MP4 needs its index (moov) before or after all of the media, so a writer must either seek back or hold the media
+somewhere until the end. Fragmented MP4 puts only the track setup in moov and the media after it in short moof and mdat
+pairs, each with its own small index, so it can be written as it is made: to a cloud blob's upload stream, an HTTP response or
+a pipe, with no temporary file. Every current player and browser reads it, and it is what HLS and DASH serve.</p>
+<h2 id="fragmented-files">Fragmented files</h2>
+<p>Set <code>Mp4Format.Fragments</code> to an <code>Mp4FragmentOptions</code> to write fragmented MP4 on any output. A fragment starts at the first
+video keyframe at least <code>Duration</code> (2 seconds by default) after the one before, so each fragment can be played or seeked to
+on its own; files without video cut every <code>Duration</code>. <code>MaxBytes</code> (32 MB by default) closes a fragment early, between
+keyframes if need be: the writer holds one fragment in memory, so this caps its memory whatever the stream's keyframe interval.</p>
+<pre><code class="lang-csharp">// Fragmented MP4: moov first with only the setup, then the media in two-second moof and mdat pairs as it comes. A
+// stream that cannot seek, such as a blob upload, gets it by default, with an mp4-fragmented warning.
+using (Stream source = File.OpenRead(&quot;movie.webm&quot;))
+using (Stream upload = File.Create(&quot;movie.mp4&quot;))
+{
+    MediaFile.Remux(source, upload, &quot;mp4&quot;, leaveOpen: true, cancellationToken: cts.Token);
+}
+
+// Ask for fragments on any output, with other cuts: here a fragment a second, at most 8 MB.
+Mp4Format fragmented = new() { Fragments = new Mp4FragmentOptions { Duration = TimeSpan.FromSeconds(1), MaxBytes = 8 &lt;&lt; 20 } };
+MediaContext context = MediaContext.Default.WithContainer(fragmented);
+MediaFile.Remux(&quot;movie.webm&quot;, &quot;fragmented.mp4&quot;, context: context, cancellationToken: cts.Token);
+
+// Or keep flat MP4 on forward-only streams, the media waiting in a temporary file until moov is written.
+MediaContext flat = MediaContext.Default.WithContainer(new Mp4Format { NonSeekable = Mp4NonSeekableLayout.TempFile });
+</code></pre>
+<p>What a fragmented file holds:</p>
+<ul>
+<li>ftyp (iso6 and mp41, and cmfc for a single track, which is CMAF), then moov with each track's sample description and an
+mvex box. moov waits for the first fragment, whose samples set the edit lists for start offsets and codec delays.</li>
+<li>A moof and mdat pair a fragment: a traf a track with its decode time (tfdt) and one trun of sizes, durations, keyframe flags
+and composition offsets, then the samples, a track after the other.</li>
+<li>mfra at the end, listing each fragment's first keyframe, so a player can seek without reading every moof.</li>
+<li>On a seekable output, the durations (mvhd, tkhd, mehd and the edit lists') are written back at the end; a forward-only
+output leaves them to the fragments, which players add up.</li>
+<li>Tags and cover art as in flat MP4, and chapters as Nero chpl only: the QuickTime chapter track needs its samples in moov,
+so it is left out with an mp4-chapter-track warning.</li>
+</ul>
+<p><code>Mp4Format.MoovAtEnd</code> and <code>Fragments</code> cannot both be set.</p>
+<h2 id="forward-only-streams">Forward-only streams</h2>
+<p>When the output cannot seek and read back and <code>Fragments</code> is not set, <code>Mp4Format</code> writes fragmented MP4 with the default
+options and an mp4-fragmented warning, so <code>MediaFile.Remux</code> and <code>MediaFile.Transcode</code> with a <code>Stream</code> output need no
+temporary file. <code>new Mp4Format { NonSeekable = Mp4NonSeekableLayout.TempFile }</code> keeps flat MP4 there instead: the media waits
+in a temporary file and moov goes first. Register either format with <code>MediaContext.WithContainer</code>.</p>
+<h2 id="hls-and-dash-segments">HLS and DASH segments</h2>
+<p><code>Mp4SegmentWriter</code> cuts the same fragments into files a web server or CDN serves as they are: for each track an init segment
+(<code>video1-init.mp4</code>) and numbered media segments (<code>video1-00001.m4s</code>, each styp, sidx, moof and mdat), as CMAF asks, plus the
+playlists <code>Mp4SegmentOptions.Playlists</code> names. A segment starts at the first video keyframe after
+<code>Mp4SegmentOptions.SegmentDuration</code> (6 seconds by default), and the audio segments are cut at the same times.</p>
+<pre><code class="lang-csharp">// HLS and DASH: an init segment and six-second media segments a track, master.m3u8 and manifest.mpd, in a folder.
+// Another constructor takes a Func&lt;string, Stream&gt; that opens each file, for blob storage.
+using IDemuxer demuxer = MediaFile.OpenDemuxer(&quot;movie.webm&quot;);
+using (Mp4SegmentWriter writer = new(&quot;stream&quot;, demuxer.Tracks, options: new Mp4SegmentOptions { SegmentDuration = TimeSpan.FromSeconds(6) }))
+{
+    while (demuxer.ReadPacket() is { } packet)
+    {
+        using (packet)
+        {
+            writer.WritePacket(packet);
+        }
+    }
+}
+</code></pre>
+<ul>
+<li><code>SegmentPlaylists.Hls</code> writes master.m3u8, an HLS multivariant playlist (RFC 8216, version 7) with each video track as a
+variant and the audio tracks as its renditions, and a media playlist a track (video1.m3u8) with EXT-X-MAP for its init
+segment. Bandwidths are measured from the segments; CODECS come from the tracks (avc1, hvc1, av01, vp09, mp4a, opus, fLaC).</li>
+<li><code>SegmentPlaylists.Dash</code> writes manifest.mpd, a static MPD in the ISO live profile with an adaptation set a track and a
+SegmentTemplate with a SegmentTimeline.</li>
+</ul>
+<p>The writer takes a folder, or a <code>Func&lt;string, Stream&gt;</code> that opens each file by name, for blob storage: it writes the whole
+file and disposes the stream. Segments hold audio and video tracks only. One rendition is written; for a bitrate ladder, run a
+transcode a rung. Live playlists, low-latency chunks and encryption are not written.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/streaming-mp4.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

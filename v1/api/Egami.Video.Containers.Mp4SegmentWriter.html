@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Mp4SegmentWriter | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Mp4SegmentWriter | Egami ">
+      
+      <meta name="description" content="Writes a file as segments for HLS and DASH (V4.3 Design Q6 and Q7): for each track a CMAF init segment (ftyp and moov) and numbered media segments (styp, sidx, moof and mdat), cut at the first video keyframe after  so every segment starts with one, plus an HLS multivariant playlist with a media playlist a track and a static DASH MPD. Each segment, read after its track&#39;s init segment, is valid fragmented MP4. A track is named after its kind and number: video1-init.mp4, video1-00001.m4s, video1.m3u8; the playlists are master.m3u8 and manifest.mpd. Holds the audio and video codecs  writes, one rendition: bitrate ladders, live playlists and encryption are not written (Q8, Q9).">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Containers_Mp4SegmentWriter.md&amp;value=---%0Auid%3A%20Egami.Video.Containers.Mp4SegmentWriter%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Containers.Mp4SegmentWriter">
+
+
+
+  <h1 id="Egami_Video_Containers_Mp4SegmentWriter" data-uid="Egami.Video.Containers.Mp4SegmentWriter" class="text-break">
+Class Mp4SegmentWriter  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4SegmentWriter.cs/#L17"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Containers.html">Containers</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Writes a file as segments for HLS and DASH (V4.3 Design Q6 and Q7): for each track a CMAF init segment (ftyp and moov) and
+numbered media segments (styp, sidx, moof and mdat), cut at the first video keyframe after
+<a class="xref" href="Egami.Video.Containers.Mp4SegmentOptions.html#Egami_Video_Containers_Mp4SegmentOptions_SegmentDuration">SegmentDuration</a> so every segment starts with one, plus an HLS multivariant playlist with a
+media playlist a track and a static DASH MPD. Each segment, read after its track's init segment, is valid fragmented MP4.
+A track is named after its kind and number: video1-init.mp4, video1-00001.m4s, video1.m3u8; the playlists are master.m3u8
+and manifest.mpd. Holds the audio and video codecs <a class="xref" href="Egami.Video.Containers.Mp4Format.html">Mp4Format</a> writes, one rendition: bitrate ladders, live
+playlists and encryption are not written (Q8, Q9).</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Mp4SegmentWriter : IMuxer, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Mp4SegmentWriter</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Video.Containers.IMuxer.html">IMuxer</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Containers_Mp4SegmentWriter_examples">Examples</h2>
+  <pre><code class="lang-csharp">// HLS and DASH: an init segment and six-second media segments a track, master.m3u8 and manifest.mpd, in a folder.
+// Another constructor takes a Func&lt;string, Stream&gt; that opens each file, for blob storage.
+using IDemuxer demuxer = MediaFile.OpenDemuxer("movie.webm");
+using (Mp4SegmentWriter writer = new("stream", demuxer.Tracks, options: new Mp4SegmentOptions { SegmentDuration = TimeSpan.FromSeconds(6) }))
+{
+    while (demuxer.ReadPacket() is { } packet)
+    {
+        using (packet)
+        {
+            writer.WritePacket(packet);
+        }
+    }
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_Containers_Mp4SegmentWriter__ctor_" data-uid="Egami.Video.Containers.Mp4SegmentWriter.#ctor*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4SegmentWriter__ctor_System_Func_System_String_System_IO_Stream__System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_Containers_Mp4SegmentOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Containers.Mp4SegmentWriter.#ctor(System.Func{System.String,System.IO.Stream},System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.Containers.Mp4SegmentOptions,Egami.Video.MediaContext)">
+  Mp4SegmentWriter(Func&lt;string, Stream&gt;, IReadOnlyList&lt;TrackInfo&gt;, MediaMetadata?, Mp4SegmentOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4SegmentWriter.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a writer that asks <code class="paramref">open</code> for a stream for each file it writes, by name, as for blob storage: it
+writes the whole file and disposes the stream, so an upload stream commits when its file is done.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Mp4SegmentWriter(Func&lt;string, Stream&gt; open, IReadOnlyList&lt;TrackInfo&gt; tracks, MediaMetadata? metadata = null, Mp4SegmentOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>open</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a>&gt;</dt>
+    <dd><p>Opens a stream to write the named file to.</p>
+</dd>
+    <dt><code>tracks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a>&gt;</dt>
+    <dd><p>The tracks: audio and video only.</p>
+</dd>
+    <dt><code>metadata</code> <a class="xref" href="Egami.Video.MediaMetadata.html">MediaMetadata</a></dt>
+    <dd><p>The tags and cover art for the init segments, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Containers.Mp4SegmentOptions.html">Mp4SegmentOptions</a></dt>
+    <dd><p>The options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Containers_Mp4SegmentWriter__ctor_System_Func_System_String_System_IO_Stream__System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_Containers_Mp4SegmentOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// HLS and DASH: an init segment and six-second media segments a track, master.m3u8 and manifest.mpd, in a folder.
+// Another constructor takes a Func&lt;string, Stream&gt; that opens each file, for blob storage.
+using IDemuxer demuxer = MediaFile.OpenDemuxer("movie.webm");
+using (Mp4SegmentWriter writer = new("stream", demuxer.Tracks, options: new Mp4SegmentOptions { SegmentDuration = TimeSpan.FromSeconds(6) }))
+{
+    while (demuxer.ReadPacket() is { } packet)
+    {
+        using (packet)
+        {
+            writer.WritePacket(packet);
+        }
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>A track is not audio or video, or MP4 cannot hold its codec.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Containers_Mp4SegmentWriter__ctor_" data-uid="Egami.Video.Containers.Mp4SegmentWriter.#ctor*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4SegmentWriter__ctor_System_String_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_Containers_Mp4SegmentOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Containers.Mp4SegmentWriter.#ctor(System.String,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.Containers.Mp4SegmentOptions,Egami.Video.MediaContext)">
+  Mp4SegmentWriter(string, IReadOnlyList&lt;TrackInfo&gt;, MediaMetadata?, Mp4SegmentOptions?, MediaContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4SegmentWriter.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a writer that puts its files in a folder, which is created when needed; files there with the same names are replaced.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Mp4SegmentWriter(string folder, IReadOnlyList&lt;TrackInfo&gt; tracks, MediaMetadata? metadata = null, Mp4SegmentOptions? options = null, MediaContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>folder</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The folder.</p>
+</dd>
+    <dt><code>tracks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a>&gt;</dt>
+    <dd><p>The tracks: audio and video only.</p>
+</dd>
+    <dt><code>metadata</code> <a class="xref" href="Egami.Video.MediaMetadata.html">MediaMetadata</a></dt>
+    <dd><p>The tags and cover art for the init segments, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Containers.Mp4SegmentOptions.html">Mp4SegmentOptions</a></dt>
+    <dd><p>The options, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Containers_Mp4SegmentWriter__ctor_System_String_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_Containers_Mp4SegmentOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// HLS and DASH: an init segment and six-second media segments a track, master.m3u8 and manifest.mpd, in a folder.
+// Another constructor takes a Func&lt;string, Stream&gt; that opens each file, for blob storage.
+using IDemuxer demuxer = MediaFile.OpenDemuxer("movie.webm");
+using (Mp4SegmentWriter writer = new("stream", demuxer.Tracks, options: new Mp4SegmentOptions { SegmentDuration = TimeSpan.FromSeconds(6) }))
+{
+    while (demuxer.ReadPacket() is { } packet)
+    {
+        using (packet)
+        {
+            writer.WritePacket(packet);
+        }
+    }
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>A track is not audio or video, or MP4 cannot hold its codec.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Containers_Mp4SegmentWriter_Tracks_" data-uid="Egami.Video.Containers.Mp4SegmentWriter.Tracks*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4SegmentWriter_Tracks" data-uid="Egami.Video.Containers.Mp4SegmentWriter.Tracks">
+  Tracks
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4SegmentWriter.cs/#L98"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the tracks as the file numbers them, in the order they were given.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;TrackInfo&gt; Tracks { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Containers_Mp4SegmentWriter_Dispose_" data-uid="Egami.Video.Containers.Mp4SegmentWriter.Dispose*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4SegmentWriter_Dispose" data-uid="Egami.Video.Containers.Mp4SegmentWriter.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4SegmentWriter.cs/#L144"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finishes the files if <a class="xref" href="Egami.Video.Containers.Mp4SegmentWriter.html#Egami_Video_Containers_Mp4SegmentWriter_Finish">Finish()</a> was not called.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Mp4SegmentWriter_Finish_" data-uid="Egami.Video.Containers.Mp4SegmentWriter.Finish*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4SegmentWriter_Finish" data-uid="Egami.Video.Containers.Mp4SegmentWriter.Finish">
+  Finish()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4SegmentWriter.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the last segments, then the playlists <a class="xref" href="Egami.Video.Containers.Mp4SegmentOptions.html#Egami_Video_Containers_Mp4SegmentOptions_Playlists">Playlists</a> asks for.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Finish()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Containers_Mp4SegmentWriter_WritePacket_" data-uid="Egami.Video.Containers.Mp4SegmentWriter.WritePacket*"></a>
+
+  <h3 id="Egami_Video_Containers_Mp4SegmentWriter_WritePacket_Egami_Video_EncodedPacket_" data-uid="Egami.Video.Containers.Mp4SegmentWriter.WritePacket(Egami.Video.EncodedPacket)">
+  WritePacket(EncodedPacket)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4SegmentWriter.cs/#L101"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes a packet. Its <a class="xref" href="Egami.Video.EncodedPacket.html#Egami_Video_EncodedPacket_TrackNumber">TrackNumber</a> is the number of the track as it was given to the muxer;
+the bytes are copied, so the caller keeps ownership of the packet.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void WritePacket(EncodedPacket packet)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>packet</code> <a class="xref" href="Egami.Video.EncodedPacket.html">EncodedPacket</a></dt>
+    <dd><p>The packet.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The packet's track was not given to the muxer.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The muxer was finished.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4SegmentWriter.cs/#L17" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -644,14 +644,15 @@ into memory asynchronously, as Egami's <code>LoadAsync</code> does, so no thread
 
   <h3 id="Egami_Video_MediaFile_Remux_System_IO_Stream_System_IO_Stream_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Remux(System.IO.Stream,System.IO.Stream,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
   Remux(Stream, Stream, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, bool, IProgress&lt;MediaProgress&gt;?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L230"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L231"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Copies the packets of one stream into another container without decoding, as
 <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Remux(string, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
 does for files: for example from one cloud blob to another without a local copy. The input may be non-seekable, except
 for MP4 files with moov after the media. Matroska, WebM, IVF and YUV4MPEG2 write to a non-seekable stream as they go;
-MP4 holds its media in a temporary file and writes moov first; AVI needs a seekable stream.</p>
+so does MP4, written fragmented there with an mp4-fragmented warning (see <a class="xref" href="Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_NonSeekable">NonSeekable</a>); AVI
+needs a seekable stream.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -802,7 +803,7 @@ long packets = MediaFile.Remux("camera.avi", "camera.mkv", progress: progress);<
 
   <h3 id="Egami_Video_MediaFile_Transcode_System_IO_Stream_System_IO_Stream_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Transcode(System.IO.Stream,System.IO.Stream,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
   Transcode(Stream, Stream, string, AudioCodec?, int?, Func&lt;TrackInfo, bool&gt;?, MediaContext?, bool, IProgress&lt;MediaProgress&gt;?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L286"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L287"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Copies a stream into another container, encoding its audio again, as
@@ -882,7 +883,7 @@ does for files. The streams work as for <a class="xref" href="Egami.Video.MediaF
 
   <h3 id="Egami_Video_MediaFile_Transcode_System_String_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Transcode(System.String,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
   Transcode(string, string, AudioCodec?, int?, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L259"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L260"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Copies a file into another container like <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Remux(string, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>,
