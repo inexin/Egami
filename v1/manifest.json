@@ -5347,6 +5347,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Ani.AniDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Ani.AniDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Ani.AniDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Ani.AniDetails.yml\" sourcestartlinenumber=\"1\">Details only ANI has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>. Each frame's own hotspot, entry and depth are in its\n<xref href=\"Egami.Metadata.FrameMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>, an <xref href=\"Egami.Formats.Ico.IcoDetails\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Ani.AniFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Ani.AniFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Ani.AniFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Ani.AniFormat.yml\" sourcestartlinenumber=\"1\">The Windows animated cursor format (.ani), registered in <xref href=\"Egami.EgamiContext.Default\" data-throw-if-not-resolved=\"false\"></xref>: a RIFF file whose frames are\ncursors or icons, with a display time and an order for each step. Load returns one animated raster with a frame per step, all\nat one size; LoadAll returns the animation once for every size its frames hold.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Ani.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Ani.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Ani",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Av1.Av1DecoderOptions.yml",
       "output": {
         ".html": {
@@ -12404,6 +12446,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/diagnostics.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/ani.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/ani.html"
         }
       },
       "version": ""

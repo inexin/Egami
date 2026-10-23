@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>ANI | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="ANI | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/ani.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="ani">ANI</h1>
+
+<p>Egami reads Windows animated cursors (.ani), written from Microsoft's description of the RIFF <code>ACON</code> form. <code>AniFormat.Info</code> is
+registered in <code>EgamiContext.Default</code>. An animated cursor stores a set of frames, each a whole cursor or icon, and a list of steps
+that says which frame shows and for how long; Egami's <a href="ico.html">ICO and CUR</a> reader decodes the frames, so a frame loads exactly
+as the same cursor would. Writing animated cursors comes in a later release.</p>
+<h2 id="reading-animated-cursors">Reading animated cursors</h2>
+<p><code>Raster.Load</code> returns one animated raster with a frame per step: the <code>seq </code> list is played out, so a frame it shows twice is in
+the raster twice, and each frame's <code>Delay</code> is its step's rate in jiffies (1/60 s), or the header's default rate. Animated cursors
+always loop, so <code>LoopCount</code> is 0. Every frame replaces the one before it (<code>FrameDisposal.ClearToBackground</code>, <code>FrameBlend.Source</code>),
+so the frames save straight to GIF, APNG or WebP. Each frame's hotspot is in its <code>IcoDetails</code>, and can move from frame to frame.</p>
+<p>All frames of a raster share one size, but a frame's cursor can hold several. Load picks one for the whole animation the way it
+picks an icon's entry: the largest, or with <code>ReaderOptions.MinimumSize</code> the smallest size at least that big. A frame without that
+size is resized from its nearest larger image, hotspot and all, with the <code>Ani.SizeMissing</code> warning. <code>Raster.LoadAll</code> returns the
+animation once for every size, largest first.</p>
+<pre><code class="lang-csharp">// One frame per step of the animation, all at one size: the largest, as for an icon.
+using Raster&lt;Rgba8&gt; busy = Raster.Load&lt;Rgba8&gt;(&quot;busy.ani&quot;);
+foreach (Frame&lt;Rgba8&gt; frame in busy.Frames)
+{
+    Point? hotspot = ((IcoDetails)frame.Metadata.FormatDetails!).Hotspot;
+    Console.WriteLine($&quot;{frame.Metadata.Delay.TotalMilliseconds:F0} ms, hotspot {hotspot}&quot;);
+}
+
+// MinimumSize picks the smallest size at least that big; LoadAll gives the animation at every size, largest first.
+using Raster&lt;Rgba8&gt; small = Raster.Load&lt;Rgba8&gt;(&quot;busy.ani&quot;, options: new ReaderOptions { MinimumSize = new Size(32, 32) });
+using RasterList sizes = Raster.LoadAll(&quot;busy.ani&quot;);
+</code></pre>
+<p><code>Raster.Probe</code> reads the chunks and each frame's directory without decoding a pixel: <code>RasterInfo.FrameCount</code> is the number of
+steps and <code>ImageCount</code> the number of sizes. <code>AniDetails</code>, the raster's format details, gives the title and artist from the
+file's <code>INFO</code> list, the default delay, how many frames the file stores, the frame each step shows and every size.</p>
+<pre><code class="lang-csharp">// Probe reads the chunks and each frame's directory without decoding a pixel.
+RasterInfo info = Raster.Probe(&quot;busy.ani&quot;);
+Console.WriteLine($&quot;{info.FrameCount} steps; {info.ImageCount} sizes; Load gives {info.Width}×{info.Height}&quot;);
+
+// The steps replay the stored frames in the file's order; a frame can show more than once.
+using Raster busy = Raster.Load(&quot;busy.ani&quot;);
+AniDetails details = (AniDetails)busy.Metadata.FormatDetails!;
+Console.WriteLine($&quot;\&quot;{details.Title}\&quot; by {details.Artist}: {details.StoredFrames} frames stored, steps {string.Join(&quot;, &quot;, details.Steps)}&quot;);
+</code></pre>
+<p>Old files sometimes store raw bitmaps instead of cursors (the header's icon flag is clear): whole BMP files, BMP data without
+the file header, or bare 24 or 32-bit rows at the header's size. Egami reads all three; their frames have no hotspot, and
+<code>AniDetails.RawBitmaps</code> is true. A frame that is a cursor in a file that says otherwise is read as a cursor, with the
+<code>Ani.IconInRawFile</code> warning.</p>
+<h2 id="damaged-and-hostile-data">Damaged and hostile data</h2>
+<p>Every count, index and size is checked before it is used; CVE-2007-0038 came from a reader that trusted the <code>anih</code> header's size.
+The steps are checked against <code>SafetyLimits.MaxFrames</code> and every frame's size against the other limits before its pixels are
+allocated, and each stored frame is decoded once however often it shows. In lenient mode, the default, damage becomes a warning
+and the parts that can be used load: an <code>anih</code> chunk that is not 36 bytes is read for its first 36 (<code>Ani.HeaderSize</code>), a step
+that names a frame the file does not store is left out (<code>Ani.SequenceIndex</code>), a rate of 0 uses the default rate
+(<code>Ani.ZeroRate</code>), and a frame that cannot be read is left out with the steps that show it (<code>Ani.FrameDamaged</code>), as is the cut-off
+end of a truncated file. In strict mode each of these throws <code>CorruptDataException</code>; a file with no step left to show throws in
+both. Odd-sized chunks without RIFF's pad byte, which some writers leave out, are followed. The reader is fuzzed through whole
+files.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/ani.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

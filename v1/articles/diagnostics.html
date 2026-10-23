@@ -244,6 +244,76 @@ are found on the finalizer thread after the call has ended; see <a href="guides/
 </thead>
 <tbody>
 <tr>
+<td><code>Ani.ChunkPastEnd</code></td>
+<td>Warning</td>
+<td>An animated cursor's chunk, or a frame in its <code>fram</code> list, runs past the end of the file or the list; the bytes that are there were read</td>
+</tr>
+<tr>
+<td><code>Ani.ChunkRepeated</code></td>
+<td>Warning</td>
+<td>An animated cursor has a second <code>anih</code> header or <code>fram</code> list; the first was used</td>
+</tr>
+<tr>
+<td><code>Ani.FrameCount</code></td>
+<td>Warning</td>
+<td>An animated cursor's header gives a frame count its <code>fram</code> list contradicts; the frames in the list were used</td>
+</tr>
+<tr>
+<td><code>Ani.FrameDamaged</code></td>
+<td>Warning</td>
+<td>A frame of an animated cursor cannot be read or decoded; the steps that show it were left out</td>
+</tr>
+<tr>
+<td><code>Ani.HeaderSize</code></td>
+<td>Warning</td>
+<td>An animated cursor's <code>anih</code> header is not 36 bytes, or says it is not; its first 36 bytes were read</td>
+</tr>
+<tr>
+<td><code>Ani.IconInRawFile</code></td>
+<td>Warning</td>
+<td>An animated cursor's header says its frames are raw bitmaps, but a frame is an icon; it was read as one</td>
+</tr>
+<tr>
+<td><code>Ani.ListSize</code></td>
+<td>Warning</td>
+<td>An animated cursor's <code>rate</code> or <code>seq </code> chunk is not a whole number of 4-byte entries; the extra bytes were ignored</td>
+</tr>
+<tr>
+<td><code>Ani.RateCount</code></td>
+<td>Warning</td>
+<td>An animated cursor's <code>rate</code> chunk has a different number of entries than it has steps; steps without one use the default rate</td>
+</tr>
+<tr>
+<td><code>Ani.RiffSize</code></td>
+<td>Warning</td>
+<td>An animated cursor's RIFF header gives a size past the end of the file; the chunks that are there were read</td>
+</tr>
+<tr>
+<td><code>Ani.SequenceFlag</code></td>
+<td>Warning</td>
+<td>An animated cursor's header flag for a <code>seq </code> chunk disagrees with whether there is one; the chunk, if any, was used</td>
+</tr>
+<tr>
+<td><code>Ani.SequenceIndex</code></td>
+<td>Warning</td>
+<td>A step of an animated cursor shows a frame the file does not store; the step was left out</td>
+</tr>
+<tr>
+<td><code>Ani.SizeMissing</code></td>
+<td>Warning</td>
+<td>A frame of an animated cursor has no image at the size loaded; its nearest image was resized, hotspot and all</td>
+</tr>
+<tr>
+<td><code>Ani.StepCount</code></td>
+<td>Warning</td>
+<td>An animated cursor's header gives a step count its <code>seq </code> chunk or frames contradict; theirs was used</td>
+</tr>
+<tr>
+<td><code>Ani.ZeroRate</code></td>
+<td>Warning</td>
+<td>An animated cursor's default rate, or a step's rate, is 0; the step uses the default rate, or one jiffy (1/60 s) when that is 0 too</td>
+</tr>
+<tr>
 <td><code>Avif.BaseLayerOnly</code></td>
 <td>Warning</td>
 <td>An AVIF image is coded in layers whose later ones are inter frames, which Egami does not decode yet; its first layer was loaded</td>

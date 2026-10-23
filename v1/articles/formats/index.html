@@ -88,11 +88,11 @@
 <h1 id="formats">Formats</h1>
 
 <p>Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float
-map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors, and reads JBIG2, raw CCITT fax data, JPEG 2000
-and Photoshop's PSD and PSB. HEIC phone photos load through the separate, opt-in Egami.Heic package; core Egami detects and probes
-them. SVG and Windows metafiles (WMF, EMF) load through the separate <a href="../guides/svg.html">Egami.Svg</a> and
-<a href="../guides/metafiles.html">Egami.Metafiles</a> packages. Every reader checks sizes against the safety limits before it allocates, and
-every reader has been fuzzed.</p>
+map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors, and reads JBIG2, raw CCITT fax data, JPEG
+2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB. HEIC phone photos load through the separate, opt-in Egami.Heic
+package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
+<a href="../guides/svg.html">Egami.Svg</a> and <a href="../guides/metafiles.html">Egami.Metafiles</a> packages. Every reader checks sizes against the
+safety limits before it allocates, and every reader has been fuzzed.</p>
 <p>Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
 through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.html"><code>Av1StreamDecoder</code></a>, VP8 and AV1 frames encode through <a href="vp8.html#encoding"><code>Vp8StreamEncoder</code></a> and <a href="av1.html#encoding"><code>Av1StreamEncoder</code></a>, and the boxes of MP4, QuickTime and HEIF files can be walked with <a href="iso-boxes.html"><code>IsoBoxReader</code></a>. This page covers what all formats share: natural pixel types, detection, files with several images, and what writers drop.</p>
 <h2 id="at-a-glance">At a glance</h2>
@@ -185,6 +185,12 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <td><code>Rgba8</code></td>
 </tr>
 <tr>
+<td><a href="ani.html">ANI</a></td>
+<td>Animated cursors: every step as a frame with its delay, one size for all frames or every size with LoadAll; cursor, icon and raw-bitmap frames; hotspots, title and artist</td>
+<td>No</td>
+<td><code>Rgba8</code></td>
+</tr>
+<tr>
 <td><a href="psd.html">PSD, PSB</a></td>
 <td>The flattened image in every color mode (bitmap, gray, indexed, RGB, CMYK, Lab, duotone, multichannel) at 1 to 32 bits, raw, PackBits and Deflate; layer records and resources as metadata</td>
 <td>No</td>
@@ -244,7 +250,7 @@ switch (image)
 }
 </code></pre><h2 id="detection">Detection</h2>
 <p>Loading never trusts the file extension: the format comes from the first bytes, in the order PNG, JPEG, GIF, WebP, BMP, QOI, PNM,
-TIFF, JBIG2, JPEG 2000, ICO, CUR, PSD, Radiance, OpenEXR, JPEG XL (FF 0A or its signature box), AVIF (an ftyp box with the avif or avis brand), HEIC (an ftyp box with a HEVC brand such as heic or heix), then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
+TIFF, JBIG2, JPEG 2000, ICO, CUR, ANI, PSD, Radiance, OpenEXR, JPEG XL (FF 0A or its signature box), AVIF (an ftyp box with the avif or avis brand), HEIC (an ftyp box with a HEVC brand such as heic or heix), then TGA. TGA has no signature, so it is matched only when its whole 18-byte header is consistent. No file of another format in
 Egami's test corpora is taken for TGA, and neither is any of a million random headers. When you know the format, register only
 that one:</p>
 <pre><code class="lang-csharp">// TGA has no signature, so it is detected last. When you know a file is TGA, register only that format.
