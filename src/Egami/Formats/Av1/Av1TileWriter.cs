@@ -37,7 +37,7 @@ internal sealed class Av1FrameDecisions
 /// 2-clause, see THIRD-PARTY-NOTICES). Each part goes to an <see cref="IAv1SymbolSink"/>: the range encoder when writing, or a
 /// cost counter when the encoder weighs a choice, so the rate a search estimates is the rate it would write.
 /// </summary>
-internal class Av1TileCoder : Av1TileState
+internal partial class Av1TileCoder : Av1TileState
 {
     private protected readonly Av1FrameDecisions _decisions;
     private readonly int[] _coeffs = new int[32 * 32];
@@ -221,7 +221,7 @@ internal class Av1TileCoder : Av1TileState
         int bw = Av1Tables.MiSizeWide[bsize], bh = Av1Tables.MiSizeHigh[bsize];
         _b = b;
         SetBlockPosition(miRow, miCol, bw, bh);
-        CodeIntraFrameModeInfo(ref s);
+        CodeModeInfo(ref s);
         if (!b.IsInter)
         {
             for (int plane = 0; plane < Math.Min(2, _planes); plane++)
@@ -234,20 +234,20 @@ internal class Av1TileCoder : Av1TileState
         }
 
         bool lossless = _header.LosslessArray[b.SegmentId];
+        int xMis = Math.Min(bw, _miCols - miCol), yMis = Math.Min(bh, _frame.MiRows - miRow);
         if (_header.TxMode == Av1TxMode.Select && bsize > Bs.B4x4 && !b.Skip && b.IsInter && !lossless)
         {
-            CodeUnsplitTransformTree(ref s, bsize);
+            CodeVarTxTree(ref s, bsize);
         }
         else
         {
             CodeTxSize(ref s, bsize, b.IsInter, !b.Skip, lossless);
+            int txfmW = b.Skip && b.IsInter ? bw * 4 : Av1Tables.TxSizeWide[b.TxSize];
+            int txfmH = b.Skip && b.IsInter ? bh * 4 : Av1Tables.TxSizeHigh[b.TxSize];
+            _aboveTxfm.AsSpan(miCol - MiColStart, bw).Fill((byte)txfmW);
+            _leftTxfm.AsSpan(miRow & MaxMibMask, bh).Fill((byte)txfmH);
         }
 
-        int xMis = Math.Min(bw, _miCols - miCol), yMis = Math.Min(bh, _frame.MiRows - miRow);
-        int txfmW = b.Skip && b.IsInter ? bw * 4 : Av1Tables.TxSizeWide[b.TxSize];
-        int txfmH = b.Skip && b.IsInter ? bh * 4 : Av1Tables.TxSizeHigh[b.TxSize];
-        _aboveTxfm.AsSpan(miCol - MiColStart, bw).Fill((byte)txfmW);
-        _leftTxfm.AsSpan(miRow & MaxMibMask, bh).Fill((byte)txfmH);
         if (b.Skip)
         {
             ResetEntropyContext(bsize);
@@ -295,7 +295,15 @@ internal class Av1TileCoder : Av1TileState
             throw new InvalidOperationException("Intra block copy needs allow_intrabc.");
         }
 
-        s.Symbol(_cdf, Av1FrameContext.KfYMode[KfYModeContext()], 13, b.YMode);
+        CodeIntraModes(ref s, Av1FrameContext.KfYMode[KfYModeContext()]);
+    }
+
+    /// <summary>Codes an intra block's modes from its luma mode on: angles, chroma, palettes and filter intra, the luma mode from <paramref name="yModeAt"/>.</summary>
+    private protected void CodeIntraModes<TSink>(ref TSink s, int yModeAt)
+        where TSink : struct, IAv1SymbolSink
+    {
+        Av1BlockInfo b = _b;
+        s.Symbol(_cdf, yModeAt, 13, b.YMode);
         bool angleDelta = b.Size >= Bs.B8x8;
         if (angleDelta && Pred.IsDirectional(b.YMode))
         {
@@ -709,27 +717,70 @@ internal class Av1TileCoder : Av1TileState
     }
 
     /// <summary>
-    /// Writes an intra block copy block's transform tree, which the encoder never splits: a 0 for each largest transform block
-    /// (read_var_tx_size), each setting the transform contexts as the decoder does.
+    /// Writes an inter block's transform tree (read_var_tx_size) down to the block's transform size, which the encoder keeps the
+    /// same over the block, each node setting the transform contexts as the decoder does.
     /// </summary>
-    private protected void CodeUnsplitTransformTree<TSink>(ref TSink s, int bsize)
+    private protected void CodeVarTxTree<TSink>(ref TSink s, int bsize)
         where TSink : struct, IAv1SymbolSink
     {
         int maxTx = Av1Tables.MaxTxSizeRectLookup[bsize];
-        if (_b.TxSize != maxTx)
+        int txh = Av1Tables.TxSizeHighUnit[maxTx], txw = Av1Tables.TxSizeWideUnit[maxTx];
+        for (int idy = 0; idy < _bh; idy += txh)
         {
-            throw new InvalidOperationException("The encoder codes intra block copy blocks with their largest transform only.");
+            for (int idx = 0; idx < _bw; idx += txw)
+            {
+                CodeVarTxNode(ref s, maxTx, 0, idy, idx);
+            }
+        }
+    }
+
+    private void CodeVarTxNode<TSink>(ref TSink s, int txSize, int depth, int blkRow, int blkCol)
+        where TSink : struct, IAv1SymbolSink
+    {
+        int bsize = _b.Size;
+        if (blkRow >= MaxBlockHigh(bsize, 0) || blkCol >= MaxBlockWide(bsize, 0))
+        {
+            return;
         }
 
-        int txh = Av1Tables.TxSizeHighUnit[maxTx], txw = Av1Tables.TxSizeWideUnit[maxTx];
-        for (int blkRow = 0; blkRow < _bh && blkRow < MaxBlockHigh(bsize, 0); blkRow += txh)
+        int target = _b.TxSize;
+        if (depth == 2)
         {
-            for (int blkCol = 0; blkCol < _bw && blkCol < MaxBlockWide(bsize, 0); blkCol += txw)
+            Check(txSize);
+            SetVarTxSize(txSize, txSize, blkRow, blkCol);
+            return;
+        }
+
+        bool split = txSize != target;
+        s.Symbol(_cdf, Av1FrameContext.TxfmPartition[TxfmPartitionContext(blkRow, blkCol, bsize, txSize)], 2, split ? 1 : 0);
+        if (!split)
+        {
+            SetVarTxSize(txSize, txSize, blkRow, blkCol);
+            return;
+        }
+
+        int sub = Av1Tables.SubTxSizeMap[txSize];
+        if (sub == Tx.T4x4)
+        {
+            Check(sub);
+            SetVarTxSize(sub, txSize, blkRow, blkCol);
+            return;
+        }
+
+        int bsw = Av1Tables.TxSizeWideUnit[sub], bsh = Av1Tables.TxSizeHighUnit[sub];
+        for (int row = 0; row < Av1Tables.TxSizeHighUnit[txSize]; row += bsh)
+        {
+            for (int col = 0; col < Av1Tables.TxSizeWideUnit[txSize]; col += bsw)
             {
-                s.Symbol(_cdf, Av1FrameContext.TxfmPartition[TxfmPartitionContext(blkRow, blkCol, bsize, maxTx)], 2, 0);
-                int block = Av1Tables.TxSizeToBlockSize[maxTx];
-                _leftTxfm.AsSpan((_miRow & MaxMibMask) + blkRow, Av1Tables.MiSizeHigh[block]).Fill((byte)Av1Tables.TxSizeHigh[maxTx]);
-                _aboveTxfm.AsSpan(_miCol - MiColStart + blkCol, Av1Tables.MiSizeWide[block]).Fill((byte)Av1Tables.TxSizeWide[maxTx]);
+                CodeVarTxNode(ref s, sub, depth + 1, blkRow + row, blkCol + col);
+            }
+        }
+
+        void Check(int tx)
+        {
+            if (tx != target)
+            {
+                throw new InvalidOperationException($"An inter block's transform size {target} is not in its transform tree.");
             }
         }
     }

@@ -654,20 +654,4 @@ internal sealed partial class Av1TileParser : Av1TileState
         }
     }
 
-    /// <summary>Records a transform block of the transform tree: its size over the area of <paramref name="area"/> (set_inter_tx_size, txfm_partition_update).</summary>
-    private void SetVarTxSize(int txSize, int area, int blkRow, int blkCol)
-    {
-        _b.TxSize = txSize;
-        int rows = Math.Min(Av1Tables.TxSizeHighUnit[area], _frame.MiRows - _miRow - blkRow);
-        int cols = Math.Min(Av1Tables.TxSizeWideUnit[area], _miCols - _miCol - blkCol);
-        for (int y = 0; y < rows; y++)
-        {
-            _frame.TxSizeMap.AsSpan(((_miRow + blkRow + y) * _miCols) + _miCol + blkCol, cols).Fill((byte)txSize);
-        }
-
-        int bsize = Av1Tables.TxSizeToBlockSize[area];
-        _leftTxfm.AsSpan((_miRow & MaxMibMask) + blkRow, Av1Tables.MiSizeHigh[bsize]).Fill((byte)Av1Tables.TxSizeHigh[txSize]);
-        _aboveTxfm.AsSpan(_miCol - MiColStart + blkCol, Av1Tables.MiSizeWide[bsize]).Fill((byte)Av1Tables.TxSizeWide[txSize]);
-    }
-
 }

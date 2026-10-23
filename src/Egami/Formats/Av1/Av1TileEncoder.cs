@@ -1214,17 +1214,23 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         Span<bool> cdef = stackalloc bool[4];
         _cdefTransmitted.CopyTo(cdef);
         Av1CostSink rate = new(false);
-        CodeIntraFrameModeInfo(ref rate);
+        CodeModeInfo(ref rate);
         bool lossless = _header.LosslessArray[_b.SegmentId];
-        if (_b.IsInter && _header.TxMode == Av1TxMode.Select && _b.Size > Bs.B4x4 && !lossless)
+        if (_b.IsInter && _header.TxMode == Av1TxMode.Select && _b.Size > Bs.B4x4 && !lossless && !_b.Skip)
         {
-            // An intra block copy block's unsplit transform tree, assuming it has a residual.
-            rate.Symbol(_cdf, Av1FrameContext.TxfmPartition[TxfmPartitionContext(0, 0, _b.Size, _b.TxSize)], 2, 0);
+            // The transform tree, assuming the block has a residual, its contexts put back after.
+            Span<byte> above = stackalloc byte[16], left = stackalloc byte[16];
+            _aboveTxfm.AsSpan(_miCol - MiColStart, _bw).CopyTo(above);
+            _leftTxfm.AsSpan(_miRow & MaxMibMask, _bh).CopyTo(left);
+            CodeVarTxTree(ref rate, _b.Size);
+            above[.._bw].CopyTo(_aboveTxfm.AsSpan(_miCol - MiColStart));
+            left[.._bh].CopyTo(_leftTxfm.AsSpan(_miRow & MaxMibMask));
         }
-        else
+        else if (!_b.IsInter || !_b.Skip)
         {
-            CodeTxSize(ref rate, _b.Size, false, true, lossless);
+            CodeTxSize(ref rate, _b.Size, _b.IsInter, true, lossless);
         }
+
         _currentQIndex = savedQIndex;
         deltaLf.CopyTo(_deltaLf);
         cdef.CopyTo(_cdefTransmitted);

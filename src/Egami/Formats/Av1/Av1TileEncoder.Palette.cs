@@ -14,7 +14,7 @@ internal sealed partial class Av1TileEncoder
     private readonly ushort[][] _chromaPalettes = new ushort[7][];
     private readonly int[] _chromaPaletteSizes = new int[7];
     private int _chromaPaletteCount;
-    private readonly int[] _samples = new int[64 * 64];
+    private readonly int[] _paletteSamples = new int[64 * 64];
     private readonly int[] _values = new int[64 * 64];
     private readonly int[] _counts = new int[64 * 64];
     private readonly long[] _keys = new long[64 * 64];
@@ -156,7 +156,7 @@ internal sealed partial class Av1TileEncoder
     }
 
     /// <summary>
-    /// Gathers the current block's source samples inside the frame into <see cref="_samples"/>: luma values, or U and V packed
+    /// Gathers the current block's source samples inside the frame into <see cref="_paletteSamples"/>: luma values, or U and V packed
     /// as <c>u &lt;&lt; 16 | v</c>; returns their count.
     /// </summary>
     private int BlockSamples(int plane, bool uv)
@@ -173,7 +173,7 @@ internal sealed partial class Av1TileEncoder
             int at = ((y0 + r) * stride) + x0;
             for (int c = 0; c < cols; c++)
             {
-                _samples[count++] = second is null ? first[at + c] : (first[at + c] << 16) | second[at + c];
+                _paletteSamples[count++] = second is null ? first[at + c] : (first[at + c] << 16) | second[at + c];
             }
         }
 
@@ -183,7 +183,7 @@ internal sealed partial class Av1TileEncoder
     /// <summary>Makes <see cref="_values"/> and <see cref="_counts"/> the distinct samples and their counts, most frequent first; returns how many.</summary>
     private int Histogram(int count)
     {
-        Span<int> samples = _samples.AsSpan(0, count);
+        Span<int> samples = _paletteSamples.AsSpan(0, count);
         samples.CopyTo(_values);
         Span<int> values = _values.AsSpan(0, count);
         values.Sort();
