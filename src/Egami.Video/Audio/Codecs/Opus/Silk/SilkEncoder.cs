@@ -74,7 +74,7 @@ internal sealed class SilkEncoder
     /// silk_Encode: buffers, resamples and encodes <paramref name="nSamplesIn"/> samples per channel (10 to 60 ms, at most one
     /// packet). <paramref name="nBytesOut"/> is the maximum payload in and the payload size out. Returns 0 or a SILK error code.
     /// </summary>
-    public int Encode(SilkEncControl encControl, ReadOnlySpan<short> samplesIn, int nSamplesIn, OpusRangeEncoder enc, ref int nBytesOut,
+    public int Encode(SilkEncControl encControl, ReadOnlySpan<short> samplesIn, int nSamplesIn, OpusRangeEncoder? enc, ref int nBytesOut,
         int prefillFlag, int activity)
     {
         int ret = 0;
@@ -261,8 +261,8 @@ internal sealed class SilkEncoder
                 {
                     // Room at the start of the payload for the VAD and LBRR flags, patched in at the end.
                     Span<byte> iCdf = [(byte)(256 - (256 >> ((s0.NFramesPerPacket + 1) * encControl.NChannelsInternal))), 0];
-                    enc.EncodeIcdf(0, iCdf, 8);
-                    currNBitsUsedLbrr = enc.Tell();
+                    enc!.EncodeIcdf(0, iCdf, 8);
+                    currNBitsUsedLbrr = enc!.Tell();
 
                     for (int n = 0; n < encControl.NChannelsInternal; n++)
                     {
@@ -276,7 +276,7 @@ internal sealed class SilkEncoder
                         sn.LbrrFlag = lbrrSymbol > 0 ? (sbyte)1 : (sbyte)0;
                         if (lbrrSymbol != 0 && sn.NFramesPerPacket > 1)
                         {
-                            enc.EncodeIcdf(lbrrSymbol - 1, sn.NFramesPerPacket == 2 ? SilkTables.LbrrFlags2Icdf : SilkTables.LbrrFlags3Icdf, 8);
+                            enc!.EncodeIcdf(lbrrSymbol - 1, sn.NFramesPerPacket == 2 ? SilkTables.LbrrFlags2Icdf : SilkTables.LbrrFlags3Icdf, 8);
                         }
                     }
 
@@ -289,16 +289,16 @@ internal sealed class SilkEncoder
                             {
                                 if (encControl.NChannelsInternal == 2 && n == 0)
                                 {
-                                    SilkEntropyEncoder.StereoEncodePred(enc, _sStereo.PredIx.AsSpan(i * 6, 6));
+                                    SilkEntropyEncoder.StereoEncodePred(enc!, _sStereo.PredIx.AsSpan(i * 6, 6));
                                     if (s1.LbrrFlags[i] == 0)
                                     {
-                                        SilkEntropyEncoder.StereoEncodeMidOnly(enc, _sStereo.MidOnlyFlags[i]);
+                                        SilkEntropyEncoder.StereoEncodeMidOnly(enc!, _sStereo.MidOnlyFlags[i]);
                                     }
                                 }
 
                                 int condCoding = i > 0 && sn.LbrrFlags[i - 1] != 0 ? CodeConditionally : CodeIndependently;
-                                sn.EncodeIndices(enc, i, true, condCoding);
-                                SilkEntropyEncoder.EncodePulses(enc, sn.IndicesLbrr[i].SignalType, sn.IndicesLbrr[i].QuantOffsetType,
+                                sn.EncodeIndices(enc!, i, true, condCoding);
+                                SilkEntropyEncoder.EncodePulses(enc!, sn.IndicesLbrr[i].SignalType, sn.IndicesLbrr[i].QuantOffsetType,
                                     sn.PulsesLbrr.AsSpan(i * MaxFrameLength, MaxFrameLength), sn.FrameLength);
                             }
                         }
@@ -309,7 +309,7 @@ internal sealed class SilkEncoder
                         Array.Clear(_stateFxx[n].LbrrFlags);
                     }
 
-                    currNBitsUsedLbrr = enc.Tell() - currNBitsUsedLbrr;
+                    currNBitsUsedLbrr = enc!.Tell() - currNBitsUsedLbrr;
                 }
 
                 s0.HpVariableCutoff();
@@ -338,7 +338,7 @@ internal sealed class SilkEncoder
                 targetRateBps -= _nBitsExceeded * 1000 / BitreservoirDecayTimeMs;
                 if (prefillFlag == 0 && s0.NFramesEncoded > 0)
                 {
-                    int bitsBalance = enc.Tell() - _nBitsUsedLbrr - (nBits * s0.NFramesEncoded);
+                    int bitsBalance = enc!.Tell() - _nBitsUsedLbrr - (nBits * s0.NFramesEncoded);
                     targetRateBps -= bitsBalance * 1000 / BitreservoirDecayTimeMs;
                 }
 
@@ -376,10 +376,10 @@ internal sealed class SilkEncoder
 
                     if (prefillFlag == 0)
                     {
-                        SilkEntropyEncoder.StereoEncodePred(enc, _sStereo.PredIx.AsSpan(frame * 6, 6));
+                        SilkEntropyEncoder.StereoEncodePred(enc!, _sStereo.PredIx.AsSpan(frame * 6, 6));
                         if (s1.VadFlags[frame] == 0)
                         {
-                            SilkEntropyEncoder.StereoEncodeMidOnly(enc, _sStereo.MidOnlyFlags[frame]);
+                            SilkEntropyEncoder.StereoEncodeMidOnly(enc!, _sStereo.MidOnlyFlags[frame]);
                         }
                     }
                 }
@@ -444,7 +444,7 @@ internal sealed class SilkEncoder
                             condCoding = CodeConditionally;
                         }
 
-                        nBytesOut = sn.EncodeFrame(enc, condCoding, maxBits, useCbr);
+                        nBytesOut = sn.EncodeFrame(enc!, condCoding, maxBits, useCbr);
                     }
 
                     sn.ControlledSinceLastPayload = 0;
@@ -472,7 +472,7 @@ internal sealed class SilkEncoder
 
                     if (prefillFlag == 0)
                     {
-                        enc.PatchInitialBits((uint)flags, (s0.NFramesPerPacket + 1) * encControl.NChannelsInternal);
+                        enc!.PatchInitialBits((uint)flags, (s0.NFramesPerPacket + 1) * encControl.NChannelsInternal);
                     }
 
                     if (s0.InDtx != 0 && (encControl.NChannelsInternal == 1 || s1.InDtx != 0))

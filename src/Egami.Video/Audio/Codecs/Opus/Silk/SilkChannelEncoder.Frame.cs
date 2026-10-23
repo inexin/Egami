@@ -56,7 +56,7 @@ internal sealed partial class SilkChannelEncoder
     /// silk_encode_frame_FLP: analyses and encodes the buffered frame, searching the gains for a size within
     /// <paramref name="maxBits"/>. Returns the payload bytes so far.
     /// </summary>
-    public int EncodeFrame(OpusRangeEncoder enc, int condCoding, int maxBits, bool useCbr)
+    public int EncodeFrame(OpusRangeEncoder? enc, int condCoding, int maxBits, bool useCbr)
     {
         SilkEncoderControl ctrl = _control;
         ctrl.Clear();
@@ -95,7 +95,7 @@ internal sealed partial class SilkChannelEncoder
             int gainsId = SilkEncoderQuant.GainsId(Indices.GainsIndices, NbSubfr);
             int gainsIdLower = -1;
             int gainsIdUpper = -1;
-            OpusRangeEncoder.EncoderState rangeCopy = enc.State;
+            OpusRangeEncoder.EncoderState rangeCopy = enc!.State;
             OpusRangeEncoder.EncoderState rangeCopy2 = default;
             _nsqCopy.CopyFrom(SNsq);
             sbyte seedCopy = Indices.Seed;
@@ -281,7 +281,7 @@ internal sealed partial class SilkChannelEncoder
         PrevLag = ctrl.PitchL[NbSubfr - 1];
         PrevSignalType = Indices.SignalType;
         FirstFrameAfterReset = 0;
-        return (enc.Tell() + 7) >> 3;
+        return (enc!.Tell() + 7) >> 3;
     }
 
     // silk_LBRR_encode_FLP: quantizes the frame again with higher gains for the in-band redundancy of the next packet.
