@@ -127,4 +127,24 @@ internal static class H264Samples
             v.AsUInt16().StoreUnsafe(ref Unsafe.As<T, ushort>(ref to));
         }
     }
+
+    /// <summary>Loads four samples into 32-bit lanes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<int> Load4Wide<T>(ref T at, nint offset)
+        where T : unmanaged
+    {
+        ref byte from = ref Unsafe.As<T, byte>(ref Unsafe.Add(ref at, offset));
+        return Narrow<T>()
+            ? Vector128.WidenLower(Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<uint>(ref from)).AsByte()).AsInt16())
+            : Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref from)).AsUInt16()).AsInt32();
+    }
+
+    /// <summary>Stores four 32-bit lanes as samples; the values are in the sample range.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void Store4Wide<T>(ref T at, nint offset, Vector128<int> v)
+        where T : unmanaged
+    {
+        Vector128<short> words = Vector128.Narrow(v, v);
+        Store4(ref at, offset, words);
+    }
 }

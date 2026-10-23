@@ -1,3 +1,8 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>The inverse 4x4 and 8x8 transforms (8.5.12.2, 8.5.13.2), added to the prediction in a plane.</summary>
@@ -28,6 +33,12 @@ internal static class H264Transform
             return;
         }
 
+        if (Vector128.IsHardwareAccelerated && Sse2.IsSupported && H264Inter.UseVectors)
+        {
+            Add4x4Vector(d, plane, at, stride, max);
+            return;
+        }
+
         Span<int> f = stackalloc int[16];
         for (int i = 0; i < 4; i++)
         {
@@ -48,6 +59,51 @@ internal static class H264Transform
             Add(plane, at + (2 * stride) + j, max, g1 - g2);
             Add(plane, at + (3 * stride) + j, max, g0 - g3);
         }
+    }
+
+    /// <summary>
+    /// <see cref="Add4x4"/> in 32-bit lanes: the rows are transposed so each butterfly of the row transform handles all four rows,
+    /// then transposed back for the column transform, whose lanes are then the columns of the block.
+    /// </summary>
+    private static void Add4x4Vector<T>(Span<int> d, T[] plane, int at, int stride, int max)
+        where T : unmanaged
+    {
+        if (d.Length < 16 || at < 0 || at + (3 * stride) + 8 > plane.Length)
+        {
+            throw H264Errors.Corrupt("A residual block lies outside the picture.");
+        }
+
+        ref int r = ref MemoryMarshal.GetReference(d);
+        Vector128<int> c0 = Vector128.LoadUnsafe(ref r), c1 = Vector128.LoadUnsafe(ref r, 4), c2 = Vector128.LoadUnsafe(ref r, 8), c3 = Vector128.LoadUnsafe(ref r, 12);
+        Transpose(ref c0, ref c1, ref c2, ref c3);
+        Vector128<int> e0 = c0 + c2, e1 = c0 - c2, e2 = (c1 >> 1) - c3, e3 = c1 + (c3 >> 1);
+        Vector128<int> f0 = e0 + e3, f1 = e1 + e2, f2 = e1 - e2, f3 = e0 - e3;
+        Transpose(ref f0, ref f1, ref f2, ref f3);
+        Vector128<int> g0 = f0 + f2, g1 = f0 - f2, g2 = (f1 >> 1) - f3, g3 = f1 + (f3 >> 1);
+        ref T s = ref H264Samples.At(plane, at);
+        Vector128<int> round = Vector128.Create(32), top = Vector128.Create(max);
+        AddRow(ref s, 0, g0 + g3, round, top);
+        AddRow(ref s, stride, g1 + g2, round, top);
+        AddRow(ref s, 2 * stride, g1 - g2, round, top);
+        AddRow(ref s, 3 * stride, g0 - g3, round, top);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void AddRow<T>(ref T s, int offset, Vector128<int> residual, Vector128<int> round, Vector128<int> top)
+        where T : unmanaged
+    {
+        Vector128<int> v = H264Samples.Load4Wide(ref s, offset) + ((residual + round) >> 6);
+        H264Samples.Store4Wide(ref s, offset, Vector128.Min(Vector128.Max(v, Vector128<int>.Zero), top));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Transpose(ref Vector128<int> a0, ref Vector128<int> a1, ref Vector128<int> a2, ref Vector128<int> a3)
+    {
+        Vector128<int> t0 = Sse2.UnpackLow(a0, a1), t1 = Sse2.UnpackHigh(a0, a1), t2 = Sse2.UnpackLow(a2, a3), t3 = Sse2.UnpackHigh(a2, a3);
+        a0 = Sse2.UnpackLow(t0.AsInt64(), t2.AsInt64()).AsInt32();
+        a1 = Sse2.UnpackHigh(t0.AsInt64(), t2.AsInt64()).AsInt32();
+        a2 = Sse2.UnpackLow(t1.AsInt64(), t3.AsInt64()).AsInt32();
+        a3 = Sse2.UnpackHigh(t1.AsInt64(), t3.AsInt64()).AsInt32();
     }
 
     /// <summary>Transforms an 8x8 block of scaled coefficients (raster order) and adds it to the plane.</summary>
