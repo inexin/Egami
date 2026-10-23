@@ -74,6 +74,8 @@ internal sealed class FfmpegLine
 
     public string? VideoFilter { get; set; }
 
+    public string? AudioFilter { get; set; }
+
     public string? ComplexFilter { get; set; }
 
     public string? SegmentTime { get; set; }
@@ -167,6 +169,7 @@ internal sealed class FfmpegLine
                 case "-map_metadata": line.MapMetadata = Next(); break;
                 case "-map_chapters": line.MapChapters = Next(); break;
                 case "-vf" or "-filter:v" or "-filter:v:0": line.VideoFilter = Next(); break;
+                case "-af" or "-filter:a" or "-filter:a:0": line.AudioFilter = Next(); break;
                 case "-lavfi" or "-filter_complex": line.ComplexFilter = Next(); break;
                 case "-segment_time": line.SegmentTime = Next(); break;
                 case "-segment_times": line.SegmentTimes = Next(); break;

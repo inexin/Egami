@@ -212,7 +212,7 @@ internal static class EncodeCommand
         return null;
     }
 
-    private static VideoCodec FindCodec(VideoSession session, string? name, ContainerFormat container)
+    internal static VideoCodec FindCodec(VideoSession session, string? name, ContainerFormat container)
     {
         string key = (name ?? (container is Y4mFormat ? "raw" : "mjpeg")).ToLowerInvariant();
         VideoCodec codec = key switch
@@ -244,7 +244,7 @@ internal static class EncodeCommand
     }
 
     /// <summary>Parses a frame rate: 25, 29.97 (read as 30000/1001), or 30000/1001.</summary>
-    private static Rational ParseRate(string text)
+    internal static Rational ParseRate(string text)
     {
         Rational rate;
         try
@@ -274,7 +274,7 @@ internal static class EncodeCommand
         static UsageException BadRate(string text) => new($"--rate '{text}' is not a frame rate: give frames per second above 0 and at most 1000, such as 25, 29.97 or 30000/1001.");
     }
 
-    private static Size ParseSize(string text)
+    internal static Size ParseSize(string text)
     {
         string[] parts = text.ToLowerInvariant().Split('x');
         return parts.Length == 2
