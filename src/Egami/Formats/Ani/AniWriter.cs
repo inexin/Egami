@@ -20,6 +20,9 @@ internal sealed class AniWriter : IFormatWriter
     /// <summary>A delay shorter than this plays as <see cref="ShortDelayJiffies"/>, as browsers play GIFs.</summary>
     private static readonly TimeSpan s_shortDelay = TimeSpan.FromMilliseconds(20);
 
+    /// <summary>The text entries the INFO list holds: the title and the artist.</summary>
+    private static readonly string[] s_textKeys = ["Title", "Author"];
+
     /// <summary>100 ms in jiffies.</summary>
     private const int ShortDelayJiffies = 6;
 
@@ -45,7 +48,7 @@ internal sealed class AniWriter : IFormatWriter
             SaveLosses.Report(context, "Save.IcoFitted", $"ANI: the {raster.Width}×{raster.Height} raster is larger than a cursor entry's 256 × 256; it was fitted to {width}×{height}. Set AniWriterOptions.Sizes to choose the sizes.");
         }
 
-        SaveLosses.Report(new EncodeStart<TPixel>(raster.Width, raster.Height, raster.Metadata, ani, context, raster, seekable: false), "ANI", SaveKeeps.Alpha | SaveKeeps.Frames | (AnyPng(raster, ani) ? SaveKeeps.Icc | SaveKeeps.Resolution : SaveKeeps.None));
+        SaveLosses.Report(new EncodeStart<TPixel>(raster.Width, raster.Height, raster.Metadata, ani, context, raster, seekable: false), "ANI", SaveKeeps.Alpha | SaveKeeps.Frames | SaveKeeps.Comment | (AnyPng(raster, ani) ? SaveKeeps.Icc | SaveKeeps.Resolution : SaveKeeps.None), s_textKeys);
         if (raster.Metadata.LoopCount != 0 && raster.FrameCount > 1)
         {
             SaveLosses.Report(context, "Save.AniLoops", $"ANI animations always loop; the raster's LoopCount of {raster.Metadata.LoopCount} was not written.");
@@ -118,8 +121,8 @@ internal sealed class AniWriter : IFormatWriter
             icons.Add(Cursor(raster, stored[s], hotspots[s], width, height, cursor));
         }
 
-        string? title = ani.Title ?? details?.Title;
-        string? artist = ani.Artist ?? details?.Artist;
+        string? title = ani.Title ?? details?.Title ?? FromText(raster, ani, "Title");
+        string? artist = ani.Artist ?? details?.Artist ?? FromText(raster, ani, "Author");
 
         using MemoryStream body = new();
         body.Write("ACON"u8);
@@ -158,20 +161,27 @@ internal sealed class AniWriter : IFormatWriter
             WriteChunk(body, "seq "u8, Words(sequence));
         }
 
-        using MemoryStream frames = new();
-        frames.Write("fram"u8);
+        // The frames go straight to the output after the small chunks before them; their lengths are known.
+        long frames = 4;
         foreach (byte[] icon in icons)
         {
-            WriteChunk(frames, "icon"u8, icon);
+            frames += 8 + icon.Length + (icon.Length & 1);
         }
 
-        WriteChunk(body, "LIST"u8, frames.ToArray());
-        Span<byte> riff = stackalloc byte[8];
-        "RIFF"u8.CopyTo(riff);
-        BinaryPrimitives.WriteUInt32LittleEndian(riff[4..], checked((uint)body.Length));
-        output.Write(riff);
+        Span<byte> head = stackalloc byte[8];
+        "RIFF"u8.CopyTo(head);
+        BinaryPrimitives.WriteUInt32LittleEndian(head[4..], checked((uint)(body.Length + 8 + frames)));
+        output.Write(head);
         body.Position = 0;
         body.CopyTo(output);
+        "LIST"u8.CopyTo(head);
+        BinaryPrimitives.WriteUInt32LittleEndian(head[4..], checked((uint)frames));
+        output.Write(head);
+        output.Write("fram"u8);
+        foreach (byte[] icon in icons)
+        {
+            WriteChunk(output, "icon"u8, icon);
+        }
     }
 
     /// <summary>
@@ -223,6 +233,12 @@ internal sealed class AniWriter : IFormatWriter
                 rgba.Dispose();
             }
         }
+    }
+
+    /// <summary>Returns the raster's first text entry with <paramref name="key"/>, unless metadata is stripped.</summary>
+    private static string? FromText(Raster raster, AniWriterOptions options, string key)
+    {
+        return options.StripMetadata ? null : raster.Metadata.Text.FirstOrDefault(t => t.Key == key)?.Value;
     }
 
     /// <summary>Returns whether any entry may be written as PNG, which keeps the ICC profile and resolution.</summary>

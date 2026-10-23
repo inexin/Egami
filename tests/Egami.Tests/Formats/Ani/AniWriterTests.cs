@@ -147,6 +147,27 @@ public class AniWriterTests
     }
 
     [Fact]
+    public void TitleAndArtistTravelAsTextEntries()
+    {
+        List<EgamiDiagnostic> warnings = [];
+        EgamiContext context = EgamiContext.Default with { Diagnostics = warnings.Add };
+        using Raster<Rgba8> animation = Animation(16, [1, 2], [100, 100], [default, default], context);
+        animation.Metadata.Text.Add(new TextEntry("Title", "From PNG"));
+        animation.Metadata.Text.Add(new TextEntry("Author", "Someone"));
+        byte[] data = Save(animation, new AniWriterOptions());
+        Assert.DoesNotContain(warnings, w => w.Id == "Save.MetadataDropped");
+
+        using Raster<Rgba8> loaded = Raster.Load<Rgba8>(data, options: Strict);
+        Assert.Equal(("From PNG", "Someone"), (((AniDetails)loaded.Metadata.FormatDetails!).Title, ((AniDetails)loaded.Metadata.FormatDetails!).Artist));
+        Assert.Equal(["Title=From PNG", "Author=Someone"], loaded.Metadata.Text.Select(t => $"{t.Key}={t.Value}"));
+        Assert.True(Raster.Probe(data).HasMetadata);
+
+        // The options come first, then the details, then the text entries.
+        using Raster<Rgba8> again = Raster.Load<Rgba8>(Save(loaded, new AniWriterOptions { Artist = "Options" }), options: Strict);
+        Assert.Equal(("From PNG", "Options"), (((AniDetails)again.Metadata.FormatDetails!).Title, ((AniDetails)again.Metadata.FormatDetails!).Artist));
+    }
+
+    [Fact]
     public void AnyPixelTypeAndAOneFrameRasterSave()
     {
         using Raster<Rgba16> deep = Raster.Create<Rgba16>(8, 8);
