@@ -360,7 +360,7 @@ public static class Hocr
         private void Open(string name, Dictionary<string, string> attributes, bool empty)
         {
             string? language = attributes.GetValueOrDefault("lang") ?? attributes.GetValueOrDefault("xml:lang");
-            language = string.IsNullOrWhiteSpace(language) ? (_open.Count > 0 ? _open[^1].Language : null) : language.Trim();
+            language = string.IsNullOrWhiteSpace(language) ? (_open.Count > 0 ? _open[^1].Language : null) : OcrText.ForXml(language.Trim());
             string[] classes = attributes.GetValueOrDefault("class")?.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries) ?? [];
             string title = attributes.GetValueOrDefault("title") ?? string.Empty;
 
@@ -499,7 +499,7 @@ public static class Hocr
             }
 
             _wordBox = null;
-            string word = OcrText.Collapse(_wordText.ToString());
+            string word = OcrText.ForXml(OcrText.Collapse(_wordText.ToString()));
             _wordText.Clear();
             if (word.Length == 0)
             {

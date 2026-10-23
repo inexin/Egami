@@ -13,6 +13,19 @@ changes that break code come only in a new major version.
 - Exit code 130 (`ExitCodes.Cancelled`) for a run stopped with Ctrl+C, and progress from within one file for the MCP server's
   notifications, both for `egami-video`.
 
+### Text recognition (OCR)
+
+- A new namespace, `Egami.Ocr`: one shape for every OCR engine, so code that needs text from an image works with whichever engine
+  is plugged in. Egami ships no engine and links no native code. `IOcrEngine.RecognizeAsync` takes an `OcrRequest` (a
+  `Raster<Rgba8>`, its resolution, languages and page index) and returns an `OcrResult`: lines of `OcrWord`s with text, an
+  `OcrQuad` box (four corners, so turned and skewed words keep their shape), confidence and language, plus the page rotation the
+  engine found. `OcrEngineInfo` gives an engine's languages, largest image and whether calls may overlap.
+- `Hocr` and `Alto` read and write hOCR (as browsers read HTML, with `textangle` turns) and ALTO 1 to 4 (pixels, 1/10 mm and
+  1/1200 inch, `HYP` hyphens), under `OcrReadOptions` limits and without fetching any DTD or file.
+- `CommandOcrEngine` runs any OCR program that writes hOCR or ALTO, such as `tesseract {image} {output} -l {langs} hocr`, without a
+  shell, with a timeout and its own temporary folder per run; failures throw `OcrEngineException`.
+- Samples (not packed): Tesseract and Azure AI Document Intelligence in `samples/Ocr`, Windows OCR in `samples/OcrWindows`.
+
 ### Animated cursors
 
 - Windows animated cursors (.ani) load: `AniFormat.Info` is registered in `EgamiContext.Default`. Load gives one animated raster

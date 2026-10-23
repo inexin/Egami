@@ -108,6 +108,8 @@
       href: guides/analysis.md
     - name: Palettes and dithering
       href: guides/palettes.md
+    - name: Text recognition (OCR)
+      href: guides/ocr.md
 - name: "Egami: extending"
   items:
     - name: Custom operations and formats
