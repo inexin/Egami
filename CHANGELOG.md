@@ -175,6 +175,8 @@ after V5.6 (Design Q17).
   they are; other frames are converted to BT.601 limited range.
 - `Vp8EncoderOptions` (`VideoEncoderOptions.Vp8`): quantizer limits, alternate references, golden frame spacing, temporal
   filter frames and strength, token partitions, error resilience, alpha.
+- `egami-video encode --codec vp8` with `--effort` and `--bitrate`, and `run` keeps VP8 sources VP8; `egami-video ffmpeg`
+  takes `-c:v libvpx`.
 
 ### Encoder settings
 
@@ -187,7 +189,7 @@ after V5.6 (Design Q17).
 - Two passes: `VideoWriter.AnalyzeFirstPass` over frames or a file gives `FirstPassStats`, which `Save` and `Load` keep in a
   file.
 - The lookahead places keyframes at scene cuts, plans groups with hidden, temporally filtered alternate references where the
-  motion lets frames reach them, and gives each frame its quantizer. Output bytes do not depend on the thread count.
+  group's first frame still predicts its last well, and gives each frame its quantizer. Output bytes do not depend on the thread count.
 
 ## Egami.Video.Cli 0.5.0 (unreleased)
 

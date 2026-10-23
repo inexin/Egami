@@ -718,8 +718,9 @@ internal static class FfmpegTranslator
     private static string VideoCodec(string codec) => codec switch
     {
         "mjpeg" => "mjpeg",
+        "libvpx" or "vp8" => "vp8",
         "rawvideo" => "raw",
-        _ => throw FfmpegMode.Unsupported($"-c:v {codec}", why: "egami-video encodes mjpeg and rawvideo, and copies"),
+        _ => throw FfmpegMode.Unsupported($"-c:v {codec}", why: "egami-video encodes mjpeg, libvpx (VP8) and rawvideo, and copies"),
     };
 
     private static string AudioCodec(string codec) => codec switch
