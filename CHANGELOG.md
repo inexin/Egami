@@ -445,6 +445,23 @@ V1.4 stage D: audio pictures.
 - Both read a file or any run of `AudioFrame`s once with constant memory: three hours of audio cost no more than three
   seconds. The pictures carry no text; the CLI adds axes and legends.
 
+V1.4 stage E: the command line.
+
+- `egami-video analyze`: every detector in one pass (`--detect` or `--all`: scenes, black, freeze, crop, interlace, duplicates,
+  signal, blur, blockiness, silence, levels, loudness), with each ffmpeg filter's settings under its own names
+  (`--black-min`, `--silence-noise -50dB`, `--crop-limit` …), `--start` and `--duration`, text, `--json` or `--csv`, and
+  `--series` for per-frame and per-100 ms values. It is a read-only tool in `egami-video mcp`.
+- `scenes`: `--min-length` (`--min-gap` still works), `--fades`, `--flash merge|suppress`, `--frame first|middle|last` and
+  `--series`.
+- `waveform` and `spectrum` draw audio pictures, with `--legend` for a time axis and level or frequency labels;
+  `generate` writes test clips and sounds (pattern, bars, solid, gradient; sine, silence, noise, sweep).
+- `segment --scenes` splits at scene changes, each part from the keyframe at or before its scene, reporting the gap and
+  warning past a second; `--exact` waits for smart cut (V5.6). `run --crop auto` crops black bars off before the steps.
+- `egami-video ffmpeg`: blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect,
+  volumedetect, astats and ebur128 with `-f null -` run `analyze` and print ffmpeg's log lines (`analyze --ffmpeg-log`);
+  `-f lavfi` testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc run `generate`; showwavespic and
+  showspectrumpic run `waveform` and `spectrum`. `-af` is parsed; filters outside these stop with exit code 2.
+
 V5.3: VP9 encoding. API review pending (combined encoders review).
 
 ### VP9 encoding

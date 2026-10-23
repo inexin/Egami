@@ -22,6 +22,7 @@ internal static class RunVideoCommand
     {
         ["--codec"] = true,
         ["--rate"] = true,
+        ["--crop"] = true,
         ["--track"] = true,
         ["-t"] = true,
         ["--no-audio"] = false,
@@ -48,6 +49,7 @@ internal static class RunVideoCommand
         command.Options.Add(new Option<string?>("--format", "-f") { Description = "The output container (mkv, avi …), when the output's extension does not say.", HelpName = "container" });
         command.Options.Add(new Option<string?>("--codec") { Description = "The video codec to encode with: mjpeg, vp8, vp9 or raw. The input's codec when Egami.Video can encode it, else mjpeg.", HelpName = "codec" });
         command.Options.Add(new Option<int?>("--quality") { Description = "The encoder's quality from 1 to 100.", HelpName = "1-100" });
+        command.Options.Add(new Option<string?>("--crop") { Description = "auto finds the black bars of letterbox, pillarbox and windowbox video, as the analyze command's crop detector does, and crops them off before the other steps.", HelpName = "auto" });
         command.Options.Add(new Option<string?>("--rate") { Description = "Frames per second of the output, dropping or repeating frames to match; frames keep their own times by default.", HelpName = "fps" });
         command.Options.Add(new Option<string?>("--track", "-t") { Description = "Which video track to run the steps over: v:1 for the second, or a track number; audio and subtitle tracks are copied.", HelpName = "track" });
         command.Options.Add(new Option<bool>("--no-audio", "-an") { Description = "Leave out the audio tracks." });
@@ -94,7 +96,13 @@ internal static class RunVideoCommand
             throw new UsageException("run takes no --to: frames are decoded to sRGB; use a convert-profile step to change their colors.");
         }
 
-        List<PipelineItem> items = Items(session, parsed);
+        bool autoCrop = Last(own, "--crop") switch
+        {
+            null => false,
+            "auto" => true,
+            string other => throw new UsageException($"--crop '{other}' is not auto; to crop by numbers, use the crop step: crop x y width height."),
+        };
+        List<PipelineItem> items = Items(session, parsed, autoCrop);
         List<BoundStep> steps = [];
         SaveSpec? save = null;
         foreach (PipelineItem item in items)
@@ -147,6 +155,7 @@ internal static class RunVideoCommand
             Last(own, "--codec") is { } codec ? FindCodec(session, codec) : null,
             Last(own, "--rate") is { } rate ? PictureFrames.ParseRate(rate, "--rate") : null,
             quality,
+            autoCrop,
             TrackSelection.Parse(own.GetValueOrDefault("--track"), own.ContainsKey("--no-audio"), own.ContainsKey("--no-subtitles")));
 
         if (parsed.Flags.Contains("--dry-run"))
@@ -176,7 +185,7 @@ internal static class RunVideoCommand
     }
 
     /// <summary>The steps from the command line or a workflow file.</summary>
-    private static List<PipelineItem> Items(VideoSession session, RunCommand.Parsed parsed)
+    private static List<PipelineItem> Items(VideoSession session, RunCommand.Parsed parsed, bool autoCrop)
     {
         List<PipelineItem> items;
         if (parsed.Value("--workflow") is { } workflowPath)
@@ -193,7 +202,7 @@ internal static class RunVideoCommand
             items = [.. parsed.Steps.Select(RunCommand.Bind)];
         }
 
-        return items.Count > 0
+        return items.Count > 0 || autoCrop
             ? items
             : throw new UsageException("No steps: 'egami-video run in.mkv resize 1280x + save out.mkv', or --workflow file.json. 'egami-video run --list' lists the steps.");
     }
@@ -338,13 +347,14 @@ internal static class RunVideoCommand
     }
 
     /// <summary>The steps and encoder settings of a run, applied to one input at a time.</summary>
-    private sealed class RunJob(List<BoundStep> steps, VideoCodec? codec, Rational? rate, int? quality, TrackSelection selection)
+    private sealed class RunJob(List<BoundStep> allSteps, VideoCodec? codec, Rational? rate, int? quality, bool autoCrop, TrackSelection selection)
     {
         /// <summary>Decodes an input's video, runs the steps over every frame and encodes the frames into <paramref name="target"/>.</summary>
         public void Run(VideoSession session, InputFile input, MediaTarget target, int count)
         {
             using FrameSource source = FrameSource.Open(session, input, selection);
             VideoTrackInfo track = source.Track;
+            List<BoundStep> steps = autoCrop && AutoCrop(session, input, track, count) is { } crop ? [crop, .. allSteps] : allSteps;
             if (target.IsStdout && target.Container is AviFormat)
             {
                 throw new UsageException("AVI needs a file it can seek in; write mkv or y4m to standard output.");
@@ -396,6 +406,29 @@ internal static class RunVideoCommand
                 writer.Finish();
                 progress.Finish();
             });
+        }
+
+        /// <summary>
+        /// <c>--crop auto</c>: one pass of the crop detector over the track, then a crop step to the rectangle it found, or none when
+        /// the picture has no bars.
+        /// </summary>
+        private static BoundStep? AutoCrop(VideoSession session, InputFile input, VideoTrackInfo track, int count)
+        {
+            string path = input.Path ?? throw new UsageException("--crop auto reads the video twice, so it needs a file, not standard input.");
+            Analysis.CropDetector detector = new(new Analysis.CropOptions());
+            Analysis.MediaAnalysis.Run(path, new Analysis.MediaAnalysisOptions { VideoDetectors = [detector], VideoTrack = track.Number },
+                session.Context, session.ProgressSink?.For(input, input.Index, count), session.Cancellation);
+            Analysis.CropReport report = detector.Report;
+            Rect r = report.Crop;
+            if (report.Frames == 0 || r.Width <= 0 || r.Height <= 0 || (r.Width == report.FrameSize.Width && r.Height == report.FrameSize.Height))
+            {
+                session.Info($"{input.Display}: --crop auto found no bars to crop");
+                return null;
+            }
+
+            session.Info($"{input.Display}: --crop auto crops {report.FrameSize.Width}x{report.FrameSize.Height} to {r.Width}x{r.Height} at {r.X},{r.Y}");
+            string[] numbers = [.. new[] { r.X, r.Y, r.Width, r.Height }.Select(n => n.ToString(CultureInfo.InvariantCulture))];
+            return StepCatalog.Bind(StepCatalog.Find("crop")!, numbers, []);
         }
 
         /// <summary>Writes the frames shown at each step of <paramref name="fps"/>, from the first frame's time: frames are dropped or repeated.</summary>

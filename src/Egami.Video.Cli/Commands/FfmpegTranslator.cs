@@ -25,7 +25,7 @@ internal static class FfmpegTranslator
             common.AddRange(["--progress", progress is "pipe:1" or "pipe:" or "-" ? "-" : progress]);
         }
 
-        if (!explain)
+        if (!explain && line.Format != "null")
         {
             CheckOverwrite(line, session, output);
         }
@@ -34,6 +34,29 @@ internal static class FfmpegTranslator
         if (format is not null && format is not ("image2" or "framemd5" or "framehash" or "null" or "segment" or "gif" or "apng"))
         {
             outputWords.AddRange(["--format", format]);
+        }
+
+        // Test sources: -f lavfi -i testsrc2, smptebars, color, sine, anullsrc or anoisesrc.
+        if (line.Inputs.Any(i => i.Format == "lavfi"))
+        {
+            return [Generate(line, outputWords, common)];
+        }
+
+        // Pictures of the sound: -lavfi showwavespic or showspectrumpic to one picture.
+        if (line.ComplexFilter is { } picture && SplitChain(picture) is [var only] && only.Split('=')[0].Trim() is "showwavespic" or "showspectrumpic")
+        {
+            return [AudioPicture(line, only, input, output, common)];
+        }
+
+        // Detection filters to the null muxer: analyze, printing what the filters log.
+        if (line.Format == "null" && line.ComplexFilter is null && (line.VideoFilter ?? line.AudioFilter) is not null)
+        {
+            return [Detect(line, first, input, common)];
+        }
+
+        if (line.AudioFilter is { } audioFilter)
+        {
+            throw FfmpegMode.Unsupported($"-af {SplitChain(audioFilter)[0].Split('=')[0].Trim()}", why: $"-af takes only the detection filters, to -f null: {string.Join(", ", AudioDetections)}");
         }
 
         // Quality checks: -lavfi psnr or ssim between two inputs, to the null muxer.
@@ -366,6 +389,403 @@ internal static class FfmpegTranslator
         return special is not null && steps.Count > 0
             ? throw FfmpegMode.Unsupported($"-vf {chain}", why: "thumbnail, select and tile run on their own, without other filters")
             : steps;
+    }
+
+    private static readonly string[] VideoDetections = ["blackdetect", "freezedetect", "cropdetect", "idet", "signalstats", "blurdetect", "blockdetect"];
+
+    private static readonly string[] AudioDetections = ["silencedetect", "volumedetect", "astats", "ebur128"];
+
+    /// <summary>
+    /// <c>-vf</c> and <c>-af</c> detection filters with <c>-f null</c>: <c>analyze</c> with the matching detectors and settings, and
+    /// <c>--ffmpeg-log</c> so that it prints what the filters log.
+    /// </summary>
+    private static string[] Detect(FfmpegLine line, FfmpegInput first, string input, List<string> common)
+    {
+        List<string> detectors = [], shapes = [], settings = [];
+        foreach ((string? chain, string flag, string[] taken) in new[] { (line.VideoFilter, "-vf", VideoDetections), (line.AudioFilter, "-af", AudioDetections) })
+        {
+            foreach (string filter in chain is null ? [] : SplitChain(chain))
+            {
+                int equals = filter.IndexOf('=', StringComparison.Ordinal);
+                string name = (equals < 0 ? filter : filter[..equals]).Trim();
+                string value = equals < 0 ? string.Empty : filter[(equals + 1)..].Trim();
+                if (!taken.Contains(name))
+                {
+                    throw FfmpegMode.Unsupported($"{flag} {name}", why: $"with -f null, {flag} takes the detection filters {string.Join(", ", taken)}");
+                }
+
+                Dictionary<string, string> options = Named(name, value, name switch
+                {
+                    "blackdetect" => ["d", "black_min_duration", "pic_th", "picture_black_ratio_th", "pix_th", "pixel_black_th"],
+                    "freezedetect" => ["n", "noise", "d", "duration"],
+                    "cropdetect" => ["limit", "round", "skip"],
+                    "silencedetect" => ["n", "noise", "d", "duration", "m", "mono"],
+                    "ebur128" => ["peak"],
+                    _ => [],
+                });
+                string? Get(string shortName, string longName) => options.GetValueOrDefault(shortName) ?? options.GetValueOrDefault(longName);
+                void Set(string option, string? text)
+                {
+                    if (text is not null)
+                    {
+                        settings.AddRange([option, text]);
+                    }
+                }
+
+                switch (name)
+                {
+                    case "blackdetect":
+                        detectors.Add("black");
+                        Set("--black-min", Get("d", "black_min_duration"));
+                        Set("--black-ratio", Get("pic_th", "picture_black_ratio_th"));
+                        Set("--black-pixel", Get("pix_th", "pixel_black_th"));
+                        break;
+                    case "freezedetect":
+                        detectors.Add("freeze");
+                        Set("--freeze-noise", Get("n", "noise"));
+                        Set("--freeze-min", Get("d", "duration"));
+                        break;
+                    case "cropdetect":
+                        detectors.Add("crop");
+                        Set("--crop-limit", Get("limit", "limit"));
+                        Set("--crop-round", Get("round", "round"));
+                        Set("--crop-skip", Get("skip", "skip"));
+                        break;
+                    case "idet":
+                        detectors.Add("interlace");
+                        break;
+                    case "signalstats":
+                        detectors.Add("signal");
+                        break;
+                    case "blurdetect":
+                        detectors.Add("blur");
+                        break;
+                    case "blockdetect":
+                        detectors.Add("blockiness");
+                        break;
+                    case "silencedetect":
+                        detectors.Add("silence");
+                        Set("--silence-noise", Get("n", "noise"));
+                        Set("--silence-min", Get("d", "duration"));
+                        if (Get("m", "mono") is { } mono)
+                        {
+                            if (mono is "1" or "true")
+                            {
+                                settings.Add("--silence-per-channel");
+                            }
+                            else if (mono is not ("0" or "false"))
+                            {
+                                throw FfmpegMode.Unsupported($"silencedetect mono={mono}", why: "give 0 or 1");
+                            }
+                        }
+
+                        break;
+                    case "volumedetect" or "astats":
+                        detectors.Add("levels");
+                        break;
+                    default:
+                        // ebur128 always reports the sample and true peaks, so peak= changes nothing.
+                        detectors.Add("loudness");
+                        break;
+                }
+
+                shapes.Add(name);
+            }
+        }
+
+        List<string> words = ["analyze", input, "--detect", string.Join(',', detectors.Distinct()), .. settings];
+        if ((first.Start ?? line.Start) is { } start)
+        {
+            words.AddRange(["--start", start]);
+        }
+
+        if ((first.To ?? line.To) is not null)
+        {
+            throw FfmpegMode.Unsupported("-to with detection filters", why: "give -t, the length to look at");
+        }
+
+        if ((first.Duration ?? line.Duration) is { } duration)
+        {
+            words.AddRange(["--duration", duration]);
+        }
+
+        return [.. words, .. Tracks(line), "--ffmpeg-log", string.Join(',', shapes), .. common];
+    }
+
+    /// <summary>A filter's options, given as name=value pairs from <paramref name="names"/>; positional values are refused.</summary>
+    private static Dictionary<string, string> Named(string filter, string value, string[] names)
+    {
+        Dictionary<string, string> options = new(StringComparer.Ordinal);
+        foreach (string part in value.Length == 0 ? [] : value.Split(':'))
+        {
+            int equals = part.IndexOf('=', StringComparison.Ordinal);
+            if (equals <= 0)
+            {
+                throw FfmpegMode.Unsupported($"{filter}={value}", why: "give each option as name=value");
+            }
+
+            string name = part[..equals].Trim();
+            if (!names.Contains(name))
+            {
+                throw FfmpegMode.Unsupported($"{filter} option {name}", why: names.Length == 0 ? $"{filter} takes no options here" : $"{filter} takes {string.Join(", ", names)}");
+            }
+
+            options[name] = part[(equals + 1)..].Trim();
+        }
+
+        return options;
+    }
+
+    /// <summary><c>-f lavfi</c> test sources: <c>generate</c>, with a picture source and up to one sound source.</summary>
+    private static string[] Generate(FfmpegLine line, List<string> outputWords, List<string> common)
+    {
+        if (line.Inputs.Any(i => i.Format != "lavfi") || line.Inputs.Count > 2)
+        {
+            throw FfmpegMode.Unsupported("-f lavfi with other inputs", why: "egami-video generate makes one picture source and one sound source");
+        }
+
+        if (line.VideoFilter is not null || line.AudioFilter is not null || line.ComplexFilter is not null)
+        {
+            throw FfmpegMode.Unsupported("filters on -f lavfi sources", why: "egami-video generate writes the source as it is");
+        }
+
+        string? picture = null, sound = null;
+        List<string> words = [];
+        string? duration = null;
+        foreach (FfmpegInput source in line.Inputs)
+        {
+            int equals = source.Path.IndexOf('=', StringComparison.Ordinal);
+            string name = (equals < 0 ? source.Path : source.Path[..equals]).Trim();
+            string value = equals < 0 ? string.Empty : source.Path[(equals + 1)..].Trim();
+            bool isPicture = name is "testsrc" or "testsrc2" or "smptebars" or "smptehdbars" or "color";
+            bool isSound = name is "sine" or "anullsrc" or "anoisesrc";
+            if (!isPicture && !isSound)
+            {
+                throw FfmpegMode.Unsupported($"-f lavfi -i {name}", why: "the sources taken are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc");
+            }
+
+            if ((isPicture ? picture : sound) is not null)
+            {
+                throw FfmpegMode.Unsupported($"-f lavfi -i {name}", why: "egami-video generate makes one picture source and one sound source");
+            }
+
+            Dictionary<string, string> options = Named(name, value, name switch
+            {
+                "testsrc" or "testsrc2" or "smptebars" or "smptehdbars" => ["s", "size", "r", "rate", "d", "duration"],
+                "color" => ["c", "color", "s", "size", "r", "rate", "d", "duration"],
+                "sine" => ["f", "frequency", "r", "sample_rate", "d", "duration"],
+                "anullsrc" => ["r", "sample_rate", "cl", "channel_layout"],
+                _ => ["c", "color", "colour", "r", "sample_rate", "d", "duration"],
+            });
+            string? Get(params string[] keys) => keys.Select(options.GetValueOrDefault).FirstOrDefault(v => v is not null);
+            duration ??= Get("d", "duration") ?? source.Duration;
+            if (source.Start is not null || source.To is not null)
+            {
+                throw FfmpegMode.Unsupported("-ss or -to on a -f lavfi source", why: "give its length with -t or d=");
+            }
+
+            if (isPicture)
+            {
+                picture = name switch
+                {
+                    "testsrc" or "testsrc2" => "pattern",
+                    "color" => "solid",
+                    _ => "bars",
+                };
+                if (name is "smptebars" or "smptehdbars")
+                {
+                    words.AddRange(["--bars", name == "smptebars" ? "sd" : "hd"]);
+                }
+
+                if (Get("c", "color") is { } color)
+                {
+                    words.AddRange(["--color", Color(color)]);
+                }
+
+                if ((Get("s", "size") ?? line.Size) is { } size)
+                {
+                    words.AddRange(["--size", size]);
+                }
+
+                if ((Get("r", "rate") ?? source.FrameRate ?? line.Rate) is { } rate)
+                {
+                    words.AddRange(["--rate", rate]);
+                }
+            }
+            else
+            {
+                sound = name switch
+                {
+                    "sine" => "sine",
+                    "anullsrc" => "silence",
+                    _ => "noise",
+                };
+                if (Get("f", "frequency") is { } frequency)
+                {
+                    words.AddRange(["--frequency", frequency]);
+                }
+
+                if (Get("c", "color", "colour") is { } noise)
+                {
+                    words.AddRange(["--noise", noise is "white" or "pink" ? noise : throw FfmpegMode.Unsupported($"anoisesrc color={noise}", why: "only white and pink noise are")]);
+                }
+
+                if ((Get("r", "sample_rate") ?? line.SampleRate) is { } sampleRate)
+                {
+                    words.AddRange(["--sample-rate", sampleRate]);
+                }
+
+                if ((Get("cl", "channel_layout") ?? line.Channels) is { } layout)
+                {
+                    words.AddRange(["--channels", layout]);
+                }
+            }
+        }
+
+        duration ??= line.Duration ?? throw new UsageException("ffmpeg's -f lavfi sources run until stopped: give the length with -t or d=.");
+        if (picture is not null && sound is not null)
+        {
+            words.AddRange(["--audio", sound]);
+        }
+
+        if (line.Codecs.TryGetValue("v", out string? videoCodec) && videoCodec != "copy")
+        {
+            words.AddRange(["--codec", VideoCodec(videoCodec)]);
+        }
+
+        if (line.Codecs.TryGetValue("a", out string? audioCodec) && audioCodec != "copy")
+        {
+            words.AddRange(["--audio-codec", AudioCodec(audioCodec)]);
+        }
+
+        if (line.Quality is { } quality)
+        {
+            words.AddRange(["--quality", QualityFromQscale(quality)]);
+        }
+
+        if (picture is null && (line.Rate is not null || line.Size is not null))
+        {
+            throw FfmpegMode.Unsupported(line.Rate is not null ? "-r" : "-s", why: "a sound source has no pictures");
+        }
+
+        return ["generate", picture ?? sound!, .. outputWords, "--duration", duration, .. words, .. common];
+    }
+
+    /// <summary><c>showwavespic</c> and <c>showspectrumpic</c> to one picture: <c>waveform</c> and <c>spectrum</c>.</summary>
+    private static string[] AudioPicture(FfmpegLine line, string filter, string input, string output, List<string> common)
+    {
+        if (line.Frames is { } frames && frames != "1")
+        {
+            throw FfmpegMode.Unsupported($"-frames:v {frames}", why: "showwavespic and showspectrumpic draw one picture");
+        }
+
+        int equals = filter.IndexOf('=', StringComparison.Ordinal);
+        string name = (equals < 0 ? filter : filter[..equals]).Trim();
+        string value = equals < 0 ? string.Empty : filter[(equals + 1)..].Trim();
+        List<string> words = [name == "showwavespic" ? "waveform" : "spectrum", input, "-o", output];
+        if (name == "showwavespic")
+        {
+            Dictionary<string, string> options = Named(name, value, ["s", "size", "split_channels", "colors", "scale"]);
+            if ((options.GetValueOrDefault("s") ?? options.GetValueOrDefault("size")) is { } size)
+            {
+                words.AddRange(["--size", size]);
+            }
+
+            if (options.GetValueOrDefault("split_channels") is { } split)
+            {
+                words.AddRange(["--channels", split is "1" or "true" ? "stacked" : split is "0" or "false" ? "mixed" : throw FfmpegMode.Unsupported($"split_channels={split}", why: "give 0 or 1")]);
+            }
+
+            if (options.GetValueOrDefault("colors") is { } colors)
+            {
+                words.AddRange(["--color", Color(colors.Split('|')[0])]);
+            }
+
+            if (options.GetValueOrDefault("scale") is { } scale)
+            {
+                words.AddRange(["--scale", scale switch
+                {
+                    "lin" => "linear",
+                    "log" => "db",
+                    _ => throw FfmpegMode.Unsupported($"showwavespic scale={scale}", why: "only lin and log are"),
+                }]);
+            }
+        }
+        else
+        {
+            Dictionary<string, string> options = Named(name, value, ["s", "size", "mode", "color", "scale", "fscale", "legend"]);
+            if ((options.GetValueOrDefault("s") ?? options.GetValueOrDefault("size")) is { } size)
+            {
+                words.AddRange(["--size", size]);
+            }
+
+            if (options.GetValueOrDefault("mode") is { } mode)
+            {
+                words.AddRange(["--channels", mode switch
+                {
+                    "combined" => "mixed",
+                    "separate" => "stacked",
+                    _ => throw FfmpegMode.Unsupported($"showspectrumpic mode={mode}", why: "give combined or separate"),
+                }]);
+            }
+
+            if (options.GetValueOrDefault("color") is { } color)
+            {
+                words.AddRange(["--colors", color is "magma" ? "magma" : throw FfmpegMode.Unsupported($"showspectrumpic color={color}", why: "egami-video draws magma, or gray with spectrum --colors gray")]);
+            }
+
+            if (options.GetValueOrDefault("scale") is { } scale && scale != "log")
+            {
+                throw FfmpegMode.Unsupported($"showspectrumpic scale={scale}", why: "egami-video draws levels in decibels, as scale=log");
+            }
+
+            if (options.GetValueOrDefault("fscale") is { } frequencyScale)
+            {
+                words.AddRange(["--scale", frequencyScale switch
+                {
+                    "lin" => "linear",
+                    "log" => "log",
+                    _ => throw FfmpegMode.Unsupported($"showspectrumpic fscale={frequencyScale}", why: "give lin or log"),
+                }]);
+            }
+
+            // showspectrumpic draws its legend unless legend=0.
+            if (options.GetValueOrDefault("legend") is not ("0" or "false"))
+            {
+                words.Add("--legend");
+            }
+        }
+
+        return [.. words, .. Tracks(line), .. common];
+    }
+
+    /// <summary>The <c>-map</c> choices as <c>--track</c> words, for commands that read the tracks they need and take no -an or -sn.</summary>
+    private static IEnumerable<string> Tracks(FfmpegLine line) => Streams(line).Where(w => w is not ("--no-audio" or "--no-subtitles"));
+
+    /// <summary>A color as ffmpeg writes it (a name, #rrggbb or 0xrrggbb) as #rrggbb.</summary>
+    private static string Color(string color)
+    {
+        string text = color.Split('@')[0].Trim();
+        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+        {
+            text = "#" + text[2..];
+        }
+
+        return text.StartsWith('#') ? text : text.ToLowerInvariant() switch
+        {
+            "black" => "#000000",
+            "white" => "#ffffff",
+            "red" => "#ff0000",
+            "green" => "#008000",
+            "lime" => "#00ff00",
+            "blue" => "#0000ff",
+            "yellow" => "#ffff00",
+            "cyan" or "aqua" => "#00ffff",
+            "magenta" or "fuchsia" => "#ff00ff",
+            "gray" or "grey" => "#808080",
+            "orange" => "#ffa500",
+            _ => throw FfmpegMode.Unsupported($"color {color}", why: "give it as #rrggbb, or one of black, white, red, green, lime, blue, yellow, cyan, magenta, gray and orange"),
+        };
     }
 
     /// <summary>

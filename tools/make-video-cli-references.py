@@ -1,13 +1,15 @@
-"""Builds the references of egami-video's picture commands in tests/reference/video-cli: contact sheets and a thumbnail that the
-built tool makes from clips of the video corpus (tests/video/corpus). They pin the tool's own output, written with Egami's
-resampling and the bundled Liberation Sans, so a change that moves pixels shows up in PictureTests, which runs the same
-arguments and compares with a small tolerance. After a deliberate change, run this script again and look at the images before
-committing them.
+"""Builds the references of egami-video's picture commands in tests/reference/video-cli: contact sheets, a thumbnail and the
+audio pictures with their legends, which the built tool makes from clips of the video corpus (tests/video/corpus). They pin
+the tool's own output, written with Egami's resampling and the bundled Liberation Sans, so a change that moves pixels shows up
+in PictureTests, which runs the same arguments and compares with a small tolerance. After a deliberate change, run this
+script again and look at the images before committing them.
 
   sheet-4x4.png                    sheet webm-vp8-opus.webm --width 480
   sheet-3x2-timestamps-title.png   sheet avi-mjpeg-420-pcm.avi --grid 3x2 --width 720 --timestamps --title
   sheet-5x1-timestamps.png         sheet y4m-420jpeg.y4m --grid 5x1 --width 640 --timestamps
   thumbnail-120.png                thumbnail webm-vp8-opus.webm --size 120x
+  waveform-legend.png              waveform webm-vp8-opus.webm --size 720x200 --legend --scale db
+  spectrum-legend.png              spectrum webm-vp8-opus.webm --size 720x300 --legend --scale log
 
 Usage, from the repo root (needs the .NET SDK):
   python tools/make-video-cli-references.py
@@ -27,6 +29,8 @@ CASES = [
     ("sheet-3x2-timestamps-title", "avi-mjpeg-420-pcm.avi", ["sheet", "--grid", "3x2", "--width", "720", "--timestamps", "--title"]),
     ("sheet-5x1-timestamps", "y4m-420jpeg.y4m", ["sheet", "--grid", "5x1", "--width", "640", "--timestamps"]),
     ("thumbnail-120", "webm-vp8-opus.webm", ["thumbnail", "--size", "120x"]),
+    ("waveform-legend", "webm-vp8-opus.webm", ["waveform", "--size", "720x200", "--legend", "--scale", "db"]),
+    ("spectrum-legend", "webm-vp8-opus.webm", ["spectrum", "--size", "720x300", "--legend", "--scale", "log"]),
 ]
 
 
