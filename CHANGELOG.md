@@ -96,6 +96,13 @@ which needs no .NET runtime.
   `egami-heic` for HEIC, which the tool leaves out.
 ## Egami 1.1.1 (unreleased)
 
+### Knockout groups
+
+- A layer inside a knockout layer now knocks out as one of its calls, on `RasterCanvas` and `InkCanvas` alike: it composites
+  with what the knockout layer started as and replaces what is under it wherever it drew, even where it is translucent, as
+  PDF's knockout groups require. A non-isolated layer inside one also starts from that first content. Before, such a layer
+  merged over the earlier calls, so they showed through it, and a non-isolated one blended with them.
+
 ### Ink drawing
 
 - An image drawn on an `InkCanvas` with overprint off now knocks out every plate it covers, as a solid fill does. Before, the

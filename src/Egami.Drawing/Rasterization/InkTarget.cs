@@ -40,7 +40,12 @@ internal sealed class InkTarget : RasterTarget
     internal override ISpanSink? CreateSink(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale)
     {
         ISpanSink? sink = CreatePaintSink(paint, matrix, colorSpace, mask, scale);
-        return sink is not null && GroupAlpha is not null ? new InkGroupAlphaSink(this, sink) : sink;
+        if (sink is not null && GroupAlpha is not null)
+        {
+            sink = new InkGroupAlphaSink(this, sink);
+        }
+
+        return sink is not null && Shape is not null ? new ShapeSink(this, sink, mask, scale) : sink;
     }
 
     private ISpanSink? CreatePaintSink(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale)
@@ -142,6 +147,29 @@ internal sealed class InkTarget : RasterTarget
                     from.Row8(p, y, area.X, area.Width).CopyTo(Row8(p, y, area.X, area.Width));
                 }
             }
+        }
+    }
+
+    internal override void Mix(RasterTarget before, Rect area, ReadOnlySpan<float> weight)
+    {
+        InkTarget from = (InkTarget)before;
+        int n = area.Width;
+        float[] row = new float[n * _planes.Length], under = new float[n * _planes.Length];
+        for (int y = area.Y; y < area.Bottom; y++)
+        {
+            ReadAll(y, area.X, n, row);
+            from.ReadAll(y, area.X, n, under);
+            ReadOnlySpan<float> w = weight.Slice((y - area.Y) * n, n);
+            for (int p = 0; p < _planes.Length; p++)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    float a = under[(p * n) + i];
+                    row[(p * n) + i] = a + ((row[(p * n) + i] - a) * w[i]);
+                }
+            }
+
+            WriteAll(y, area.X, n, row);
         }
     }
 

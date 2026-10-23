@@ -105,6 +105,71 @@ public class KnockoutAndMaskTests
         Assert.Equal(new Rgba8(127, 127, 255, 255), Near(drawn.GetPixel(20, 10)));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AGroupInAKnockoutGroupReplacesWhatIsUnderItByItsShape(bool groupAlpha)
+    {
+        // A half-transparent blue group over red in a knockout group: the red goes where the group's shape is, though its
+        // alpha is a half, whether that half is the group's opacity or its content's.
+        using Raster<Rgba8> drawn = Pixels.Draw(40, 20, c =>
+        {
+            c.SaveLayer(new LayerOptions { Knockout = true, Isolated = true });
+            c.FillRect(new RectF(0, 0, 25, 20), new RgbaF32(1, 0, 0, 1));
+            c.SaveLayer(new LayerOptions { Isolated = true, Opacity = groupAlpha ? 0.5f : 1 });
+            c.FillRect(new RectF(15, 0, 25, 20), groupAlpha ? new RgbaF32(0, 0, 1, 1) : HalfBlue);
+            c.Restore();
+            c.Restore();
+        });
+
+        Assert.Equal(new Rgba8(255, 0, 0, 255), Near(drawn.GetPixel(5, 10)));
+        Assert.Equal(new Rgba8(127, 127, 255, 255), Near(drawn.GetPixel(20, 10)));
+        Assert.Equal(new Rgba8(127, 127, 255, 255), Near(drawn.GetPixel(35, 10)));
+    }
+
+    [Fact]
+    public void ANonIsolatedGroupInAKnockoutGroupStartsFromTheKnockoutGroupsBackdrop()
+    {
+        // pdf.js's knockout_inner_backdrop: blue, then a non-isolated group multiplying red and green, in an isolated knockout
+        // group. The inner group starts from the knockout group's transparent start, not the blue, so red and green show and
+        // only their overlap is black.
+        using Raster<Rgba8> drawn = Pixels.Draw(40, 20, c =>
+        {
+            c.SaveLayer(new LayerOptions { Knockout = true, Isolated = true });
+            c.FillRect(new RectF(0, 0, 40, 20), new RgbaF32(0, 0, 1, 1));
+            c.SaveLayer(new LayerOptions { Isolated = false });
+            c.FillRect(new RectF(5, 0, 20, 20), new SolidPaint(new RgbaF32(1, 0, 0, 1)) { BlendMode = BlendMode.Multiply });
+            c.FillRect(new RectF(15, 0, 20, 20), new SolidPaint(new RgbaF32(0, 1, 0, 1)) { BlendMode = BlendMode.Multiply });
+            c.Restore();
+            c.Restore();
+        });
+
+        Assert.Equal(new Rgba8(0, 0, 255, 255), Near(drawn.GetPixel(2, 10)));
+        Assert.Equal(new Rgba8(255, 0, 0, 255), Near(drawn.GetPixel(10, 10)));
+        Assert.Equal(new Rgba8(0, 0, 0, 255), Near(drawn.GetPixel(20, 10)));
+        Assert.Equal(new Rgba8(0, 255, 0, 255), Near(drawn.GetPixel(30, 10)));
+        Assert.Equal(new Rgba8(0, 0, 255, 255), Near(drawn.GetPixel(37, 10)));
+    }
+
+    [Fact]
+    public void AGroupInANestedGroupOfAKnockoutGroupKnocksOutAsAWhole()
+    {
+        // The shape of a group inside a group inside a knockout group reaches the knockout group through both.
+        using Raster<Rgba8> drawn = Pixels.Draw(40, 20, c =>
+        {
+            c.SaveLayer(new LayerOptions { Knockout = true, Isolated = true });
+            c.FillRect(new RectF(0, 0, 25, 20), new RgbaF32(1, 0, 0, 1));
+            c.SaveLayer(new LayerOptions { Isolated = true });
+            c.SaveLayer(new LayerOptions { Isolated = true, Opacity = 0.5f });
+            c.FillRect(new RectF(15, 0, 25, 20), new RgbaF32(0, 0, 1, 1));
+            c.Restore();
+            c.Restore();
+            c.Restore();
+        });
+
+        Assert.Equal(new Rgba8(127, 127, 255, 255), Near(drawn.GetPixel(20, 10)));
+    }
+
     [Fact]
     public void AGrayMaskPaintsWhereItIsWhite()
     {

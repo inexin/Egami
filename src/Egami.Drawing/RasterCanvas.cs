@@ -140,10 +140,12 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
             }
             else if (!options.Isolated)
             {
+                // Inside a knockout group a group's backdrop is the knockout group's first content, not what its earlier
+                // elements drew (ISO 32000 11.4.6.2).
                 Rect shared = area.Intersect(parent.Area);
                 if (!shared.IsEmpty)
                 {
-                    layer.CopyFrom(parent, shared);
+                    layer.CopyFrom(parent.KnockoutBackdrop ?? parent, shared);
                 }
 
                 // Merged with a blend mode, the group's own content must be told apart from the backdrop it started as.
@@ -167,6 +169,11 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
             RasterTarget first = layer.CreateLayer(area, _context);
             first.CopyFrom(layer, area);
             layer.KnockoutBackdrop = first;
+        }
+
+        if (parent.KnockoutBackdrop is not null || parent.Shape is not null)
+        {
+            layer.Shape = new float[area.Width * area.Height];
         }
 
         _layers.Push(new Layer(parent, layer, options, merge));
@@ -208,7 +215,23 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
                     AddLayerToGroupAlpha(pixels, merge, options.Opacity);
                 }
 
-                _target.Merge(pixels, merge, _clip.Mask, options.BlendMode, options.Opacity, Options.ColorSpace);
+                if (_target.KnockoutBackdrop is RasterTarget backdrop && pixels.Shape is float[] shape)
+                {
+                    MergeKnockout(pixels, backdrop, shape, merge, options);
+                }
+                else
+                {
+                    _target.Merge(pixels, merge, _clip.Mask, options.BlendMode, options.Opacity, Options.ColorSpace);
+                }
+
+                if (_target.Shape is not null && pixels.Shape is float[] own)
+                {
+                    float[] weight = ShapeWeights(pixels, own, merge);
+                    for (int y = merge.Y; y < merge.Bottom; y++)
+                    {
+                        _target.AddShape(y, merge.X, weight.AsSpan((y - merge.Y) * merge.Width, merge.Width));
+                    }
+                }
             }
         }
         finally
@@ -533,6 +556,36 @@ public sealed partial class RasterCanvas<TPixel> : Canvas
     }
 
     /// <summary>Adds a layer merged into a non-isolated parent to the parent's group alpha: its alpha times the opacity and the clip.</summary>
+    /// <summary>
+    /// Merges a layer into a knockout layer as one of its elements: composited onto the knockout layer's first content, then
+    /// replacing what the knockout layer holds by the layer's shape and the clip.
+    /// </summary>
+    private void MergeKnockout(RasterTarget pixels, RasterTarget backdrop, float[] shape, Rect merge, LayerOptions options)
+    {
+        using RasterTarget before = _target.CreateLayer(merge, _context);
+        before.CopyFrom(_target, merge);
+        _target.CopyFrom(backdrop, merge);
+        _target.Merge(pixels, merge, null, options.BlendMode, options.Opacity, Options.ColorSpace);
+        _target.Mix(before, merge, ShapeWeights(pixels, shape, merge));
+    }
+
+    /// <summary>A layer's shape over <paramref name="merge"/>, times the clip's coverage.</summary>
+    private float[] ShapeWeights(RasterTarget layer, float[] shape, Rect merge)
+    {
+        float[] weight = new float[merge.Width * merge.Height];
+        for (int y = merge.Y; y < merge.Bottom; y++)
+        {
+            ReadOnlySpan<byte> clip = _clip.Mask is ClipMask mask ? mask.Row(y).Slice(merge.X - mask.Bounds.X, merge.Width) : default;
+            int from = ((y - layer.Area.Y) * layer.Area.Width) + (merge.X - layer.Area.X), to = (y - merge.Y) * merge.Width;
+            for (int i = 0; i < merge.Width; i++)
+            {
+                weight[to + i] = shape[from + i] * (clip.IsEmpty ? 1 : clip[i] / 255f);
+            }
+        }
+
+        return weight;
+    }
+
     private void AddLayerToGroupAlpha(RasterTarget layer, Rect merge, float opacity)
     {
         float[] alpha = new float[merge.Width];
