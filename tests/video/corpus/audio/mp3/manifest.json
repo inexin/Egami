@@ -1,0 +1,62 @@
+{
+  "mp3-cbr-stereo.mp3": {
+    "channels": 2,
+    "rate": 44100,
+    "samples": 13230,
+    "packets": 13
+  },
+  "mp3-vbr-joint.mp3": {
+    "channels": 2,
+    "rate": 44100,
+    "samples": 13230,
+    "packets": 13
+  },
+  "mp3-mpeg2-mono.mp3": {
+    "channels": 1,
+    "rate": 22050,
+    "samples": 6615,
+    "packets": 14
+  },
+  "mp3-mpeg25-8k.mp3": {
+    "channels": 1,
+    "rate": 8000,
+    "samples": 2400,
+    "packets": 7
+  },
+  "mp3-id3v23-cover-chapters.mp3": {
+    "channels": 2,
+    "rate": 44100,
+    "samples": 13230,
+    "packets": 13
+  },
+  "mp3-id3v1-noxing.mp3": {
+    "channels": 2,
+    "rate": 44100,
+    "samples": 14976,
+    "packets": 13
+  },
+  "mp2-stereo.mp2": {
+    "channels": 2,
+    "rate": 48000,
+    "samples": 14976,
+    "packets": 13
+  },
+  "mp2-crc-mono.mp2": {
+    "channels": 1,
+    "rate": 22050,
+    "samples": 6912,
+    "packets": 6
+  },
+  "mka-mp3.mka": {
+    "channels": 2,
+    "rate": 44100,
+    "samples": 14335,
+    "packets": 13
+  },
+  "m4a-mp3.m4a": {
+    "channels": 2,
+    "rate": 44100,
+    "samples": 13871,
+    "packets": 13
+  }
+}

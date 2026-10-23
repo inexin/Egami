@@ -7,7 +7,7 @@ namespace Egami.Video.Codecs;
 /// frame equals libvpx's sample for sample. Frames come out as 8-bit 4:2:0 planes, BT.601 limited range unless the container says
 /// otherwise; hidden frames (alternate references) give no frame. A WebM track with alpha (<see cref="VideoTrackInfo.HasAlpha"/>)
 /// decodes its second VP8 stream, carried in each packet's addition 1, into the frame's alpha plane unless
-/// <see cref="VideoDecoderOptions.DecodeAlpha"/> is off. Decode only.
+/// <see cref="VideoDecoderOptions.DecodeAlpha"/> is off. Encoding goes through <see cref="CreateEncoder"/>.
 /// </summary>
 /// <remarks>
 /// Broken data follows <see cref="VideoDecoderOptions.Errors"/> and is reported through the Egami context's diagnostics as
@@ -37,6 +37,9 @@ public sealed class Vp8Codec : VideoCodec
     public override string CodecId => CodecIds.Vp8;
 
     /// <inheritdoc/>
+    public override bool CanEncode => true;
+
+    /// <inheritdoc/>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/Video.cs" region="video-codecs"/>
     /// </example>
@@ -51,5 +54,27 @@ public sealed class Vp8Codec : VideoCodec
         }
 
         return new Vp8VideoDecoder(track, options, context);
+    }
+
+    /// <summary>
+    /// Creates an encoder through Egami's <see cref="Egami.Formats.Webp.Vp8StreamEncoder"/>. It codes 8-bit 4:2:0: such planes
+    /// as they are, anything else converted to BT.601 limited range. By default it aims at constant quality 60 at effort 4,
+    /// looks 25 frames ahead for scene cuts and hidden alternate references, and places a keyframe at least every 10 seconds;
+    /// <see cref="VideoEncoderOptions"/> chooses bitrate, constant bitrate, two passes or real time instead, and
+    /// <see cref="VideoEncoderOptions.Vp8"/> holds the expert settings. Frames with alpha get a second VP8 stream for it, which
+    /// WebM and Matroska carry.
+    /// </summary>
+    /// <param name="options">The picture size, frame rate and how to spend bits.</param>
+    /// <param name="context">The context.</param>
+    /// <returns>The encoder.</returns>
+    /// <exception cref="ArgumentException">The options are out of range, or a bitrate mode has no bitrate.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-vp8"/>
+    /// </example>
+    public override IVideoEncoder CreateEncoder(VideoEncoderOptions options, MediaContext context)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(context);
+        return new Vp8VideoEncoder(options, context);
     }
 }

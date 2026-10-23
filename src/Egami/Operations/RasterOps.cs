@@ -835,6 +835,76 @@ public sealed partial class RasterOps
     }
 
     /// <summary>
+    /// Makes pixels whose chroma lies within <paramref name="similarity"/> of <paramref name="color"/>'s transparent, keeping their
+    /// color: a chroma key for green and blue screens. The distance is taken between Rec. 709 Cb and Cr, leaving luma out, so lighter
+    /// and darker patches of an unevenly lit screen stay closer to the key than they do by the RGB distance
+    /// <see cref="MakeTransparent"/> uses.
+    /// <paramref name="blend"/> ramps alpha back up over the next band of distance, for hair and soft edges. Follow it with
+    /// <see cref="Despill"/> to remove the screen's cast from the edges that stay.
+    /// </summary>
+    /// <param name="color">The screen color, such as <c>#00b140</c> for a green screen; its alpha is ignored.</param>
+    /// <param name="similarity">
+    /// The chroma distance that becomes fully transparent, from 0 (the key's exact chroma) to 1 (every color), as a share of the
+    /// largest distance in RGB, the one between green and magenta.
+    /// </param>
+    /// <param name="blend">The band of distance beyond <paramref name="similarity"/> over which alpha returns to full; 0 for a hard edge.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="similarity"/> is outside 0..1, or <paramref name="blend"/> is negative or not finite.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Keying.cs" region="chroma-key"/>
+    /// </example>
+    public RasterOps ChromaKey(Rgba8 color, float similarity = 0.1f, float blend = 0.05f)
+    {
+        if (!(similarity >= 0 && similarity <= 1))
+        {
+            throw new ArgumentOutOfRangeException(nameof(similarity), similarity, "Similarity must be from 0 to 1.");
+        }
+
+        if (!(blend >= 0) || !float.IsFinite(blend))
+        {
+            throw new ArgumentOutOfRangeException(nameof(blend), blend, "Blend must be 0 or more and finite.");
+        }
+
+        return Add(new ChromaKeyOperation(color, similarity, blend));
+    }
+
+    /// <summary>
+    /// Removes the colored cast a green or blue screen leaves on edges, hair and see-through pixels: the screen's channel is held
+    /// down to a limit taken from the other two channels. Run it after <see cref="ChromaKey"/> or <see cref="MakeTransparent"/>, or
+    /// on its own on a photo shot in front of a screen.
+    /// </summary>
+    /// <param name="screen">The screen color whose spill is removed.</param>
+    /// <param name="mix">
+    /// How the limit is taken from the other two channels, from 0 (their average, the strongest removal) to 1 (the larger of the two,
+    /// the gentlest, which leaves neutral colors alone).
+    /// </param>
+    /// <param name="expand">How much further the limit is lowered, from 0 to 1, for heavy spill; this darkens the screen's channel more.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="screen"/> is not defined, or <paramref name="mix"/> or <paramref name="expand"/> is outside 0..1.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Keying.cs" region="chroma-key"/>
+    /// </example>
+    public RasterOps Despill(DespillColor screen = DespillColor.Green, float mix = 0.5f, float expand = 0)
+    {
+        if (!Enum.IsDefined(screen))
+        {
+            throw new ArgumentOutOfRangeException(nameof(screen), screen, "Unknown screen color.");
+        }
+
+        if (!(mix >= 0 && mix <= 1))
+        {
+            throw new ArgumentOutOfRangeException(nameof(mix), mix, "Mix must be from 0 to 1.");
+        }
+
+        if (!(expand >= 0 && expand <= 1))
+        {
+            throw new ArgumentOutOfRangeException(nameof(expand), expand, "Expand must be from 0 to 1.");
+        }
+
+        return Add(new DespillOperation(screen, mix, expand));
+    }
+
+    /// <summary>
     /// Replaces every pixel within <paramref name="tolerance"/> of <paramref name="from"/> with <paramref name="to"/>, by ImageMagick's
     /// -fuzz distance, as ImageMagick's -fill with -opaque does.
     /// </summary>

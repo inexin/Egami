@@ -86,9 +86,11 @@ internal sealed class Vp8VideoDecoder : IDisposable
     /// <summary>
     /// Decodes the frame in <paramref name="data"/>[<paramref name="offset"/>..+<paramref name="length"/>], updates the references
     /// and returns its header. <see cref="Shown"/> is then the frame to show. Broken data throws
-    /// <see cref="CorruptDataException"/> unless <see cref="Conceal"/> is set.
+    /// <see cref="CorruptDataException"/> unless <see cref="Conceal"/> is set. The encoder, which has the frame's unfiltered
+    /// pixels, passes them as <paramref name="reconstruction"/> with the macroblocks that have no coefficients in
+    /// <paramref name="zero"/>: then only the header and the modes are read, and the frame is that reconstruction filtered.
     /// </summary>
-    internal Vp8FrameHeader Decode(byte[] data, int offset, int length)
+    internal Vp8FrameHeader Decode(byte[] data, int offset, int length, Vp8Planes? reconstruction = null, bool[]? zero = null)
     {
         Concealed = false;
         Shown = null;
@@ -152,7 +154,7 @@ internal sealed class Vp8VideoDecoder : IDisposable
                 _decoder = Threads == 1 ? decoder : null;
             }
 
-            decoder.DecodeFrame();
+            decoder.DecodeFrame(reconstruction, zero);
         }
         catch (CorruptDataException) when (Conceal)
         {
@@ -463,51 +465,5 @@ internal sealed class Vp8VideoDecoder : IDisposable
         _counts[_new]--;
         Decoded = shown;
         Shown = frame.Header.Show ? shown : null;
-    }
-
-    /// <summary>
-    /// Decodes a frame of the stream's size without keeping it: the references and the state stay as they were (the state is
-    /// put back from <paramref name="saved"/>, which this overwrites). Returns the decoded frame, without its borders, valid until
-    /// the next decode. The encoder tries loop filter levels with it.
-    /// </summary>
-    internal Vp8FrameBuffer DecodeTrial(byte[] data, int offset, int length, Vp8StreamState saved)
-    {
-        saved.CopyFrom(State);
-        Vp8FrameHeader header = Vp8Decoder.ReadVideoHeader(data.AsSpan(offset, length), _lastKey);
-        if (header.KeyFrame)
-        {
-            if (header.Width != Width || header.Height != Height || _buffers[0] is null)
-            {
-                Allocate(header.Width, header.Height);
-            }
-
-            State.ResetForKeyFrame();
-        }
-
-        int target = FreeBuffer();
-        _new = target;
-        try
-        {
-            Vp8Decoder decoder;
-            if (_decoder is not null)
-            {
-                _decoder.Restart(data, offset, length, header);
-                decoder = _decoder;
-            }
-            else
-            {
-                decoder = Vp8Decoder.CreateVideo(data, offset, length, header, this);
-                _decoder = Threads == 1 ? decoder : null;
-            }
-
-            decoder.DecodeFrame();
-        }
-        finally
-        {
-            _counts[target]--;
-            State.CopyFrom(saved);
-        }
-
-        return _buffers[target]!;
     }
 }

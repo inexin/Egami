@@ -45,6 +45,11 @@ For kashida justification (2.8.3), the W3C Arabic Layout Requirements, Microsoft
 ECMA-376 (Word's three kashida levels) are the references; HarfBuzz gives the safe-to-insert-tatweel flag. LibreOffice
 (MPL-2.0) is not read.
 
+For OCR (2.12), Egami ships no engine. The hOCR 1.2 specification (kba/hocr-spec) and the Library of Congress ALTO schemas
+(versions 2 to 4) are the references for the readers and writers. Tesseract (Apache-2.0) runs only as an outside program, through
+`CommandOcrEngine` or the samples; Windows.Media.Ocr and Azure AI Document Intelligence are used through their public APIs in the
+samples only. OCRmyPDF (MPL-2.0) and iText pdfOCR (AGPL) were looked at for behaviour only, never read.
+
 For HEIC, libheif and libde265 (LGPL-3), FFmpeg's HEVC decoder and openHEVC (LGPL-2.1) and x265 (GPL-2) are never read; they
 only run as black-box tools in Docker to make test files and references. Nokia's HEIF code (non-commercial licence) is never
 read.
@@ -88,6 +93,9 @@ LGPL code is never read.
 | Ogg, IETF RFC 3533; Ogg Opus, IETF RFC 7845 | Ogg pages, the Opus mapping, OpusHead and OpusTags |
 | Opus, IETF RFC 6716 and RFC 8251 | Opus decoding and its test vectors |
 | Vorbis I specification (Xiph.Org) | The Ogg Vorbis mapping and Vorbis headers |
+| ISO/IEC 11172-3 and 13818-3 (MPEG-1 and MPEG-2 audio), with MPEG-2.5's 8 to 12 kHz rates | MPEG audio Layers I, II and III, frame headers and the CRC-16; the ISO/IEC 11172-4 compliance streams test the decoder |
+| ID3 tag version 2.2, 2.3 and 2.4 and the ID3v1 layout (id3.org informal standards); APEv2 item layout (wiki.hydrogenaud.io) | Tags, pictures and chapters in .mp3 files |
+| Xing VBR header, Fraunhofer VBRI header, and the LAME "Mp3 Info Tag rev 1" specification (Gabriel Bouvigne) | Frame counts, seek tables, and the encoder delay and padding for gapless playback |
 
 ### Reference code (ideas only)
 
@@ -102,6 +110,7 @@ LGPL code is never read.
 | --- | --- | --- |
 | libvpx 1.14.1 | BSD-3, Google patent grant | The VP9 decoder (`src/Egami.Video/Codecs/Vp9`), so frames equal libvpx's sample for sample |
 | libopus 1.5.2 | BSD-3, royalty-free IETF patent licenses | The Opus decoder (`src/Egami.Video/Audio/Codecs/Opus`): RFC 6716 makes this decoder normative, and the RFC 8251 test vectors check it |
+| minimp3 (lieff) | CC0 1.0 | The MPEG audio decoder (`src/Egami.Video/Audio/Codecs/Mp3`): frame decoding, tables, synthesis and frame search; its copies of the ISO compliance streams and references test it |
 
 ### Tools run as black boxes only (never read)
 

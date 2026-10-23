@@ -72,6 +72,7 @@ Operations that run on a raster through `Apply` and `Derive`.
 - [Animation](animation.md): frames, timing and animated GIF, APNG and WebP.
 - [Comparing and measuring](analysis.md): differences, statistics, hashes and visual regression tests.
 - [Palettes and dithering](palettes.md): reducing colors and indexed images.
+- [Text recognition (OCR)](ocr.md): one shape for every OCR engine, any OCR program as an engine, and hOCR and ALTO files.
 
 ## Egami: extending
 

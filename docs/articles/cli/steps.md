@@ -23,6 +23,7 @@ Positional values fill the parameters in order; `--name value` sets one by name.
 | [brightness](#brightness) | Multiplies red, green and blue by amount: 1 changes nothing, 0 gives black. |
 | [canny-edges](#canny-edges) | Finds thin edges with Canny's detector, as ImageMagick's -canny 0x{sigma}+{low × 100}%+{high × 100}% does: the luma is smoothed by a Gaussian, Canny's first differences give the gradient, pixels that are not the strongest across their edge are dropped, and hysteresis keeps pixels whose magnitude reaches high times the largest, plus those 8-connected to them that reach low times it. |
 | [change-speed](#change-speed) | Plays the animation factor times as fast: every delay is divided by it, rounded to whole milliseconds. |
+| [chroma-key](#chroma-key) | Makes pixels whose chroma lies within similarity of color's transparent, keeping their color: a chroma key for green and blue screens. |
 | [clahe](#clahe) | Contrast-limited adaptive histogram equalization (Zuiderveld, 1994) on L*, as ImageMagick's -clahe: each of tilesX × tilesY tiles gets its own clipped, equalized curve, blended smoothly between tile centers, so local detail comes up without the noise of plain equalization. |
 | [colorize](#colorize) | Blends red, green and blue toward color, as ImageMagick's -colorize. |
 | [contrast](#contrast) | Scales red, green and blue around mid-gray: 1 changes nothing, 0 gives flat gray. |
@@ -32,6 +33,7 @@ Positional values fill the parameters in order; `--name value` sets one by name.
 | [crop](#crop) | Keeps one rectangle of the image. |
 | [deskew](#deskew) | Straightens a scanned or photographed page: detects the tilt of its text lines (see DetectSkew) and turns the image back by it. |
 | [despeckle](#despeckle) | Removes specks while keeping edges, by Crimmins' complementary hulling exactly as ImageMagick's -despeckle runs it: each color channel is nudged, a level at a time, toward neighbours that differ by two levels or more, in 16 passes along four directions. |
+| [despill](#despill) | Removes the colored cast a green or blue screen leaves on edges, hair and see-through pixels: the screen's channel is held down to a limit taken from the other two channels. |
 | [dilate](#dilate) | The maximum over the (2rx + 1) × (2ry + 1) rectangle around each pixel, as Skia's dilate filter with those radii. |
 | [displace](#displace) | Moves each pixel by a displacement map, as Skia's DisplacementMap and ImageMagick's -displace do: pixel (x, y) shows the source at (x + scaleX × (mx − 0.5), y + scaleY × (my − 0.5)), with mx and my the map's chosen channels from 0 to 1, so mid-gray moves nothing. |
 | [draw-animation](#draw-animation) | Draws an animation (or a still) onto this one at position. |
@@ -327,6 +329,20 @@ change-speed: Plays the animation factor times as fast: every delay is divided b
         The speed-up, more than 0: 2 plays twice as fast, 0.5 at half speed.
 ```
 
+## chroma-key
+
+```text
+chroma-key: Makes pixels whose chroma lies within similarity of color's transparent, keeping their color: a chroma key for green and blue screens.
+
+  chroma-key <color> [--similarity <number>] [--blend <number>]
+    --color <color>, required
+        The screen color, such as #00b140 for a green screen; its alpha is ignored.
+    --similarity <number>, default 0.1
+        The chroma distance that becomes fully transparent, from 0 (the key's exact chroma) to 1 (every color), as a share of the largest distance in RGB, the one between green and magenta.
+    --blend <number>, default 0.05
+        The band of distance beyond similarity over which alpha returns to full; 0 for a hard edge.
+```
+
 ## clahe
 
 ```text
@@ -451,6 +467,20 @@ deskew: Straightens a scanned or photographed page: detects the tilt of its text
 despeckle: Removes specks while keeping edges, by Crimmins' complementary hulling exactly as ImageMagick's -despeckle runs it: each color channel is nudged, a level at a time, toward neighbours that differ by two levels or more, in 16 passes along four directions.
 
   despeckle no arguments
+```
+
+## despill
+
+```text
+despill: Removes the colored cast a green or blue screen leaves on edges, hair and see-through pixels: the screen's channel is held down to a limit taken from the other two channels.
+
+  despill [--screen <choice>] [--mix <number>] [--expand <number>]
+    --screen <green|blue>, default green
+        The screen color whose spill is removed.
+    --mix <number>, default 0.5
+        How the limit is taken from the other two channels, from 0 (their average, the strongest removal) to 1 (the larger of the two, the gentlest, which leaves neutral colors alone).
+    --expand <number>, default 0
+        How much further the limit is lowered, from 0 to 1, for heavy spill; this darkens the screen's channel more.
 ```
 
 ## dilate

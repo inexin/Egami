@@ -95,7 +95,7 @@ public sealed class RunTests
     [Theory]
     [InlineData("mkv-mjpeg-pcm.mkv", null, CodecIds.MotionJpeg)]
     [InlineData("mkv-raw-i420.mkv", null, CodecIds.Uncompressed)]
-    [InlineData("webm-vp8-opus.webm", null, CodecIds.MotionJpeg)]
+    [InlineData("webm-vp8-opus.webm", null, CodecIds.Vp8)]
     [InlineData("mkv-mjpeg-pcm.mkv", "raw", CodecIds.Uncompressed)]
     public void CodecIsTheSourcesWhenItCanBeEncoded(string clip, string? codec, string expected)
     {

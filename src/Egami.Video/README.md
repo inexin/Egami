@@ -17,7 +17,9 @@ Version 0.2 (V2) adds VP8 decode, WebM alpha, IVF and exact seeking. Version 0.3
 libaom frame for frame, from WebM, Matroska, MP4 and IVF. Version 0.6 adds fragmented MP4 writing and SRT, WebVTT and ASS
 subtitle files (`SubtitleDocument`): read, edit, retime and convert.
 
-Royalty-free codecs only: Opus follows in a later step. No native code, no wrapped C or C++ libraries.
+Audio (V5) adds PCM and FLAC decode and encode, Opus, Vorbis and MP3 decode, and WAV, FLAC, Ogg and MP3 files.
+
+Royalty-free codecs only (MP3's patents have expired). No native code, no wrapped C or C++ libraries.
 
 ## Read frames
 

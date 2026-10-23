@@ -1,0 +1,153 @@
+namespace Egami.Video.Codecs;
+
+/// <summary>How an encoder spends bits: on a quality, on a bitrate or on a fixed quantizer.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-bitrate"/>
+/// </example>
+public enum RateControlMode
+{
+    /// <summary>
+    /// Constant quality, the default: every frame aims at <see cref="VideoEncoderOptions.Quality"/>, so files are as large as the
+    /// content needs. Best for files.
+    /// </summary>
+    Quality,
+
+    /// <summary>
+    /// A target average bitrate (<see cref="VideoEncoderOptions.Bitrate"/>) that bits are spread over by frame complexity: one
+    /// pass, or two with <see cref="VideoEncoderOptions.FirstPassStats"/>.
+    /// </summary>
+    Bitrate,
+
+    /// <summary>
+    /// A constant bitrate that a decoder buffer of <see cref="VideoEncoderOptions.BufferSize"/> never runs dry on, as live streams
+    /// and WebRTC want.
+    /// </summary>
+    ConstantBitrate,
+
+    /// <summary>One quantizer for every frame (<see cref="VideoEncoderOptions.Quantizer"/>, or the one <see cref="VideoEncoderOptions.Quality"/> maps to).</summary>
+    Quantizer,
+}
+
+/// <summary>Whether an encoder may hold frames back to code them better, as WebCodecs' latencyMode.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-realtime"/>
+/// </example>
+public enum LatencyMode
+{
+    /// <summary>
+    /// The default: the encoder looks 25 frames ahead to place keyframes at scene cuts and to code hidden alternate reference
+    /// frames, so a packet comes out up to 25 frames after its frame went in.
+    /// </summary>
+    Quality,
+
+    /// <summary>No lookahead and no hidden frames: every frame's packet comes out as soon as it is sent, as live streams need.</summary>
+    Realtime,
+}
+
+/// <summary>What one <see cref="IVideoEncoder.Send(VideoFrame, EncodeFrameOptions)"/> call asks for beyond the frame.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-realtime"/>
+/// </example>
+public sealed record EncodeFrameOptions
+{
+    /// <summary>Gets the defaults: nothing beyond the frame.</summary>
+    public static EncodeFrameOptions Default { get; } = new();
+
+    /// <summary>Gets whether the frame must be a keyframe, as WebCodecs' keyFrame flag: a point where decoding can start.</summary>
+    public bool ForceKeyframe { get; init; }
+}
+
+/// <summary>
+/// The VP8 settings beyond <see cref="VideoEncoderOptions"/>, for experts: quantizer limits, alternate reference frames,
+/// golden frame spacing, token partitions and error resilience. Every one has a default that suits most uses.
+/// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-vp8"/>
+/// </example>
+public sealed record Vp8EncoderOptions
+{
+    private readonly int _minQuantizer = 4;
+    private readonly int _maxQuantizer = 127;
+    private readonly int? _goldenInterval;
+    private readonly int _temporalFilterFrames = 7;
+    private readonly int _temporalFilterStrength = 5;
+    private readonly int? _partitions;
+
+    /// <summary>Gets the defaults.</summary>
+    public static Vp8EncoderOptions Default { get; } = new();
+
+    /// <summary>Gets the smallest quantizer index rate control may use, 0 (finest) to 127. Default 4.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 127.</exception>
+    public int MinQuantizer
+    {
+        get => _minQuantizer;
+        init => _minQuantizer = InRange(value, 0, 127);
+    }
+
+    /// <summary>Gets the largest quantizer index rate control may use, 0 to 127. Default 127.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 127.</exception>
+    public int MaxQuantizer
+    {
+        get => _maxQuantizer;
+        init => _maxQuantizer = InRange(value, 0, 127);
+    }
+
+    /// <summary>
+    /// Gets whether <see cref="LatencyMode.Quality"/> codes hidden alternate reference frames: a temporally filtered copy of a
+    /// frame ahead that the frames before it predict from. Default on; <see cref="LatencyMode.Realtime"/> never codes them.
+    /// </summary>
+    public bool AlternateReference { get; init; } = true;
+
+    /// <summary>
+    /// Gets the most frames between golden frame refreshes (and alternate reference frames), 4 to 64, or <see langword="null"/>
+    /// (the default) for 8 to 16 chosen by how much the picture moves.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 4 to 64.</exception>
+    public int? GoldenInterval
+    {
+        get => _goldenInterval;
+        init => _goldenInterval = value is int v ? InRange(v, 4, 64) : null;
+    }
+
+    /// <summary>Gets how many frames the temporal filter blends into an alternate reference frame, 1 (none) to 15. Default 7.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 1 to 15.</exception>
+    public int TemporalFilterFrames
+    {
+        get => _temporalFilterFrames;
+        init => _temporalFilterFrames = InRange(value, 1, 15);
+    }
+
+    /// <summary>Gets how strongly the temporal filter blends, 0 (weakest) to 6. Default 5.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 6.</exception>
+    public int TemporalFilterStrength
+    {
+        get => _temporalFilterStrength;
+        init => _temporalFilterStrength = InRange(value, 0, 6);
+    }
+
+    /// <summary>
+    /// Gets the token partitions per frame, 1, 2, 4 or 8, or <see langword="null"/> (the default) for 1, and in
+    /// <see cref="LatencyMode.Realtime"/> 2 from 720 lines and 4 from 1080: more partitions let decoders use more threads.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not 1, 2, 4 or 8.</exception>
+    public int? Partitions
+    {
+        get => _partitions;
+        init => _partitions = value is null or 1 or 2 or 4 or 8 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The partition count must be 1, 2, 4 or 8.");
+    }
+
+    /// <summary>
+    /// Gets whether frames keep no probability updates for the frames after them, so a lost packet spoils only its own frame,
+    /// or <see langword="null"/> (the default) for on in <see cref="LatencyMode.Realtime"/> and off otherwise.
+    /// </summary>
+    public bool? ErrorResilient { get; init; }
+
+    /// <summary>
+    /// Gets whether frames with alpha are coded with their alpha plane as a second VP8 stream, as WebM carries it, or
+    /// <see langword="null"/> (the default) to code alpha when the first frame has it.
+    /// </summary>
+    public bool? Alpha { get; init; }
+
+    private static int InRange(int value, int min, int max, [System.Runtime.CompilerServices.CallerArgumentExpression(nameof(value))] string? name = null) =>
+        value < min || value > max ? throw new ArgumentOutOfRangeException(name, value, $"The value must be {min} to {max}.") : value;
+}

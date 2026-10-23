@@ -5,6 +5,14 @@ changes that break code come only in a new major version.
 
 ## Egami 1.2.0 (unreleased)
 
+### Chroma key
+
+- `RasterOps.ChromaKey(color, similarity, blend)` keys out a green or blue screen by chroma: the distance between Rec. 709 Cb and
+  Cr, leaving luma out, so lighter and darker patches of an unevenly lit screen key with it. `blend` ramps alpha back up for
+  soft edges. `MakeTransparent` stays the RGB color key. As the `chroma-key` step in `egami run`.
+- `RasterOps.Despill(DespillColor, mix, expand)` takes a screen's green or blue cast off edges and see-through pixels by holding
+  that channel down to a limit from the other two. As the `despill` step.
+
 ### Command host
 
 - A new package, Egami.Cli.Host: the command host of `egami` as source with internal types, so other command-line tools of the
@@ -12,6 +20,19 @@ changes that break code come only in a new major version.
   It adds no public API and no assembly. `egami` now compiles it in and behaves as before.
 - Exit code 130 (`ExitCodes.Cancelled`) for a run stopped with Ctrl+C, and progress from within one file for the MCP server's
   notifications, both for `egami-video`.
+
+### Text recognition (OCR)
+
+- A new namespace, `Egami.Ocr`: one shape for every OCR engine, so code that needs text from an image works with whichever engine
+  is plugged in. Egami ships no engine and links no native code. `IOcrEngine.RecognizeAsync` takes an `OcrRequest` (a
+  `Raster<Rgba8>`, its resolution, languages and page index) and returns an `OcrResult`: lines of `OcrWord`s with text, an
+  `OcrQuad` box (four corners, so turned and skewed words keep their shape), confidence and language, plus the page rotation the
+  engine found. `OcrEngineInfo` gives an engine's languages, largest image and whether calls may overlap.
+- `Hocr` and `Alto` read and write hOCR (as browsers read HTML, with `textangle` turns) and ALTO 1 to 4 (pixels, 1/10 mm and
+  1/1200 inch, `HYP` hyphens), under `OcrReadOptions` limits and without fetching any DTD or file.
+- `CommandOcrEngine` runs any OCR program that writes hOCR or ALTO, such as `tesseract {image} {output} -l {langs} hocr`, without a
+  shell, with a timeout and its own temporary folder per run; failures throw `OcrEngineException`.
+- Samples (not packed): Tesseract and Azure AI Document Intelligence in `samples/Ocr`, Windows OCR in `samples/OcrWindows`.
 
 ### Animated cursors
 
@@ -38,8 +59,13 @@ changes that break code come only in a new major version.
   sign biases, hidden frames, error resilience and token partitions; `Vp8References` and `Vp8ReferenceCopy` go with it.
   `Vp8EncodedFrame` returns the frame's data with its bits, quantizer, filter level, squared error and macroblock counts.
 - At the default effort the frames are within a few percent of libvpx `--good --cpu-used=1` in BD-rate on natural clips (about
-  10% larger on test patterns), taking 1.3 to 2.9 times libvpx's time on one thread. Lossy WebP stills are unchanged, byte for
-  byte.
+  6% larger on test patterns). Lossy WebP stills are unchanged, byte for byte.
+- The encoder codes each frame's macroblock rows on `EgamiContext.MaxParallelism` threads with the same output on any number of
+  threads, measures loop filter levels on its own reconstruction instead of decoding the frame for each, and gates the golden
+  and alternate frame searches and the intra modes where they rarely win. At 1080p and the default effort it takes 0.5 to 1.0
+  times libvpx `--good --cpu-used=1`'s time on one thread and 0.6 to 0.8 times on all cores (2.3 to 3.6 times faster than
+  before on one thread); the efforts are retuned so that each step buys compression (split vectors from effort 1, 4 × 4 splits
+  from 5, the trellis from 6).
 
 ### AV1 video encoding
 
@@ -215,6 +241,48 @@ V4.3: fragmented MP4 writing, and HLS and DASH segments. API reviewed and accept
 - Writing fragmented MP4 takes 0.69 times as long as flat MP4 on 720p Motion JPEG and allocates no memory per packet or
   fragment in steady state; Chromium and Chrome (Media Source Extensions), hls.js, dash.js, ffprobe, MP4Box and Bento4 read
   the files (egami-compare).
+
+V5.2: VP8 encoding, on an encoder core that VP9 and AV1 encoding will share. The V5 encoder steps get one combined API review
+after V5.6 (Design Q17).
+
+### VP8 encoding
+
+- `Vp8Codec.CreateEncoder` and `VideoWriterOptions.Codec = VideoCodecs.Vp8`: VP8 into WebM, Matroska and IVF through Egami's
+  `Vp8StreamEncoder`, with WebM alpha as a second VP8 stream in each packet's addition 1. 8-bit 4:2:0 planes are coded as
+  they are; other frames are converted to BT.601 limited range.
+- `Vp8EncoderOptions` (`VideoEncoderOptions.Vp8`): quantizer limits, alternate references, golden frame spacing, temporal
+  filter frames and strength, token partitions, error resilience, alpha.
+- `egami-video encode --codec vp8` with `--effort` and `--bitrate`, and `run` keeps VP8 sources VP8; `egami-video ffmpeg`
+  takes `-c:v libvpx`.
+
+### Encoder settings
+
+- `VideoEncoderOptions` (and `VideoWriterOptions`) gain `Effort`, `RateControl` (`RateControlMode.Quality`, the default,
+  `Bitrate`, `ConstantBitrate`, `Quantizer`), `Bitrate`, `MaxBitrate`, `BufferSize`, `Quantizer`, `LatencyMode` (`Quality`
+  with a 25-frame lookahead, or `Realtime`), `KeyframeInterval` (10 seconds by default), `SceneCutKeyframes` and
+  `FirstPassStats`.
+- `IVideoEncoder.Send(VideoFrame, EncodeFrameOptions)` with `EncodeFrameOptions.ForceKeyframe`; Motion JPEG and uncompressed
+  video treat it as `Send(VideoFrame)`.
+- Two passes: `VideoWriter.AnalyzeFirstPass` over frames or a file gives `FirstPassStats`, which `Save` and `Load` keep in a
+  file.
+- The lookahead places keyframes at scene cuts, plans groups with hidden, temporally filtered alternate references where the
+  group's first frame still predicts its last well, and gives each frame its quantizer. Output bytes do not depend on the thread count.
+
+### MP3 (V5.8)
+
+V5.8: MPEG audio decoding and .mp3 files. The API review is still to come.
+
+- `Mp3Codec` (and `AudioCodecs.Mp3`, decode only), registered by default, translated from minimp3 (CC0): Layers I, II and III
+  of MPEG-1, MPEG-2 and MPEG-2.5, 8 to 48 kHz, every channel mode and free-format bit rates, as planar float. It passes the
+  ISO/IEC 11172-4 compliance streams at full accuracy (maximum error at most 2^-14, PSNR about 101 dB) and matches FFmpeg's
+  float decoder within 2e-7 on LAME files. Frames are found by three matching headers; damaged frames and CRC-16 mismatches
+  (`Mp3.CorruptFrame`, `Mp3.BadCrc`) become silence of their own length with `DecodeErrorMode.Conceal`. `CodecIds.Mp1` is new.
+- `Mp3Format` (.mp3, .mp2, .mp1, .mpa), registered by default, read and written. ID3v2.2 to 2.4 tags (text frames, APIC cover
+  art, CHAP chapters), ID3v1, APEv2 and Lyrics3 tags are read; Xing, Info and VBRI frames give the frame count, and the LAME
+  tag's delay and padding become `CodecDelay` and the last packet's duration, so LAME files decode to the source's exact
+  sample count. Seeks land on the exact sample (output equals a straight decode); `Mp3Format.FastSeek` seeks by the Xing table.
+  The writer stores ID3v2.4 and, on a seekable stream, a Xing header and LAME tag that FFmpeg reads gaplessly.
+- MP3 in Matroska gets sample-exact packet durations and its DiscardPadding; WAV's id3 chunk now reads ID3v2.2 too.
 
 ### Text subtitles (V1.2)
 

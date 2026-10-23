@@ -97,6 +97,9 @@ public static class CodecIds
     /// <summary>MPEG audio layer II.</summary>
     public const string Mp2 = "A_MPEG/L2";
 
+    /// <summary>MPEG audio layer I.</summary>
+    public const string Mp1 = "A_MPEG/L1";
+
     /// <summary>Dolby AC-3.</summary>
     public const string Ac3 = "A_AC3";
 

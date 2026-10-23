@@ -928,3 +928,17 @@ https://datatracker.ietf.org/ipr/1914/
 Broadcom Corporation:
 https://datatracker.ietf.org/ipr/1526/
 ```
+
+## minimp3
+
+Egami.Video's MPEG audio decoder (`src/Egami.Video/Audio/Codecs/Mp3`) is translated from minimp3 by Lion (lieff): the bit
+reader, side information, scale factors, Huffman decoding, stereo processing, reordering, antialias, IMDCT and the Layer I and
+II paths of `minimp3.h` in its scalar build (`Mp3FrameDecoder.cs`), its tables (`Mp3Tables.cs`), the synthesis filterbank
+(`Mp3Synthesis.cs`) and its frame search (`MpegAudioSync.cs`). minimp3 is dedicated to the public domain under CC0 1.0
+Universal, which asks for no notice; it is listed here as a courtesy.
+
+```
+To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this
+software to the public domain worldwide. This software is distributed without any warranty.
+See <http://creativecommons.org/publicdomain/zero/1.0/>.
+```

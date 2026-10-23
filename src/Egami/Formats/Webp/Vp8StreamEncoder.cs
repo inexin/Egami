@@ -10,9 +10,9 @@ namespace Egami.Formats.Webp;
 /// frames can too. The frames decode in libvpx exactly as in <see cref="Vp8StreamDecoder"/>.
 /// </summary>
 /// <remarks>
-/// The encoder keeps the stream's references in four frame buffers from the context's <see cref="EgamiContext.Memory"/> and
-/// decodes each frame it writes to keep them, on up to <see cref="EgamiContext.MaxParallelism"/> threads; the output does not
-/// depend on the thread count. The frame size is checked against the context's <see cref="EgamiContext.Limits"/>. An instance is
+/// The encoder keeps the stream's references in four frame buffers from the context's <see cref="EgamiContext.Memory"/>. It
+/// codes a frame's macroblock rows on up to <see cref="EgamiContext.MaxParallelism"/> threads, each row a little behind the one
+/// above; the output does not depend on the thread count. The frame size is checked against the context's <see cref="EgamiContext.Limits"/>. An instance is
 /// not thread-safe.
 /// </remarks>
 /// <example>
@@ -23,7 +23,8 @@ public sealed class Vp8StreamEncoder : IDisposable
     private readonly Vp8Planes _planes;
     private readonly Vp8Encoder _encoder;
     private readonly Vp8VideoDecoder _decoder;
-    private readonly Vp8StreamState _saved = new();
+    private readonly Vp8Planes _unfiltered;
+    private byte[][] _filterWork = [[], []];
     private bool _started;
 
     // The loop filter level the last inter frame searched its way to, or −1.
@@ -47,8 +48,9 @@ public sealed class Vp8StreamEncoder : IDisposable
         Width = width;
         Height = height;
         _planes = new Vp8Planes(width, height);
-        _encoder = new Vp8Encoder(_planes, new Vp8EncoderOptions());
+        _unfiltered = new Vp8Planes(width, height);
         _decoder = new Vp8VideoDecoder(c.MaxParallelism, c.Memory, c.Limits);
+        _encoder = new Vp8Encoder(_planes, new Vp8EncoderOptions()) { Reconstruction = _unfiltered, Pool = c.MaxParallelism > 1 ? _decoder : null };
     }
 
     /// <summary>Gets the frame width.</summary>
@@ -57,10 +59,10 @@ public sealed class Vp8StreamEncoder : IDisposable
     /// <summary>Gets the frame height.</summary>
     public int Height { get; }
 
-    /// <summary>Sets planes that receive each frame's unfiltered reconstruction, for tests.</summary>
+    /// <summary>Sets planes that receive each frame's unfiltered reconstruction, for tests; the loop filter search uses them too.</summary>
     internal Vp8Planes? Reconstruction
     {
-        set => _encoder.Reconstruction = value;
+        set => _encoder.Reconstruction = value ?? _unfiltered;
     }
 
     /// <summary>
@@ -107,7 +109,7 @@ public sealed class Vp8StreamEncoder : IDisposable
         }
         else
         {
-            (int range, bool quarter, int candidates, int split, int intraGate, int filterStep) = Vp8InterFrame.Search(plan.Effort);
+            (int range, bool quarter, int candidates, int split, bool trellis, int intraGate, int intraFloor, int referenceGate, int filterStep) = Vp8InterFrame.Search(plan.Effort);
             Vp8InterFrame inter = new()
             {
                 State = _decoder.State,
@@ -125,6 +127,9 @@ public sealed class Vp8StreamEncoder : IDisposable
                 Split = split,
                 IntraGate = intraGate,
                 FilterStep = filterStep,
+                Trellis = trellis,
+                IntraFloor = intraFloor,
+                ReferenceGate = referenceGate,
             };
             ReadOnlySpan<Vp8References> slots = [Vp8References.None, Vp8References.Last, Vp8References.Golden, Vp8References.Alternate];
             for (int slot = 1; slot <= 3; slot++)
@@ -141,7 +146,8 @@ public sealed class Vp8StreamEncoder : IDisposable
             intra = _encoder.IntraMacroblocks;
         }
 
-        _decoder.Decode(data, 0, data.Length);
+        // The decoder takes the encoder's reconstruction rather than read the tokens back: the same frame, by construction.
+        _decoder.Decode(data, 0, data.Length, _encoder.Reconstruction, _encoder.ZeroFlags);
         _started = true;
         Vp8FrameBuffer decoded = _decoder.Decoded!;
         long y = SquaredError(_planes.Y, _planes.Stride, decoded.Y, decoded.OriginY, decoded.StrideY, Width, Height);
@@ -183,48 +189,56 @@ public sealed class Vp8StreamEncoder : IDisposable
     }
 
     /// <summary>
-    /// Tries loop filter levels around the encoder's own by decoding the frame with each, steps halving, and keeps the level whose
-    /// luma is closest to the source.
+    /// Tries loop filter levels around the encoder's own, steps halving, and keeps the level whose luma is closest to the source:
+    /// each level filters the encoder's unfiltered reconstruction as the decoder would (two levels at a time on two threads).
     /// </summary>
     private byte[] SearchFilterLevel(byte[] data, int firstStep)
     {
         // From the level of the inter frame before, which rarely moves far, else from the quantizer's.
-        int level = _filterLevel >= 0 ? _filterLevel : _encoder.FilterLevel;
-        if (level != _encoder.FilterLevel)
+        int written = _encoder.FilterLevel;
+        int level = _filterLevel >= 0 ? _filterLevel : written;
+        int planeSize = _planes.Stride * _planes.PaddedHeight;
+        if (_filterWork[0].Length != planeSize)
         {
-            data = _encoder.WithFilterLevel(level);
+            _filterWork = [new byte[planeSize], new byte[planeSize]];
         }
 
-        long error = TrialError(data);
-        int written = level;
+        long error = _encoder.FilteredLumaError(level, _filterWork[0]);
+        Span<int> candidates = stackalloc int[2];
         for (int step = firstStep; step >= 1; step >>= 1)
         {
-            foreach (int candidate in (ReadOnlySpan<int>)[level - step, level + step])
+            (candidates[0], candidates[1]) = (level - step, level + step);
+            long below = long.MaxValue, above = long.MaxValue;
+            bool both = candidates[0] >= 0 && candidates[1] <= 63;
+            if (both && _decoder.Threads > 1)
             {
-                if (candidate < 0 || candidate > 63)
+                int low = candidates[0], high = candidates[1];
+                _decoder.RunWorkers(2, w =>
                 {
-                    continue;
-                }
+                    long e = _encoder.FilteredLumaError(w == 0 ? low : high, _filterWork[w]);
+                    (w == 0 ? ref below : ref above) = e;
+                });
+            }
+            else
+            {
+                below = candidates[0] >= 0 ? _encoder.FilteredLumaError(candidates[0], _filterWork[0]) : long.MaxValue;
+                above = candidates[1] <= 63 ? _encoder.FilteredLumaError(candidates[1], _filterWork[0]) : long.MaxValue;
+            }
 
-                byte[] trial = _encoder.WithFilterLevel(candidate);
-                written = candidate;
-                long e = TrialError(trial);
-                if (e < error)
-                {
-                    (error, data) = (e, trial);
-                    level = candidate;
-                }
+            int start = level;
+            if (below < error)
+            {
+                (error, level) = (below, start - step);
+            }
+
+            if (above < error)
+            {
+                (error, level) = (above, start + step);
             }
         }
 
         _filterLevel = level;
-        return written == level ? data : _encoder.WithFilterLevel(level);
-    }
-
-    private long TrialError(byte[] data)
-    {
-        Vp8FrameBuffer decoded = _decoder.DecodeTrial(data, 0, data.Length, _saved);
-        return SquaredError(_planes.Y, _planes.Stride, decoded.Y, decoded.OriginY, decoded.StrideY, Width, Height);
+        return level == written ? data : _encoder.WithFilterLevel(level);
     }
 
     private static long SquaredError(byte[] source, int stride, ReadOnlySpan<byte> plane, int origin, int planeStride, int width, int height)
@@ -232,16 +246,7 @@ public sealed class Vp8StreamEncoder : IDisposable
         long sum = 0;
         for (int y = 0; y < height; y++)
         {
-            ReadOnlySpan<byte> a = source.AsSpan(y * stride, width);
-            ReadOnlySpan<byte> b = plane.Slice(origin + (y * planeStride), width);
-            int row = 0;
-            for (int x = 0; x < width; x++)
-            {
-                int d = a[x] - b[x];
-                row += d * d;
-            }
-
-            sum += row;
+            sum += Vp8EncDsp.SquaredError(source.AsSpan(y * stride, width), plane.Slice(origin + (y * planeStride), width));
         }
 
         return sum;
