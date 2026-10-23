@@ -1,3 +1,5 @@
+using Egami.Nal;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>
@@ -39,7 +41,7 @@ internal sealed class HevcParameterSetStore
             return null;
         }
 
-        HevcBitReader r = nal.Reader(elements);
+        NalBitReader r = nal.Reader(elements);
         switch (nal.Type)
         {
             case HevcNal.Vps:

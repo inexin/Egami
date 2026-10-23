@@ -1,3 +1,5 @@
+using Egami.Nal;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>
@@ -17,7 +19,7 @@ internal sealed partial class HevcSliceDecoder
     private readonly HevcSps _sps;
     private readonly HevcPps _pps;
     private readonly HevcLayout _layout;
-    private readonly HevcCabac _cabac = new();
+    private readonly CabacEngine _cabac = new();
     private readonly HevcIntra _intra = new();
     private readonly byte[] _contexts = new byte[HevcContexts.Count];
     private readonly int[] _statCoeff = new int[4];
@@ -538,7 +540,7 @@ internal sealed partial class HevcSliceDecoder
 
     private void PcmSample(int x0, int y0, int log2CbSize)
     {
-        HevcCabac.RawReader raw = new(_data, _cabac.Position);
+        CabacEngine.RawReader raw = new(_data, _cabac.Position);
         int size = 1 << log2CbSize;
         int components = _sps.ChromaArrayType != 0 ? 3 : 1;
         for (int c = 0; c < components; c++)

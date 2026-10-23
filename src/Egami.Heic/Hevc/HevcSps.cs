@@ -1,3 +1,5 @@
+using Egami.Nal;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>A sequence parameter set (H.265 7.3.2.2) and the variables derived from it (7.4.3.2).</summary>
@@ -159,7 +161,7 @@ internal sealed class HevcSps
     /// <summary>Gets the height after the conformance window.</summary>
     internal int OutputHeight => Height - Conformance.Top - Conformance.Bottom;
 
-    internal static HevcSps Read(HevcBitReader r)
+    internal static HevcSps Read(NalBitReader r)
     {
         HevcSps sps = new();
         r.U(4, "sps_video_parameter_set_id");

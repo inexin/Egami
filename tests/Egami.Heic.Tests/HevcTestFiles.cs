@@ -5,6 +5,7 @@ using Egami.Formats;
 using Egami.Formats.Heic;
 using Egami.Formats.Heif;
 using Egami.Heic.Hevc;
+using Egami.Nal;
 
 namespace Egami.Heic.Tests;
 
@@ -57,7 +58,7 @@ internal static class HevcTestFiles
         HeifItem item = heif.Item(itemId)!;
         HevcConfig config = HevcConfig.Read(heif, heif.Property(item, HeicFile.HvcC)!);
         List<HevcNal> nals = [.. config.NalUnits.Select(n => HevcNal.Parse(n.Span))];
-        nals.AddRange(HevcNal.SplitLengthPrefixed(heif.ItemData(item), config.LengthSize).Select(n => HevcNal.Parse(n.Span)));
+        nals.AddRange(NalFraming.SplitLengthPrefixed(heif.ItemData(item), config.LengthSize).Select(n => HevcNal.Parse(n.Span)));
         return nals;
     }
 
@@ -66,7 +67,7 @@ internal static class HevcTestFiles
     {
         List<HevcNal> nals = [];
         bool seenSlice = false;
-        foreach (ReadOnlyMemory<byte> unit in HevcNal.SplitAnnexB(stream))
+        foreach (ReadOnlyMemory<byte> unit in NalFraming.SplitAnnexB(stream))
         {
             HevcNal nal = HevcNal.Parse(unit.Span);
             if (seenSlice && ((nal.IsSlice && (nal.Rbsp[2] & 0x80) != 0) || nal.Type is 32 or 33 or 34 or 35 or 39 or (>= 41 and <= 44)))
