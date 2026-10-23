@@ -16,4 +16,11 @@ if (args is ["--encode-vp8", .. string[] rest])
     return;
 }
 
+// Time and write an Opus encode (V5.7 speed gate): -- --encode-opus <audio file> [--out=file.opus --bitrate=BITS ...]
+if (args is ["--encode-opus", .. string[] opus])
+{
+    OpusEncodeTiming.Run(opus);
+    return;
+}
+
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);

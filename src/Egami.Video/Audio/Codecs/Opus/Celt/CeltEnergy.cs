@@ -2,7 +2,7 @@
 namespace Egami.Video.Audio.Codecs.Opus;
 
 /// <summary>CELT's band energy decoding: the coarse energy with its Laplace model and prediction, then the fine energy bits.</summary>
-internal static class CeltEnergy
+internal static partial class CeltEnergy
 {
     private const int LaplaceLogMinP = 0;
     private const int LaplaceMinP = 1 << LaplaceLogMinP;

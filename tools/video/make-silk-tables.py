@@ -1,16 +1,17 @@
-"""Transcribes the SILK decoder tables of libopus into C#.
+"""Transcribes the SILK decoder and encoder tables of libopus into C#.
 
 Usage: python tools/video/make-silk-tables.py <libopus checkout> <output .cs>
-Reads silk/tables_*.c, pitch_est_tables.c, table_LSF_cos.c and resampler_rom.c and writes SilkTables.cs.
+Reads silk/tables_*.c, pitch_est_tables.c, table_LSF_cos.c, resampler_rom.c and control_SNR.c and writes SilkTables.cs.
 """
 import re
 import sys
 from pathlib import Path
 
-# Constants from silk/define.h that the tables use.
-DEFINES = {"OFFSET_VL_Q10": 32, "OFFSET_VH_Q10": 100, "OFFSET_UVL_Q10": 100, "OFFSET_UVH_Q10": 240}
+# Constants from silk/define.h and pitch_est_defines.h that the tables use.
+DEFINES = {"OFFSET_VL_Q10": 32, "OFFSET_VH_Q10": 100, "OFFSET_UVL_Q10": 100, "OFFSET_UVH_Q10": 240,
+           "PE_NB_CBKS_STAGE3_MIN": 16, "PE_NB_CBKS_STAGE3_MID": 24, "PE_NB_CBKS_STAGE3_MAX": 34}
 
-TYPES = {"opus_uint8": "byte", "opus_int8": "sbyte", "opus_int16": "short", "opus_int32": "int"}
+TYPES = {"unsigned char": "byte", "opus_uint8": "byte", "opus_int8": "sbyte", "opus_int16": "short", "opus_int32": "int"}
 
 # (C file, C name, C# name)
 WANTED = [
@@ -81,6 +82,28 @@ WANTED = [
     ("resampler_rom.c", "silk_Resampler_1_4_COEFS", "Resampler14Coefs"),
     ("resampler_rom.c", "silk_Resampler_1_6_COEFS", "Resampler16Coefs"),
     ("resampler_rom.c", "silk_resampler_frac_FIR_12", "ResamplerFracFir12"),
+    # Encoder only.
+    ("tables_pulses_per_block.c", "silk_max_pulses_table", "MaxPulsesTable"),
+    ("tables_pulses_per_block.c", "silk_pulses_per_block_BITS_Q5", "PulsesPerBlockBitsQ5"),
+    ("tables_pulses_per_block.c", "silk_rate_levels_BITS_Q5", "RateLevelsBitsQ5"),
+    ("tables_LTP.c", "silk_LTP_gain_BITS_Q5_0", "LtpGainBitsQ50"),
+    ("tables_LTP.c", "silk_LTP_gain_BITS_Q5_1", "LtpGainBitsQ51"),
+    ("tables_LTP.c", "silk_LTP_gain_BITS_Q5_2", "LtpGainBitsQ52"),
+    ("tables_LTP.c", "silk_LTP_gain_vq_0_gain", "LtpGainVq0Gain"),
+    ("tables_LTP.c", "silk_LTP_gain_vq_1_gain", "LtpGainVq1Gain"),
+    ("tables_LTP.c", "silk_LTP_gain_vq_2_gain", "LtpGainVq2Gain"),
+    ("tables_LTP.c", "silk_LTP_vq_sizes", "LtpVqSizes"),
+    ("tables_NLSF_CB_NB_MB.c", "silk_NLSF_CB2_BITS_NB_MB_Q5", "NlsfCb2BitsNbMbQ5"),
+    ("tables_NLSF_CB_WB.c", "silk_NLSF_CB2_BITS_WB_Q5", "NlsfCb2BitsWbQ5"),
+    ("tables_other.c", "silk_Transition_LP_B_Q28", "TransitionLpBQ28"),
+    ("tables_other.c", "silk_Transition_LP_A_Q28", "TransitionLpAQ28"),
+    ("pitch_est_tables.c", "silk_Lag_range_stage3", "LagRangeStage3"),
+    ("pitch_est_tables.c", "silk_Lag_range_stage3_10_ms", "LagRangeStage310Ms"),
+    ("pitch_est_tables.c", "silk_nb_cbk_searchs_stage3", "NbCbkSearchsStage3"),
+    ("resampler_rom.c", "silk_Resampler_2_3_COEFS_LQ", "Resampler23CoefsLq"),
+    ("control_SNR.c", "silk_TargetRate_NB_21", "TargetRateNb21"),
+    ("control_SNR.c", "silk_TargetRate_MB_21", "TargetRateMb21"),
+    ("control_SNR.c", "silk_TargetRate_WB_21", "TargetRateWb21"),
 ]
 
 
@@ -90,7 +113,7 @@ def strip_comments(text):
 
 
 def extract(text, name):
-    m = re.search(r"(opus_u?int(?:8|16|32))\s+" + re.escape(name) + r"\s*(\[[^=]*)=\s*\{", text)
+    m = re.search(r"(opus_u?int(?:8|16|32)|unsigned char)\s+" + re.escape(name) + r"\s*(\[[^=]*)=\s*\{", text)
     if not m:
         raise SystemExit("not found: " + name)
     ctype = m.group(1)
@@ -113,11 +136,11 @@ def main():
     out = Path(sys.argv[2])
     texts = {}
     lines = [
-        "// Transcribed from libopus 1.5.2 silk/tables_*.c, pitch_est_tables.c, table_LSF_cos.c and resampler_rom.c by",
+        "// Transcribed from libopus 1.5.2 silk/tables_*.c, pitch_est_tables.c, table_LSF_cos.c, resampler_rom.c and control_SNR.c by",
         "// tools/video/make-silk-tables.py; do not edit by hand.",
         "namespace Egami.Video.Audio.Codecs.Opus;",
         "",
-        "/// <summary>The constant tables of the SILK decoder; multi-dimensional C arrays are flattened row by row.</summary>",
+        "/// <summary>The constant tables of the SILK decoder and encoder; multi-dimensional C arrays are flattened row by row.</summary>",
         "internal static class SilkTables",
         "{",
     ]

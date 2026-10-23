@@ -156,6 +156,11 @@ the egami-opusref image (the build command is in the file); `SilkTests` decodes 
 from a synthetic signal with libopus 1.5.2, with libopus's final range and decoded samples for each frame, some frames lost.
 `tools/video/opusref/make-celt-reference.c` makes it in the `egami-opusref` image; `CeltTests` decodes it.
 
+`opus-encode/encoder-ref.bin` holds, for 46 encoder settings (every application, rate mode and frame duration, FEC, DTX,
+forced modes and bandwidths, 8 to 48 kHz, and multistream up to 7.1), the length, FNV-1a hash and final range of each packet
+libopus 1.5.2 makes from a synthetic signal. `tools/video/opusref/make-opus-encoder-reference.c` makes it in the
+`egami-opusref` image; `OpusEncoderTests` encodes the same signal and compares.
+
 ## AV1 (V4.2)
 
 `tests/video/corpus/av1` holds our own AV1 clips, encoded by libaom 3.15.2's aomenc (`tools/avifref/av1corpus.py`, through
