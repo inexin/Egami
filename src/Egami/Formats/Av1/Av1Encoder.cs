@@ -155,6 +155,12 @@ internal sealed class Av1EncoderSource
     /// <summary>Gets the superblock columns of <see cref="SuperblockQIndices"/>.</summary>
     internal int SuperblockColumns { get; set; }
 
+    /// <summary>Gets the bordered luma of each reference frame an inter frame searches, LAST at 1.</summary>
+    internal Av1ReferencePlane?[] ReferencePlanes { get; } = new Av1ReferencePlane?[8];
+
+    /// <summary>Gets or sets the reference frames an inter block searches, each a different frame, nearest first.</summary>
+    internal int[] SearchReferences { get; set; } = [];
+
     /// <summary>Gets the hashes of the luma blocks, when the frame allows intra block copy.</summary>
     internal Av1BlockHash? Hash { get; set; }
 
@@ -216,11 +222,39 @@ internal sealed class Av1Encoder
         ArgumentNullException.ThrowIfNull(settings);
         Av1SequenceHeader sequence = SequenceFor(input);
         Av1FrameParameters parameters = ParametersFor(input, sequence, settings);
+        (byte[] payload, Av1Frame frame, double estimated, double tileBits) = EncodeFrame(input, settings, sequence, parameters, [], []);
+        List<byte> stream = [];
+        Av1ObuWriter.Obu(stream, Av1ObuType.SequenceHeader, Av1ObuWriter.SequenceHeader(sequence));
+        Av1ObuWriter.Obu(stream, Av1ObuType.Frame, payload);
+        return new Av1Encoder([.. stream], sequence, frame, estimated, tileBits);
+    }
+
+    /// <summary>
+    /// Encodes one frame of a sequence as its parameters say; an inter frame reads its slots (<see cref="Av1FrameParameters.Slots"/>)
+    /// and searches <paramref name="searchReferences"/> in their bordered luma, <paramref name="referencePlanes"/> (LAST at 1).
+    /// Returns the frame OBU's payload and the frame as a decoder reconstructs it, with the CDFs it saves for the frames after it.
+    /// </summary>
+    internal static (byte[] Payload, Av1Frame Frame, double EstimatedBits, double TileBits) EncodeFrame(Av1EncoderInput input, Av1EncoderSettings settings,
+        Av1SequenceHeader sequence, Av1FrameParameters parameters, Av1ReferencePlane?[] referencePlanes, int[] searchReferences)
+    {
         Av1BitWriter bits = new();
         Av1ObuWriter.FrameHeader(bits, sequence, parameters);
-        Av1FrameHeader header = Av1FrameHeader.Parse(bits.ToArray(), sequence, 0, 0, "AV1");
-        Av1Frame frame = new(header, "AV1", reconstruct: true, compact: false) { Parallelism = Math.Max(1, settings.Parallelism), CancellationToken = settings.CancellationToken };
+        Av1FrameHeader header = Av1FrameHeader.Parse(bits.ToArray(), sequence, 0, 0, "AV1", parameters.Slots is null ? null : (Av1Frame?[])parameters.Slots.Clone());
+        Av1Frame frame = new(header, "AV1", reconstruct: true, compact: false)
+        {
+            Parallelism = Math.Max(1, settings.Parallelism),
+            CancellationToken = settings.CancellationToken,
+            Showable = header.ShowableFrame,
+        };
+        if (header.UseRefFrameMvs)
+        {
+            Av1MotionField.Setup(frame);
+        }
+
         Av1EncoderSource source = new(input, frame);
+        referencePlanes.CopyTo(source.ReferencePlanes, 0);
+        source.SearchReferences = searchReferences;
+
         if (header.DeltaQPresent)
         {
             int sbCols = (header.MiCols + 15) >> 4, sbRows = (header.MiRows + 15) >> 4;
@@ -251,12 +285,23 @@ internal sealed class Av1Encoder
         Av1FilterSearch.Search(frame, source, sequence, parameters, settings.Effort, Av1Rate.RdMultiplier(Math.Max(parameters.BaseQIdx, 1), sequence.BitDepth));
 
         byte[][] tileData = new byte[tiles][];
-        frame.For(tiles, tile => tileData[tile] = new Av1TileWriter(frame, tile / header.TileCols, tile % header.TileCols, decisions).Write());
+        Av1FrameContext?[] contexts = new Av1FrameContext?[tiles];
+        frame.For(tiles, tile =>
+        {
+            Av1TileWriter writer = new(frame, tile / frame.Header.TileCols, tile % frame.Header.TileCols, decisions);
+            tileData[tile] = writer.Write();
+            contexts[tile] = writer.Context;
+        });
         parameters.TileSizeBytes = Av1ObuWriter.TileSizeBytesFor(tileData);
-        List<byte> stream = [];
-        Av1ObuWriter.Obu(stream, Av1ObuType.SequenceHeader, Av1ObuWriter.SequenceHeader(sequence));
-        Av1ObuWriter.Obu(stream, Av1ObuType.Frame, Av1ObuWriter.Frame(sequence, parameters, tileData));
-        return new Av1Encoder([.. stream], sequence, frame, estimates.Sum() / (double)Av1CostSink.BitCost, tileData.Sum(t => t.Length) * 8.0);
+        if (!frame.Header.DisableFrameEndUpdateCdf)
+        {
+            // The CDFs the context update tile ends with, which the frames that load this one start from.
+            Av1FrameContext saved = contexts[frame.Header.ContextUpdateTileId]!.Clone();
+            saved.ResetCounters();
+            frame.SavedContext = saved;
+        }
+
+        return (Av1ObuWriter.Frame(sequence, parameters, tileData), frame, estimates.Sum() / (double)Av1CostSink.BitCost, tileData.Sum(t => t.Length) * 8.0);
     }
 
     /// <summary>

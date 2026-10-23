@@ -73,6 +73,9 @@ internal sealed class Av1FrameParameters
     /// <summary>Gets or sets the mode deltas the frame starts from, with <see cref="PreviousLoopFilterRefDeltas"/>.</summary>
     internal int[]? PreviousLoopFilterModeDeltas { get; set; }
 
+    /// <summary>Gets or sets the reference slots the header is read back against, for a frame of a stream; null for a still.</summary>
+    internal Av1Frame?[]? Slots { get; set; }
+
     /// <summary>Gets whether the frame is a key or intra-only frame.</summary>
     internal bool FrameIsIntra => FrameType is Av1FrameType.Key or Av1FrameType.IntraOnly;
 

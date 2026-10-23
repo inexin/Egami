@@ -333,15 +333,18 @@ internal sealed class Av1FrameHeader
     }
 
     /// <summary>Gets the signed distance between two order hints (get_relative_dist).</summary>
-    internal int RelativeDist(int a, int b)
+    internal int RelativeDist(int a, int b) => RelativeDist(Sequence, a, b);
+
+    /// <summary>Gets the signed distance between two order hints of a sequence (get_relative_dist).</summary>
+    internal static int RelativeDist(Av1SequenceHeader sequence, int a, int b)
     {
-        if (!Sequence.EnableOrderHint)
+        if (!sequence.EnableOrderHint)
         {
             return 0;
         }
 
         int diff = a - b;
-        int m = 1 << (Sequence.OrderHintBits - 1);
+        int m = 1 << (sequence.OrderHintBits - 1);
         return (diff & (m - 1)) - (diff & m);
     }
 
@@ -708,9 +711,15 @@ internal sealed class Av1FrameHeader
     }
 
     /// <summary>Gets whether skip mode may be coded, and sets <see cref="SkipModeFrame"/> (av1_setup_skip_mode_allowed).</summary>
-    private bool SkipModeAllowed()
+    private bool SkipModeAllowed() => SkipModeAllowed(Sequence, FrameIsIntra, ReferenceSelect, OrderHint, OrderHints, SkipModeFrame);
+
+    /// <summary>
+    /// Gets whether a frame of a sequence may code skip mode from the order hints of its references (LAST at 1), and the pair of
+    /// references skip mode then predicts from (av1_setup_skip_mode_allowed).
+    /// </summary>
+    internal static bool SkipModeAllowed(Av1SequenceHeader sequence, bool intra, bool referenceSelect, int orderHint, ReadOnlySpan<int> hints, Span<int> frames)
     {
-        if (!Sequence.EnableOrderHint || FrameIsIntra || !ReferenceSelect)
+        if (!sequence.EnableOrderHint || intra || !referenceSelect)
         {
             return false;
         }
@@ -718,16 +727,16 @@ internal sealed class Av1FrameHeader
         int forwardHint = -1, backwardHint = int.MaxValue, forwardIdx = -1, backwardIdx = -1;
         for (int i = 0; i < 7; i++)
         {
-            int hint = OrderHints[Ref.Last + i];
-            if (RelativeDist(hint, OrderHint) < 0)
+            int hint = hints[Ref.Last + i];
+            if (RelativeDist(sequence, hint, orderHint) < 0)
             {
-                if (forwardHint == -1 || RelativeDist(hint, forwardHint) > 0)
+                if (forwardHint == -1 || RelativeDist(sequence, hint, forwardHint) > 0)
                 {
                     forwardHint = hint;
                     forwardIdx = i;
                 }
             }
-            else if (RelativeDist(hint, OrderHint) > 0 && (backwardHint == int.MaxValue || RelativeDist(hint, backwardHint) < 0))
+            else if (RelativeDist(sequence, hint, orderHint) > 0 && (backwardHint == int.MaxValue || RelativeDist(sequence, hint, backwardHint) < 0))
             {
                 backwardHint = hint;
                 backwardIdx = i;
@@ -745,8 +754,8 @@ internal sealed class Av1FrameHeader
             int secondHint = -1;
             for (int i = 0; i < 7; i++)
             {
-                int hint = OrderHints[Ref.Last + i];
-                if (RelativeDist(hint, forwardHint) < 0 && (secondHint == -1 || RelativeDist(hint, secondHint) > 0))
+                int hint = hints[Ref.Last + i];
+                if (RelativeDist(sequence, hint, forwardHint) < 0 && (secondHint == -1 || RelativeDist(sequence, hint, secondHint) > 0))
                 {
                     secondHint = hint;
                     backwardIdx = i;
@@ -759,8 +768,8 @@ internal sealed class Av1FrameHeader
             }
         }
 
-        SkipModeFrame[0] = Ref.Last + Math.Min(forwardIdx, backwardIdx);
-        SkipModeFrame[1] = Ref.Last + Math.Max(forwardIdx, backwardIdx);
+        frames[0] = Ref.Last + Math.Min(forwardIdx, backwardIdx);
+        frames[1] = Ref.Last + Math.Max(forwardIdx, backwardIdx);
         return true;
     }
 
