@@ -75,6 +75,12 @@ internal sealed class H264Deblock
 
     private void FilterMacroblock(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
     {
+        if (UseVectors && Avx2.IsSupported)
+        {
+            FilterMacroblockWide(mbX, mbY, addr, left, top, p);
+            return;
+        }
+
         ComputeStrengths(mbX, mbY, addr, left, top);
         bool t8 = _mb.Transform8x8[addr];
         int stride = _pic.Stride;
@@ -96,11 +102,15 @@ internal sealed class H264Deblock
             }
         }
 
-        if (_chroma == 0)
+        if (_chroma != 0)
         {
-            return;
+            FilterChromaPlanes(mbX, mbY, addr, left, top, p);
         }
+    }
 
+    /// <summary>Filters the chroma edges of the macroblock, plane by plane, with the strengths of its luma edges.</summary>
+    private void FilterChromaPlanes(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
+    {
         int cStride = _pic.ChromaStride;
         int cw = 8, ch = _chroma == 1 ? 8 : 16;
         int cOrigin = _pic.ChromaOrigin + (mbY * ch * cStride) + (mbX * cw);
@@ -129,6 +139,314 @@ internal sealed class H264Deblock
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// <see cref="FilterMacroblock"/> with 256-bit vectors: a luma edge's 16 samples at once, and the Cb and Cr edges of 4:2:0
+    /// side by side in one vector, so each filter runs half as often as in eight lanes.
+    /// </summary>
+    private void FilterMacroblockWide(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
+    {
+        ComputeStrengths(mbX, mbY, addr, left, top);
+        ref int bs = ref MemoryMarshal.GetArrayDataReference(_bs);
+        bool t8 = _mb.Transform8x8[addr];
+        sbyte[] qps = _mb.Qp;
+        int stride = _pic.Stride;
+        int origin = _pic.Origin + (mbY * 16 * stride) + (mbX * 16);
+        ushort[] luma = _pic.Y;
+        if (origin - (4 * stride) - 4 < 0 || origin + (19 * stride) + 16 > luma.Length)
+        {
+            throw H264Errors.Corrupt("A deblocking edge lies outside the picture.");
+        }
+
+        ref ushort y0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(luma), origin);
+        int qp = qps[addr];
+        int scaleY = 1 << (_bitDepthY - 8);
+        Vector256<short> maxY = Vector256.Create((short)((1 << _bitDepthY) - 1));
+        for (int dir = 0; dir < 2; dir++)
+        {
+            for (int edge = 0; edge < 4; edge++)
+            {
+                if ((edge == 0 && !(dir == 0 ? left : top)) || (t8 && (edge & 1) != 0))
+                {
+                    continue;
+                }
+
+                Vector128<int> b4 = Vector128.LoadUnsafe(ref bs, (nuint)((dir * 16) + (edge * 4)));
+                if (b4 == Vector128<int>.Zero)
+                {
+                    continue;
+                }
+
+                int qpP = edge == 0 ? qps[dir == 0 ? addr - 1 : addr - _widthMbs] : qp;
+                int qpAv = (qpP + qp + 1) >> 1;
+                int indexA = Math.Clamp(qpAv + p.OffsetA, 0, 51), indexB = Math.Clamp(qpAv + p.OffsetB, 0, 51);
+                int alpha = H264Tables.Alpha[indexA] * scaleY, beta = H264Tables.Beta[indexB] * scaleY;
+                if (alpha == 0 || beta == 0)
+                {
+                    continue;
+                }
+
+                Vector256<short> bs16 = Vector256.Create(
+                    Vector128.Create(Vector64.Create((short)b4.GetElement(0)), Vector64.Create((short)b4.GetElement(1))),
+                    Vector128.Create(Vector64.Create((short)b4.GetElement(2)), Vector64.Create((short)b4.GetElement(3))));
+                Vector256<short> tc0 = TcLanes(bs16, indexA, scaleY);
+                if (dir == 1)
+                {
+                    ref ushort q = ref Unsafe.Add(ref y0, edge * 4 * stride);
+                    Vector256<short> p3 = Row256(ref q, -4 * stride), p2 = Row256(ref q, -3 * stride), p1 = Row256(ref q, -2 * stride),
+                        p0 = Row256(ref q, -stride), q0 = Row256(ref q, 0), q1 = Row256(ref q, stride), q2 = Row256(ref q, 2 * stride),
+                        q3 = Row256(ref q, 3 * stride);
+                    FilterLuma(p3, ref p2, ref p1, ref p0, ref q0, ref q1, ref q2, q3, bs16, tc0, Vector256.Create((short)alpha), Vector256.Create((short)beta), maxY);
+                    Store256(p2, ref q, -3 * stride);
+                    Store256(p1, ref q, -2 * stride);
+                    Store256(p0, ref q, -stride);
+                    Store256(q0, ref q, 0);
+                    Store256(q1, ref q, stride);
+                    Store256(q2, ref q, 2 * stride);
+                }
+                else
+                {
+                    // Sixteen rows of eight samples across the edge, transposed in two halves into eight columns of sixteen.
+                    ref ushort r = ref Unsafe.Add(ref y0, (edge * 4) - 4);
+                    ref ushort s = ref Unsafe.Add(ref r, 8 * stride);
+                    Vector128<short> a0 = Row(ref r, 0), a1 = Row(ref r, stride), a2 = Row(ref r, 2 * stride), a3 = Row(ref r, 3 * stride),
+                        a4 = Row(ref r, 4 * stride), a5 = Row(ref r, 5 * stride), a6 = Row(ref r, 6 * stride), a7 = Row(ref r, 7 * stride);
+                    Vector128<short> c0 = Row(ref s, 0), c1 = Row(ref s, stride), c2 = Row(ref s, 2 * stride), c3 = Row(ref s, 3 * stride),
+                        c4 = Row(ref s, 4 * stride), c5 = Row(ref s, 5 * stride), c6 = Row(ref s, 6 * stride), c7 = Row(ref s, 7 * stride);
+                    Transpose(ref a0, ref a1, ref a2, ref a3, ref a4, ref a5, ref a6, ref a7);
+                    Transpose(ref c0, ref c1, ref c2, ref c3, ref c4, ref c5, ref c6, ref c7);
+                    Vector256<short> p3 = Vector256.Create(a0, c0), p2 = Vector256.Create(a1, c1), p1 = Vector256.Create(a2, c2),
+                        p0 = Vector256.Create(a3, c3), q0 = Vector256.Create(a4, c4), q1 = Vector256.Create(a5, c5),
+                        q2 = Vector256.Create(a6, c6), q3 = Vector256.Create(a7, c7);
+                    FilterLuma(p3, ref p2, ref p1, ref p0, ref q0, ref q1, ref q2, q3, bs16, tc0, Vector256.Create((short)alpha), Vector256.Create((short)beta), maxY);
+                    a0 = p3.GetLower();
+                    a1 = p2.GetLower();
+                    a2 = p1.GetLower();
+                    a3 = p0.GetLower();
+                    a4 = q0.GetLower();
+                    a5 = q1.GetLower();
+                    a6 = q2.GetLower();
+                    a7 = q3.GetLower();
+                    c0 = p3.GetUpper();
+                    c1 = p2.GetUpper();
+                    c2 = p1.GetUpper();
+                    c3 = p0.GetUpper();
+                    c4 = q0.GetUpper();
+                    c5 = q1.GetUpper();
+                    c6 = q2.GetUpper();
+                    c7 = q3.GetUpper();
+                    Transpose(ref a0, ref a1, ref a2, ref a3, ref a4, ref a5, ref a6, ref a7);
+                    Transpose(ref c0, ref c1, ref c2, ref c3, ref c4, ref c5, ref c6, ref c7);
+                    StoreRows(ref r, stride, a0, a1, a2, a3, a4, a5, a6, a7);
+                    StoreRows(ref s, stride, c0, c1, c2, c3, c4, c5, c6, c7);
+                }
+            }
+        }
+
+        if (_chroma == 1)
+        {
+            FilterChromaWide(mbX, mbY, addr, left, top, p);
+        }
+        else if (_chroma != 0)
+        {
+            FilterChromaPlanes(mbX, mbY, addr, left, top, p);
+        }
+    }
+
+    /// <summary>The 4:2:0 chroma edges of the macroblock, Cb in the low half of each vector and Cr in the high half.</summary>
+    private void FilterChromaWide(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
+    {
+        ref int bs = ref MemoryMarshal.GetArrayDataReference(_bs);
+        int stride = _pic.ChromaStride;
+        int origin = _pic.ChromaOrigin + (mbY * 8 * stride) + (mbX * 8);
+        ushort[] cbPlane = _pic.Cb, crPlane = _pic.Cr;
+        if (origin - (4 * stride) - 4 < 0 || origin + (11 * stride) + 8 > Math.Min(cbPlane.Length, crPlane.Length))
+        {
+            throw H264Errors.Corrupt("A deblocking edge lies outside the picture.");
+        }
+
+        ref ushort cb0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(cbPlane), origin);
+        ref ushort cr0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(crPlane), origin);
+        sbyte[] qpCb = _mb.QpC[0], qpCr = _mb.QpC[1];
+        int scale = 1 << (_bitDepthC - 8);
+        Vector256<short> max = Vector256.Create((short)((1 << _bitDepthC) - 1));
+        for (int dir = 0; dir < 2; dir++)
+        {
+            for (int ce = 0; ce < 2; ce++)
+            {
+                if (ce == 0 && !(dir == 0 ? left : top))
+                {
+                    continue;
+                }
+
+                // The chroma edge takes the strengths of luma edge 2ce, two samples to a segment.
+                Vector128<int> b4 = Vector128.LoadUnsafe(ref bs, (nuint)((dir * 16) + (ce * 8)));
+                if (b4 == Vector128<int>.Zero)
+                {
+                    continue;
+                }
+
+                int pAddr = ce != 0 ? addr : dir == 0 ? addr - 1 : addr - _widthMbs;
+                (int alphaCb, int betaCb, int indexCb) = Thresholds((qpCb[pAddr] + qpCb[addr] + 1) >> 1, p, scale);
+                (int alphaCr, int betaCr, int indexCr) = Thresholds((qpCr[pAddr] + qpCr[addr] + 1) >> 1, p, scale);
+                Vector128<short> bs8 = Vector128.Create((short)b4.GetElement(0), (short)b4.GetElement(0), (short)b4.GetElement(1), (short)b4.GetElement(1),
+                    (short)b4.GetElement(2), (short)b4.GetElement(2), (short)b4.GetElement(3), (short)b4.GetElement(3));
+                Vector128<short> bsCb = alphaCb == 0 || betaCb == 0 ? Vector128<short>.Zero : bs8;
+                Vector128<short> bsCr = alphaCr == 0 || betaCr == 0 ? Vector128<short>.Zero : bs8;
+                if ((bsCb | bsCr) == Vector128<short>.Zero)
+                {
+                    continue;
+                }
+
+                Vector256<short> bs16 = Vector256.Create(bsCb, bsCr);
+                Vector256<short> tc0 = Vector256.Create(TcLanes(Vector256.Create(bsCb, bsCb), indexCb, scale).GetLower(), TcLanes(Vector256.Create(bsCr, bsCr), indexCr, scale).GetLower());
+                Vector256<short> alpha = Vector256.Create(Vector128.Create((short)alphaCb), Vector128.Create((short)alphaCr));
+                Vector256<short> beta = Vector256.Create(Vector128.Create((short)betaCb), Vector128.Create((short)betaCr));
+                if (dir == 1)
+                {
+                    ref ushort qb = ref Unsafe.Add(ref cb0, ce * 4 * stride), qr = ref Unsafe.Add(ref cr0, ce * 4 * stride);
+                    Vector256<short> p1 = Vector256.Create(Row(ref qb, -2 * stride), Row(ref qr, -2 * stride));
+                    Vector256<short> p0 = Vector256.Create(Row(ref qb, -stride), Row(ref qr, -stride));
+                    Vector256<short> q0 = Vector256.Create(Row(ref qb, 0), Row(ref qr, 0));
+                    Vector256<short> q1 = Vector256.Create(Row(ref qb, stride), Row(ref qr, stride));
+                    FilterChroma(p1, ref p0, ref q0, q1, bs16, tc0, alpha, beta, max);
+                    Store(p0.GetLower(), ref qb, -stride);
+                    Store(q0.GetLower(), ref qb, 0);
+                    Store(p0.GetUpper(), ref qr, -stride);
+                    Store(q0.GetUpper(), ref qr, 0);
+                }
+                else
+                {
+                    ref ushort rb = ref Unsafe.Add(ref cb0, (ce * 4) - 4), rr = ref Unsafe.Add(ref cr0, (ce * 4) - 4);
+                    Vector128<short> a0 = Row(ref rb, 0), a1 = Row(ref rb, stride), a2 = Row(ref rb, 2 * stride), a3 = Row(ref rb, 3 * stride),
+                        a4 = Row(ref rb, 4 * stride), a5 = Row(ref rb, 5 * stride), a6 = Row(ref rb, 6 * stride), a7 = Row(ref rb, 7 * stride);
+                    Vector128<short> c0 = Row(ref rr, 0), c1 = Row(ref rr, stride), c2 = Row(ref rr, 2 * stride), c3 = Row(ref rr, 3 * stride),
+                        c4 = Row(ref rr, 4 * stride), c5 = Row(ref rr, 5 * stride), c6 = Row(ref rr, 6 * stride), c7 = Row(ref rr, 7 * stride);
+                    Transpose(ref a0, ref a1, ref a2, ref a3, ref a4, ref a5, ref a6, ref a7);
+                    Transpose(ref c0, ref c1, ref c2, ref c3, ref c4, ref c5, ref c6, ref c7);
+                    Vector256<short> p0 = Vector256.Create(a3, c3), q0 = Vector256.Create(a4, c4);
+                    FilterChroma(Vector256.Create(a2, c2), ref p0, ref q0, Vector256.Create(a5, c5), bs16, tc0, alpha, beta, max);
+                    a3 = p0.GetLower();
+                    a4 = q0.GetLower();
+                    c3 = p0.GetUpper();
+                    c4 = q0.GetUpper();
+                    Transpose(ref a0, ref a1, ref a2, ref a3, ref a4, ref a5, ref a6, ref a7);
+                    Transpose(ref c0, ref c1, ref c2, ref c3, ref c4, ref c5, ref c6, ref c7);
+                    StoreRows(ref rb, stride, a0, a1, a2, a3, a4, a5, a6, a7);
+                    StoreRows(ref rr, stride, c0, c1, c2, c3, c4, c5, c6, c7);
+                }
+            }
+        }
+    }
+
+    /// <summary>alpha, beta and indexA of an edge (8.7.2.2), scaled to the bit depth.</summary>
+    private static (int Alpha, int Beta, int IndexA) Thresholds(int qpAv, H264FilterParams p, int scale)
+    {
+        int indexA = Math.Clamp(qpAv + p.OffsetA, 0, 51), indexB = Math.Clamp(qpAv + p.OffsetB, 0, 51);
+        return (H264Tables.Alpha[indexA] * scale, H264Tables.Beta[indexB] * scale, indexA);
+    }
+
+    /// <summary>tC0 (Table 8-17) for each lane's bS: 0 for bS 0 and 4.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> TcLanes(Vector256<short> bs, int indexA, int scale)
+    {
+        ReadOnlySpan<byte> tc = H264Tables.Tc0;
+        return (Vector256.Equals(bs, Vector256.Create((short)1)) & Vector256.Create((short)(tc[indexA * 3] * scale)))
+            | (Vector256.Equals(bs, Vector256.Create((short)2)) & Vector256.Create((short)(tc[(indexA * 3) + 1] * scale)))
+            | (Vector256.Equals(bs, Vector256.Create((short)3)) & Vector256.Create((short)(tc[(indexA * 3) + 2] * scale)));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Row256(ref ushort at, int offset) => Vector256.LoadUnsafe(ref Unsafe.Add(ref at, offset)).AsInt16();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Store256(Vector256<short> v, ref ushort at, int offset) => v.AsUInt16().StoreUnsafe(ref Unsafe.Add(ref at, offset));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void StoreRows(ref ushort r, int stride, Vector128<short> a0, Vector128<short> a1, Vector128<short> a2, Vector128<short> a3,
+        Vector128<short> a4, Vector128<short> a5, Vector128<short> a6, Vector128<short> a7)
+    {
+        Store(a0, ref r, 0);
+        Store(a1, ref r, stride);
+        Store(a2, ref r, 2 * stride);
+        Store(a3, ref r, 3 * stride);
+        Store(a4, ref r, 4 * stride);
+        Store(a5, ref r, 5 * stride);
+        Store(a6, ref r, 6 * stride);
+        Store(a7, ref r, 7 * stride);
+    }
+
+    /// <summary><see cref="FilterLuma(Vector128{short}, ref Vector128{short}, ref Vector128{short}, ref Vector128{short}, ref Vector128{short}, ref Vector128{short}, ref Vector128{short}, Vector128{short}, Vector128{short}, Vector128{short}, int, int, int)"/> for sixteen lanes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void FilterLuma(Vector256<short> p3, ref Vector256<short> p2, ref Vector256<short> p1, ref Vector256<short> p0,
+        ref Vector256<short> q0, ref Vector256<short> q1, ref Vector256<short> q2, Vector256<short> q3, Vector256<short> bs,
+        Vector256<short> tc0, Vector256<short> vAlpha, Vector256<short> vBeta, Vector256<short> top)
+    {
+        Vector256<short> filter = Vector256.GreaterThan(bs, Vector256<short>.Zero)
+            & Vector256.LessThan(Vector256.Abs(p0 - q0), vAlpha)
+            & Vector256.LessThan(Vector256.Abs(p1 - p0), vBeta)
+            & Vector256.LessThan(Vector256.Abs(q1 - q0), vBeta);
+        if (filter == Vector256<short>.Zero)
+        {
+            return;
+        }
+
+        Vector256<short> one = Vector256<short>.One, two = Vector256.Create((short)2), four = Vector256.Create((short)4);
+        Vector256<short> ap = Vector256.LessThan(Vector256.Abs(p2 - p0), vBeta);
+        Vector256<short> aq = Vector256.LessThan(Vector256.Abs(q2 - q0), vBeta);
+        Vector256<short> strongBs = Vector256.Equals(bs, four);
+
+        Vector256<short> tc = tc0 - ap - aq;
+        Vector256<short> delta = Vector256.Min(Vector256.Max((((q0 - p0) << 2) + (p1 - q1) + four) >> 3, -tc), tc);
+        Vector256<short> np0 = Vector256.Min(Vector256.Max(p0 + delta, Vector256<short>.Zero), top);
+        Vector256<short> nq0 = Vector256.Min(Vector256.Max(q0 - delta, Vector256<short>.Zero), top);
+        Vector256<short> avg = (p0 + q0 + one) >> 1;
+        Vector256<short> np1 = Vector256.ConditionalSelect(ap, p1 + Vector256.Min(Vector256.Max((p2 + avg - (p1 << 1)) >> 1, -tc0), tc0), p1);
+        Vector256<short> nq1 = Vector256.ConditionalSelect(aq, q1 + Vector256.Min(Vector256.Max((q2 + avg - (q1 << 1)) >> 1, -tc0), tc0), q1);
+
+        Vector256<short> small = Vector256.LessThan(Vector256.Abs(p0 - q0), (vAlpha >> 2) + two);
+        Vector256<short> strongP = ap & small, strongQ = aq & small;
+        Vector256<short> sp0 = Vector256.ConditionalSelect(strongP, (p2 + (p1 << 1) + (p0 << 1) + (q0 << 1) + q1 + four) >> 3, ((p1 << 1) + p0 + q1 + two) >> 2);
+        Vector256<short> sp1 = Vector256.ConditionalSelect(strongP, (p2 + p1 + p0 + q0 + two) >> 2, p1);
+        Vector256<short> sp2 = Vector256.ConditionalSelect(strongP, ((p3 << 1) + (p2 * (short)3) + p1 + p0 + q0 + four) >> 3, p2);
+        Vector256<short> sq0 = Vector256.ConditionalSelect(strongQ, (p1 + (p0 << 1) + (q0 << 1) + (q1 << 1) + q2 + four) >> 3, ((q1 << 1) + q0 + p1 + two) >> 2);
+        Vector256<short> sq1 = Vector256.ConditionalSelect(strongQ, (p0 + q0 + q1 + q2 + two) >> 2, q1);
+        Vector256<short> sq2 = Vector256.ConditionalSelect(strongQ, ((q3 << 1) + (q2 * (short)3) + q1 + q0 + p0 + four) >> 3, q2);
+
+        Vector256<short> normal = filter & ~strongBs, strong = filter & strongBs;
+        p0 = Vector256.ConditionalSelect(strong, sp0, Vector256.ConditionalSelect(normal, np0, p0));
+        q0 = Vector256.ConditionalSelect(strong, sq0, Vector256.ConditionalSelect(normal, nq0, q0));
+        p1 = Vector256.ConditionalSelect(strong, sp1, Vector256.ConditionalSelect(normal, np1, p1));
+        q1 = Vector256.ConditionalSelect(strong, sq1, Vector256.ConditionalSelect(normal, nq1, q1));
+        p2 = Vector256.ConditionalSelect(strong, sp2, p2);
+        q2 = Vector256.ConditionalSelect(strong, sq2, q2);
+    }
+
+    /// <summary>The chroma filter for sixteen lanes, with alpha and beta per lane.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void FilterChroma(Vector256<short> p1, ref Vector256<short> p0, ref Vector256<short> q0, Vector256<short> q1,
+        Vector256<short> bs, Vector256<short> tc0, Vector256<short> vAlpha, Vector256<short> vBeta, Vector256<short> top)
+    {
+        Vector256<short> filter = Vector256.GreaterThan(bs, Vector256<short>.Zero)
+            & Vector256.LessThan(Vector256.Abs(p0 - q0), vAlpha)
+            & Vector256.LessThan(Vector256.Abs(p1 - p0), vBeta)
+            & Vector256.LessThan(Vector256.Abs(q1 - q0), vBeta);
+        if (filter == Vector256<short>.Zero)
+        {
+            return;
+        }
+
+        Vector256<short> two = Vector256.Create((short)2), four = Vector256.Create((short)4);
+        Vector256<short> tc = tc0 + Vector256<short>.One;
+        Vector256<short> delta = Vector256.Min(Vector256.Max((((q0 - p0) << 2) + (p1 - q1) + four) >> 3, -tc), tc);
+        Vector256<short> np0 = Vector256.Min(Vector256.Max(p0 + delta, Vector256<short>.Zero), top);
+        Vector256<short> nq0 = Vector256.Min(Vector256.Max(q0 - delta, Vector256<short>.Zero), top);
+        Vector256<short> strong = Vector256.Equals(bs, four);
+        np0 = Vector256.ConditionalSelect(strong, ((p1 << 1) + p0 + q1 + two) >> 2, np0);
+        nq0 = Vector256.ConditionalSelect(strong, ((q1 << 1) + q0 + p1 + two) >> 2, nq0);
+        p0 = Vector256.ConditionalSelect(filter, np0, p0);
+        q0 = Vector256.ConditionalSelect(filter, nq0, q0);
     }
 
     /// <summary>
