@@ -204,7 +204,7 @@ internal sealed class Mp3Decoder : IAudioDecoder
 
     private static int NextHeader(ReadOnlySpan<byte> span)
     {
-        for (int k = MpegAudioHeader.Size; k + MpegAudioHeader.Size <= span.Length && k <= MpegAudioHeader.MaxFreeFormatBytes + 4; k++)
+        for (int k = MpegAudioHeader.MinFreeFormatBytes; k + MpegAudioHeader.Size <= span.Length && k <= MpegAudioHeader.MaxFreeFormatBytes + 4; k++)
         {
             if (MpegAudioHeader.Matches(span, span[k..]))
             {

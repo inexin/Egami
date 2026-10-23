@@ -13,6 +13,9 @@ internal readonly struct MpegAudioHeader
     /// <summary>The largest free-format frame accepted, as minimp3 (more than the standard allows).</summary>
     public const int MaxFreeFormatBytes = 2304;
 
+    /// <summary>The shortest free-format frame taken as real: a header, side information and some main data.</summary>
+    public const int MinFreeFormatBytes = 48;
+
     // Half the bit rates in kbit/s, indexed [MPEG-1][layer - 1][index], from the standards' tables.
     private static ReadOnlySpan<byte> HalfRates =>
     [
@@ -111,7 +114,7 @@ internal readonly struct MpegAudioHeader
             bytes &= ~3;
         }
 
-        return bytes != 0 ? bytes : freeFormatBytes;
+        return bytes != 0 ? bytes : freeFormatBytes >= MinFreeFormatBytes ? freeFormatBytes : 0;
     }
 
     /// <summary>Returns the whole frame's length in bytes with padding; 0 for a free-format frame of unknown length.</summary>

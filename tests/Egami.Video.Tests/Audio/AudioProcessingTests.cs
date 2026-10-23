@@ -304,6 +304,8 @@ public class AudioAllocationTests
     [InlineData("wav-s16-stereo.wav")]
     [InlineData("opus/opus-stereo.opus")]
     [InlineData("opus/opus-mono-speech.opus")]
+    [InlineData("mp3/mp3-vbr-joint.mp3")]
+    [InlineData("mp3/mp2-stereo.mp2")]
     public void DecodeLoopAllocatesNoSampleMemory(string name)
     {
         List<EncodedPacket> packets = [];

@@ -399,7 +399,7 @@ internal static class Id3Tag
     {
         int idLength = version == 2 ? 3 : 4;
         int headerLength = version == 2 ? 6 : 10;
-        while (p >= 0 && p + headerLength <= body.Length && body[p] != 0)
+        while (p >= 0 && p <= body.Length - headerLength && body[p] != 0)
         {
             string id = Encoding.ASCII.GetString(body.Slice(p, idLength));
             int frameSize = version switch
@@ -464,8 +464,9 @@ internal static class Id3Tag
                 decoded = inflated.ToArray();
                 frame = decoded;
             }
-            catch (InvalidDataException)
+            catch (Exception e) when (e is InvalidDataException or IOException)
             {
+                // A damaged stream (ZLibException is an IOException).
                 return false;
             }
         }

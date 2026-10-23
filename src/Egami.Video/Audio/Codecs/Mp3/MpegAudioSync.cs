@@ -52,7 +52,7 @@ internal static class MpegAudioSync
             if (bytes == 0)
             {
                 // Free format: the length is the distance to the next matching header, confirmed by the one after it.
-                for (int k = MpegAudioHeader.Size; k < MpegAudioHeader.MaxFreeFormatBytes && i + (2 * k) < data.Length - MpegAudioHeader.Size; k++)
+                for (int k = MpegAudioHeader.MinFreeFormatBytes + header.PaddingBytes; k < MpegAudioHeader.MaxFreeFormatBytes && i + (2 * k) < data.Length - MpegAudioHeader.Size; k++)
                 {
                     if (MpegAudioHeader.Matches(h, h[k..]))
                     {

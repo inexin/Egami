@@ -6,7 +6,7 @@ instruments Egami.Video.dll with SharpFuzz and runs afl-fuzz on the target's see
 
 Usage, from the repo root:
   docker build -t egami-fuzz -f tests/Egami.Fuzz/Dockerfile tests/Egami.Fuzz
-  python tools/video/fuzz-afl.py 10m ivf webm vp8         run time (10m, 2h) then targets (default: all nineteen)
+  python tools/video/fuzz-afl.py 10m ivf webm vp8         run time (10m, 2h) then targets (default: all twenty-one)
   docker logs -f egami-video-afl-avi              to follow one
   dotnet run --project tests/Egami.Video.Fuzz -c Release -- replay avi .cache/video/afl/avi/default/crashes
 """
@@ -21,7 +21,8 @@ SEEDS = {"avi": "tests/video/fuzz-seeds/avi/*", "mkv": "tests/video/fuzz-seeds/m
          "mp4": "tests/video/fuzz-seeds/mp4/*", "mp4mux": "tests/video/fuzz-seeds/mp4/*",
          "wav": "tests/video/fuzz-seeds/wav/*", "flac": "tests/video/fuzz-seeds/flac/*",
          "ogg": "tests/video/fuzz-seeds/ogg/*", "opusraw": "tests/video/fuzz-seeds/opusraw/*",
-         "vorbisraw": "tests/video/fuzz-seeds/vorbisraw/*"}
+         "vorbisraw": "tests/video/fuzz-seeds/vorbisraw/*", "mp3": "tests/video/fuzz-seeds/mp3/*",
+         "mp3raw": "tests/video/fuzz-seeds/mp3raw/*"}
 
 # The VP8 decoder itself is in Egami; its own fuzzing (Egami 2.3.5) covers it, and the vp8 target instruments it too.
 INSTRUMENT = {"vp8": "sharpfuzz /out/Egami.dll", "av1": "sharpfuzz /out/Egami.dll", "av1raw": "sharpfuzz /out/Egami.dll"}
