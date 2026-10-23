@@ -589,7 +589,8 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
 probed but not decoded, so a PDF page can embed a JPEG as it is while a raster canvas draws the decoded pixels.
 <code>DrawImageMask</code> paints through an image used as a mask, as PDF's stencil masks: its alpha, or for an image without alpha its
 gray level, is the coverage. <code>LayerOptions.Knockout</code> makes a layer a knockout group: each call inside it composites with what
-the layer started as and replaces earlier calls where it covers. <code>DrawAnnotation</code> marks a link to a URL, a named destination or a link to one (<code>Annotation</code>, as Skia's drawAnnotation), and
+the layer started as and replaces earlier calls where it covers. A layer inside it counts as one call, which replaces what is
+under it wherever it drew. <code>DrawAnnotation</code> marks a link to a URL, a named destination or a link to one (<code>Annotation</code>, as Skia's drawAnnotation), and
 <code>BeginMarkedContent</code> and <code>EndMarkedContent</code> bracket drawing with a <code>MarkedContent</code> tag for tagged PDF, with a structure node id,
 replacement text and alternate text. Backends get <code>OnDrawEncodedImage</code>, <code>OnDrawAnnotation</code>, <code>OnBeginMarkedContent</code> and
 <code>OnEndMarkedContent</code>; by default the image is decoded and the others do nothing.</p>
