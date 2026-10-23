@@ -8,7 +8,7 @@ namespace Egami.Video.Codecs;
 /// keyframes) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; hidden frames (alternate references) give no frame. A
 /// WebM track with alpha (<see cref="VideoTrackInfo.HasAlpha"/>) decodes its second VP9 stream, carried in each packet's
 /// addition 1, into the frame's alpha plane unless <see cref="VideoDecoderOptions.DecodeAlpha"/> is off. 4:4:0 streams are not
-/// decoded. Decode only.
+/// decoded. Encoding goes through <see cref="CreateEncoder"/>.
 /// </summary>
 /// <remarks>
 /// The frame's color takes the matrix and range from the VP9 header and the primaries and transfer from the container
@@ -43,6 +43,9 @@ public sealed class Vp9Codec : VideoCodec
     public override string CodecId => CodecIds.Vp9;
 
     /// <inheritdoc/>
+    public override bool CanEncode => true;
+
+    /// <inheritdoc/>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/Video.cs" region="video-codecs"/>
     /// </example>
@@ -57,5 +60,27 @@ public sealed class Vp9Codec : VideoCodec
         }
 
         return new Vp9VideoDecoder(track, options, context);
+    }
+
+    /// <summary>
+    /// Creates a VP9 encoder. It codes 8-bit 4:2:0: such planes as they are, anything else converted to BT.601 limited range.
+    /// By default it aims at constant quality 60 at effort 4, looks 25 frames ahead for scene cuts and hidden alternate
+    /// references (each sent in a superframe with the next shown frame), splits frames into up to four tile columns and places
+    /// a keyframe at least every 10 seconds; <see cref="VideoEncoderOptions"/> chooses bitrate, constant bitrate, two passes or
+    /// real time instead, and <see cref="VideoEncoderOptions.Vp9"/> holds the expert settings. Frames with alpha get a second
+    /// VP9 stream for it, which WebM and Matroska carry. The output is the same at any thread count.
+    /// </summary>
+    /// <param name="options">The picture size, frame rate and how to spend bits.</param>
+    /// <param name="context">The context.</param>
+    /// <returns>The encoder.</returns>
+    /// <exception cref="ArgumentException">The options are out of range, or a bitrate mode has no bitrate.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-vp9"/>
+    /// </example>
+    public override IVideoEncoder CreateEncoder(VideoEncoderOptions options, MediaContext context)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(context);
+        return new Vp9VideoEncoder(options, context);
     }
 }

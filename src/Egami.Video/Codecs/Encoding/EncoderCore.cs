@@ -13,7 +13,11 @@ internal readonly record struct FrameDecision(FrameType Type, int Quantizer, boo
 /// <param name="Data">The frame's bytes.</param>
 /// <param name="Alpha">The alpha frame's bytes, for a shown frame of a stream with alpha.</param>
 /// <param name="Quantizer">The quantizer the frame used.</param>
-internal readonly record struct CodedFrame(ReadOnlyMemory<byte> Data, ReadOnlyMemory<byte>? Alpha, int Quantizer);
+/// <param name="HiddenLength">
+/// The bytes at the start of <paramref name="Data"/> that belong to hidden frames coded before this one (a VP9 superframe), which
+/// rate control already counted.
+/// </param>
+internal readonly record struct CodedFrame(ReadOnlyMemory<byte> Data, ReadOnlyMemory<byte>? Alpha, int Quantizer, int HiddenLength = 0);
 
 /// <summary>A codec's frame encoder under the core: VP8's wraps Egami's Vp8StreamEncoder.</summary>
 internal interface IFrameCoder : IDisposable
@@ -21,8 +25,21 @@ internal interface IFrameCoder : IDisposable
     /// <summary>Gets the step size of each quantizer index, for the bit model.</summary>
     short[] Steps { get; }
 
+    /// <summary>
+    /// Gets whether the coder keeps a hidden frame and puts it in the next shown frame's packet (VP9 superframes), so a hidden
+    /// frame makes no packet of its own.
+    /// </summary>
+    bool MergesHiddenFrames => false;
+
     /// <summary>Codes a frame; a shown frame of a stream with alpha also codes the picture's alpha plane.</summary>
     CodedFrame Code(YuvRaster<byte> picture, FrameDecision decision);
+
+    /// <summary>
+    /// Codes a frame from its picture in the stream's own format (another bit depth or chroma format), when the core keeps one
+    /// (<see cref="CoreSettings.FullPictures"/>); <paramref name="picture"/> is the 8-bit 4:2:0 picture the core analyzes,
+    /// which still carries the alpha plane. A hidden alternate reference gets its frame's full picture, unfiltered.
+    /// </summary>
+    CodedFrame Code(YuvRaster<byte> picture, YuvRaster? full, FrameDecision decision) => Code(picture, decision);
 
     /// <summary>
     /// Codes a keyframe and, when given, the frame after it at one quantizer on the side, without touching the stream, and
@@ -56,7 +73,23 @@ internal sealed record CoreSettings
 
     public int Parallelism { get; init; } = 1;
 
+    /// <summary>How much better than intra the group's first frame must predict its last for an alternate reference (VP8: 4 times).</summary>
+    public double AltRefReach { get; init; } = 4;
+
+    /// <summary>The alternate reference's step against an inter frame's on still groups, and how much coarser on busy ones.</summary>
+    public double AltRefStep { get; init; } = 0.85;
+
+    public double AltRefStepRange { get; init; } = 0.10;
+
+    /// <summary>The golden frame's step against an inter frame's on still groups, and how much coarser on busy ones.</summary>
+    public double GoldenStep { get; init; } = 0.80;
+
+    public double GoldenStepRange { get; init; } = 0.15;
+
     public required RateSettings Rate { get; init; }
+
+    /// <summary>Whether each frame is also kept in the stream's own format (<see cref="EncoderPictures.ImportFull"/>) for the coder.</summary>
+    public bool FullPictures { get; init; }
 }
 
 /// <summary>
@@ -123,6 +156,7 @@ internal sealed class EncoderCore : IDisposable
         }
 
         YuvRaster<byte> picture = _pictures.Import(frame, _alpha);
+        YuvRaster? full = _settings.FullPictures ? _pictures.ImportFull(frame) : null;
         FrameStats stats = _analyzer.Analyze(picture);
         byte[] half = _halves.TryPop(out byte[]? free) ? free : new byte[_analyzer.HalfLength];
         _analyzer.CopyHalf(half);
@@ -138,7 +172,7 @@ internal sealed class EncoderCore : IDisposable
         _previousRatio = ratio;
         MediaTime timestamp = frame.Timestamp.Rescale(_timeBase);
         MediaTime duration = frame.Duration is { } d ? d.Rescale(_timeBase) : new MediaTime(1, _timeBase);
-        _queue.Add(new Pending(picture, half, index, timestamp, duration, key, stats));
+        _queue.Add(new Pending(picture, half, index, timestamp, duration, key, stats) { Full = full });
         while (_queue.Count > _depth)
         {
             CodeNext();
@@ -191,9 +225,10 @@ internal sealed class EncoderCore : IDisposable
         int quantizer = _rate.Next(type, complexity, Factor(type));
         bool refreshGolden = frame.Index == _groupEnd && _refreshGoldenAtEnd;
         bool ahead = _altRef > frame.Index && _altRefCoded;
-        CodedFrame coded = _coder.Code(frame.Picture, new FrameDecision(type, quantizer, ahead, refreshGolden));
-        _rate.Done(type, coded.Quantizer, coded.Data.Length * 8L, complexity);
-        Trace?.Invoke($"{frame.Index} {type} q{coded.Quantizer} {coded.Data.Length}B c{complexity}");
+        FrameDecision decision = new(type, quantizer, ahead, refreshGolden);
+        CodedFrame coded = frame.Full is null ? _coder.Code(frame.Picture, decision) : _coder.Code(frame.Picture, frame.Full, decision);
+        _rate.Done(type, coded.Quantizer, (coded.Data.Length - coded.HiddenLength) * 8L, complexity);
+        Trace?.Invoke($"{frame.Index} {type} q{coded.Quantizer} {coded.Data.Length - coded.HiddenLength}B c{complexity}");
         EncodedPacket packet = Packet(coded.Data, frame.Timestamp, frame.Key);
         packet.Duration = frame.Duration;
         if (coded.Alpha is { } alpha)
@@ -204,6 +239,11 @@ internal sealed class EncoderCore : IDisposable
         _ready.Enqueue(packet);
         _queue.RemoveAt(0);
         _pictures.Return(frame.Picture);
+        if (frame.Full is not null)
+        {
+            _pictures.ReturnFull(frame.Full);
+        }
+
         _halves.Push(frame.Half);
     }
 
@@ -260,8 +300,8 @@ internal sealed class EncoderCore : IDisposable
 
         // Still, well-predicted groups give their reference frames finer steps (libvpx's boost is the idea).
         double boost = Math.Clamp(ratio, 0, 0.4) / 0.4;
-        _altRefFactor = 0.85 + (0.10 * boost);
-        _goldenFactor = 0.80 + (0.15 * boost);
+        _altRefFactor = _settings.AltRefStep + (_settings.AltRefStepRange * boost);
+        _goldenFactor = _settings.GoldenStep + (_settings.GoldenStepRange * boost);
         if (_depth > 0)
         {
             // The group's end and the frames the filter takes after it must be in the lookahead.
@@ -323,7 +363,7 @@ internal sealed class EncoderCore : IDisposable
     private bool Reachable(Pending from, Pending to)
     {
         (long inter, long intra) = _analyzer.Distance(from.Half, to.Half);
-        return inter * 4 <= intra;
+        return inter * _settings.AltRefReach <= intra;
     }
 
     /// <summary>A frame type's step against an inter frame's in this group, or 0 for rate control's own.</summary>
@@ -394,8 +434,14 @@ internal sealed class EncoderCore : IDisposable
         int radius = _settings.FilterFrames / 2;
         _filterFrames.Clear();
         int center = 0;
+        YuvRaster? full = null;
         foreach (Pending p in _queue)
         {
+            if (p.Index == _altRef)
+            {
+                full = p.Full;
+            }
+
             if (p.Index >= _altRef - radius && p.Index <= _altRef + radius && !(p.Key && p.Index > _altRef))
             {
                 if (p.Index == _altRef)
@@ -411,11 +457,16 @@ internal sealed class EncoderCore : IDisposable
         TemporalFilter.Apply(_filterFrames, center, _settings.FilterStrength, filtered, _settings.Parallelism);
         long complexity = AltRefComplexity();
         int quantizer = _rate.Next(FrameType.AltRef, complexity, _altRefFactor);
-        CodedFrame coded = _coder.Code(filtered, new FrameDecision(FrameType.AltRef, quantizer, AltRefAhead: true, RefreshGolden: false));
+        FrameDecision decision = new(FrameType.AltRef, quantizer, AltRefAhead: true, RefreshGolden: false);
+        CodedFrame coded = full is null ? _coder.Code(filtered, decision) : _coder.Code(filtered, full, decision);
         _rate.Done(FrameType.AltRef, coded.Quantizer, coded.Data.Length * 8L, complexity);
         Trace?.Invoke($"{_altRef} AltRef q{coded.Quantizer} {coded.Data.Length}B c{complexity}");
         _pictures.Return(filtered);
-        _ready.Enqueue(Packet(coded.Data, next.Timestamp, key: false));
+        if (!_coder.MergesHiddenFrames)
+        {
+            _ready.Enqueue(Packet(coded.Data, next.Timestamp, key: false));
+        }
+
         _altRefCoded = true;
     }
 
@@ -432,6 +483,7 @@ internal sealed class EncoderCore : IDisposable
         foreach (Pending p in _queue)
         {
             p.Picture.Dispose();
+            p.Full?.Dispose();
         }
 
         _queue.Clear();
@@ -441,5 +493,9 @@ internal sealed class EncoderCore : IDisposable
         }
     }
 
-    private sealed record Pending(YuvRaster<byte> Picture, byte[] Half, int Index, MediaTime Timestamp, MediaTime Duration, bool Key, FrameStats Stats);
+    private sealed record Pending(YuvRaster<byte> Picture, byte[] Half, int Index, MediaTime Timestamp, MediaTime Duration, bool Key, FrameStats Stats)
+    {
+        /// <summary>Gets the frame in the stream's own format, when the core keeps it.</summary>
+        public YuvRaster? Full { get; init; }
+    }
 }
