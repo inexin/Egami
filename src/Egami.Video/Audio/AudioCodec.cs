@@ -197,6 +197,9 @@ public static class AudioCodecs
     /// <summary>Gets the Vorbis codec (decode only).</summary>
     public static AudioCodec Vorbis => VorbisCodec.Instance;
 
+    /// <summary>Gets the MPEG audio codec: MP3, MP2 and MP1 (decode only).</summary>
+    public static AudioCodec Mp3 => Mp3Codec.Instance;
+
     /// <summary>Creates a decoder for a track.</summary>
     /// <param name="track">The track.</param>
     /// <param name="options">How to decode, or <see langword="null"/> for the defaults.</param>

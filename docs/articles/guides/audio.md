@@ -2,12 +2,13 @@
 
 Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:
 
-- Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and Vorbis I decode.
-- Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC and Ogg, read and written; FLAC, PCM,
-  Opus and Vorbis in Matroska, WebM and MP4 too.
+- Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode, Vorbis I decode and MPEG audio
+  (MP3, MP2 and MP1) decode.
+- Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC, Ogg and MP3, read and written; FLAC,
+  PCM, Opus, Vorbis and MP3 in Matroska, WebM and MP4 too.
 - A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.
 
-Other audio tracks, such as AAC and MP3, are copied through untouched.
+Other audio tracks, such as AAC, are copied through untouched.
 
 ## Frames
 
@@ -107,6 +108,25 @@ matches libvorbis to within 2^-16 of full scale. A packet that cannot be decoded
 with `DecodeErrorMode.Conceal`, left as silence; the decoder starts its overlap again at the next packet.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-vorbis)]
+
+## MP3
+
+`Mp3Codec` decodes MPEG audio (ISO/IEC 11172-3 and 13818-3): Layers I, II and III of MPEG-1, MPEG-2 and MPEG-2.5, every rate
+from 8 to 48 kHz, mono, stereo, joint and dual channel, and free-format bit rates. Frames come out as planar float, one per MPEG
+frame, and pass the ISO/IEC 11172-4 compliance streams at full accuracy. The decoder is translated from minimp3 (CC0). Damaged
+frames are found by resynchronizing on three matching headers, and a frame whose CRC-16 does not match is reported as
+`Mp3.BadCrc`; with `DecodeErrorMode.Conceal` a bad frame becomes silence of its own length, so the timing stays right.
+
+`Mp3Format` reads .mp3, .mp2, .mp1 and .mpa files: ID3v2.2 to 2.4 tags (text frames as tags, pictures as attachments with the
+front cover named cover.*, CHAP frames as chapters), ID3v1 and APEv2 tags, and the Xing, Info or VBRI frame. The LAME tag's
+encoder delay and padding become the track's `CodecDelay` and the last packet's duration, so the audio is gapless: a LAME
+file decodes to exactly the samples the encoder was given. Seeks are exact: the first seek reads every frame header into an
+index, and the reader starts early enough to fill the bit reservoir. Set `Mp3Format.FastSeek` (registered with
+`MediaContext.WithContainer`) to seek by the Xing table instead, which reads nothing first but lands within about a percent.
+The writer stores an ID3v2.4 tag and the frames, with a Xing header and LAME tag on a seekable stream, so MP3 leaves Matroska
+or MP4 without a re-encode.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-mp3)]
 
 ## Containers
 
