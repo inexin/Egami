@@ -7,7 +7,7 @@ namespace Egami.Video.Codecs;
 /// profiles: 8, 10 and 12 bit, 4:0:0, 4:2:0, 4:2:2 and 4:4:4, film grain, scaled references and scalable streams, every frame equal
 /// to libaom's sample for sample. A packet is a temporal unit. Frames come out at their own size (a stream may change size at a
 /// key frame) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; a monochrome stream gives 4:0:0 planes. Hidden frames give
-/// no frame; a frame shown later with show_existing_frame comes out then. Decode only.
+/// no frame; a frame shown later with show_existing_frame comes out then. Encoding goes through <see cref="CreateEncoder"/>.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -44,6 +44,9 @@ public sealed class Av1Codec : VideoCodec
     public override string CodecId => CodecIds.Av1;
 
     /// <inheritdoc/>
+    public override bool CanEncode => true;
+
+    /// <inheritdoc/>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/Video.cs" region="video-av1"/>
     /// </example>
@@ -58,5 +61,31 @@ public sealed class Av1Codec : VideoCodec
         }
 
         return new Av1VideoDecoder(track, options, context);
+    }
+
+    /// <summary>
+    /// Creates an AV1 encoder, which codes frames with Egami's <see cref="Egami.Formats.Av1.Av1StreamEncoder"/>. 8 and 10-bit 4:2:0
+    /// planes make Main profile streams, 4:4:4 High and 12-bit or 4:2:2 Professional, coded as they are; RGB frames are converted
+    /// to 8-bit 4:2:0 BT.601 limited range unless <see cref="Av1EncoderOptions.BitDepth"/> or
+    /// <see cref="VideoEncoderOptions.ChromaFormat"/> say otherwise. By default it aims at constant quality 60 at effort 4, looks
+    /// 25 frames ahead for scene cuts and for a hidden alternate reference at each group's end with a hidden frame halfway to it,
+    /// both shown later with show_existing_frame, and places a keyframe at least every 10 seconds; <see cref="VideoEncoderOptions"/>
+    /// chooses bitrate, constant bitrate, two passes or real time instead, and <see cref="VideoEncoderOptions.Av1"/> holds the
+    /// expert settings. Each packet is a temporal unit; the track's av1C comes from the sequence header, which also carries the
+    /// frames' color code points, and keyframes carry their static HDR metadata as metadata OBUs (HDR10+ goes into the frames
+    /// that have it). Alpha is not coded: AV1 has no alpha in Matroska or MP4. The output is the same at any thread count.
+    /// </summary>
+    /// <param name="options">The picture size, frame rate and how to spend bits.</param>
+    /// <param name="context">The context.</param>
+    /// <returns>The encoder.</returns>
+    /// <exception cref="ArgumentException">The options are out of range, or a bitrate mode has no bitrate.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-av1"/>
+    /// </example>
+    public override IVideoEncoder CreateEncoder(VideoEncoderOptions options, MediaContext context)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(context);
+        return new Av1VideoEncoder(options, context);
     }
 }

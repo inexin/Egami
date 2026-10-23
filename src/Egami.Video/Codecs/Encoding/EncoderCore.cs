@@ -7,7 +7,11 @@ namespace Egami.Video.Codecs.Encoding;
 /// <param name="Quantizer">The codec's quantizer index.</param>
 /// <param name="AltRefAhead">Whether the alternate reference is a frame still to be shown (its vectors point forward).</param>
 /// <param name="RefreshGolden">Whether the frame becomes the golden reference.</param>
-internal readonly record struct FrameDecision(FrameType Type, int Quantizer, bool AltRefAhead, bool RefreshGolden);
+/// <param name="Index">
+/// The frame's place in display order, counted from the first frame sent: a hidden frame's is the place it is shown at, and an
+/// overlay's that of the hidden frame it shows.
+/// </param>
+internal readonly record struct FrameDecision(FrameType Type, int Quantizer, bool AltRefAhead, bool RefreshGolden, int Index = 0);
 
 /// <summary>A frame a codec coded.</summary>
 /// <param name="Data">The frame's bytes.</param>
@@ -17,7 +21,11 @@ internal readonly record struct FrameDecision(FrameType Type, int Quantizer, boo
 /// The bytes at the start of <paramref name="Data"/> that belong to hidden frames coded before this one (a VP9 superframe), which
 /// rate control already counted.
 /// </param>
-internal readonly record struct CodedFrame(ReadOnlyMemory<byte> Data, ReadOnlyMemory<byte>? Alpha, int Quantizer, int HiddenLength = 0);
+/// <param name="Bits">
+/// The frame's own bits when <paramref name="Data"/> does not hold them: a hidden frame a coder keeps for the next shown frame's
+/// packet (AV1); null to count <paramref name="Data"/>.
+/// </param>
+internal readonly record struct CodedFrame(ReadOnlyMemory<byte> Data, ReadOnlyMemory<byte>? Alpha, int Quantizer, int HiddenLength = 0, long? Bits = null);
 
 /// <summary>A codec's frame encoder under the core: VP8's wraps Egami's Vp8StreamEncoder.</summary>
 internal interface IFrameCoder : IDisposable
@@ -90,6 +98,18 @@ internal sealed record CoreSettings
 
     /// <summary>Whether each frame is also kept in the stream's own format (<see cref="EncoderPictures.ImportFull"/>) for the coder.</summary>
     public bool FullPictures { get; init; }
+
+    /// <summary>
+    /// Whether an overlay costs next to nothing because the coder shows the hidden frame again (AV1's show_existing_frame), so
+    /// rate control plans no bits for it.
+    /// </summary>
+    public bool FreeOverlays { get; init; }
+
+    /// <summary>
+    /// Whether a group with an alternate reference also codes a hidden frame halfway to it, shown later as an overlay of its own
+    /// (a two-level pyramid, AV1's ALTREF2). Needs a coder that keeps several hidden frames for one packet.
+    /// </summary>
+    public bool Pyramid { get; init; }
 }
 
 /// <summary>
@@ -125,6 +145,8 @@ internal sealed class EncoderCore : IDisposable
     private bool _refreshGoldenAtEnd;
     private int _altRef = -1;
     private bool _altRefCoded;
+    private int _altRef2 = -1;
+    private bool _altRef2Coded;
     private bool _flushing;
     private double _altRefFactor = 0.7;
     private double _goldenFactor = 0.8;
@@ -206,28 +228,38 @@ internal sealed class EncoderCore : IDisposable
             PlanGroup(frame);
         }
 
-        // The alternate reference goes out before the first shown frame that predicts from it, after the group's keyframe.
+        // The alternate reference goes out before the first shown frame that predicts from it, after the group's keyframe, and
+        // the pyramid's middle frame after it.
         if (_altRef >= 0 && !_altRefCoded && !frame.Key)
         {
-            CodeAltRef(frame);
+            CodeAltRef(frame, _altRef, _altRefFactor);
+            _altRefCoded = true;
+            return;
+        }
+
+        if (_altRef2 >= 0 && !_altRef2Coded && !frame.Key)
+        {
+            CodeAltRef(frame, _altRef2, AltRef2Factor);
+            _altRef2Coded = true;
             return;
         }
 
         FrameType type = frame.Key ? FrameType.Key
+            : frame.Index == _altRef2 ? FrameType.Overlay
             : frame.Index == _groupEnd ? (_altRef == frame.Index ? FrameType.Overlay : _refreshGoldenAtEnd ? FrameType.Golden : FrameType.Inter)
             : FrameType.Inter;
         long complexity = type switch
         {
             FrameType.Key => frame.Stats.Intra,
-            FrameType.Overlay => frame.Stats.Inter / 4,
+            FrameType.Overlay => OverlayComplexity(frame.Stats),
             _ => frame.Stats.Inter,
         };
         int quantizer = _rate.Next(type, complexity, Factor(type));
         bool refreshGolden = frame.Index == _groupEnd && _refreshGoldenAtEnd;
         bool ahead = _altRef > frame.Index && _altRefCoded;
-        FrameDecision decision = new(type, quantizer, ahead, refreshGolden);
+        FrameDecision decision = new(type, quantizer, ahead, refreshGolden, frame.Index);
         CodedFrame coded = frame.Full is null ? _coder.Code(frame.Picture, decision) : _coder.Code(frame.Picture, frame.Full, decision);
-        _rate.Done(type, coded.Quantizer, (coded.Data.Length - coded.HiddenLength) * 8L, complexity);
+        _rate.Done(type, coded.Quantizer, coded.Bits ?? ((coded.Data.Length - coded.HiddenLength) * 8L), complexity);
         Trace?.Invoke($"{frame.Index} {type} q{coded.Quantizer} {coded.Data.Length - coded.HiddenLength}B c{complexity}");
         EncodedPacket packet = Packet(coded.Data, frame.Timestamp, frame.Key);
         packet.Duration = frame.Duration;
@@ -329,6 +361,11 @@ internal sealed class EncoderCore : IDisposable
         _altRef = altRef ? end : -1;
         _altRefCoded = false;
 
+        // The pyramid's middle frame halves the distance the frames before the alternate reference predict across.
+        int firstShown = first.Key ? start + 1 : start;
+        _altRef2 = altRef && _settings.Pyramid && end - firstShown >= 6 ? (firstShown + end) / 2 : -1;
+        _altRef2Coded = false;
+
         // The group's frames in coding order, for its bit budget.
         int n = 0;
         int count = Math.Min(end - start + 1, _group.Length - 1);
@@ -341,7 +378,7 @@ internal sealed class EncoderCore : IDisposable
                 _group[n++] = new GroupFrame(FrameType.Key, stats.Intra);
                 if (altRef)
                 {
-                    _group[n++] = new GroupFrame(FrameType.AltRef, AltRefComplexity(), _altRefFactor);
+                    AddHidden(ref n);
                 }
 
                 continue;
@@ -349,15 +386,32 @@ internal sealed class EncoderCore : IDisposable
 
             if (i == 0 && altRef)
             {
-                _group[n++] = new GroupFrame(FrameType.AltRef, AltRefComplexity(), _altRefFactor);
+                AddHidden(ref n);
             }
 
-            FrameType type = index == end ? (altRef ? FrameType.Overlay : _refreshGoldenAtEnd ? FrameType.Golden : FrameType.Inter) : FrameType.Inter;
-            _group[n++] = new GroupFrame(type, type == FrameType.Overlay ? stats.Inter / 4 : stats.Inter, Factor(type));
+            FrameType type = index == end ? (altRef ? FrameType.Overlay : _refreshGoldenAtEnd ? FrameType.Golden : FrameType.Inter)
+                : index == _altRef2 ? FrameType.Overlay : FrameType.Inter;
+            _group[n++] = new GroupFrame(type, type == FrameType.Overlay ? OverlayComplexity(stats) : stats.Inter, Factor(type));
         }
 
         _rate.StartGroup(_group.AsSpan(0, n));
     }
+
+    /// <summary>Adds the group's hidden frames to its plan, in coding order.</summary>
+    private void AddHidden(ref int n)
+    {
+        _group[n++] = new GroupFrame(FrameType.AltRef, AltRefComplexity(_altRef), _altRefFactor);
+        if (_altRef2 >= 0)
+        {
+            _group[n++] = new GroupFrame(FrameType.AltRef, AltRefComplexity(_altRef2), AltRef2Factor);
+        }
+    }
+
+    /// <summary>The pyramid's middle frame's step: between the alternate reference's and an inter frame's.</summary>
+    private double AltRef2Factor => Math.Sqrt(_altRefFactor);
+
+    /// <summary>An overlay's complexity: a quarter of its frame's, or none when the coder shows the hidden frame again.</summary>
+    private long OverlayComplexity(FrameStats stats) => _settings.FreeOverlays ? 0 : stats.Inter / 4;
 
     /// <summary>Whether <paramref name="to"/>'s coarse picture predicts from <paramref name="from"/>'s with at most a quarter of its intra error.</summary>
     private bool Reachable(Pending from, Pending to)
@@ -409,18 +463,19 @@ internal sealed class EncoderCore : IDisposable
         return ratio < 0.15 ? 16 : ratio < 0.35 ? 12 : 8;
     }
 
-    /// <summary>A guess at an alternate reference's cost: what the frames up to it change, but no more than coding it alone.</summary>
-    private long AltRefComplexity()
+    /// <summary>A guess at a hidden frame's cost: what the frames up to it change, but no more than coding it alone.</summary>
+    private long AltRefComplexity(int target)
     {
         long sum = 0, intra = 0;
+        int from = target == _altRef2 ? _groupStart : _altRef2 >= 0 ? _altRef2 : _groupStart;
         foreach (Pending p in _queue)
         {
-            if (p.Index > _groupStart && p.Index <= _altRef)
+            if (p.Index > from && p.Index <= target)
             {
                 sum += p.Stats.Inter;
             }
 
-            if (p.Index == _altRef)
+            if (p.Index == target)
             {
                 intra = p.Stats.Intra;
             }
@@ -429,7 +484,7 @@ internal sealed class EncoderCore : IDisposable
         return Math.Max(1, Math.Min(intra, sum));
     }
 
-    private void CodeAltRef(Pending next)
+    private void CodeAltRef(Pending next, int target, double factor)
     {
         int radius = _settings.FilterFrames / 2;
         _filterFrames.Clear();
@@ -437,14 +492,14 @@ internal sealed class EncoderCore : IDisposable
         YuvRaster? full = null;
         foreach (Pending p in _queue)
         {
-            if (p.Index == _altRef)
+            if (p.Index == target)
             {
                 full = p.Full;
             }
 
-            if (p.Index >= _altRef - radius && p.Index <= _altRef + radius && !(p.Key && p.Index > _altRef))
+            if (p.Index >= target - radius && p.Index <= target + radius && !(p.Key && p.Index > target))
             {
-                if (p.Index == _altRef)
+                if (p.Index == target)
                 {
                     center = _filterFrames.Count;
                 }
@@ -455,19 +510,18 @@ internal sealed class EncoderCore : IDisposable
 
         YuvRaster<byte> filtered = _pictures.Rent(false);
         TemporalFilter.Apply(_filterFrames, center, _settings.FilterStrength, filtered, _settings.Parallelism);
-        long complexity = AltRefComplexity();
-        int quantizer = _rate.Next(FrameType.AltRef, complexity, _altRefFactor);
-        FrameDecision decision = new(FrameType.AltRef, quantizer, AltRefAhead: true, RefreshGolden: false);
+        long complexity = AltRefComplexity(target);
+        int quantizer = _rate.Next(FrameType.AltRef, complexity, factor);
+        FrameDecision decision = new(FrameType.AltRef, quantizer, AltRefAhead: true, RefreshGolden: false, target);
         CodedFrame coded = full is null ? _coder.Code(filtered, decision) : _coder.Code(filtered, full, decision);
-        _rate.Done(FrameType.AltRef, coded.Quantizer, coded.Data.Length * 8L, complexity);
-        Trace?.Invoke($"{_altRef} AltRef q{coded.Quantizer} {coded.Data.Length}B c{complexity}");
+        long bits = coded.Bits ?? (coded.Data.Length * 8L);
+        _rate.Done(FrameType.AltRef, coded.Quantizer, bits, complexity);
+        Trace?.Invoke($"{target} AltRef q{coded.Quantizer} {bits / 8}B c{complexity}");
         _pictures.Return(filtered);
         if (!_coder.MergesHiddenFrames)
         {
             _ready.Enqueue(Packet(coded.Data, next.Timestamp, key: false));
         }
-
-        _altRefCoded = true;
     }
 
     private static EncodedPacket Packet(ReadOnlyMemory<byte> data, MediaTime timestamp, bool key)

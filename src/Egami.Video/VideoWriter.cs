@@ -303,6 +303,7 @@ public sealed class VideoWriter : IDisposable
                     FirstPassStats = _options.FirstPassStats,
                     Vp8 = _options.Vp8,
                     Vp9 = _options.Vp9,
+                    Av1 = _options.Av1,
                 },
                 _context);
             _encoder.Send(frame);
@@ -428,6 +429,9 @@ public sealed record VideoWriterOptions
 
     /// <summary>Gets the VP9 expert settings, or <see langword="null"/> for <see cref="Vp9EncoderOptions.Default"/>.</summary>
     public Vp9EncoderOptions? Vp9 { get; init; }
+
+    /// <summary>Gets the AV1 expert settings, or <see langword="null"/> for <see cref="Av1EncoderOptions.Default"/>.</summary>
+    public Av1EncoderOptions? Av1 { get; init; }
 
     /// <summary>
     /// Gets tracks written alongside the video, such as audio from the source file, whose packets go through

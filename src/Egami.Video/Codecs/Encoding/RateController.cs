@@ -53,6 +53,12 @@ internal sealed record RateSettings
 
     /// <summary>For two passes, every frame's complexity from the first pass, in display order.</summary>
     public long[]? FirstPass { get; init; }
+
+    /// <summary>
+    /// Whether the frames past the current group are planned like the whole group, hidden frames included, rather than like its
+    /// inter frames: right when hidden frames cost as much as the shown ones, as AV1's pyramid does.
+    /// </summary>
+    public bool PlanHiddenAhead { get; init; }
 }
 
 /// <summary>
@@ -189,6 +195,11 @@ internal sealed class RateController
 
         int horizon = Math.Max(shown, (int)(2 * s.FrameRate));
         double perInter = inter > 0 ? interNeed / inter : _correction[(int)FrameType.Inter] * Effective(complexity);
+        if (s.PlanHiddenAhead && GroupNeedPerShown() is > 0 and var perShown)
+        {
+            perInter = perShown;
+        }
+
         need += (horizon - shown) * perInter;
         double budget = Budget(horizon);
         double ratio = need / Math.Max(_frameBits * 0.05 * horizon, budget);
@@ -217,6 +228,28 @@ internal sealed class RateController
         }
 
         return quantizer;
+    }
+
+    /// <summary>What the whole group's frames other than a keyframe need, hidden ones included, per shown frame; 0 when none is shown.</summary>
+    private double GroupNeedPerShown()
+    {
+        double need = 0;
+        int shown = 0;
+        foreach (GroupFrame f in _plan)
+        {
+            if (f.Type == FrameType.Key)
+            {
+                continue;
+            }
+
+            need += _correction[(int)f.Type] * Effective(f.Complexity) / Power(Factor(f.Type, f.StepFactor));
+            if (f.Type != FrameType.AltRef)
+            {
+                shown++;
+            }
+        }
+
+        return shown == 0 ? 0 : need / shown;
     }
 
     /// <summary>The bits the next <paramref name="horizon"/> shown frames may spend.</summary>
