@@ -85,6 +85,25 @@ WebVTT.
 | Karaoke timing | No | Timestamps | `\k` |
 | Styles, layers, margins, effects, other tags | No | No | Yes |
 
+## Subtitle tracks in containers
+
+`SubtitleDocument.ReadTrack` reads a subtitle track from an `IDemuxer`, and `FromPackets` reads one from packets you already
+hold, for example while remuxing. `IsTextCodec` tells which codecs they read. `SubtitleTrackWriter` turns a document into a
+track: its `Track` goes to the muxer, and its `Packets` go to the muxer in time order with the other tracks' packets.
+`CodecIdFor` picks the codec for a container:
+
+| Container | Codecs | Notes |
+| --- | --- | --- |
+| Matroska | `CodecIds.SubRip`, `CodecIds.WebVtt`, `CodecIds.Ass` (and `CodecIds.Ssa`, read only) | Each cue is a block with its duration. ASS keeps its header in the track; WebVTT keeps its header, settings and identifiers. |
+| WebM | `CodecIds.WebMWebVtt` | The identifier, settings and text in each block, as WebM and FFmpeg store them. |
+| MP4 | `CodecIds.MovText`, `CodecIds.Mp4WebVtt` | Samples cannot overlap or leave gaps, so the writer adds empty samples and splits overlapping cues. The reader joins them again. |
+
+mov_text keeps bold, italic, underline, colors and font sizes; alignment, positions and strikeout are reported as
+`Subtitle.Dropped`. Tracks written by FFmpeg, MKVToolNix and GPAC MP4Box read back to the cues of their source file, and
+those tools read the tracks Egami.Video writes.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Subtitles.cs#subtitles-tracks)]
+
 ## Encodings and diagnostics
 
 Files are read by their byte order mark (UTF-8, UTF-16 little or big-endian), then as UTF-8 when the bytes are valid UTF-8,

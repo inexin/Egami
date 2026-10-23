@@ -16,7 +16,8 @@ internal static class Mp4SampleEntries
     {
         TrackKind.Video => "vide",
         TrackKind.Audio => "soun",
-        TrackKind.Subtitle => "sbtl",
+        // ISO/IEC 14496-30 puts WebVTT on a text track; mov_text goes on a subtitle track, as Apple players expect.
+        TrackKind.Subtitle => track.CodecId == CodecIds.Mp4WebVtt ? "text" : "sbtl",
         _ => track.CodecPrivate.Length >= 8 && track.CodecPrivate.Span[4..8].SequenceEqual("tmcd"u8) ? "tmcd" : "meta",
     };
 
@@ -27,7 +28,7 @@ internal static class Mp4SampleEntries
         CodecIds.Av1 or CodecIds.Vp9 or CodecIds.Vp8 or CodecIds.MotionJpeg or CodecIds.Avc or CodecIds.Hevc or CodecIds.Mpeg4Visual => null,
         CodecIds.Opus or CodecIds.Flac or CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis => null,
         CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian or CodecIds.PcmFloat => null,
-        CodecIds.MovText => null,
+        CodecIds.MovText or CodecIds.Mp4WebVtt => null,
         CodecIds.QuickTimeVideo or CodecIds.QuickTimeAudio or CodecIds.QuickTimeOther when track.CodecPrivate.Length >= 8 => null,
         _ => $"MP4 cannot hold codec '{track.CodecId}'",
     };
@@ -50,6 +51,24 @@ internal static class Mp4SampleEntries
                 else
                 {
                     DefaultTextEntry(w);
+                }
+
+                w.End();
+                return;
+            case CodecIds.Mp4WebVtt:
+                // ISO/IEC 14496-30: the plain-text sample entry fields, then vttC with the file header.
+                w.Start("wvtt");
+                if (priv.Length >= 8)
+                {
+                    w.Bytes(priv);
+                }
+                else
+                {
+                    w.Zeros(6);
+                    w.U16(1);
+                    w.Start("vttC");
+                    w.Bytes("WEBVTT"u8);
+                    w.End();
                 }
 
                 w.End();

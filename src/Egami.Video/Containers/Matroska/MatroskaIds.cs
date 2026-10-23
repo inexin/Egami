@@ -36,6 +36,7 @@ internal static class MatroskaIds
     public const uint FlagEnabled = 0xB9;
     public const uint FlagDefault = 0x88;
     public const uint FlagLacing = 0x9C;
+    public const uint MaxBlockAdditionId = 0x55EE;
     public const uint DefaultDuration = 0x23E383;
     public const uint Name = 0x536E;
     public const uint Language = 0x22B59C;

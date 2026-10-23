@@ -5,6 +5,12 @@ abstract Egami.Video.Audio.AudioCodec.CreateDecoder(Egami.Video.AudioTrackInfo! 
 abstract Egami.Video.Audio.AudioCodec.Name.get -> string!
 const Egami.Video.Audio.ChannelLayout.MaxChannels = 255 -> int
 const Egami.Video.Audio.ChannelMixer.MinusThreeDecibels = 0.70710677 -> float
+const Egami.Video.CodecIds.Ass = "S_TEXT/ASS" -> string!
+const Egami.Video.CodecIds.Mp4WebVtt = "S_WVTT" -> string!
+const Egami.Video.CodecIds.Ssa = "S_TEXT/SSA" -> string!
+const Egami.Video.CodecIds.SubRip = "S_TEXT/UTF8" -> string!
+const Egami.Video.CodecIds.WebMWebVtt = "D_WEBVTT/SUBTITLES" -> string!
+const Egami.Video.CodecIds.WebVtt = "S_TEXT/WEBVTT" -> string!
 Egami.Video.Audio.AudioCodec
 Egami.Video.Audio.AudioCodec.AudioCodec() -> void
 Egami.Video.Audio.AudioCodecs
@@ -499,6 +505,10 @@ Egami.Video.Subtitles.SubtitleStyle.Strikeout.init -> void
 Egami.Video.Subtitles.SubtitleStyle.SubtitleStyle(string! Name) -> void
 Egami.Video.Subtitles.SubtitleStyle.Underline.get -> bool
 Egami.Video.Subtitles.SubtitleStyle.Underline.init -> void
+Egami.Video.Subtitles.SubtitleTrackWriter
+Egami.Video.Subtitles.SubtitleTrackWriter.Packets.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.EncodedPacket!>!
+Egami.Video.Subtitles.SubtitleTrackWriter.SubtitleTrackWriter(Egami.Video.Subtitles.SubtitleDocument! document, int trackNumber, string? codecId = null, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Subtitles.SubtitleTrackWriter.Track.get -> Egami.Video.TrackInfo!
 Egami.Video.Subtitles.SubtitleWriterOptions
 Egami.Video.Subtitles.SubtitleWriterOptions.<Clone>$() -> Egami.Video.Subtitles.SubtitleWriterOptions!
 Egami.Video.Subtitles.SubtitleWriterOptions.ByteOrderMark.get -> bool?
@@ -736,10 +746,13 @@ static Egami.Video.MediaProgress.operator ==(Egami.Video.MediaProgress left, Ega
 static Egami.Video.Subtitles.SubtitleAttachment.operator !=(Egami.Video.Subtitles.SubtitleAttachment? left, Egami.Video.Subtitles.SubtitleAttachment? right) -> bool
 static Egami.Video.Subtitles.SubtitleAttachment.operator ==(Egami.Video.Subtitles.SubtitleAttachment? left, Egami.Video.Subtitles.SubtitleAttachment? right) -> bool
 static Egami.Video.Subtitles.SubtitleDocument.DetectFormat(System.ReadOnlySpan<byte> data) -> Egami.Video.Subtitles.SubtitleFormat?
+static Egami.Video.Subtitles.SubtitleDocument.FromPackets(Egami.Video.TrackInfo! track, System.Collections.Generic.IEnumerable<Egami.Video.EncodedPacket!>! packets, Egami.Video.Subtitles.SubtitleReaderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Subtitles.SubtitleDocument!
+static Egami.Video.Subtitles.SubtitleDocument.IsTextCodec(string! codecId) -> bool
 static Egami.Video.Subtitles.SubtitleDocument.Load(string! path, Egami.Video.Subtitles.SubtitleReaderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Subtitles.SubtitleDocument!
 static Egami.Video.Subtitles.SubtitleDocument.Load(System.IO.Stream! stream, Egami.Video.Subtitles.SubtitleReaderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Subtitles.SubtitleDocument!
 static Egami.Video.Subtitles.SubtitleDocument.Load(System.ReadOnlySpan<byte> data, Egami.Video.Subtitles.SubtitleReaderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Subtitles.SubtitleDocument!
 static Egami.Video.Subtitles.SubtitleDocument.Parse(string! text, Egami.Video.Subtitles.SubtitleFormat? format = null, Egami.Video.Subtitles.SubtitleReaderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Subtitles.SubtitleDocument!
+static Egami.Video.Subtitles.SubtitleDocument.ReadTrack(Egami.Video.Containers.IDemuxer! demuxer, Egami.Video.TrackInfo! track, Egami.Video.Subtitles.SubtitleReaderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Subtitles.SubtitleDocument!
 static Egami.Video.Subtitles.SubtitlePosition.operator !=(Egami.Video.Subtitles.SubtitlePosition left, Egami.Video.Subtitles.SubtitlePosition right) -> bool
 static Egami.Video.Subtitles.SubtitlePosition.operator ==(Egami.Video.Subtitles.SubtitlePosition left, Egami.Video.Subtitles.SubtitlePosition right) -> bool
 static Egami.Video.Subtitles.SubtitleReaderOptions.operator !=(Egami.Video.Subtitles.SubtitleReaderOptions? left, Egami.Video.Subtitles.SubtitleReaderOptions? right) -> bool
@@ -750,6 +763,7 @@ static Egami.Video.Subtitles.SubtitleSpan.operator !=(Egami.Video.Subtitles.Subt
 static Egami.Video.Subtitles.SubtitleSpan.operator ==(Egami.Video.Subtitles.SubtitleSpan? left, Egami.Video.Subtitles.SubtitleSpan? right) -> bool
 static Egami.Video.Subtitles.SubtitleStyle.operator !=(Egami.Video.Subtitles.SubtitleStyle? left, Egami.Video.Subtitles.SubtitleStyle? right) -> bool
 static Egami.Video.Subtitles.SubtitleStyle.operator ==(Egami.Video.Subtitles.SubtitleStyle? left, Egami.Video.Subtitles.SubtitleStyle? right) -> bool
+static Egami.Video.Subtitles.SubtitleTrackWriter.CodecIdFor(string! formatNameOrExtension, Egami.Video.Subtitles.SubtitleFormat format) -> string!
 static Egami.Video.Subtitles.SubtitleWriterOptions.operator !=(Egami.Video.Subtitles.SubtitleWriterOptions? left, Egami.Video.Subtitles.SubtitleWriterOptions? right) -> bool
 static Egami.Video.Subtitles.SubtitleWriterOptions.operator ==(Egami.Video.Subtitles.SubtitleWriterOptions? left, Egami.Video.Subtitles.SubtitleWriterOptions? right) -> bool
 static Egami.Video.Subtitles.WebVttCueSettings.operator !=(Egami.Video.Subtitles.WebVttCueSettings? left, Egami.Video.Subtitles.WebVttCueSettings? right) -> bool

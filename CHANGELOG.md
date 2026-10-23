@@ -229,6 +229,12 @@ V4.3: fragmented MP4 writing, and HLS and DASH segments. API reviewed and accept
 - WebVTT is parsed as the W3C spec says and passes the web-platform-tests parsing suite (pinned to a commit by
   tools/video/fetch-webvtt-tests.py), with the full HTML named character references.
 - `Shift`, `Scale`, `Sync`, `Clip`, `Sort` and `FixOverlaps` retime without rounding; times are rounded only when written.
+- Subtitle tracks: `SubtitleDocument.ReadTrack`, `FromPackets` and `IsTextCodec` read them, and `SubtitleTrackWriter` writes them.
+  Matroska takes `S_TEXT/UTF8`, `S_TEXT/WEBVTT` and `S_TEXT/ASS`, and reads `S_TEXT/SSA`. WebM takes `D_WEBVTT/SUBTITLES`.
+  MP4 takes mov_text and WebVTT (`wvtt`, ISO/IEC 14496-30, on a `text` track). New `CodecIds` constants name them.
+- Matroska subtitle blocks carry their BlockDuration, so cue durations survive a remux. Files from FFmpeg, MKVToolNix and
+  MP4Box read back to their source cues (tools/video/make-subtitle-tracks.py). ffprobe, mkvmerge and MP4Box read Egami's
+  files cleanly (tools/video/check-subtitle-tracks.py).
 
 ## Egami.Video 0.5.0 (unreleased)
 

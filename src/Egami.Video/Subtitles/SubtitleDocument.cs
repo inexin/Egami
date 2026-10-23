@@ -242,7 +242,7 @@ public sealed partial class SubtitleDocument
         return Parse(text, format, bom, log);
     }
 
-    private static SubtitleDocument Parse(string text, SubtitleFormat format, bool bom, SubtitleLog log)
+    internal static SubtitleDocument Parse(string text, SubtitleFormat format, bool bom, SubtitleLog log)
     {
         SubtitleDocument document = format switch
         {
@@ -255,7 +255,7 @@ public sealed partial class SubtitleDocument
         return document;
     }
 
-    private string Write(SubtitleFormat format, SubtitleWriterOptions? options, SubtitleLog log)
+    internal string Write(SubtitleFormat format, SubtitleWriterOptions? options, SubtitleLog log)
     {
         string newLine = options?.NewLine ?? (Source is { Format: var f, NewLine: { } own } && f == format ? own : format == SubtitleFormat.WebVtt ? "\n" : "\r\n");
         return format switch

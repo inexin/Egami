@@ -54,6 +54,34 @@ public static class CodecIds
     /// </summary>
     public const string MovText = "S_TX3G";
 
+    /// <summary>
+    /// WebVTT in MP4 (wvtt, ISO/IEC 14496-30): <see cref="TrackInfo.CodecPrivate"/> holds the sample entry after its 8-byte header
+    /// (the vttC box with the file header); each sample holds the cues shown over its time. <see cref="Subtitles.SubtitleDocument.FromPackets"/>
+    /// reads the track and <see cref="Subtitles.SubtitleTrackWriter"/> writes one.
+    /// </summary>
+    public const string Mp4WebVtt = "S_WVTT";
+
+    /// <summary>SRT-style text subtitles (SubRip): each packet one cue's text, with <c>&lt;i&gt;</c>-style tags.</summary>
+    public const string SubRip = "S_TEXT/UTF8";
+
+    /// <summary>
+    /// WebVTT in Matroska: <see cref="TrackInfo.CodecPrivate"/> holds the file header, each packet a cue's text, and a block
+    /// addition the cue's settings and identifier.
+    /// </summary>
+    public const string WebVtt = "S_TEXT/WEBVTT";
+
+    /// <summary>WebVTT in WebM: each packet holds the cue's identifier line, settings line and text.</summary>
+    public const string WebMWebVtt = "D_WEBVTT/SUBTITLES";
+
+    /// <summary>
+    /// ASS in Matroska: <see cref="TrackInfo.CodecPrivate"/> holds the script header up to the [Events] format line; each packet
+    /// is an event without its times (ReadOrder, Layer, Style, Name, MarginL, MarginR, MarginV, Effect, Text).
+    /// </summary>
+    public const string Ass = "S_TEXT/ASS";
+
+    /// <summary>SSA in Matroska, laid out as <see cref="Ass"/> with Marked in place of Layer.</summary>
+    public const string Ssa = "S_TEXT/SSA";
+
     /// <summary>Integer PCM, little-endian.</summary>
     public const string PcmLittleEndian = "A_PCM/INT/LIT";
 

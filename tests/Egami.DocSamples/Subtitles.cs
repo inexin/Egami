@@ -2,6 +2,7 @@ using System.Text;
 
 using Egami.Pixels;
 using Egami.Video;
+using Egami.Video.Containers;
 using Egami.Video.Subtitles;
 
 namespace Egami.DocSamples;
@@ -162,5 +163,52 @@ public class Subtitles
 
         Assert.Equal("Café", old.Cues[0].PlainText);
         Assert.StartsWith("Subtitle.Encoding", Assert.Single(log), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Tracks()
+    {
+        using SampleFiles files = new();
+        SubtitleDocument captions = SubtitleDocument.Parse("WEBVTT\n\n00:00.100 --> 00:00.400\nHello\n");
+
+        #region subtitles-tracks
+        // Read a subtitle track out of a container: mov_text, WebVTT, SRT and ASS tracks become a document.
+        using (IDemuxer movie = MediaFile.OpenDemuxer("subtitled.mp4"))
+        {
+            TrackInfo track = movie.Tracks.First(t => SubtitleDocument.IsTextCodec(t.CodecId));
+            SubtitleDocument.ReadTrack(movie, track).Save("subtitled.srt");
+        }
+
+        // Add one to a copy of a video: the writer makes the track and its packets, merged in time order with the video's.
+        using IDemuxer input = MediaFile.OpenDemuxer("movie.webm");
+        SubtitleTrackWriter subtitles = new(captions, input.Tracks.Count + 1, SubtitleTrackWriter.CodecIdFor("webm", captions.Format));
+        using (IMuxer output = MediaFile.CreateMuxer("captioned.webm", [.. input.Tracks, subtitles.Track with { Language = "eng" }]))
+        {
+            int next = 0;
+            while (input.ReadPacket() is { } packet)
+            {
+                using (packet)
+                {
+                    for (; next < subtitles.Packets.Count && subtitles.Packets[next].Timestamp <= packet.Timestamp; next++)
+                    {
+                        output.WritePacket(subtitles.Packets[next]);
+                    }
+
+                    output.WritePacket(packet);
+                }
+            }
+
+            for (; next < subtitles.Packets.Count; next++)
+            {
+                output.WritePacket(subtitles.Packets[next]);
+            }
+        }
+        #endregion
+
+        Assert.NotEmpty(SubtitleDocument.Load("subtitled.srt").Cues);
+        using IDemuxer check = MediaFile.OpenDemuxer("captioned.webm");
+        TrackInfo written = check.Tracks[^1];
+        Assert.Equal(CodecIds.WebMWebVtt, written.CodecId);
+        Assert.Equal("Hello", Assert.Single(SubtitleDocument.ReadTrack(check, written).Cues).PlainText);
     }
 }
