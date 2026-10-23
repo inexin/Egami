@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Text recognition (OCR) | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Text recognition (OCR) | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/ocr.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="text-recognition-ocr">Text recognition (OCR)</h1>
+
+<p>Egami does not recognize text itself. It gives every OCR engine one shape, so code that needs text from an image works with
+whichever engine you plug in: a program such as Tesseract, the OS's own OCR or a cloud service. Egami ships no engine and links no native code. It also reads and writes
+hOCR and ALTO, the two files engines write. Types live in <code>Egami.Ocr</code>.</p>
+<h2 id="the-engine-shape">The engine shape</h2>
+<pre><code class="lang-csharp">// An engine is one method: an image in, lines of words out. This one finds a single word; a real one wraps an OCR program,
+// an OS service or a cloud API (see samples/Ocr).
+public sealed class OneWordEngine : IOcrEngine
+{
+    public OcrEngineInfo Info { get; } = new(&quot;one-word&quot;) { Languages = [&quot;eng&quot;], IsThreadSafe = true };
+
+    public Task&lt;OcrResult&gt; RecognizeAsync(OcrRequest request, CancellationToken cancellationToken = default)
+    {
+        OcrQuad box = OcrQuad.FromBounds(10, 10, request.Image.Width / 2, 20);
+        OcrLine line = new([new OcrWord(&quot;Duck&quot;, box, Confidence: 0.9, Language: &quot;eng&quot;)]);
+        return Task.FromResult(new OcrResult([line]) { ImageSize = new Size(request.Image.Width, request.Image.Height) });
+    }
+}
+</code></pre>
+<p>An <code>IOcrEngine</code> has one method, <code>RecognizeAsync</code>, and an <code>OcrEngineInfo</code> that says what it can do: its <code>Name</code>, the <code>Languages</code>
+it reads, the <code>MaxImageDimension</code> it takes (callers scale larger images down and the boxes back up), whether it <code>FindsOrientation</code>
+and whether calls may overlap (<code>IsThreadSafe</code>, the default; a caller runs one page at a time when it is <code>false</code>).</p>
+<pre><code class="lang-csharp">// Any IOcrEngine reads a Raster&lt;Rgba8&gt;; say the resolution and languages when you know them.
+OneWordEngine engine = new();
+using Raster&lt;Rgba8&gt; page = Raster.Load&lt;Rgba8&gt;(&quot;duck.png&quot;);
+OcrResult result = await engine.RecognizeAsync(new OcrRequest(page) { Dpi = 300, Languages = [&quot;eng&quot;] }, Ct);
+
+Console.WriteLine(result.Text);
+foreach (OcrWord word in result.Words)
+{
+    Console.WriteLine($&quot;{word.Text} at {word.Box.Bounds}, {word.Confidence:P0} sure&quot;);
+}
+</code></pre>
+<p>An <code>OcrRequest</code> carries a <code>Raster&lt;Rgba8&gt;</code> that the engine must not change or dispose, its <code>Dpi</code> (300 by default; engines use it
+to judge text size), the <code>Languages</code> to read as the engine names them, most likely first, and the <code>PageIndex</code> when the image is a
+page of a document. The <code>OcrResult</code> has <code>Lines</code> of <code>OcrWord</code>s in reading order, each with its <code>Text</code>, its <code>Box</code>, a <code>Confidence</code>
+from 0 to 1 when the engine gives one, and a <code>Language</code>. <code>Text</code> joins words with spaces and lines with line feeds; <code>Words</code>
+lists them all. <code>Rotation</code> is the clockwise quarter turn that would put the image upright, for engines that look, and <code>ImageSize</code>
+the size of the image the boxes refer to.</p>
+<p>All engines are async. A network engine that blocks a thread while it waits can deadlock a caller with a synchronization context,
+so there is no synchronous form; a console app can simply <code>await</code>.</p>
+<h2 id="boxes-are-quads">Boxes are quads</h2>
+<pre><code class="lang-csharp">// Boxes are quads, corners named as the word reads, so turned and skewed words keep their shape.
+OcrQuad upright = OcrQuad.FromBounds(100, 50, 200, 40);
+OcrQuad upThePage = OcrQuad.FromBounds(20, 300, 40, 200, angle: 90); // TopLeft is the bottom left of the box
+Console.WriteLine($&quot;{upThePage.Angle}° from {upThePage.TopLeft} to {upThePage.TopRight}&quot;);
+
+// Map boxes back from an image the engine saw at half size, or into another space.
+OcrQuad full = upright.Transform(Matrix3x2.CreateScale(2));
+</code></pre>
+<p>An <code>OcrQuad</code> holds a word's four corners in image pixels with the origin at the top left, named as the word reads: a word that runs
+up the page has its <code>TopLeft</code> at the bottom left of its box. Rotated and skewed scans keep each word's shape, which a PDF text layer
+needs for selection that matches the picture. <code>FromBounds</code> makes the quad of an upright word, or of a word turned by a quarter turn;
+<code>Bounds</code> gives the whole-pixel rectangle around it, <code>Angle</code> the reading direction in degrees counterclockwise, and <code>Transform</code>
+maps the corners through a matrix, such as back from an image the engine saw at a smaller size.</p>
+<h2 id="any-ocr-program-commandocrengine">Any OCR program: CommandOcrEngine</h2>
+<pre><code class="lang-csharp">// Any OCR program that writes hOCR or ALTO is an engine. No shell runs the command, and each run has its own temp folder.
+CommandOcrEngine tesseract = new(&quot;tesseract {image} {output} -l {langs} --dpi {dpi} hocr&quot;, new CommandOcrOptions
+{
+    Languages = [&quot;eng&quot;],
+    Timeout = TimeSpan.FromMinutes(2),
+});
+
+try
+{
+    OcrResult result = await tesseract.RecognizeAsync(new OcrRequest(page), Ct);
+    Console.WriteLine(result.Text);
+}
+catch (OcrEngineException e)
+{
+    Console.WriteLine($&quot;{e.Message} {e.ErrorOutput}&quot;);
+}
+</code></pre>
+<p><code>CommandOcrEngine</code> runs a program for each image and reads the hOCR or ALTO it writes, so any engine with a command line plugs in
+without code. The command is split into words at spaces, with quotes around a word that holds spaces, and run without a shell:
+an image path or a language can never become a command. Words may hold placeholders:</p>
+<table>
+<thead>
+<tr>
+<th>Placeholder</th>
+<th>Becomes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{image}</code></td>
+<td>The image, written as a PNG file in the run's own temporary folder</td>
+</tr>
+<tr>
+<td><code>{output}</code></td>
+<td>A path without extension for the output file; the engine reads it, or the one file the program wrote with an extension added</td>
+</tr>
+<tr>
+<td><code>{langs}</code></td>
+<td>The request's languages joined by <code>+</code> (Tesseract's form), or <code>CommandOcrOptions.Languages</code> when the request names none</td>
+</tr>
+<tr>
+<td><code>{dpi}</code></td>
+<td>The request's resolution as a whole number</td>
+</tr>
+<tr>
+<td><code>{page}</code></td>
+<td>The request's page index</td>
+</tr>
+</tbody>
+</table>
+<p>Without <code>{output}</code>, the engine reads the program's standard output, so <code>tesseract {image} - -l {langs} hocr</code> works as well.
+<code>CommandOcrOptions</code> sets the <code>Output</code> format (<code>OcrOutputFormat.Auto</code>, the default, tells hOCR from ALTO by the content), a
+<code>Timeout</code> (5 minutes; the program and its children are stopped), the <code>WorkingDirectory</code>, the engine <code>Name</code> and the <code>Read</code> limits
+for what the program writes. A program that cannot start, exits with an error, times out or writes no hOCR or ALTO throws
+<code>OcrEngineException</code>, with its <code>ExitCode</code> and the end of its <code>ErrorOutput</code>. Each run has its own temporary folder, deleted
+afterwards, so runs may overlap.</p>
+<h2 id="hocr-and-alto-files">hOCR and ALTO files</h2>
+<pre><code class="lang-csharp">// Read hOCR from Tesseract or any other engine, under limits for files you did not make.
+using FileStream file = File.OpenRead(&quot;page.hocr&quot;);
+IReadOnlyList&lt;OcrResult&gt; pages = Hocr.Read(file, new OcrReadOptions { MaxWords = 100_000 });
+Console.WriteLine($&quot;{pages.Count} page, {pages[0].Words.Count()} words: {pages[0].Lines[0].Text}&quot;);
+
+// Write results back as hOCR (or Alto.Write for ALTO).
+using FileStream copy = File.Create(&quot;copy.hocr&quot;);
+Hocr.Write(copy, pages);
+</code></pre>
+<p><code>Hocr</code> reads and writes hOCR, the HTML that Tesseract, OCRopus and kraken write: <code>ocr_page</code> pages, <code>ocr_line</code> lines (and
+<code>ocrx_line</code>, <code>ocr_header</code>, <code>ocr_caption</code> and <code>ocr_textfloat</code>) and <code>ocrx_word</code> words with <code>bbox</code>, <code>x_wconf</code> (confidence as a
+percentage), <code>textangle</code> and <code>lang</code>. It reads HTML the way browsers do, not only XHTML, so missing end tags and unquoted
+attributes are fine. A line with <code>textangle</code> 90, 180 or 270 gives turned quads. A document with neither a page nor a word throws
+<code>CorruptDataException</code>.</p>
+<pre><code class="lang-csharp">// ALTO from ABBYY, Tesseract or a library's digitization: positions in 1/10 mm or 1/1200 inch become pixels at Dpi.
+IReadOnlyList&lt;OcrResult&gt; pages = Alto.Parse(File.ReadAllText(&quot;page.xml&quot;), new OcrReadOptions { Dpi = 300 });
+Console.WriteLine($&quot;{pages[0].ImageSize}: {pages[0].Text}&quot;);
+
+// Turn it into hOCR, or write ALTO 4 in pixels.
+using FileStream hocr = File.Create(&quot;page.hocr&quot;);
+Hocr.Write(hocr, pages);
+using FileStream alto = File.Create(&quot;page-v4.xml&quot;);
+Alto.Write(alto, pages);
+</code></pre>
+<p><code>Alto</code> reads ALTO 1 to 4, the XML of library digitization that ABBYY, Tesseract and Transkribus write: <code>Page</code>, <code>TextLine</code> and
+<code>String</code> with <code>HPOS</code>, <code>VPOS</code>, <code>WIDTH</code>, <code>HEIGHT</code>, <code>WC</code> and <code>LANG</code>, a <code>HYP</code> hyphen joined to the word before it. Positions in 1/10 mm
+(<code>mm10</code>) or 1/1200 inch (<code>inch1200</code>) become pixels at <code>OcrReadOptions.Dpi</code>. It writes ALTO 4 in pixels.</p>
+<p>Both readers take untrusted files: <code>OcrReadOptions</code> limits the size (<code>MaxBytes</code>, 256 MB) and the words (<code>MaxWords</code>, 4 million),
+breaking either throws <code>LimitExceededException</code>, and no DTD, schema or other file is ever fetched. Both writers replace
+characters XML cannot hold with U+FFFD.</p>
+<h2 id="sample-engines">Sample engines</h2>
+<p>Egami's samples hold three adapters you can copy, built with the rest of the repository but never packed:</p>
+<ul>
+<li><a href="https://github.com/inexin/Egami/tree/main/samples/Ocr"><code>samples/Ocr</code></a> has Tesseract, through its program and <code>CommandOcrEngine</code>,
+and Azure AI Document Intelligence's Read model, through its REST API with <code>HttpClient</code> and no SDK. It draws a page of text,
+reads it back and writes text, hOCR and ALTO: <code>dotnet run --project samples/Ocr -- tesseract</code> (or <code>azure</code>, with
+<code>AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT</code> and <code>AZURE_DOCUMENT_INTELLIGENCE_KEY</code> set).</li>
+<li><a href="https://github.com/inexin/Egami/tree/main/samples/OcrWindows"><code>samples/OcrWindows</code></a> has Windows' own OCR (Windows.Media.Ocr)
+for Windows 10 and 11: <code>dotnet run --project samples/OcrWindows -- scan.png en-US</code>.</li>
+</ul>
+<p>Engines differ in what they report. Tesseract gives confidences and no page orientation in hOCR; Windows OCR gives upright word
+rectangles and no confidence; Document Intelligence gives polygons, confidences and the page's angle.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/ocr.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -8861,6 +8861,216 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.Alto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.Alto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.Alto",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.Alto.yml\" sourcestartlinenumber=\"1\">Reads and writes ALTO (Analyzed Layout and Text Object), the XML format of library digitization that ABBYY, Tesseract and\nTranskribus write: pages (<code>Page</code>), lines (<code>TextLine</code>) and words (<code>String</code>) with their positions, <code>WC</code>\nconfidence and <code>LANG</code>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.CommandOcrEngine.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.CommandOcrEngine.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.CommandOcrEngine",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.CommandOcrEngine.yml\" sourcestartlinenumber=\"1\">An <xref href=\"Egami.Ocr.IOcrEngine\" data-throw-if-not-resolved=\"false\"></xref> that runs an OCR program for each image and reads the hOCR or ALTO it writes, such as\n<code>tesseract {image} {output} -l {langs} --dpi {dpi} hocr</code>. Egami ships no engine and links none: the program is yours.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.CommandOcrOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.CommandOcrOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.CommandOcrOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.CommandOcrOptions.yml\" sourcestartlinenumber=\"1\">Options for <xref href=\"Egami.Ocr.CommandOcrEngine\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.Hocr.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.Hocr.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.Hocr",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.Hocr.yml\" sourcestartlinenumber=\"1\">Reads and writes hOCR, the HTML format that Tesseract, OCRopus, kraken and others write: pages (<code>ocr_page</code>), lines\n(<code>ocr_line</code> and its kin) and words (<code>ocrx_word</code>) with their <code>bbox</code>, <code>x_wconf</code>, <code>textangle</code> and\n<code>lang</code>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.IOcrEngine.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.IOcrEngine.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.IOcrEngine",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.IOcrEngine.yml\" sourcestartlinenumber=\"1\">A text recognition (OCR) engine: an image in, words with their boxes out. Egami ships no engine; plug one in, such as\n<xref href=\"Egami.Ocr.CommandOcrEngine\" data-throw-if-not-resolved=\"false\"></xref> for any program that writes hOCR or ALTO, or your own class around an OS or cloud service.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.OcrEngineException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.OcrEngineException.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.OcrEngineException",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.OcrEngineException.yml\" sourcestartlinenumber=\"1\">Thrown when an OCR engine fails, such as a program that exits with an error, times out or writes no result.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.OcrEngineInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.OcrEngineInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.OcrEngineInfo",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.OcrEngineInfo.yml\" sourcestartlinenumber=\"1\">What an <xref href=\"Egami.Ocr.IOcrEngine\" data-throw-if-not-resolved=\"false\"></xref> can do. Callers such as a PDF driver read it to size and schedule their requests.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.OcrLine.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.OcrLine.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.OcrLine",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.OcrLine.yml\" sourcestartlinenumber=\"1\">One line of text: its words, in reading order.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.OcrOutputFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.OcrOutputFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.OcrOutputFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.OcrOutputFormat.yml\" sourcestartlinenumber=\"1\">What an OCR program writes, for <xref href=\"Egami.Ocr.CommandOcrOptions.Output\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.OcrQuad.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.OcrQuad.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.OcrQuad",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.OcrQuad.yml\" sourcestartlinenumber=\"1\">The four corners of a word, in pixels with the origin at the top left of the image, named as the word reads: a word that runs\nup the page has its <xref href=\"Egami.Ocr.OcrQuad.TopLeft\" data-throw-if-not-resolved=\"false\"></xref> at the bottom left of its bounds. Rotated and skewed words keep their shape.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.OcrReadOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.OcrReadOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.OcrReadOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.OcrReadOptions.yml\" sourcestartlinenumber=\"1\">Limits for reading hOCR and ALTO files, which may come from an untrusted engine or file.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.OcrRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.OcrRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.OcrRequest",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.OcrRequest.yml\" sourcestartlinenumber=\"1\">One image to recognize, with how to read it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.OcrResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.OcrResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.OcrResult",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.OcrResult.yml\" sourcestartlinenumber=\"1\">The text an engine found in one image: lines of words, in reading order.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.OcrWord.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.OcrWord.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr.OcrWord",
+      "Summary": "<p sourcefile=\"api/Egami.Ocr.OcrWord.yml\" sourcestartlinenumber=\"1\">One recognized word.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Ocr.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Ocr.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Ocr",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Operations.Anchor.yml",
       "output": {
         ".html": {
@@ -13080,6 +13290,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/metafiles.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/ocr.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/ocr.html"
         }
       },
       "version": ""
