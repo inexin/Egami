@@ -117,6 +117,7 @@ internal static class TrackCommands
             CodecIds.Uncompressed => "y4m",
             CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian or CodecIds.PcmFloat => "wav",
             CodecIds.Flac => "flac",
+            CodecIds.Alac => "m4a",
             CodecIds.Opus or CodecIds.Vorbis => "ogg",
             _ => string.Empty,
         };

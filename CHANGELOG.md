@@ -512,6 +512,24 @@ V5.9 stage B: CAF.
 - Fuzz target `caf`; `tools/video/fuzz-afl.py` now knows the `aiff` and `caf` targets. A CHAN or chan chunk whose bitmap names
   more or fewer speakers than the file has channels is now ignored instead of throwing (AIFF-C too).
 
+V5.9 stage C: ALAC.
+
+### ALAC
+
+- `AlacCodec` (`AudioCodecs.Alac`): Apple Lossless decoding and encoding, translated from Apple's Apache-2.0 reference codec.
+  16, 20, 24 and 32 bits, 1 to 8 channels in ALAC's layouts, partial last frames. The encoder's packets equal Apple's byte for
+  byte at level 1 (the default, full stereo and predictor search) and level 0 (Apple's fast mode), with 4096 samples per
+  packet unless `FrameSize` is set; the track's `CodecPrivate` is the 24-byte ALACSpecificConfig with the largest packet and
+  average bit rate filled in. `tools/video/alacref` builds Apple's code as the reference, and
+  `tools/video/make-alac-references.py` makes the gate streams.
+- MP4 reads and writes the `alac` sample entry and box, and reads QuickTime's `wave` atom; the rate, channels and bit depth come
+  from the config (so 96 kHz and up work). Matroska `A_ALAC` and CAF (already in stage B) decode too. FFmpeg's ALAC files in
+  all four decode to FFmpeg's samples.
+- `AudioWriter` keeps 20-bit samples at 20 bits for ALAC and writes float as 24-bit ALAC. A track with no layout gets ALAC's
+  layout for its channel count. The CLI extracts ALAC tracks to .m4a. ALAC decoding trims a packet to its duration, so
+  Matroska DiscardPadding and CAF remainder frames apply, and stays sample exact across Matroska's millisecond block times.
+- Fuzz target `alac`.
+
 V5.9 stage D (container part): AC-3 and E-AC-3.
 
 ### AC-3 and E-AC-3

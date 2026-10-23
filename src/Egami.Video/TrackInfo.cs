@@ -161,10 +161,12 @@ public sealed record AudioTrackInfo : TrackInfo
     /// </summary>
     public MediaTime? SeekPreRoll { get; init; }
 
-    /// <summary>Gets the layout: <see cref="Layout"/> when known, otherwise the default for the channel count.</summary>
+    /// <summary>Gets the layout: <see cref="Layout"/> when known, otherwise the default for the channel count (for ALAC, its own).</summary>
     internal ChannelLayout EffectiveLayout => Layout is { ChannelCount: > 0 } layout && layout.ChannelCount == Channels
         ? layout
-        : ChannelLayout.ForChannelCount(Math.Clamp(Channels, 1, ChannelLayout.MaxChannels));
+        : CodecId == CodecIds.Alac && Channels is >= 1 and <= 8
+            ? Audio.Codecs.Alac.AlacDecoder.Layout(Channels).Layout // ALAC fixes the speakers by the channel count
+            : ChannelLayout.ForChannelCount(Math.Clamp(Channels, 1, ChannelLayout.MaxChannels));
 }
 
 /// <summary>How a video track's frames are interlaced.</summary>

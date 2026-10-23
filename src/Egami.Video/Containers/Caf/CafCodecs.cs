@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 
 using Egami.Video.Audio;
+using Egami.Video.Audio.Codecs.Alac;
 using Egami.Video.Audio.Codecs.Opus;
 using Egami.Video.Containers.Mp4;
 
@@ -129,24 +130,8 @@ internal static class CafCodecs
         }
     }
 
-    /// <summary>
-    /// Takes ALACSpecificConfig out of a cookie in any of its forms: the bare 24 bytes, or wrapped in QuickTime's frma and alac
-    /// atoms (which FFmpeg writes), with a channel layout atom and terminator after it.
-    /// </summary>
-    public static byte[] AlacConfig(ReadOnlySpan<byte> cookie)
-    {
-        if (cookie.Length >= 12 && cookie[4..8].SequenceEqual("frma"u8))
-        {
-            cookie = cookie[12..];
-        }
-
-        if (cookie.Length >= 12 + AlacConfigSize && cookie[4..8].SequenceEqual("alac"u8))
-        {
-            cookie = cookie[12..];
-        }
-
-        return cookie.Length >= AlacConfigSize ? cookie[..AlacConfigSize].ToArray() : [];
-    }
+    /// <summary>Takes ALACSpecificConfig out of a cookie in any of its forms (see <see cref="AlacSpecificConfig.Extract"/>).</summary>
+    public static byte[] AlacConfig(ReadOnlySpan<byte> cookie) => AlacSpecificConfig.Extract(cookie);
 
     /// <summary>Builds an MPEG-4 ES descriptor (ISO/IEC 14496-1) holding a decoder config with the given specific info: AAC's cookie in CAF.</summary>
     public static byte[] EsDescriptor(int objectType, ReadOnlySpan<byte> specific)

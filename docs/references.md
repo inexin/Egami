@@ -103,6 +103,7 @@ LGPL code is never read.
 | Audio Interchange File Format 1.3 (Apple, 1989); AIFF-C draft (Apple, 1991); Apple Core Audio Format specification (AudioChannelLayout) | AIFF and AIFF-C files, their compression types and the CHAN chunk |
 | ITU-T G.711 | μ-law and A-law expansion |
 | Apple Core Audio Format Specification 1.0 (CAF) | CAF files: desc, data, pakt, kuki, chan, info, strg, mark and regn chunks |
+| Apple ALACMagicCookieDescription.txt (ALACSpecificConfig, ALACChannelLayoutInfo) | The ALAC config in MP4 (`alac` box), QuickTime (`wave` atom), Matroska and CAF, and ALAC's channel layouts |
 | ATSC A/52 (Digital Audio Compression, AC-3 and E-AC-3), syncinfo, bsi and Annex E's E-AC-3 bit stream header; ETSI TS 102 366 Annex F | AC-3 and E-AC-3 frame headers in raw streams; the dac3 and dec3 boxes in MP4 |
 | Matroska subtitle codec mapping; WebM WebVTT mapping | `S_TEXT/*` and `D_WEBVTT/*` tracks |
 | ISO/IEC 14496-30; 3GPP TS 26.245 | WebVTT (`wvtt`) and timed text (`tx3g`) in MP4 |
@@ -123,6 +124,7 @@ LGPL code is never read.
 | libvpx 1.14.1 | BSD-3, Google patent grant | The VP9 decoder (`src/Egami.Video/Codecs/Vp9`), so frames equal libvpx's sample for sample |
 | libopus 1.5.2 | BSD-3, royalty-free IETF patent licenses | The Opus decoder (`src/Egami.Video/Audio/Codecs/Opus`): RFC 6716 makes this decoder normative, and the RFC 8251 test vectors check it |
 | OpenH264 2.4.1 (Cisco) | BSD-2 | Egami.Video.H264's CABAC context initialisation values and CAVLC code tables (`H264Tables.Data.cs`, made by `tools/video/make-h264-tables.py`); the decoder itself is written from ITU-T H.264 |
+| Apple ALAC (macosforge/alac, commit c38887c) | Apache-2.0 | The ALAC decoder and encoder (`src/Egami.Video/Audio/Codecs/Alac`), so packets equal Apple's encoder's byte for byte; `tools/video/alacref` builds Apple's code as the reference |
 | minimp3 (lieff) | CC0 1.0 | The MPEG audio decoder (`src/Egami.Video/Audio/Codecs/Mp3`): frame decoding, tables, synthesis and frame search; its copies of the ISO compliance streams and references test it |
 
 ### Tools run as black boxes only (never read)

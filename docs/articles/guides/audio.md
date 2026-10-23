@@ -168,6 +168,16 @@ or dec3 box from the first frame), Matroska and CAF unchanged. Egami.Video does 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-ac3)]
 
+`AlacCodec` decodes and encodes Apple Lossless (ALAC) at 16, 20, 24 and 32 bits with 1 to 8 channels. It is translated from
+Apple's reference codec, so its packets are the bytes Apple's encoder makes: level 1, the default, searches the stereo matrix
+and predictor order, and level 0 is Apple's fast mode. Each packet holds 4096 samples unless `FrameSize` says otherwise, and
+the track's `CodecPrivate` is the 24-byte ALACSpecificConfig. ALAC goes in MP4 and M4A (an `alac` box), QuickTime MOV (read
+from its `wave` atom), Matroska (`A_ALAC`) and CAF. ALAC fixes the speakers by the channel count (for example center, left,
+right and back center for four channels), so a frame with the same number of channels is stored as it is and read back with
+ALAC's layout. Extracting an ALAC track with the CLI makes an .m4a file.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-alac)]
+
 `OggFormat` reads and writes Ogg (.ogg, .opus, .oga) with Opus, Vorbis and FLAC. Timestamps come from the granule positions,
 seeking from an index built in one pass over the page headers, and pages with a bad CRC are skipped with an `ogg-crc`
 warning. A chained file (one stream after another) reads as one track when the settings stay the same, each link's TITLE a

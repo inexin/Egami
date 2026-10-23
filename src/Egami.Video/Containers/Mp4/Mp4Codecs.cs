@@ -4,6 +4,7 @@ using Egami.Colors;
 using Egami.Formats.Iso;
 using Egami.Metadata;
 using Egami.Pixels;
+using Egami.Video.Audio.Codecs.Alac;
 
 namespace Egami.Video.Containers.Mp4;
 
@@ -269,6 +270,19 @@ internal static class Mp4Codecs
                     // Kept, so that an E-AC-3 track with dependent substreams goes back into MP4 with its channel locations.
                     codecId = CodecIds.EAc3;
                     codecPrivate = content.ToArray();
+                    break;
+                case "alac" when type == "alac" && c.Length >= 4 + AlacSpecificConfig.Size:
+                case "wave" when type == "alac":
+                    // MP4 puts ALACSpecificConfig in an alac full box; QuickTime puts it in a wave atom, after frma, in an alac atom.
+                    if (AlacSpecificConfig.Read(childType.ToString() == "alac" ? c[4..] : c) is { } alac)
+                    {
+                        codecId = CodecIds.Alac;
+                        codecPrivate = alac.Write();
+                        rate = (int)Math.Min(alac.SampleRate, int.MaxValue);
+                        channels = alac.Channels;
+                        bits = alac.BitDepth;
+                    }
+
                     break;
                 case "pcmC" when type is "ipcm" or "fpcm" && c.Length >= 6:
                     bigEndian = (c[4] & 1) == 0;
