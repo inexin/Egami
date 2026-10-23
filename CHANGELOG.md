@@ -542,6 +542,17 @@ V5.9 stage D (container part): AC-3 and E-AC-3.
   and writes them, with a dac3 or dec3 box made from the first packet's headers; the boxes match FFmpeg's. CAF maps ec-3 too.
 - Fuzz target `ac3`.
 
+V5.9 task 19: the CLI.
+
+### egami-video
+
+- `audio --codec alac` writes Apple Lossless (`--level` 0 or 1) to .m4a, .mov, .mka and .caf; .m4a outputs get ALAC by
+  default. `audio` also writes .aiff (PCM) and .caf (PCM by default, or FLAC, ALAC or Opus).
+- `extract` writes ALAC tracks to .m4a and AC-3 and E-AC-3 tracks to raw .ac3 and .eac3 files; `remux` writes .ac3, .aiff and .caf.
+- ffmpeg mode maps `-c:a alac` and the big-endian `pcm_s16be`, `pcm_s24be` and `pcm_s32be`, and sends .aiff and .caf outputs
+  to `audio` unless the audio is copied. `info` and ffprobe mode name ALAC, E-AC-3, G.711, AIFF, CAF and raw AC-3 as ffprobe
+  does.
+
 ## Egami.Video 0.5.0 (unreleased)
 
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;

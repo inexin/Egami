@@ -79,7 +79,7 @@ internal sealed class MediaOptions
 
     public Option<string?> Format { get; } = new("--format", "-f")
     {
-        Description = "The output container by name or extension (mkv, webm, mp4, avi, ivf, y4m, wav, flac, ogg), when -o's extension does not say; always for -o -.",
+        Description = "The output container by name or extension (mkv, webm, mp4, m4a, avi, ivf, y4m, wav, flac, ogg, aiff, caf, ac3), when -o's extension does not say; always for -o -.",
         HelpName = "container",
     };
 

@@ -86,6 +86,12 @@
 => audio in.mkv -o out.ogg --codec opus --bitrate 64k --no-video | ffmpeg -i in.mkv -vn -c:a opus -ab 64k out.ogg
 => audio in.mkv -o out.flac --track a:1 | ffmpeg -i in.mkv -map 0:a:1 out.flac
 => audio in.mkv -o out.wav --rate 16000 --channels 1 | ffmpeg -i in.mkv -ar 16000 -ac 1 out.wav
+=> audio in.flac -o out.m4a --codec alac | ffmpeg -i in.flac -c:a alac out.m4a
+=> audio in.wav -o out.aiff | ffmpeg -i in.wav out.aiff
+=> audio in.wav -o out.aiff --codec pcm | ffmpeg -i in.wav -c:a pcm_s16be out.aiff
+=> audio in.flac -o out.caf --codec alac | ffmpeg -i in.flac -acodec alac out.caf
+=> remux in.m4a -o out.caf | ffmpeg -i in.m4a -c copy out.caf
+=> remux in.ac3 -o out.mka | ffmpeg -i in.ac3 -c copy out.mka
 => embed video.mkv --add audio.flac -o out.mkv | ffmpeg -i video.mkv -i audio.flac -c copy out.mkv
 => embed video.mkv --add audio.wav:a:0 -o out.mkv | ffmpeg -i video.mkv -i audio.wav -map 0 -map 1:a:0 -c copy out.mkv
 => embed in.mkv --add commentary.mka -o out.mkv | ffmpeg -i in.mkv -i commentary.mka -map 0 -map 1 -c copy out.mkv
