@@ -994,7 +994,7 @@ internal sealed class CeltEncoder
     }
 
     // celt_preemphasis for the 48 kHz mode (coef[1] == 0).
-    private static void Preemphasis(ReadOnlySpan<float> pcm, Span<float> inp, int n, int cc, int upsample, ref float mem, bool clip)
+    internal static void Preemphasis(ReadOnlySpan<float> pcm, Span<float> inp, int n, int cc, int upsample, ref float mem, bool clip)
     {
         const float Coef0 = CeltTables.Preemph0;
         float mm = mem;
