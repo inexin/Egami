@@ -307,6 +307,26 @@ V5.8: MPEG audio decoding and .mp3 files. The API review is still to come.
   The writer stores ID3v2.4 and, on a seekable stream, a Xing header and LAME tag that FFmpeg reads gaplessly.
 - MP3 in Matroska gets sample-exact packet durations and its DiscardPadding; WAV's id3 chunk now reads ID3v2.2 too.
 
+### Text subtitles (V1.2)
+
+- `SubtitleDocument` in `Egami.Video.Subtitles` reads and writes SRT, WebVTT and ASS, and reads SSA v4: `Load`, `Parse`,
+  `Save`, `ToText` and `DetectFormat`. Cues (`SubtitleCue`) are spans of styled text (`SubtitleSpan`) with exact `MediaTime`
+  times, a keypad `SubtitleAlignment` and an exact `SubtitlePosition`; ASS styles, layers, margins, embedded fonts and every
+  override tag are kept, and WebVTT cue settings, regions, voices, classes, ruby and karaoke timestamps.
+- An unchanged file saved in its own format gives back the same bytes. Reading is lenient, with `Subtitle.Repaired` warnings
+  (`SubtitleReaderOptions.Strict` throws instead); encodings are found from the byte order mark and UTF-8, then
+  `SubtitleReaderOptions.Encoding`, then a reported guess (`Subtitle.Encoding`). Converting reports what the target cannot
+  hold as `Subtitle.Dropped`, once per kind.
+- WebVTT is parsed as the W3C spec says and passes the web-platform-tests parsing suite (pinned to a commit by
+  tools/video/fetch-webvtt-tests.py), with the full HTML named character references.
+- `Shift`, `Scale`, `Sync`, `Clip`, `Sort` and `FixOverlaps` retime without rounding; times are rounded only when written.
+- Subtitle tracks: `SubtitleDocument.ReadTrack`, `FromPackets` and `IsTextCodec` read them, and `SubtitleTrackWriter` writes them.
+  Matroska takes `S_TEXT/UTF8`, `S_TEXT/WEBVTT` and `S_TEXT/ASS`, and reads `S_TEXT/SSA`. WebM takes `D_WEBVTT/SUBTITLES`.
+  MP4 takes mov_text and WebVTT (`wvtt`, ISO/IEC 14496-30, on a `text` track). New `CodecIds` constants name them.
+- Matroska subtitle blocks carry their BlockDuration, so cue durations survive a remux. Files from FFmpeg, MKVToolNix and
+  MP4Box read back to their source cues (tools/video/make-subtitle-tracks.py). ffprobe, mkvmerge and MP4Box read Egami's
+  files cleanly (tools/video/check-subtitle-tracks.py).
+
 V1.4 stage A: scene detection and the analysis pass, in the new `Egami.Video.Analysis` namespace. The API review comes once the
 whole step is built (V1.4 Build Plan).
 

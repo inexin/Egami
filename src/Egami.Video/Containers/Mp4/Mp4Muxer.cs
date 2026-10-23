@@ -901,6 +901,7 @@ internal sealed class Mp4Muxer : IMuxer
             "vide" => "VideoHandler",
             "soun" => "SoundHandler",
             "sbtl" => "SubtitleHandler",
+            "text" => "TextHandler",
             "tmcd" => "TimeCodeHandler",
             _ => "DataHandler",
         });

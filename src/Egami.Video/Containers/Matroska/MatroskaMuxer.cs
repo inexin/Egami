@@ -21,7 +21,7 @@ internal sealed class MatroskaMuxer : IMuxer
 
     /// <summary>Uncompressed layouts written as V_UNCOMPRESSED with a ColourSpace; others use the Video for Windows mode, which more readers accept.</summary>
     private static readonly HashSet<string> NativeUncompressed = ["I420", "Y42B", "Y800", "NV12", "YUY2", "UYVY"];
-    private static readonly HashSet<string> WebMCodecs = [CodecIds.Vp8, CodecIds.Vp9, CodecIds.Av1, CodecIds.Opus, CodecIds.Vorbis, "S_TEXT/WEBVTT"];
+    private static readonly HashSet<string> WebMCodecs = [CodecIds.Vp8, CodecIds.Vp9, CodecIds.Av1, CodecIds.Opus, CodecIds.Vorbis, CodecIds.WebVtt, CodecIds.WebMWebVtt, "D_WEBVTT/CAPTIONS", "D_WEBVTT/DESCRIPTIONS", "D_WEBVTT/METADATA"];
 
     private readonly Stream _stream;
     private readonly Stream _output;
@@ -209,7 +209,10 @@ internal sealed class MatroskaMuxer : IMuxer
         // BlockGroup, where a ReferenceBlock (pointing at the track's previous block) marks a frame that is not a keyframe.
         long relative = time - _clusterTime;
         long discardPadding = DiscardPadding(track, packet, data);
-        if (packet.Additions.Count == 0 && discardPadding == 0)
+
+        // A subtitle shows for its BlockDuration, which only a BlockGroup has.
+        long? blockDuration = track.Input.Kind == TrackKind.Subtitle && packet.Duration is { } shown ? Math.Max(0, shown.Rescale(Milliseconds).Ticks) : null;
+        if (packet.Additions.Count == 0 && discardPadding == 0 && blockDuration is null)
         {
             EbmlWriter.Header(_cluster, MatroskaIds.SimpleBlock, 4 + data.Length);
             WriteBlockHeader(_cluster, track.Number, relative, packet.IsKeyframe ? (byte)0x80 : (byte)0);
@@ -233,6 +236,11 @@ internal sealed class MatroskaMuxer : IMuxer
                 }
 
                 EbmlWriter.Element(group, MatroskaIds.ReferenceBlock, value[skip..]);
+            }
+
+            if (blockDuration is { } duration)
+            {
+                EbmlWriter.Unsigned(group, MatroskaIds.BlockDuration, (ulong)duration);
             }
 
             if (discardPadding > 0)
@@ -673,6 +681,12 @@ internal sealed class MatroskaMuxer : IMuxer
                 _ => 33,
             });
             EbmlWriter.Unsigned(e, MatroskaIds.FlagLacing, 0);
+            if (t.CodecId == CodecIds.WebVtt)
+            {
+                // WebVTT cue settings and identifiers come in block additions with BlockAddID 1.
+                EbmlWriter.Unsigned(e, MatroskaIds.MaxBlockAdditionId, 1);
+            }
+
             if (!t.IsDefault)
             {
                 EbmlWriter.Unsigned(e, MatroskaIds.FlagDefault, 0);

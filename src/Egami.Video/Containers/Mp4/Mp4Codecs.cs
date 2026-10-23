@@ -317,13 +317,14 @@ internal static class Mp4Codecs
 
     private static TrackInfo Other(Mp4Track track, Mp4SampleEntry entry, TrackKind kind, int number, Rational timeBase, MediaTime? duration, Dictionary<string, string> tags)
     {
-        bool movText = entry.Type.ToString() == "tx3g" && kind == TrackKind.Subtitle;
+        string type = entry.Type.ToString();
+        bool text = type is "tx3g" or "wvtt" && kind == TrackKind.Subtitle;
         return new TrackInfo
         {
             Number = number,
             Kind = kind,
-            CodecId = movText ? CodecIds.MovText : PassThroughId(kind),
-            CodecPrivate = movText ? entry.Box.AsMemory(8) : entry.Box,
+            CodecId = !text ? PassThroughId(kind) : type == "wvtt" ? CodecIds.Mp4WebVtt : CodecIds.MovText,
+            CodecPrivate = text ? entry.Box.AsMemory(8) : entry.Box,
             TimeBase = timeBase,
             Duration = duration,
             Language = track.Language,

@@ -150,6 +150,8 @@
       href: guides/audio.md
     - name: Encoding Opus
       href: guides/opus-encoding.md
+    - name: Subtitles
+      href: guides/subtitles.md
 - name: Egami.Video.Cli
   items:
     - name: The egami-video command
