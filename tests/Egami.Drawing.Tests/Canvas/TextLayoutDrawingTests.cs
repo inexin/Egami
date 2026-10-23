@@ -156,6 +156,39 @@ public class TextLayoutDrawingTests
         Assert.Contains("begin Span \u00AD", canvas.Calls);
     }
 
+    [Fact]
+    public void KashidaTatweelsDrawAsMarkedContentWithoutText()
+    {
+        // 2.8.3: the tatweels kashida justification puts in are drawn like the rest of the run, inside a span whose ActualText is
+        // empty, so extracted text has no U+0640 the paragraph lacks.
+        FontCollection fonts = new();
+        fonts.Add(Typeface.FromFile(TextTests.FontPath(System.IO.Path.Combine("shaping", "NotoSansArabic-Regular.ttf"))));
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 16 },
+            Align = TextAlign.Justify,
+            Justify = TextJustify.Kashida,
+        };
+        const string Arabic = "\u0644\u0645\u0651\u0627 \u0643\u0627\u0646 \u0627\u0644\u0627\u0639\u062A\u0631\u0627\u0641 \u0628\u0627\u0644\u0643\u0631\u0627\u0645\u0629 "
+            + "\u0627\u0644\u0645\u062A\u0623\u0635\u0644\u0629 \u0641\u064A \u062C\u0645\u064A\u0639 \u0623\u0639\u0636\u0627\u0621 \u0627\u0644\u0623\u0633\u0631\u0629 \u0627\u0644\u0628\u0634\u0631\u064A\u0629";
+        TextLayout layout = Paragraph.Create(Arabic, style).Layout(200);
+        RecordingCanvas canvas = new();
+        canvas.DrawTextLayout(layout, Vector2.Zero);
+        Assert.Contains("begin Span ", canvas.Calls);
+
+        // Split or not, the pixels are those of the runs drawn whole.
+        using Raster<Rgba8> drawn = Draw(c => c.DrawTextLayout(layout, new Vector2(10, 10)));
+        using Raster<Rgba8> byHand = Draw(c =>
+        {
+            foreach (LayoutRun run in layout.Lines.SelectMany(l => l.Runs).Where(r => r.Glyphs is { Count: > 0 }))
+            {
+                c.DrawGlyphRun(run.Glyphs!, new Vector2(10, 10), new SolidPaint(new Rgba8(0, 0, 0, 255)));
+            }
+        });
+        Assert.True(Count(drawn, p => p.R < 128) > 100);
+        Assert.Equal(Count(byHand, p => p.R < 128), Count(drawn, p => p.R < 128));
+    }
+
     private static int Ink(Raster<Rgba8> image, int top, int bottom)
     {
         int ink = 0;

@@ -294,6 +294,34 @@ public class ParagraphLayout
     }
 
     [Fact]
+    public void KashidaJustifiedArabic()
+    {
+        FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansArabic-Regular.ttf"));
+        FontFamily arabic = fonts.Families[0];
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(300, 200);
+        using RasterCanvas<Rgba8> canvas = image.CreateCanvas();
+        canvas.Clear(Rgba8.White);
+        string text = "\u0644\u0645\u0651\u0627 \u0643\u0627\u0646 \u0627\u0644\u0627\u0639\u062A\u0631\u0627\u0641 \u0628\u0627\u0644\u0643\u0631\u0627\u0645\u0629 \u0627\u0644\u0645\u062A\u0623\u0635\u0644\u0629 "
+            + "\u0641\u064A \u062C\u0645\u064A\u0639 \u0623\u0639\u0636\u0627\u0621 \u0627\u0644\u0623\u0633\u0631\u0629 \u0627\u0644\u0628\u0634\u0631\u064A\u0629 \u0648\u0628\u062D\u0642\u0648\u0642\u0647\u0645 \u0627\u0644\u0645\u062A\u0633\u0627\u0648\u064A\u0629";
+        #region kashida
+        // Justified Arabic lengthens words with tatweels (kashida) before it widens spaces, as Word does.
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [arabic], Size = 16 },
+            Align = TextAlign.Justify,
+            Justify = TextJustify.Kashida,
+            Kashida = KashidaLevel.Medium,             // up to two tatweels a word; Low one, High four
+        };
+        TextLayout layout = Paragraph.Create(text, style).Layout(260);
+        canvas.DrawTextLayout(layout, new System.Numerics.Vector2(20, 10));
+        #endregion
+
+        Assert.True(layout.Lines.Count >= 2);
+        Assert.Equal(260, layout.Lines[0].Width, 2);
+    }
+
+    [Fact]
     public void ChatBubble()
     {
         FontFamily text = Noto();
