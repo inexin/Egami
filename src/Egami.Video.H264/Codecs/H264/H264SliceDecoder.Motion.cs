@@ -471,15 +471,36 @@ internal sealed partial class H264SliceDecoder
     /// <summary>Writes the direct prediction of the 8x8 blocks in the mask, both lists, to the picture (B_Skip, B_Direct_16x16).</summary>
     private void WriteDirect(int mask)
     {
+        int w4 = _mb.W4, b0 = Block(0, 0);
         for (int list = 0; list < 2; list++)
         {
-            for (int p = 0; p < 4; p++)
+            H264Picture[] refs = list == 0 ? _list0 : _list1;
+            sbyte[] refIdxs = _pic.RefIdx[list];
+            int[] ids = _pic.RefPicId[list], mvs = _pic.Mv[list];
+            byte[] mvds = _mb.Mvd[list];
+            for (int blk = 0; blk < 16; blk++)
             {
-                if ((mask & (1 << p)) != 0)
+                int x = blk & 3, y = blk >> 2;
+                if ((mask & (1 << (((y >> 1) * 2) + (x >> 1)))) == 0)
                 {
-                    WriteDirectRefs(list, (p & 1) * 2, (p >> 1) * 2);
-                    WriteDirectMvs(list, (p & 1) * 2, (p >> 1) * 2);
+                    continue;
                 }
+
+                int r = _directRefBlock[(list * 16) + blk];
+                int b = b0 + (y * w4) + x;
+                refIdxs[b] = (sbyte)r;
+                ids[b] = r >= 0 && r < refs.Length ? refs[r].Id : -1;
+                mvs[b] = r >= 0 ? _directMv[(list * 16) + blk] : 0;
+                mvds[b * 2] = 0;
+                mvds[(b * 2) + 1] = 0;
+            }
+        }
+
+        for (int p = 0; p < 4; p++)
+        {
+            if ((mask & (1 << p)) != 0)
+            {
+                _decodedMask |= 0x33 << (((p & 1) * 2) + ((p >> 1) * 8));
             }
         }
     }
