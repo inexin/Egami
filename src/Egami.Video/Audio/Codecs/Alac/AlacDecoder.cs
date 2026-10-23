@@ -113,7 +113,7 @@ internal sealed class AlacDecoder : IAudioDecoder
             }
         }
 
-        Emit(count, packet.Timestamp);
+        Emit(count, Snap(packet.Timestamp));
     }
 
     public void SendLoss(MediaTime duration) =>
@@ -160,6 +160,54 @@ internal sealed class AlacDecoder : IAudioDecoder
         Speakers all = positions.Aggregate(Speakers.None, (a, s) => a | s);
         int[] order = [.. positions.Select(s => System.Numerics.BitOperations.PopCount((uint)all & ((uint)s - 1)))];
         return (new ChannelLayout(all), order);
+    }
+
+    /// <summary>
+    /// The samples a packet holds, from its first element's header: a partial frame's own count, else the config's frame
+    /// length; <see langword="null"/> when the packet or the config is too short to say.
+    /// </summary>
+    internal static long? SampleCount(ReadOnlySpan<byte> packet, ReadOnlySpan<byte> cookie)
+    {
+        if (AlacSpecificConfig.Read(cookie) is not { } config || packet.Length < 3)
+        {
+            return null;
+        }
+
+        int tag = packet[0] >> 5;
+        if (tag is not (IdSce or IdCpe or IdLfe))
+        {
+            return null;
+        }
+
+        // Tag (3 bits), instance (4), unused (12), then the partial-frame flag; a partial frame's count follows 3 bits later.
+        if ((packet[2] & 0x10) == 0)
+        {
+            return config.FrameLength;
+        }
+
+        if (packet.Length < 7)
+        {
+            return null;
+        }
+
+        ulong bits = ((ulong)packet[2] << 32) | ((ulong)packet[3] << 24) | ((ulong)packet[4] << 16) | ((ulong)packet[5] << 8) | packet[6];
+        return (long)((bits >> 1) & 0xFFFFFFFF);
+    }
+
+    /// <summary>
+    /// The packet's time, or the end of the frame before when it is within a millisecond of it: Matroska's millisecond block times
+    /// would otherwise overlap or gap the samples.
+    /// </summary>
+    private MediaTime Snap(MediaTime timestamp)
+    {
+        if (_next is not { } next)
+        {
+            return timestamp;
+        }
+
+        Rational sample = new(1, SampleRate);
+        long gap = Math.Abs(timestamp.Rescale(sample).Ticks - next.Rescale(sample).Ticks);
+        return gap <= (SampleRate / 1000) + 1 ? next : timestamp;
     }
 
     private int SampleRate => _track.SampleRate > 0 ? _track.SampleRate : Math.Max(1, (int)Math.Min(_config.SampleRate, int.MaxValue));

@@ -40,11 +40,13 @@ public class AlacFileTests
     [InlineData("mov", 1, 16, 22050)]
     [InlineData("mka", 8, 24, 48000)]
     [InlineData("mka", 3, 20, 32000)]
+    [InlineData("mka", 2, 16, 44100, 30011)]
     [InlineData("caf", 4, 32, 44100)]
-    public void RoundTripsLosslessly(string extension, int channels, int bits, int rate)
+    public void RoundTripsLosslessly(string extension, int channels, int bits, int rate, int samples = 10007)
     {
-        using AudioFrame input = AudioRoundTripTests.Signal(channels, bits, rate, samples: 10007);
-        string path = AudioRoundTripTests.OutputPath($"alac-{channels}-{bits}-{rate}.{extension}");
+        // 30011 samples at 44.1 kHz: Matroska's millisecond block times put later packets a few samples off the frames before.
+        using AudioFrame input = AudioRoundTripTests.Signal(channels, bits, rate, samples);
+        string path = AudioRoundTripTests.OutputPath($"alac-{channels}-{bits}-{rate}-{samples}.{extension}");
         using (AudioWriter writer = AudioWriter.Create(path, new AudioWriterOptions { Codec = AlacCodec.Instance }))
         {
             writer.Write(input);
