@@ -29,6 +29,7 @@ internal static class CheckCommands
         Option<string?> format = new("--format", "-f") { Description = "How to write: text (the default, framemd5's lines), json or csv.", HelpName = "text|json|csv" };
         Option<bool> json = new("--json") { Description = "Write JSON; the same as --format json." };
         Option<bool> csv = new("--csv") { Description = "Write CSV; the same as --format csv." };
+        Option<string?> output = new("--output", "-o") { Description = "Write the hashes to this file instead of standard output.", HelpName = "file" };
         Command command = new("hash", "Hash every decoded frame or packet of each track, in the layout of ffmpeg -f framemd5, to check that decoding matches.");
         options.AddTo(command, write: false);
         command.Options.Add(packets);
@@ -38,6 +39,7 @@ internal static class CheckCommands
         command.Options.Add(format);
         command.Options.Add(json);
         command.Options.Add(csv);
+        command.Options.Add(output);
         command.SetAction(result =>
         {
             string style = Style(result.GetValue(json), result.GetValue(csv), result.GetValue(format));
@@ -73,7 +75,17 @@ internal static class CheckCommands
                 return [];
             });
 
-            WriteHashes(session.Console.Text, style, [.. found.OfType<HashData>()], request, inputs.Count > 1);
+            if (result.GetValue(output) is { } file && file != "-")
+            {
+                StringWriter text = new() { NewLine = "\n" };
+                WriteHashes(text, style, [.. found.OfType<HashData>()], request, inputs.Count > 1);
+                MediaIO.Write(session, session.ResolvePath(file), stream => stream.Write(System.Text.Encoding.UTF8.GetBytes(text.ToString())));
+            }
+            else
+            {
+                WriteHashes(session.Console.Text, style, [.. found.OfType<HashData>()], request, inputs.Count > 1);
+            }
+
             return code;
         });
         return command;

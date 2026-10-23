@@ -137,7 +137,7 @@ internal static class FfmpegTranslator
 
         if (extension is ".gif" or ".apng" || (extension == ".webp" && !line.Codecs.ContainsKey("v")))
         {
-            List<string> animate = ["animate", input, "-o", output, .. Range(line, first), .. common];
+            List<string> animate = ["animate", input, "-o", output, .. Range(line, first, durations: false), .. common];
             if ((fps ?? line.Rate) is { } rate)
             {
                 animate.AddRange(["--rate", rate]);
@@ -183,6 +183,11 @@ internal static class FfmpegTranslator
             if (line.SampleFormat is { } sampleFormat)
             {
                 audio.AddRange(["--sample-format", SampleFormat(sampleFormat)]);
+            }
+
+            if (line.NoVideo)
+            {
+                audio.Add("--no-video");
             }
 
             return [[.. audio]];
@@ -459,7 +464,7 @@ internal static class FfmpegTranslator
         }
         else
         {
-            frames.AddRange(Range(line, first));
+            frames.AddRange(Range(line, first, durations: false));
             if (line.Frames is { } count)
             {
                 // The first N frames are the frames before frame #N; after a start time they would be counted from elsewhere.
@@ -519,9 +524,14 @@ internal static class FfmpegTranslator
         return [.. embed, .. outputWords, .. common];
     }
 
-    private static IEnumerable<string> Range(FfmpegLine line, FfmpegInput first)
+    /// <summary>
+    /// <c>-ss</c>, <c>-to</c> and <c>-t</c> as <c>--from</c>, <c>--to</c> and <c>--duration</c>; for commands without
+    /// <c>--duration</c> (<paramref name="durations"/> false), <c>-t</c> becomes <c>--to</c> at the start plus the length.
+    /// </summary>
+    private static IEnumerable<string> Range(FfmpegLine line, FfmpegInput first, bool durations = true)
     {
-        if ((first.Start ?? line.Start) is { } start)
+        string? start = first.Start ?? line.Start;
+        if (start is not null)
         {
             yield return "--from";
             yield return start;
@@ -535,8 +545,17 @@ internal static class FfmpegTranslator
 
         if ((first.Duration ?? line.Duration) is { } duration)
         {
-            yield return "--duration";
-            yield return duration;
+            if (durations)
+            {
+                yield return "--duration";
+                yield return duration;
+            }
+            else
+            {
+                double end = (start is null ? 0 : TimeValue.Parse(start, "-ss").Seconds) + TimeValue.Parse(duration, "-t").Seconds;
+                yield return "--to";
+                yield return end.ToString("0.###", CultureInfo.InvariantCulture);
+            }
         }
     }
 

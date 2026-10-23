@@ -515,6 +515,7 @@ Options:
   -f, --format <text|json|csv>   How to write: text (the default, framemd5's lines), json or csv.
   --json                         Write JSON; the same as --format json.
   --csv                          Write CSV; the same as --format csv.
+  -o, --output <file>            Write the hashes to this file instead of standard output.
 ```
 
 ## compare

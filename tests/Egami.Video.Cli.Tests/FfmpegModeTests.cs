@@ -63,6 +63,10 @@ public sealed class FfmpegModeTests
                 }
 
                 Assert.True(parsed.Errors.Count == 0, $"{string.Join(' ', native)}: {string.Join("; ", parsed.Errors.Select(e => e.Message))}");
+
+                // An option the command lacks would be taken as an input, such as -o for a command without one.
+                IEnumerable<string> arguments = parsed.CommandResult.Children.OfType<System.CommandLine.Parsing.ArgumentResult>().SelectMany(a => a.Tokens.Select(t => t.Value));
+                Assert.DoesNotContain(arguments, a => a.Length > 1 && a.StartsWith('-') && !double.TryParse(a, System.Globalization.CultureInfo.InvariantCulture, out _));
             }
         }
         else
@@ -82,6 +86,19 @@ public sealed class FfmpegModeTests
         Assert.Equal(0, tool.Run("ffmpeg", "-i", clip, "-c", "copy", "a.mkv").Code);
         Assert.Equal(0, tool.Run("remux", clip, "-o", "b.mkv").Code);
         Assert.Equal(File.ReadAllBytes(tool.PathOf("b.mkv")), File.ReadAllBytes(tool.PathOf("a.mkv")));
+    }
+
+    [Fact]
+    public void Framemd5ToAFileAndAudioWithoutVideo()
+    {
+        using Tool tool = new();
+        string clip = tool.Copy("avi-mjpeg-420-pcm.avi", "in.avi");
+        Assert.Equal(0, tool.Run("ffmpeg", "-i", clip, "-c", "copy", "-f", "framemd5", "hashes.txt").Code);
+        Assert.Equal(tool.Run("hash", clip, "--packets").Text, File.ReadAllText(tool.PathOf("hashes.txt")));
+
+        ToolRun audio = tool.Run("ffmpeg", "-i", clip, "-vn", "-c:a", "flac", "audio.mkv");
+        Assert.True(audio.Code == 0, audio.Error);
+        Assert.Equal([TrackKind.Audio], MediaFile.Probe(tool.PathOf("audio.mkv")).Tracks.Select(t => t.Kind));
     }
 
     [Fact]

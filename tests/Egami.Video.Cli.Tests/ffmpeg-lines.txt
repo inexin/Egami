@@ -38,7 +38,7 @@
 => frames in.mp4 -o out{frame}.png --every 0.1 | ffmpeg -i in.mp4 -r 10 out%d.png
 => frames in.mp4 -o img{frame:00}.jpg --to #10 | ffmpeg -i in.mp4 -frames:v 10 img%02d.jpg
 => frames in.mkv -o shot{frame:000}.jpg --quality 95 | ffmpeg -i in.mkv -q:v 3 shot%03d.jpg
-=> frames in.mkv -o img{frame:0000}.png --from 30 --duration 5 | ffmpeg -ss 30 -t 5 -i in.mkv img%04d.png
+=> frames in.mkv -o img{frame:0000}.png --from 30 --to 35 | ffmpeg -ss 30 -t 5 -i in.mkv img%04d.png
 => frames in.mkv -o img{frame:0000}.png --track v:1 | ffmpeg -i in.mkv -map 0:v:1 img%04d.png
 => frames in.avi -o img{frame:0000}.jpg | ffmpeg -i in.avi -f image2 img%04d.jpg
 => frames in.avi -o img{frame:0000}.jpg | ffmpeg -i in.avi -c:v copy -f image2 img%04d.jpg
@@ -71,14 +71,14 @@
 => run in.mkv resize 1280x720! + flip horizontal -o out.mkv --codec mjpeg --quality 95 | ffmpeg -i in.mkv -vf scale=1280:720,hflip -c:v mjpeg -q:v 3 out.mkv
 => run in.mkv resize 640x480! -o out.mkv | ffmpeg -i in.mkv -s 640x480 -c:v mjpeg out.mkv
 => animate in.mp4 -o out.gif | ffmpeg -i in.mp4 out.gif
-=> animate in.mp4 -o out.gif --from 5 --duration 3 --rate 10 --size 320 | ffmpeg -ss 5 -t 3 -i in.mp4 -vf fps=10,scale=320:-1 out.gif
+=> animate in.mp4 -o out.gif --from 5 --to 8 --rate 10 --size 320 | ffmpeg -ss 5 -t 3 -i in.mp4 -vf fps=10,scale=320:-1 out.gif
 => animate in.mkv -o out.webp --rate 15 | ffmpeg -i in.mkv -vf fps=15 out.webp
 => animate in.mkv -o out.apng | ffmpeg -i in.mkv out.apng
-=> audio in.mp4 -o out.wav | ffmpeg -i in.mp4 -vn out.wav
-=> audio in.mkv -o out.flac --codec flac | ffmpeg -i in.mkv -vn -c:a flac out.flac
-=> audio in.mkv -o out.wav --codec pcm | ffmpeg -i in.mkv -vn -acodec pcm_s16le out.wav
-=> audio in.mkv -o out.wav --rate 44100 --channels 2 | ffmpeg -i in.mkv -vn -ar 44100 -ac 2 out.wav
-=> audio in.mkv -o out.wav --sample-format s16 | ffmpeg -i in.mkv -vn -sample_fmt s16 out.wav
+=> audio in.mp4 -o out.wav --no-video | ffmpeg -i in.mp4 -vn out.wav
+=> audio in.mkv -o out.flac --codec flac --no-video | ffmpeg -i in.mkv -vn -c:a flac out.flac
+=> audio in.mkv -o out.wav --codec pcm --no-video | ffmpeg -i in.mkv -vn -acodec pcm_s16le out.wav
+=> audio in.mkv -o out.wav --rate 44100 --channels 2 --no-video | ffmpeg -i in.mkv -vn -ar 44100 -ac 2 out.wav
+=> audio in.mkv -o out.wav --sample-format s16 --no-video | ffmpeg -i in.mkv -vn -sample_fmt s16 out.wav
 => audio in.mkv -o out.mkv --codec flac | ffmpeg -i in.mkv -c:v copy -c:a flac out.mkv
 => audio in.mkv -o out.flac --track a:1 | ffmpeg -i in.mkv -map 0:a:1 out.flac
 => audio in.mkv -o out.wav --rate 16000 --channels 1 | ffmpeg -i in.mkv -ar 16000 -ac 1 out.wav
