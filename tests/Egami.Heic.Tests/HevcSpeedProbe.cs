@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Egami.Formats.Heic;
 using Egami.Formats.Heif;
 using Egami.Heic.Hevc;
+using Egami.Nal;
 
 namespace Egami.Heic.Tests;
 
@@ -24,7 +25,7 @@ public class HevcSpeedProbe(ITestOutputHelper output)
         {
             HevcConfig config = HevcConfig.Read(heif, heif.Property(item, HeicFile.HvcC)!);
             List<HevcNal> nals = [.. config.NalUnits.Select(n => HevcNal.Parse(n.Span))];
-            nals.AddRange(HevcNal.SplitLengthPrefixed(heif.ItemData(item), config.LengthSize).Select(n => HevcNal.Parse(n.Span)));
+            nals.AddRange(NalFraming.SplitLengthPrefixed(heif.ItemData(item), config.LengthSize).Select(n => HevcNal.Parse(n.Span)));
             tiles.Add(nals);
         }
 

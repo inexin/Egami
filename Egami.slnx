@@ -48,6 +48,7 @@
     <Project Path="tests/Egami.Fuzz/Egami.Fuzz.csproj" />
     <Project Path="tests/Egami.Heic.Tests/Egami.Heic.Tests.csproj" />
     <Project Path="tests/Egami.Metafiles.Tests/Egami.Metafiles.Tests.csproj" />
+    <Project Path="tests/Egami.Nal.Tests/Egami.Nal.Tests.csproj" />
     <Project Path="tests/Egami.OutsideTests/Egami.OutsideTests.csproj" />
     <Project Path="tests/Egami.Svg.Tests/Egami.Svg.Tests.csproj" />
     <Project Path="tests/Egami.Tests/Egami.Tests.csproj" />

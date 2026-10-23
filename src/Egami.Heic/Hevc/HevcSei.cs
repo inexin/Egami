@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 
+using Egami.Nal;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>
@@ -21,64 +23,11 @@ internal sealed class HevcPictureHash
     internal byte[][] Values { get; }
 
     /// <summary>Reads the SEI messages of an SEI NAL unit and returns the decoded picture hash, or null when it has none.</summary>
-    internal static HevcPictureHash? Read(HevcBitReader r, int components)
+    internal static HevcPictureHash? Read(NalBitReader r, int components)
     {
-        HevcPictureHash? hash = null;
-        do
-        {
-            int type = 0, size = 0, b;
-            do
-            {
-                b = (int)r.U(8, "payload_type");
-                type += b;
-            }
-            while (b == 0xFF);
-
-            do
-            {
-                b = (int)r.U(8, "payload_size");
-                size += b;
-            }
-            while (b == 0xFF);
-
-            long end = r.BitPosition + (8L * size);
-            if (size * 8L > r.BitsLeft)
-            {
-                throw HevcErrors.Corrupt("An SEI message runs past the end of its NAL unit.");
-            }
-
-            if (type == 132 && hash is null)
-            {
-                int hashType = (int)r.U(8, "hash_type");
-                (int length, string name) = hashType switch
-                {
-                    0 => (16, "picture_md5"),
-                    1 => (2, "picture_crc"),
-                    2 => (4, "picture_checksum"),
-                    _ => (0, ""),
-                };
-                if (length > 0 && size >= 1 + (components * length))
-                {
-                    byte[][] values = new byte[components][];
-                    for (int c = 0; c < components; c++)
-                    {
-                        values[c] = new byte[length];
-                        for (int i = 0; i < length; i++)
-                        {
-                            values[c][i] = (byte)r.U(8, name);
-                        }
-                    }
-
-                    hash = new HevcPictureHash(hashType, values);
-                }
-            }
-
-            r.Skip(end - r.BitPosition);
-        }
-        while (r.MoreRbspData());
-
-        r.TrailingBits();
-        return hash;
+        HashReader reader = new(components);
+        NalSei.Read(r, reader, static (bits, type, size, state) => state.Payload(bits, type, size));
+        return reader.Hash;
     }
 
     /// <summary>
@@ -162,6 +111,43 @@ internal sealed class HevcPictureHash
 
                     return [(byte)(sum >> 24), (byte)(sum >> 16), (byte)(sum >> 8), (byte)sum];
                 }
+        }
+    }
+
+    /// <summary>Keeps the first decoded picture hash message of an SEI NAL unit.</summary>
+    private sealed class HashReader(int components)
+    {
+        internal HevcPictureHash? Hash { get; private set; }
+
+        internal void Payload(NalBitReader r, int type, int size)
+        {
+            if (type != 132 || Hash is not null)
+            {
+                return;
+            }
+
+            int hashType = (int)r.U(8, "hash_type");
+            (int length, string name) = hashType switch
+            {
+                0 => (16, "picture_md5"),
+                1 => (2, "picture_crc"),
+                2 => (4, "picture_checksum"),
+                _ => (0, ""),
+            };
+            if (length > 0 && size >= 1 + (components * length))
+            {
+                byte[][] values = new byte[components][];
+                for (int c = 0; c < components; c++)
+                {
+                    values[c] = new byte[length];
+                    for (int i = 0; i < length; i++)
+                    {
+                        values[c][i] = (byte)r.U(8, name);
+                    }
+                }
+
+                Hash = new HevcPictureHash(hashType, values);
+            }
         }
     }
 }

@@ -22,6 +22,11 @@
     <ProjectReference Include="..\Egami\Egami.csproj" />
   </ItemGroup>
 
+  <!-- The NAL code Egami.Heic shares with Egami.Video.H264, compiled into each as internal source (H.264 and HEVC design, Q1). -->
+  <ItemGroup>
+    <Compile Include="..\Shared\Nal\**\*.cs" Link="Shared\Nal\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Egami.Heic.Tests" />
     <InternalsVisibleTo Include="Egami.Fuzz" />
