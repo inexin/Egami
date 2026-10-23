@@ -434,7 +434,7 @@ subtle.Apply(swatch);</code></pre>
 
   <h3 id="Egami_Operations_RasterOps_Arithmetic_Egami_Operations_PixelMath_System_Single_Egami_Operations_ColorChannels_" data-uid="Egami.Operations.RasterOps.Arithmetic(Egami.Operations.PixelMath,System.Single,Egami.Operations.ColorChannels)">
   Arithmetic(PixelMath, float, ColorChannels)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/RasterOps.cs/#L908"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/RasterOps.cs/#L978"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Applies <code class="paramref">op</code> with <code class="paramref">value</code> to every value of <code class="paramref">channels</code>, on values scaled 0 to 1
@@ -1248,6 +1248,71 @@ using Raster backwards = fast.Derive(ops =&gt; ops.Reverse(), Ct);</code></pre>
 
 
 
+  <a id="Egami_Operations_RasterOps_ChromaKey_" data-uid="Egami.Operations.RasterOps.ChromaKey*"></a>
+
+  <h3 id="Egami_Operations_RasterOps_ChromaKey_Egami_Pixels_Rgba8_System_Single_System_Single_" data-uid="Egami.Operations.RasterOps.ChromaKey(Egami.Pixels.Rgba8,System.Single,System.Single)">
+  ChromaKey(Rgba8, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/RasterOps.cs/#L856"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes pixels whose chroma lies within <code class="paramref">similarity</code> of <code class="paramref">color</code>'s transparent, keeping their
+color: a chroma key for green and blue screens. The distance is taken between Rec. 709 Cb and Cr, leaving luma out, so lighter
+and darker patches of an unevenly lit screen stay closer to the key than they do by the RGB distance
+<a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_MakeTransparent_Egami_Pixels_Rgba8_System_Single_System_Single_">MakeTransparent(Rgba8, float, float)</a> uses.
+<code class="paramref">blend</code> ramps alpha back up over the next band of distance, for hair and soft edges. Follow it with
+<a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Despill_Egami_Operations_DespillColor_System_Single_System_Single_">Despill(DespillColor, float, float)</a> to remove the screen's cast from the edges that stay.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RasterOps ChromaKey(Rgba8 color, float similarity = 0.1, float blend = 0.05)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The screen color, such as <code>#00b140</code> for a green screen; its alpha is ignored.</p>
+</dd>
+    <dt><code>similarity</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The chroma distance that becomes fully transparent, from 0 (the key's exact chroma) to 1 (every color), as a share of the
+largest distance in RGB, the one between green and magenta.</p>
+</dd>
+    <dt><code>blend</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The band of distance beyond <code class="paramref">similarity</code> over which alpha returns to full; 0 for a hard edge.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a></dt>
+    <dd><p>This builder.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Operations_RasterOps_ChromaKey_Egami_Pixels_Rgba8_System_Single_System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Key out a green screen by chroma, so its lighter and darker patches go too, soften the edge, and take the green cast off
+// what is left; then put the result over a new background.
+photo.Apply(ops =&gt; ops
+    .ChromaKey(new Rgba8(0, 177, 64, 255), similarity: 0.12f, blend: 0.06f)
+    .Despill(DespillColor.Green, mix: 0.5f), Ct);
+backdrop.Apply(ops =&gt; ops.DrawImage(photo, new Point(0, 0)), Ct);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">similarity</code> is outside 0..1, or <code class="paramref">blend</code> is negative or not finite.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Operations_RasterOps_Clahe_" data-uid="Egami.Operations.RasterOps.Clahe*"></a>
 
   <h3 id="Egami_Operations_RasterOps_Clahe_System_Int32_System_Int32_System_Single_System_Int32_" data-uid="Egami.Operations.RasterOps.Clahe(System.Int32,System.Int32,System.Single,System.Int32)">
@@ -1948,6 +2013,68 @@ scan.Apply(ops =&gt; ops.Despeckle(), Ct);</code></pre>
 
 
 
+
+
+
+  <a id="Egami_Operations_RasterOps_Despill_" data-uid="Egami.Operations.RasterOps.Despill*"></a>
+
+  <h3 id="Egami_Operations_RasterOps_Despill_Egami_Operations_DespillColor_System_Single_System_Single_" data-uid="Egami.Operations.RasterOps.Despill(Egami.Operations.DespillColor,System.Single,System.Single)">
+  Despill(DespillColor, float, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/RasterOps.cs/#L887"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the colored cast a green or blue screen leaves on edges, hair and see-through pixels: the screen's channel is held
+down to a limit taken from the other two channels. Run it after <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_ChromaKey_Egami_Pixels_Rgba8_System_Single_System_Single_">ChromaKey(Rgba8, float, float)</a> or <a class="xref" href="Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_MakeTransparent_Egami_Pixels_Rgba8_System_Single_System_Single_">MakeTransparent(Rgba8, float, float)</a>, or
+on its own on a photo shot in front of a screen.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RasterOps Despill(DespillColor screen = DespillColor.Green, float mix = 0.5, float expand = 0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>screen</code> <a class="xref" href="Egami.Operations.DespillColor.html">DespillColor</a></dt>
+    <dd><p>The screen color whose spill is removed.</p>
+</dd>
+    <dt><code>mix</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How the limit is taken from the other two channels, from 0 (their average, the strongest removal) to 1 (the larger of the two,
+the gentlest, which leaves neutral colors alone).</p>
+</dd>
+    <dt><code>expand</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>How much further the limit is lowered, from 0 to 1, for heavy spill; this darkens the screen's channel more.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Operations.RasterOps.html">RasterOps</a></dt>
+    <dd><p>This builder.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Operations_RasterOps_Despill_Egami_Operations_DespillColor_System_Single_System_Single__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Key out a green screen by chroma, so its lighter and darker patches go too, soften the edge, and take the green cast off
+// what is left; then put the result over a new background.
+photo.Apply(ops =&gt; ops
+    .ChromaKey(new Rgba8(0, 177, 64, 255), similarity: 0.12f, blend: 0.06f)
+    .Despill(DespillColor.Green, mix: 0.5f), Ct);
+backdrop.Apply(ops =&gt; ops.DrawImage(photo, new Point(0, 0)), Ct);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">screen</code> is not defined, or <code class="paramref">mix</code> or <code class="paramref">expand</code> is outside 0..1.</p>
+</dd>
+  </dl>
 
 
 
@@ -3265,7 +3392,7 @@ using Raster luma = photo.Derive(ops =&gt; ops.LuminanceToAlpha(), Ct);         
 
   <h3 id="Egami_Operations_RasterOps_FloodFill_Egami_Point_Egami_Pixels_Rgba8_System_Single_Egami_Operations_Connectivity_" data-uid="Egami.Operations.RasterOps.FloodFill(Egami.Point,Egami.Pixels.Rgba8,System.Single,Egami.Operations.Connectivity)">
   FloodFill(Point, Rgba8, float, Connectivity)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/RasterOps.cs/#L872"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/RasterOps.cs/#L942"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Fills the region connected to <code class="paramref">seed</code> whose colors lie within <code class="paramref">tolerance</code> of the seed's own with
@@ -5023,7 +5150,7 @@ photo.Apply(ops =&gt; ops.Remap(inks, DitherMode.FloydSteinberg), Ct);</code></p
 
   <h3 id="Egami_Operations_RasterOps_ReplaceColor_Egami_Pixels_Rgba8_Egami_Pixels_Rgba8_System_Single_" data-uid="Egami.Operations.RasterOps.ReplaceColor(Egami.Pixels.Rgba8,Egami.Pixels.Rgba8,System.Single)">
   ReplaceColor(Rgba8, Rgba8, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/RasterOps.cs/#L849"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Operations/RasterOps.cs/#L919"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Replaces every pixel within <code class="paramref">tolerance</code> of <code class="paramref">from</code> with <code class="paramref">to</code>, by ImageMagick's

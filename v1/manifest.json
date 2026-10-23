@@ -9309,6 +9309,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Operations.DespillColor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Operations.DespillColor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Operations.DespillColor",
+      "Summary": "<p sourcefile=\"api/Egami.Operations.DespillColor.yml\" sourcestartlinenumber=\"1\">The screen color whose spill <xref href=\"Egami.Operations.RasterOps.Despill(Egami.Operations.DespillColor%2cSystem.Single%2cSystem.Single)\" data-throw-if-not-resolved=\"false\"></xref> removes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Operations.DistantLight.yml",
       "output": {
         ".html": {

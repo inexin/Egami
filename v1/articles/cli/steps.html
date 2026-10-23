@@ -167,6 +167,10 @@ Positional values fill the parameters in order; <code>--name value</code> sets o
 <td>Plays the animation factor times as fast: every delay is divided by it, rounded to whole milliseconds.</td>
 </tr>
 <tr>
+<td><a href="#chroma-key">chroma-key</a></td>
+<td>Makes pixels whose chroma lies within similarity of color's transparent, keeping their color: a chroma key for green and blue screens.</td>
+</tr>
+<tr>
 <td><a href="#clahe">clahe</a></td>
 <td>Contrast-limited adaptive histogram equalization (Zuiderveld, 1994) on L*, as ImageMagick's -clahe: each of tilesX × tilesY tiles gets its own clipped, equalized curve, blended smoothly between tile centers, so local detail comes up without the noise of plain equalization.</td>
 </tr>
@@ -201,6 +205,10 @@ Positional values fill the parameters in order; <code>--name value</code> sets o
 <tr>
 <td><a href="#despeckle">despeckle</a></td>
 <td>Removes specks while keeping edges, by Crimmins' complementary hulling exactly as ImageMagick's -despeckle runs it: each color channel is nudged, a level at a time, toward neighbours that differ by two levels or more, in 16 passes along four directions.</td>
+</tr>
+<tr>
+<td><a href="#despill">despill</a></td>
+<td>Removes the colored cast a green or blue screen leaves on edges, hair and see-through pixels: the screen's channel is held down to a limit taken from the other two channels.</td>
 </tr>
 <tr>
 <td><a href="#dilate">dilate</a></td>
@@ -657,6 +665,17 @@ Positional values fill the parameters in order; <code>--name value</code> sets o
     --factor &lt;number&gt;, required
         The speed-up, more than 0: 2 plays twice as fast, 0.5 at half speed.
 </code></pre>
+<h2 id="chroma-key">chroma-key</h2>
+<pre><code class="lang-text">chroma-key: Makes pixels whose chroma lies within similarity of color's transparent, keeping their color: a chroma key for green and blue screens.
+
+  chroma-key &lt;color&gt; [--similarity &lt;number&gt;] [--blend &lt;number&gt;]
+    --color &lt;color&gt;, required
+        The screen color, such as #00b140 for a green screen; its alpha is ignored.
+    --similarity &lt;number&gt;, default 0.1
+        The chroma distance that becomes fully transparent, from 0 (the key's exact chroma) to 1 (every color), as a share of the largest distance in RGB, the one between green and magenta.
+    --blend &lt;number&gt;, default 0.05
+        The band of distance beyond similarity over which alpha returns to full; 0 for a hard edge.
+</code></pre>
 <h2 id="clahe">clahe</h2>
 <pre><code class="lang-text">clahe: Contrast-limited adaptive histogram equalization (Zuiderveld, 1994) on L*, as ImageMagick's -clahe: each of tilesX × tilesY tiles gets its own clipped, equalized curve, blended smoothly between tile centers, so local detail comes up without the noise of plain equalization.
 
@@ -755,6 +774,17 @@ Positional values fill the parameters in order; <code>--name value</code> sets o
 <pre><code class="lang-text">despeckle: Removes specks while keeping edges, by Crimmins' complementary hulling exactly as ImageMagick's -despeckle runs it: each color channel is nudged, a level at a time, toward neighbours that differ by two levels or more, in 16 passes along four directions.
 
   despeckle no arguments
+</code></pre>
+<h2 id="despill">despill</h2>
+<pre><code class="lang-text">despill: Removes the colored cast a green or blue screen leaves on edges, hair and see-through pixels: the screen's channel is held down to a limit taken from the other two channels.
+
+  despill [--screen &lt;choice&gt;] [--mix &lt;number&gt;] [--expand &lt;number&gt;]
+    --screen &lt;green|blue&gt;, default green
+        The screen color whose spill is removed.
+    --mix &lt;number&gt;, default 0.5
+        How the limit is taken from the other two channels, from 0 (their average, the strongest removal) to 1 (the larger of the two, the gentlest, which leaves neutral colors alone).
+    --expand &lt;number&gt;, default 0
+        How much further the limit is lowered, from 0 to 1, for heavy spill; this darkens the screen's channel more.
 </code></pre>
 <h2 id="dilate">dilate</h2>
 <pre><code class="lang-text">dilate: The maximum over the (2rx + 1) × (2ry + 1) rectangle around each pixel, as Skia's dilate filter with those radii.

@@ -57158,6 +57158,24 @@ references:
   isSpec: "True"
   fullName: Egami.Operations.CubeFile.Write
   nameWithType: CubeFile.Write
+- uid: Egami.Operations.DespillColor
+  name: DespillColor
+  href: api/Egami.Operations.DespillColor.html
+  commentId: T:Egami.Operations.DespillColor
+  fullName: Egami.Operations.DespillColor
+  nameWithType: DespillColor
+- uid: Egami.Operations.DespillColor.Blue
+  name: Blue
+  href: api/Egami.Operations.DespillColor.html#Egami_Operations_DespillColor_Blue
+  commentId: F:Egami.Operations.DespillColor.Blue
+  fullName: Egami.Operations.DespillColor.Blue
+  nameWithType: DespillColor.Blue
+- uid: Egami.Operations.DespillColor.Green
+  name: Green
+  href: api/Egami.Operations.DespillColor.html#Egami_Operations_DespillColor_Green
+  commentId: F:Egami.Operations.DespillColor.Green
+  fullName: Egami.Operations.DespillColor.Green
+  nameWithType: DespillColor.Green
 - uid: Egami.Operations.DistantLight
   name: DistantLight
   href: api/Egami.Operations.DistantLight.html
@@ -59182,6 +59200,22 @@ references:
   isSpec: "True"
   fullName: Egami.Operations.RasterOps.ChangeSpeed
   nameWithType: RasterOps.ChangeSpeed
+- uid: Egami.Operations.RasterOps.ChromaKey(Egami.Pixels.Rgba8,System.Single,System.Single)
+  name: ChromaKey(Rgba8, float, float)
+  href: api/Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_ChromaKey_Egami_Pixels_Rgba8_System_Single_System_Single_
+  commentId: M:Egami.Operations.RasterOps.ChromaKey(Egami.Pixels.Rgba8,System.Single,System.Single)
+  name.vb: ChromaKey(Rgba8, Single, Single)
+  fullName: Egami.Operations.RasterOps.ChromaKey(Egami.Pixels.Rgba8, float, float)
+  fullName.vb: Egami.Operations.RasterOps.ChromaKey(Egami.Pixels.Rgba8, Single, Single)
+  nameWithType: RasterOps.ChromaKey(Rgba8, float, float)
+  nameWithType.vb: RasterOps.ChromaKey(Rgba8, Single, Single)
+- uid: Egami.Operations.RasterOps.ChromaKey*
+  name: ChromaKey
+  href: api/Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_ChromaKey_
+  commentId: Overload:Egami.Operations.RasterOps.ChromaKey
+  isSpec: "True"
+  fullName: Egami.Operations.RasterOps.ChromaKey
+  nameWithType: RasterOps.ChromaKey
 - uid: Egami.Operations.RasterOps.Clahe(System.Int32,System.Int32,System.Single,System.Int32)
   name: Clahe(int, int, float, int)
   href: api/Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Clahe_System_Int32_System_Int32_System_Single_System_Int32_
@@ -59371,6 +59405,22 @@ references:
   isSpec: "True"
   fullName: Egami.Operations.RasterOps.Despeckle
   nameWithType: RasterOps.Despeckle
+- uid: Egami.Operations.RasterOps.Despill(Egami.Operations.DespillColor,System.Single,System.Single)
+  name: Despill(DespillColor, float, float)
+  href: api/Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Despill_Egami_Operations_DespillColor_System_Single_System_Single_
+  commentId: M:Egami.Operations.RasterOps.Despill(Egami.Operations.DespillColor,System.Single,System.Single)
+  name.vb: Despill(DespillColor, Single, Single)
+  fullName: Egami.Operations.RasterOps.Despill(Egami.Operations.DespillColor, float, float)
+  fullName.vb: Egami.Operations.RasterOps.Despill(Egami.Operations.DespillColor, Single, Single)
+  nameWithType: RasterOps.Despill(DespillColor, float, float)
+  nameWithType.vb: RasterOps.Despill(DespillColor, Single, Single)
+- uid: Egami.Operations.RasterOps.Despill*
+  name: Despill
+  href: api/Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Despill_
+  commentId: Overload:Egami.Operations.RasterOps.Despill
+  isSpec: "True"
+  fullName: Egami.Operations.RasterOps.Despill
+  nameWithType: RasterOps.Despill
 - uid: Egami.Operations.RasterOps.Dilate(System.Int32)
   name: Dilate(int)
   href: api/Egami.Operations.RasterOps.html#Egami_Operations_RasterOps_Dilate_System_Int32_

@@ -88,7 +88,8 @@
 <h1 id="keying-and-arithmetic">Keying and arithmetic</h1>
 
 <p>Operations that ImageMagick users expect: making a color transparent, replacing a color, flood fill, arithmetic with a constant,
-and stacking several images. Each matches its ImageMagick option exactly at 8 and 16 bits.</p>
+and stacking several images. Each matches its ImageMagick option exactly at 8 and 16 bits. For green and blue screens there is
+also a chroma key with spill removal.</p>
 <h2 id="color-tolerance">Color tolerance</h2>
 <p>Keying compares colors with ImageMagick's -fuzz distance on the stored values: a tolerance from 0 (the exact color) to 1 (every
 color). Alpha counts three times as much as each color channel, and colors count in proportion to how visible both pixels are, so
@@ -100,6 +101,22 @@ photo.Apply(ops =&gt; ops.MakeTransparent(new Rgba8(0, 177, 64, 255), tolerance:
 <p>Raise the tolerance until the screen is gone, then add softness for clean hair and edges.</p>
 <p><code>MakeTransparent</code> clears alpha where a pixel lies within the tolerance and keeps its color, as ImageMagick's -transparent does.
 <code>softness</code> ramps alpha back up over the next band of distance, for antialiased edges; with no softness the result is ImageMagick's.</p>
+<h2 id="key-out-a-green-or-blue-screen">Key out a green or blue screen</h2>
+<pre><code class="lang-csharp">// Key out a green screen by chroma, so its lighter and darker patches go too, soften the edge, and take the green cast off
+// what is left; then put the result over a new background.
+photo.Apply(ops =&gt; ops
+    .ChromaKey(new Rgba8(0, 177, 64, 255), similarity: 0.12f, blend: 0.06f)
+    .Despill(DespillColor.Green, mix: 0.5f), Ct);
+backdrop.Apply(ops =&gt; ops.DrawImage(photo, new Point(0, 0)), Ct);
+</code></pre>
+<p><code>ChromaKey</code> compares chroma alone: the distance between the Rec. 709 Cb and Cr of each pixel and of the screen color, as a share
+of the largest such distance (green to magenta). Luma is left out, so lighter and darker patches of an unevenly lit screen stay
+closer to the key than they do by <code>MakeTransparent</code>'s RGB distance. <code>similarity</code> sets the distance that becomes fully
+transparent and <code>blend</code> the band over which alpha returns to full. Pixels keep their color and their alpha is scaled, so an
+already transparent pixel stays transparent. Types without alpha are left as they are.</p>
+<p><code>Despill</code> removes the screen's colored cast from what remains. It holds green (or blue, with <code>DespillColor.Blue</code>) down to a
+limit taken from the other two channels: their average with <code>mix</code> 0, the larger of them with <code>mix</code> 1, which leaves neutral colors
+alone. <code>expand</code> lowers the limit further for heavy spill. Despill works on any raster, keyed or not.</p>
 <h2 id="replace-a-color">Replace a color</h2>
 <pre><code class="lang-csharp">photo.Apply(ops =&gt; ops.ReplaceColor(Rgba8.White, new Rgba8(250, 245, 230, 255), tolerance: 0.05f), Ct);
 </code></pre><h2 id="flood-fill">Flood fill</h2>
