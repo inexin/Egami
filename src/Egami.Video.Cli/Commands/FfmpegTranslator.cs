@@ -161,6 +161,7 @@ internal static class FfmpegTranslator
         }
 
         bool audioJob = AudioExtensions.Contains(extension) || line.NoVideo || line.SampleRate is not null || line.Channels is not null || line.SampleFormat is not null
+            || line.AudioBitrate is not null
             || (line.Codecs.TryGetValue("a", out string? audioCodec) && audioCodec != "copy");
         if (audioJob)
         {
@@ -173,6 +174,11 @@ internal static class FfmpegTranslator
             if (line.SampleRate is { } sampleRate)
             {
                 audio.AddRange(["--rate", sampleRate]);
+            }
+
+            if (line.AudioBitrate is { } bitrate)
+            {
+                audio.AddRange(["--bitrate", bitrate]);
             }
 
             if (line.Channels is { } channels)
@@ -727,7 +733,8 @@ internal static class FfmpegTranslator
     {
         "flac" => "flac",
         "pcm_s16le" or "pcm_s24le" or "pcm_s32le" or "pcm_f32le" or "pcm_u8" => "pcm",
-        _ => throw FfmpegMode.Unsupported($"-c:a {codec}", why: "egami-video encodes flac and PCM, and copies"),
+        "libopus" or "opus" => "opus",
+        _ => throw FfmpegMode.Unsupported($"-c:a {codec}", why: "egami-video encodes flac, PCM and libopus, and copies"),
     };
 
     private static string SampleFormat(string format) => format switch

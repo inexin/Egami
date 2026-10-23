@@ -35,7 +35,7 @@ prints `egami-video run in.mkv resize 640 + flip horizontal -o out.mkv --codec m
 | `-vf` with scale, crop, pad, transpose, hflip, vflip; `-s`; `-c:v mjpeg` or `rawvideo` | `run` |
 | `-vf thumbnail`, `select='gt(scene,0.4)'`, `tile=4x4` | `thumbnail`, `scenes`, `sheet` |
 | `.gif`, `.apng` or `.webp` output | `animate` |
-| `-vn`, `-c:a flac`, `-ar`, `-ac`, `-sample_fmt` | `audio` |
+| `-vn`, `-c:a flac`, `-c:a libopus`, `-b:a`, `-ar`, `-ac`, `-sample_fmt` | `audio` |
 | `-f framemd5`, `-f framehash` | `hash` |
 | `-i distorted -i reference -lavfi psnr` or `ssim` | `compare` |
 
@@ -46,11 +46,11 @@ in a warning. An output that exists needs `-y`, as in ffmpeg.
 
 ffmpeg mode takes `-i`, `-f`, `-y`, `-n`, `-ss`, `-to`, `-t`, `-itsoffset`, `-framerate`, `-safe`, `-map`, `-c`, `-codec`, `-c:v`,
 `-c:a`, `-c:s`, `-vcodec`, `-acodec`, `-scodec`, `-an`, `-vn`, `-sn`, `-dn`, `-r`, `-s`, `-frames:v`, `-vframes`, `-q:v`,
-`-qscale:v`, `-ar`, `-ac`, `-sample_fmt`, `-metadata`, `-map_metadata`, `-map_chapters`, `-vf`, `-filter:v`, `-lavfi` and
+`-qscale:v`, `-ar`, `-b:a`, `-ab`, `-ac`, `-sample_fmt`, `-metadata`, `-map_metadata`, `-map_chapters`, `-vf`, `-filter:v`, `-lavfi` and
 `-filter_complex` (psnr and ssim), `-segment_time`, `-segment_times`, `-update`, `-progress`, `-stats`, `-nostats`,
 `-stats_period`, `-hide_banner`, `-loglevel`, `-v` and `-nostdin`, with `pipe:` and `%d` patterns. The filters are scale, crop,
-pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile. Codecs: `copy`, `mjpeg` and `rawvideo` for video, `flac`
-and the `pcm_` codecs for audio.
+pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile. Codecs: `copy`, `mjpeg` and `rawvideo` for video, `flac`,
+`libopus` (or `opus`) and the `pcm_` codecs for audio.
 
 ffprobe mode takes `-i`, `-show_streams`, `-show_format`, `-show_packets`, `-show_frames`, `-show_chapters`, `-select_streams`,
 `-show_entries`, `-of` (also `-print_format`, `-output_format`) with the json, csv, compact, default, flat and xml writers and

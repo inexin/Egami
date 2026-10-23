@@ -233,7 +233,7 @@ internal static class EncodeCommand
     }
 
     /// <summary>Parses a bitrate in bits a second: 800000, 2000k or 1.5M.</summary>
-    private static long ParseBitrate(string text)
+    internal static long ParseBitrate(string text)
     {
         string t = text.Trim();
         double scale = t.EndsWith('k') || t.EndsWith('K') ? 1e3 : t.EndsWith('m') || t.EndsWith('M') ? 1e6 : 1;

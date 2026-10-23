@@ -207,8 +207,9 @@ recommended).
   APNG).
 - Checks: `hash` (per frame or packet, framemd5's layout and hashes) and `compare` (PSNR and SSIM per plane, within 0.01 dB of
   ffmpeg's psnr filter; `--min-psnr`, `--min-ssim`).
-- `audio`: a track to WAV, Wave64, FLAC or Ogg FLAC with resampling, remixing and sample format conversion, or the audio of a
-  video file encoded again while its video is copied.
+- `audio`: a track to WAV, Wave64, FLAC, Ogg FLAC or Opus with resampling, remixing and sample format conversion, or the audio
+  of a video file encoded again while its video is copied. `--codec opus` (the default for .opus and WebM outputs) encodes Opus
+  with `--bitrate`; ffmpeg mode maps `-c:a libopus` and `-b:a` onto it.
 - `formats`: the containers and codecs this build reads and writes.
 - `ffmpeg` and `ffprobe`: a documented subset of their command lines, mapped onto the commands above; anything else stops with
   exit code 2 and names the option. `--explain` prints the native command.

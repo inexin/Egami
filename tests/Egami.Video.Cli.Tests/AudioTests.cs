@@ -171,6 +171,15 @@ public sealed class AudioTests
     [InlineData("out.flac", "--codec", "pcm")]
     [InlineData("out.wav", "--codec", "flac")]
     [InlineData("out.mkv", "--no-audio", "--codec=flac")]
+    [InlineData("out.webm", "--codec", "pcm")]
+    [InlineData("out.wav", "--codec", "opus")]
+    [InlineData("out.flac", "--codec", "opus")]
+    [InlineData("out.ogg", "--codec", "pcm")]
+    [InlineData("out.opus", "--level", "5")]
+    [InlineData("out.opus", "--sample-format", "s16")]
+    [InlineData("out.opus", "--bitrate", "3M")]
+    [InlineData("out.opus", "--bitrate", "fast")]
+    [InlineData("out.flac", "--bitrate", "96k")]
     public void UsageErrors(string output, string option, string value)
     {
         using Tool tool = new();
@@ -178,6 +187,74 @@ public sealed class AudioTests
         Assert.Equal(2, run.Code);
         Assert.NotEmpty(run.Error);
         Assert.False(File.Exists(tool.PathOf(output)));
+    }
+
+    [Theory]
+    [InlineData("audio/wav-s16-stereo.wav", null)]
+    [InlineData("audio/flac-24-51.flac", "192k")]
+    [InlineData("audio/opus/opus-stereo.opus", "32k")]
+    public void EncodesOpusFiles(string clip, string? bitrate)
+    {
+        using Tool tool = new();
+        string source = Path.Combine(Tool.Corpus, clip);
+        ToolRun run = bitrate is null ? tool.Run("audio", source, "-o", "out.opus") : tool.Run("audio", source, "-o", "out.opus", "--bitrate", bitrate);
+        Assert.True(run.Code == 0, run.Error);
+        AudioTrackInfo track = (AudioTrackInfo)MediaFile.Probe(tool.PathOf("out.opus")).Tracks.Single();
+        AudioTrackInfo original = (AudioTrackInfo)MediaFile.Probe(source).Tracks.Single();
+        Assert.Equal(CodecIds.Opus, track.CodecId);
+        Assert.Equal(original.Channels, track.Channels);
+
+        // Opus decodes to exactly as many samples as went in, at 48 kHz.
+        Assert.Equal(DecodedLength(source, 48000), DecodedLength(tool.PathOf("out.opus"), 48000));
+    }
+
+    [Fact]
+    public void OpusTakesTheRateAndBitrate()
+    {
+        using Tool tool = new();
+        string source = Path.Combine(Tool.Corpus, "audio/wav-s16-stereo.wav");
+        Assert.Equal(0, tool.Run("audio", source, "-o", "low.opus", "--bitrate", "24k", "--channels", "mono").Code);
+        Assert.Equal(0, tool.Run("audio", source, "-o", "high.opus", "--bitrate", "256k").Code);
+        Assert.True(new FileInfo(tool.PathOf("low.opus")).Length * 3 < new FileInfo(tool.PathOf("high.opus")).Length);
+        Assert.Equal(1, ((AudioTrackInfo)MediaFile.Probe(tool.PathOf("low.opus")).Tracks.Single()).Channels);
+
+        // A rate Opus does not code is resampled inside the encoder, and OpusHead keeps it as the source's rate (RFC 7845 5.1).
+        ToolRun resampled = tool.Run("audio", source, "-o", "out.mka", "--codec", "opus", "--rate", "44100");
+        Assert.True(resampled.Code == 0, resampled.Error);
+        AudioTrackInfo track = (AudioTrackInfo)MediaFile.Probe(tool.PathOf("out.mka")).Tracks.Single();
+        Assert.Equal(CodecIds.Opus, track.CodecId);
+        Assert.Equal(44100, (int)System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(track.CodecPrivate.Span[12..]));
+
+        // .ogg and .oga keep FLAC as their default; --codec opus picks Opus.
+        Assert.Equal(0, tool.Run("audio", source, "-o", "out.ogg").Code);
+        Assert.Equal(CodecIds.Flac, MediaFile.Probe(tool.PathOf("out.ogg")).Tracks.Single().CodecId);
+        Assert.Equal(0, tool.Run("audio", source, "-o", "opus.ogg", "--codec", "opus").Code);
+        Assert.Equal(CodecIds.Opus, MediaFile.Probe(tool.PathOf("opus.ogg")).Tracks.Single().CodecId);
+    }
+
+    [Fact]
+    public void OpusToStandardOutput()
+    {
+        using Tool tool = new();
+        ToolRun run = tool.Run("audio", Path.Combine(Tool.Corpus, "audio/wav-s16-stereo.wav"), "-o", "-", "--format", "opus");
+        Assert.True(run.Code == 0, run.Error);
+        File.WriteAllBytes(tool.PathOf("piped.opus"), run.Bytes);
+        Assert.Equal(CodecIds.Opus, MediaFile.Probe(tool.PathOf("piped.opus")).Tracks.Single().CodecId);
+    }
+
+    [Theory]
+    [InlineData("webm-vp8-opus.webm", "out.webm")]
+    [InlineData("mkv-mjpeg-pcm.mkv", "out.mkv")]
+    [InlineData("mkv-mjpeg-pcm.mkv", "out.mp4")]
+    public void VideoPacketsStayAndAudioBecomesOpus(string clip, string output)
+    {
+        using Tool tool = new();
+        string source = Path.Combine(Tool.Corpus, clip);
+        ToolRun run = tool.Run("audio", source, "-o", output, "--codec", "opus", "--bitrate", "48k");
+        Assert.True(run.Code == 0, run.Error);
+        Assert.Equal(VideoPackets(source), VideoPackets(tool.PathOf(output)));
+        MediaInfo info = MediaFile.Probe(tool.PathOf(output));
+        Assert.All(info.Tracks.Where(t => t.Kind == TrackKind.Audio), t => Assert.Equal(CodecIds.Opus, t.CodecId));
     }
 
     [Fact]
@@ -226,6 +303,22 @@ public sealed class AudioTests
     }
 
     /// <summary>The video packets of a file, as <see cref="RemuxTests.Packets(string)"/> lists them.</summary>
+    /// <summary>The number of samples a file decodes to, at <paramref name="rate"/>.</summary>
+    private static long DecodedLength(string path, int rate)
+    {
+        using AudioReader reader = AudioReader.Open(path, new AudioReaderOptions { SampleRate = rate });
+        long length = 0;
+        while (reader.TryRead(out AudioFrame? frame))
+        {
+            using (frame)
+            {
+                length += frame.SampleCount;
+            }
+        }
+
+        return length;
+    }
+
     private static List<string> VideoPackets(string path) => [.. RemuxTests.Packets(path).Where(p => p.StartsWith("Video ", StringComparison.Ordinal))];
 
     /// <summary>Checks a FLAC file with the reference decoder, or ffmpeg's, when either is on the PATH.</summary>
