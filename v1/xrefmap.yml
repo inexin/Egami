@@ -81891,6 +81891,12 @@ references:
   commentId: F:Egami.Video.CodecIds.AcmAudio
   fullName: Egami.Video.CodecIds.AcmAudio
   nameWithType: CodecIds.AcmAudio
+- uid: Egami.Video.CodecIds.Alac
+  name: Alac
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Alac
+  commentId: F:Egami.Video.CodecIds.Alac
+  fullName: Egami.Video.CodecIds.Alac
+  nameWithType: CodecIds.Alac
 - uid: Egami.Video.CodecIds.Ass
   name: Ass
   href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Ass
@@ -84404,6 +84410,125 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Containers.AviFormat.SignatureLength
   nameWithType: AviFormat.SignatureLength
+- uid: Egami.Video.Containers.CafFormat
+  name: CafFormat
+  href: api/Egami.Video.Containers.CafFormat.html
+  commentId: T:Egami.Video.Containers.CafFormat
+  fullName: Egami.Video.Containers.CafFormat
+  nameWithType: CafFormat
+- uid: Egami.Video.Containers.CafFormat.CanMux
+  name: CanMux
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_CanMux
+  commentId: P:Egami.Video.Containers.CafFormat.CanMux
+  fullName: Egami.Video.Containers.CafFormat.CanMux
+  nameWithType: CafFormat.CanMux
+- uid: Egami.Video.Containers.CafFormat.CanMux*
+  name: CanMux
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_CanMux_
+  commentId: Overload:Egami.Video.Containers.CafFormat.CanMux
+  isSpec: "True"
+  fullName: Egami.Video.Containers.CafFormat.CanMux
+  nameWithType: CafFormat.CanMux
+- uid: Egami.Video.Containers.CafFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name: CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.CafFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name.vb: CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.CafFormat.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo>, Egami.Video.MediaMetadata, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.CafFormat.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList(Of Egami.Video.TrackInfo), Egami.Video.MediaMetadata, Egami.Video.MediaContext, Boolean)
+  nameWithType: CafFormat.CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  nameWithType.vb: CafFormat.CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+- uid: Egami.Video.Containers.CafFormat.CreateMuxer*
+  name: CreateMuxer
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_CreateMuxer_
+  commentId: Overload:Egami.Video.Containers.CafFormat.CreateMuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.CafFormat.CreateMuxer
+  nameWithType: CafFormat.CreateMuxer
+- uid: Egami.Video.Containers.CafFormat.Extensions
+  name: Extensions
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_Extensions
+  commentId: P:Egami.Video.Containers.CafFormat.Extensions
+  fullName: Egami.Video.Containers.CafFormat.Extensions
+  nameWithType: CafFormat.Extensions
+- uid: Egami.Video.Containers.CafFormat.Extensions*
+  name: Extensions
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_Extensions_
+  commentId: Overload:Egami.Video.Containers.CafFormat.Extensions
+  isSpec: "True"
+  fullName: Egami.Video.Containers.CafFormat.Extensions
+  nameWithType: CafFormat.Extensions
+- uid: Egami.Video.Containers.CafFormat.Instance
+  name: Instance
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_Instance
+  commentId: P:Egami.Video.Containers.CafFormat.Instance
+  fullName: Egami.Video.Containers.CafFormat.Instance
+  nameWithType: CafFormat.Instance
+- uid: Egami.Video.Containers.CafFormat.Instance*
+  name: Instance
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_Instance_
+  commentId: Overload:Egami.Video.Containers.CafFormat.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Containers.CafFormat.Instance
+  nameWithType: CafFormat.Instance
+- uid: Egami.Video.Containers.CafFormat.IsMatch(System.ReadOnlySpan{System.Byte})
+  name: IsMatch(ReadOnlySpan<byte>)
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_IsMatch_System_ReadOnlySpan_System_Byte__
+  commentId: M:Egami.Video.Containers.CafFormat.IsMatch(System.ReadOnlySpan{System.Byte})
+  name.vb: IsMatch(ReadOnlySpan(Of Byte))
+  fullName: Egami.Video.Containers.CafFormat.IsMatch(System.ReadOnlySpan<byte>)
+  fullName.vb: Egami.Video.Containers.CafFormat.IsMatch(System.ReadOnlySpan(Of Byte))
+  nameWithType: CafFormat.IsMatch(ReadOnlySpan<byte>)
+  nameWithType.vb: CafFormat.IsMatch(ReadOnlySpan(Of Byte))
+- uid: Egami.Video.Containers.CafFormat.IsMatch*
+  name: IsMatch
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_IsMatch_
+  commentId: Overload:Egami.Video.Containers.CafFormat.IsMatch
+  isSpec: "True"
+  fullName: Egami.Video.Containers.CafFormat.IsMatch
+  nameWithType: CafFormat.IsMatch
+- uid: Egami.Video.Containers.CafFormat.Name
+  name: Name
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_Name
+  commentId: P:Egami.Video.Containers.CafFormat.Name
+  fullName: Egami.Video.Containers.CafFormat.Name
+  nameWithType: CafFormat.Name
+- uid: Egami.Video.Containers.CafFormat.Name*
+  name: Name
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_Name_
+  commentId: Overload:Egami.Video.Containers.CafFormat.Name
+  isSpec: "True"
+  fullName: Egami.Video.Containers.CafFormat.Name
+  nameWithType: CafFormat.Name
+- uid: Egami.Video.Containers.CafFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name: OpenDemuxer(Stream, MediaContext, bool)
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.CafFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name.vb: OpenDemuxer(Stream, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.CafFormat.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.CafFormat.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, Boolean)
+  nameWithType: CafFormat.OpenDemuxer(Stream, MediaContext, bool)
+  nameWithType.vb: CafFormat.OpenDemuxer(Stream, MediaContext, Boolean)
+- uid: Egami.Video.Containers.CafFormat.OpenDemuxer*
+  name: OpenDemuxer
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_OpenDemuxer_
+  commentId: Overload:Egami.Video.Containers.CafFormat.OpenDemuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.CafFormat.OpenDemuxer
+  nameWithType: CafFormat.OpenDemuxer
+- uid: Egami.Video.Containers.CafFormat.SignatureLength
+  name: SignatureLength
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_SignatureLength
+  commentId: P:Egami.Video.Containers.CafFormat.SignatureLength
+  fullName: Egami.Video.Containers.CafFormat.SignatureLength
+  nameWithType: CafFormat.SignatureLength
+- uid: Egami.Video.Containers.CafFormat.SignatureLength*
+  name: SignatureLength
+  href: api/Egami.Video.Containers.CafFormat.html#Egami_Video_Containers_CafFormat_SignatureLength_
+  commentId: Overload:Egami.Video.Containers.CafFormat.SignatureLength
+  isSpec: "True"
+  fullName: Egami.Video.Containers.CafFormat.SignatureLength
+  nameWithType: CafFormat.SignatureLength
 - uid: Egami.Video.Containers.ContainerFormat
   name: ContainerFormat
   href: api/Egami.Video.Containers.ContainerFormat.html

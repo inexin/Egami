@@ -345,6 +345,29 @@ using (AudioWriter writer = AudioWriter.Create(&quot;titled.aiff&quot;, new Audi
 using AudioReader reader = AudioReader.Open(&quot;titled.aiff&quot;);
 Console.WriteLine($&quot;{reader.Track.CodecId}: {reader.Track.SampleRate} Hz, {MediaFile.Probe(&quot;titled.aiff&quot;).Tags[&quot;TITLE&quot;]}&quot;);
 </code></pre>
+<p><code>CafFormat</code> reads and writes Apple's Core Audio Format (.caf): PCM of 8 to 32 bits in either byte order, 32 and 64-bit float,
+G.711, ALAC, Opus, AAC, MP3, AC-3 and FLAC, with 64-bit chunk sizes and so no 4 GB limit. The packet table (pakt) cuts
+variable-size packets and gives the priming frames, which become the track's <code>CodecDelay</code>, and the padding at the end; the
+magic cookie (kuki) becomes the track's <code>CodecPrivate</code>. The info chunk becomes tags, markers and regions named by the strg
+chunk become chapters, and a chan chunk gives the layout. Other formats pass through with an <code>X_CAF/</code> codec id. The writer
+streams PCM and G.711: on a non-seekable output the data chunk's size is -1, meaning &quot;to the end of the file&quot;. For other
+codecs it puts the packet table after the samples, or before them through a temporary file when the output cannot seek, so
+the file can be read as a stream. Reading a file whose packet table follows the samples needs a seekable stream.</p>
+<pre><code class="lang-csharp">// CAF has no 4 GB limit and streams PCM: on a pipe the data chunk simply runs to the end of the file.
+using (AudioWriter writer = AudioWriter.Create(&quot;tone.caf&quot;))
+{
+    writer.Write(tone);
+}
+
+// Opus, AAC, MP3, AC-3, FLAC and ALAC packets are cut by the packet table, which also gives the priming frames.
+using (AudioWriter writer = AudioWriter.Create(&quot;tone-opus.caf&quot;, new AudioWriterOptions { Codec = AudioCodecs.Opus }))
+{
+    writer.Write(tone);
+}
+
+AudioTrackInfo opus = (AudioTrackInfo)MediaFile.Probe(&quot;tone-opus.caf&quot;).Tracks[0];
+Console.WriteLine($&quot;{opus.CodecId}: {opus.Duration}, {opus.CodecDelay} priming&quot;);
+</code></pre>
 <p><code>OggFormat</code> reads and writes Ogg (.ogg, .opus, .oga) with Opus, Vorbis and FLAC. Timestamps come from the granule positions,
 seeking from an index built in one pass over the page headers, and pages with a bad CRC are skipped with an <code>ogg-crc</code>
 warning. A chained file (one stream after another) reads as one track when the settings stay the same, each link's TITLE a
