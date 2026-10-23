@@ -153,8 +153,9 @@ for (int i = 0; i &lt; pictures.Count; i++)
 <ul>
 <li><code>KeyFrame</code> starts a frame that decodes on its own; the first frame is always one.</li>
 <li><code>Quality</code> (0 to 100, the scale of lossy WebP) or <code>Quantizer</code> (VP8's index, 0 to 127, for rate control) sets the frame's
-quantizer, and <code>Effort</code> (0 to 10, default 4) how hard the encoder searches: how far it looks for motion, whether it tries split
-vectors and every intra mode, and whether it tries loop filter levels by decoding the frame with each.</li>
+quantizer, and <code>Effort</code> (0 to 10, default 4) how hard the encoder searches: how far it looks for motion, how many candidates it
+codes in full, which split layouts it tries, where it tries the intra modes and the golden and alternate frames, and how many
+loop filter levels it tries.</li>
 <li><code>References</code> (a <code>Vp8References</code>) says which references an inter frame may predict from, and <code>RefreshLast</code>, <code>RefreshGolden</code>,
 <code>RefreshAlternate</code>, <code>CopyToGolden</code> and <code>CopyToAlternate</code> (a <code>Vp8ReferenceCopy</code>) what becomes of them. <code>GoldenSignBias</code> and <code>AlternateSignBias</code> mark a reference that lies in
 the future, as a hidden alternate frame does.</li>
@@ -168,9 +169,10 @@ and <code>Partitions</code> splits the coefficients into 2, 4 or 8 parts that de
 the decoded frame against the picture (<code>LumaPsnr</code> from it), and how many macroblocks were intra or had nothing to code: what rate
 control needs to plan the next frame.</p>
 <p>At the default effort the frames are about as small as libvpx's at <code>--good --cpu-used=1</code> for the same luma PSNR, within a few
-percent on natural pictures and about 10% larger on synthetic test patterns, and higher efforts come out smaller still. The
-encoder keeps the stream's four frame buffers from the context's memory source and decodes each frame it writes to keep its
-references; its output does not depend on <code>MaxParallelism</code>. Lossy WebP stills are not affected: they encode as before.</p>
+percent on natural pictures and up to about 10% larger on synthetic test patterns, and higher efforts come out smaller still.
+The encoder codes a frame's macroblock rows on the context's <code>MaxParallelism</code> threads, each row a little behind the one above
+it; its output does not depend on the thread count. It keeps the stream's four frame buffers from the context's memory source.
+Lossy WebP stills are not affected: they encode as before.</p>
 
 </article>
 

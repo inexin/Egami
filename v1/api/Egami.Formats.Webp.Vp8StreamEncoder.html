@@ -170,9 +170,9 @@ for (int i = 0; i &lt; pictures.Count; i++)
 
 
   <h2 id="Egami_Formats_Webp_Vp8StreamEncoder_remarks">Remarks</h2>
-  <div class="markdown level0 remarks"><p>The encoder keeps the stream's references in four frame buffers from the context's <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Memory">Memory</a> and
-decodes each frame it writes to keep them, on up to <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_MaxParallelism">MaxParallelism</a> threads; the output does not
-depend on the thread count. The frame size is checked against the context's <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Limits">Limits</a>. An instance is
+  <div class="markdown level0 remarks"><p>The encoder keeps the stream's references in four frame buffers from the context's <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Memory">Memory</a>. It
+codes a frame's macroblock rows on up to <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_MaxParallelism">MaxParallelism</a> threads, each row a little behind the one
+above; the output does not depend on the thread count. The frame size is checked against the context's <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Limits">Limits</a>. An instance is
 not thread-safe.</p>
 </div>
 
@@ -185,7 +185,7 @@ not thread-safe.</p>
 
   <h3 id="Egami_Formats_Webp_Vp8StreamEncoder__ctor_System_Int32_System_Int32_Egami_EgamiContext_" data-uid="Egami.Formats.Webp.Vp8StreamEncoder.#ctor(System.Int32,System.Int32,Egami.EgamiContext)">
   Vp8StreamEncoder(int, int, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L40"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Starts a stream of <code class="paramref">width</code> × <code class="paramref">height</code> frames.</p>
@@ -237,7 +237,7 @@ not thread-safe.</p>
 
   <h3 id="Egami_Formats_Webp_Vp8StreamEncoder_Height" data-uid="Egami.Formats.Webp.Vp8StreamEncoder.Height">
   Height
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L60"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the frame height.</p>
@@ -269,7 +269,7 @@ not thread-safe.</p>
 
   <h3 id="Egami_Formats_Webp_Vp8StreamEncoder_Width" data-uid="Egami.Formats.Webp.Vp8StreamEncoder.Width">
   Width
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L57"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the frame width.</p>
@@ -305,7 +305,7 @@ not thread-safe.</p>
 
   <h3 id="Egami_Formats_Webp_Vp8StreamEncoder_Dispose" data-uid="Egami.Formats.Webp.Vp8StreamEncoder.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L162"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the frame buffers to the memory source and stops the decoder's threads.</p>
@@ -332,7 +332,7 @@ not thread-safe.</p>
 
   <h3 id="Egami_Formats_Webp_Vp8StreamEncoder_Encode_Egami_YuvRaster_System_Byte__Egami_Formats_Webp_Vp8FramePlan_" data-uid="Egami.Formats.Webp.Vp8StreamEncoder.Encode(Egami.YuvRaster{System.Byte},Egami.Formats.Webp.Vp8FramePlan)">
   Encode(YuvRaster&lt;byte&gt;, Vp8FramePlan)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L75"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Encodes one frame as <code class="paramref">plan</code> says and updates the references. The first frame is always a key frame.</p>

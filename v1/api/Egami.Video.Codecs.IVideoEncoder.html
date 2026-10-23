@@ -177,7 +177,7 @@ while (encoder.TryReceive(out EncodedPacket? packet))
 
   <h3 id="Egami_Video_Codecs_IVideoEncoder_Flush" data-uid="Egami.Video.Codecs.IVideoEncoder.Flush">
   Flush()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/IVideoEncoder.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/IVideoEncoder.cs/#L45"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Tells the encoder no more frames come, so it releases every packet it holds.</p>
@@ -240,11 +240,84 @@ timestamp is rescaled to the track's time base. The caller keeps ownership of th
 
 
 
+  <a id="Egami_Video_Codecs_IVideoEncoder_Send_" data-uid="Egami.Video.Codecs.IVideoEncoder.Send*"></a>
+
+  <h3 id="Egami_Video_Codecs_IVideoEncoder_Send_Egami_Video_VideoFrame_Egami_Video_Codecs_EncodeFrameOptions_" data-uid="Egami.Video.Codecs.IVideoEncoder.Send(Egami.Video.VideoFrame,Egami.Video.Codecs.EncodeFrameOptions)">
+  Send(VideoFrame, EncodeFrameOptions)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/IVideoEncoder.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Encodes a frame with per-frame settings, such as <a class="xref" href="Egami.Video.Codecs.EncodeFrameOptions.html#Egami_Video_Codecs_EncodeFrameOptions_ForceKeyframe">ForceKeyframe</a>. Encoders whose every
+packet is a keyframe (Motion JPEG, uncompressed video) treat it as <a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Send_Egami_Video_VideoFrame_">Send(VideoFrame)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void Send(VideoFrame frame, EncodeFrameOptions options)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Video.VideoFrame.html">VideoFrame</a></dt>
+    <dd><p>The frame, as for <a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Send_Egami_Video_VideoFrame_">Send(VideoFrame)</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Codecs.EncodeFrameOptions.html">EncodeFrameOptions</a></dt>
+    <dd><p>The frame's settings.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Codecs_IVideoEncoder_Send_Egami_Video_VideoFrame_Egami_Video_Codecs_EncodeFrameOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Live: no lookahead, so each packet comes out as soon as its frame goes in, at a constant bitrate.
+VideoEncoderOptions options = new()
+{
+    Width = 320,
+    Height = 240,
+    LatencyMode = LatencyMode.Realtime,
+    RateControl = RateControlMode.ConstantBitrate,
+    Bitrate = 300_000,
+};
+using IVideoEncoder encoder = VideoCodecs.Vp8.CreateEncoder(options, MediaContext.Default);
+using IMuxer muxer = MediaFile.CreateMuxer(stream, "webm", [encoder.Track], leaveOpen: true);
+for (int i = 0; i &lt; 60; i++)
+{
+    using VideoFrame&lt;Rgb8&gt; frame = new(Raster.Create(320, 240, new Rgb8((byte)i, 90, 160)), new MediaTime(i, new Rational(1, 30)));
+
+    // A viewer joined: start a keyframe so they can decode from here.
+    encoder.Send(frame, new EncodeFrameOptions { ForceKeyframe = i == 30 });
+    while (encoder.TryReceive(out EncodedPacket? packet))
+    {
+        using (packet)
+        {
+            muxer.WritePacket(packet);
+        }
+    }
+}
+
+encoder.Flush();
+muxer.Finish();</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The frame's size differs from the encoder's.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Video_Codecs_IVideoEncoder_TryReceive_" data-uid="Egami.Video.Codecs.IVideoEncoder.TryReceive*"></a>
 
   <h3 id="Egami_Video_Codecs_IVideoEncoder_TryReceive_Egami_Video_EncodedPacket__" data-uid="Egami.Video.Codecs.IVideoEncoder.TryReceive(Egami.Video.EncodedPacket@)">
   TryReceive(out EncodedPacket?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/IVideoEncoder.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/IVideoEncoder.cs/#L50"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Takes the next packet.</p>

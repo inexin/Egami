@@ -76147,6 +76147,127 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.CodecHeaders.Describe
   nameWithType: CodecHeaders.Describe
+- uid: Egami.Video.Codecs.EncodeFrameOptions
+  name: EncodeFrameOptions
+  href: api/Egami.Video.Codecs.EncodeFrameOptions.html
+  commentId: T:Egami.Video.Codecs.EncodeFrameOptions
+  fullName: Egami.Video.Codecs.EncodeFrameOptions
+  nameWithType: EncodeFrameOptions
+- uid: Egami.Video.Codecs.EncodeFrameOptions.Default
+  name: Default
+  href: api/Egami.Video.Codecs.EncodeFrameOptions.html#Egami_Video_Codecs_EncodeFrameOptions_Default
+  commentId: P:Egami.Video.Codecs.EncodeFrameOptions.Default
+  fullName: Egami.Video.Codecs.EncodeFrameOptions.Default
+  nameWithType: EncodeFrameOptions.Default
+- uid: Egami.Video.Codecs.EncodeFrameOptions.Default*
+  name: Default
+  href: api/Egami.Video.Codecs.EncodeFrameOptions.html#Egami_Video_Codecs_EncodeFrameOptions_Default_
+  commentId: Overload:Egami.Video.Codecs.EncodeFrameOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.EncodeFrameOptions.Default
+  nameWithType: EncodeFrameOptions.Default
+- uid: Egami.Video.Codecs.EncodeFrameOptions.ForceKeyframe
+  name: ForceKeyframe
+  href: api/Egami.Video.Codecs.EncodeFrameOptions.html#Egami_Video_Codecs_EncodeFrameOptions_ForceKeyframe
+  commentId: P:Egami.Video.Codecs.EncodeFrameOptions.ForceKeyframe
+  fullName: Egami.Video.Codecs.EncodeFrameOptions.ForceKeyframe
+  nameWithType: EncodeFrameOptions.ForceKeyframe
+- uid: Egami.Video.Codecs.EncodeFrameOptions.ForceKeyframe*
+  name: ForceKeyframe
+  href: api/Egami.Video.Codecs.EncodeFrameOptions.html#Egami_Video_Codecs_EncodeFrameOptions_ForceKeyframe_
+  commentId: Overload:Egami.Video.Codecs.EncodeFrameOptions.ForceKeyframe
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.EncodeFrameOptions.ForceKeyframe
+  nameWithType: EncodeFrameOptions.ForceKeyframe
+- uid: Egami.Video.Codecs.FirstPassStats
+  name: FirstPassStats
+  href: api/Egami.Video.Codecs.FirstPassStats.html
+  commentId: T:Egami.Video.Codecs.FirstPassStats
+  fullName: Egami.Video.Codecs.FirstPassStats
+  nameWithType: FirstPassStats
+- uid: Egami.Video.Codecs.FirstPassStats.FrameCount
+  name: FrameCount
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_FrameCount
+  commentId: P:Egami.Video.Codecs.FirstPassStats.FrameCount
+  fullName: Egami.Video.Codecs.FirstPassStats.FrameCount
+  nameWithType: FirstPassStats.FrameCount
+- uid: Egami.Video.Codecs.FirstPassStats.FrameCount*
+  name: FrameCount
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_FrameCount_
+  commentId: Overload:Egami.Video.Codecs.FirstPassStats.FrameCount
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.FirstPassStats.FrameCount
+  nameWithType: FirstPassStats.FrameCount
+- uid: Egami.Video.Codecs.FirstPassStats.Height
+  name: Height
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_Height
+  commentId: P:Egami.Video.Codecs.FirstPassStats.Height
+  fullName: Egami.Video.Codecs.FirstPassStats.Height
+  nameWithType: FirstPassStats.Height
+- uid: Egami.Video.Codecs.FirstPassStats.Height*
+  name: Height
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_Height_
+  commentId: Overload:Egami.Video.Codecs.FirstPassStats.Height
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.FirstPassStats.Height
+  nameWithType: FirstPassStats.Height
+- uid: Egami.Video.Codecs.FirstPassStats.Load(System.IO.Stream)
+  name: Load(Stream)
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_Load_System_IO_Stream_
+  commentId: M:Egami.Video.Codecs.FirstPassStats.Load(System.IO.Stream)
+  fullName: Egami.Video.Codecs.FirstPassStats.Load(System.IO.Stream)
+  nameWithType: FirstPassStats.Load(Stream)
+- uid: Egami.Video.Codecs.FirstPassStats.Load(System.String)
+  name: Load(string)
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_Load_System_String_
+  commentId: M:Egami.Video.Codecs.FirstPassStats.Load(System.String)
+  name.vb: Load(String)
+  fullName: Egami.Video.Codecs.FirstPassStats.Load(string)
+  fullName.vb: Egami.Video.Codecs.FirstPassStats.Load(String)
+  nameWithType: FirstPassStats.Load(string)
+  nameWithType.vb: FirstPassStats.Load(String)
+- uid: Egami.Video.Codecs.FirstPassStats.Load*
+  name: Load
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_Load_
+  commentId: Overload:Egami.Video.Codecs.FirstPassStats.Load
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.FirstPassStats.Load
+  nameWithType: FirstPassStats.Load
+- uid: Egami.Video.Codecs.FirstPassStats.Save(System.IO.Stream)
+  name: Save(Stream)
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_Save_System_IO_Stream_
+  commentId: M:Egami.Video.Codecs.FirstPassStats.Save(System.IO.Stream)
+  fullName: Egami.Video.Codecs.FirstPassStats.Save(System.IO.Stream)
+  nameWithType: FirstPassStats.Save(Stream)
+- uid: Egami.Video.Codecs.FirstPassStats.Save(System.String)
+  name: Save(string)
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_Save_System_String_
+  commentId: M:Egami.Video.Codecs.FirstPassStats.Save(System.String)
+  name.vb: Save(String)
+  fullName: Egami.Video.Codecs.FirstPassStats.Save(string)
+  fullName.vb: Egami.Video.Codecs.FirstPassStats.Save(String)
+  nameWithType: FirstPassStats.Save(string)
+  nameWithType.vb: FirstPassStats.Save(String)
+- uid: Egami.Video.Codecs.FirstPassStats.Save*
+  name: Save
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_Save_
+  commentId: Overload:Egami.Video.Codecs.FirstPassStats.Save
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.FirstPassStats.Save
+  nameWithType: FirstPassStats.Save
+- uid: Egami.Video.Codecs.FirstPassStats.Width
+  name: Width
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_Width
+  commentId: P:Egami.Video.Codecs.FirstPassStats.Width
+  fullName: Egami.Video.Codecs.FirstPassStats.Width
+  nameWithType: FirstPassStats.Width
+- uid: Egami.Video.Codecs.FirstPassStats.Width*
+  name: Width
+  href: api/Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_Width_
+  commentId: Overload:Egami.Video.Codecs.FirstPassStats.Width
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.FirstPassStats.Width
+  nameWithType: FirstPassStats.Width
 - uid: Egami.Video.Codecs.IVideoDecoder
   name: IVideoDecoder
   href: api/Egami.Video.Codecs.IVideoDecoder.html
@@ -76311,6 +76432,12 @@ references:
   commentId: M:Egami.Video.Codecs.IVideoEncoder.Send(Egami.Video.VideoFrame)
   fullName: Egami.Video.Codecs.IVideoEncoder.Send(Egami.Video.VideoFrame)
   nameWithType: IVideoEncoder.Send(VideoFrame)
+- uid: Egami.Video.Codecs.IVideoEncoder.Send(Egami.Video.VideoFrame,Egami.Video.Codecs.EncodeFrameOptions)
+  name: Send(VideoFrame, EncodeFrameOptions)
+  href: api/Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Send_Egami_Video_VideoFrame_Egami_Video_Codecs_EncodeFrameOptions_
+  commentId: M:Egami.Video.Codecs.IVideoEncoder.Send(Egami.Video.VideoFrame,Egami.Video.Codecs.EncodeFrameOptions)
+  fullName: Egami.Video.Codecs.IVideoEncoder.Send(Egami.Video.VideoFrame, Egami.Video.Codecs.EncodeFrameOptions)
+  nameWithType: IVideoEncoder.Send(VideoFrame, EncodeFrameOptions)
 - uid: Egami.Video.Codecs.IVideoEncoder.Send*
   name: Send
   href: api/Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Send_
@@ -76347,6 +76474,24 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.IVideoEncoder.TryReceive
   nameWithType: IVideoEncoder.TryReceive
+- uid: Egami.Video.Codecs.LatencyMode
+  name: LatencyMode
+  href: api/Egami.Video.Codecs.LatencyMode.html
+  commentId: T:Egami.Video.Codecs.LatencyMode
+  fullName: Egami.Video.Codecs.LatencyMode
+  nameWithType: LatencyMode
+- uid: Egami.Video.Codecs.LatencyMode.Quality
+  name: Quality
+  href: api/Egami.Video.Codecs.LatencyMode.html#Egami_Video_Codecs_LatencyMode_Quality
+  commentId: F:Egami.Video.Codecs.LatencyMode.Quality
+  fullName: Egami.Video.Codecs.LatencyMode.Quality
+  nameWithType: LatencyMode.Quality
+- uid: Egami.Video.Codecs.LatencyMode.Realtime
+  name: Realtime
+  href: api/Egami.Video.Codecs.LatencyMode.html#Egami_Video_Codecs_LatencyMode_Realtime
+  commentId: F:Egami.Video.Codecs.LatencyMode.Realtime
+  fullName: Egami.Video.Codecs.LatencyMode.Realtime
+  nameWithType: LatencyMode.Realtime
 - uid: Egami.Video.Codecs.MotionJpegCodec
   name: MotionJpegCodec
   href: api/Egami.Video.Codecs.MotionJpegCodec.html
@@ -76447,6 +76592,36 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.MotionJpegCodec.Name
   nameWithType: MotionJpegCodec.Name
+- uid: Egami.Video.Codecs.RateControlMode
+  name: RateControlMode
+  href: api/Egami.Video.Codecs.RateControlMode.html
+  commentId: T:Egami.Video.Codecs.RateControlMode
+  fullName: Egami.Video.Codecs.RateControlMode
+  nameWithType: RateControlMode
+- uid: Egami.Video.Codecs.RateControlMode.Bitrate
+  name: Bitrate
+  href: api/Egami.Video.Codecs.RateControlMode.html#Egami_Video_Codecs_RateControlMode_Bitrate
+  commentId: F:Egami.Video.Codecs.RateControlMode.Bitrate
+  fullName: Egami.Video.Codecs.RateControlMode.Bitrate
+  nameWithType: RateControlMode.Bitrate
+- uid: Egami.Video.Codecs.RateControlMode.ConstantBitrate
+  name: ConstantBitrate
+  href: api/Egami.Video.Codecs.RateControlMode.html#Egami_Video_Codecs_RateControlMode_ConstantBitrate
+  commentId: F:Egami.Video.Codecs.RateControlMode.ConstantBitrate
+  fullName: Egami.Video.Codecs.RateControlMode.ConstantBitrate
+  nameWithType: RateControlMode.ConstantBitrate
+- uid: Egami.Video.Codecs.RateControlMode.Quality
+  name: Quality
+  href: api/Egami.Video.Codecs.RateControlMode.html#Egami_Video_Codecs_RateControlMode_Quality
+  commentId: F:Egami.Video.Codecs.RateControlMode.Quality
+  fullName: Egami.Video.Codecs.RateControlMode.Quality
+  nameWithType: RateControlMode.Quality
+- uid: Egami.Video.Codecs.RateControlMode.Quantizer
+  name: Quantizer
+  href: api/Egami.Video.Codecs.RateControlMode.html#Egami_Video_Codecs_RateControlMode_Quantizer
+  commentId: F:Egami.Video.Codecs.RateControlMode.Quantizer
+  fullName: Egami.Video.Codecs.RateControlMode.Quantizer
+  nameWithType: RateControlMode.Quantizer
 - uid: Egami.Video.Codecs.RawVideoCodec
   name: RawVideoCodec
   href: api/Egami.Video.Codecs.RawVideoCodec.html
@@ -76823,6 +76998,32 @@ references:
   commentId: T:Egami.Video.Codecs.VideoEncoderOptions
   fullName: Egami.Video.Codecs.VideoEncoderOptions
   nameWithType: VideoEncoderOptions
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Bitrate
+  name: Bitrate
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Bitrate
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.Bitrate
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Bitrate
+  nameWithType: VideoEncoderOptions.Bitrate
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Bitrate*
+  name: Bitrate
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Bitrate_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.Bitrate
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Bitrate
+  nameWithType: VideoEncoderOptions.Bitrate
+- uid: Egami.Video.Codecs.VideoEncoderOptions.BufferSize
+  name: BufferSize
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_BufferSize
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.BufferSize
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.BufferSize
+  nameWithType: VideoEncoderOptions.BufferSize
+- uid: Egami.Video.Codecs.VideoEncoderOptions.BufferSize*
+  name: BufferSize
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_BufferSize_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.BufferSize
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.BufferSize
+  nameWithType: VideoEncoderOptions.BufferSize
 - uid: Egami.Video.Codecs.VideoEncoderOptions.ChromaFormat
   name: ChromaFormat
   href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_ChromaFormat
@@ -76836,6 +77037,32 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.VideoEncoderOptions.ChromaFormat
   nameWithType: VideoEncoderOptions.ChromaFormat
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Effort
+  name: Effort
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Effort
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.Effort
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Effort
+  nameWithType: VideoEncoderOptions.Effort
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Effort*
+  name: Effort
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Effort_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.Effort
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Effort
+  nameWithType: VideoEncoderOptions.Effort
+- uid: Egami.Video.Codecs.VideoEncoderOptions.FirstPassStats
+  name: FirstPassStats
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_FirstPassStats
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.FirstPassStats
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.FirstPassStats
+  nameWithType: VideoEncoderOptions.FirstPassStats
+- uid: Egami.Video.Codecs.VideoEncoderOptions.FirstPassStats*
+  name: FirstPassStats
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_FirstPassStats_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.FirstPassStats
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.FirstPassStats
+  nameWithType: VideoEncoderOptions.FirstPassStats
 - uid: Egami.Video.Codecs.VideoEncoderOptions.FrameRate
   name: FrameRate
   href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_FrameRate
@@ -76862,6 +77089,45 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.VideoEncoderOptions.Height
   nameWithType: VideoEncoderOptions.Height
+- uid: Egami.Video.Codecs.VideoEncoderOptions.KeyframeInterval
+  name: KeyframeInterval
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_KeyframeInterval
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.KeyframeInterval
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.KeyframeInterval
+  nameWithType: VideoEncoderOptions.KeyframeInterval
+- uid: Egami.Video.Codecs.VideoEncoderOptions.KeyframeInterval*
+  name: KeyframeInterval
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_KeyframeInterval_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.KeyframeInterval
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.KeyframeInterval
+  nameWithType: VideoEncoderOptions.KeyframeInterval
+- uid: Egami.Video.Codecs.VideoEncoderOptions.LatencyMode
+  name: LatencyMode
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_LatencyMode
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.LatencyMode
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.LatencyMode
+  nameWithType: VideoEncoderOptions.LatencyMode
+- uid: Egami.Video.Codecs.VideoEncoderOptions.LatencyMode*
+  name: LatencyMode
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_LatencyMode_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.LatencyMode
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.LatencyMode
+  nameWithType: VideoEncoderOptions.LatencyMode
+- uid: Egami.Video.Codecs.VideoEncoderOptions.MaxBitrate
+  name: MaxBitrate
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_MaxBitrate
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.MaxBitrate
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.MaxBitrate
+  nameWithType: VideoEncoderOptions.MaxBitrate
+- uid: Egami.Video.Codecs.VideoEncoderOptions.MaxBitrate*
+  name: MaxBitrate
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_MaxBitrate_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.MaxBitrate
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.MaxBitrate
+  nameWithType: VideoEncoderOptions.MaxBitrate
 - uid: Egami.Video.Codecs.VideoEncoderOptions.Quality
   name: Quality
   href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Quality
@@ -76875,6 +77141,45 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.VideoEncoderOptions.Quality
   nameWithType: VideoEncoderOptions.Quality
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Quantizer
+  name: Quantizer
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Quantizer
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.Quantizer
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Quantizer
+  nameWithType: VideoEncoderOptions.Quantizer
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Quantizer*
+  name: Quantizer
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Quantizer_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.Quantizer
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Quantizer
+  nameWithType: VideoEncoderOptions.Quantizer
+- uid: Egami.Video.Codecs.VideoEncoderOptions.RateControl
+  name: RateControl
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_RateControl
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.RateControl
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.RateControl
+  nameWithType: VideoEncoderOptions.RateControl
+- uid: Egami.Video.Codecs.VideoEncoderOptions.RateControl*
+  name: RateControl
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_RateControl_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.RateControl
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.RateControl
+  nameWithType: VideoEncoderOptions.RateControl
+- uid: Egami.Video.Codecs.VideoEncoderOptions.SceneCutKeyframes
+  name: SceneCutKeyframes
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_SceneCutKeyframes
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.SceneCutKeyframes
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.SceneCutKeyframes
+  nameWithType: VideoEncoderOptions.SceneCutKeyframes
+- uid: Egami.Video.Codecs.VideoEncoderOptions.SceneCutKeyframes*
+  name: SceneCutKeyframes
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_SceneCutKeyframes_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.SceneCutKeyframes
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.SceneCutKeyframes
+  nameWithType: VideoEncoderOptions.SceneCutKeyframes
 - uid: Egami.Video.Codecs.VideoEncoderOptions.TargetFrameBytes
   name: TargetFrameBytes
   href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_TargetFrameBytes
@@ -76888,6 +77193,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.VideoEncoderOptions.TargetFrameBytes
   nameWithType: VideoEncoderOptions.TargetFrameBytes
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Vp8
+  name: Vp8
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Vp8
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.Vp8
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Vp8
+  nameWithType: VideoEncoderOptions.Vp8
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Vp8*
+  name: Vp8
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Vp8_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.Vp8
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Vp8
+  nameWithType: VideoEncoderOptions.Vp8
 - uid: Egami.Video.Codecs.VideoEncoderOptions.Width
   name: Width
   href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Width
@@ -76907,6 +77225,19 @@ references:
   commentId: T:Egami.Video.Codecs.Vp8Codec
   fullName: Egami.Video.Codecs.Vp8Codec
   nameWithType: Vp8Codec
+- uid: Egami.Video.Codecs.Vp8Codec.CanEncode
+  name: CanEncode
+  href: api/Egami.Video.Codecs.Vp8Codec.html#Egami_Video_Codecs_Vp8Codec_CanEncode
+  commentId: P:Egami.Video.Codecs.Vp8Codec.CanEncode
+  fullName: Egami.Video.Codecs.Vp8Codec.CanEncode
+  nameWithType: Vp8Codec.CanEncode
+- uid: Egami.Video.Codecs.Vp8Codec.CanEncode*
+  name: CanEncode
+  href: api/Egami.Video.Codecs.Vp8Codec.html#Egami_Video_Codecs_Vp8Codec_CanEncode_
+  commentId: Overload:Egami.Video.Codecs.Vp8Codec.CanEncode
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8Codec.CanEncode
+  nameWithType: Vp8Codec.CanEncode
 - uid: Egami.Video.Codecs.Vp8Codec.CodecId
   name: CodecId
   href: api/Egami.Video.Codecs.Vp8Codec.html#Egami_Video_Codecs_Vp8Codec_CodecId
@@ -76936,6 +77267,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.Vp8Codec.CreateDecoder
   nameWithType: Vp8Codec.CreateDecoder
+- uid: Egami.Video.Codecs.Vp8Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions,Egami.Video.MediaContext)
+  name: CreateEncoder(VideoEncoderOptions, MediaContext)
+  href: api/Egami.Video.Codecs.Vp8Codec.html#Egami_Video_Codecs_Vp8Codec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Codecs.Vp8Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions,Egami.Video.MediaContext)
+  fullName: Egami.Video.Codecs.Vp8Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions, Egami.Video.MediaContext)
+  nameWithType: Vp8Codec.CreateEncoder(VideoEncoderOptions, MediaContext)
+- uid: Egami.Video.Codecs.Vp8Codec.CreateEncoder*
+  name: CreateEncoder
+  href: api/Egami.Video.Codecs.Vp8Codec.html#Egami_Video_Codecs_Vp8Codec_CreateEncoder_
+  commentId: Overload:Egami.Video.Codecs.Vp8Codec.CreateEncoder
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8Codec.CreateEncoder
+  nameWithType: Vp8Codec.CreateEncoder
 - uid: Egami.Video.Codecs.Vp8Codec.Instance
   name: Instance
   href: api/Egami.Video.Codecs.Vp8Codec.html#Egami_Video_Codecs_Vp8Codec_Instance
@@ -76962,6 +77306,142 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.Vp8Codec.Name
   nameWithType: Vp8Codec.Name
+- uid: Egami.Video.Codecs.Vp8EncoderOptions
+  name: Vp8EncoderOptions
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html
+  commentId: T:Egami.Video.Codecs.Vp8EncoderOptions
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions
+  nameWithType: Vp8EncoderOptions
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.Alpha
+  name: Alpha
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_Alpha
+  commentId: P:Egami.Video.Codecs.Vp8EncoderOptions.Alpha
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.Alpha
+  nameWithType: Vp8EncoderOptions.Alpha
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.Alpha*
+  name: Alpha
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_Alpha_
+  commentId: Overload:Egami.Video.Codecs.Vp8EncoderOptions.Alpha
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.Alpha
+  nameWithType: Vp8EncoderOptions.Alpha
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.AlternateReference
+  name: AlternateReference
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_AlternateReference
+  commentId: P:Egami.Video.Codecs.Vp8EncoderOptions.AlternateReference
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.AlternateReference
+  nameWithType: Vp8EncoderOptions.AlternateReference
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.AlternateReference*
+  name: AlternateReference
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_AlternateReference_
+  commentId: Overload:Egami.Video.Codecs.Vp8EncoderOptions.AlternateReference
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.AlternateReference
+  nameWithType: Vp8EncoderOptions.AlternateReference
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.Default
+  name: Default
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_Default
+  commentId: P:Egami.Video.Codecs.Vp8EncoderOptions.Default
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.Default
+  nameWithType: Vp8EncoderOptions.Default
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.Default*
+  name: Default
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_Default_
+  commentId: Overload:Egami.Video.Codecs.Vp8EncoderOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.Default
+  nameWithType: Vp8EncoderOptions.Default
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.ErrorResilient
+  name: ErrorResilient
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_ErrorResilient
+  commentId: P:Egami.Video.Codecs.Vp8EncoderOptions.ErrorResilient
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.ErrorResilient
+  nameWithType: Vp8EncoderOptions.ErrorResilient
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.ErrorResilient*
+  name: ErrorResilient
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_ErrorResilient_
+  commentId: Overload:Egami.Video.Codecs.Vp8EncoderOptions.ErrorResilient
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.ErrorResilient
+  nameWithType: Vp8EncoderOptions.ErrorResilient
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.GoldenInterval
+  name: GoldenInterval
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_GoldenInterval
+  commentId: P:Egami.Video.Codecs.Vp8EncoderOptions.GoldenInterval
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.GoldenInterval
+  nameWithType: Vp8EncoderOptions.GoldenInterval
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.GoldenInterval*
+  name: GoldenInterval
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_GoldenInterval_
+  commentId: Overload:Egami.Video.Codecs.Vp8EncoderOptions.GoldenInterval
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.GoldenInterval
+  nameWithType: Vp8EncoderOptions.GoldenInterval
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.MaxQuantizer
+  name: MaxQuantizer
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_MaxQuantizer
+  commentId: P:Egami.Video.Codecs.Vp8EncoderOptions.MaxQuantizer
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.MaxQuantizer
+  nameWithType: Vp8EncoderOptions.MaxQuantizer
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.MaxQuantizer*
+  name: MaxQuantizer
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_MaxQuantizer_
+  commentId: Overload:Egami.Video.Codecs.Vp8EncoderOptions.MaxQuantizer
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.MaxQuantizer
+  nameWithType: Vp8EncoderOptions.MaxQuantizer
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.MinQuantizer
+  name: MinQuantizer
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_MinQuantizer
+  commentId: P:Egami.Video.Codecs.Vp8EncoderOptions.MinQuantizer
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.MinQuantizer
+  nameWithType: Vp8EncoderOptions.MinQuantizer
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.MinQuantizer*
+  name: MinQuantizer
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_MinQuantizer_
+  commentId: Overload:Egami.Video.Codecs.Vp8EncoderOptions.MinQuantizer
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.MinQuantizer
+  nameWithType: Vp8EncoderOptions.MinQuantizer
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.Partitions
+  name: Partitions
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_Partitions
+  commentId: P:Egami.Video.Codecs.Vp8EncoderOptions.Partitions
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.Partitions
+  nameWithType: Vp8EncoderOptions.Partitions
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.Partitions*
+  name: Partitions
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_Partitions_
+  commentId: Overload:Egami.Video.Codecs.Vp8EncoderOptions.Partitions
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.Partitions
+  nameWithType: Vp8EncoderOptions.Partitions
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterFrames
+  name: TemporalFilterFrames
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_TemporalFilterFrames
+  commentId: P:Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterFrames
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterFrames
+  nameWithType: Vp8EncoderOptions.TemporalFilterFrames
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterFrames*
+  name: TemporalFilterFrames
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_TemporalFilterFrames_
+  commentId: Overload:Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterFrames
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterFrames
+  nameWithType: Vp8EncoderOptions.TemporalFilterFrames
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterStrength
+  name: TemporalFilterStrength
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_TemporalFilterStrength
+  commentId: P:Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterStrength
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterStrength
+  nameWithType: Vp8EncoderOptions.TemporalFilterStrength
+- uid: Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterStrength*
+  name: TemporalFilterStrength
+  href: api/Egami.Video.Codecs.Vp8EncoderOptions.html#Egami_Video_Codecs_Vp8EncoderOptions_TemporalFilterStrength_
+  commentId: Overload:Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterStrength
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterStrength
+  nameWithType: Vp8EncoderOptions.TemporalFilterStrength
 - uid: Egami.Video.Codecs.Vp9Codec
   name: Vp9Codec
   href: api/Egami.Video.Codecs.Vp9Codec.html
@@ -82134,6 +82614,31 @@ references:
   commentId: T:Egami.Video.VideoWriter
   fullName: Egami.Video.VideoWriter
   nameWithType: VideoWriter
+- uid: Egami.Video.VideoWriter.AnalyzeFirstPass(System.Collections.Generic.IEnumerable{Egami.Video.VideoFrame},System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: AnalyzeFirstPass(IEnumerable<VideoFrame>, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.VideoWriter.html#Egami_Video_VideoWriter_AnalyzeFirstPass_System_Collections_Generic_IEnumerable_Egami_Video_VideoFrame__System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.VideoWriter.AnalyzeFirstPass(System.Collections.Generic.IEnumerable{Egami.Video.VideoFrame},System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: AnalyzeFirstPass(IEnumerable(Of VideoFrame), IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.VideoWriter.AnalyzeFirstPass(System.Collections.Generic.IEnumerable<Egami.Video.VideoFrame>, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.VideoWriter.AnalyzeFirstPass(System.Collections.Generic.IEnumerable(Of Egami.Video.VideoFrame), System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: VideoWriter.AnalyzeFirstPass(IEnumerable<VideoFrame>, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: VideoWriter.AnalyzeFirstPass(IEnumerable(Of VideoFrame), IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.VideoWriter.AnalyzeFirstPass(System.String,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: AnalyzeFirstPass(string, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.VideoWriter.html#Egami_Video_VideoWriter_AnalyzeFirstPass_System_String_Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.VideoWriter.AnalyzeFirstPass(System.String,Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: AnalyzeFirstPass(String, MediaContext, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.VideoWriter.AnalyzeFirstPass(string, Egami.Video.MediaContext?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.VideoWriter.AnalyzeFirstPass(String, Egami.Video.MediaContext, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: VideoWriter.AnalyzeFirstPass(string, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: VideoWriter.AnalyzeFirstPass(String, MediaContext, IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.VideoWriter.AnalyzeFirstPass*
+  name: AnalyzeFirstPass
+  href: api/Egami.Video.VideoWriter.html#Egami_Video_VideoWriter_AnalyzeFirstPass_
+  commentId: Overload:Egami.Video.VideoWriter.AnalyzeFirstPass
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriter.AnalyzeFirstPass
+  nameWithType: VideoWriter.AnalyzeFirstPass
 - uid: Egami.Video.VideoWriter.AudioTrack
   name: AudioTrack
   href: api/Egami.Video.VideoWriter.html#Egami_Video_VideoWriter_AudioTrack
@@ -82351,6 +82856,32 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoWriterOptions.AudioSampleRate
   nameWithType: VideoWriterOptions.AudioSampleRate
+- uid: Egami.Video.VideoWriterOptions.Bitrate
+  name: Bitrate
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Bitrate
+  commentId: P:Egami.Video.VideoWriterOptions.Bitrate
+  fullName: Egami.Video.VideoWriterOptions.Bitrate
+  nameWithType: VideoWriterOptions.Bitrate
+- uid: Egami.Video.VideoWriterOptions.Bitrate*
+  name: Bitrate
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Bitrate_
+  commentId: Overload:Egami.Video.VideoWriterOptions.Bitrate
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.Bitrate
+  nameWithType: VideoWriterOptions.Bitrate
+- uid: Egami.Video.VideoWriterOptions.BufferSize
+  name: BufferSize
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_BufferSize
+  commentId: P:Egami.Video.VideoWriterOptions.BufferSize
+  fullName: Egami.Video.VideoWriterOptions.BufferSize
+  nameWithType: VideoWriterOptions.BufferSize
+- uid: Egami.Video.VideoWriterOptions.BufferSize*
+  name: BufferSize
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_BufferSize_
+  commentId: Overload:Egami.Video.VideoWriterOptions.BufferSize
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.BufferSize
+  nameWithType: VideoWriterOptions.BufferSize
 - uid: Egami.Video.VideoWriterOptions.ChromaFormat
   name: ChromaFormat
   href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_ChromaFormat
@@ -82377,6 +82908,32 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoWriterOptions.Codec
   nameWithType: VideoWriterOptions.Codec
+- uid: Egami.Video.VideoWriterOptions.Effort
+  name: Effort
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Effort
+  commentId: P:Egami.Video.VideoWriterOptions.Effort
+  fullName: Egami.Video.VideoWriterOptions.Effort
+  nameWithType: VideoWriterOptions.Effort
+- uid: Egami.Video.VideoWriterOptions.Effort*
+  name: Effort
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Effort_
+  commentId: Overload:Egami.Video.VideoWriterOptions.Effort
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.Effort
+  nameWithType: VideoWriterOptions.Effort
+- uid: Egami.Video.VideoWriterOptions.FirstPassStats
+  name: FirstPassStats
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_FirstPassStats
+  commentId: P:Egami.Video.VideoWriterOptions.FirstPassStats
+  fullName: Egami.Video.VideoWriterOptions.FirstPassStats
+  nameWithType: VideoWriterOptions.FirstPassStats
+- uid: Egami.Video.VideoWriterOptions.FirstPassStats*
+  name: FirstPassStats
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_FirstPassStats_
+  commentId: Overload:Egami.Video.VideoWriterOptions.FirstPassStats
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.FirstPassStats
+  nameWithType: VideoWriterOptions.FirstPassStats
 - uid: Egami.Video.VideoWriterOptions.FrameRate
   name: FrameRate
   href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_FrameRate
@@ -82390,6 +82947,45 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoWriterOptions.FrameRate
   nameWithType: VideoWriterOptions.FrameRate
+- uid: Egami.Video.VideoWriterOptions.KeyframeInterval
+  name: KeyframeInterval
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_KeyframeInterval
+  commentId: P:Egami.Video.VideoWriterOptions.KeyframeInterval
+  fullName: Egami.Video.VideoWriterOptions.KeyframeInterval
+  nameWithType: VideoWriterOptions.KeyframeInterval
+- uid: Egami.Video.VideoWriterOptions.KeyframeInterval*
+  name: KeyframeInterval
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_KeyframeInterval_
+  commentId: Overload:Egami.Video.VideoWriterOptions.KeyframeInterval
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.KeyframeInterval
+  nameWithType: VideoWriterOptions.KeyframeInterval
+- uid: Egami.Video.VideoWriterOptions.LatencyMode
+  name: LatencyMode
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_LatencyMode
+  commentId: P:Egami.Video.VideoWriterOptions.LatencyMode
+  fullName: Egami.Video.VideoWriterOptions.LatencyMode
+  nameWithType: VideoWriterOptions.LatencyMode
+- uid: Egami.Video.VideoWriterOptions.LatencyMode*
+  name: LatencyMode
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_LatencyMode_
+  commentId: Overload:Egami.Video.VideoWriterOptions.LatencyMode
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.LatencyMode
+  nameWithType: VideoWriterOptions.LatencyMode
+- uid: Egami.Video.VideoWriterOptions.MaxBitrate
+  name: MaxBitrate
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_MaxBitrate
+  commentId: P:Egami.Video.VideoWriterOptions.MaxBitrate
+  fullName: Egami.Video.VideoWriterOptions.MaxBitrate
+  nameWithType: VideoWriterOptions.MaxBitrate
+- uid: Egami.Video.VideoWriterOptions.MaxBitrate*
+  name: MaxBitrate
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_MaxBitrate_
+  commentId: Overload:Egami.Video.VideoWriterOptions.MaxBitrate
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.MaxBitrate
+  nameWithType: VideoWriterOptions.MaxBitrate
 - uid: Egami.Video.VideoWriterOptions.Metadata
   name: Metadata
   href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Metadata
@@ -82429,6 +83025,58 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoWriterOptions.Quality
   nameWithType: VideoWriterOptions.Quality
+- uid: Egami.Video.VideoWriterOptions.Quantizer
+  name: Quantizer
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Quantizer
+  commentId: P:Egami.Video.VideoWriterOptions.Quantizer
+  fullName: Egami.Video.VideoWriterOptions.Quantizer
+  nameWithType: VideoWriterOptions.Quantizer
+- uid: Egami.Video.VideoWriterOptions.Quantizer*
+  name: Quantizer
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Quantizer_
+  commentId: Overload:Egami.Video.VideoWriterOptions.Quantizer
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.Quantizer
+  nameWithType: VideoWriterOptions.Quantizer
+- uid: Egami.Video.VideoWriterOptions.RateControl
+  name: RateControl
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_RateControl
+  commentId: P:Egami.Video.VideoWriterOptions.RateControl
+  fullName: Egami.Video.VideoWriterOptions.RateControl
+  nameWithType: VideoWriterOptions.RateControl
+- uid: Egami.Video.VideoWriterOptions.RateControl*
+  name: RateControl
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_RateControl_
+  commentId: Overload:Egami.Video.VideoWriterOptions.RateControl
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.RateControl
+  nameWithType: VideoWriterOptions.RateControl
+- uid: Egami.Video.VideoWriterOptions.SceneCutKeyframes
+  name: SceneCutKeyframes
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_SceneCutKeyframes
+  commentId: P:Egami.Video.VideoWriterOptions.SceneCutKeyframes
+  fullName: Egami.Video.VideoWriterOptions.SceneCutKeyframes
+  nameWithType: VideoWriterOptions.SceneCutKeyframes
+- uid: Egami.Video.VideoWriterOptions.SceneCutKeyframes*
+  name: SceneCutKeyframes
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_SceneCutKeyframes_
+  commentId: Overload:Egami.Video.VideoWriterOptions.SceneCutKeyframes
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.SceneCutKeyframes
+  nameWithType: VideoWriterOptions.SceneCutKeyframes
+- uid: Egami.Video.VideoWriterOptions.Vp8
+  name: Vp8
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Vp8
+  commentId: P:Egami.Video.VideoWriterOptions.Vp8
+  fullName: Egami.Video.VideoWriterOptions.Vp8
+  nameWithType: VideoWriterOptions.Vp8
+- uid: Egami.Video.VideoWriterOptions.Vp8*
+  name: Vp8
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Vp8_
+  commentId: Overload:Egami.Video.VideoWriterOptions.Vp8
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.Vp8
+  nameWithType: VideoWriterOptions.Vp8
 - uid: Egami.Video.YuvVideoFrame
   name: YuvVideoFrame
   href: api/Egami.Video.YuvVideoFrame.html

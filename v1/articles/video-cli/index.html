@@ -218,7 +218,8 @@ egami-video audio in.mkv -o sound.flac
 </table>
 <p>Commands that copy packets (<code>remux</code>, <code>trim</code>, <code>concat</code>, <code>segment</code>, <code>timestamps</code>, <code>extract</code>, <code>embed</code>, <code>metadata</code>) never decode, so
 they work on any codec, H.264 and AAC included. Commands that decode need a codec Egami.Video decodes: Motion JPEG, VP8, VP9, AV1
-and uncompressed video, and PCM, FLAC, Opus and Vorbis audio. <code>encode</code> and <code>run</code> write Motion JPEG or uncompressed video.</p>
+and uncompressed video, and PCM, FLAC, Opus and Vorbis audio. <code>encode</code> and <code>run</code> write Motion JPEG, VP8 or uncompressed video; <code>encode --codec vp8</code> takes
+<code>--effort</code> and <code>--bitrate</code> (see <a href="../guides/video-encoding.html">Encoding video</a>).</p>
 <h2 id="inspecting">Inspecting</h2>
 <p><code>info</code> reads the headers without decoding. <code>--all</code> reads every packet too, for packet and keyframe counts and bit rates;
 <code>--headers</code> shows the codec headers of each track's first frame; <code>--packets</code> and <code>--frames</code> list every packet and every decoded

@@ -128,6 +128,19 @@ in order to list them whole.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.EncodeFrameOptions.html">EncodeFrameOptions</a></dt>
+      <dd><p>What one <a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Send_Egami_Video_VideoFrame_Egami_Video_Codecs_EncodeFrameOptions_">Send(VideoFrame, EncodeFrameOptions)</a> call asks for beyond the frame.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.FirstPassStats.html">FirstPassStats</a></dt>
+      <dd><p>What the first pass of a two-pass encode learned about each frame: how hard it is to code. Pass it as
+<a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_FirstPassStats">FirstPassStats</a> with <a class="xref" href="Egami.Video.Codecs.RateControlMode.html#Egami_Video_Codecs_RateControlMode_Bitrate">Bitrate</a>, and the second pass spreads the
+bits over the whole clip by it instead of guessing from the frames so far. <a class="xref" href="Egami.Video.Codecs.FirstPassStats.html#Egami_Video_Codecs_FirstPassStats_Save_System_IO_Stream_">Save(Stream)</a> keeps it in a file,
+so the two passes can run apart, as FFmpeg's pass log does.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Codecs.MotionJpegCodec.html">MotionJpegCodec</a></dt>
       <dd><p>Motion JPEG: every frame a complete JPEG image, decoded and encoded by Egami's JPEG codec. Decoding fixes frames without
 a DHT segment, weaves interlaced field pairs, ignores junk around the image and decodes several frames at once. Frames
@@ -169,7 +182,13 @@ AVI's bottom-up 24-bit BI_RGB (as <a class="xref" href="Egami.Video.CodecIds.htm
 frame equals libvpx's sample for sample. Frames come out as 8-bit 4:2:0 planes, BT.601 limited range unless the container says
 otherwise; hidden frames (alternate references) give no frame. A WebM track with alpha (<a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_HasAlpha">HasAlpha</a>)
 decodes its second VP8 stream, carried in each packet's addition 1, into the frame's alpha plane unless
-<a class="xref" href="Egami.Video.Codecs.VideoDecoderOptions.html#Egami_Video_Codecs_VideoDecoderOptions_DecodeAlpha">DecodeAlpha</a> is off. Decode only.</p>
+<a class="xref" href="Egami.Video.Codecs.VideoDecoderOptions.html#Egami_Video_Codecs_VideoDecoderOptions_DecodeAlpha">DecodeAlpha</a> is off. Encoding goes through <a class="xref" href="Egami.Video.Codecs.Vp8Codec.html#Egami_Video_Codecs_Vp8Codec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_">CreateEncoder(VideoEncoderOptions, MediaContext)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.Vp8EncoderOptions.html">Vp8EncoderOptions</a></dt>
+      <dd><p>The VP8 settings beyond <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a>, for experts: quantizer limits, alternate reference frames,
+golden frame spacing, token partitions and error resilience. Every one has a default that suits most uses.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -210,6 +229,19 @@ the end of the stream call <a class="xref" href="Egami.Video.Codecs.IVideoDecode
       <dd><p>Turns frames into packets with a send and receive loop, the mirror of <a class="xref" href="Egami.Video.Codecs.IVideoDecoder.html">IVideoDecoder</a>. After each
 <a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Send_Egami_Video_VideoFrame_">Send(VideoFrame)</a> call <a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_TryReceive_Egami_Video_EncodedPacket__">TryReceive(out EncodedPacket?)</a> until it returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>; at the end call
 <a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Flush">Flush()</a> and receive what is left.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.LatencyMode.html">LatencyMode</a></dt>
+      <dd><p>Whether an encoder may hold frames back to code them better, as WebCodecs' latencyMode.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.RateControlMode.html">RateControlMode</a></dt>
+      <dd><p>How an encoder spends bits: on a quality, on a bitrate or on a fixed quantizer.</p>
 </dd>
     </dl>
 
