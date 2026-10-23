@@ -479,6 +479,18 @@ V5.9 stage B: CAF.
 - Fuzz target `caf`; `tools/video/fuzz-afl.py` now knows the `aiff` and `caf` targets. A CHAN or chan chunk whose bitmap names
   more or fewer speakers than the file has channels is now ignored instead of throwing (AIFF-C too).
 
+V5.9 stage D (container part): AC-3 and E-AC-3.
+
+### AC-3 and E-AC-3
+
+- `Ac3Format`: raw AC-3 and E-AC-3 streams (.ac3, .eac3, .ec3). Each packet is one AC-3 frame, or an E-AC-3 independent frame
+  with its dependent substreams; rate, channels and layout from the first frame; junk between frames is skipped (a frame found
+  after junk must be followed by another); duration from the frame size and seeking through a frame index. Writes the packets
+  back to back. New `CodecIds.EAc3` (`A_EAC3`), passed through.
+- MP4 reads ac-3 and ec-3 sample entries as `CodecIds.Ac3` and `CodecIds.EAc3` (they used to come through as `A_QUICKTIME`)
+  and writes them, with a dac3 or dec3 box made from the first packet's headers; the boxes match FFmpeg's. CAF maps ec-3 too.
+- Fuzz target `ac3`.
+
 ## Egami.Video 0.5.0 (unreleased)
 
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;

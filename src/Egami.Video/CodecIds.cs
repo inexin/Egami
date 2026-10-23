@@ -100,8 +100,14 @@ public static class CodecIds
     /// <summary>MPEG audio layer I.</summary>
     public const string Mp1 = "A_MPEG/L1";
 
-    /// <summary>Dolby AC-3.</summary>
+    /// <summary>Dolby AC-3 (ATSC A/52).</summary>
     public const string Ac3 = "A_AC3";
+
+    /// <summary>
+    /// Dolby E-AC-3 (ATSC A/52 Annex E), each packet an independent frame and its substreams; from MP4, <see cref="TrackInfo.CodecPrivate"/>
+    /// holds the dec3 box body. Passed through, not decoded.
+    /// </summary>
+    public const string EAc3 = "A_EAC3";
 
     /// <summary>AAC.</summary>
     public const string Aac = "A_AAC";

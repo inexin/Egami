@@ -102,6 +102,7 @@ LGPL code is never read.
 | Audio Interchange File Format 1.3 (Apple, 1989); AIFF-C draft (Apple, 1991); Apple Core Audio Format specification (AudioChannelLayout) | AIFF and AIFF-C files, their compression types and the CHAN chunk |
 | ITU-T G.711 | μ-law and A-law expansion |
 | Apple Core Audio Format Specification 1.0 (CAF) | CAF files: desc, data, pakt, kuki, chan, info, strg, mark and regn chunks |
+| ATSC A/52 (Digital Audio Compression, AC-3 and E-AC-3), syncinfo, bsi and Annex E's E-AC-3 bit stream header; ETSI TS 102 366 Annex F | AC-3 and E-AC-3 frame headers in raw streams; the dac3 and dec3 boxes in MP4 |
 | Matroska subtitle codec mapping; WebM WebVTT mapping | `S_TEXT/*` and `D_WEBVTT/*` tracks |
 | ISO/IEC 14496-30; 3GPP TS 26.245 | WebVTT (`wvtt`) and timed text (`tx3g`) in MP4 |
 

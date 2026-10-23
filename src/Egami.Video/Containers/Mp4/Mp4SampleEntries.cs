@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Text;
 
 using Egami.Colors;
+using Egami.Video.Audio.Codecs.Ac3;
 
 namespace Egami.Video.Containers.Mp4;
 
@@ -26,7 +27,7 @@ internal static class Mp4SampleEntries
     {
         CodecIds.Av1 when track.CodecPrivate.IsEmpty => "an AV1 track needs its av1C configuration in CodecPrivate",
         CodecIds.Av1 or CodecIds.Vp9 or CodecIds.Vp8 or CodecIds.MotionJpeg or CodecIds.Avc or CodecIds.Hevc or CodecIds.Mpeg4Visual => null,
-        CodecIds.Opus or CodecIds.Flac or CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis => null,
+        CodecIds.Opus or CodecIds.Flac or CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis or CodecIds.Ac3 or CodecIds.EAc3 => null,
         CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian or CodecIds.PcmFloat => null,
         CodecIds.MovText or CodecIds.Mp4WebVtt => null,
         CodecIds.QuickTimeVideo or CodecIds.QuickTimeAudio or CodecIds.QuickTimeOther when track.CodecPrivate.Length >= 8 => null,
@@ -127,6 +128,8 @@ internal static class Mp4SampleEntries
             CodecIds.Opus => "Opus",
             CodecIds.Flac => "fLaC",
             CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis => "mp4a",
+            CodecIds.Ac3 => "ac-3",
+            CodecIds.EAc3 => "ec-3",
             CodecIds.PcmFloat => "fpcm",
             _ => "ipcm",
         };
@@ -158,6 +161,17 @@ internal static class Mp4SampleEntries
                 break;
             case CodecIds.Mp3:
                 Esds(w, 0x6B, 0x05, []);
+                break;
+            case CodecIds.Ac3:
+                // dac3 (ETSI TS 102 366 F.4): the muxer puts the first frame's in CodecPrivate; else one from the rate and layout.
+                w.Start("dac3");
+                w.Bytes(priv.Length == 3 ? priv : Ac3Config.Dac3(audio));
+                w.End();
+                break;
+            case CodecIds.EAc3:
+                w.Start("dec3");
+                w.Bytes(priv.Length >= 5 ? priv : Ac3Config.Dec3(audio));
+                w.End();
                 break;
             case CodecIds.Vorbis:
                 // Object type 0xDD, as FFmpeg writes Vorbis in MP4: the three headers, Xiph-laced, as the decoder specific info.
