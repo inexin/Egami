@@ -307,6 +307,22 @@ internal sealed class InkImageSink : RasterSink
                         row[i] = InkTarget.To8((tint * k) + (row[i] / 255f * (1 - k)));
                     }
                 }
+
+                // Planes the image has no plate for take none of its ink: where it is opaque it knocks them out, as any
+                // paint with overprint off does to the inks it does not name.
+                for (int p = 0; p < _target.Inks; p++)
+                {
+                    if (Array.IndexOf(_planeOf, p) >= 0 || (_painted.Length > 0 && !_painted[p]))
+                    {
+                        continue;
+                    }
+
+                    Span<byte> row = _target.Row8(p, y, x, n);
+                    for (int i = 0; i < n; i++)
+                    {
+                        row[i] = InkTarget.To8(row[i] / 255f * (1 - weights[(3 * i) + 2]));
+                    }
+                }
             }
             finally
             {
