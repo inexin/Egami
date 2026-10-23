@@ -161,6 +161,38 @@ ITU-T T.35 metadata OBU.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-quality)]
 
+## Scenes and analysis
+
+`MediaAnalysis.Run` reads a file once and hands every frame to its detectors: the `SceneDetector` by default, and any
+`IVideoDetector` or `IAudioDetector` you add. Each `Scene` has its first and last frame, its start and end time and how it
+starts (`SceneStart`): at the first frame, at a cut, or inside a fade through black. `Cuts` lists each `SceneCut` and `Fades`
+each fade out and fade in (`FadeKind`).
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-run)]
+
+`SceneOptions` picks the method and its threshold. `SceneMethod.Adaptive` weighs each frame's change against the frames
+around it, so a fast pan is not taken for a cut; `Content` compares with the frames just before, as ffmpeg's scene score does;
+`Histogram` compares luma histograms, which ignores motion inside a steady picture. A cut closer than `MinSceneLength` to the
+last is dropped, and with `FlashMode.Merge` a flash that comes back to the picture before it is no scene. `KeepSeries` keeps every frame's score.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-scene-options)]
+
+A detector of your own takes frames in time order, and the `SceneDetector` runs on its own too:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-detectors)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-audio-detector)]
+
+`SceneFrames.Read` seeks to the first, middle or last frame of each scene, for thumbnails or a shot list:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-scene-frames)]
+
+`TestSources` makes pictures and sounds to test with: SMPTE color bars at their code values in any bit depth, a moving pattern
+with a frame counter, solid colors, gradients, tones, white or pink noise (`NoiseColor`) and sweeps. `TestVideoFormat` and
+`TestAudioFormat` set the size, rate and sample layout; `ColorBarsStyle` picks HD or SD bars.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-test-sources)]
+
 ## Limits and warnings
 
 A `MediaContext` holds the containers and codecs, the Egami context (memory, threads, safety limits), the `MediaLimits` for
