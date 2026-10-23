@@ -41,5 +41,7 @@ internal sealed class SilkNlsfCodebook
 
     public ReadOnlySpan<byte> EcIcdf => _wideband ? SilkTables.NlsfCb2WbIcdf : SilkTables.NlsfCb2NbMbIcdf;
 
+    public ReadOnlySpan<byte> EcRatesQ5 => _wideband ? SilkTables.NlsfCb2BitsWbQ5 : SilkTables.NlsfCb2BitsNbMbQ5;
+
     public ReadOnlySpan<short> DeltaMinQ15 => _wideband ? SilkTables.NlsfDeltaMinWbQ15 : SilkTables.NlsfDeltaMinNbMbQ15;
 }
