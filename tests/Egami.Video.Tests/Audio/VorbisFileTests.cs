@@ -34,9 +34,9 @@ public class VorbisFileTests
     {
         string webm = AudioRoundTripTests.OutputPath("vorbis-remux.webm");
         string ogg = AudioRoundTripTests.OutputPath("vorbis-remux.ogg");
-        MediaFile.Remux(Path.Combine(VorbisTests.Directory, "q3-stereo-44k-bursts.ogg"), webm);
+        MediaFile.Remux(Path.Combine(VorbisTests.Directory, "q3-stereo-44k-bursts.ogg"), webm, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(5292, Decode(webm)[0].Length);
-        MediaFile.Remux(webm, ogg);
+        MediaFile.Remux(webm, ogg, cancellationToken: TestContext.Current.CancellationToken);
         AssertLikeLibvorbis(ogg, "q3-stereo-44k-bursts.ogg", absolute: true);
     }
 
@@ -44,7 +44,7 @@ public class VorbisFileTests
     public void RemuxesToMp4()
     {
         string mp4 = AudioRoundTripTests.OutputPath("vorbis-remux.mp4");
-        MediaFile.Remux(Path.Combine(VorbisTests.Directory, "q10-stereo-44k-noise.ogg"), mp4);
+        MediaFile.Remux(Path.Combine(VorbisTests.Directory, "q10-stereo-44k-noise.ogg"), mp4, cancellationToken: TestContext.Current.CancellationToken);
         AssertLikeLibvorbis(mp4, "q10-stereo-44k-noise.ogg", absolute: true);
     }
 

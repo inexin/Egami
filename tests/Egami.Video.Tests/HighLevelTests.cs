@@ -91,8 +91,8 @@ public class HighLevelTests
         Assert.Equal([CodecIds.MotionJpeg, CodecIds.PcmLittleEndian], remuxed.Tracks.Select(t => t.CodecId));
 
         string again = AviWriterTests.TempFile("remux-helper.avi");
-        Assert.Equal(Corpus.ReadProbe(Corpus.PathOf("avi-mjpeg-420-pcm.avi")).Packets.Count, MediaFile.Remux(output, again));
-        Assert.Equal(1, MediaFile.Remux(output, again, t => t.Kind == TrackKind.Video) > 0 ? MediaFile.Probe(again).Tracks.Count : 0);
+        Assert.Equal(Corpus.ReadProbe(Corpus.PathOf("avi-mjpeg-420-pcm.avi")).Packets.Count, MediaFile.Remux(output, again, cancellationToken: TestContext.Current.CancellationToken));
+        Assert.Equal(1, MediaFile.Remux(output, again, t => t.Kind == TrackKind.Video, cancellationToken: TestContext.Current.CancellationToken) > 0 ? MediaFile.Probe(again).Tracks.Count : 0);
     }
 
     [Fact]

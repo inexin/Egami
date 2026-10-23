@@ -27,7 +27,7 @@ public class MetadataTests
     public void MatroskaRemuxKeepsTagsChaptersAndAttachments()
     {
         string output = AviWriterTests.TempFile("metadata-remux.mkv");
-        MediaFile.Remux(Corpus.PathOf("mkv-metadata.mkv"), output);
+        MediaFile.Remux(Corpus.PathOf("mkv-metadata.mkv"), output, cancellationToken: TestContext.Current.CancellationToken);
         MediaInfo source = MediaFile.Probe(Corpus.PathOf("mkv-metadata.mkv")), copy = MediaFile.Probe(output);
         Assert.Equal(source.Tags.Where(t => t.Key is not ("MUXINGAPP" or "WRITINGAPP")).OrderBy(t => t.Key), copy.Tags.Where(t => t.Key is not ("MUXINGAPP" or "WRITINGAPP")).OrderBy(t => t.Key));
         Assert.Equal(source.Chapters, copy.Chapters);
@@ -50,8 +50,8 @@ public class MetadataTests
         Assert.StartsWith("Lavf", avi.Tags["ENCODER"], StringComparison.Ordinal);
 
         string mkv = AviWriterTests.TempFile("avi-tags.mkv"), back = AviWriterTests.TempFile("avi-tags-back.avi");
-        MediaFile.Remux(Corpus.PathOf("avi-tags.avi"), mkv);
-        MediaFile.Remux(mkv, back);
+        MediaFile.Remux(Corpus.PathOf("avi-tags.avi"), mkv, cancellationToken: TestContext.Current.CancellationToken);
+        MediaFile.Remux(mkv, back, cancellationToken: TestContext.Current.CancellationToken);
         foreach (string path in (string[])[mkv, back])
         {
             MediaInfo copy = MediaFile.Probe(path);
@@ -68,7 +68,7 @@ public class MetadataTests
         List<MediaWarning> warnings = [];
         MediaContext context = MediaContext.Default with { Warnings = warnings.Add };
         string output = AviWriterTests.TempFile("metadata.avi");
-        MediaFile.Remux(Corpus.PathOf("mkv-metadata.mkv"), output, context: context);
+        MediaFile.Remux(Corpus.PathOf("mkv-metadata.mkv"), output, context: context, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Contains(warnings, w => w.Code == "metadata-dropped");
         Assert.Equal("Corpus clip", MediaFile.Probe(output).Tags["TITLE"]);
     }

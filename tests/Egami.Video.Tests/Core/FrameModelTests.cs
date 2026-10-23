@@ -169,7 +169,7 @@ public class FrameModelTests
         }
 
         string second = AviWriterTests.TempFile("vfr-remux.mkv");
-        MediaFile.Remux(first, second);
+        MediaFile.Remux(first, second, cancellationToken: TestContext.Current.CancellationToken);
         using IDemuxer demuxer = MediaFile.OpenDemuxer(second);
         Assert.Equal(times, Corpus.ReadAll(demuxer).Select(p => p.Timestamp.Rescale(new Rational(1, 1000)).Ticks));
     }

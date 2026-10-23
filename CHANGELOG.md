@@ -212,6 +212,20 @@ V4.2, API reviewed and accepted 2026-10-22 (all as recommended): AV1 decode, thr
   at a `FrameRate` you set (30 a second by default). Reading and writing back gives the same bytes; packets match ffprobe's,
   and aomdec and dav1d decode the files the writers make to libaom's frames.
 
+### Progress, cancellation and streams
+
+V1.3, API reviewed and accepted 2026-10-22 (all as recommended); it ships in this release. Breaking: `MediaFile.Remux` and `MediaFile.Transcode` take two more optional parameters, so callers recompile.
+
+- `MediaFile.Remux` and `MediaFile.Transcode` take `IProgress<MediaProgress>? progress` and `CancellationToken
+  cancellationToken` as their last parameters. Reports come once the output is open, then at most every 250 ms, then a final
+  one with `IsFinal` and `Fraction` 1. A cancelled job throws `OperationCanceledException` within a packet, without finishing
+  the output, and deletes a file it created. Without a handler and a token the jobs run as before.
+- `MediaProgress`: position, duration, fraction (from the time, else the bytes read, else `null`; never backwards), frames,
+  packets, bytes read and written, elapsed time and speed.
+- `Stream` overloads of `Remux` and `Transcode` with the output container named and `leaveOpen`, to read from and write to
+  cloud storage without a local copy. Non-seekable input works (except MP4 with moov at the end); Matroska, WebM, IVF and
+  YUV4MPEG2 write to non-seekable output as they go, MP4 through a temporary file, and AVI refuses it.
+
 ## Egami.Video 0.4.0 (unreleased)
 
 V4.1, API reviewed and accepted 2026-10-22 (all as recommended): MP4 and QuickTime. Built on Egami's public ISO BMFF box
