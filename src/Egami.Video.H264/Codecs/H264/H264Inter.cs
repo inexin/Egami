@@ -255,18 +255,31 @@ internal sealed class H264Inter
         ref ushort a = ref MemoryMarshal.GetArrayDataReference(_pred0);
         ref ushort b = ref MemoryMarshal.GetArrayDataReference(_pred1);
         ref ushort d = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(plane), at);
-        if (max == 255 && w1 == 0 && Math.Abs(w0) <= 128 && round <= 64)
+        if (max == 255 && Math.Max(w0, 0) + Math.Max(w1, 0) <= 128 && Math.Max(-w0, 0) + Math.Max(-w1, 0) <= 128 && round <= 64)
         {
-            // One list at 8 bits: a sample times a weight of at most 128, plus the rounding, fits a signed 16-bit lane.
-            Vector128<short> sw0 = Vector128.Create((short)w0), sRound = Vector128.Create((short)round), sOffset = Vector128.Create((short)offset),
-                sMax = Vector128.Create((short)max);
+            // At 8 bits with these weights the weighted sum lies in a signed 16-bit lane; the products may wrap on the way, but
+            // the sum they wrap to is the true one.
+            Vector128<short> sw0 = Vector128.Create((short)w0), sw1 = Vector128.Create((short)w1), sRound = Vector128.Create((short)round),
+                sOffset = Vector128.Create((short)offset), sMax = Vector128.Create((short)max);
+            bool average = w0 == w1 && offset == 0 && shift >= 1 && w0 == 1 << (shift - 1) && round == w0;
             for (int y = 0; y < h; y++)
             {
                 for (int x = 0; x < w; x += 8)
                 {
-                    Vector128<short> p0 = Vector128.LoadUnsafe(ref a, (nuint)((y * PredStride) + x)).AsInt16();
-                    Vector128<short> v = (((p0 * sw0) + sRound) >> shift) + sOffset;
-                    v = Vector128.Min(Vector128.Max(v, Vector128<short>.Zero), sMax);
+                    nuint i = (nuint)((y * PredStride) + x);
+                    Vector128<short> p0 = Vector128.LoadUnsafe(ref a, i).AsInt16(), p1 = Vector128.LoadUnsafe(ref b, i).AsInt16();
+                    Vector128<short> v;
+                    if (average)
+                    {
+                        // Equal weights of half the denominator: the rounded average.
+                        v = ((p0 + p1 + Vector128<short>.One) >>> 1);
+                    }
+                    else
+                    {
+                        v = (((p0 * sw0) + (p1 * sw1) + sRound) >> shift) + sOffset;
+                        v = Vector128.Min(Vector128.Max(v, Vector128<short>.Zero), sMax);
+                    }
+
                     ref ushort to = ref Unsafe.Add(ref d, (y * stride) + x);
                     if (w == 4)
                     {
