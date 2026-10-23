@@ -651,6 +651,51 @@ V5.9 task 19: the CLI.
   to `audio` unless the audio is copied. `info` and ffprobe mode name ALAC, E-AC-3, G.711, AIFF, CAF and raw AC-3 as ffprobe
   does.
 
+V5.4: AV1 encoding, through Egami's `Av1StreamEncoder` (Egami 2.9.9). API review pending (combined encoders review).
+
+### AV1 encoding
+
+- `Av1Codec.CanEncode` is true and `Av1Codec.CreateEncoder` encodes AV1 into WebM, Matroska, MP4, IVF, raw OBU and Annex B,
+  with the encoder core's keyframes, groups and rate control modes on the shared `Quality` (0 to 100, default 60, the same
+  quantizer steps as VP9) and `Effort` (0 to 10, default 4) scales; `Quantizer` is AV1's base_q_idx, 0 to 255 (0 lossless).
+  Each packet is a temporal unit; the track's av1C is built from the sequence header.
+- Hierarchical groups: each group's hidden alternate reference and a hidden frame halfway to it (a two-level pyramid, ALTREF2)
+  are coded ahead, lead the next shown frame's temporal unit, and are shown at their own place with `show_existing_frame`, a
+  packet of a few bytes, instead of an overlay frame. The frames between read their three nearest past frames as LAST to
+  LAST3, the golden frame and the hidden frames ahead as BWDREF, ALTREF2 and ALTREF; each refreshes a slot nothing needs any
+  more.
+- Main, High and Professional profiles: 8, 10 and 12 bits, 4:2:0, 4:2:2 and 4:4:4, from the frames' planes or
+  `Av1EncoderOptions.BitDepth`. The frames' color code points and 4:2:0 chroma siting go into the sequence header and the
+  container; static HDR metadata into content light level and mastering display metadata OBUs on every keyframe and into the
+  container (Matroska Colour, MP4 mdcv and clli); HDR10+ from a frame into its temporal unit as an ITU-T T.35 metadata OBU.
+  The level is the smallest whose picture size, dimensions and sample rate hold the stream. No alpha (AV1 has no alpha in
+  Matroska or MP4; animated AVIF has it).
+- `Av1EncoderOptions` (`VideoEncoderOptions.Av1`, `VideoWriterOptions.Av1`): quantizer limits, alternate references and the
+  pyramid, golden frame spacing, temporal filter, adaptive quantization (delta q per superblock), screen content tools, error
+  resilience and bit depth.
+- Rate control plans later groups with their hidden frames, and a real-time constant bitrate stream plans its first inter frame
+  from the keyframe probe (both for AV1 only; VP8 and VP9 output is unchanged).
+- `egami-video encode --codec av1` (with `--effort` and `--bitrate`), `run --codec av1` (and AV1 sources stay AV1), and
+  `egami-video ffmpeg` takes `-c:v libaom-av1`, `libsvtav1`, `librav1e` and `av1`.
+- dav1d 1.5.4 and libaom 3.15.2's aomdec decode every test stream (28: every effort from 0 to 8, the pyramid, real time, the
+  bitrate modes, keyframes at cuts and the interval, quantizers 0 and 255, error resilience, sizes down to 1x1, all three
+  profiles at 8, 10 and 12 bits, HDR metadata) exactly as Egami does (`tools/video/check-av1-encoder.py`); each is the same
+  bytes at one thread and at all cores, and with hardware intrinsics off. 10 minutes of AFL++ on the av1enc target found no
+  crash (two inputs at effort 10 ran past AFL++'s 5 s limit: 5.5 s each).
+- Against libaom 3.15.2 `aomenc --good` (one-pass VBR, 25 frames of lag, alternate references) and SVT-AV1 3.0.2
+  (`tools/video/time-av1-encoder.py`), at effort 4, 720p, 60 frames, BD-rate on PSNR-Y / SSIM: against `--cpu-used=2` crowd_run
+  +40.3 % / +12.3 %, ducks_take_off +38.2 % / -1.8 %, park_joy +44.4 % / +23.2 %, old_town_cross +189 % / +13.9 % (libaom keeps
+  its grain-free references far better there); against `--cpu-used=6` +18.2 % / -3.4 %, +29.0 % / -7.6 %, +28.8 % / +5.7 %,
+  +117 % / -10.6 %. SVT-AV1 preset 6: -0.5 % / -17.7 %, +8.5 % / -16.9 %, +7.9 % / -6.4 %, +64.5 % / -18.4 %. The +15 % gate is
+  missed on PSNR-Y on every clip, even against libaom's fastest setting; on SSIM it is met against `--cpu-used=2` by three
+  clips of four.
+- Speed (1080p, 10 frames, effort 4, crowd_run and park_joy): one thread 25 to 35 s a frame, between libaom's `--cpu-used=2`
+  (45 to 54 s) and `=3` (10 to 14 s); all 24 cores the same 26 to 35 s, as Egami's AV1 encoder codes frames up to 4096 pixels
+  wide as one tile, while libaom takes 13 to 17 s at `=2` and 0.5 to 0.6 s at `=6`. No libaom setting is as slow in BD-rate as
+  Egami, so the 2x speed gate is missed by far: 12 to 14 times `--cpu-used=6` on one thread and 48 to 57 times on all cores.
+- Rate control (720p, 100 frames, 3 Mbit/s, effort 0): one and two-pass bitrate +1.3 % to +4.5 % of the target, within the 5 %
+  gate; constant bitrate +0.3 % to -8.5 %, its one-second buffer never below 57 %.
+
 ## Egami.Video 0.5.0 (unreleased)
 
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;
