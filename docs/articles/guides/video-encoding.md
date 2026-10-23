@@ -1,9 +1,10 @@
 # Encoding video
 
-Egami.Video encodes VP8 and VP9 into WebM, Matroska and IVF (VP9 into MP4 too), with alpha in WebM and Matroska. VP8's frame
-coding is Egami's `Vp8StreamEncoder`, VP9's Egami.Video's own; for both, Egami.Video decides how each frame is coded: where
-keyframes go, which frames become references, and how many bits each frame gets. The same settings will drive AV1 when it can
-encode. Motion JPEG and uncompressed video encode too, without these settings: every frame is a keyframe.
+Egami.Video encodes VP8 and VP9 into WebM, Matroska and IVF (VP9 into MP4 too), with alpha in WebM and Matroska, and AV1 into
+WebM, Matroska, MP4, IVF, raw OBU and Annex B files. VP8's frame coding is Egami's `Vp8StreamEncoder`, VP9's Egami.Video's own
+and AV1's Egami's `Av1StreamEncoder`; for all three, Egami.Video decides how each frame is coded: where keyframes go, which
+frames become references, and how many bits each frame gets. Motion JPEG and uncompressed video encode too, without these
+settings: every frame is a keyframe.
 
 ## Writing VP8
 
@@ -43,6 +44,39 @@ references of other formats than 8-bit 4:2:0 are their frame unfiltered.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoEncode.cs#video-encode-vp9-hdr)]
 
+## Writing AV1
+
+Set `VideoWriterOptions.Codec` to `VideoCodecs.Av1`. `Quality` and `Effort` work as for VP8 and VP9 (default 60 and 4), and
+equal qualities give the same quantizer step as VP9's; `Quantizer` is AV1's base_q_idx, 0 to 255, and 0 is lossless. Each
+packet is a temporal unit of OBUs, as MP4 and Matroska store them, and the track's `av1C` comes from the sequence header.
+
+The frame coding is `Av1StreamEncoder`'s: partitions, intra and inter modes from up to seven references with compound
+prediction, transform types and sizes chosen by rate and distortion, a trellis, delta quantizers per superblock by block detail,
+and deblocking levels and CDEF strengths per frame; from effort 5, 6 and 7 on it adds compound masks, overlapped and warped
+motion, dual filters and global motion. Egami.Video plans the references: each group's last frame, blended with its neighbours along
+their motion, is coded first as a hidden alternate reference, then a hidden frame halfway to it (a two-level pyramid, AV1's
+ALTREF2). Neither costs a frame of its own when its time comes: AV1 shows it again with `show_existing_frame`, a packet of a
+few bytes. The frames in between read their three nearest past frames, the golden frame and the hidden frames ahead.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoEncode.cs#video-encode-av1)]
+
+`Av1EncoderOptions` holds the expert settings: quantizer limits, alternate references and the pyramid on or off, golden frame
+spacing, the temporal filter's frames and strength, adaptive quantization, screen content tools, error resilience and the bit
+depth. AV1 codes no alpha in video files (Matroska and MP4 have no standard place for it); animated AVIF, through Egami's
+`AvifWriter`, does.
+
+### Profiles and HDR
+
+8 and 10-bit 4:2:0 planes make Main profile streams, 4:4:4 High and 12-bit or 4:2:2 Professional, all coded as they are;
+`Av1EncoderOptions.BitDepth` codes another depth and `VideoEncoderOptions.ChromaFormat` sets the chroma format for RGB frames,
+which are converted to BT.601 limited range. The frames' code points (primaries, transfer, matrix, range) and the chroma
+siting of 4:2:0 planes go into the sequence header and the container. Their static HDR metadata goes into content light level
+and mastering display metadata OBUs on every keyframe, and into the container as for VP9; a frame's HDR10+ metadata goes into
+its own temporal unit as an ITU-T T.35 metadata OBU. The level is the smallest whose picture size and sample rate hold the
+stream.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoEncode.cs#video-encode-av1-hdr)]
+
 ## How bits are spent
 
 `RateControl` picks one of four modes:
@@ -71,8 +105,9 @@ arrives and starts a keyframe at a scene cut, at least every 10 seconds (`Keyfra
 and wherever `EncodeFrameOptions.ForceKeyframe` asks. Between keyframes it codes groups of 4 to 16 frames: the group's last
 frame is blended with its neighbours along their motion into a hidden alternate reference, coded first at a finer step, so
 the frames before it can predict from it. That happens only where the group's first frame still predicts its last well
-(still content); with motion, zooms or fades the group just ends in a golden frame. A hidden frame's
-packet carries the timestamp of the shown frame after it, and gives no frame when decoded. Turn `SceneCutKeyframes` off for
+(still content); with motion, zooms or fades the group just ends in a golden frame. A VP8 hidden frame's
+packet carries the timestamp of the shown frame after it, and gives no frame when decoded; VP9 and AV1 put their hidden frames in
+the next shown frame's packet. Turn `SceneCutKeyframes` off for
 keyframes at a fixed spacing.
 
 `LatencyMode.Realtime` looks nowhere ahead: each packet comes out as soon as its frame goes in, there are no hidden frames,
@@ -85,4 +120,5 @@ four token partitions so decoders can use more threads.
 
 The output depends only on the frames and the options, never on the number of threads or the machine, so a test can compare
 hashes. `EgamiContext.MaxParallelism` on the `MediaContext` sets how many threads the encoder uses. VP9's tile columns depend
-on the frame width and `Vp9EncoderOptions.TileColumns`, never on the threads.
+on the frame width and `Vp9EncoderOptions.TileColumns`, never on the threads; AV1's are one per 4096 samples of width, so
+frames up to 4K are one tile, and its threads help little within a frame.

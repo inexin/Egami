@@ -6,14 +6,17 @@ using Egami.Video.Codecs;
 namespace Egami.Video.Benchmarks;
 
 /// <summary>
-/// The V5.3 gates' Egami side: encodes a YUV4MPEG2 clip to VP9 IVF with the options given and prints the encode time (frames
-/// read into memory first, best of --runs), the output size and the bitrate, for tools/video/time-vp9-encoder.py to compare with
-/// vpxenc. Options: --out=file.ivf --quality=Q --quantizer=Q --effort=E --threads=N --bitrate=BITS --cbr --two-pass
-/// --realtime --no-altref --tiles=N --aq --frames=N --runs=N --decoded=file.yuv (Egami's decode of the output, packed I420).
+/// The V5.3 and V5.4 gates' Egami side: encodes a YUV4MPEG2 clip to VP9 or AV1 IVF with the options given and prints the encode
+/// time (frames read into memory first, best of --runs), the output size and the bitrate, for tools/video/time-vp9-encoder.py and
+/// time-av1-encoder.py to compare with vpxenc and aomenc. Options: --out=file.ivf --quality=Q --quantizer=Q --effort=E
+/// --threads=N --bitrate=BITS --cbr --two-pass --realtime --no-altref --frames=N --runs=N --decoded=file.yuv (Egami's decode
+/// of the output, packed I420); VP9 also --tiles=N --aq, AV1 --no-pyramid --no-aq.
 /// </summary>
 internal static class Vp9EncodeTiming
 {
-    internal static void Run(string[] args)
+    internal static void Run(string[] args) => Run(args, VideoCodecs.Vp9);
+
+    internal static void Run(string[] args, VideoCodec codec)
     {
         string input = args.First(a => !a.StartsWith("--", StringComparison.Ordinal));
         string? Value(string name) => args.FirstOrDefault(a => a.StartsWith($"--{name}=", StringComparison.Ordinal))?[(name.Length + 3)..];
@@ -58,6 +61,7 @@ internal static class Vp9EncodeTiming
                 : Flag("cbr") ? RateControlMode.ConstantBitrate : RateControlMode.Bitrate,
             LatencyMode = Flag("realtime") ? LatencyMode.Realtime : LatencyMode.Quality,
             Vp9 = new Vp9EncoderOptions { AlternateReference = !Flag("no-altref"), TileColumns = Number("tiles"), AdaptiveQuantization = Flag("aq") },
+            Av1 = new Av1EncoderOptions { AlternateReference = !Flag("no-altref"), Pyramid = !Flag("no-pyramid"), AdaptiveQuantization = !Flag("no-aq") },
         };
         MediaContext context = new() { Egami = EgamiContext.Default with { MaxParallelism = threads } };
         int runs = Number("runs") ?? 1;
@@ -72,7 +76,7 @@ internal static class Vp9EncodeTiming
             }
 
             using MemoryStream output = new();
-            bytes = Encode(output, options, context, frames);
+            bytes = Encode(output, codec, options, context, frames);
 
             best = Math.Min(best, Stopwatch.GetElapsedTime(start).TotalMilliseconds);
             if (run == 0 && Value("out") is { } path)
@@ -114,9 +118,9 @@ internal static class Vp9EncodeTiming
     }
 
     /// <summary>Encodes every frame into IVF in memory and returns its size.</summary>
-    private static long Encode(MemoryStream output, VideoEncoderOptions options, MediaContext context, List<YuvVideoFrame> frames)
+    private static long Encode(MemoryStream output, VideoCodec codec, VideoEncoderOptions options, MediaContext context, List<YuvVideoFrame> frames)
     {
-        using IVideoEncoder encoder = VideoCodecs.Vp9.CreateEncoder(options, context);
+        using IVideoEncoder encoder = codec.CreateEncoder(options, context);
         using Containers.IMuxer muxer = MediaFile.CreateMuxer(output, "ivf", [encoder.Track], context, leaveOpen: true);
         foreach (YuvVideoFrame frame in frames)
         {
