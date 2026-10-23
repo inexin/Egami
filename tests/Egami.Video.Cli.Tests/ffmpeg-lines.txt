@@ -44,8 +44,8 @@
 => frames in.avi -o img{frame:0000}.jpg | ffmpeg -i in.avi -c:v copy -f image2 img%04d.jpg
 => thumbnail in.mp4 -o thumb.png | ffmpeg -i in.mp4 -vf thumbnail -frames:v 1 thumb.png
 => thumbnail in.mkv -o best.jpg | ffmpeg -i in.mkv -vf thumbnail best.jpg
-=> scenes in.mp4 --threshold 0.4 -o scene{scene:000}.png | ffmpeg -i in.mp4 -vf select='gt(scene,0.4)' scene%03d.png
-=> scenes in.mp4 --threshold 0.3 -o s{scene}.jpg | ffmpeg -i in.mp4 -vf "select=gt(scene\,0.3)" s%d.jpg
+=> scenes in.mp4 --method content --threshold 0.4 -o scene{scene:000}.png | ffmpeg -i in.mp4 -vf select='gt(scene,0.4)' scene%03d.png
+=> scenes in.mp4 --method content --threshold 0.3 -o s{scene}.jpg | ffmpeg -i in.mp4 -vf "select=gt(scene\,0.3)" s%d.jpg
 => sheet in.mp4 -o sheet.png --grid 4x4 | ffmpeg -i in.mp4 -vf tile=4x4 sheet.png
 => sheet in.mkv -o tiles.jpg --grid 3x2 | ffmpeg -i in.mkv -vf tile=layout=3x2 tiles.jpg
 => encode img{frame:0000}.png -o out.mkv --rate 30 | ffmpeg -framerate 30 -i img%04d.png out.mkv

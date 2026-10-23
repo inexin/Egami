@@ -130,7 +130,7 @@ internal static class FfmpegTranslator
             return parts[0] switch
             {
                 "thumbnail" => [["thumbnail", input, "-o", output, .. common]],
-                "scenes" => [["scenes", input, "--threshold", parts[1], "-o", Pattern(output, "scene"), .. common]],
+                "scenes" => [["scenes", input, "--method", "content", "--threshold", parts[1], "-o", Pattern(output, "scene"), .. common]],
                 _ => [["sheet", input, "-o", output, "--grid", parts[1], .. common]],
             };
         }

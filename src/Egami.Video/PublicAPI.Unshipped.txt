@@ -5,6 +5,204 @@ abstract Egami.Video.Audio.AudioCodec.CreateDecoder(Egami.Video.AudioTrackInfo! 
 abstract Egami.Video.Audio.AudioCodec.Name.get -> string!
 const Egami.Video.Audio.ChannelLayout.MaxChannels = 255 -> int
 const Egami.Video.Audio.ChannelMixer.MinusThreeDecibels = 0.70710677 -> float
+Egami.Video.Analysis.ColorBarsStyle
+Egami.Video.Analysis.ColorBarsStyle.Auto = 0 -> Egami.Video.Analysis.ColorBarsStyle
+Egami.Video.Analysis.ColorBarsStyle.Hd = 1 -> Egami.Video.Analysis.ColorBarsStyle
+Egami.Video.Analysis.ColorBarsStyle.Sd = 2 -> Egami.Video.Analysis.ColorBarsStyle
+Egami.Video.Analysis.Fade
+Egami.Video.Analysis.Fade.<Clone>$() -> Egami.Video.Analysis.Fade!
+Egami.Video.Analysis.Fade.Deconstruct(out Egami.Video.Analysis.FadeKind Kind, out long StartFrame, out long EndFrame, out Egami.Video.MediaTime Start, out Egami.Video.MediaTime End) -> void
+Egami.Video.Analysis.Fade.End.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.Fade.End.init -> void
+Egami.Video.Analysis.Fade.EndFrame.get -> long
+Egami.Video.Analysis.Fade.EndFrame.init -> void
+Egami.Video.Analysis.Fade.Equals(Egami.Video.Analysis.Fade? other) -> bool
+Egami.Video.Analysis.Fade.Fade(Egami.Video.Analysis.FadeKind Kind, long StartFrame, long EndFrame, Egami.Video.MediaTime Start, Egami.Video.MediaTime End) -> void
+Egami.Video.Analysis.Fade.Kind.get -> Egami.Video.Analysis.FadeKind
+Egami.Video.Analysis.Fade.Kind.init -> void
+Egami.Video.Analysis.Fade.Start.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.Fade.Start.init -> void
+Egami.Video.Analysis.Fade.StartFrame.get -> long
+Egami.Video.Analysis.Fade.StartFrame.init -> void
+Egami.Video.Analysis.FadeKind
+Egami.Video.Analysis.FadeKind.In = 1 -> Egami.Video.Analysis.FadeKind
+Egami.Video.Analysis.FadeKind.Out = 0 -> Egami.Video.Analysis.FadeKind
+Egami.Video.Analysis.FlashMode
+Egami.Video.Analysis.FlashMode.Merge = 0 -> Egami.Video.Analysis.FlashMode
+Egami.Video.Analysis.FlashMode.Suppress = 1 -> Egami.Video.Analysis.FlashMode
+Egami.Video.Analysis.IAudioDetector
+Egami.Video.Analysis.IAudioDetector.Add(Egami.Video.Audio.AudioFrame! frame) -> void
+Egami.Video.Analysis.IAudioDetector.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Analysis.IVideoDetector
+Egami.Video.Analysis.IVideoDetector.Add(Egami.Video.YuvVideoFrame! frame) -> void
+Egami.Video.Analysis.IVideoDetector.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Analysis.MediaAnalysis
+Egami.Video.Analysis.MediaAnalysisOptions
+Egami.Video.Analysis.MediaAnalysisOptions.<Clone>$() -> Egami.Video.Analysis.MediaAnalysisOptions!
+Egami.Video.Analysis.MediaAnalysisOptions.AudioDetectors.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.IAudioDetector!>!
+Egami.Video.Analysis.MediaAnalysisOptions.AudioDetectors.init -> void
+Egami.Video.Analysis.MediaAnalysisOptions.AudioTrack.get -> int?
+Egami.Video.Analysis.MediaAnalysisOptions.AudioTrack.init -> void
+Egami.Video.Analysis.MediaAnalysisOptions.Duration.get -> Egami.Video.MediaTime?
+Egami.Video.Analysis.MediaAnalysisOptions.Duration.init -> void
+Egami.Video.Analysis.MediaAnalysisOptions.Equals(Egami.Video.Analysis.MediaAnalysisOptions? other) -> bool
+Egami.Video.Analysis.MediaAnalysisOptions.MediaAnalysisOptions() -> void
+Egami.Video.Analysis.MediaAnalysisOptions.Scenes.get -> Egami.Video.Analysis.SceneOptions?
+Egami.Video.Analysis.MediaAnalysisOptions.Scenes.init -> void
+Egami.Video.Analysis.MediaAnalysisOptions.Start.get -> Egami.Video.MediaTime?
+Egami.Video.Analysis.MediaAnalysisOptions.Start.init -> void
+Egami.Video.Analysis.MediaAnalysisOptions.VideoDetectors.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.IVideoDetector!>!
+Egami.Video.Analysis.MediaAnalysisOptions.VideoDetectors.init -> void
+Egami.Video.Analysis.MediaAnalysisOptions.VideoTrack.get -> int?
+Egami.Video.Analysis.MediaAnalysisOptions.VideoTrack.init -> void
+Egami.Video.Analysis.MediaAnalysisResult
+Egami.Video.Analysis.MediaAnalysisResult.Cuts.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.SceneCut!>!
+Egami.Video.Analysis.MediaAnalysisResult.End.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.MediaAnalysisResult.Fades.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.Fade!>!
+Egami.Video.Analysis.MediaAnalysisResult.Scenes.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.Scene!>!
+Egami.Video.Analysis.MediaAnalysisResult.SceneScores.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.SceneScore>!
+Egami.Video.Analysis.MediaAnalysisResult.Start.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.MediaAnalysisResult.VideoFrames.get -> long
+Egami.Video.Analysis.NoiseColor
+Egami.Video.Analysis.NoiseColor.Pink = 1 -> Egami.Video.Analysis.NoiseColor
+Egami.Video.Analysis.NoiseColor.White = 0 -> Egami.Video.Analysis.NoiseColor
+Egami.Video.Analysis.Scene
+Egami.Video.Analysis.Scene.<Clone>$() -> Egami.Video.Analysis.Scene!
+Egami.Video.Analysis.Scene.Deconstruct(out int Number, out long StartFrame, out long EndFrame, out Egami.Video.MediaTime Start, out Egami.Video.MediaTime End, out double Score, out Egami.Video.Analysis.SceneStart StartKind) -> void
+Egami.Video.Analysis.Scene.Duration.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.Scene.End.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.Scene.End.init -> void
+Egami.Video.Analysis.Scene.EndFrame.get -> long
+Egami.Video.Analysis.Scene.EndFrame.init -> void
+Egami.Video.Analysis.Scene.Equals(Egami.Video.Analysis.Scene? other) -> bool
+Egami.Video.Analysis.Scene.Middle.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.Scene.Number.get -> int
+Egami.Video.Analysis.Scene.Number.init -> void
+Egami.Video.Analysis.Scene.Scene(int Number, long StartFrame, long EndFrame, Egami.Video.MediaTime Start, Egami.Video.MediaTime End, double Score, Egami.Video.Analysis.SceneStart StartKind) -> void
+Egami.Video.Analysis.Scene.Score.get -> double
+Egami.Video.Analysis.Scene.Score.init -> void
+Egami.Video.Analysis.Scene.Start.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.Scene.Start.init -> void
+Egami.Video.Analysis.Scene.StartFrame.get -> long
+Egami.Video.Analysis.Scene.StartFrame.init -> void
+Egami.Video.Analysis.Scene.StartKind.get -> Egami.Video.Analysis.SceneStart
+Egami.Video.Analysis.Scene.StartKind.init -> void
+Egami.Video.Analysis.SceneCut
+Egami.Video.Analysis.SceneCut.<Clone>$() -> Egami.Video.Analysis.SceneCut!
+Egami.Video.Analysis.SceneCut.Deconstruct(out long Frame, out Egami.Video.MediaTime Time, out double Score, out Egami.Video.Analysis.SceneStart Kind) -> void
+Egami.Video.Analysis.SceneCut.Equals(Egami.Video.Analysis.SceneCut? other) -> bool
+Egami.Video.Analysis.SceneCut.Frame.get -> long
+Egami.Video.Analysis.SceneCut.Frame.init -> void
+Egami.Video.Analysis.SceneCut.Kind.get -> Egami.Video.Analysis.SceneStart
+Egami.Video.Analysis.SceneCut.Kind.init -> void
+Egami.Video.Analysis.SceneCut.SceneCut(long Frame, Egami.Video.MediaTime Time, double Score, Egami.Video.Analysis.SceneStart Kind) -> void
+Egami.Video.Analysis.SceneCut.Score.get -> double
+Egami.Video.Analysis.SceneCut.Score.init -> void
+Egami.Video.Analysis.SceneCut.Time.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.SceneCut.Time.init -> void
+Egami.Video.Analysis.SceneDetector
+Egami.Video.Analysis.SceneDetector.Add(Egami.Video.YuvVideoFrame! frame) -> Egami.Video.Analysis.SceneCut?
+Egami.Video.Analysis.SceneDetector.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Analysis.SceneDetector.Cuts.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.SceneCut!>!
+Egami.Video.Analysis.SceneDetector.Fades.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.Fade!>!
+Egami.Video.Analysis.SceneDetector.FrameCount.get -> long
+Egami.Video.Analysis.SceneDetector.Options.get -> Egami.Video.Analysis.SceneOptions!
+Egami.Video.Analysis.SceneDetector.SceneDetector(Egami.Video.Analysis.SceneOptions? options = null) -> void
+Egami.Video.Analysis.SceneDetector.Scenes.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.Scene!>!
+Egami.Video.Analysis.SceneDetector.Scores.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.SceneScore>!
+Egami.Video.Analysis.SceneDetector.SettledFrames.get -> long
+Egami.Video.Analysis.SceneFrame
+Egami.Video.Analysis.SceneFrame.Deconstruct(out Egami.Video.Analysis.Scene! Scene, out Egami.Video.YuvVideoFrame! Frame) -> void
+Egami.Video.Analysis.SceneFrame.Equals(Egami.Video.Analysis.SceneFrame other) -> bool
+Egami.Video.Analysis.SceneFrame.Frame.get -> Egami.Video.YuvVideoFrame!
+Egami.Video.Analysis.SceneFrame.Frame.init -> void
+Egami.Video.Analysis.SceneFrame.Scene.get -> Egami.Video.Analysis.Scene!
+Egami.Video.Analysis.SceneFrame.Scene.init -> void
+Egami.Video.Analysis.SceneFrame.SceneFrame() -> void
+Egami.Video.Analysis.SceneFrame.SceneFrame(Egami.Video.Analysis.Scene! Scene, Egami.Video.YuvVideoFrame! Frame) -> void
+Egami.Video.Analysis.SceneFrames
+Egami.Video.Analysis.SceneMethod
+Egami.Video.Analysis.SceneMethod.Adaptive = 0 -> Egami.Video.Analysis.SceneMethod
+Egami.Video.Analysis.SceneMethod.Content = 1 -> Egami.Video.Analysis.SceneMethod
+Egami.Video.Analysis.SceneMethod.Histogram = 2 -> Egami.Video.Analysis.SceneMethod
+Egami.Video.Analysis.SceneOptions
+Egami.Video.Analysis.SceneOptions.<Clone>$() -> Egami.Video.Analysis.SceneOptions!
+Egami.Video.Analysis.SceneOptions.AdaptiveRatio.get -> double
+Egami.Video.Analysis.SceneOptions.AdaptiveRatio.init -> void
+Egami.Video.Analysis.SceneOptions.DetectFades.get -> bool
+Egami.Video.Analysis.SceneOptions.DetectFades.init -> void
+Egami.Video.Analysis.SceneOptions.Equals(Egami.Video.Analysis.SceneOptions? other) -> bool
+Egami.Video.Analysis.SceneOptions.FadeBias.get -> double
+Egami.Video.Analysis.SceneOptions.FadeBias.init -> void
+Egami.Video.Analysis.SceneOptions.FadeLevel.get -> double
+Egami.Video.Analysis.SceneOptions.FadeLevel.init -> void
+Egami.Video.Analysis.SceneOptions.FadeToWhite.get -> bool
+Egami.Video.Analysis.SceneOptions.FadeToWhite.init -> void
+Egami.Video.Analysis.SceneOptions.Flash.get -> Egami.Video.Analysis.FlashMode
+Egami.Video.Analysis.SceneOptions.Flash.init -> void
+Egami.Video.Analysis.SceneOptions.KeepSeries.get -> bool
+Egami.Video.Analysis.SceneOptions.KeepSeries.init -> void
+Egami.Video.Analysis.SceneOptions.Method.get -> Egami.Video.Analysis.SceneMethod
+Egami.Video.Analysis.SceneOptions.Method.init -> void
+Egami.Video.Analysis.SceneOptions.MinSceneLength.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.SceneOptions.MinSceneLength.init -> void
+Egami.Video.Analysis.SceneOptions.SceneOptions() -> void
+Egami.Video.Analysis.SceneOptions.Threshold.get -> double?
+Egami.Video.Analysis.SceneOptions.Threshold.init -> void
+Egami.Video.Analysis.SceneOptions.Window.get -> int
+Egami.Video.Analysis.SceneOptions.Window.init -> void
+Egami.Video.Analysis.ScenePosition
+Egami.Video.Analysis.ScenePosition.First = 0 -> Egami.Video.Analysis.ScenePosition
+Egami.Video.Analysis.ScenePosition.Last = 2 -> Egami.Video.Analysis.ScenePosition
+Egami.Video.Analysis.ScenePosition.Middle = 1 -> Egami.Video.Analysis.ScenePosition
+Egami.Video.Analysis.SceneScore
+Egami.Video.Analysis.SceneScore.Deconstruct(out long Frame, out Egami.Video.MediaTime Time, out double Score, out double Luma) -> void
+Egami.Video.Analysis.SceneScore.Equals(Egami.Video.Analysis.SceneScore other) -> bool
+Egami.Video.Analysis.SceneScore.Frame.get -> long
+Egami.Video.Analysis.SceneScore.Frame.init -> void
+Egami.Video.Analysis.SceneScore.Luma.get -> double
+Egami.Video.Analysis.SceneScore.Luma.init -> void
+Egami.Video.Analysis.SceneScore.SceneScore() -> void
+Egami.Video.Analysis.SceneScore.SceneScore(long Frame, Egami.Video.MediaTime Time, double Score, double Luma) -> void
+Egami.Video.Analysis.SceneScore.Score.get -> double
+Egami.Video.Analysis.SceneScore.Score.init -> void
+Egami.Video.Analysis.SceneScore.Time.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.SceneScore.Time.init -> void
+Egami.Video.Analysis.SceneStart
+Egami.Video.Analysis.SceneStart.Cut = 1 -> Egami.Video.Analysis.SceneStart
+Egami.Video.Analysis.SceneStart.Fade = 2 -> Egami.Video.Analysis.SceneStart
+Egami.Video.Analysis.SceneStart.First = 0 -> Egami.Video.Analysis.SceneStart
+Egami.Video.Analysis.TestAudioFormat
+Egami.Video.Analysis.TestAudioFormat.<Clone>$() -> Egami.Video.Analysis.TestAudioFormat!
+Egami.Video.Analysis.TestAudioFormat.Context.get -> Egami.Video.MediaContext?
+Egami.Video.Analysis.TestAudioFormat.Context.init -> void
+Egami.Video.Analysis.TestAudioFormat.Equals(Egami.Video.Analysis.TestAudioFormat? other) -> bool
+Egami.Video.Analysis.TestAudioFormat.FrameSize.get -> int
+Egami.Video.Analysis.TestAudioFormat.FrameSize.init -> void
+Egami.Video.Analysis.TestAudioFormat.Layout.get -> Egami.Video.Audio.ChannelLayout
+Egami.Video.Analysis.TestAudioFormat.Layout.init -> void
+Egami.Video.Analysis.TestAudioFormat.SampleRate.get -> int
+Egami.Video.Analysis.TestAudioFormat.SampleRate.init -> void
+Egami.Video.Analysis.TestAudioFormat.TestAudioFormat() -> void
+Egami.Video.Analysis.TestSources
+Egami.Video.Analysis.TestVideoFormat
+Egami.Video.Analysis.TestVideoFormat.<Clone>$() -> Egami.Video.Analysis.TestVideoFormat!
+Egami.Video.Analysis.TestVideoFormat.BitDepth.get -> int
+Egami.Video.Analysis.TestVideoFormat.BitDepth.init -> void
+Egami.Video.Analysis.TestVideoFormat.ChromaFormat.get -> Egami.Pixels.ChromaFormat
+Egami.Video.Analysis.TestVideoFormat.ChromaFormat.init -> void
+Egami.Video.Analysis.TestVideoFormat.Color.get -> Egami.Pixels.YuvColor
+Egami.Video.Analysis.TestVideoFormat.Color.init -> void
+Egami.Video.Analysis.TestVideoFormat.Context.get -> Egami.Video.MediaContext?
+Egami.Video.Analysis.TestVideoFormat.Context.init -> void
+Egami.Video.Analysis.TestVideoFormat.Equals(Egami.Video.Analysis.TestVideoFormat? other) -> bool
+Egami.Video.Analysis.TestVideoFormat.FrameRate.get -> Egami.Video.Rational
+Egami.Video.Analysis.TestVideoFormat.FrameRate.init -> void
+Egami.Video.Analysis.TestVideoFormat.Height.get -> int
+Egami.Video.Analysis.TestVideoFormat.Height.init -> void
+Egami.Video.Analysis.TestVideoFormat.TestVideoFormat() -> void
+Egami.Video.Analysis.TestVideoFormat.Width.get -> int
+Egami.Video.Analysis.TestVideoFormat.Width.init -> void
 Egami.Video.Audio.AudioCodec
 Egami.Video.Audio.AudioCodec.AudioCodec() -> void
 Egami.Video.Audio.AudioCodecs
@@ -387,6 +585,29 @@ Egami.Video.VideoWriterOptions.SceneCutKeyframes.get -> bool
 Egami.Video.VideoWriterOptions.SceneCutKeyframes.init -> void
 Egami.Video.VideoWriterOptions.Vp8.get -> Egami.Video.Codecs.Vp8EncoderOptions?
 Egami.Video.VideoWriterOptions.Vp8.init -> void
+override Egami.Video.Analysis.Fade.Equals(object? obj) -> bool
+override Egami.Video.Analysis.Fade.GetHashCode() -> int
+override Egami.Video.Analysis.Fade.ToString() -> string!
+override Egami.Video.Analysis.MediaAnalysisOptions.Equals(object? obj) -> bool
+override Egami.Video.Analysis.MediaAnalysisOptions.GetHashCode() -> int
+override Egami.Video.Analysis.MediaAnalysisOptions.ToString() -> string!
+override Egami.Video.Analysis.Scene.Equals(object? obj) -> bool
+override Egami.Video.Analysis.Scene.GetHashCode() -> int
+override Egami.Video.Analysis.Scene.ToString() -> string!
+override Egami.Video.Analysis.SceneCut.Equals(object? obj) -> bool
+override Egami.Video.Analysis.SceneCut.GetHashCode() -> int
+override Egami.Video.Analysis.SceneCut.ToString() -> string!
+override Egami.Video.Analysis.SceneFrame.GetHashCode() -> int
+override Egami.Video.Analysis.SceneOptions.Equals(object? obj) -> bool
+override Egami.Video.Analysis.SceneOptions.GetHashCode() -> int
+override Egami.Video.Analysis.SceneOptions.ToString() -> string!
+override Egami.Video.Analysis.SceneScore.GetHashCode() -> int
+override Egami.Video.Analysis.TestAudioFormat.Equals(object? obj) -> bool
+override Egami.Video.Analysis.TestAudioFormat.GetHashCode() -> int
+override Egami.Video.Analysis.TestAudioFormat.ToString() -> string!
+override Egami.Video.Analysis.TestVideoFormat.Equals(object? obj) -> bool
+override Egami.Video.Analysis.TestVideoFormat.GetHashCode() -> int
+override Egami.Video.Analysis.TestVideoFormat.ToString() -> string!
 override Egami.Video.Audio.AudioCodec.ToString() -> string!
 override Egami.Video.Audio.AudioConvertOptions.Equals(object? obj) -> bool
 override Egami.Video.Audio.AudioConvertOptions.GetHashCode() -> int
@@ -476,6 +697,38 @@ override Egami.Video.Containers.WavFormat.Name.get -> string!
 override Egami.Video.Containers.WavFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
 override Egami.Video.Containers.WavFormat.SignatureLength.get -> int
 override Egami.Video.MediaProgress.GetHashCode() -> int
+static Egami.Video.Analysis.Fade.operator !=(Egami.Video.Analysis.Fade? left, Egami.Video.Analysis.Fade? right) -> bool
+static Egami.Video.Analysis.Fade.operator ==(Egami.Video.Analysis.Fade? left, Egami.Video.Analysis.Fade? right) -> bool
+static Egami.Video.Analysis.MediaAnalysis.Run(string! path, Egami.Video.Analysis.MediaAnalysisOptions? options = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Video.Analysis.MediaAnalysisResult!
+static Egami.Video.Analysis.MediaAnalysisOptions.Default.get -> Egami.Video.Analysis.MediaAnalysisOptions!
+static Egami.Video.Analysis.MediaAnalysisOptions.operator !=(Egami.Video.Analysis.MediaAnalysisOptions? left, Egami.Video.Analysis.MediaAnalysisOptions? right) -> bool
+static Egami.Video.Analysis.MediaAnalysisOptions.operator ==(Egami.Video.Analysis.MediaAnalysisOptions? left, Egami.Video.Analysis.MediaAnalysisOptions? right) -> bool
+static Egami.Video.Analysis.Scene.operator !=(Egami.Video.Analysis.Scene? left, Egami.Video.Analysis.Scene? right) -> bool
+static Egami.Video.Analysis.Scene.operator ==(Egami.Video.Analysis.Scene? left, Egami.Video.Analysis.Scene? right) -> bool
+static Egami.Video.Analysis.SceneCut.operator !=(Egami.Video.Analysis.SceneCut? left, Egami.Video.Analysis.SceneCut? right) -> bool
+static Egami.Video.Analysis.SceneCut.operator ==(Egami.Video.Analysis.SceneCut? left, Egami.Video.Analysis.SceneCut? right) -> bool
+static Egami.Video.Analysis.SceneFrame.operator !=(Egami.Video.Analysis.SceneFrame left, Egami.Video.Analysis.SceneFrame right) -> bool
+static Egami.Video.Analysis.SceneFrame.operator ==(Egami.Video.Analysis.SceneFrame left, Egami.Video.Analysis.SceneFrame right) -> bool
+static Egami.Video.Analysis.SceneFrames.Read(Egami.Video.VideoReader! reader, System.Collections.Generic.IEnumerable<Egami.Video.Analysis.Scene!>! scenes, Egami.Video.Analysis.ScenePosition position = Egami.Video.Analysis.ScenePosition.First) -> System.Collections.Generic.IEnumerable<Egami.Video.Analysis.SceneFrame>!
+static Egami.Video.Analysis.SceneOptions.Default.get -> Egami.Video.Analysis.SceneOptions!
+static Egami.Video.Analysis.SceneOptions.operator !=(Egami.Video.Analysis.SceneOptions? left, Egami.Video.Analysis.SceneOptions? right) -> bool
+static Egami.Video.Analysis.SceneOptions.operator ==(Egami.Video.Analysis.SceneOptions? left, Egami.Video.Analysis.SceneOptions? right) -> bool
+static Egami.Video.Analysis.SceneScore.operator !=(Egami.Video.Analysis.SceneScore left, Egami.Video.Analysis.SceneScore right) -> bool
+static Egami.Video.Analysis.SceneScore.operator ==(Egami.Video.Analysis.SceneScore left, Egami.Video.Analysis.SceneScore right) -> bool
+static Egami.Video.Analysis.TestAudioFormat.Default.get -> Egami.Video.Analysis.TestAudioFormat!
+static Egami.Video.Analysis.TestAudioFormat.operator !=(Egami.Video.Analysis.TestAudioFormat? left, Egami.Video.Analysis.TestAudioFormat? right) -> bool
+static Egami.Video.Analysis.TestAudioFormat.operator ==(Egami.Video.Analysis.TestAudioFormat? left, Egami.Video.Analysis.TestAudioFormat? right) -> bool
+static Egami.Video.Analysis.TestSources.ColorBars(Egami.Video.Analysis.TestVideoFormat? format, Egami.Video.MediaTime duration, Egami.Video.Analysis.ColorBarsStyle style = Egami.Video.Analysis.ColorBarsStyle.Auto) -> System.Collections.Generic.IEnumerable<Egami.Video.YuvVideoFrame!>!
+static Egami.Video.Analysis.TestSources.Gradient(Egami.Video.Analysis.TestVideoFormat? format, Egami.Video.MediaTime duration, Egami.Pixels.Rgba8 from, Egami.Pixels.Rgba8 to, bool vertical = false) -> System.Collections.Generic.IEnumerable<Egami.Video.YuvVideoFrame!>!
+static Egami.Video.Analysis.TestSources.Noise(Egami.Video.Analysis.TestAudioFormat? format, Egami.Video.MediaTime duration, Egami.Video.Analysis.NoiseColor color = Egami.Video.Analysis.NoiseColor.White, double level = -18, int seed = 1) -> System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame!>!
+static Egami.Video.Analysis.TestSources.Pattern(Egami.Video.Analysis.TestVideoFormat? format, Egami.Video.MediaTime duration) -> System.Collections.Generic.IEnumerable<Egami.Video.YuvVideoFrame!>!
+static Egami.Video.Analysis.TestSources.Silence(Egami.Video.Analysis.TestAudioFormat? format, Egami.Video.MediaTime duration) -> System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame!>!
+static Egami.Video.Analysis.TestSources.Sine(Egami.Video.Analysis.TestAudioFormat? format, Egami.Video.MediaTime duration, double frequency = 1000, double level = -18) -> System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame!>!
+static Egami.Video.Analysis.TestSources.Solid(Egami.Video.Analysis.TestVideoFormat? format, Egami.Video.MediaTime duration, Egami.Pixels.Rgba8 color) -> System.Collections.Generic.IEnumerable<Egami.Video.YuvVideoFrame!>!
+static Egami.Video.Analysis.TestSources.Sweep(Egami.Video.Analysis.TestAudioFormat? format, Egami.Video.MediaTime duration, double from = 20, double? to = null, double level = -18) -> System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame!>!
+static Egami.Video.Analysis.TestVideoFormat.Default.get -> Egami.Video.Analysis.TestVideoFormat!
+static Egami.Video.Analysis.TestVideoFormat.operator !=(Egami.Video.Analysis.TestVideoFormat? left, Egami.Video.Analysis.TestVideoFormat? right) -> bool
+static Egami.Video.Analysis.TestVideoFormat.operator ==(Egami.Video.Analysis.TestVideoFormat? left, Egami.Video.Analysis.TestVideoFormat? right) -> bool
 static Egami.Video.Audio.AudioCodecs.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.IAudioDecoder!
 static Egami.Video.Audio.AudioCodecs.Flac.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Get(string! codecId, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.AudioCodec!
@@ -560,6 +813,10 @@ static Egami.Video.VideoWriter.AnalyzeFirstPass(System.Collections.Generic.IEnum
 virtual Egami.Video.Audio.AudioCodec.CanDecode(Egami.Video.TrackInfo! track) -> bool
 virtual Egami.Video.Audio.AudioCodec.CanEncode.get -> bool
 virtual Egami.Video.Audio.AudioCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
+~override Egami.Video.Analysis.SceneFrame.Equals(object obj) -> bool
+~override Egami.Video.Analysis.SceneFrame.ToString() -> string
+~override Egami.Video.Analysis.SceneScore.Equals(object obj) -> bool
+~override Egami.Video.Analysis.SceneScore.ToString() -> string
 ~override Egami.Video.Audio.ChannelLayout.Equals(object obj) -> bool
 ~override Egami.Video.MediaProgress.Equals(object obj) -> bool
 ~override Egami.Video.MediaProgress.ToString() -> string

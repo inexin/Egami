@@ -223,6 +223,9 @@ recommended).
 - A live progress line on a terminal; `--progress <file|->` writes ffmpeg's `-progress` keys, or JSON lines with
   `--progress-format json`. Ctrl+C stops between packets, deletes the output it was writing and exits with 130.
 - `egami video <command>` runs it from the `egami` tool.
+- `scenes` uses Egami.Video's `SceneDetector` (V1.4): `--method adaptive|content|histogram` (adaptive by default), each
+  method's own default `--threshold`, and `--min-gap` 0.6 s by default; `ffmpeg -vf select='gt(scene,X)'` maps to
+  `--method content`.
 
 ## Egami.Video 0.6.0 (unreleased)
 
@@ -267,6 +270,33 @@ after V5.6 (Design Q17).
   file.
 - The lookahead places keyframes at scene cuts, plans groups with hidden, temporally filtered alternate references where the
   group's first frame still predicts its last well, and gives each frame its quantizer. Output bytes do not depend on the thread count.
+
+V1.4 stage A: scene detection and the analysis pass, in the new `Egami.Video.Analysis` namespace. The API review comes once the
+whole step is built (V1.4 Build Plan).
+
+### Scene detection
+
+- `SceneDetector`: cuts from a 16 by 9 grid of mean Y, Cb and Cr and a 64-bin luma histogram per frame, read from the planes
+  with no RGB conversion. `SceneMethod.Adaptive` (the default) weighs each frame's change against the frames around it, so
+  pans and fast motion are not taken for cuts; `Content` scores against the mean of the last frames, as ffmpeg's scene score
+  does; `Histogram` compares luma histograms. A cut within `MinSceneLength` (0.6 s) of the last is not taken, and with
+  `FlashMode.Merge` a flash that comes back to the picture before it is no scene.
+- Fades: a fade or cut through black (or white, with `FadeToWhite`) starts the next scene inside the dark run (`FadeBias`
+  moves it), and `Fades` lists each fade out and fade in.
+- `Scenes` (`Scene` with first and last frame, start, end, middle and how it starts), `Cuts`, `Scores` with `KeepSeries`, and
+  `SettledFrames` for callers that hold recent frames. No memory is allocated per frame.
+
+### The analysis pass
+
+- `MediaAnalysis.Run` reads a file once and feeds the scene detector and any `IVideoDetector` and `IAudioDetector` of the
+  caller's, video and audio interleaved by time, over an optional `Start` and `Duration`, with progress and cancellation.
+- `SceneFrames.Read`: the first, middle or last frame of each scene, by seeking.
+
+### Test sources
+
+- `TestSources`: SMPTE RP 219 HD bars (with the -2%, +2% and +4% pluge bars) and SMPTE EG 1 SD bars at their code values in
+  any bit depth, a moving pattern with a frame counter, solid colors and gradients as video; sine tones, silence, white and
+  pink noise and log sweeps as audio, at a level in dBFS.
 
 ## Egami.Video 0.5.0 (unreleased)
 
