@@ -81,18 +81,12 @@ public sealed class McpTests : IAsyncDisposable
         CallToolResult result = await client.CallToolAsync(
             "remux",
             new Dictionary<string, object?> { ["inputs"] = new[] { clip }, ["output"] = "out/{name}.mkv" },
-            new Progress<ProgressNotificationValue>(n =>
-            {
-                lock (notes)
-                {
-                    notes.Add(n);
-                }
-            }),
+            new Notes(notes),
             cancellationToken: Token);
         Assert.False(result.IsError, Text(result));
         Assert.True(File.Exists(_tool.PathOf("out/avi-mjpeg-420-pcm.mkv")));
         Assert.Equal(RemuxTests.Packets(_tool.PathOf(clip)), RemuxTests.Packets(_tool.PathOf("out/avi-mjpeg-420-pcm.mkv")));
-        for (int i = 0; i < 50 && notes.Count == 0; i++)
+        for (int i = 0; i < 250 && notes.Count == 0; i++)
         {
             await Task.Delay(20, Token);
         }
@@ -159,6 +153,18 @@ public sealed class McpTests : IAsyncDisposable
         McpClient client = await McpClient.CreateAsync(new StreamClientTransport(toServer, fromServer), cancellationToken: Token);
         _servers.Add(new Server(client, server, [toServer, fromServer, serverIn, serverOut]));
         return client;
+    }
+
+    /// <summary>Collects progress notifications as they arrive, on the thread that receives them (Progress&lt;T&gt; would post them on).</summary>
+    private sealed class Notes(List<ProgressNotificationValue> notes) : IProgress<ProgressNotificationValue>
+    {
+        public void Report(ProgressNotificationValue value)
+        {
+            lock (notes)
+            {
+                notes.Add(value);
+            }
+        }
     }
 
     private sealed class Server(McpClient client, Task<int> run, Stream[] streams) : IAsyncDisposable
