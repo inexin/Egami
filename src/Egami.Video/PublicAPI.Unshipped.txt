@@ -1797,4 +1797,79 @@ override Egami.Video.Containers.Ac3Format.Name.get -> string!
 override Egami.Video.Containers.Ac3Format.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
 override Egami.Video.Containers.Ac3Format.SignatureLength.get -> int
 static Egami.Video.Containers.Ac3Format.Instance.get -> Egami.Video.Containers.Ac3Format!
+Egami.Video.Analysis.AudioPictureChannels
+Egami.Video.Analysis.AudioPictureChannels.Mixed = 0 -> Egami.Video.Analysis.AudioPictureChannels
+Egami.Video.Analysis.AudioPictureChannels.Stacked = 1 -> Egami.Video.Analysis.AudioPictureChannels
+Egami.Video.Analysis.AudioPictures
+Egami.Video.Analysis.FrequencyScale
+Egami.Video.Analysis.FrequencyScale.Linear = 0 -> Egami.Video.Analysis.FrequencyScale
+Egami.Video.Analysis.FrequencyScale.Logarithmic = 1 -> Egami.Video.Analysis.FrequencyScale
+Egami.Video.Analysis.SpectrogramColors
+Egami.Video.Analysis.SpectrogramColors.Grayscale = 1 -> Egami.Video.Analysis.SpectrogramColors
+Egami.Video.Analysis.SpectrogramColors.Magma = 0 -> Egami.Video.Analysis.SpectrogramColors
+Egami.Video.Analysis.SpectrogramOptions
+Egami.Video.Analysis.SpectrogramOptions.<Clone>$() -> Egami.Video.Analysis.SpectrogramOptions!
+Egami.Video.Analysis.SpectrogramOptions.Ceiling.get -> double
+Egami.Video.Analysis.SpectrogramOptions.Ceiling.init -> void
+Egami.Video.Analysis.SpectrogramOptions.Channels.get -> Egami.Video.Analysis.AudioPictureChannels
+Egami.Video.Analysis.SpectrogramOptions.Channels.init -> void
+Egami.Video.Analysis.SpectrogramOptions.Colors.get -> Egami.Video.Analysis.SpectrogramColors
+Egami.Video.Analysis.SpectrogramOptions.Colors.init -> void
+Egami.Video.Analysis.SpectrogramOptions.Equals(Egami.Video.Analysis.SpectrogramOptions? other) -> bool
+Egami.Video.Analysis.SpectrogramOptions.Floor.get -> double
+Egami.Video.Analysis.SpectrogramOptions.Floor.init -> void
+Egami.Video.Analysis.SpectrogramOptions.Height.get -> int
+Egami.Video.Analysis.SpectrogramOptions.Height.init -> void
+Egami.Video.Analysis.SpectrogramOptions.MinFrequency.get -> double
+Egami.Video.Analysis.SpectrogramOptions.MinFrequency.init -> void
+Egami.Video.Analysis.SpectrogramOptions.Scale.get -> Egami.Video.Analysis.FrequencyScale
+Egami.Video.Analysis.SpectrogramOptions.Scale.init -> void
+Egami.Video.Analysis.SpectrogramOptions.SpectrogramOptions() -> void
+Egami.Video.Analysis.SpectrogramOptions.Track.get -> int?
+Egami.Video.Analysis.SpectrogramOptions.Track.init -> void
+Egami.Video.Analysis.SpectrogramOptions.Width.get -> int
+Egami.Video.Analysis.SpectrogramOptions.Width.init -> void
+Egami.Video.Analysis.SpectrogramOptions.WindowSize.get -> int
+Egami.Video.Analysis.SpectrogramOptions.WindowSize.init -> void
+Egami.Video.Analysis.WaveformOptions
+Egami.Video.Analysis.WaveformOptions.<Clone>$() -> Egami.Video.Analysis.WaveformOptions!
+Egami.Video.Analysis.WaveformOptions.Background.get -> Egami.Pixels.Rgba8
+Egami.Video.Analysis.WaveformOptions.Background.init -> void
+Egami.Video.Analysis.WaveformOptions.Channels.get -> Egami.Video.Analysis.AudioPictureChannels
+Egami.Video.Analysis.WaveformOptions.Channels.init -> void
+Egami.Video.Analysis.WaveformOptions.Equals(Egami.Video.Analysis.WaveformOptions? other) -> bool
+Egami.Video.Analysis.WaveformOptions.Floor.get -> double
+Egami.Video.Analysis.WaveformOptions.Floor.init -> void
+Egami.Video.Analysis.WaveformOptions.Foreground.get -> Egami.Pixels.Rgba8
+Egami.Video.Analysis.WaveformOptions.Foreground.init -> void
+Egami.Video.Analysis.WaveformOptions.Height.get -> int
+Egami.Video.Analysis.WaveformOptions.Height.init -> void
+Egami.Video.Analysis.WaveformOptions.Rms.get -> Egami.Pixels.Rgba8?
+Egami.Video.Analysis.WaveformOptions.Rms.init -> void
+Egami.Video.Analysis.WaveformOptions.Scale.get -> Egami.Video.Analysis.WaveformScale
+Egami.Video.Analysis.WaveformOptions.Scale.init -> void
+Egami.Video.Analysis.WaveformOptions.Track.get -> int?
+Egami.Video.Analysis.WaveformOptions.Track.init -> void
+Egami.Video.Analysis.WaveformOptions.WaveformOptions() -> void
+Egami.Video.Analysis.WaveformOptions.Width.get -> int
+Egami.Video.Analysis.WaveformOptions.Width.init -> void
+Egami.Video.Analysis.WaveformScale
+Egami.Video.Analysis.WaveformScale.Decibel = 1 -> Egami.Video.Analysis.WaveformScale
+Egami.Video.Analysis.WaveformScale.Linear = 0 -> Egami.Video.Analysis.WaveformScale
+override Egami.Video.Analysis.SpectrogramOptions.Equals(object? obj) -> bool
+override Egami.Video.Analysis.SpectrogramOptions.GetHashCode() -> int
+override Egami.Video.Analysis.SpectrogramOptions.ToString() -> string!
+override Egami.Video.Analysis.WaveformOptions.Equals(object? obj) -> bool
+override Egami.Video.Analysis.WaveformOptions.GetHashCode() -> int
+override Egami.Video.Analysis.WaveformOptions.ToString() -> string!
+static Egami.Video.Analysis.AudioPictures.Spectrogram(string! path, Egami.Video.Analysis.SpectrogramOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame!>! frames, Egami.Video.MediaTime duration, Egami.Video.Analysis.SpectrogramOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.AudioPictures.Waveform(string! path, Egami.Video.Analysis.WaveformOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame!>! frames, Egami.Video.MediaTime duration, Egami.Video.Analysis.WaveformOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.SpectrogramOptions.Default.get -> Egami.Video.Analysis.SpectrogramOptions!
+static Egami.Video.Analysis.SpectrogramOptions.operator !=(Egami.Video.Analysis.SpectrogramOptions? left, Egami.Video.Analysis.SpectrogramOptions? right) -> bool
+static Egami.Video.Analysis.SpectrogramOptions.operator ==(Egami.Video.Analysis.SpectrogramOptions? left, Egami.Video.Analysis.SpectrogramOptions? right) -> bool
+static Egami.Video.Analysis.WaveformOptions.Default.get -> Egami.Video.Analysis.WaveformOptions!
+static Egami.Video.Analysis.WaveformOptions.operator !=(Egami.Video.Analysis.WaveformOptions? left, Egami.Video.Analysis.WaveformOptions? right) -> bool
+static Egami.Video.Analysis.WaveformOptions.operator ==(Egami.Video.Analysis.WaveformOptions? left, Egami.Video.Analysis.WaveformOptions? right) -> bool
 static Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory<byte> payload) -> Egami.Video.Hdr10PlusMetadata?
