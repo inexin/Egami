@@ -12053,6 +12053,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.G711Codec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.G711Codec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.G711Codec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.G711Codec.yml\" sourcestartlinenumber=\"1\">G.711 (ITU-T G.711) μ-law and A-law, decode only: one byte per sample, expanded to 16-bit samples by the standard's tables.\nRead from WAV (format tags 7 and 6), AVI, AIFF-C (ulaw, alaw) and MP4/MOV. Each instance decodes both laws. Frames come out\ninterleaved as <xref href=\"Egami.Video.Audio.SampleFormat.S16\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Codecs.Mp3Codec.yml",
       "output": {
         ".html": {
@@ -12708,6 +12722,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Codecs",
       "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.AiffFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.AiffFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.AiffFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.AiffFormat.yml\" sourcestartlinenumber=\"1\">AIFF and AIFF-C (.aif, .aiff, .aifc; Apple's Audio Interchange File Format 1.3 and its AIFF-C draft): big-endian integer\nPCM, AIFF-C's little-endian (sowt), 24 and 32-bit (in24, in32), float (fl32, fl64) and G.711 (ulaw, alaw) samples. Other\nAIFF-C compressions (ima4, MACE, QDesign and so on) pass through undecoded with an &quot;X_AIFC/&quot; codec id. The NAME, AUTH,\n&quot;(c) &quot; and ANNO chunks and an ID3 chunk become <xref href=\"Egami.Video.MediaInfo.Tags\" data-throw-if-not-resolved=\"false\"></xref> (ID3 pictures become attachments), MARK\nmarkers become chapters, and a CHAN chunk gives the channel layout. The writer stores integer PCM as AIFF and float as\nAIFF-C, the title, artist, copyright and comment in the text chunks, any other tag and cover art in an ID3 chunk, chapters\nas markers and the layout of more than two channels in a CHAN chunk. A non-seekable output is written through a temporary\nfile, since AIFF's sizes come before the samples. Seeking is sample exact.</p>\n"
     },
     {
       "type": "ManagedReference",

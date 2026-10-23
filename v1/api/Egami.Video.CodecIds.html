@@ -244,7 +244,7 @@ decoder.Flush();</code></pre>
 
   <h3 id="Egami_Video_CodecIds_AcmAudio" data-uid="Egami.Video.CodecIds.AcmAudio">
   AcmAudio
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L119"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L128"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Any Audio Compression Manager codec; <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">CodecPrivate</a> holds its WAVEFORMATEX.</p>
@@ -378,6 +378,69 @@ is an event without its times (ReadOrder, Layer, Style, Name, MarginL, MarginR, 
 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public const string Flac = &quot;A_FLAC&quot;</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Egami_Video_CodecIds_G711ALaw" data-uid="Egami.Video.CodecIds.G711ALaw">
+  G711ALaw
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L125"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>G.711 A-law (ITU-T G.711), one byte per sample; like <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_G711MuLaw">G711MuLaw</a>, an Egami.Video id.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string G711ALaw = &quot;X_G711/ALAW&quot;</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Egami_Video_CodecIds_G711MuLaw" data-uid="Egami.Video.CodecIds.G711MuLaw">
+  G711MuLaw
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/CodecIds.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>G.711 μ-law (ITU-T G.711), one byte per sample. Matroska has no id of its own for it, so this one is Egami.Video's and
+Matroska writers refuse it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string G711MuLaw = &quot;X_G711/MULAW&quot;</code></pre>
   </div>
 
 

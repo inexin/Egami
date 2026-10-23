@@ -102,6 +102,13 @@ levels 0 to 8 with the reference encoder's meaning, default 5. Read and written 
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Codecs.G711Codec.html">G711Codec</a></dt>
+      <dd><p>G.711 (ITU-T G.711) μ-law and A-law, decode only: one byte per sample, expanded to 16-bit samples by the standard's tables.
+Read from WAV (format tags 7 and 6), AVI, AIFF-C (ulaw, alaw) and MP4/MOV. Each instance decodes both laws. Frames come out
+interleaved as <a class="xref" href="Egami.Video.Audio.SampleFormat.html#Egami_Video_Audio_SampleFormat_S16">S16</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Codecs.Mp3Codec.html">Mp3Codec</a></dt>
       <dd><p>MPEG audio (ISO/IEC 11172-3 and 13818-3), decode only: Layers I, II and III (MP3) of MPEG-1, MPEG-2 and MPEG-2.5, every
 rate from 8 to 48 kHz, mono, stereo, joint and dual channel, free-format bit rates, and the CRC-16 when frames carry it.

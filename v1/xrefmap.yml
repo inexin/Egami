@@ -78925,6 +78925,93 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Codecs.FlacCodec.Name
   nameWithType: FlacCodec.Name
+- uid: Egami.Video.Audio.Codecs.G711Codec
+  name: G711Codec
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html
+  commentId: T:Egami.Video.Audio.Codecs.G711Codec
+  fullName: Egami.Video.Audio.Codecs.G711Codec
+  nameWithType: G711Codec
+- uid: Egami.Video.Audio.Codecs.G711Codec.ALaw
+  name: ALaw
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_ALaw
+  commentId: P:Egami.Video.Audio.Codecs.G711Codec.ALaw
+  fullName: Egami.Video.Audio.Codecs.G711Codec.ALaw
+  nameWithType: G711Codec.ALaw
+- uid: Egami.Video.Audio.Codecs.G711Codec.ALaw*
+  name: ALaw
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_ALaw_
+  commentId: Overload:Egami.Video.Audio.Codecs.G711Codec.ALaw
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.G711Codec.ALaw
+  nameWithType: G711Codec.ALaw
+- uid: Egami.Video.Audio.Codecs.G711Codec.CanDecode(Egami.Video.TrackInfo)
+  name: CanDecode(TrackInfo)
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_CanDecode_Egami_Video_TrackInfo_
+  commentId: M:Egami.Video.Audio.Codecs.G711Codec.CanDecode(Egami.Video.TrackInfo)
+  fullName: Egami.Video.Audio.Codecs.G711Codec.CanDecode(Egami.Video.TrackInfo)
+  nameWithType: G711Codec.CanDecode(TrackInfo)
+- uid: Egami.Video.Audio.Codecs.G711Codec.CanDecode*
+  name: CanDecode
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_CanDecode_
+  commentId: Overload:Egami.Video.Audio.Codecs.G711Codec.CanDecode
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.G711Codec.CanDecode
+  nameWithType: G711Codec.CanDecode
+- uid: Egami.Video.Audio.Codecs.G711Codec.CodecId
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_CodecId
+  commentId: P:Egami.Video.Audio.Codecs.G711Codec.CodecId
+  fullName: Egami.Video.Audio.Codecs.G711Codec.CodecId
+  nameWithType: G711Codec.CodecId
+- uid: Egami.Video.Audio.Codecs.G711Codec.CodecId*
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_CodecId_
+  commentId: Overload:Egami.Video.Audio.Codecs.G711Codec.CodecId
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.G711Codec.CodecId
+  nameWithType: G711Codec.CodecId
+- uid: Egami.Video.Audio.Codecs.G711Codec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name: CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_CreateDecoder_Egami_Video_AudioTrackInfo_Egami_Video_Audio_AudioDecoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Audio.Codecs.G711Codec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name.vb: CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+  fullName: Egami.Video.Audio.Codecs.G711Codec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions?, Egami.Video.MediaContext)
+  fullName.vb: Egami.Video.Audio.Codecs.G711Codec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions, Egami.Video.MediaContext)
+  nameWithType: G711Codec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  nameWithType.vb: G711Codec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+- uid: Egami.Video.Audio.Codecs.G711Codec.CreateDecoder*
+  name: CreateDecoder
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_CreateDecoder_
+  commentId: Overload:Egami.Video.Audio.Codecs.G711Codec.CreateDecoder
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.G711Codec.CreateDecoder
+  nameWithType: G711Codec.CreateDecoder
+- uid: Egami.Video.Audio.Codecs.G711Codec.MuLaw
+  name: MuLaw
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_MuLaw
+  commentId: P:Egami.Video.Audio.Codecs.G711Codec.MuLaw
+  fullName: Egami.Video.Audio.Codecs.G711Codec.MuLaw
+  nameWithType: G711Codec.MuLaw
+- uid: Egami.Video.Audio.Codecs.G711Codec.MuLaw*
+  name: MuLaw
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_MuLaw_
+  commentId: Overload:Egami.Video.Audio.Codecs.G711Codec.MuLaw
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.G711Codec.MuLaw
+  nameWithType: G711Codec.MuLaw
+- uid: Egami.Video.Audio.Codecs.G711Codec.Name
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_Name
+  commentId: P:Egami.Video.Audio.Codecs.G711Codec.Name
+  fullName: Egami.Video.Audio.Codecs.G711Codec.Name
+  nameWithType: G711Codec.Name
+- uid: Egami.Video.Audio.Codecs.G711Codec.Name*
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.G711Codec.html#Egami_Video_Audio_Codecs_G711Codec_Name_
+  commentId: Overload:Egami.Video.Audio.Codecs.G711Codec.Name
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.G711Codec.Name
+  nameWithType: G711Codec.Name
 - uid: Egami.Video.Audio.Codecs.Mp3Codec
   name: Mp3Codec
   href: api/Egami.Video.Audio.Codecs.Mp3Codec.html
@@ -80842,6 +80929,18 @@ references:
   commentId: F:Egami.Video.CodecIds.Flac
   fullName: Egami.Video.CodecIds.Flac
   nameWithType: CodecIds.Flac
+- uid: Egami.Video.CodecIds.G711ALaw
+  name: G711ALaw
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_G711ALaw
+  commentId: F:Egami.Video.CodecIds.G711ALaw
+  fullName: Egami.Video.CodecIds.G711ALaw
+  nameWithType: CodecIds.G711ALaw
+- uid: Egami.Video.CodecIds.G711MuLaw
+  name: G711MuLaw
+  href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_G711MuLaw
+  commentId: F:Egami.Video.CodecIds.G711MuLaw
+  fullName: Egami.Video.CodecIds.G711MuLaw
+  nameWithType: CodecIds.G711MuLaw
 - uid: Egami.Video.CodecIds.Hevc
   name: Hevc
   href: api/Egami.Video.CodecIds.html#Egami_Video_CodecIds_Hevc
@@ -82817,6 +82916,125 @@ references:
   commentId: N:Egami.Video.Containers
   fullName: Egami.Video.Containers
   nameWithType: Egami.Video.Containers
+- uid: Egami.Video.Containers.AiffFormat
+  name: AiffFormat
+  href: api/Egami.Video.Containers.AiffFormat.html
+  commentId: T:Egami.Video.Containers.AiffFormat
+  fullName: Egami.Video.Containers.AiffFormat
+  nameWithType: AiffFormat
+- uid: Egami.Video.Containers.AiffFormat.CanMux
+  name: CanMux
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_CanMux
+  commentId: P:Egami.Video.Containers.AiffFormat.CanMux
+  fullName: Egami.Video.Containers.AiffFormat.CanMux
+  nameWithType: AiffFormat.CanMux
+- uid: Egami.Video.Containers.AiffFormat.CanMux*
+  name: CanMux
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_CanMux_
+  commentId: Overload:Egami.Video.Containers.AiffFormat.CanMux
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AiffFormat.CanMux
+  nameWithType: AiffFormat.CanMux
+- uid: Egami.Video.Containers.AiffFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name: CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.AiffFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name.vb: CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.AiffFormat.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo>, Egami.Video.MediaMetadata, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.AiffFormat.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList(Of Egami.Video.TrackInfo), Egami.Video.MediaMetadata, Egami.Video.MediaContext, Boolean)
+  nameWithType: AiffFormat.CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  nameWithType.vb: AiffFormat.CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+- uid: Egami.Video.Containers.AiffFormat.CreateMuxer*
+  name: CreateMuxer
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_CreateMuxer_
+  commentId: Overload:Egami.Video.Containers.AiffFormat.CreateMuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AiffFormat.CreateMuxer
+  nameWithType: AiffFormat.CreateMuxer
+- uid: Egami.Video.Containers.AiffFormat.Extensions
+  name: Extensions
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_Extensions
+  commentId: P:Egami.Video.Containers.AiffFormat.Extensions
+  fullName: Egami.Video.Containers.AiffFormat.Extensions
+  nameWithType: AiffFormat.Extensions
+- uid: Egami.Video.Containers.AiffFormat.Extensions*
+  name: Extensions
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_Extensions_
+  commentId: Overload:Egami.Video.Containers.AiffFormat.Extensions
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AiffFormat.Extensions
+  nameWithType: AiffFormat.Extensions
+- uid: Egami.Video.Containers.AiffFormat.Instance
+  name: Instance
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_Instance
+  commentId: P:Egami.Video.Containers.AiffFormat.Instance
+  fullName: Egami.Video.Containers.AiffFormat.Instance
+  nameWithType: AiffFormat.Instance
+- uid: Egami.Video.Containers.AiffFormat.Instance*
+  name: Instance
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_Instance_
+  commentId: Overload:Egami.Video.Containers.AiffFormat.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AiffFormat.Instance
+  nameWithType: AiffFormat.Instance
+- uid: Egami.Video.Containers.AiffFormat.IsMatch(System.ReadOnlySpan{System.Byte})
+  name: IsMatch(ReadOnlySpan<byte>)
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_IsMatch_System_ReadOnlySpan_System_Byte__
+  commentId: M:Egami.Video.Containers.AiffFormat.IsMatch(System.ReadOnlySpan{System.Byte})
+  name.vb: IsMatch(ReadOnlySpan(Of Byte))
+  fullName: Egami.Video.Containers.AiffFormat.IsMatch(System.ReadOnlySpan<byte>)
+  fullName.vb: Egami.Video.Containers.AiffFormat.IsMatch(System.ReadOnlySpan(Of Byte))
+  nameWithType: AiffFormat.IsMatch(ReadOnlySpan<byte>)
+  nameWithType.vb: AiffFormat.IsMatch(ReadOnlySpan(Of Byte))
+- uid: Egami.Video.Containers.AiffFormat.IsMatch*
+  name: IsMatch
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_IsMatch_
+  commentId: Overload:Egami.Video.Containers.AiffFormat.IsMatch
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AiffFormat.IsMatch
+  nameWithType: AiffFormat.IsMatch
+- uid: Egami.Video.Containers.AiffFormat.Name
+  name: Name
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_Name
+  commentId: P:Egami.Video.Containers.AiffFormat.Name
+  fullName: Egami.Video.Containers.AiffFormat.Name
+  nameWithType: AiffFormat.Name
+- uid: Egami.Video.Containers.AiffFormat.Name*
+  name: Name
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_Name_
+  commentId: Overload:Egami.Video.Containers.AiffFormat.Name
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AiffFormat.Name
+  nameWithType: AiffFormat.Name
+- uid: Egami.Video.Containers.AiffFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name: OpenDemuxer(Stream, MediaContext, bool)
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.AiffFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name.vb: OpenDemuxer(Stream, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.AiffFormat.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.AiffFormat.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, Boolean)
+  nameWithType: AiffFormat.OpenDemuxer(Stream, MediaContext, bool)
+  nameWithType.vb: AiffFormat.OpenDemuxer(Stream, MediaContext, Boolean)
+- uid: Egami.Video.Containers.AiffFormat.OpenDemuxer*
+  name: OpenDemuxer
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_OpenDemuxer_
+  commentId: Overload:Egami.Video.Containers.AiffFormat.OpenDemuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AiffFormat.OpenDemuxer
+  nameWithType: AiffFormat.OpenDemuxer
+- uid: Egami.Video.Containers.AiffFormat.SignatureLength
+  name: SignatureLength
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_SignatureLength
+  commentId: P:Egami.Video.Containers.AiffFormat.SignatureLength
+  fullName: Egami.Video.Containers.AiffFormat.SignatureLength
+  nameWithType: AiffFormat.SignatureLength
+- uid: Egami.Video.Containers.AiffFormat.SignatureLength*
+  name: SignatureLength
+  href: api/Egami.Video.Containers.AiffFormat.html#Egami_Video_Containers_AiffFormat_SignatureLength_
+  commentId: Overload:Egami.Video.Containers.AiffFormat.SignatureLength
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AiffFormat.SignatureLength
+  nameWithType: AiffFormat.SignatureLength
 - uid: Egami.Video.Containers.Av1AnnexBFormat
   name: Av1AnnexBFormat
   href: api/Egami.Video.Containers.Av1AnnexBFormat.html
