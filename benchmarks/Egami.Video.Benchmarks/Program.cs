@@ -9,6 +9,13 @@ if (args is ["--time-vp9", .. string[] files])
     return;
 }
 
+// Time H.264 decoding (V7 speed gate): -- --time-h264 <file.h264>...
+if (args is ["--time-h264", .. string[] h264])
+{
+    H264Timing.Run(h264);
+    return;
+}
+
 // Time and write a VP8 encode (V5.2 gates): -- --encode-vp8 <clip.y4m> [--out=file.ivf --quality=Q ...]
 if (args is ["--encode-vp8", .. string[] rest])
 {
