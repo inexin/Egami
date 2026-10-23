@@ -18,11 +18,8 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
-  <!-- The tool compiles the sources, so it needs what they use. -->
-  <ItemGroup>
-    <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="ModelContextProtocol.Core" />
-  </ItemGroup>
+  <!-- The sources use System.CommandLine and ModelContextProtocol.Core; the tool that compiles them references both itself,
+       as Egami.Cli does, so this project needs no package references of its own. -->
 
   <ItemGroup>
     <Content Include="**\*.cs" Exclude="bin\**;obj\**" Pack="true" PackagePath="contentFiles\cs\any\Egami.Cli.Host\%(RecursiveDir)%(Filename)%(Extension)" BuildAction="Compile" PackageCopyToOutput="false" />

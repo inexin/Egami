@@ -13,5 +13,5 @@ package adds no public API and no assembly.
   opened or `--allow` names, progress and cancellation.
 
 A tool derives its session from `CliHostSession` and describes its MCP tools with an `McpToolSet`. The sources use implicit
-usings and nullable reference types, and need System.CommandLine and ModelContextProtocol.Core, which the package brings along.
+usings and nullable reference types, and need System.CommandLine and ModelContextProtocol.Core: reference both in the tool, as Egami.Cli does.
 MIT licensed.
