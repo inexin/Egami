@@ -94,6 +94,48 @@ public class AniWriterTests
     }
 
     [Fact]
+    public void CursorSizesAreAllPngSinceBmpEntriesWouldStartPastWhatWindowsReads()
+    {
+        // Windows' LoadCursorFromFile rejects an animated cursor when an entry of a frame starts past 65535; as BMP the 128 entry
+        // of the cursor sizes would start at 68982.
+        using Raster<Rgba8> animation = Animation(64, [1, 2], [100, 200], [new(10, 20), new(10, 20)]);
+        foreach (List<(int Size, bool Png, int Start)> frame in Entries(Save(animation, new AniWriterOptions { Sizes = AniWriterOptions.CursorSizes })))
+        {
+            Assert.Equal([32, 48, 64, 96, 128], frame.Select(e => e.Size));
+            Assert.All(frame, e => Assert.True(e.Png));
+            Assert.All(frame, e => Assert.InRange(e.Start, 0, ushort.MaxValue));
+        }
+    }
+
+    [Fact]
+    public void SizesThatFitAreAllBmpEvenWhereAFrameWasPng()
+    {
+        // The frames' own IcoDetails say PNG; with BMP and PNG entries in one frame Windows may draw another size's BMP entry.
+        using Raster<Rgba8> animation = Animation(48, [1, 2], [100, 200], [new(1, 2), new(1, 2)]);
+        Assert.Equal(IcoEntryEncoding.Png, ((IcoDetails)animation.Frames[0].Metadata.FormatDetails!).Encoding);
+        List<List<(int Size, bool Png, int Start)>> frames = Entries(Save(animation, new AniWriterOptions { Sizes = [16, 32, 48, 64] }));
+        Assert.All(frames, frame => Assert.All(frame, e => Assert.False(e.Png)));
+
+        // One size keeps the frame's own encoding, as before.
+        Assert.All(Entries(Save(animation, new AniWriterOptions())), frame => Assert.True(Assert.Single(frame).Png));
+    }
+
+    [Fact]
+    public void BmpEntriesTooLargeForWindowsAreWrittenWithAWarning()
+    {
+        List<EgamiDiagnostic> warnings = [];
+        EgamiContext context = EgamiContext.Default with { Diagnostics = warnings.Add };
+        using Raster<Rgba8> animation = Animation(32, [1], [100], [default], context);
+        byte[] data = Save(animation, new AniWriterOptions { Sizes = AniWriterOptions.CursorSizes, Encoding = IcoEntryEncoding.Bmp });
+        Assert.Single(warnings, w => w.Id == "Save.AniTooLarge");
+        Assert.All(Entries(data)[0], e => Assert.False(e.Png));
+
+        warnings.Clear();
+        Save(animation, new AniWriterOptions { Sizes = [32, 48, 64], Encoding = IcoEntryEncoding.Bmp });
+        Assert.DoesNotContain(warnings, w => w.Id == "Save.AniTooLarge");
+    }
+
+    [Fact]
     public void ShortDelaysBecome100MillisecondsAndALoopCountWarns()
     {
         List<EgamiDiagnostic> warnings = [];
@@ -229,6 +271,30 @@ public class AniWriterTests
         }
 
         return chunks;
+    }
+
+    /// <summary>Each stored frame's directory: every entry's size, whether it is PNG and where in the frame its data starts.</summary>
+    private static List<List<(int Size, bool Png, int Start)>> Entries(byte[] data)
+    {
+        byte[] list = Chunks(data)["LIST fram"];
+        List<List<(int, bool, int)>> frames = [];
+        for (int at = 4; at + 8 <= list.Length;)
+        {
+            int length = (int)BinaryPrimitives.ReadUInt32LittleEndian(list.AsSpan(at + 4));
+            ReadOnlySpan<byte> icon = list.AsSpan(at + 8, length);
+            List<(int, bool, int)> entries = [];
+            for (int i = 0; i < BinaryPrimitives.ReadUInt16LittleEndian(icon[4..]); i++)
+            {
+                ReadOnlySpan<byte> entry = icon.Slice(6 + (16 * i), 16);
+                int start = (int)BinaryPrimitives.ReadUInt32LittleEndian(entry[12..]);
+                entries.Add((entry[0] == 0 ? 256 : entry[0], icon[start] == 0x89, start));
+            }
+
+            frames.Add(entries);
+            at += 8 + length + (length & 1);
+        }
+
+        return frames;
     }
 
     private static int[] Words(byte[] data)

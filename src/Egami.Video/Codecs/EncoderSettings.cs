@@ -151,3 +151,119 @@ public sealed record Vp8EncoderOptions
     private static int InRange(int value, int min, int max, [System.Runtime.CompilerServices.CallerArgumentExpression(nameof(value))] string? name = null) =>
         value < min || value > max ? throw new ArgumentOutOfRangeException(name, value, $"The value must be {min} to {max}.") : value;
 }
+
+/// <summary>
+/// The VP9 settings beyond <see cref="VideoEncoderOptions"/>, for experts: quantizer limits, alternate reference frames,
+/// golden frame spacing, tile columns, adaptive quantization, error resilience, the bit depth and alpha. Every one has a
+/// default that suits most uses.
+/// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoEncode.cs" region="video-encode-vp9"/>
+/// </example>
+public sealed record Vp9EncoderOptions
+{
+    private readonly int _minQuantizer;
+    private readonly int _maxQuantizer = 255;
+    private readonly int? _goldenInterval;
+    private readonly int _temporalFilterFrames = 7;
+    private readonly int _temporalFilterStrength = 5;
+    private readonly int? _tileColumns;
+    private readonly int? _bitDepth;
+
+    /// <summary>Gets the defaults.</summary>
+    public static Vp9EncoderOptions Default { get; } = new();
+
+    /// <summary>Gets the smallest quantizer index rate control may use, 0 (finest, lossless) to 255. Default 0.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 255.</exception>
+    public int MinQuantizer
+    {
+        get => _minQuantizer;
+        init => _minQuantizer = InRange(value, 0, 255);
+    }
+
+    /// <summary>Gets the largest quantizer index rate control may use, 0 to 255. Default 255.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 255.</exception>
+    public int MaxQuantizer
+    {
+        get => _maxQuantizer;
+        init => _maxQuantizer = InRange(value, 0, 255);
+    }
+
+    /// <summary>
+    /// Gets whether <see cref="LatencyMode.Quality"/> codes hidden alternate reference frames: a temporally filtered copy of a
+    /// frame ahead that the frames before it predict from, sent in a superframe with the next shown frame. Default on;
+    /// <see cref="LatencyMode.Realtime"/> never codes them.
+    /// </summary>
+    public bool AlternateReference { get; init; } = true;
+
+    /// <summary>
+    /// Gets the most frames between golden frame refreshes (and alternate reference frames), 4 to 64, or <see langword="null"/>
+    /// (the default) for 8 to 16 chosen by how much the picture moves.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 4 to 64.</exception>
+    public int? GoldenInterval
+    {
+        get => _goldenInterval;
+        init => _goldenInterval = value is int v ? InRange(v, 4, 64) : null;
+    }
+
+    /// <summary>Gets how many frames the temporal filter blends into an alternate reference frame, 1 (none) to 15. Default 7.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 1 to 15.</exception>
+    public int TemporalFilterFrames
+    {
+        get => _temporalFilterFrames;
+        init => _temporalFilterFrames = InRange(value, 1, 15);
+    }
+
+    /// <summary>Gets how strongly the temporal filter blends, 0 (weakest) to 6. Default 5.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 6.</exception>
+    public int TemporalFilterStrength
+    {
+        get => _temporalFilterStrength;
+        init => _temporalFilterStrength = InRange(value, 0, 6);
+    }
+
+    /// <summary>
+    /// Gets the tile columns per frame, a power of two from 1 to 64, or <see langword="null"/> (the default) for as many as the
+    /// width allows with each at least 256 pixels wide, up to 4. Tiles let encoders and decoders use more threads; the frame
+    /// width caps them. The output never depends on the thread count.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not a power of two from 1 to 64.</exception>
+    public int? TileColumns
+    {
+        get => _tileColumns;
+        init => _tileColumns = value is null or 1 or 2 or 4 or 8 or 16 or 32 or 64 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The tile columns must be a power of two from 1 to 64.");
+    }
+
+    /// <summary>
+    /// Gets whether blocks get finer or coarser quantizers by their detail, through segments (libvpx's aq-mode 1): flat areas,
+    /// where banding shows, get finer steps. Default off.
+    /// </summary>
+    public bool AdaptiveQuantization { get; init; }
+
+    /// <summary>
+    /// Gets whether frames keep no probability updates for the frames after them, so a lost packet spoils only its own frame,
+    /// or <see langword="null"/> (the default) for on in <see cref="LatencyMode.Realtime"/> and off otherwise.
+    /// </summary>
+    public bool? ErrorResilient { get; init; }
+
+    /// <summary>
+    /// Gets the bit depth to code, 8, 10 or 12, or <see langword="null"/> (the default) for the frames' own: 10 or 12 for 16-bit
+    /// planes of that depth, 8 for everything else. 10 and 12 bits make profile 2 (4:2:0) or 3 streams.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is not 8, 10 or 12.</exception>
+    public int? BitDepth
+    {
+        get => _bitDepth;
+        init => _bitDepth = value is null or 8 or 10 or 12 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The bit depth must be 8, 10 or 12.");
+    }
+
+    /// <summary>
+    /// Gets whether frames with alpha are coded with their alpha plane as a second VP9 stream, as WebM carries it, or
+    /// <see langword="null"/> (the default) to code alpha when the first frame has it.
+    /// </summary>
+    public bool? Alpha { get; init; }
+
+    private static int InRange(int value, int min, int max, [System.Runtime.CompilerServices.CallerArgumentExpression(nameof(value))] string? name = null) =>
+        value < min || value > max ? throw new ArgumentOutOfRangeException(name, value, $"The value must be {min} to {max}.") : value;
+}

@@ -233,6 +233,36 @@ public class Audio
     }
 
     [Fact]
+    public void Aiff()
+    {
+        using SampleFiles files = new();
+        using AudioFrame tone = Tone();
+        using (AudioWriter writer = AudioWriter.Create("tone.wav"))
+        {
+            writer.Write(tone);
+        }
+
+        #region audio-aiff
+        // AIFF holds big-endian PCM; remuxing turns WAV's samples around without decoding. Metadata goes into its text chunks.
+        MediaFile.Remux("tone.wav", "tone.aiff");
+        using (AudioWriter writer = AudioWriter.Create("titled.aiff", new AudioWriterOptions
+        {
+            Metadata = new MediaMetadata { Tags = new Dictionary<string, string> { ["TITLE"] = "Tone" } },
+        }))
+        {
+            writer.Write(tone);
+        }
+
+        // AIFF-C's G.711 (ulaw, alaw), sowt and float samples decode like any other track.
+        using AudioReader reader = AudioReader.Open("titled.aiff");
+        Console.WriteLine($"{reader.Track.CodecId}: {reader.Track.SampleRate} Hz, {MediaFile.Probe("titled.aiff").Tags["TITLE"]}");
+        #endregion
+
+        Assert.Equal("AIFF", MediaFile.Probe("tone.aiff").FormatName);
+        Assert.Equal(CodecIds.PcmBigEndian, reader.Track.CodecId);
+    }
+
+    [Fact]
     public void VideoWithAudio()
     {
         using SampleFiles files = new();

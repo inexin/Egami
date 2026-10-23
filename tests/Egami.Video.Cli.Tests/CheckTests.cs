@@ -189,7 +189,11 @@ public sealed class CheckTests
         ToolRun file = tool.Run("hash", path, "--csv");
         ToolRun piped = tool.Run(["hash", "-", "--csv"], File.ReadAllBytes(path));
         Assert.True(piped.Code == 0, piped.Error);
-        Assert.Equal(file.Text.Split('\n').Skip(1), piped.Text.Split('\n').Skip(1).Select(l => l.Replace("-,", $"{path},", StringComparison.Ordinal)));
+
+        // The file's rows name it as the CLI shows it (relative, or absolute with '/' on another drive); the piped rows name "-".
+        string[] rows = [.. file.Text.Split('\n').Skip(1)];
+        string shown = rows[0][..rows[0].IndexOf(',', StringComparison.Ordinal)];
+        Assert.Equal(rows, piped.Text.Split('\n').Skip(1).Select(l => l.StartsWith("-,", StringComparison.Ordinal) ? shown + l[1..] : l));
         ToolRun packets = tool.Run(["hash", "-", "--packets"], File.ReadAllBytes(path));
         Assert.True(packets.Code == 0, packets.Error);
     }

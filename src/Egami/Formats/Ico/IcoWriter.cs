@@ -196,6 +196,7 @@ internal sealed class IcoWriter : IFormatWriter, IMultiImageWriter
         BinaryPrimitives.WriteUInt16LittleEndian(header[14..], 32);
         BinaryPrimitives.WriteUInt32LittleEndian(header[20..], (uint)(data.Length - 40));
         int maskStart = 40 + (colorStride * height);
+        bool anyVisible = false;
         for (int y = 0; y < height; y++)
         {
             ReadOnlySpan<Rgba8> row = pixels.Row(height - 1 - y);
@@ -212,7 +213,18 @@ internal sealed class IcoWriter : IFormatWriter, IMultiImageWriter
                 {
                     mask[x >> 3] |= (byte)(0x80 >> (x & 7));
                 }
+                else
+                {
+                    anyVisible = true;
+                }
             }
+        }
+
+        // Windows ignores an alpha channel that is 0 everywhere and draws the colors through the AND mask instead, so a wholly
+        // transparent entry gets black colors, which the mask and the XOR draw as nothing.
+        if (!anyVisible)
+        {
+            data.AsSpan(40, maskStart - 40).Clear();
         }
 
         return data;

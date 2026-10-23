@@ -1,3 +1,4 @@
+using Egami.Colors;
 using Egami.Pixels;
 using Egami.Video;
 using Egami.Video.Codecs;
@@ -32,6 +33,60 @@ public class VideoEncode
 
         Assert.Equal(CodecIds.Vp8, MediaFile.Probe("duck.webm").Tracks[0].CodecId);
         Assert.False(tuned.Vp8!.AlternateReference);
+    }
+
+    [Fact]
+    public void Vp9()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgb8> duck = Raster.Load<Rgb8>("duck.png");
+
+        #region video-encode-vp9
+        // VP9 in WebM at constant quality, on the same Quality and Effort scales as VP8.
+        VideoWriterOptions options = new() { Codec = VideoCodecs.Vp9, FrameRate = new Rational(30, 1), Quality = 70, Effort = 2 };
+        using (VideoWriter writer = VideoWriter.Create("duck-vp9.webm", options))
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                using Raster<Rgb8> frame = duck.Derive(ops => ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+                writer.WriteFrame(frame);
+            }
+        }
+
+        // Expert settings: two tile columns, adaptive quantization, quantizer limits on VP9's 0 to 255 scale.
+        VideoWriterOptions tuned = options with
+        {
+            Vp9 = new Vp9EncoderOptions { TileColumns = 2, AdaptiveQuantization = true, MinQuantizer = 20, MaxQuantizer = 200 },
+        };
+        #endregion
+
+        Assert.Equal(CodecIds.Vp9, MediaFile.Probe("duck-vp9.webm").Tracks[0].CodecId);
+        Assert.Equal(2, tuned.Vp9!.TileColumns);
+    }
+
+    [Fact]
+    public void Vp9Deep()
+    {
+        using SampleFiles files = new();
+
+        #region video-encode-vp9-hdr
+        // 10-bit planes code profile 2 (4:2:0) or 3 (4:2:2, 4:4:4); the frames' code points and HDR metadata go into the
+        // container's Colour (WebM, Matroska) or colr, mdcv and clli boxes (MP4).
+        ColorCodePoints pq = new(9, 16, 9, false);
+        HdrMetadata hdr = new() { MasteringMaxLuminance = 1000, MasteringMinLuminance = 0.005, MaxContentLightLevel = 1000, MaxFrameAverageLightLevel = 400 };
+        VideoWriterOptions options = new() { Codec = VideoCodecs.Vp9, Quality = 80, Effort = 1 };
+        using (VideoWriter writer = VideoWriter.Create("hdr.mp4", options))
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                YuvRaster<ushort> planes = YuvRaster.Create(64, 48, ChromaFormat.Yuv420, 10, new YuvColor(YuvMatrix.Bt2020Ncl, YuvRange.Limited, ChromaSiting.Center));
+                using YuvVideoFrame frame = new(planes, new MediaTime(i, new Rational(1, 30)), color: pq) { Hdr = hdr };
+                writer.WriteFrame(frame);
+            }
+        }
+        #endregion
+
+        Assert.Equal(10, MediaFile.Probe("hdr.mp4").Tracks.OfType<VideoTrackInfo>().First().BitDepth);
     }
 
     [Fact]

@@ -76,7 +76,7 @@ static Action<Stream> Target(string name) => name switch
     "vp9" => ReadVp9,
     "vp9raw" => DecodeVp9Packets,
     "h264" => ReadH264,
-    "wav" or "flac" or "ogg" => ReadAudio,
+    "wav" or "flac" or "ogg" or "aiff" => ReadAudio,
     "opusraw" => DecodeOpusPackets,
     "vorbisraw" => DecodeVorbisPackets,
     "mp3" => ReadMp3,
@@ -87,7 +87,8 @@ static Action<Stream> Target(string name) => name switch
     "opusenc" => EncodeOpus,
     "subs" => ReadSubtitles,
     "subtrack" => ReadSubtitleTracks,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, opusraw, vorbisraw, vp8enc, mp3, mp3raw, opusenc, subs, subtrack."),
+    "vp9enc" => EncodeVp9,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, opusraw, vorbisraw, vp8enc, mp3, mp3raw, opusenc, subs, subtrack, vp9enc."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -186,6 +187,132 @@ static void EncodeVp8(Stream stream)
     }
 }
 
+// The VP9 encoder: the first bytes pick the size, format and options, the rest fills the frames; every frame must come back out
+// of Egami's decoder at the coded depth and chroma format, and nothing may throw, since every option it can pick is valid.
+static void EncodeVp9(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 10)
+    {
+        return;
+    }
+
+    int width = 1 + (data[0] % 80), height = 1 + (data[1] % 48), frames = 1 + (data[2] % 10);
+    RateControlMode mode = (RateControlMode)(data[3] % 4);
+    int depth = (data[8] & 3) switch { 1 => 10, 2 => 12, _ => 8 };
+    ChromaFormat chroma = ((data[8] >> 2) % 3) switch { 1 => ChromaFormat.Yuv422, 2 => ChromaFormat.Yuv444, _ => ChromaFormat.Yuv420 };
+    VideoEncoderOptions options = new()
+    {
+        Width = width,
+        Height = height,
+        Quality = data[4] % 101,
+        Effort = data[5] % 11,
+        RateControl = mode,
+        Bitrate = mode is RateControlMode.Bitrate or RateControlMode.ConstantBitrate ? 1000 + (data[6] * 4000L) : null,
+        Quantizer = mode == RateControlMode.Quantizer ? data[6] : null,
+        LatencyMode = (data[7] & 1) != 0 ? LatencyMode.Realtime : LatencyMode.Quality,
+        KeyframeInterval = (data[7] & 2) != 0 ? 1 + (data[7] >> 4) : null,
+        Vp9 = new Vp9EncoderOptions
+        {
+            Alpha = (data[7] & 4) != 0 && depth == 8,
+            AdaptiveQuantization = (data[7] & 8) != 0,
+            ErrorResilient = (data[8] & 16) != 0,
+            GoldenInterval = 4 + (data[6] % 8),
+            TileColumns = 1 << ((data[8] >> 5) & 3),
+        },
+    };
+    MediaContext context = Context();
+    using IVideoEncoder encoder = VideoCodecs.Vp9.CreateEncoder(options, context);
+    List<EncodedPacket> packets = [];
+    int at = 0;
+    for (int f = 0; f < frames; f++)
+    {
+        YuvColor color = YuvColor.Bt601Limited;
+        YuvRaster picture;
+        if (depth == 8)
+        {
+            YuvRaster<byte> bytes = YuvRaster.Create(width, height, chroma, color, alpha: true);
+            foreach (YuvPlane<byte>? plane in (YuvPlane<byte>?[])[bytes.Y, bytes.U, bytes.V, bytes.A])
+            {
+                for (int y = 0; y < plane!.Height; y++)
+                {
+                    Span<byte> row = plane.Row(y);
+                    for (int x = 0; x < row.Length; x++)
+                    {
+                        row[x] = data[9 + (at++ % (data.Length - 9))];
+                    }
+                }
+            }
+
+            picture = bytes;
+        }
+        else
+        {
+            YuvRaster<ushort> words = YuvRaster.Create(width, height, chroma, depth, color);
+            foreach (YuvPlane<ushort>? plane in (YuvPlane<ushort>?[])[words.Y, words.U, words.V])
+            {
+                for (int y = 0; y < plane!.Height; y++)
+                {
+                    Span<ushort> row = plane.Row(y);
+                    for (int x = 0; x < row.Length; x++)
+                    {
+                        row[x] = (ushort)((data[9 + (at++ % (data.Length - 9))] << (depth - 8)) | (data[(at + x) % data.Length] & ((1 << (depth - 8)) - 1)));
+                    }
+                }
+            }
+
+            picture = words;
+        }
+
+        using YuvVideoFrame frame = new(picture, new MediaTime(f, new Rational(1, 30)));
+        encoder.Send(frame, new EncodeFrameOptions { ForceKeyframe = (data[(at + f) % data.Length] & 7) == 0 });
+        while (encoder.TryReceive(out EncodedPacket? packet))
+        {
+            packets.Add(packet);
+        }
+    }
+
+    encoder.Flush();
+    while (encoder.TryReceive(out EncodedPacket? packet))
+    {
+        packets.Add(packet);
+    }
+
+    using IVideoDecoder decoder = VideoCodecs.Vp9.CreateDecoder(encoder.Track, null, context);
+    int shown = 0;
+    foreach (EncodedPacket packet in packets)
+    {
+        using (packet)
+        {
+            decoder.Send(packet);
+            while (decoder.TryReceive(out YuvVideoFrame? frame))
+            {
+                using (frame)
+                {
+                    if (frame.Raster.BitDepth != depth || frame.Raster.ChromaFormat != chroma)
+                    {
+                        throw new InvalidOperationException($"A {depth}-bit {chroma} frame came out as {frame.Raster.BitDepth}-bit {frame.Raster.ChromaFormat}.");
+                    }
+                }
+
+                shown++;
+            }
+        }
+    }
+
+    decoder.Flush();
+    while (decoder.TryReceive(out YuvVideoFrame? frame))
+    {
+        frame.Dispose();
+        shown++;
+    }
+
+    if (shown != frames)
+    {
+        throw new InvalidOperationException($"{frames} frames went in, {shown} came out of the decoder.");
+    }
+}
+
 // Any container: probe, read every packet (decoding Motion JPEG ones), then seek and read again; then the same bytes as a
 // non-seekable stream.
 static void Demux(Stream stream)
@@ -215,7 +342,7 @@ static void Demux(Stream stream)
     }
 }
 
-// An audio file (V5.0: WAV, Wave64, RF64, FLAC): decode it through AudioReader, converting to 16-bit stereo at 22.05 kHz so the
+// An audio file (V5.0: WAV, Wave64, RF64, FLAC; V5.9: AIFF, AIFF-C, G.711): decode it through AudioReader, converting to 16-bit stereo at 22.05 kHz so the
 // resampler and mixer run too, seek and decode again; then the same bytes as a non-seekable stream with the codec's own samples.
 static void ReadAudio(Stream stream)
 {

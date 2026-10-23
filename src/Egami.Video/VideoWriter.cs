@@ -302,6 +302,7 @@ public sealed class VideoWriter : IDisposable
                     SceneCutKeyframes = _options.SceneCutKeyframes,
                     FirstPassStats = _options.FirstPassStats,
                     Vp8 = _options.Vp8,
+                    Vp9 = _options.Vp9,
                 },
                 _context);
             _encoder.Send(frame);
@@ -424,6 +425,9 @@ public sealed record VideoWriterOptions
 
     /// <summary>Gets the VP8 expert settings, or <see langword="null"/> for the defaults.</summary>
     public Vp8EncoderOptions? Vp8 { get; init; }
+
+    /// <summary>Gets the VP9 expert settings, or <see langword="null"/> for <see cref="Vp9EncoderOptions.Default"/>.</summary>
+    public Vp9EncoderOptions? Vp9 { get; init; }
 
     /// <summary>
     /// Gets tracks written alongside the video, such as audio from the source file, whose packets go through

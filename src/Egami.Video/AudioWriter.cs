@@ -170,6 +170,7 @@ public sealed class AudioWriter : IDisposable
     internal static AudioCodec DefaultCodec(ContainerFormat format) =>
         format == FlacFormat.Instance ? FlacCodec.Instance
         : format == OggFormat.Instance || format == MatroskaFormat.WebM ? OpusCodec.Instance
+        : format == AiffFormat.Instance ? PcmCodec.BigEndian
         : PcmCodec.Instance;
 
     /// <summary>Picks the stored bit depth: the option, else the first frame's valid bits where the codec stores them.</summary>

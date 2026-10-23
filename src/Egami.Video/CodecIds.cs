@@ -115,6 +115,15 @@ public static class CodecIds
     /// <summary>FLAC.</summary>
     public const string Flac = "A_FLAC";
 
+    /// <summary>
+    /// G.711 μ-law (ITU-T G.711), one byte per sample. Matroska has no id of its own for it, so this one is Egami.Video's and
+    /// Matroska writers refuse it.
+    /// </summary>
+    public const string G711MuLaw = "X_G711/MULAW";
+
+    /// <summary>G.711 A-law (ITU-T G.711), one byte per sample; like <see cref="G711MuLaw"/>, an Egami.Video id.</summary>
+    public const string G711ALaw = "X_G711/ALAW";
+
     /// <summary>Any Audio Compression Manager codec; <see cref="TrackInfo.CodecPrivate"/> holds its WAVEFORMATEX.</summary>
     public const string AcmAudio = "A_MS/ACM";
 }
