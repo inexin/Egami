@@ -99,16 +99,16 @@ internal sealed class H264Inter
         int w = w4 * 4, h = h4 * 4, x = x4 * 4, y = y4 * 4;
         if ((x4 & 3) == 0 && (y4 & 3) == 0)
         {
-            // The first partition of a macroblock: the next macroblock likely moves the same way, so its reference samples
-            // are fetched into the cache while this one is predicted.
+            // The first partition of a macroblock: the macroblocks after it likely move the same way, so the reference
+            // samples of the one two ahead are fetched into the cache while this one is predicted.
             if (p0 is not null)
             {
-                Prefetch(p0, x + 16, y, mv0);
+                Prefetch(p0, x + 32, y, mv0);
             }
 
             if (p1 is not null)
             {
-                Prefetch(p1, x + 16, y, mv1);
+                Prefetch(p1, x + 32, y, mv1);
             }
         }
 
@@ -237,7 +237,9 @@ internal sealed class H264Inter
         for (int row = 0; row < 9; row++)
         {
             Prefetch(ref Unsafe.Add(ref cb, row * refPic.ChromaStride));
+            Prefetch(ref Unsafe.Add(ref cb, (row * refPic.ChromaStride) + 9));
             Prefetch(ref Unsafe.Add(ref cr, row * refPic.ChromaStride));
+            Prefetch(ref Unsafe.Add(ref cr, (row * refPic.ChromaStride) + 9));
         }
     }
 
