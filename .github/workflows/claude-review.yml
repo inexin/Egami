@@ -88,4 +88,16 @@ jobs:
             - Don't post a new comment for an issue that an unresolved thread already covers.
             - If no new issues are found and the pull request already has a "No issues found" comment from Claude, post
               nothing.
-          claude_args: --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(review-threads list),Bash(review-threads resolve:*)"
+
+            Nobody can approve a command in this run, so a command that needs approval is refused. Run each command on its
+            own: no `cd`, no `&&` or `;`, and keep any file you save inside the working directory, not in /tmp. You and
+            every subagent may run `gh pr view`, `gh pr diff`, `gh pr comment`, `gh pr list`, `gh issue view`,
+            `gh issue list`, `gh search`, `head`, `tail`, `wc` and `grep`.
+            If you still can't finish the review, because a command was refused or a step failed, don't end silently:
+            post a comment with `gh pr comment` that starts with "## Code review" and says the review did not complete
+            and why.
+          # The code-review command allows its gh commands only for its own step, and a chained command such as
+          # `cd /tmp && gh pr diff ... > file && wc -l file` was refused on large pull requests, which then got no comment.
+          # These rules apply to the whole run, subagents included.
+          claude_args: >-
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(review-threads list),Bash(review-threads resolve:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh pr list:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh search:*),Bash(head:*),Bash(tail:*),Bash(wc:*),Bash(grep:*)"

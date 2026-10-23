@@ -108,6 +108,8 @@
       href: guides/analysis.md
     - name: Palettes and dithering
       href: guides/palettes.md
+    - name: Text recognition (OCR)
+      href: guides/ocr.md
 - name: "Egami: extending"
   items:
     - name: Custom operations and formats
@@ -142,6 +144,8 @@
       href: guides/video.md
     - name: Streaming MP4
       href: guides/streaming-mp4.md
+    - name: Encoding video
+      href: guides/video-encoding.md
     - name: Audio
       href: guides/audio.md
 - name: Egami.Video.Cli

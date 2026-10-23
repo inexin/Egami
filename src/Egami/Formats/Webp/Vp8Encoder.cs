@@ -883,7 +883,25 @@ internal sealed partial class Vp8Encoder
 
         internal int MinDisto { get; set; }
 
-        internal int MaxEdge { get; set; }
+        internal int MaxEdge { get => _maxEdge; set => _maxEdge = value; }
+
+        private int _maxEdge;
+
+        /// <summary>Raises <see cref="MaxEdge"/> to <paramref name="value"/>; safe from several threads.</summary>
+        internal void RaiseMaxEdge(int value)
+        {
+            int seen = Volatile.Read(ref _maxEdge);
+            while (value > seen)
+            {
+                int was = Interlocked.CompareExchange(ref _maxEdge, value, seen);
+                if (was == seen)
+                {
+                    return;
+                }
+
+                seen = was;
+            }
+        }
 
         internal long I4Penalty { get; set; }
 

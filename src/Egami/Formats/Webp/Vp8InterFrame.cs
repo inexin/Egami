@@ -49,22 +49,37 @@ internal sealed class Vp8InterFrame
     /// </summary>
     internal int IntraGate { get; init; } = 8;
 
+    /// <summary>
+    /// Gets how small, in quarters of the squared quantizer step, the best vector's squared error may be for the macroblock to
+    /// skip the intra modes: below it the residual mostly quantizes away and intra rarely wins. 0 never skips them so.
+    /// </summary>
+    internal int IntraFloor { get; init; }
+
+    /// <summary>
+    /// Gets how close, in quarters, the golden or alternate frame's near vectors must come to the frames before's best prediction
+    /// error for the macroblock to search that frame (its error under this many quarters of theirs); 0 searches every frame.
+    /// </summary>
+    internal int ReferenceGate { get; init; }
+
     /// <summary>Gets the loop filter search's first step, 0 for no search (the quantizer's level).</summary>
     internal int FilterStep { get; init; } = 2;
 
+    /// <summary>Gets whether inter residuals are quantized with the trellis; else level by level.</summary>
+    internal bool Trellis { get; init; }
+
     /// <summary>Gets the settings for an effort from 0 (fastest) to 10 (smallest).</summary>
-    internal static (int Range, bool Quarter, int Candidates, int Split, int IntraGate, int FilterStep) Search(int effort) => effort switch
+    internal static (int Range, bool Quarter, int Candidates, int Split, bool Trellis, int IntraGate, int IntraFloor, int ReferenceGate, int FilterStep) Search(int effort) => effort switch
     {
-        0 => (8, false, 1, 0, 2, 0),
-        1 => (16, true, 1, 0, 2, 0),
-        2 => (16, true, 1, 0, 4, 0),
-        3 => (16, true, 1, 1, 4, 0),
-        4 => (32, true, 2, 1, 8, 2),
-        5 => (32, true, 3, 1, 8, 2),
-        6 => (48, true, 3, 1, 0, 4),
-        7 => (48, true, 3, 2, 0, 4),
-        8 => (64, true, 4, 2, 0, 8),
-        9 => (64, true, 6, 2, 0, 8),
-        _ => (64, true, 8, 2, 0, 8),
+        0 => (8, false, 1, 0, false, 2, 32, 4, 0),
+        1 => (16, true, 1, 1, false, 2, 32, 4, 0),
+        2 => (16, true, 1, 1, false, 4, 32, 4, 1),
+        3 => (16, true, 2, 1, false, 8, 32, 4, 1),
+        4 => (32, true, 2, 1, false, 8, 32, 4, 1),
+        5 => (32, true, 2, 2, false, 8, 16, 4, 2),
+        6 => (32, true, 2, 2, true, 8, 16, 4, 2),
+        7 => (48, true, 4, 2, true, 16, 8, 0, 4),
+        8 => (64, true, 4, 2, true, 16, 8, 0, 8),
+        9 => (64, true, 6, 2, true, 0, 0, 0, 8),
+        _ => (64, true, 8, 2, true, 0, 0, 0, 8),
     };
 }

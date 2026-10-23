@@ -29,11 +29,13 @@ internal sealed partial class Vp8Encoder
     private bool _useSkip;
     private int _skipProb;
 
-    private void ResetTokens()
+    private void ResetTokens() => ResetTokens(Math.Clamp(_mbw * _mbh * 64, 4096, 1 << 22));
+
+    private void ResetTokens(int size)
     {
         if (_tokens.Length == 0)
         {
-            _tokens = ArrayPool<ushort>.Shared.Rent(Math.Clamp(_mbw * _mbh * 64, 4096, 1 << 22));
+            _tokens = ArrayPool<ushort>.Shared.Rent(size);
         }
 
         _tokenCount = 0;

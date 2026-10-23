@@ -79,6 +79,7 @@ settings, safety limits and registered formats a call uses.
 - [Animation](https://inexin.github.io/Egami/v1/articles/guides/animation.html): A raster holds one or more frames, all the size of the raster and the same pixel type.
 - [Comparing and measuring](https://inexin.github.io/Egami/v1/articles/guides/analysis.html): Calls that look at images rather than change them.
 - [Palettes and dithering](https://inexin.github.io/Egami/v1/articles/guides/palettes.html): The palette machinery behind the GIF, palette PNG, BMP and TGA writers, opened up.
+- [Text recognition (OCR)](https://inexin.github.io/Egami/v1/articles/guides/ocr.html): Egami does not recognize text itself.
 
 ## Egami: extending
 
@@ -108,6 +109,7 @@ settings, safety limits and registered formats a call uses.
 
 - [Video](https://inexin.github.io/Egami/v1/articles/guides/video.html): Egami.Video reads and writes video with Egami rasters as frames, so resizing, color and drawing from Egami work on video with no copying.
 - [Streaming MP4](https://inexin.github.io/Egami/v1/articles/guides/streaming-mp4.html): Flat MP4 needs its index (moov) before or after all of the media, so a writer must either seek back or hold the media somewhere until the end.
+- [Encoding video](https://inexin.github.io/Egami/v1/articles/guides/video-encoding.html): Egami.Video encodes VP8 into WebM, Matroska and IVF, with alpha in WebM and Matroska.
 - [Audio](https://inexin.github.io/Egami/v1/articles/guides/audio.html): Egami.Video decodes and encodes audio with the same send and receive loop as video.
 
 ## Egami.Video.Cli

@@ -106,8 +106,70 @@ public sealed record VideoEncoderOptions
     /// <summary>Gets the frame rate, which also sets the time base of the packets (its reciprocal). Default 30/1.</summary>
     public Rational FrameRate { get; init; } = new(30, 1);
 
-    /// <summary>Gets the quality from 1 to 100, or <see langword="null"/> for the codec's default (75 for Motion JPEG, as Egami's JPEG writer).</summary>
+    /// <summary>
+    /// Gets the quality, or <see langword="null"/> for the codec's default: 1 to 100 for Motion JPEG (default 75, as Egami's JPEG
+    /// writer), 0 to 100 for VP8 (default 60, the scale of Egami's AVIF writer, where equal numbers look alike). With
+    /// <see cref="RateControlMode.Quality"/> it is what every frame aims at.
+    /// </summary>
     public int? Quality { get; init; }
+
+    /// <summary>
+    /// Gets how hard the encoder works, 0 (fastest) to 10 (smallest files), or <see langword="null"/> for the codec's default
+    /// (4 for VP8). Motion JPEG has no effort.
+    /// </summary>
+    public int? Effort { get; init; }
+
+    /// <summary>Gets how the encoder spends bits (VP8). Default <see cref="RateControlMode.Quality"/>: constant quality.</summary>
+    public RateControlMode RateControl { get; init; }
+
+    /// <summary>
+    /// Gets the target bitrate in bits per second for <see cref="RateControlMode.Bitrate"/> and
+    /// <see cref="RateControlMode.ConstantBitrate"/>, which need it.
+    /// </summary>
+    public long? Bitrate { get; init; }
+
+    /// <summary>
+    /// Gets the highest bitrate in bits per second that <see cref="RateControlMode.Bitrate"/> may reach over one second, or
+    /// <see langword="null"/> for twice <see cref="Bitrate"/>.
+    /// </summary>
+    public long? MaxBitrate { get; init; }
+
+    /// <summary>
+    /// Gets the decoder buffer in bits that <see cref="RateControlMode.ConstantBitrate"/> keeps from running dry, or
+    /// <see langword="null"/> for one second of <see cref="Bitrate"/>.
+    /// </summary>
+    public long? BufferSize { get; init; }
+
+    /// <summary>
+    /// Gets the codec's own quantizer for <see cref="RateControlMode.Quantizer"/> (0 to 127 for VP8), or <see langword="null"/>
+    /// to take the one <see cref="Quality"/> maps to.
+    /// </summary>
+    public int? Quantizer { get; init; }
+
+    /// <summary>Gets whether the encoder may hold frames back to code them better (VP8). Default <see cref="LatencyMode.Quality"/>.</summary>
+    public LatencyMode LatencyMode { get; init; }
+
+    /// <summary>
+    /// Gets the most frames from one keyframe to the next, or <see langword="null"/> for 10 seconds' worth. Keyframes also come
+    /// at scene cuts unless <see cref="SceneCutKeyframes"/> is off, and where <see cref="EncodeFrameOptions.ForceKeyframe"/> asks.
+    /// </summary>
+    public int? KeyframeInterval { get; init; }
+
+    /// <summary>
+    /// Gets whether a scene cut starts a keyframe. Default on; off, with <see cref="KeyframeInterval"/>, gives keyframes at a
+    /// fixed spacing.
+    /// </summary>
+    public bool SceneCutKeyframes { get; init; } = true;
+
+    /// <summary>
+    /// Gets the first pass's statistics for a two-pass <see cref="RateControlMode.Bitrate"/> encode, from
+    /// <see cref="VideoWriter.AnalyzeFirstPass(IEnumerable{VideoFrame}, IProgress{MediaProgress}?, CancellationToken)"/>,
+    /// or <see langword="null"/> for one pass.
+    /// </summary>
+    public FirstPassStats? FirstPassStats { get; init; }
+
+    /// <summary>Gets the VP8 expert settings, or <see langword="null"/> for <see cref="Vp8EncoderOptions.Default"/>.</summary>
+    public Vp8EncoderOptions? Vp8 { get; init; }
 
     /// <summary>
     /// Gets the largest packet size in bytes to aim for, or <see langword="null"/> for none. Motion JPEG then picks, per frame,

@@ -492,9 +492,11 @@ internal sealed partial class Vp8Decoder : IDisposable
 
     /// <summary>
     /// Decodes a video frame into the target buffer: every macroblock's modes first (they share one partition), then the rows,
-    /// on as many threads as the token partitions and <see cref="Vp8VideoDecoder.Threads"/> allow, in a wavefront.
+    /// on as many threads as the token partitions and <see cref="Vp8VideoDecoder.Threads"/> allow, in a wavefront. With
+    /// <paramref name="reconstruction"/> (the encoder's, of the frame it just wrote) the tokens are not read: the frame's
+    /// unfiltered pixels are taken from it and <paramref name="zero"/> says which macroblocks have no coefficients.
     /// </summary>
-    internal void DecodeFrame()
+    internal void DecodeFrame(Vp8Planes? reconstruction = null, bool[]? zero = null)
     {
         Vp8VideoDecoder video = _video!;
         _macroblocks ??= new Macroblock[MbWidth * MbHeight];
@@ -516,6 +518,13 @@ internal sealed partial class Vp8Decoder : IDisposable
         }
 
         Vp8StageTimes.Lap(Vp8Stage.Modes);
+        if (reconstruction is not null)
+        {
+            FilterReconstruction(reconstruction, zero!);
+            NextMbRow = MbHeight;
+            RowsDone = Height;
+            return;
+        }
 
         // Rows that share a partition must go in order, so each thread takes every n-th row, n a power of two no more than the
         // partitions.
@@ -824,6 +833,104 @@ internal sealed partial class Vp8Decoder : IDisposable
             }
 
             Vp8StageTimes.Lap(Vp8Stage.Filter);
+        }
+    }
+
+    /// <summary>
+    /// Takes the encoder's unfiltered reconstruction of the frame as its pixels, notes which macroblocks are skipped as reading
+    /// their tokens would, and runs the loop filter: one row after another, or in a wavefront on the decoder's threads (a
+    /// macroblock's edges wait for the row above to have filtered the one above-right of it).
+    /// </summary>
+    private void FilterReconstruction(Vp8Planes recon, bool[] zero)
+    {
+        Vp8VideoDecoder video = _video!;
+        Vp8FrameBuffer target = video.Target!;
+        int width = MbWidth * 16, rows = MbHeight * 16;
+        for (int y = 0; y < rows; y++)
+        {
+            recon.Y.AsSpan(y * recon.Stride, width).CopyTo(target.Y.Slice(target.OriginY + (y * target.StrideY), width));
+        }
+
+        for (int y = 0; y < rows / 2; y++)
+        {
+            recon.U.AsSpan(y * recon.ChromaStride, width / 2).CopyTo(target.U.Slice(target.OriginC + (y * target.StrideC), width / 2));
+            recon.V.AsSpan(y * recon.ChromaStride, width / 2).CopyTo(target.V.Slice(target.OriginC + (y * target.StrideC), width / 2));
+        }
+
+        Vp8ModeInfo modes = video.Modes;
+        for (int mby = 0; mby < MbHeight; mby++)
+        {
+            for (int mbx = 0; mbx < MbWidth; mbx++)
+            {
+                Macroblock mb = _macroblocks![(mby * MbWidth) + mbx];
+                modes.Skip[modes.Index(mbx, mby)] = (byte)(mb.Skip || zero[(mby * MbWidth) + mbx] ? 1 : 0);
+            }
+        }
+
+        Vp8StageTimes.Lap(Vp8Stage.Reconstruct);
+        if (_filterType == 0)
+        {
+            return;
+        }
+
+        int workers = Math.Min(video.Threads, MbHeight);
+        if (workers == 1)
+        {
+            for (int mby = 0; mby < MbHeight; mby++)
+            {
+                FilterRow(mby, _main, null);
+            }
+        }
+        else
+        {
+            _progress ??= new int[MbHeight];
+            Array.Clear(_progress);
+            if (_rows is null || _rows.Length < workers)
+            {
+                Row[] all = new Row[workers];
+                all[0] = _main;
+                for (int w = 1; w < workers; w++)
+                {
+                    all[w] = _rows is not null && w < _rows.Length ? _rows[w] : new Row(MbWidth);
+                }
+
+                _rows = all;
+            }
+
+            video.RunWorkers(workers, w =>
+            {
+                for (int mby = w; mby < MbHeight; mby += workers)
+                {
+                    FilterRow(mby, _rows![w], _progress);
+                }
+            });
+        }
+
+        Vp8StageTimes.Lap(Vp8Stage.Filter);
+    }
+
+    /// <summary>Filters one macroblock row of the target buffer, as <see cref="DecodeMacroblock"/> notes each macroblock's filter.</summary>
+    private void FilterRow(int mby, Row c, int[]? progress)
+    {
+        Vp8ModeInfo modes = _video!.Modes;
+        c.RowY = _video.Target!.OriginY + (mby * 16 * _strideY);
+        c.RowC = _video.Target.OriginC + (mby * 8 * _strideC);
+        for (int mbx = 0; mbx < MbWidth; mbx++)
+        {
+            if (progress is not null && mby > 0)
+            {
+                _video.WaitFor(progress, mby - 1, Math.Min(mbx + 2, MbWidth));
+            }
+
+            Macroblock mb = _macroblocks![(mby * MbWidth) + mbx];
+            bool skipped = modes.Skip[modes.Index(mbx, mby)] != 0;
+            int modeIndex = mb.Reference == 0 ? (mb.Intra4x4 ? 0 : 1) : mb.Mode == Vp8ModeInfo.Zero ? 1 : mb.Mode == Vp8ModeInfo.Split ? 3 : 2;
+            c.Filter[mbx] = new MacroblockFilter(_filterInfo[(((mb.Segment * 4) + mb.Reference) * 4) + modeIndex], !mb.HasY2 || !skipped);
+            FilterMacroblock(mbx, mby, c);
+            if (progress is not null)
+            {
+                Volatile.Write(ref progress[mby], mbx + 1);
+            }
         }
     }
 
@@ -1510,11 +1617,61 @@ internal sealed partial class Vp8Decoder : IDisposable
         }
     }
 
-    /// <summary>Filters one luma edge 16 pixels long: a vertical edge (between columns) or a horizontal one (between rows).</summary>
-    private void LumaEdge(bool vertical, int at, Vp8FilterSimd.Kind kind, int threshold, int interior, int hev)
+    /// <summary>
+    /// Filters the luma of one macroblock of a plane with the normal filter, as <see cref="FilterMacroblock"/> does: its left edge
+    /// unless it is in the first column, inner vertical edges, its top edge unless it is in the first row, inner horizontal edges.
+    /// The encoder tries loop filter levels with it.
+    /// </summary>
+    internal static void FilterLuma(Span<byte> y, int at, int stride, FilterInfo info, bool left, bool top, bool inner)
     {
-        Span<byte> y = RowsY;
-        int stride = StrideY;
+        int limit = info.Limit;
+        if (limit == 0)
+        {
+            return;
+        }
+
+        int interior = info.Interior;
+        int hev = info.HevThreshold;
+        if (left)
+        {
+            LumaEdge(y, stride, vertical: true, at, Vp8FilterSimd.Kind.MacroblockEdge, limit + 4, interior, hev);
+        }
+
+        if (inner)
+        {
+            if (Vp8FilterSimd.Columns)
+            {
+                Vp8FilterSimd.InnerVerticalEdges16(y, at, stride, Vp8FilterSimd.Kind.Inner, limit, interior, hev);
+            }
+            else
+            {
+                for (int k = 4; k < 16; k += 4)
+                {
+                    LumaEdge(y, stride, vertical: true, at + k, Vp8FilterSimd.Kind.Inner, limit, interior, hev);
+                }
+            }
+        }
+
+        if (top)
+        {
+            LumaEdge(y, stride, vertical: false, at, Vp8FilterSimd.Kind.MacroblockEdge, limit + 4, interior, hev);
+        }
+
+        if (inner)
+        {
+            for (int k = 4; k < 16; k += 4)
+            {
+                LumaEdge(y, stride, vertical: false, at + (k * stride), Vp8FilterSimd.Kind.Inner, limit, interior, hev);
+            }
+        }
+    }
+
+    /// <summary>Filters one luma edge 16 pixels long: a vertical edge (between columns) or a horizontal one (between rows).</summary>
+    private void LumaEdge(bool vertical, int at, Vp8FilterSimd.Kind kind, int threshold, int interior, int hev) =>
+        LumaEdge(RowsY, StrideY, vertical, at, kind, threshold, interior, hev);
+
+    private static void LumaEdge(Span<byte> y, int stride, bool vertical, int at, Vp8FilterSimd.Kind kind, int threshold, int interior, int hev)
+    {
         if (vertical ? Vp8FilterSimd.Columns : Vp8FilterSimd.Rows)
         {
             if (vertical)
@@ -1663,7 +1820,7 @@ internal sealed partial class Vp8Decoder : IDisposable
     }
 
     /// <summary>A filter strength: the edge limit, the interior limit and the high-variance threshold; a limit of 0 means no filtering.</summary>
-    private readonly record struct FilterInfo(int Limit, int Interior, int HevThreshold);
+    internal readonly record struct FilterInfo(int Limit, int Interior, int HevThreshold);
 
     private readonly record struct MacroblockFilter(FilterInfo Info, bool Inner);
 }
