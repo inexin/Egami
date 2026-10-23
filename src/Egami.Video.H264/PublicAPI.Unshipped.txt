@@ -1,0 +1,19 @@
+#nullable enable
+Egami.Video.Codecs.H264Codec
+Egami.Video.Containers.H264Format
+Egami.Video.Containers.H264Format.FrameRate.get -> Egami.Video.Rational?
+Egami.Video.Containers.H264Format.FrameRate.init -> void
+Egami.Video.Containers.H264Format.H264Format() -> void
+Egami.Video.H264MediaContextExtensions
+override Egami.Video.Codecs.H264Codec.CanDecode(Egami.Video.TrackInfo! track) -> bool
+override Egami.Video.Codecs.H264Codec.CodecId.get -> string!
+override Egami.Video.Codecs.H264Codec.CreateDecoder(Egami.Video.VideoTrackInfo! track, Egami.Video.Codecs.VideoDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Codecs.IVideoDecoder!
+override Egami.Video.Codecs.H264Codec.Name.get -> string!
+override Egami.Video.Containers.H264Format.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.H264Format.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.H264Format.Name.get -> string!
+override Egami.Video.Containers.H264Format.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.H264Format.SignatureLength.get -> int
+static Egami.Video.Codecs.H264Codec.Instance.get -> Egami.Video.Codecs.H264Codec!
+static Egami.Video.Containers.H264Format.Instance.get -> Egami.Video.Containers.H264Format!
+static Egami.Video.H264MediaContextExtensions.WithH264(this Egami.Video.MediaContext! context) -> Egami.Video.MediaContext!

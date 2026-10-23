@@ -1,0 +1,601 @@
+using System.Runtime.CompilerServices;
+
+using Egami.Nal;
+
+namespace Egami.Video.Codecs.H264;
+
+/// <summary>
+/// Decodes the macroblocks of one slice (H.264 7.3.4, 7.3.5 and clause 8) into a picture: parsing with CAVLC or CABAC, motion
+/// vector prediction, intra and inter prediction, and the residual. The deblocking filter runs on the whole picture afterwards.
+/// </summary>
+internal sealed partial class H264SliceDecoder
+{
+    private readonly H264BitReader _bits = new();
+    private readonly CabacEngine _engine = new();
+    private readonly byte[] _ctx = new byte[460];
+    private readonly H264Inter _inter = new();
+
+    // Coefficients of the macroblock being decoded, in raster order within each block.
+    private readonly int[] _coef = new int[256];
+    private readonly int[] _dcY = new int[16];
+    private readonly int[] _coefC = new int[2 * 8 * 16];
+    private readonly int[] _dcC = new int[2 * 8];
+
+    // Motion of the macroblock being decoded: sub_mb_type and the direct prediction per 8x8 block.
+    private readonly int[] _subType = new int[4];
+    private readonly int[] _directRef = new int[2];
+    private readonly int[] _directMv = new int[2 * 16];
+    private readonly sbyte[] _directRefBlock = new sbyte[2 * 16];
+
+    private H264SliceHeader _h = null!;
+    private H264Sps _sps = null!;
+    private H264Pps _pps = null!;
+    private H264Picture _pic = null!;
+    private H264MbState _mb = null!;
+    private H264Picture[] _list0 = [];
+    private H264Picture[] _list1 = [];
+    private int[] _implicitWeights = [];
+    private int _slice;
+    private bool _cabac;
+    private int _widthMbs;
+    private int _mbCount;
+    private int _chromaArrayType;
+    private int _bitDepthY;
+    private int _bitDepthC;
+    private int _qpBdOffsetY;
+    private int _qpBdOffsetC;
+
+    // The macroblock being decoded.
+    private int _mbAddr;
+    private int _mbX;
+    private int _mbY;
+    private int _qp;
+    private bool _prevQpDeltaNonZero;
+    private H264MbKind _kind;
+    private int _partShape;
+    private int _partPred0;
+    private int _partPred1;
+    private int _i16Mode;
+    private int _cbp;
+    private bool _t8x8;
+    private int _lumaCoded;
+    private int _chromaDcCoded;
+    private int _chromaAcCoded;
+
+    /// <summary>Gets the number of macroblocks the last call decoded.</summary>
+    internal int Decoded { get; private set; }
+
+    /// <summary>Gets the address of the last macroblock decoded, or -1.</summary>
+    internal int LastMb { get; private set; } = -1;
+
+    /// <summary>Decodes a slice. A broken slice throws <see cref="CorruptDataException"/>; the macroblocks before the damage stay.</summary>
+    internal void Decode(H264SliceHeader h, byte[] padded, int length, H264Picture pic, H264MbState mb, int slice, H264Picture[] list0, H264Picture[] list1, int[] implicitWeights)
+    {
+        _h = h;
+        _sps = h.Sps;
+        _pps = h.Pps;
+        _pic = pic;
+        _mb = mb;
+        _slice = slice;
+        _list0 = list0;
+        _list1 = list1;
+        _implicitWeights = implicitWeights;
+        _cabac = _pps.Cabac;
+        _widthMbs = _sps.WidthInMbs;
+        _mbCount = _sps.WidthInMbs * _sps.HeightInMbs;
+        _chromaArrayType = _sps.ChromaArrayType;
+        _bitDepthY = _sps.BitDepthLuma;
+        _bitDepthC = _sps.BitDepthChroma;
+        _qpBdOffsetY = 6 * (_bitDepthY - 8);
+        _qpBdOffsetC = 6 * (_bitDepthC - 8);
+        _qp = h.SliceQp;
+        _prevQpDeltaNonZero = false;
+        _inter.Setup(pic, h, list0, list1, implicitWeights);
+        Decoded = 0;
+        LastMb = -1;
+
+        int mbAddr = h.FirstMb;
+        if (_cabac)
+        {
+            InitContexts();
+            _engine.Start(padded, (int)((h.DataBitPosition + 7) >> 3), length);
+            while (true)
+            {
+                CheckAddress(mbAddr);
+                bool skip = !h.IsI && DecodeSkipFlag(mbAddr);
+                if (skip)
+                {
+                    DecodeSkip(mbAddr);
+                }
+                else
+                {
+                    DecodeMacroblock(mbAddr);
+                }
+
+                if (_engine.Overrun)
+                {
+                    throw H264Errors.Corrupt("A CABAC slice runs past its data.");
+                }
+
+                if (_engine.Terminate() != 0)
+                {
+                    break;
+                }
+
+                mbAddr++;
+            }
+        }
+        else
+        {
+            _bits.Start(padded, length, (int)h.DataBitPosition);
+            bool more = true;
+            while (more)
+            {
+                if (!h.IsI)
+                {
+                    int run = (int)_bits.Ue((uint)(_mbCount - mbAddr), "mb_skip_run");
+                    for (int i = 0; i < run; i++)
+                    {
+                        CheckAddress(mbAddr);
+                        DecodeSkip(mbAddr);
+                        mbAddr++;
+                    }
+
+                    if (run > 0 && !_bits.MoreRbspData())
+                    {
+                        break;
+                    }
+                }
+
+                CheckAddress(mbAddr);
+                DecodeMacroblock(mbAddr);
+                if (_bits.Overrun)
+                {
+                    throw H264Errors.Corrupt("A CAVLC slice runs past its data.");
+                }
+
+                more = _bits.MoreRbspData();
+                mbAddr++;
+            }
+        }
+    }
+
+    private void CheckAddress(int mbAddr)
+    {
+        if (mbAddr >= _mbCount)
+        {
+            throw H264Errors.Corrupt("A slice has more macroblocks than the picture.");
+        }
+
+        if (_mb.Slice[mbAddr] >= 0)
+        {
+            throw H264Errors.Corrupt($"Macroblock {mbAddr} is coded twice.");
+        }
+    }
+
+    private void Begin(int mbAddr)
+    {
+        _mbAddr = mbAddr;
+        _mbX = mbAddr % _widthMbs;
+        _mbY = mbAddr / _widthMbs;
+        _mb.Slice[mbAddr] = _slice;
+        _mb.Transform8x8[mbAddr] = false;
+        _mb.Cbp[mbAddr] = 0;
+        _mb.CbfDc[mbAddr] = 0;
+        _mb.Direct8x8[mbAddr] = 0;
+        _mb.ChromaPredMode[mbAddr] = 0;
+        _mb.QpDeltaNonZero[mbAddr] = false;
+        _t8x8 = false;
+        _cbp = 0;
+        _lumaCoded = 0;
+        _chromaDcCoded = 0;
+        _chromaAcCoded = 0;
+    }
+
+    private void Finish()
+    {
+        int addr = _mbAddr;
+        _mb.Kind[addr] = _kind;
+        _mb.Cbp[addr] = (byte)_cbp;
+        _mb.Transform8x8[addr] = _t8x8;
+        int qp = _kind == H264MbKind.IPcm ? 0 : _qp;
+        _mb.Qp[addr] = (sbyte)qp;
+        _mb.QpC[0][addr] = (sbyte)ChromaQp(qp, _pps.ChromaQpIndexOffset);
+        _mb.QpC[1][addr] = (sbyte)ChromaQp(qp, _pps.SecondChromaQpIndexOffset);
+        _pic.MbIntra[addr] = H264MbState.IsIntra(_kind);
+        Decoded++;
+        LastMb = addr;
+    }
+
+    /// <summary>QPC (Table 8-15) for a QPY and a chroma offset, without the bit depth offset.</summary>
+    private int ChromaQp(int qpY, int offset)
+    {
+        int qpi = Math.Clamp(qpY + offset, -_qpBdOffsetC, 51);
+        return qpi < 0 ? qpi : H264Tables.ChromaQp[qpi];
+    }
+
+    /// <summary>Gets the 4x4 block index in the picture of block (bx, by) of the current macroblock.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int Block(int bx, int by) => (((_mbY * 4) + by) * _mb.W4) + (_mbX * 4) + bx;
+
+    /// <summary>Gets whether a macroblock address is in the picture and already decoded in this slice.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool Available(int addr) => addr >= 0 && _mb.Slice[addr] == _slice;
+
+    private int LeftMb => _mbX > 0 ? _mbAddr - 1 : -1;
+
+    private int TopMb => _mbY > 0 ? _mbAddr - _widthMbs : -1;
+
+    private void DecodeSkip(int mbAddr)
+    {
+        Begin(mbAddr);
+        _kind = _h.IsB ? H264MbKind.BSkip : H264MbKind.PSkip;
+        _prevQpDeltaNonZero = false;
+        ClearMbBlocks(intra: false);
+        if (_kind == H264MbKind.PSkip)
+        {
+            PredictPSkip();
+        }
+        else
+        {
+            _mb.Direct8x8[mbAddr] = 15;
+            PredictDirect(15);
+            WriteDirect(15);
+        }
+
+        PredictInter(15);
+        Finish();
+    }
+
+    /// <summary>Clears the coefficient counts, mvd and intra modes of the current macroblock's blocks.</summary>
+    private void ClearMbBlocks(bool intra)
+    {
+        int w4 = _mb.W4;
+        int b = Block(0, 0);
+        for (int y = 0; y < 4; y++, b += w4)
+        {
+            _mb.NzLuma.AsSpan(b, 4).Clear();
+            _mb.Nonzero.AsSpan(b, 4).Clear();
+            _mb.IntraModes.AsSpan(b, 4).Fill(-1);
+            _mb.Mvd[0].AsSpan(b * 2, 8).Clear();
+            _mb.Mvd[1].AsSpan(b * 2, 8).Clear();
+            if (intra)
+            {
+                _pic.RefIdx[0].AsSpan(b, 4).Fill(-1);
+                _pic.RefIdx[1].AsSpan(b, 4).Fill(-1);
+                _pic.RefPicId[0].AsSpan(b, 4).Fill(-1);
+                _pic.RefPicId[1].AsSpan(b, 4).Fill(-1);
+                _pic.Mv[0].AsSpan(b, 4).Clear();
+                _pic.Mv[1].AsSpan(b, 4).Clear();
+            }
+        }
+
+        if (_chromaArrayType != 0)
+        {
+            int cw = _mb.ChromaW4, rows = _chromaArrayType == 1 ? 2 : 4;
+            int c = (_mbY * rows * cw) + (_mbX * 2);
+            for (int y = 0; y < rows; y++, c += cw)
+            {
+                _mb.NzCb.AsSpan(c, 2).Clear();
+                _mb.NzCr.AsSpan(c, 2).Clear();
+            }
+        }
+    }
+
+    private void DecodeMacroblock(int mbAddr)
+    {
+        Begin(mbAddr);
+        int type = ReadMbType();
+        int intraType = _h.Type switch
+        {
+            H264SliceType.I => type,
+            H264SliceType.P => type - 5,
+            _ => type - 23,
+        };
+
+        if (intraType >= 0)
+        {
+            DecodeIntraMacroblock(intraType);
+        }
+        else
+        {
+            DecodeInterMacroblock(type);
+        }
+
+        Finish();
+    }
+
+    /// <summary>Predicts the inter macroblock from the motion stored for it, block by block in its partitions.</summary>
+    private void PredictInter(int directMask)
+    {
+        int x0 = _mbX * 4, y0 = _mbY * 4;
+        if (_kind is H264MbKind.PSkip || (_kind == H264MbKind.Inter && _partShape == 0))
+        {
+            _inter.Predict(x0, y0, 4, 4);
+            return;
+        }
+
+        if (_kind == H264MbKind.Inter && _partShape is 1 or 2)
+        {
+            int w = _partShape == 1 ? 4 : 2, hgt = _partShape == 1 ? 2 : 4;
+            _inter.Predict(x0, y0, w, hgt);
+            _inter.Predict(x0 + (4 - w), y0 + (4 - hgt), w, hgt);
+            return;
+        }
+
+        if (_kind is H264MbKind.BSkip or H264MbKind.BDirect && _inter.Uniform(x0, y0))
+        {
+            _inter.Predict(x0, y0, 4, 4);
+            return;
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            int bx = x0 + ((i & 1) * 2), by = y0 + ((i >> 1) * 2);
+            int shape = (directMask & (1 << i)) != 0 ? (_sps.Direct8x8Inference ? 0 : 3) : _h.IsB ? H264Tables.BSubShape[_subType[i]] : _subType[i];
+            switch (shape)
+            {
+                case 0:
+                    _inter.Predict(bx, by, 2, 2);
+                    break;
+                case 1:
+                    _inter.Predict(bx, by, 2, 1);
+                    _inter.Predict(bx, by + 1, 2, 1);
+                    break;
+                case 2:
+                    _inter.Predict(bx, by, 1, 2);
+                    _inter.Predict(bx + 1, by, 1, 2);
+                    break;
+                default:
+                    _inter.Predict(bx, by, 1, 1);
+                    _inter.Predict(bx + 1, by, 1, 1);
+                    _inter.Predict(bx, by + 1, 1, 1);
+                    _inter.Predict(bx + 1, by + 1, 1, 1);
+                    break;
+            }
+        }
+    }
+
+    private void DecodeIntraMacroblock(int type)
+    {
+        ClearMbBlocks(intra: true);
+        if (type == 25)
+        {
+            _kind = H264MbKind.IPcm;
+            DecodePcm();
+            _cbp = 0x2F;
+            _prevQpDeltaNonZero = false;
+            int w4 = _mb.W4;
+            int b = Block(0, 0);
+            for (int y = 0; y < 4; y++, b += w4)
+            {
+                _mb.NzLuma.AsSpan(b, 4).Fill(16);
+                _mb.Nonzero.AsSpan(b, 4).Fill(1);
+            }
+
+            if (_chromaArrayType != 0)
+            {
+                int cw = _mb.ChromaW4, rows = _chromaArrayType == 1 ? 2 : 4;
+                int c = (_mbY * rows * cw) + (_mbX * 2);
+                for (int y = 0; y < rows; y++, c += cw)
+                {
+                    _mb.NzCb.AsSpan(c, 2).Fill(16);
+                    _mb.NzCr.AsSpan(c, 2).Fill(16);
+                }
+            }
+
+            _mb.CbfDc[_mbAddr] = 7;
+            return;
+        }
+
+        if (type == 0)
+        {
+            if (_pps.Transform8x8Mode)
+            {
+                _t8x8 = ReadTransform8x8Flag();
+            }
+
+            _kind = _t8x8 ? H264MbKind.I8x8 : H264MbKind.I4x4;
+            ReadIntraNxNModes();
+        }
+        else
+        {
+            _kind = H264MbKind.I16x16;
+            _i16Mode = (type - 1) % 4;
+            _cbp = ((((type - 1) / 4) % 3) << 4) | (type >= 13 ? 15 : 0);
+        }
+
+        // Written now: CABAC chroma mode contexts read it for later macroblocks, and the kind decides intra availability.
+        _mb.Kind[_mbAddr] = _kind;
+        if (_chromaArrayType is 1 or 2)
+        {
+            _mb.ChromaPredMode[_mbAddr] = (byte)ReadChromaPredMode();
+        }
+
+        if (_kind != H264MbKind.I16x16)
+        {
+            _cbp = ReadCbp(intra: true);
+        }
+
+        _mb.Cbp[_mbAddr] = (byte)_cbp;
+        if (_cbp != 0 || _kind == H264MbKind.I16x16)
+        {
+            ReadQpDelta();
+            ReadResidual();
+        }
+        else
+        {
+            _prevQpDeltaNonZero = false;
+        }
+
+        ReconstructIntra();
+    }
+
+    private void DecodeInterMacroblock(int type)
+    {
+        ClearMbBlocks(intra: false);
+        _mb.Kind[_mbAddr] = H264MbKind.Inter;
+        bool noSubBelow8x8 = true;
+        int directMask = 0;
+        if (_h.IsB)
+        {
+            if (type == 0)
+            {
+                _kind = H264MbKind.BDirect;
+                directMask = 15;
+                noSubBelow8x8 = _sps.Direct8x8Inference;
+            }
+            else if (type == 22)
+            {
+                _kind = H264MbKind.Inter;
+                _partShape = 3;
+                for (int i = 0; i < 4; i++)
+                {
+                    _subType[i] = ReadSubMbType();
+                    if (_subType[i] == 0)
+                    {
+                        directMask |= 1 << i;
+                        noSubBelow8x8 &= _sps.Direct8x8Inference;
+                    }
+                    else
+                    {
+                        noSubBelow8x8 &= H264Tables.BSubShape[_subType[i]] == 0;
+                    }
+                }
+            }
+            else
+            {
+                _kind = H264MbKind.Inter;
+                if (type <= 3)
+                {
+                    _partShape = 0;
+                    _partPred0 = type;
+                }
+                else
+                {
+                    _partShape = type % 2 == 0 ? 1 : 2;
+                    _partPred0 = H264Tables.BPartPred[((type - 4) / 2) * 2];
+                    _partPred1 = H264Tables.BPartPred[(((type - 4) / 2) * 2) + 1];
+                }
+            }
+        }
+        else
+        {
+            _kind = H264MbKind.Inter;
+            _partPred0 = _partPred1 = 1;
+            if (type <= 2)
+            {
+                _partShape = type;
+            }
+            else
+            {
+                _partShape = 3;
+                for (int i = 0; i < 4; i++)
+                {
+                    _subType[i] = ReadSubMbType();
+                    noSubBelow8x8 &= _subType[i] == 0;
+                }
+            }
+        }
+
+        _mb.Kind[_mbAddr] = _kind;
+        _mb.Direct8x8[_mbAddr] = (byte)directMask;
+        if (directMask != 0)
+        {
+            PredictDirect(directMask);
+        }
+
+        if (_kind == H264MbKind.BDirect)
+        {
+            WriteDirect(15);
+        }
+        else
+        {
+            ReadMotion(type == 4 && !_h.IsB, directMask);
+        }
+
+        _cbp = ReadCbp(intra: false);
+        _mb.Cbp[_mbAddr] = (byte)_cbp;
+        if ((_cbp & 15) != 0 && _pps.Transform8x8Mode && noSubBelow8x8)
+        {
+            _t8x8 = ReadTransform8x8Flag();
+        }
+
+        _mb.Transform8x8[_mbAddr] = _t8x8;
+        if (_cbp != 0)
+        {
+            ReadQpDelta();
+            ReadResidual();
+        }
+        else
+        {
+            _prevQpDeltaNonZero = false;
+        }
+
+        PredictInter(directMask);
+        ReconstructInterResidual();
+    }
+
+    private void ReadQpDelta()
+    {
+        int delta = _cabac ? ReadQpDeltaCabac() : _bits.Se();
+        int limit = 26 + (_qpBdOffsetY / 2);
+        if (delta < -limit || delta > limit - 1)
+        {
+            throw H264Errors.Corrupt($"mb_qp_delta {delta} is out of range.");
+        }
+
+        _prevQpDeltaNonZero = delta != 0;
+        _mb.QpDeltaNonZero[_mbAddr] = delta != 0;
+        _qp = ((_qp + delta + 52 + (2 * _qpBdOffsetY)) % (52 + _qpBdOffsetY)) - _qpBdOffsetY;
+    }
+
+    private void DecodePcm()
+    {
+        int luma = _pic.Origin + (_mbY * 16 * _pic.Stride) + (_mbX * 16);
+        if (_cabac)
+        {
+            CabacEngine.RawReader raw = new(_engine.Data, _engine.Position);
+            ReadPcmSamples(raw.Read, luma);
+            _engine.Start(_engine.Data, raw.BytePosition, _engine.End);
+        }
+        else
+        {
+            while ((_bits.Position & 7) != 0)
+            {
+                _bits.Skip(1);
+            }
+
+            ReadPcmSamples(_bits.Read, luma);
+        }
+    }
+
+    private void ReadPcmSamples(Func<int, int> read, int luma)
+    {
+        for (int y = 0; y < 16; y++)
+        {
+            for (int x = 0; x < 16; x++)
+            {
+                _pic.Y[luma + (y * _pic.Stride) + x] = (ushort)read(_bitDepthY);
+            }
+        }
+
+        if (_chromaArrayType == 0)
+        {
+            return;
+        }
+
+        int w = _sps.MbWidthC, hgt = _sps.MbHeightC;
+        int chroma = _pic.ChromaOrigin + (_mbY * hgt * _pic.ChromaStride) + (_mbX * w);
+        foreach (ushort[] plane in new[] { _pic.Cb, _pic.Cr })
+        {
+            for (int y = 0; y < hgt; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    plane[chroma + (y * _pic.ChromaStride) + x] = (ushort)read(_bitDepthC);
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,128 @@
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text.Json;
+
+using Egami.Pixels;
+using Egami.Video.Codecs;
+using Egami.Video.Containers;
+
+namespace Egami.Video.H264.Tests;
+
+/// <summary>Decodes the clips of tools/video/make-h264-corpus.py and compares each frame with FFmpeg's decode of it.</summary>
+public sealed class DecodeTests
+{
+    public static TheoryData<string> Clips =>
+    [
+        "cavlc-intra", "cavlc-p", "cavlc-slices", "cavlc-b", "cabac-p", "cabac-b-spatial", "cabac-b-temporal", "cabac-weighted",
+        "cabac-slices", "high-8x8", "high-8x8-cavlc", "high-cqm", "high-crop", "high10", "high10-intra", "high422", "high422-cavlc",
+        "high422-10", "gray", "open-gop", "intra-refresh", "constrained-intra", "many-refs", "slice-max", "weighted-cavlc",
+        "deblock-offsets", "qp-low", "qp-high", "tiny-motion", "high10-qp-low", "high422-10-intra",
+    ];
+
+    private static string PathOf(string file) => Path.Combine(AppContext.BaseDirectory, "corpus", "h264", file);
+
+    [Theory]
+    [MemberData(nameof(Clips))]
+    public void RawStreamMatchesFfmpeg(string clip)
+    {
+        using FileStream stream = File.OpenRead(PathOf(clip + ".h264"));
+        using IDemuxer demuxer = H264Format.Instance.OpenDemuxer(stream, MediaContext.Default, leaveOpen: true);
+        Check(clip, demuxer);
+    }
+
+    [Theory]
+    [InlineData("cabac-b-spatial")]
+    [InlineData("high10")]
+    public void Mp4MatchesFfmpeg(string clip)
+    {
+        using FileStream stream = File.OpenRead(PathOf(clip + ".mp4"));
+        using IDemuxer demuxer = Mp4Format.Instance.OpenDemuxer(stream, MediaContext.Default, leaveOpen: true);
+        Check(clip, demuxer);
+    }
+
+    private static void Check(string clip, IDemuxer demuxer)
+    {
+        using JsonDocument json = JsonDocument.Parse(File.ReadAllText(PathOf(clip + ".frames.json")));
+        string[] expected = [.. json.RootElement.GetProperty("md5").EnumerateArray().Select(e => e.GetString()!)];
+        int width = json.RootElement.GetProperty("width").GetInt32(), height = json.RootElement.GetProperty("height").GetInt32();
+        VideoTrackInfo track = demuxer.Info.VideoTrack!;
+        Assert.Equal((width, height), (track.Width, track.Height));
+        MediaContext context = MediaContext.Default.WithH264();
+        using IVideoDecoder decoder = H264Codec.Instance.CreateDecoder(track, null, context);
+        List<string> actual = [];
+        List<MediaTime> times = [];
+        while (demuxer.ReadPacket() is { } packet)
+        {
+            using (packet)
+            {
+                decoder.Send(packet);
+            }
+
+            Receive(decoder, actual, times);
+        }
+
+        decoder.Flush();
+        Receive(decoder, actual, times);
+        Assert.Equal(expected.Length, actual.Count);
+        for (int i = 0; i < expected.Length; i++)
+        {
+            Assert.True(expected[i] == actual[i], $"{clip}: frame {i} of {expected.Length} differs from FFmpeg's.");
+        }
+
+        for (int i = 1; i < times.Count; i++)
+        {
+            Assert.True(times[i] > times[i - 1], $"{clip}: frame {i} is not later than frame {i - 1}.");
+        }
+    }
+
+    private static void Receive(IVideoDecoder decoder, List<string> hashes, List<MediaTime> times)
+    {
+        while (decoder.TryReceive(out YuvVideoFrame? frame))
+        {
+            using (frame)
+            {
+                hashes.Add(Md5(frame.Raster));
+                times.Add(frame.Timestamp);
+            }
+        }
+    }
+
+    /// <summary>The MD5 of the planes one after the other, as FFmpeg's framemd5 gives it: a byte per sample at 8 bits, two above.</summary>
+    internal static string Md5(YuvRaster raster)
+    {
+        using IncrementalHash md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+        switch (raster)
+        {
+            case YuvRaster<byte> r8:
+                foreach (YuvPlane<byte>? plane in new[] { r8.Y, r8.U, r8.V })
+                {
+                    for (int y = 0; plane is not null && y < plane.Height; y++)
+                    {
+                        md5.AppendData(plane.Row(y));
+                    }
+                }
+
+                if (r8.U is null)
+                {
+                    // FFmpeg gives a monochrome stream as 4:2:0 with mid-gray chroma.
+                    byte[] gray = new byte[((r8.Width + 1) / 2) * ((r8.Height + 1) / 2) * 2];
+                    Array.Fill(gray, (byte)128);
+                    md5.AppendData(gray);
+                }
+
+                break;
+            case YuvRaster<ushort> r16:
+                foreach (YuvPlane<ushort>? plane in new[] { r16.Y, r16.U, r16.V })
+                {
+                    for (int y = 0; plane is not null && y < plane.Height; y++)
+                    {
+                        md5.AppendData(MemoryMarshal.AsBytes(plane.Row(y)));
+                    }
+                }
+
+                break;
+        }
+
+        return Convert.ToHexStringLower(md5.GetHashAndReset());
+    }
+}
