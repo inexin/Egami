@@ -571,37 +571,6 @@ Egami.DecodeStatus.Completed = 3 -> Egami.DecodeStatus
 Egami.DecodeStatus.FrameEnded = 2 -> Egami.DecodeStatus
 Egami.DecodeStatus.NeedsInput = 1 -> Egami.DecodeStatus
 Egami.DecodeStatus.RowsAvailable = 0 -> Egami.DecodeStatus
-Egami.Formats.Ani.AniDetails
-Egami.Formats.Ani.AniDetails.AniDetails() -> void
-Egami.Formats.Ani.AniDetails.Artist.get -> string?
-Egami.Formats.Ani.AniDetails.Artist.set -> void
-Egami.Formats.Ani.AniDetails.DefaultDelay.get -> System.TimeSpan
-Egami.Formats.Ani.AniDetails.DefaultDelay.set -> void
-Egami.Formats.Ani.AniDetails.RawBitmaps.get -> bool
-Egami.Formats.Ani.AniDetails.RawBitmaps.set -> void
-Egami.Formats.Ani.AniDetails.Sizes.get -> System.Collections.Generic.IReadOnlyList<Egami.Size>!
-Egami.Formats.Ani.AniDetails.Sizes.set -> void
-Egami.Formats.Ani.AniDetails.Steps.get -> System.Collections.Generic.IReadOnlyList<int>!
-Egami.Formats.Ani.AniDetails.Steps.set -> void
-Egami.Formats.Ani.AniDetails.StoredFrames.get -> int
-Egami.Formats.Ani.AniDetails.StoredFrames.set -> void
-Egami.Formats.Ani.AniDetails.Title.get -> string?
-Egami.Formats.Ani.AniDetails.Title.set -> void
-Egami.Formats.Ani.AniFormat
-Egami.Formats.Ani.AniWriterOptions
-Egami.Formats.Ani.AniWriterOptions.AniWriterOptions() -> void
-Egami.Formats.Ani.AniWriterOptions.Artist.get -> string?
-Egami.Formats.Ani.AniWriterOptions.Artist.init -> void
-Egami.Formats.Ani.AniWriterOptions.Encoding.get -> Egami.Formats.Ico.IcoEntryEncoding?
-Egami.Formats.Ani.AniWriterOptions.Encoding.init -> void
-Egami.Formats.Ani.AniWriterOptions.Filter.get -> Egami.Operations.ResampleFilter
-Egami.Formats.Ani.AniWriterOptions.Filter.init -> void
-Egami.Formats.Ani.AniWriterOptions.Hotspot.get -> Egami.Point?
-Egami.Formats.Ani.AniWriterOptions.Hotspot.init -> void
-Egami.Formats.Ani.AniWriterOptions.Sizes.get -> System.Collections.Generic.IReadOnlyList<int>?
-Egami.Formats.Ani.AniWriterOptions.Sizes.init -> void
-Egami.Formats.Ani.AniWriterOptions.Title.get -> string?
-Egami.Formats.Ani.AniWriterOptions.Title.init -> void
 Egami.Formats.Av1.Av1DecoderOptions
 Egami.Formats.Av1.Av1DecoderOptions.<Clone>$() -> Egami.Formats.Av1.Av1DecoderOptions!
 Egami.Formats.Av1.Av1DecoderOptions.ApplyFilmGrain.get -> bool
@@ -3078,7 +3047,6 @@ override Egami.Colors.TransferFunction.GetHashCode() -> int
 override Egami.Colors.TransferFunction.ToString() -> string!
 override Egami.Colors.XyzColor.GetHashCode() -> int
 override Egami.Colors.YCbCrColor.GetHashCode() -> int
-override Egami.Formats.Ani.AniDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Av1.Av1DecoderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Av1.Av1DecoderOptions.GetHashCode() -> int
 override Egami.Formats.Av1.Av1DecoderOptions.ToString() -> string!
@@ -3491,9 +3459,6 @@ static Egami.Colors.YCbCrColor.From(Egami.Pixels.RgbaF32 color, Egami.Pixels.Yuv
 static Egami.Colors.YCbCrColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Colors.YCbCrColor
 static Egami.Colors.YCbCrColor.operator !=(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
 static Egami.Colors.YCbCrColor.operator ==(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
-static Egami.Formats.Ani.AniFormat.Info.get -> Egami.Formats.FormatInfo!
-static Egami.Formats.Ani.AniWriterOptions.CursorSizes.get -> System.Collections.Generic.IReadOnlyList<int>!
-static Egami.Formats.Ani.AniWriterOptions.Default.get -> Egami.Formats.Ani.AniWriterOptions!
 static Egami.Formats.Av1.Av1DecoderOptions.Default.get -> Egami.Formats.Av1.Av1DecoderOptions!
 static Egami.Formats.Av1.Av1DecoderOptions.operator !=(Egami.Formats.Av1.Av1DecoderOptions? left, Egami.Formats.Av1.Av1DecoderOptions? right) -> bool
 static Egami.Formats.Av1.Av1DecoderOptions.operator ==(Egami.Formats.Av1.Av1DecoderOptions? left, Egami.Formats.Av1.Av1DecoderOptions? right) -> bool
