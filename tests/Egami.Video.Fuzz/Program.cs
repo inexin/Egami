@@ -75,7 +75,7 @@ static Action<Stream> Target(string name) => name switch
     "vp8" => ReadVp8,
     "vp9" => ReadVp9,
     "vp9raw" => DecodeVp9Packets,
-    "wav" or "flac" or "ogg" => ReadAudio,
+    "wav" or "flac" or "ogg" or "aiff" => ReadAudio,
     "opusraw" => DecodeOpusPackets,
     "vorbisraw" => DecodeVorbisPackets,
     "mp3" => ReadMp3,
@@ -87,7 +87,7 @@ static Action<Stream> Target(string name) => name switch
     "subs" => ReadSubtitles,
     "subtrack" => ReadSubtitleTracks,
     "vp9enc" => EncodeVp9,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, av1, av1raw, wav, flac, ogg, opusraw, vorbisraw, vp8enc, mp3, mp3raw, opusenc, subs, subtrack, vp9enc."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, av1, av1raw, wav, flac, ogg, aiff, opusraw, vorbisraw, vp8enc, mp3, mp3raw, opusenc, subs, subtrack, vp9enc."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -341,7 +341,7 @@ static void Demux(Stream stream)
     }
 }
 
-// An audio file (V5.0: WAV, Wave64, RF64, FLAC): decode it through AudioReader, converting to 16-bit stereo at 22.05 kHz so the
+// An audio file (V5.0: WAV, Wave64, RF64, FLAC; V5.9: AIFF, AIFF-C, G.711): decode it through AudioReader, converting to 16-bit stereo at 22.05 kHz so the
 // resampler and mixer run too, seek and decode again; then the same bytes as a non-seekable stream with the codec's own samples.
 static void ReadAudio(Stream stream)
 {

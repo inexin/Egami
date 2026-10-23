@@ -25,13 +25,13 @@ public sealed record MediaContext
     private static MediaContext? s_default;
 
     /// <summary>Gets the containers, tried in order when detecting a file's format.</summary>
-    public IReadOnlyList<ContainerFormat> Containers { get; init; } = [AviFormat.Instance, MatroskaFormat.Instance, MatroskaFormat.WebM, Y4mFormat.Instance, IvfFormat.Instance, Mp4Format.Instance, WavFormat.Instance, WavFormat.Wave64, FlacFormat.Instance, OggFormat.Instance, Av1ObuFormat.Instance, Av1AnnexBFormat.Instance, Mp3Format.Instance];
+    public IReadOnlyList<ContainerFormat> Containers { get; init; } = [AviFormat.Instance, MatroskaFormat.Instance, MatroskaFormat.WebM, Y4mFormat.Instance, IvfFormat.Instance, Mp4Format.Instance, WavFormat.Instance, WavFormat.Wave64, AiffFormat.Instance, FlacFormat.Instance, OggFormat.Instance, Av1ObuFormat.Instance, Av1AnnexBFormat.Instance, Mp3Format.Instance];
 
     /// <summary>Gets the video codecs.</summary>
     public IReadOnlyList<VideoCodec> Codecs { get; init; } = [MotionJpegCodec.Instance, Vp8Codec.Instance, Vp9Codec.Instance, Av1Codec.Instance, RawVideoCodec.Instance];
 
     /// <summary>Gets the audio codecs.</summary>
-    public IReadOnlyList<AudioCodec> AudioCodecs { get; init; } = [PcmCodec.Instance, PcmCodec.BigEndian, PcmCodec.FloatingPoint, FlacCodec.Instance, OpusCodec.Instance, VorbisCodec.Instance, Mp3Codec.Instance];
+    public IReadOnlyList<AudioCodec> AudioCodecs { get; init; } = [PcmCodec.Instance, PcmCodec.BigEndian, PcmCodec.FloatingPoint, FlacCodec.Instance, OpusCodec.Instance, VorbisCodec.Instance, Mp3Codec.Instance, G711Codec.MuLaw, G711Codec.ALaw];
 
     /// <summary>
     /// Gets the Egami context: the memory source decoded frames come from, the parallelism limit for decoding, and the image

@@ -13,6 +13,8 @@ internal static class AviCodecs
 
     private const ushort WavePcm = 0x0001;
     private const ushort WaveFloat = 0x0003;
+    private const ushort WaveALaw = 0x0006;
+    private const ushort WaveMuLaw = 0x0007;
     private const ushort WaveMpeg = 0x0050;
     private const ushort WaveMp3 = 0x0055;
     private const ushort WaveAac = 0x00FF;
@@ -142,6 +144,8 @@ internal static class AviCodecs
         {
             WavePcm => (CodecIds.PcmLittleEndian, [], rate, channels, bits),
             WaveFloat => (CodecIds.PcmFloat, [], rate, channels, bits),
+            WaveALaw => (CodecIds.G711ALaw, [], rate, channels, 8),
+            WaveMuLaw => (CodecIds.G711MuLaw, [], rate, channels, 8),
             WaveMp3 => (CodecIds.Mp3, [], rate, channels, 0),
             WaveMpeg => (CodecIds.Mp2, [], rate, channels, 0),
             WaveAc3 => (CodecIds.Ac3, [], rate, channels, 0),

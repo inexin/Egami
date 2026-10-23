@@ -1599,3 +1599,21 @@ static Egami.Video.Analysis.SignalReport.operator ==(Egami.Video.Analysis.Signal
 ~override Egami.Video.Analysis.FrameValue.ToString() -> string
 ~override Egami.Video.Analysis.PlaneLevels.Equals(object obj) -> bool
 ~override Egami.Video.Analysis.PlaneLevels.ToString() -> string
+Egami.Video.Audio.Codecs.G711Codec
+static Egami.Video.Audio.Codecs.G711Codec.MuLaw.get -> Egami.Video.Audio.Codecs.G711Codec!
+static Egami.Video.Audio.Codecs.G711Codec.ALaw.get -> Egami.Video.Audio.Codecs.G711Codec!
+override Egami.Video.Audio.Codecs.G711Codec.Name.get -> string!
+override Egami.Video.Audio.Codecs.G711Codec.CodecId.get -> string!
+override Egami.Video.Audio.Codecs.G711Codec.CanDecode(Egami.Video.TrackInfo! track) -> bool
+override Egami.Video.Audio.Codecs.G711Codec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
+const Egami.Video.CodecIds.G711MuLaw = "X_G711/MULAW" -> string!
+const Egami.Video.CodecIds.G711ALaw = "X_G711/ALAW" -> string!
+Egami.Video.Containers.AiffFormat
+static Egami.Video.Containers.AiffFormat.Instance.get -> Egami.Video.Containers.AiffFormat!
+override Egami.Video.Containers.AiffFormat.Name.get -> string!
+override Egami.Video.Containers.AiffFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.AiffFormat.SignatureLength.get -> int
+override Egami.Video.Containers.AiffFormat.CanMux.get -> bool
+override Egami.Video.Containers.AiffFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.AiffFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.AiffFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!

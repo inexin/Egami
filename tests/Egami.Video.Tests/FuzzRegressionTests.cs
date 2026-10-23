@@ -82,7 +82,8 @@ public class FuzzRegressionTests
             return;
         }
 
-        if (input.StartsWith("wav", StringComparison.Ordinal) || input.StartsWith("flac", StringComparison.Ordinal) || input.StartsWith("ogg", StringComparison.Ordinal))
+        if (input.StartsWith("wav", StringComparison.Ordinal) || input.StartsWith("flac", StringComparison.Ordinal) || input.StartsWith("ogg", StringComparison.Ordinal)
+            || input.StartsWith("aiff", StringComparison.Ordinal))
         {
             // As the fuzz target: decode converting to 16-bit stereo at 22.05 kHz, then seek.
             try

@@ -1,0 +1,109 @@
+{
+  "aiff-s16-stereo.aiff": {
+    "samples": 13230,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cf612b26732b7c58c70fceb1fc52b0aa"
+  },
+  "aiff-s8-mono.aiff": {
+    "samples": 2400,
+    "rate": 8000,
+    "channels": 1,
+    "bits": 8,
+    "float": false,
+    "md5": "374f264e166af59434c303b9fa53db41"
+  },
+  "aiff-s24-51.aiff": {
+    "samples": 4800,
+    "rate": 16000,
+    "channels": 6,
+    "bits": 24,
+    "float": false,
+    "md5": "aaa8c7412bb7b0020b5fa6cc5a3a60a3"
+  },
+  "aiff-s32-stereo.aiff": {
+    "samples": 6615,
+    "rate": 22050,
+    "channels": 2,
+    "bits": 32,
+    "float": false,
+    "md5": "4d069ddf280bbf0c6c9f71a9a2a8078e"
+  },
+  "aifc-f32-stereo.aifc": {
+    "samples": 6615,
+    "rate": 22050,
+    "channels": 2,
+    "bits": 32,
+    "float": true,
+    "md5": "98e81a84eb619c0b8971889ace4adf67"
+  },
+  "aifc-f64-mono.aifc": {
+    "samples": 6615,
+    "rate": 22050,
+    "channels": 1,
+    "bits": 32,
+    "float": true,
+    "md5": "de0dd10d16fa9aa783a09fd74e9f5f3c"
+  },
+  "aifc-sowt-stereo.aifc": {
+    "samples": 13230,
+    "rate": 44100,
+    "channels": 2,
+    "bits": 16,
+    "float": false,
+    "md5": "cf612b26732b7c58c70fceb1fc52b0aa"
+  },
+  "aifc-ulaw-mono.aifc": {
+    "samples": 2400,
+    "rate": 8000,
+    "channels": 1,
+    "bits": 16,
+    "float": false,
+    "md5": "5650ab702a68e2b8879fda670179c7af"
+  },
+  "aifc-alaw-mono.aifc": {
+    "samples": 2400,
+    "rate": 8000,
+    "channels": 1,
+    "bits": 16,
+    "float": false,
+    "md5": "e4de4e98afd78fbad18589149ad088da"
+  },
+  "aifc-ima4-stereo.aifc": {
+    "decodes": false
+  },
+  "aiff-tags-id3.aiff": {
+    "samples": 6615,
+    "rate": 22050,
+    "channels": 1,
+    "bits": 16,
+    "float": false,
+    "md5": "8245cc709b8631cec195521e876b507e"
+  },
+  "wav-ulaw-mono.wav": {
+    "samples": 2400,
+    "rate": 8000,
+    "channels": 1,
+    "bits": 16,
+    "float": false,
+    "md5": "5650ab702a68e2b8879fda670179c7af"
+  },
+  "wav-alaw-mono.wav": {
+    "samples": 2400,
+    "rate": 8000,
+    "channels": 1,
+    "bits": 16,
+    "float": false,
+    "md5": "e4de4e98afd78fbad18589149ad088da"
+  },
+  "mov-ulaw-mono.mov": {
+    "samples": 2400,
+    "rate": 8000,
+    "channels": 1,
+    "bits": 16,
+    "float": false,
+    "md5": "5650ab702a68e2b8879fda670179c7af"
+  }
+}

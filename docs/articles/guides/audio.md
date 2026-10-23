@@ -139,6 +139,16 @@ FLAC: Vorbis comments as tags, pictures as attachments (cover.* for the front co
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-containers)]
 
+`AiffFormat` reads AIFF and AIFF-C (.aiff, .aif, .aifc): big-endian PCM of 8 to 32 bits, AIFF-C's little-endian `sowt`,
+`in24`, `in32`, `fl32` and `fl64` samples, and G.711 `ulaw` and `alaw`, which `G711Codec` decodes to 16-bit samples (it
+decodes G.711 in WAV, AVI and MOV too). Other AIFF-C compressions, such as ima4, MACE and QDesign, pass through undecoded
+with an `X_AIFC/` codec id. NAME, AUTH, `(c) ` and ANNO chunks and an ID3 chunk become tags, MARK markers become chapters,
+and a CHAN chunk gives the channel layout. The writer stores integer PCM as AIFF and float as AIFF-C, the title, artist,
+copyright and comment in text chunks, other tags and cover art in an ID3 chunk, and chapters as markers. AIFF's sizes come
+before the samples, so a non-seekable output is written through a temporary file; AIFF holds at most 4 GB.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-aiff)]
+
 `OggFormat` reads and writes Ogg (.ogg, .opus, .oga) with Opus, Vorbis and FLAC. Timestamps come from the granule positions,
 seeking from an index built in one pass over the page headers, and pages with a bad CRC are skipped with an `ogg-crc`
 warning. A chained file (one stream after another) reads as one track when the settings stay the same, each link's TITLE a
