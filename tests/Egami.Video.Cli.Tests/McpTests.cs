@@ -78,10 +78,23 @@ public sealed class McpTests : IAsyncDisposable
         string clip = _tool.Copy("avi-mjpeg-420-pcm.avi");
         McpClient client = await Connect();
         List<ProgressNotificationValue> notes = [];
+
+        // The call's own progress callback stops when the result arrives, which can come before the notifications are handled;
+        // a handler of the session's own hears every one the server sent, as egami's MCP tests do.
+        await using IAsyncDisposable listening = client.RegisterNotificationHandler(NotificationMethods.ProgressNotification, (note, _) =>
+        {
+            ProgressNotificationParams value = JsonSerializer.Deserialize(note.Params, McpJsonUtilities.DefaultOptions.GetTypeInfo<ProgressNotificationParams>())!;
+            lock (notes)
+            {
+                notes.Add(value.Progress);
+            }
+
+            return ValueTask.CompletedTask;
+        });
         CallToolResult result = await client.CallToolAsync(
             "remux",
             new Dictionary<string, object?> { ["inputs"] = new[] { clip }, ["output"] = "out/{name}.mkv" },
-            new Notes(notes),
+            new Progress<ProgressNotificationValue>(),
             cancellationToken: Token);
         Assert.False(result.IsError, Text(result));
         Assert.True(File.Exists(_tool.PathOf("out/avi-mjpeg-420-pcm.mkv")));
@@ -153,18 +166,6 @@ public sealed class McpTests : IAsyncDisposable
         McpClient client = await McpClient.CreateAsync(new StreamClientTransport(toServer, fromServer), cancellationToken: Token);
         _servers.Add(new Server(client, server, [toServer, fromServer, serverIn, serverOut]));
         return client;
-    }
-
-    /// <summary>Collects progress notifications as they arrive, on the thread that receives them (Progress&lt;T&gt; would post them on).</summary>
-    private sealed class Notes(List<ProgressNotificationValue> notes) : IProgress<ProgressNotificationValue>
-    {
-        public void Report(ProgressNotificationValue value)
-        {
-            lock (notes)
-            {
-                notes.Add(value);
-            }
-        }
     }
 
     private sealed class Server(McpClient client, Task<int> run, Stream[] streams) : IAsyncDisposable
