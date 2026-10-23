@@ -58,6 +58,24 @@ public sealed class DecodeTests
     }
 
     [Theory]
+    [MemberData(nameof(Clips))]
+    public void NarrowVectorFormsMatchFfmpeg(string clip)
+    {
+        // The 128-bit forms, which run where 256-bit vectors are not available.
+        Codecs.H264.H264Inter.UseWideVectors = false;
+        Codecs.H264.H264Deblock.UseWideVectors = false;
+        try
+        {
+            RawStreamMatchesFfmpeg(clip);
+        }
+        finally
+        {
+            Codecs.H264.H264Inter.UseWideVectors = System.Runtime.Intrinsics.X86.Avx2.IsSupported;
+            Codecs.H264.H264Deblock.UseWideVectors = System.Runtime.Intrinsics.X86.Avx2.IsSupported;
+        }
+    }
+
+    [Theory]
     [InlineData("cabac-b-spatial")]
     [InlineData("high10")]
     public void Mp4MatchesFfmpeg(string clip)

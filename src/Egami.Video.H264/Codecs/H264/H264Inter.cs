@@ -50,6 +50,9 @@ internal sealed class H264Inter
     /// <summary>Gets or sets whether the vector forms run; tests turn it off to compare with the scalar reference.</summary>
     internal static bool UseVectors { get; set; } = Vector128.IsHardwareAccelerated;
 
+    /// <summary>Gets or sets whether the 256-bit forms run; tests turn them off to check the 128-bit ones.</summary>
+    internal static bool UseWideVectors { get; set; } = Avx2.IsSupported;
+
     internal void Setup(H264Picture pic, H264SliceHeader h, H264Picture[] list0, H264Picture[] list1, int[] implicitWeights)
     {
         _pic = pic;
@@ -185,7 +188,7 @@ internal sealed class H264Inter
 
     /// <summary>
     /// Predicts a 4:2:0 chroma block of both planes from one reference, Cb at the start of pred and Cr <see cref="CrRows"/> after
-    /// it; eight-wide blocks interpolate a row of each plane in one 256-bit vector.
+    /// it; blocks four or eight wide interpolate a row of each plane in one 256-bit vector.
     /// </summary>
     private void ChromaPair<T>(H264Picture refPic, int x, int y, int w, int h, int mv, ushort[] pred)
         where T : unmanaged
@@ -194,7 +197,7 @@ internal sealed class H264Inter
         int xInt = x + (mvx >> 3), xFrac = mvx & 7, yInt = y + (mvy >> 3), yFrac = mvy & 7;
         int pad = H264Picture.Pad, stride = refPic.ChromaStride;
         int at = refPic.ChromaOrigin + (yInt * stride) + xInt;
-        if (w != 8 || !UseVectors || !Avx2.IsSupported
+        if (w < 4 || !UseVectors || !UseWideVectors
             || xInt < -pad || yInt < -pad || xInt + w + 1 > refPic.ChromaWidth + pad || yInt + h + 1 > refPic.ChromaHeight + pad
             || at < 0 || at + (h * stride) + 24 > Math.Min(refPic.Cb<T>().Length, refPic.Cr<T>().Length))
         {
@@ -349,7 +352,7 @@ internal sealed class H264Inter
             Vector128<short> sw0 = Vector128.Create((short)w0), sw1 = Vector128.Create((short)w1), sRound = Vector128.Create((short)round),
                 sOffset = Vector128.Create((short)offset), sMax = Vector128.Create((short)max);
             bool average = w0 == w1 && offset == 0 && shift >= 1 && w0 == 1 << (shift - 1) && round == w0;
-            if (w == 16 && Vector256.IsHardwareAccelerated)
+            if (w == 16 && UseWideVectors)
             {
                 Vector256<short> lw0 = Vector256.Create((short)w0), lw1 = Vector256.Create((short)w1), lRound = Vector256.Create((short)round),
                     lOffset = Vector256.Create((short)offset), lMax = Vector256.Create((short)max);
@@ -496,7 +499,7 @@ internal sealed class H264Inter
             ref ushort a = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(into), po);
             ref ushort b = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(other), po);
             Vector128<ushort> one = Vector128<ushort>.One;
-            if (w == 16 && Vector256.IsHardwareAccelerated)
+            if (w == 16 && UseWideVectors)
             {
                 for (int y = 0; y < h; y++)
                 {
@@ -665,7 +668,7 @@ internal sealed class H264Inter
         CheckReach(src, at, stride, h);
         ref T s = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at);
         ref ushort d = ref MemoryMarshal.GetArrayDataReference(dst);
-        if (w == 16 && Vector256.IsHardwareAccelerated)
+        if (w == 16 && UseWideVectors)
         {
             for (int j = 0; j < h; j++)
             {
@@ -705,7 +708,7 @@ internal sealed class H264Inter
         CheckReach(src, at, stride, h);
         ref T s0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at - 2);
         ref ushort d = ref MemoryMarshal.GetArrayDataReference(dst);
-        if (w == 16 && Vector256.IsHardwareAccelerated)
+        if (w == 16 && UseWideVectors)
         {
             Vector256<short> wideRound = Vector256.Create((short)16), wideTop = Vector256.Create((short)max);
             for (int j = 0; j < h; j++)
@@ -738,7 +741,7 @@ internal sealed class H264Inter
         CheckReach(src, at, stride, h);
         ref T s0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at - (2 * stride));
         ref ushort d = ref MemoryMarshal.GetArrayDataReference(dst);
-        if (w == 16 && Vector256.IsHardwareAccelerated)
+        if (w == 16 && UseWideVectors)
         {
             Vector256<short> wideRound = Vector256.Create((short)16), wideTop = Vector256.Create((short)max);
             Vector256<short> a = Load16(ref s0, 0), b = Load16(ref s0, stride), c = Load16(ref s0, 2 * stride), e = Load16(ref s0, 3 * stride),

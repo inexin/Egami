@@ -28,6 +28,9 @@ internal sealed class H264Deblock
 
     /// <summary>Gets or sets whether the vector form runs; tests turn it off to compare with the scalar reference.</summary>
     internal static bool UseVectors { get; set; } = VectorsSupported;
+
+    /// <summary>Gets or sets whether the 256-bit forms run; tests turn them off to check the 128-bit ones.</summary>
+    internal static bool UseWideVectors { get; set; } = Avx2.IsSupported;
     private H264MbState _mb = null!;
     private int _widthMbs;
     private int _bitDepthY;
@@ -88,7 +91,7 @@ internal sealed class H264Deblock
     private void FilterMacroblock<T>(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
         where T : unmanaged
     {
-        if (UseVectors && Avx2.IsSupported)
+        if (UseVectors && UseWideVectors)
         {
             FilterMacroblockWide<T>(mbX, mbY, addr, left, top, p);
             return;
