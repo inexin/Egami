@@ -4,6 +4,7 @@ using Egami.Formats;
 using Egami.Formats.Ani;
 using Egami.Formats.Ico;
 using Egami.Metadata;
+using Egami.Operations;
 using Egami.Pixels;
 
 namespace Egami.DocSamples;
@@ -56,6 +57,39 @@ public class Ani
 
         Assert.Equal(4, info.FrameCount);
         Assert.Equal([0, 1, 2, 1], details.Steps);
+    }
+
+    [Fact]
+    public void Save()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgba8> duck = Raster.Load<Rgba8>("duck.png");
+        using Raster<Rgba8> spin = Raster.Create<Rgba8>(64, 64);
+        for (int i = 0; i < 8; i++)
+        {
+            using Raster<Rgba8> turned = duck.Derive(ops => ops.Rotate(i * 45f).Fit(64, 64).Pad(64, 64, default, Anchor.Center));
+            Frame<Rgba8> frame = i == 0 ? spin.Frames[0] : spin.Frames.Add(turned.Frames[0]);
+            for (int y = 0; i == 0 && y < 64; y++)
+            {
+                turned.Row(y).CopyTo(frame.Row(y));
+            }
+
+            frame.Metadata.Delay = TimeSpan.FromMilliseconds(100);
+        }
+
+        #region ani-save
+        // Every frame is a step; frames that repeat are stored once. Each stored frame holds every size Windows may draw.
+        spin.Save("spin.ani", new AniWriterOptions
+        {
+            Sizes = AniWriterOptions.CursorSizes,
+            Hotspot = new Point(32, 32),
+            Title = "Spinning duck",
+        });
+        #endregion
+
+        RasterInfo info = Raster.Probe("spin.ani");
+        Assert.Equal(8, info.FrameCount);
+        Assert.Equal(5, info.ImageCount);
     }
 
     /// <summary>Writes a small animated cursor byte by byte: three cursors at 32 and 48, played 0, 1, 2, 1, with a title.</summary>
