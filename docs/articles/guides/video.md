@@ -223,6 +223,15 @@ short-term loudness while audio comes in, and a `LoudnessReport` with the gated 
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-loudness)]
 
+`AudioPictures` draws audio as a `Raster<Rgba8>`, reading it once with constant memory however long it runs. `Waveform`
+shows each column's min-to-max outline with the RMS level shaded inside, linear or in dB (`WaveformScale`), with the
+channels together or stacked (`AudioPictureChannels`); `WaveformOptions` sets the size and colors. `Spectrogram` shows
+frequency over time with a Hann-windowed FFT per column, on a linear or logarithmic `FrequencyScale`, colored by level from
+`Floor` to `Ceiling` with magma or grayscale (`SpectrogramColors`); `SpectrogramOptions` sets the window length too. The
+pictures carry no text: add axes and labels with Egami.Drawing.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoAnalysis.cs#analysis-pictures)]
+
 ## Limits and warnings
 
 A `MediaContext` holds the containers and codecs, the Egami context (memory, threads, safety limits), the `MediaLimits` for

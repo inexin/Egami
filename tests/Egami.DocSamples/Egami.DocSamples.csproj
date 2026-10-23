@@ -29,6 +29,7 @@
     <None Include="../video/corpus/audio/opus/webm-opus.webm" Link="images/music.webm" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/audio/mp3/mp3-id3v23-cover-chapters.mp3" Link="images/podcast.mp3" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/audio/mp3/mka-mp3.mka" Link="images/episode.mka" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/audio/ac3/ac3-51-48k.ac3" Link="images/surround.ac3" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ops/egret.png" Link="images/egret.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ocr/tesseract-style.hocr" Link="images/page.hocr" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ocr/abbyy-style.xml" Link="images/page.xml" CopyToOutputDirectory="PreserveNewest" />

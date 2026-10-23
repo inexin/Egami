@@ -261,6 +261,15 @@ internal static class Mp4Codecs
                         _ => (codecId, codecPrivate),
                     };
                     break;
+                case "dac3" when type == "ac-3":
+                    codecId = CodecIds.Ac3;
+                    codecPrivate = ReadOnlyMemory<byte>.Empty;
+                    break;
+                case "dec3" when type == "ec-3":
+                    // Kept, so that an E-AC-3 track with dependent substreams goes back into MP4 with its channel locations.
+                    codecId = CodecIds.EAc3;
+                    codecPrivate = content.ToArray();
+                    break;
                 case "pcmC" when type is "ipcm" or "fpcm" && c.Length >= 6:
                     bigEndian = (c[4] & 1) == 0;
                     bits = c[5];
@@ -287,6 +296,14 @@ internal static class Mp4Codecs
                 codecPrivate = ReadOnlyMemory<byte>.Empty;
                 _ = signed;
                 break;
+            case "ac-3" when codecId == CodecIds.QuickTimeAudio:
+                codecId = CodecIds.Ac3;
+                codecPrivate = ReadOnlyMemory<byte>.Empty;
+                break;
+            case "ec-3" when codecId == CodecIds.QuickTimeAudio:
+                codecId = CodecIds.EAc3;
+                codecPrivate = ReadOnlyMemory<byte>.Empty;
+                break;
             case "ulaw" or "alaw":
                 codecId = type == "ulaw" ? CodecIds.G711MuLaw : CodecIds.G711ALaw;
                 bits = 8;
@@ -299,7 +316,7 @@ internal static class Mp4Codecs
                 break;
         }
 
-        bool compressed = codecId is CodecIds.Opus or CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis or CodecIds.QuickTimeAudio;
+        bool compressed = codecId is CodecIds.Opus or CodecIds.Aac or CodecIds.Mp3 or CodecIds.Vorbis or CodecIds.Ac3 or CodecIds.EAc3 or CodecIds.QuickTimeAudio;
         return new AudioTrackInfo
         {
             Number = number,

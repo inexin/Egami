@@ -61,6 +61,8 @@ internal static class CafCodecs
                 return new CafCodec(CodecIds.Mp1, default, 0, 0, frames);
             case "ac-3":
                 return new CafCodec(CodecIds.Ac3, default, 0, 0, frames);
+            case "ec-3":
+                return new CafCodec(CodecIds.EAc3, default, 0, 0, frames);
             case "flac":
                 return new CafCodec(CodecIds.Flac, FlacPrivate(cookie), 0, 0, frames);
             default:
@@ -117,6 +119,9 @@ internal static class CafCodecs
                 return (new CafDescription(rate, id, 0, 0, (uint)mpegFrames, channels, 0), null, mpegFrames);
             case CodecIds.Ac3:
                 return (new CafDescription(rate, "ac-3", 0, 0, 1536, channels, 0), null, 1536);
+            case CodecIds.EAc3:
+                // Frames of fewer than six blocks hold fewer samples; the packet table then gives each packet's own count.
+                return (new CafDescription(rate, "ec-3", 0, 0, 1536, channels, 0), null, 1536);
             case CodecIds.Flac:
                 return (new CafDescription(rate, "flac", 0, 0, 0, channels, 0), FlacCookie(track.CodecPrivate.Span), 0);
             default:

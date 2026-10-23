@@ -290,6 +290,26 @@ public class Audio
     }
 
     [Fact]
+    public void Ac3()
+    {
+        using SampleFiles files = new();
+
+        #region audio-ac3
+        // A raw .ac3 or .eac3 stream: each packet is one sync frame (E-AC-3: an independent frame and its substreams).
+        MediaInfo info = MediaFile.Probe("surround.ac3");
+        AudioTrackInfo track = (AudioTrackInfo)info.Tracks[0];
+        Console.WriteLine($"{track.CodecId}: {track.SampleRate} Hz, {track.Channels} channels, {info.Duration}");
+
+        // Into MP4 (an ac-3 sample entry with its dac3 box), Matroska or CAF without decoding.
+        MediaFile.Remux("surround.ac3", "surround.mp4");
+        #endregion
+
+        Assert.Equal(CodecIds.Ac3, track.CodecId);
+        Assert.Equal(6, track.Channels);
+        Assert.Equal(CodecIds.Ac3, MediaFile.Probe("surround.mp4").Tracks[0].CodecId);
+    }
+
+    [Fact]
     public void VideoWithAudio()
     {
         using SampleFiles files = new();

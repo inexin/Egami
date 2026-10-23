@@ -436,6 +436,16 @@ V1.4 stage C: audio detectors and the loudness meter.
   faster than real time on 48 kHz stereo, and is the meter V9.1's loudness normalization will use.
 - No detector allocates memory per frame once running.
 
+V1.4 stage D: audio pictures.
+
+- `AudioPictures.Waveform` draws each column's min-to-max outline with the RMS level shaded inside, linear or in dB, with the
+  channels together or stacked (`WaveformOptions`); about 800 times faster than real time on 48 kHz stereo.
+- `AudioPictures.Spectrogram` draws a Hann-windowed FFT per column (2048 samples by default) from -120 to 0 dBFS in magma or
+  grayscale, on a linear or logarithmic frequency axis, mixed or per channel (`SpectrogramOptions`); a row that spans several
+  bins shows the strongest, so pure tones never fall between rows. About 400 times faster than real time at 1800 x 512.
+- Both read a file or any run of `AudioFrame`s once with constant memory: three hours of audio cost no more than three
+  seconds. The pictures carry no text; the CLI adds axes and legends.
+
 V5.3: VP9 encoding. API review pending (combined encoders review).
 
 ### VP9 encoding
@@ -502,6 +512,18 @@ V5.9 stage B: CAF.
   ffmpeg reads the files with their tags and layout. `CodecIds.Alac` names ALAC tracks (decoding comes in stage C).
 - Fuzz target `caf`; `tools/video/fuzz-afl.py` now knows the `aiff` and `caf` targets. A CHAN or chan chunk whose bitmap names
   more or fewer speakers than the file has channels is now ignored instead of throwing (AIFF-C too).
+
+V5.9 stage D (container part): AC-3 and E-AC-3.
+
+### AC-3 and E-AC-3
+
+- `Ac3Format`: raw AC-3 and E-AC-3 streams (.ac3, .eac3, .ec3). Each packet is one AC-3 frame, or an E-AC-3 independent frame
+  with its dependent substreams; rate, channels and layout from the first frame; junk between frames is skipped (a frame found
+  after junk must be followed by another); duration from the frame size and seeking through a frame index. Writes the packets
+  back to back. New `CodecIds.EAc3` (`A_EAC3`), passed through.
+- MP4 reads ac-3 and ec-3 sample entries as `CodecIds.Ac3` and `CodecIds.EAc3` (they used to come through as `A_QUICKTIME`)
+  and writes them, with a dac3 or dec3 box made from the first packet's headers; the boxes match FFmpeg's. CAF maps ec-3 too.
+- Fuzz target `ac3`.
 
 ## Egami.Video 0.5.0 (unreleased)
 
