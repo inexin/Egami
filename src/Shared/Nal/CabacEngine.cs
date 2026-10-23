@@ -12,7 +12,7 @@ namespace Egami.Nal;
 internal sealed class CabacEngine
 {
     /// <summary>rangeTabLps (H.265 Table 9-52, H.264 Table 9-44), by pStateIdx and qRangeIdx.</summary>
-    private static readonly byte[] RangeLps =
+    private static ReadOnlySpan<byte> RangeLps =>
     [
         128, 176, 208, 240, 128, 167, 197, 227, 128, 158, 187, 216, 123, 150, 178, 205, 116, 142, 169, 195, 111, 135, 160, 185,
         105, 128, 152, 175, 100, 122, 144, 166, 95, 116, 137, 158, 90, 110, 130, 150, 85, 104, 123, 142, 81, 99, 117, 135,
@@ -28,7 +28,7 @@ internal sealed class CabacEngine
     ];
 
     /// <summary>transIdxLps (H.265 Table 9-53, H.264 Table 9-45).</summary>
-    private static readonly byte[] TransitionLps =
+    private static ReadOnlySpan<byte> TransitionLps =>
     [
         0, 0, 1, 2, 2, 4, 4, 5, 6, 7, 8, 9, 9, 11, 11, 12, 13, 13, 15, 15, 16, 16, 18, 18, 19, 19, 21, 21, 22, 22, 23, 24,
         24, 25, 26, 26, 27, 27, 28, 29, 29, 30, 30, 30, 31, 32, 32, 33, 33, 33, 34, 34, 35, 35, 35, 36, 36, 36, 37, 37, 37, 38, 38, 63,
@@ -69,7 +69,7 @@ internal sealed class CabacEngine
     internal int Decode(ref byte state)
     {
         int s = state;
-        uint lps = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(RangeLps), ((s >> 1) << 2) + (int)((_range >> 6) & 3));
+        uint lps = Unsafe.Add(ref MemoryMarshal.GetReference(RangeLps), ((s >> 1) << 2) + (int)((_range >> 6) & 3));
         _range -= lps;
         uint scaledRange = _range << 7;
         int bin;
@@ -92,7 +92,7 @@ internal sealed class CabacEngine
         {
             bin = (s & 1) ^ 1;
             int p = s >> 1;
-            state = (byte)((Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(TransitionLps), p) << 1) | (p == 0 ? bin : s & 1));
+            state = (byte)((Unsafe.Add(ref MemoryMarshal.GetReference(TransitionLps), p) << 1) | (p == 0 ? bin : s & 1));
             int shift = System.Numerics.BitOperations.LeadingZeroCount(lps) - 23;
             _value = (_value - scaledRange) << shift;
             _range = lps << shift;
@@ -127,7 +127,7 @@ internal sealed class CabacEngine
     internal int Decode(ref State e, ref byte state)
     {
         int s = state;
-        uint lps = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(RangeLps), ((s >> 1) << 2) + (int)((e.Range >> 6) & 3));
+        uint lps = Unsafe.Add(ref MemoryMarshal.GetReference(RangeLps), ((s >> 1) << 2) + (int)((e.Range >> 6) & 3));
         e.Range -= lps;
         uint scaledRange = e.Range << 7;
         int bin;
@@ -150,7 +150,7 @@ internal sealed class CabacEngine
         {
             bin = (s & 1) ^ 1;
             int p = s >> 1;
-            state = (byte)((Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(TransitionLps), p) << 1) | (p == 0 ? bin : s & 1));
+            state = (byte)((Unsafe.Add(ref MemoryMarshal.GetReference(TransitionLps), p) << 1) | (p == 0 ? bin : s & 1));
             int shift = System.Numerics.BitOperations.LeadingZeroCount(lps) - 23;
             e.Value = (e.Value - scaledRange) << shift;
             e.Range = lps << shift;

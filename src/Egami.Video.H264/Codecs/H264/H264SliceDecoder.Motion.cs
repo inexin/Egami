@@ -9,6 +9,9 @@ internal sealed partial class H264SliceDecoder
     // Which 4x4 blocks of the current macroblock (bit bx + 4 * by) have their motion for the list being derived.
     private int _decodedMask;
 
+    // Whether the last direct prediction of a whole macroblock gave all 16 blocks the same motion: 1 yes, 0 no, -1 not known.
+    private int _directUniform = -1;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int PackMv(int x, int y) => (ushort)x | (y << 16);
 
@@ -307,6 +310,8 @@ internal sealed partial class H264SliceDecoder
             throw H264Errors.Corrupt("A B slice has an empty reference list.");
         }
 
+        _directUniform = -1;
+
         if (_h.DirectSpatialMvPred)
         {
             PredictSpatialDirect(mask);
@@ -378,6 +383,13 @@ internal sealed partial class H264SliceDecoder
                 _directRefBlock[(list * 16) + blk] = (sbyte)refIdx[list];
                 _directMv[(list * 16) + blk] = refIdx[list] < 0 || (refIdx[list] == 0 && colZero) ? 0 : mvp[list];
             }
+        }
+
+        if (mask == 15 && inferred)
+        {
+            // The motion differs between 8x8 blocks only through colZero, in a list of refIdx 0 with a vector.
+            bool split = colZero8 is not 0 and not 15 && ((refIdx[0] == 0 && mvp[0] != 0) || (refIdx[1] == 0 && mvp[1] != 0));
+            _directUniform = split ? 0 : 1;
         }
     }
 

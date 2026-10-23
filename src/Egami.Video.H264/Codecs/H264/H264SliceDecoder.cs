@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 using Egami.Nal;
 
@@ -261,13 +262,19 @@ internal sealed partial class H264SliceDecoder
         int b = Block(0, 0);
         byte[] nzLuma = _mb.NzLuma, nonzero = _mb.Nonzero, mvd0 = _mb.Mvd[0], mvd1 = _mb.Mvd[1];
         sbyte[] intraModes = _mb.IntraModes;
+        if (b + (3 * w4) + 4 > Math.Min(nzLuma.Length, Math.Min(nonzero.Length, intraModes.Length)) || ((b + (3 * w4)) * 2) + 8 > Math.Min(mvd0.Length, mvd1.Length))
+        {
+            throw H264Errors.Corrupt("A macroblock lies outside the picture.");
+        }
+
         for (int y = 0; y < 4; y++, b += w4)
         {
-            nzLuma.AsSpan(b, 4).Clear();
-            nonzero.AsSpan(b, 4).Clear();
-            intraModes.AsSpan(b, 4).Fill(-1);
-            mvd0.AsSpan(b * 2, 8).Clear();
-            mvd1.AsSpan(b * 2, 8).Clear();
+            // A row of four blocks: four bytes of counts and modes, eight of mvd.
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(nzLuma), b), 0u);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(nonzero), b), 0u);
+            Unsafe.WriteUnaligned(ref Unsafe.As<sbyte, byte>(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(intraModes), b)), uint.MaxValue);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(mvd0), b * 2), 0ul);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(mvd1), b * 2), 0ul);
             if (intra)
             {
                 _pic.RefIdx[0].AsSpan(b, 4).Fill(-1);
@@ -332,7 +339,7 @@ internal sealed partial class H264SliceDecoder
             return;
         }
 
-        if (_kind is H264MbKind.BSkip or H264MbKind.BDirect && _inter.Uniform(x0, y0))
+        if (_kind is H264MbKind.BSkip or H264MbKind.BDirect && (_directUniform >= 0 ? _directUniform == 1 : _inter.Uniform(x0, y0)))
         {
             _inter.Predict(x0, y0, 4, 4);
             return;
