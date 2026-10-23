@@ -588,6 +588,20 @@ Egami.Formats.Ani.AniDetails.StoredFrames.set -> void
 Egami.Formats.Ani.AniDetails.Title.get -> string?
 Egami.Formats.Ani.AniDetails.Title.set -> void
 Egami.Formats.Ani.AniFormat
+Egami.Formats.Ani.AniWriterOptions
+Egami.Formats.Ani.AniWriterOptions.AniWriterOptions() -> void
+Egami.Formats.Ani.AniWriterOptions.Artist.get -> string?
+Egami.Formats.Ani.AniWriterOptions.Artist.init -> void
+Egami.Formats.Ani.AniWriterOptions.Encoding.get -> Egami.Formats.Ico.IcoEntryEncoding?
+Egami.Formats.Ani.AniWriterOptions.Encoding.init -> void
+Egami.Formats.Ani.AniWriterOptions.Filter.get -> Egami.Operations.ResampleFilter
+Egami.Formats.Ani.AniWriterOptions.Filter.init -> void
+Egami.Formats.Ani.AniWriterOptions.Hotspot.get -> Egami.Point?
+Egami.Formats.Ani.AniWriterOptions.Hotspot.init -> void
+Egami.Formats.Ani.AniWriterOptions.Sizes.get -> System.Collections.Generic.IReadOnlyList<int>?
+Egami.Formats.Ani.AniWriterOptions.Sizes.init -> void
+Egami.Formats.Ani.AniWriterOptions.Title.get -> string?
+Egami.Formats.Ani.AniWriterOptions.Title.init -> void
 Egami.Formats.Av1.Av1DecoderOptions
 Egami.Formats.Av1.Av1DecoderOptions.<Clone>$() -> Egami.Formats.Av1.Av1DecoderOptions!
 Egami.Formats.Av1.Av1DecoderOptions.ApplyFilmGrain.get -> bool
@@ -3478,6 +3492,8 @@ static Egami.Colors.YCbCrColor.FromXyz(Egami.Colors.XyzColor xyz) -> Egami.Color
 static Egami.Colors.YCbCrColor.operator !=(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
 static Egami.Colors.YCbCrColor.operator ==(Egami.Colors.YCbCrColor left, Egami.Colors.YCbCrColor right) -> bool
 static Egami.Formats.Ani.AniFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Ani.AniWriterOptions.CursorSizes.get -> System.Collections.Generic.IReadOnlyList<int>!
+static Egami.Formats.Ani.AniWriterOptions.Default.get -> Egami.Formats.Ani.AniWriterOptions!
 static Egami.Formats.Av1.Av1DecoderOptions.Default.get -> Egami.Formats.Av1.Av1DecoderOptions!
 static Egami.Formats.Av1.Av1DecoderOptions.operator !=(Egami.Formats.Av1.Av1DecoderOptions? left, Egami.Formats.Av1.Av1DecoderOptions? right) -> bool
 static Egami.Formats.Av1.Av1DecoderOptions.operator ==(Egami.Formats.Av1.Av1DecoderOptions? left, Egami.Formats.Av1.Av1DecoderOptions? right) -> bool

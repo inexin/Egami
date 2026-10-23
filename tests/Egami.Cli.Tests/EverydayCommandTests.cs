@@ -33,6 +33,20 @@ public sealed class EverydayCommandTests : IDisposable
     }
 
     [Fact]
+    public void ConvertTurnsAGifIntoAnAnimatedCursor()
+    {
+        string gif = _tool.Copy("gif/loop-3.gif");
+        ToolRun run = _tool.Run("convert", gif, "-o", "spin.ani", "--set", "ani.sizes=32,48", "--set", "ani.hotspot=4,4", "--set", "ani.title=Spinner");
+        Assert.True(run.Code == 0, run.Error);
+        using Raster source = Raster.Load(_tool.PathOf(gif));
+        using Raster cursor = Raster.Load(_tool.PathOf("spin.ani"));
+        Assert.Equal("ANI", cursor.Metadata.FormatName);
+        Assert.Equal(source.FrameCount, cursor.FrameCount);
+        Assert.Equal(2, Raster.Probe(_tool.PathOf("spin.ani")).ImageCount);
+        Assert.Equal("Spinner", ((Egami.Formats.Ani.AniDetails)cursor.Metadata.FormatDetails!).Title);
+    }
+
+    [Fact]
     public void ResizeIsTheLibrarysTranscode()
     {
         string duck = _tool.Copy(Duck);
