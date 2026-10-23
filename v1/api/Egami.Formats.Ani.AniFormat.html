@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class AniFormat | Egami ">
       
-      <meta name="description" content="The Windows animated cursor format (.ani), registered in : a RIFF file whose frames are cursors or icons, with a display time and an order for each step. Load returns one animated raster with a frame per step, all at one size; LoadAll returns the animation once for every size its frames hold.">
+      <meta name="description" content="The Windows animated cursor format (.ani), registered in : a RIFF file whose frames are cursors or icons, with a display time and an order for each step. Load returns one animated raster with a frame per step, all at one size; LoadAll returns the animation once for every size its frames hold. Save writes an animated raster with .">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Ani_AniFormat" data-uid="Egami.Formats.Ani.AniFormat" class="text-break">
-Class AniFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ani/AniFormat.cs/#L14"><i class="bi bi-code-slash"></i></a>
+Class AniFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ani/AniFormat.cs/#L16"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -99,7 +99,8 @@ Class AniFormat  <a class="header-action link-secondary" title="View source" hre
 
   <div class="markdown summary"><p>The Windows animated cursor format (.ani), registered in <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>: a RIFF file whose frames are
 cursors or icons, with a display time and an order for each step. Load returns one animated raster with a frame per step, all
-at one size; LoadAll returns the animation once for every size its frames hold.</p>
+at one size; LoadAll returns the animation once for every size its frames hold. Save writes an animated raster with
+<a class="xref" href="Egami.Formats.Ani.AniWriterOptions.html">AniWriterOptions</a>.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -172,10 +173,10 @@ using RasterList sizes = Raster.LoadAll("busy.ani");</code></pre>
 
   <h3 id="Egami_Formats_Ani_AniFormat_Info" data-uid="Egami.Formats.Ani.AniFormat.Info">
   Info
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ani/AniFormat.cs/#L17"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ani/AniFormat.cs/#L19"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the format's registration: name, MIME type, extension, signature and reader.</p>
+  <div class="markdown level1 summary"><p>Gets the format's registration: name, MIME type, extension, signature, reader and writer.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -204,7 +205,7 @@ using RasterList sizes = Raster.LoadAll("busy.ani");</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ani/AniFormat.cs/#L14" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Ani/AniFormat.cs/#L16" class="edit-link">Edit this page</a>
         </div>
 
 

@@ -87,10 +87,10 @@
         <article data-uid="">
 <h1 id="ani">ANI</h1>
 
-<p>Egami reads Windows animated cursors (.ani), written from Microsoft's description of the RIFF <code>ACON</code> form. <code>AniFormat.Info</code> is
-registered in <code>EgamiContext.Default</code>. An animated cursor stores a set of frames, each a whole cursor or icon, and a list of steps
-that says which frame shows and for how long; Egami's <a href="ico.html">ICO and CUR</a> reader decodes the frames, so a frame loads exactly
-as the same cursor would. Writing animated cursors comes in a later release.</p>
+<p>Egami reads and writes Windows animated cursors (.ani), written from Microsoft's description of the RIFF <code>ACON</code> form.
+<code>AniFormat.Info</code> is registered in <code>EgamiContext.Default</code>. An animated cursor stores a set of frames, each a whole cursor or icon,
+and a list of steps that says which frame shows and for how long; Egami's <a href="ico.html">ICO and CUR</a> reader decodes the frames, so a
+frame loads exactly as the same cursor would, and its CUR writer stores the frames when Egami writes one.</p>
 <h2 id="reading-animated-cursors">Reading animated cursors</h2>
 <p><code>Raster.Load</code> returns one animated raster with a frame per step: the <code>seq </code> list is played out, so a frame it shows twice is in
 the raster twice, and each frame's <code>Delay</code> is its step's rate in jiffies (1/60 s), or the header's default rate. Animated cursors
@@ -113,8 +113,9 @@ using Raster&lt;Rgba8&gt; small = Raster.Load&lt;Rgba8&gt;(&quot;busy.ani&quot;,
 using RasterList sizes = Raster.LoadAll(&quot;busy.ani&quot;);
 </code></pre>
 <p><code>Raster.Probe</code> reads the chunks and each frame's directory without decoding a pixel: <code>RasterInfo.FrameCount</code> is the number of
-steps and <code>ImageCount</code> the number of sizes. <code>AniDetails</code>, the raster's format details, gives the title and artist from the
-file's <code>INFO</code> list, the default delay, how many frames the file stores, the frame each step shows and every size.</p>
+steps and <code>ImageCount</code> the number of sizes. <code>AniDetails</code>, the raster's format details, gives the title and artist from the file's
+<code>INFO</code> list (also added to the raster's text entries as <code>Title</code> and <code>Author</code>, the keys PNG and TGA use), the default delay, how
+many frames the file stores, the frame each step shows and every size.</p>
 <pre><code class="lang-csharp">// Probe reads the chunks and each frame's directory without decoding a pixel.
 RasterInfo info = Raster.Probe(&quot;busy.ani&quot;);
 Console.WriteLine($&quot;{info.FrameCount} steps; {info.ImageCount} sizes; Load gives {info.Width}×{info.Height}&quot;);
@@ -128,6 +129,31 @@ Console.WriteLine($&quot;\&quot;{details.Title}\&quot; by {details.Artist}: {det
 the file header, or bare 24 or 32-bit rows at the header's size. Egami reads all three; their frames have no hotspot, and
 <code>AniDetails.RawBitmaps</code> is true. A frame that is a cursor in a file that says otherwise is read as a cursor, with the
 <code>Ani.IconInRawFile</code> warning.</p>
+<h2 id="writing-animated-cursors">Writing animated cursors</h2>
+<p><code>Raster.Save</code> with a <code>.ani</code> path, or <code>AniFormat.Info</code>, writes an animated raster as a cursor: each frame is a step. A frame with
+the same pixels and hotspot as an earlier one is stored once, and a <code>seq </code> list says which stored frame each step shows, so a
+spinner that comes back to its first picture costs nothing extra. Every stored frame is a cursor written by Egami's
+<a href="ico.html">CUR writer</a>, 32-bit BMP entries below 256 × 256 and PNG at 256, which is what Windows expects.</p>
+<p><code>AniWriterOptions</code> has the same words as <code>IcoWriterOptions</code>. <code>Sizes</code> gives every stored frame each size, from the frame resized
+with <code>Filter</code>; <code>AniWriterOptions.CursorSizes</code> (32, 48, 64, 96 and 128) are the sizes Windows draws cursors at as the display
+scale grows. Without <code>Sizes</code> the frames keep the raster's size, fitted down to 256 with the <code>Save.IcoFitted</code> warning when larger.
+<code>Hotspot</code> sets every frame's hotspot at the raster's size, scaled to each entry; without it each frame keeps its own
+<code>IcoDetails.Hotspot</code>, so a cursor loaded from ANI or CUR saves with its hotspots. <code>Title</code> and <code>Artist</code> go into the <code>INFO</code> list,
+or come from a loaded cursor's <code>AniDetails</code>, else from the raster's <code>Title</code> and <code>Author</code> text entries, unless <code>StripMetadata</code>
+is set; so a PNG's title carries into the cursor.</p>
+<pre><code class="lang-csharp">// Every frame is a step; frames that repeat are stored once. Each stored frame holds every size Windows may draw.
+spin.Save(&quot;spin.ani&quot;, new AniWriterOptions
+{
+    Sizes = AniWriterOptions.CursorSizes,
+    Hotspot = new Point(32, 32),
+    Title = &quot;Spinning duck&quot;,
+});
+</code></pre>
+<p>Delays are rounded to the nearest jiffy. A frame shown for less than 20 ms is written as 100 ms, as browsers play such GIF frames,
+with the <code>Save.AniDelayRaised</code> warning. The most common delay becomes the header's default rate, and a <code>rate</code> list is written
+only when the delays differ. Animated cursors always loop, so a <code>LoopCount</code> other than 0 is not written, with the
+<code>Save.AniLoops</code> warning. Raw-bitmap frames are read but never written. The same raster and options give the same bytes, and
+<code>egami convert spinner.gif spinner.ani --set ani.sizes=32,48</code> turns a GIF into a cursor from the command line.</p>
 <h2 id="damaged-and-hostile-data">Damaged and hostile data</h2>
 <p>Every count, index and size is checked before it is used; CVE-2007-0038 came from a reader that trusted the <code>anih</code> header's size.
 The steps are checked against <code>SafetyLimits.MaxFrames</code> and every frame's size against the other limits before its pixels are

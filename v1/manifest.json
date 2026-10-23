@@ -5385,7 +5385,21 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Formats.Ani.AniFormat",
-      "Summary": "<p sourcefile=\"api/Egami.Formats.Ani.AniFormat.yml\" sourcestartlinenumber=\"1\">The Windows animated cursor format (.ani), registered in <xref href=\"Egami.EgamiContext.Default\" data-throw-if-not-resolved=\"false\"></xref>: a RIFF file whose frames are\ncursors or icons, with a display time and an order for each step. Load returns one animated raster with a frame per step, all\nat one size; LoadAll returns the animation once for every size its frames hold.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Ani.AniFormat.yml\" sourcestartlinenumber=\"1\">The Windows animated cursor format (.ani), registered in <xref href=\"Egami.EgamiContext.Default\" data-throw-if-not-resolved=\"false\"></xref>: a RIFF file whose frames are\ncursors or icons, with a display time and an order for each step. Load returns one animated raster with a frame per step, all\nat one size; LoadAll returns the animation once for every size its frames hold. Save writes an animated raster with\n<xref href=\"Egami.Formats.Ani.AniWriterOptions\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Ani.AniWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Ani.AniWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Ani.AniWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Ani.AniWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing ANI. Each frame of the raster is a step of the animation; a frame that repeats an earlier one (same pixels,\nsame hotspot) is stored once and shown again. Every stored frame is a cursor with the entries <xref href=\"Egami.Formats.Ico.IcoWriterOptions\" data-throw-if-not-resolved=\"false\"></xref>\nwould write. Delays are rounded to 1/60 s, and a delay under 20 ms is written as 100 ms, as browsers play GIFs. ANI always\nloops. EXIF, XMP and IPTC are not written; an ICC profile goes into PNG entries.</p>\n"
     },
     {
       "type": "ManagedReference",

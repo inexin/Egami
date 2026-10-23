@@ -1144,6 +1144,16 @@ are found on the finalizer thread after the call has ended; see <a href="guides/
 <td>The format, as written with these options, has no alpha; translucent pixels were written opaque</td>
 </tr>
 <tr>
+<td><code>Save.AniDelayRaised</code></td>
+<td>Warning</td>
+<td>ANI frames shown for less than 20 ms were written as 100 ms, as browsers play such GIF frames</td>
+</tr>
+<tr>
+<td><code>Save.AniLoops</code></td>
+<td>Warning</td>
+<td>The raster's LoopCount was not 0; ANI animations always loop, so it was not written</td>
+</tr>
+<tr>
 <td><code>Save.ColorsQuantized</code></td>
 <td>Warning</td>
 <td>The image has more colors than the palette holds; it was reduced</td>
