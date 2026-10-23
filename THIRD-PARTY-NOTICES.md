@@ -812,6 +812,15 @@ transforms of `vp9_idct.c` and `vpx_dsp/inv_txfm.c` (`Vp9Transform.cs`, with the
 quantizer tables, interpolation kernels and lookups of `vp9/common` into `Vp9Tables.Data.cs`. `tools/vp9ref/vp9dump.c`, a test
 tool built against libvpx in Docker, is Egami.Video's own.
 
+The VP9 encoder (`Vp9Encoder*.cs`, `Vp9BoolEncoder.cs`, `Vp9RdCosts.cs`, `Vp9EncoderTables.cs`, `Vp9Transform.Forward.cs`)
+translates parts of libvpx 1.14.1's encoder closely: the one-dimensional forward transforms of `vp9/encoder/vp9_dct.c` and
+`vpx_dsp/fwd_txfm.c` (translated by `tools/video/make-vp9-forward-transforms.py` into `Vp9Transform.Forward.OneD.cs` and, on
+vectors, `Vp9TransformSimd.Forward.OneD.cs`) and the two-dimensional passes around them (`vp9_fht4x4_c` to `vp9_fht16x16_c`,
+`vpx_fdct32x32_c` and its rd variant, `vp9_fwht4x4_c`); the boolean encoder of `vpx_dsp/bitwriter.h` and `bitwriter.c`; the
+bit costs of `vp9/encoder/vp9_cost.c`; the probability updates of `vp9_subexp.c` and `vp9_bitstream.c`; the dead-zone
+quantizer of `vpx_dsp/quantize.c` and `vp9_quantize.c`; the trellis of `vp9_encodemb.c` (`vp9_optimize_b`); and the RD
+multipliers and partition search breakout of `vp9_rd.c` and `vp9_encodeframe.c`. The rest of the search is Egami.Video's own.
+
 ```
 Copyright (c) 2010, The WebM Project authors. All rights reserved.
 

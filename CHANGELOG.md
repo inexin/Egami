@@ -394,6 +394,39 @@ stream's range so 8-bit and 10-bit video behave alike; they run in `MediaAnalysi
   with `Blockiness` how much a block grid stands out (blockdetect's periods). Per-frame `SignalFrame`s with `KeepSeries`.
 - No detector allocates memory per frame once running.
 
+V5.3: VP9 encoding. API review pending (combined encoders review).
+
+### VP9 encoding
+
+- `Vp9Codec.CanEncode` is true and `Vp9Codec.CreateEncoder` encodes VP9 into WebM, Matroska, IVF and MP4, with the encoder
+  core's keyframes, groups, hidden alternate references and rate control modes, on VP8's `Quality` (0 to 100, default 60) and
+  `Effort` (0 to 10, default 4) scales; `Quantizer` is VP9's 0 to 255 (0 lossless). Hidden frames go out in a superframe with
+  the next shown frame, so every packet shows one frame.
+- The search: partitions from 64x64 down to 4x4 with libvpx's breakout and a partition range from the previous frame, all ten
+  intra modes with ADST and DCT transforms to 32x32 and the transform size chosen by rate and distortion, motion search to 1/8
+  pixel, NEARESTMV, NEARMV, ZEROMV and NEWMV from LAST, GOLDEN and ALTREF, compound prediction, the regular, sharp and smooth
+  filters, libvpx's trellis, forward probability updates, a loop filter level search, tile columns and adaptive quantization
+  by segments. The encoder decodes what it writes, so its references are what every decoder holds.
+- Profiles 0 to 3: 8, 10 and 12 bits, 4:2:0, 4:2:2 and 4:4:4, from the frames' planes or `Vp9EncoderOptions.BitDepth`; the
+  frames' color code points and static HDR metadata go into the track (WebM and Matroska Colour, MP4 colr, mdcv and clli).
+  Frames with alpha get a second VP9 stream in each packet's addition 1, as WebM carries it.
+- `egami-video encode --codec vp9` (with `--effort` and `--bitrate`), `run` keeps VP9 sources VP9, and `egami-video ffmpeg`
+  takes `-c:v libvpx-vp9`.
+- `Vp9EncoderOptions` (`VideoEncoderOptions.Vp9`, `VideoWriterOptions.Vp9`): quantizer limits, alternate references, golden
+  frame spacing, temporal filter, tile columns, adaptive quantization, error resilience, bit depth and alpha.
+- The output is the same at any thread count and with or without hardware intrinsics: tile columns depend only on the width
+  and the options, and superblock rows run as a wavefront. Forward transforms run on Vector128 and Vector256 lanes, sums of
+  absolute differences, squared errors and residuals on AVX2.
+- libvpx 1.14.1's vpxdec decodes every test stream (33, all profiles and options) exactly as Egami does
+  (`tools/video/check-vp9-encoder.py`); 10 minutes of AFL++ on the vp9enc target found nothing.
+- Against libvpx 1.14.1 `vpxenc --good` (one-pass VBR, 25 frames of lag, alternate references; `tools/video/time-vp9-encoder.py`),
+  at effort 4: one thread at 1080p codes 1.6 to 2.4 s a frame, between `--cpu-used=1` and `=3` (about `=2`); all 24 cores
+  0.39 to 0.51 s, about `--cpu-used=1`. BD-rate against `--cpu-used=2` (720p, 60 frames, PSNR-Y / SSIM): crowd_run +6.1 % /
+  +19.9 %, ducks_take_off +0.4 % / -9.3 %, park_joy +3.9 % / +10.3 %, old_town_cross +24.5 % / +34.9 %. The +15 % gate is met on
+  PSNR-Y by three clips of four and on SSIM by two; static, grainy content (old_town_cross) and SSIM are where libvpx is still
+  ahead. Egami matches libvpx's PSNR-Y BD-rate at about `--cpu-used=4` on crowd_run, park_joy and old_town_cross and `=2` on
+  ducks_take_off, taking 0.65 to 1.8 times its time there on one thread and 1.1 to 2.0 times on all cores.
+
 ## Egami.Video 0.5.0 (unreleased)
 
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;

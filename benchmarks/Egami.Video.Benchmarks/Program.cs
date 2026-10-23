@@ -30,4 +30,11 @@ if (args is ["--time-subtitles", .. string[] subtitles])
     return;
 }
 
+// Time and write a VP9 encode (V5.3 gates): -- --encode-vp9 <clip.y4m> [--out=file.ivf --quality=Q ...]
+if (args is ["--encode-vp9", .. string[] rest9])
+{
+    Vp9EncodeTiming.Run(rest9);
+    return;
+}
+
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);

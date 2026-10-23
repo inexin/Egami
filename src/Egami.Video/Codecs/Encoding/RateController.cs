@@ -48,6 +48,9 @@ internal sealed record RateSettings
     /// <summary>The quantizer index's step sizes, lowest index first; their ratios are what the bit model scales by.</summary>
     public required short[] Steps { get; init; }
 
+    /// <summary>Each frame type's step against an inter frame's in constant quality, or null for VP8's (0.7, 1, 0.8, 0.7, 1).</summary>
+    public double[]? StepFactors { get; init; }
+
     /// <summary>For two passes, every frame's complexity from the first pass, in display order.</summary>
     public long[]? FirstPass { get; init; }
 }
@@ -153,7 +156,7 @@ internal sealed class RateController
 
         if (s.Mode == RateControlMode.Quality)
         {
-            return Clamp(QuantizerForStep(s.Steps[s.BaseQuantizer] * (stepFactor > 0 ? stepFactor : StepFactors[(int)type])));
+            return Clamp(QuantizerForStep(s.Steps[s.BaseQuantizer] * (stepFactor > 0 ? stepFactor : TypeFactor(type))));
         }
 
         // The inter step at which the frames of the next two seconds fill their budget, by the model of bits as complexity over
@@ -271,7 +274,9 @@ internal sealed class RateController
         return x;
     }
 
-    private static double Factor(FrameType type, double stepFactor) => stepFactor > 0 ? stepFactor : StepFactors[(int)type];
+    private double Factor(FrameType type, double stepFactor) => stepFactor > 0 ? stepFactor : TypeFactor(type);
+
+    private double TypeFactor(FrameType type) => (_settings.StepFactors ?? StepFactors)[(int)type];
 
     /// <summary>A complexity with a floor: even a frame equal to the one before costs some bits.</summary>
     private double Effective(long complexity) => Math.Max(1, complexity) + (_settings.Pixels / 16.0);

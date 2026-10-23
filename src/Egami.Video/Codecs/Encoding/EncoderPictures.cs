@@ -18,6 +18,7 @@ internal sealed class EncoderPictures : IDisposable
     private readonly EgamiContext _context;
     private readonly Stack<YuvRaster<byte>> _free = new();
     private readonly Stack<YuvRaster<byte>> _freeAlpha = new();
+    private readonly Stack<YuvRaster> _freeFull = new();
 
     public EncoderPictures(int width, int height, YuvColor color, EgamiContext context)
     {
@@ -95,10 +96,74 @@ internal sealed class EncoderPictures : IDisposable
         return picture;
     }
 
+    /// <summary>Gets or sets the format <see cref="ImportFull"/> keeps frames in: a chroma format, a bit depth and a color.</summary>
+    public (ChromaFormat Chroma, int BitDepth, YuvColor Color) FullFormat { get; set; } = (ChromaFormat.Yuv420, 8, Vp8Color);
+
+    /// <summary>
+    /// Copies or converts a frame into a picture of <see cref="FullFormat"/>: planes of that chroma format and depth (a 16-bit
+    /// plane's samples count) as they are, anything else through RGB once.
+    /// </summary>
+    public YuvRaster ImportFull(VideoFrame frame)
+    {
+        (ChromaFormat chroma, int depth, YuvColor color) = FullFormat;
+        YuvRaster picture = _freeFull.TryPop(out YuvRaster? free) ? free
+            : depth == 8 ? YuvRaster.Create(_width, _height, chroma, color, false, _context)
+            : YuvRaster.Create(_width, _height, chroma, depth, color, false, _context);
+        if (frame.Planes is YuvRaster<byte> bytes && depth == 8 && bytes.ChromaFormat == chroma)
+        {
+            YuvRaster<byte> to = (YuvRaster<byte>)picture;
+            CopyPlane(bytes.Y, to.Y);
+            CopyPlane(bytes.U!, to.U!);
+            CopyPlane(bytes.V!, to.V!);
+            return picture;
+        }
+
+        if (frame.Planes is YuvRaster<ushort> words && depth > 8 && words.ChromaFormat == chroma && words.BitDepth == depth)
+        {
+            YuvRaster<ushort> to = (YuvRaster<ushort>)picture;
+            CopyPlane(words.Y, to.Y);
+            CopyPlane(words.U!, to.U!);
+            CopyPlane(words.V!, to.V!);
+            return picture;
+        }
+
+        Raster? converted = null;
+        Raster raster = frame.Pixels ?? (converted = frame.Planes!.ToRaster());
+        try
+        {
+            if (depth == 8)
+            {
+                using YuvRaster<byte> yuv = YuvRaster.FromRaster(raster, chroma, color);
+                YuvRaster<byte> to = (YuvRaster<byte>)picture;
+                CopyPlane(yuv.Y, to.Y);
+                CopyPlane(yuv.U!, to.U!);
+                CopyPlane(yuv.V!, to.V!);
+            }
+            else
+            {
+                using YuvRaster<ushort> yuv = YuvRaster.FromRaster(raster, chroma, depth, color);
+                YuvRaster<ushort> to = (YuvRaster<ushort>)picture;
+                CopyPlane(yuv.Y, to.Y);
+                CopyPlane(yuv.U!, to.U!);
+                CopyPlane(yuv.V!, to.V!);
+            }
+        }
+        finally
+        {
+            converted?.Dispose();
+        }
+
+        return picture;
+    }
+
+    /// <summary>Takes a picture from <see cref="ImportFull"/> back for reuse.</summary>
+    public void ReturnFull(YuvRaster picture) => _freeFull.Push(picture);
+
     /// <summary>Whether a frame carries an alpha plane or alpha channel.</summary>
     public static bool HasAlpha(VideoFrame frame) => frame.Planes?.HasAlpha ?? frame.Pixels?.Layout.HasAlpha ?? false;
 
-    public static void CopyPlane(YuvPlane<byte> from, YuvPlane<byte> to)
+    public static void CopyPlane<T>(YuvPlane<T> from, YuvPlane<T> to)
+        where T : unmanaged
     {
         int width = Math.Min(from.Width, to.Width);
         for (int y = 0; y < to.Height; y++)
@@ -123,6 +188,11 @@ internal sealed class EncoderPictures : IDisposable
         }
 
         while (_freeAlpha.TryPop(out YuvRaster<byte>? p))
+        {
+            p.Dispose();
+        }
+
+        while (_freeFull.TryPop(out YuvRaster? p))
         {
             p.Dispose();
         }
