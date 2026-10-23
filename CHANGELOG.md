@@ -176,34 +176,6 @@ which needs no .NET runtime.
   stack, and the symbol characters and bars are built without lists or copies. Code 128 and Code 39 no longer copy
   text without control characters for the human-readable text.
 
-## Egami.Video 0.7.0 (unreleased)
-
-V5.2: VP8 encoding, on an encoder core that VP9 and AV1 encoding will share. The V5 encoder steps get one combined API review
-after V5.6 (Design Q17).
-
-### VP8 encoding
-
-- `Vp8Codec.CreateEncoder` and `VideoWriterOptions.Codec = VideoCodecs.Vp8`: VP8 into WebM, Matroska and IVF through Egami's
-  `Vp8StreamEncoder`, with WebM alpha as a second VP8 stream in each packet's addition 1. 8-bit 4:2:0 planes are coded as
-  they are; other frames are converted to BT.601 limited range.
-- `Vp8EncoderOptions` (`VideoEncoderOptions.Vp8`): quantizer limits, alternate references, golden frame spacing, temporal
-  filter frames and strength, token partitions, error resilience, alpha.
-- `egami-video encode --codec vp8` with `--effort` and `--bitrate`, and `run` keeps VP8 sources VP8; `egami-video ffmpeg`
-  takes `-c:v libvpx`.
-
-### Encoder settings
-
-- `VideoEncoderOptions` (and `VideoWriterOptions`) gain `Effort`, `RateControl` (`RateControlMode.Quality`, the default,
-  `Bitrate`, `ConstantBitrate`, `Quantizer`), `Bitrate`, `MaxBitrate`, `BufferSize`, `Quantizer`, `LatencyMode` (`Quality`
-  with a 25-frame lookahead, or `Realtime`), `KeyframeInterval` (10 seconds by default), `SceneCutKeyframes` and
-  `FirstPassStats`.
-- `IVideoEncoder.Send(VideoFrame, EncodeFrameOptions)` with `EncodeFrameOptions.ForceKeyframe`; Motion JPEG and uncompressed
-  video treat it as `Send(VideoFrame)`.
-- Two passes: `VideoWriter.AnalyzeFirstPass` over frames or a file gives `FirstPassStats`, which `Save` and `Load` keep in a
-  file.
-- The lookahead places keyframes at scene cuts, plans groups with hidden, temporally filtered alternate references where the
-  group's first frame still predicts its last well, and gives each frame its quantizer. Output bytes do not depend on the thread count.
-
 ## Egami.Video.Cli 0.5.0 (unreleased)
 
 A new package: the `egami-video` command-line tool (Video V1.1), a .NET tool built on Egami.Video's public API that carries
@@ -261,6 +233,32 @@ V4.3: fragmented MP4 writing, and HLS and DASH segments. API reviewed and accept
 - Writing fragmented MP4 takes 0.69 times as long as flat MP4 on 720p Motion JPEG and allocates no memory per packet or
   fragment in steady state; Chromium and Chrome (Media Source Extensions), hls.js, dash.js, ffprobe, MP4Box and Bento4 read
   the files (egami-compare).
+
+V5.2: VP8 encoding, on an encoder core that VP9 and AV1 encoding will share. The V5 encoder steps get one combined API review
+after V5.6 (Design Q17).
+
+### VP8 encoding
+
+- `Vp8Codec.CreateEncoder` and `VideoWriterOptions.Codec = VideoCodecs.Vp8`: VP8 into WebM, Matroska and IVF through Egami's
+  `Vp8StreamEncoder`, with WebM alpha as a second VP8 stream in each packet's addition 1. 8-bit 4:2:0 planes are coded as
+  they are; other frames are converted to BT.601 limited range.
+- `Vp8EncoderOptions` (`VideoEncoderOptions.Vp8`): quantizer limits, alternate references, golden frame spacing, temporal
+  filter frames and strength, token partitions, error resilience, alpha.
+- `egami-video encode --codec vp8` with `--effort` and `--bitrate`, and `run` keeps VP8 sources VP8; `egami-video ffmpeg`
+  takes `-c:v libvpx`.
+
+### Encoder settings
+
+- `VideoEncoderOptions` (and `VideoWriterOptions`) gain `Effort`, `RateControl` (`RateControlMode.Quality`, the default,
+  `Bitrate`, `ConstantBitrate`, `Quantizer`), `Bitrate`, `MaxBitrate`, `BufferSize`, `Quantizer`, `LatencyMode` (`Quality`
+  with a 25-frame lookahead, or `Realtime`), `KeyframeInterval` (10 seconds by default), `SceneCutKeyframes` and
+  `FirstPassStats`.
+- `IVideoEncoder.Send(VideoFrame, EncodeFrameOptions)` with `EncodeFrameOptions.ForceKeyframe`; Motion JPEG and uncompressed
+  video treat it as `Send(VideoFrame)`.
+- Two passes: `VideoWriter.AnalyzeFirstPass` over frames or a file gives `FirstPassStats`, which `Save` and `Load` keep in a
+  file.
+- The lookahead places keyframes at scene cuts, plans groups with hidden, temporally filtered alternate references where the
+  group's first frame still predicts its last well, and gives each frame its quantizer. Output bytes do not depend on the thread count.
 
 ## Egami.Video 0.5.0 (unreleased)
 
