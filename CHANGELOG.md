@@ -379,6 +379,21 @@ whole step is built (V1.4 Build Plan).
   any bit depth, a moving pattern with a frame counter, solid colors and gradients as video; sine tones, silence, white and
   pink noise and log sweeps as audio, at a level in dBFS.
 
+V1.4 stage B: the video detectors. Each keeps ffmpeg's documented measure and defaults, with thresholds as fractions of the
+stream's range so 8-bit and 10-bit video behave alike; they run in `MediaAnalysis.Run` or on frames of the caller's own.
+
+- `BlackDetector` (as blackdetect: 10 % pixel threshold, 98 % of the picture, 2 s) and `FreezeDetector` (as freezedetect:
+  mean absolute difference over Y, Cb and Cr against the frame that froze, -60 dB, 2 s) return `DetectedRange`s.
+- `CropDetector` (as cropdetect's black mode, limit 24/255, even sizes): a `CropReport` with the rectangle that keeps every
+  frame's picture, the most common one and the runs of frames that share one.
+- `InterlaceDetector` (as idet, ratios 1.04, 1.5 and 3): `InterlaceReport` with top field first, bottom field first,
+  progressive and undetermined frames, repeated fields and an `InterlaceVerdict` that names 3:2 telecine.
+- `DuplicateDetector`: mpdecimate's 8 by 8 block test (768, 320, 0.33) without dropping, as runs of repeated frames.
+- `SignalMeter` (as signalstats and colordetect): `PlaneLevels` for Y, Cb, Cr and saturation, the share of pixels outside
+  broadcast range, the `SignalRange` really used and `AlphaUse`; with `Blur` the mean edge width (blurdetect's thresholds) and
+  with `Blockiness` how much a block grid stands out (blockdetect's periods). Per-frame `SignalFrame`s with `KeepSeries`.
+- No detector allocates memory per frame once running.
+
 V5.9 stage A: AIFF and AIFF-C, and G.711.
 
 ### AIFF

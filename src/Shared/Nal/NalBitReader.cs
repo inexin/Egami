@@ -1,19 +1,19 @@
-namespace Egami.Heic.Hevc;
+namespace Egami.Nal;
 
 /// <summary>
-/// Reads the fixed- and variable-length codes of an HEVC RBSP (H.265 7.2, 9.2): u(n), ue(v), se(v), most significant bit first.
-/// The bytes are an RBSP, emulation prevention already removed (<see cref="HevcNal.Unescape"/>). Reading past the end throws
-/// <see cref="CorruptDataException"/>. When <see cref="Trace"/> is set, every element read is added to it by name, the names H.265
-/// and HM's syntax trace use, so headers can be compared with HM's.
+/// Reads the fixed- and variable-length codes of an H.264 or HEVC RBSP (H.264 7.2 and 9.1, H.265 7.2 and 9.2): u(n), ue(v), se(v),
+/// most significant bit first. The bytes are an RBSP, emulation prevention already removed (<see cref="NalFraming.Unescape"/>).
+/// Reading past the end throws <see cref="CorruptDataException"/>. When <see cref="Trace"/> is set, every element read is added to
+/// it by name, the names the standards and the reference decoders' syntax traces use, so headers can be compared with theirs.
 /// </summary>
-internal sealed class HevcBitReader
+internal sealed class NalBitReader
 {
     private readonly byte[] _data;
     private readonly int _end;
     private long _bit;
 
     /// <summary>Initializes a reader over an RBSP, from <paramref name="start"/> (in bytes) to the end of the array.</summary>
-    internal HevcBitReader(byte[] rbsp, int start = 0)
+    internal NalBitReader(byte[] rbsp, int start = 0)
     {
         _data = rbsp;
         _end = rbsp.Length;
@@ -67,14 +67,14 @@ internal sealed class HevcBitReader
     internal uint Ue(string name, uint max)
     {
         uint value = Ue(name);
-        return value <= max ? value : throw HevcErrors.Corrupt($"{name} is {value}, more than {max}.");
+        return value <= max ? value : throw NalErrors.Corrupt($"{name} is {value}, more than {max}.");
     }
 
     /// <summary>Reads a signed Exp-Golomb code checked against a range.</summary>
     internal int Se(string name, int min, int max)
     {
         int value = Se(name);
-        return value >= min && value <= max ? value : throw HevcErrors.Corrupt($"{name} is {value}, outside {min} to {max}.");
+        return value >= min && value <= max ? value : throw NalErrors.Corrupt($"{name} is {value}, outside {min} to {max}.");
     }
 
     /// <summary>Skips n bits.</summary>
@@ -82,13 +82,13 @@ internal sealed class HevcBitReader
     {
         if (n > BitsLeft)
         {
-            throw HevcErrors.Corrupt("A NAL unit is cut off.");
+            throw NalErrors.Corrupt("A NAL unit is cut off.");
         }
 
         _bit += n;
     }
 
-    /// <summary>Gets whether more RBSP data comes before the trailing bits (H.265 7.2, more_rbsp_data).</summary>
+    /// <summary>Gets whether more RBSP data comes before the trailing bits (H.264 and H.265 7.2, more_rbsp_data).</summary>
     internal bool MoreRbspData()
     {
         long left = BitsLeft;
@@ -118,7 +118,7 @@ internal sealed class HevcBitReader
     {
         if (U(1, "rbsp_stop_one_bit") != 1)
         {
-            throw HevcErrors.Corrupt("rbsp_stop_one_bit is 0.");
+            throw NalErrors.Corrupt("rbsp_stop_one_bit is 0.");
         }
 
         while (!ByteAligned)
@@ -127,12 +127,12 @@ internal sealed class HevcBitReader
         }
     }
 
-    /// <summary>Reads byte_alignment(): a 1 bit, then zero bits to the byte boundary (not traced, as HM does not trace it).</summary>
+    /// <summary>Reads byte_alignment() (HEVC): a 1 bit, then zero bits to the byte boundary, not traced as HM does not.</summary>
     internal void ByteAlignment()
     {
         if (Bits(1) != 1)
         {
-            throw HevcErrors.Corrupt("alignment_bit_equal_to_one is 0.");
+            throw NalErrors.Corrupt("alignment_bit_equal_to_one is 0.");
         }
 
         while (!ByteAligned)
@@ -150,7 +150,7 @@ internal sealed class HevcBitReader
 
         if (n > BitsLeft)
         {
-            throw HevcErrors.Corrupt("A NAL unit is cut off.");
+            throw NalErrors.Corrupt("A NAL unit is cut off.");
         }
 
         ulong value = 0;
@@ -175,21 +175,10 @@ internal sealed class HevcBitReader
         {
             if (++zeros > 31)
             {
-                throw HevcErrors.Corrupt("An Exp-Golomb code is longer than 32 bits.");
+                throw NalErrors.Corrupt("An Exp-Golomb code is longer than 32 bits.");
             }
         }
 
         return (uint)(((1UL << zeros) - 1) + Bits(zeros));
     }
-}
-
-/// <summary>Builds the exceptions the HEVC decoder throws.</summary>
-internal static class HevcErrors
-{
-    /// <summary>The format name errors carry.</summary>
-    internal const string FormatName = "HEIC";
-
-    internal static CorruptDataException Corrupt(string problem) => new(FormatName, -1, "HEVC: " + problem);
-
-    internal static UnsupportedFormatException Unsupported(string what) => new($"HEVC: {what} Egami.Heic does not decode it (2.9.4 decodes intra pictures of the Main, Main 10, Main Still Picture and format range extensions profiles up to 12 bits).");
 }

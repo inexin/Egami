@@ -1,3 +1,5 @@
+using Egami.Nal;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>An HEVC NAL unit: its header fields and its RBSP (H.265 7.3.1).</summary>
@@ -69,125 +71,18 @@ internal sealed class HevcNal
         }
 
         List<int> removed = [];
-        byte[] rbsp = Unescape(nal, removed);
+        byte[] rbsp = NalFraming.Unescape(nal, removed);
         return new HevcNal((nal[0] >> 1) & 63, ((nal[0] & 1) << 5) | (nal[1] >> 3), nal[1] & 7, rbsp, [.. removed]);
     }
 
-    /// <summary>Removes emulation_prevention_three_byte (the 03 in 00 00 03), noting where each was.</summary>
-    internal static byte[] Unescape(ReadOnlySpan<byte> nal, List<int>? removed = null)
-    {
-        ReadOnlySpan<byte> pattern = [0, 0, 3];
-        int first = nal.IndexOf(pattern);
-        if (first < 0)
-        {
-            return nal.ToArray();
-        }
-
-        byte[] output = new byte[nal.Length];
-        int written = 0, zeros = 0;
-        for (int i = 0; i < nal.Length; i++)
-        {
-            byte b = nal[i];
-            if (zeros >= 2 && b == 3)
-            {
-                removed?.Add(i);
-                zeros = 0;
-                continue;
-            }
-
-            output[written++] = b;
-            zeros = b == 0 ? zeros + 1 : 0;
-        }
-
-        return output[..written];
-    }
-
     /// <summary>Reads the header's fields into a trace (forbidden_zero_bit, nal_unit_type, nuh_layer_id, nuh_temporal_id_plus1).</summary>
-    internal HevcBitReader Reader(List<(string Name, long Value)>? trace)
+    internal NalBitReader Reader(List<(string Name, long Value)>? trace)
     {
-        HevcBitReader reader = new(Rbsp) { Trace = trace };
+        NalBitReader reader = new(Rbsp) { Trace = trace };
         reader.U(1, "forbidden_zero_bit");
         reader.U(6, "nal_unit_type");
         reader.U(6, "nuh_layer_id");
         reader.U(3, "nuh_temporal_id_plus1");
         return reader;
-    }
-
-    /// <summary>Splits item data of NAL units, each after a big-endian size field of <paramref name="lengthSize"/> bytes.</summary>
-    /// <exception cref="CorruptDataException">A size runs past the end.</exception>
-    internal static List<ReadOnlyMemory<byte>> SplitLengthPrefixed(ReadOnlyMemory<byte> data, int lengthSize)
-    {
-        List<ReadOnlyMemory<byte>> units = [];
-        ReadOnlySpan<byte> span = data.Span;
-        int at = 0;
-        while (at < span.Length)
-        {
-            if (at + lengthSize > span.Length)
-            {
-                throw HevcErrors.Corrupt("A NAL unit's size field is cut off.");
-            }
-
-            long size = 0;
-            for (int i = 0; i < lengthSize; i++)
-            {
-                size = (size << 8) | span[at + i];
-            }
-
-            at += lengthSize;
-            if (size > span.Length - at)
-            {
-                throw HevcErrors.Corrupt($"A NAL unit of {size} bytes runs past the end of the item's {span.Length} bytes.");
-            }
-
-            if (size > 0)
-            {
-                units.Add(data.Slice(at, (int)size));
-            }
-
-            at += (int)size;
-        }
-
-        return units;
-    }
-
-    /// <summary>Splits an Annex B byte stream at its start codes (00 00 01), dropping trailing zero bytes of each unit.</summary>
-    internal static List<ReadOnlyMemory<byte>> SplitAnnexB(ReadOnlyMemory<byte> stream)
-    {
-        List<ReadOnlyMemory<byte>> units = [];
-        ReadOnlySpan<byte> span = stream.Span;
-        int start = -1;
-        for (int i = 0; i + 2 < span.Length; i++)
-        {
-            if (span[i] == 0 && span[i + 1] == 0 && span[i + 2] == 1)
-            {
-                if (start >= 0)
-                {
-                    Add(span, start, i);
-                }
-
-                start = i + 3;
-                i += 2;
-            }
-        }
-
-        if (start >= 0)
-        {
-            Add(span, start, span.Length);
-        }
-
-        return units;
-
-        void Add(ReadOnlySpan<byte> bytes, int from, int to)
-        {
-            while (to > from && bytes[to - 1] == 0)
-            {
-                to--;
-            }
-
-            if (to > from)
-            {
-                units.Add(stream[from..to]);
-            }
-        }
     }
 }

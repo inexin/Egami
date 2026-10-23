@@ -1,3 +1,5 @@
+using Egami.Nal;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>profile_tier_level() (H.265 7.3.3): the general profile, tier and level.</summary>
@@ -18,7 +20,7 @@ internal sealed class HevcProfileTierLevel
     /// <summary>Gets whether the profile, or a compatible one, is <paramref name="idc"/>.</summary>
     internal bool Is(int idc) => ProfileIdc == idc || (Compatibility & (1u << idc)) != 0;
 
-    internal static HevcProfileTierLevel Read(HevcBitReader r, bool profilePresent, int maxSubLayersMinus1)
+    internal static HevcProfileTierLevel Read(NalBitReader r, bool profilePresent, int maxSubLayersMinus1)
     {
         HevcProfileTierLevel ptl = new();
         if (profilePresent)
@@ -59,7 +61,7 @@ internal sealed class HevcProfileTierLevel
     }
 
     /// <summary>Reads profile_space through inbld_flag; the constraint flags' layout depends on the profile (H.265 7.3.3).</summary>
-    private static (int Idc, uint Compatibility, bool Tier) ReadProfileTier(HevcBitReader r, string prefix)
+    private static (int Idc, uint Compatibility, bool Tier) ReadProfileTier(NalBitReader r, string prefix)
     {
         r.U(2, prefix + "profile_space");
         bool tier = r.Flag(prefix + "tier_flag");
@@ -119,7 +121,7 @@ internal sealed class HevcVps
     /// <summary>Gets vps_video_parameter_set_id.</summary>
     internal int Id { get; private set; }
 
-    internal static HevcVps Read(HevcBitReader r)
+    internal static HevcVps Read(NalBitReader r)
     {
         HevcVps vps = new() { Id = (int)r.U(4, "vps_video_parameter_set_id") };
         r.Flag("vps_base_layer_internal_flag");
@@ -183,56 +185,13 @@ internal sealed class HevcVps
     }
 }
 
-/// <summary>vui_parameters() (H.265 E.2.1): the colour description and the rest, read past.</summary>
-internal sealed class HevcVui
+/// <summary>vui_parameters() (H.265 E.2.1): the shared start (<see cref="NalVui"/>), and the rest read past.</summary>
+internal sealed class HevcVui : NalVui
 {
-    /// <summary>Gets video_full_range_flag (false when absent).</summary>
-    internal bool FullRange { get; private set; }
-
-    /// <summary>Gets colour_primaries (2, unspecified, when absent).</summary>
-    internal int ColourPrimaries { get; private set; } = 2;
-
-    /// <summary>Gets transfer_characteristics (2 when absent).</summary>
-    internal int TransferCharacteristics { get; private set; } = 2;
-
-    /// <summary>Gets matrix_coeffs (2 when absent).</summary>
-    internal int MatrixCoefficients { get; private set; } = 2;
-
-    /// <summary>Gets chroma_sample_loc_type_top_field, or -1 when absent.</summary>
-    internal int ChromaSampleLocation { get; private set; } = -1;
-
-    internal static HevcVui Read(HevcBitReader r, int subWidthC, int subHeightC, int maxSubLayersMinus1)
+    internal static HevcVui Read(NalBitReader r, int subWidthC, int subHeightC, int maxSubLayersMinus1)
     {
         HevcVui vui = new();
-        if (r.Flag("aspect_ratio_info_present_flag") && r.U(8, "aspect_ratio_idc") == 255)
-        {
-            r.U(16, "sar_width");
-            r.U(16, "sar_height");
-        }
-
-        if (r.Flag("overscan_info_present_flag"))
-        {
-            r.Flag("overscan_appropriate_flag");
-        }
-
-        if (r.Flag("video_signal_type_present_flag"))
-        {
-            r.U(3, "video_format");
-            vui.FullRange = r.Flag("video_full_range_flag");
-            if (r.Flag("colour_description_present_flag"))
-            {
-                vui.ColourPrimaries = (int)r.U(8, "colour_primaries");
-                vui.TransferCharacteristics = (int)r.U(8, "transfer_characteristics");
-                vui.MatrixCoefficients = (int)r.U(8, "matrix_coeffs");
-            }
-        }
-
-        if (r.Flag("chroma_loc_info_present_flag"))
-        {
-            vui.ChromaSampleLocation = (int)r.Ue("chroma_sample_loc_type_top_field", 5);
-            r.Ue("chroma_sample_loc_type_bottom_field", 5);
-        }
-
+        vui.ReadCommon(r);
         r.Flag("neutral_chroma_indication_flag");
         r.Flag("field_seq_flag");
         r.Flag("frame_field_info_present_flag");
@@ -276,7 +235,7 @@ internal sealed class HevcVui
     }
 
     /// <summary>Reads hrd_parameters() (H.265 E.2.2), which intra decoding does not use.</summary>
-    internal static void ReadHrd(HevcBitReader r, bool commonInfPresent, int maxSubLayersMinus1)
+    internal static void ReadHrd(NalBitReader r, bool commonInfPresent, int maxSubLayersMinus1)
     {
         bool nal = false, vcl = false, subPic = false;
         if (commonInfPresent)
@@ -382,7 +341,7 @@ internal sealed class HevcScalingList
     /// <summary>Gets the factors by sizeId (transform size 4 &lt;&lt; sizeId) and matrixId, each in raster order.</summary>
     internal int[][][] Factors { get; private set; } = [];
 
-    internal static HevcScalingList Read(HevcBitReader r)
+    internal static HevcScalingList Read(NalBitReader r)
     {
         HevcScalingList list = new();
         for (int sizeId = 0; sizeId < 4; sizeId++)
@@ -518,7 +477,7 @@ internal sealed class HevcShortTermRps
     internal int NumUsed => Used.Count(u => u);
 
     /// <summary>Reads st_ref_pic_set(idx), predicting from <paramref name="sets"/> when inter_ref_pic_set_prediction_flag is set.</summary>
-    internal static HevcShortTermRps Read(HevcBitReader r, int idx, IReadOnlyList<HevcShortTermRps> sets, int numInSps)
+    internal static HevcShortTermRps Read(NalBitReader r, int idx, IReadOnlyList<HevcShortTermRps> sets, int numInSps)
     {
         HevcShortTermRps rps = new();
         bool predicted = idx != 0 && r.Flag("inter_ref_pic_set_prediction_flag");

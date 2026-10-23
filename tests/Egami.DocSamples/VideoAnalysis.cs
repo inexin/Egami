@@ -159,6 +159,57 @@ public class VideoAnalysis
         Assert.True(File.Exists("scene-3.png"));
     }
 
+    [Fact]
+    public void VideoDetectors()
+    {
+        using SampleFiles files = new();
+        WriteClip("shots.mkv");
+
+        #region analysis-video-detectors
+        // ffmpeg's detection filters as detectors, with their documented defaults: black and frozen stretches, black borders,
+        // field order and repeated frames, all from one decode.
+        BlackDetector black = new(new BlackOptions { MinDuration = MediaTime.FromSeconds(0.5) });
+        using FreezeDetector freeze = new(new FreezeOptions { MinDuration = MediaTime.FromSeconds(0.5) });
+        CropDetector crop = new();
+        InterlaceDetector fields = new();
+        DuplicateDetector duplicates = new();
+        MediaAnalysis.Run("shots.mkv", new MediaAnalysisOptions { VideoDetectors = [black, freeze, crop, fields, duplicates] });
+
+        foreach (DetectedRange range in freeze.Ranges)
+        {
+            Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
+        }
+
+        Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+        Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");
+        #endregion
+
+        Assert.Empty(black.Ranges);
+        Assert.Equal(2, freeze.Ranges.Count);
+        Assert.False(crop.Report.HasBorders);
+    }
+
+    [Fact]
+    public void Signal()
+    {
+        using SampleFiles files = new();
+        WriteClip("shots.mkv");
+
+        #region analysis-signal
+        // Levels, saturation and broadcast range as signalstats gives them, the range really used, and optional blur and
+        // blockiness scores.
+        SignalMeter meter = new(new SignalOptions { Blur = true, Blockiness = true });
+        MediaAnalysis.Run("shots.mkv", new MediaAnalysisOptions { Scenes = null, VideoDetectors = [meter] });
+        SignalReport report = meter.Report;
+        Console.WriteLine($"Y {report.Y.Min}..{report.Y.Max} (mean {report.Y.Mean:0.0}), {report.OutOfRange:P1} out of range, {report.Range} range");
+        Console.WriteLine($"Edges {report.Blur:0.00} px wide, blockiness {report.Blockiness:0.00}");
+        #endregion
+
+        // Motion JPEG decodes to full-range planes, and the bars' PLUGE reaches below video black.
+        Assert.Equal(SignalRange.Full, report.Range);
+        Assert.Equal(75, report.Frames);
+    }
+
     private sealed class DarkestFrame : IVideoDetector
     {
         private double _lowest = double.MaxValue;

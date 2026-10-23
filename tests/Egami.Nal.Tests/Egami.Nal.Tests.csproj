@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3.mtp-off" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Egami\Egami.csproj" />
+  </ItemGroup>
+
+  <!-- The shared NAL code is internal source compiled into each package that uses it, so its tests compile it too, apart from
+       either package. -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Shared\Nal\**\*.cs" Link="Shared\Nal\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

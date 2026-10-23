@@ -1,3 +1,5 @@
+using Egami.Nal;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>A slice segment header (H.265 7.3.6.1) and where the slice data starts.</summary>
@@ -65,7 +67,7 @@ internal sealed class HevcSliceHeader
     /// Reads a slice segment header. For a dependent slice segment, the fields of the slice it continues come from
     /// <paramref name="independent"/>, the previous independent slice segment's header.
     /// </summary>
-    internal static HevcSliceHeader Read(HevcBitReader r, HevcNal nal, Func<int, (HevcSps Sps, HevcPps Pps)> parameterSets, HevcSliceHeader? independent)
+    internal static HevcSliceHeader Read(NalBitReader r, HevcNal nal, Func<int, (HevcSps Sps, HevcPps Pps)> parameterSets, HevcSliceHeader? independent)
     {
         HevcSliceHeader h = new() { FirstSliceSegmentInPic = r.Flag("first_slice_segment_in_pic_flag") };
         if (nal.IsIrap)
@@ -154,7 +156,7 @@ internal sealed class HevcSliceHeader
         CabacInit = s.CabacInit;
     }
 
-    private void ReadSliceFields(HevcBitReader r, HevcNal nal, HevcSps sps, HevcPps pps)
+    private void ReadSliceFields(NalBitReader r, HevcNal nal, HevcSps sps, HevcPps pps)
     {
         for (int i = 0; i < pps.NumExtraSliceHeaderBits; i++)
         {
@@ -351,7 +353,7 @@ internal sealed class HevcSliceHeader
     }
 
     /// <summary>Reads pred_weight_table() (H.265 7.3.6.3), which intra decoding does not use.</summary>
-    private static void ReadPredWeightTable(HevcBitReader r, HevcSps sps, int numL0, int numL1)
+    private static void ReadPredWeightTable(NalBitReader r, HevcSps sps, int numL0, int numL1)
     {
         r.Ue("luma_log2_weight_denom", 7);
         bool chroma = sps.ChromaArrayType != 0;

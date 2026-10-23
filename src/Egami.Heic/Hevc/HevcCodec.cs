@@ -2,6 +2,7 @@ using Egami.Colors;
 using Egami.Formats;
 using Egami.Formats.Heic;
 using Egami.Formats.Heif;
+using Egami.Nal;
 
 namespace Egami.Heic.Hevc;
 
@@ -43,7 +44,7 @@ internal sealed class HevcCodec : IHeifCodec, IHevcSampleCodec
     public HeifPlanes Decode(HevcConfig config, ReadOnlyMemory<byte> data, EgamiInput input, int parallelism)
     {
         List<HevcNal> nals = [.. config.NalUnits.Select(n => HevcNal.Parse(n.Span))];
-        foreach (ReadOnlyMemory<byte> unit in HevcNal.SplitLengthPrefixed(data, config.LengthSize))
+        foreach (ReadOnlyMemory<byte> unit in NalFraming.SplitLengthPrefixed(data, config.LengthSize))
         {
             nals.Add(HevcNal.Parse(unit.Span));
         }

@@ -2,6 +2,7 @@ using Egami.Formats;
 using Egami.Formats.Heic;
 using Egami.Heic;
 using Egami.Heic.Hevc;
+using Egami.Nal;
 using Egami.Pixels;
 
 namespace Egami.Fuzz;
@@ -65,7 +66,7 @@ internal static class HeicFuzzTarget
         List<HevcNal> nals = [];
         try
         {
-            foreach (ReadOnlyMemory<byte> unit in HevcNal.SplitAnnexB(data))
+            foreach (ReadOnlyMemory<byte> unit in NalFraming.SplitAnnexB(data))
             {
                 nals.Add(HevcNal.Parse(unit.Span));
             }

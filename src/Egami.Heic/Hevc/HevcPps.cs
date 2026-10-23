@@ -1,3 +1,5 @@
+using Egami.Nal;
+
 namespace Egami.Heic.Hevc;
 
 /// <summary>A picture parameter set (H.265 7.3.2.3) with its range extension.</summary>
@@ -138,7 +140,7 @@ internal sealed class HevcPps
     /// <summary>Gets log2_sao_offset_scale_chroma.</summary>
     internal int Log2SaoOffsetScaleChroma { get; private set; }
 
-    internal static HevcPps Read(HevcBitReader r)
+    internal static HevcPps Read(NalBitReader r)
     {
         HevcPps pps = new()
         {
