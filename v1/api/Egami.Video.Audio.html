@@ -137,6 +137,24 @@ Upmixing only routes the speakers both layouts share, so no channel is made up. 
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.LoudnessMeter.html">LoudnessMeter</a></dt>
+      <dd><p>Measures loudness as ITU-R BS.1770-5 and EBU R 128 define it: momentary (400 ms) and short-term (3 s) loudness while audio
+comes in, and at any point the gated integrated loudness, the loudness range (EBU Tech 3342), the true peak and the sample
+peak. It takes any sample format, any rate from 8 to 384 kHz and any channel layout, weighting surround channels by +1.5 dB
+and leaving the LFE channel out. The audio filters' loudness normalization measures with it too.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.LoudnessOptions.html">LoudnessOptions</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Audio.LoudnessMeter.html">LoudnessMeter</a> measures and keeps.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.LoudnessReport.html">LoudnessReport</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Audio.LoudnessMeter.html">LoudnessMeter</a> measured. Loudness is in LUFS, ranges in LU, peaks in dBFS (dBTP for true peak).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Resampler.html">Resampler</a></dt>
       <dd><p>Converts audio between any two sample rates with a polyphase windowed-sinc filter (Kaiser window). The filter's phases come
 from the rate ratio reduced to lowest terms; when that needs more than 1024 phases (as for unusual rates), coefficients
@@ -160,6 +178,11 @@ Structs
 (WAVE_FORMAT_EXTENSIBLE order, the one canonical order every decoder hands out), plus any channels with no position, such
 as ambisonic or unknown ones, after them. Decoders of codecs with another order (Vorbis and Opus put center second) remap
 their channels to this one.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.LoudnessValue.html">LoudnessValue</a></dt>
+      <dd><p>One loudness reading in a <a class="xref" href="Egami.Video.Audio.LoudnessMeter.html">LoudnessMeter</a> series.</p>
 </dd>
     </dl>
     <h3 id="interfaces">

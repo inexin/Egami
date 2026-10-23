@@ -607,6 +607,33 @@ MediaAnalysis.Run(&quot;shots.mkv&quot;, new MediaAnalysisOptions { Scenes = nul
 SignalReport report = meter.Report;
 Console.WriteLine($&quot;Y {report.Y.Min}..{report.Y.Max} (mean {report.Y.Mean:0.0}), {report.OutOfRange:P1} out of range, {report.Range} range&quot;);
 Console.WriteLine($&quot;Edges {report.Blur:0.00} px wide, blockiness {report.Blockiness:0.00}&quot;);
+</code></pre>
+<p>On the audio side, <code>SilenceDetector</code> finds silent stretches as silencedetect does, over all channels or each one, with its
+<code>SilenceOptions</code>; <code>AudioLevelMeter</code> returns an <code>AudioLevelReport</code> with <code>ChannelLevels</code> for each channel and overall: peak,
+RMS, DC offset, crest factor, clipped samples, noise floor, zero crossings and a 1 dB histogram, as volumedetect and astats
+report them.</p>
+<pre><code class="lang-csharp">// Silent stretches as silencedetect finds them (under -60 dBFS for 2 s by default), and the sample levels volumedetect
+// and astats report, per channel and over all channels.
+SilenceDetector silence = new(new SilenceOptions { Noise = -50, MinDuration = MediaTime.FromSeconds(0.5) });
+AudioLevelMeter levels = new();
+MediaAnalysis.Run(&quot;shots.mkv&quot;, new MediaAnalysisOptions { Scenes = null, AudioDetectors = [silence, levels] });
+
+Console.WriteLine($&quot;{silence.Ranges.Count} silent stretches&quot;);
+AudioLevelReport report = levels.Report();
+Console.WriteLine($&quot;Peak {report.Overall.Peak:0.0} dBFS, RMS {report.Overall.Rms:0.0} dBFS, {report.Overall.Clipped} clipped&quot;);
+</code></pre>
+<p><code>LoudnessMeter</code> measures loudness as ITU-R BS.1770 and EBU R 128 define it, at any rate from 8 to 384 kHz: momentary and
+short-term loudness while audio comes in, and a <code>LoudnessReport</code> with the gated integrated loudness, the loudness range
+(EBU Tech 3342) and the true peak. <code>LoudnessOptions</code> turns the true peak off or keeps a <code>LoudnessValue</code> every 100 ms.</p>
+<pre><code class="lang-csharp">// EBU R 128 loudness: integrated, range and true peak at the end, momentary and short-term while the audio plays.
+LoudnessMeter meter = new(new LoudnessOptions { KeepSeries = true });
+MediaAnalysis.Run(&quot;shots.mkv&quot;, new MediaAnalysisOptions { Scenes = null, AudioDetectors = [meter] });
+LoudnessReport loudness = meter.Report();
+Console.WriteLine($&quot;I {loudness.Integrated:0.0} LUFS, LRA {loudness.Range:0.0} LU, true peak {loudness.TruePeak:0.0} dBTP&quot;);
+foreach (LoudnessValue value in meter.ShortTermSeries)
+{
+    Console.WriteLine($&quot;{value.Time.ToTimeSpan()}: {value.Loudness:0.0} LUFS&quot;);
+}
 </code></pre><h2 id="limits-and-warnings">Limits and warnings</h2>
 <p>A <code>MediaContext</code> holds the containers and codecs, the Egami context (memory, threads, safety limits), the <code>MediaLimits</code> for
 files from outside (packet, header and index sizes, tracks, nesting) and a handler for <code>MediaWarning</code>s: what a reader

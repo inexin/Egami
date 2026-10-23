@@ -95,6 +95,18 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.AudioLevelMeter.html">AudioLevelMeter</a></dt>
+      <dd><p>Measures sample levels per channel and over all channels: peak, RMS, DC offset, crest factor, clipped samples, how often the
+peak was reached, the noise floor, zero crossings and a histogram in 1 dB steps. It reports what ffmpeg's volumedetect and
+astats report, from any sample format.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.AudioLevelReport.html">AudioLevelReport</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Analysis.AudioLevelMeter.html">AudioLevelMeter</a> measured.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Analysis.BlackDetector.html">BlackDetector</a></dt>
       <dd><p>Finds black stretches: runs of frames where nearly every luma sample is near black, lasting at least
 <a class="xref" href="Egami.Video.Analysis.BlackOptions.html#Egami_Video_Analysis_BlackOptions_MinDuration">MinDuration</a>. It keeps ffmpeg's blackdetect measure and defaults, with the pixel threshold a fraction
@@ -104,6 +116,11 @@ of the stream's own range so 8-bit and 10-bit files behave alike.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Analysis.BlackOptions.html">BlackOptions</a></dt>
       <dd><p>What <a class="xref" href="Egami.Video.Analysis.BlackDetector.html">BlackDetector</a> counts as black. The defaults are ffmpeg blackdetect's.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.ChannelLevels.html">ChannelLevels</a></dt>
+      <dd><p>The sample levels of one channel, or of all channels together. Levels are in dBFS, where a full-scale sample is 0.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -250,6 +267,18 @@ blurdetect and blockdetect do.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Analysis.SignalReport.html">SignalReport</a></dt>
       <dd><p>What <a class="xref" href="Egami.Video.Analysis.SignalMeter.html">SignalMeter</a> measured over every frame.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.SilenceDetector.html">SilenceDetector</a></dt>
+      <dd><p>Finds silent stretches: runs of samples whose level stays under <a class="xref" href="Egami.Video.Analysis.SilenceOptions.html#Egami_Video_Analysis_SilenceOptions_Noise">Noise</a> for at least
+<a class="xref" href="Egami.Video.Analysis.SilenceOptions.html#Egami_Video_Analysis_SilenceOptions_MinDuration">MinDuration</a>. By default a stretch is silent only when every channel is, as ffmpeg's silencedetect
+does; <a class="xref" href="Egami.Video.Analysis.SilenceOptions.html#Egami_Video_Analysis_SilenceOptions_PerChannel">PerChannel</a> also finds each channel's own stretches. Times are exact to the sample.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Analysis.SilenceOptions.html">SilenceOptions</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Analysis.SilenceDetector.html">SilenceDetector</a> counts as silence. The defaults are ffmpeg silencedetect's.</p>
 </dd>
     </dl>
     <dl class="jumplist">

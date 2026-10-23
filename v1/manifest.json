@@ -11255,6 +11255,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.AudioLevelMeter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.AudioLevelMeter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.AudioLevelMeter",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.AudioLevelMeter.yml\" sourcestartlinenumber=\"1\">Measures sample levels per channel and over all channels: peak, RMS, DC offset, crest factor, clipped samples, how often the\npeak was reached, the noise floor, zero crossings and a histogram in 1 dB steps. It reports what ffmpeg's volumedetect and\nastats report, from any sample format.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.AudioLevelReport.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.AudioLevelReport.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.AudioLevelReport",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.AudioLevelReport.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.AudioLevelMeter\" data-throw-if-not-resolved=\"false\"></xref> measured.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Analysis.BlackDetector.yml",
       "output": {
         ".html": {
@@ -11280,6 +11308,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.BlackOptions",
       "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.BlackOptions.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.BlackDetector\" data-throw-if-not-resolved=\"false\"></xref> counts as black. The defaults are ffmpeg blackdetect's.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.ChannelLevels.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.ChannelLevels.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.ChannelLevels",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.ChannelLevels.yml\" sourcestartlinenumber=\"1\">The sample levels of one channel, or of all channels together. Levels are in dBFS, where a full-scale sample is 0.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11857,6 +11899,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SilenceDetector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SilenceDetector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SilenceDetector",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SilenceDetector.yml\" sourcestartlinenumber=\"1\">Finds silent stretches: runs of samples whose level stays under <xref href=\"Egami.Video.Analysis.SilenceOptions.Noise\" data-throw-if-not-resolved=\"false\"></xref> for at least\n<xref href=\"Egami.Video.Analysis.SilenceOptions.MinDuration\" data-throw-if-not-resolved=\"false\"></xref>. By default a stretch is silent only when every channel is, as ffmpeg's silencedetect\ndoes; <xref href=\"Egami.Video.Analysis.SilenceOptions.PerChannel\" data-throw-if-not-resolved=\"false\"></xref> also finds each channel's own stretches. Times are exact to the sample.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SilenceOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SilenceOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SilenceOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SilenceOptions.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.SilenceDetector\" data-throw-if-not-resolved=\"false\"></xref> counts as silence. The defaults are ffmpeg silencedetect's.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Analysis.TestAudioFormat.yml",
       "output": {
         ".html": {
@@ -12218,6 +12288,62 @@
       "IsMRef": true,
       "Title": "Egami.Video.Audio.IAudioEncoder",
       "Summary": "<p sourcefile=\"api/Egami.Video.Audio.IAudioEncoder.yml\" sourcestartlinenumber=\"1\">Turns audio frames into packets, the mirror of <xref href=\"Egami.Video.Audio.IAudioDecoder\" data-throw-if-not-resolved=\"false\"></xref>. Frames may have any length and any sample\nformat; the encoder converts them to its own and cuts packets of <xref href=\"Egami.Video.Audio.IAudioEncoder.FrameSize\" data-throw-if-not-resolved=\"false\"></xref> samples.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.LoudnessMeter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.LoudnessMeter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.LoudnessMeter",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.LoudnessMeter.yml\" sourcestartlinenumber=\"1\">Measures loudness as ITU-R BS.1770-5 and EBU R 128 define it: momentary (400 ms) and short-term (3 s) loudness while audio\ncomes in, and at any point the gated integrated loudness, the loudness range (EBU Tech 3342), the true peak and the sample\npeak. It takes any sample format, any rate from 8 to 384 kHz and any channel layout, weighting surround channels by +1.5 dB\nand leaving the LFE channel out. The audio filters' loudness normalization measures with it too.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.LoudnessOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.LoudnessOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.LoudnessOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.LoudnessOptions.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Audio.LoudnessMeter\" data-throw-if-not-resolved=\"false\"></xref> measures and keeps.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.LoudnessReport.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.LoudnessReport.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.LoudnessReport",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.LoudnessReport.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Audio.LoudnessMeter\" data-throw-if-not-resolved=\"false\"></xref> measured. Loudness is in LUFS, ranges in LU, peaks in dBFS (dBTP for true peak).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.LoudnessValue.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.LoudnessValue.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.LoudnessValue",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.LoudnessValue.yml\" sourcestartlinenumber=\"1\">One loudness reading in a <xref href=\"Egami.Video.Audio.LoudnessMeter\" data-throw-if-not-resolved=\"false\"></xref> series.</p>\n"
     },
     {
       "type": "ManagedReference",
