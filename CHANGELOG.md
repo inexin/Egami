@@ -183,6 +183,24 @@ recommended).
   `--progress-format json`. Ctrl+C stops between packets, deletes the output it was writing and exits with 130.
 - `egami video <command>` runs it from the `egami` tool.
 
+## Egami.Video 0.6.0 (unreleased)
+
+V4.3: fragmented MP4 writing, and HLS and DASH segments. The API review is pending.
+
+- `Mp4Format.Fragments` and `Mp4FragmentOptions`: fragmented MP4 (ISO/IEC 14496-12 8.8), moov with mvex and then a moof and
+  mdat pair a fragment as packets come, cut at the first video keyframe after `Duration` (2 s) or at `MaxBytes` (32 MB), with
+  mfra at the end. A seekable output gets its durations written back; tags, cover art and Nero chapters are kept (the
+  QuickTime chapter track is left out, with an mp4-chapter-track warning). Setting it with `MoovAtEnd` throws.
+- `Mp4Format.NonSeekable` and `Mp4NonSeekableLayout`: an output that cannot seek and read back now gets fragmented MP4 with an
+  mp4-fragmented warning, so `MediaFile.Remux` and `MediaFile.Transcode` with a `Stream` output use no temporary file;
+  `TempFile` keeps the flat layout of 0.5.0.
+- `Mp4SegmentWriter`, `Mp4SegmentOptions` and `SegmentPlaylists`: CMAF init and media segments a track (styp, sidx, moof and
+  mdat), cut at a keyframe after `SegmentDuration` (6 s), to a folder or a `Func<string, Stream>`, with an HLS multivariant
+  playlist and media playlists (RFC 8216) and a static DASH MPD (ISO/IEC 23009-1).
+- Writing fragmented MP4 takes 0.69 times as long as flat MP4 on 720p Motion JPEG and allocates no memory per packet or
+  fragment in steady state; Chromium and Chrome (Media Source Extensions), hls.js, dash.js, ffprobe, MP4Box and Bento4 read
+  the files (egami-compare).
+
 ## Egami.Video 0.5.0 (unreleased)
 
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;
