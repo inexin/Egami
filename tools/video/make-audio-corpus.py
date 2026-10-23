@@ -19,6 +19,10 @@ Usage, from the repo root:
   python tools/video/make-audio-corpus.py --aiff       V5.9: AIFF and AIFF-C clips, and G.711 in WAV and MOV, into
                                                        tests/video/corpus/audio/aiff (checked in) with FFmpeg's decode MD5 in
                                                        manifest.json. Add --local to run FFmpeg from the PATH instead of in Docker.
+  python tools/video/make-audio-corpus.py --caf        V5.9: CAF clips (PCM, G.711, FLAC, ALAC, Opus, MP3, AC-3) into
+                                                       tests/video/corpus/audio/caf (checked in) with FFmpeg's decode MD5 for the
+                                                       lossless ones and ffprobe's packet count for every clip. Add --local to run
+                                                       FFmpeg from the PATH instead of in Docker.
   python tools/video/make-audio-corpus.py --check DIR  run flac -t on every .flac file in DIR (Egami.Video's own output)
   python tools/video/make-audio-corpus.py --gates      after the EGAMI_AUDIO_GATES=1 tests: flac -t on Egami.Video's encodings
                                                        of the IETF files, their size against flac -0 to -8, and flac -d's time
@@ -330,6 +334,62 @@ def make_aiff(local):
         f.write("\n")
 
 
+# name: (FFmpeg arguments after the source, rate, channels, bits of the reference decode, float, lossless). Lossless clips get the
+# MD5 of FFmpeg's decode; every clip gets ffprobe's packet count. FLAC is left out: FFmpeg 6.1 writes it with a garbage frame count
+# in desc and pakt, so the tests write their own.
+CAF_OUT = os.path.join(OUT, "caf")
+CAF_CLIPS = {
+    "caf-s16le-stereo.caf": ("-c:a pcm_s16le", 44100, 2, 16, False, True),
+    "caf-s16be-stereo.caf": ("-c:a pcm_s16be", 44100, 2, 16, False, True),
+    "caf-s8-mono.caf": ("-c:a pcm_s8", 8000, 1, 8, False, True),
+    "caf-s24be-51.caf": ("-c:a pcm_s24be", 16000, 6, 24, False, True),
+    "caf-s32le-stereo.caf": ("-c:a pcm_s32le", 22050, 2, 32, False, True),
+    "caf-f32le-stereo.caf": ("-c:a pcm_f32le", 22050, 2, 32, True, True),
+    "caf-f64be-mono.caf": ("-c:a pcm_f64be", 22050, 1, 32, True, True),
+    "caf-ulaw-mono.caf": ("-c:a pcm_mulaw", 8000, 1, 16, False, True),
+    "caf-alaw-mono.caf": ("-c:a pcm_alaw", 8000, 1, 16, False, True),
+    "caf-alac-stereo.caf": ("-sample_fmt s16p -c:a alac", 44100, 2, 16, False, True),
+    "caf-alac-24-51.caf": ("-sample_fmt s32p -c:a alac", 48000, 6, 24, False, True),
+    "caf-opus-stereo.caf": ("-c:a libopus -b:a 96k", 48000, 2, 16, False, False),
+    "caf-mp3-stereo.caf": ("-c:a libmp3lame -b:a 128k", 44100, 2, 16, False, False),
+    "caf-ac3-stereo.caf": ("-c:a ac3 -b:a 192k", 48000, 2, 16, False, False),
+    "caf-tags.caf": ("-c:a pcm_s16le -metadata title='Corpus tone' -metadata artist=Egami -metadata album='Egami corpus'"
+                     " -metadata comment='Test clip'", 22050, 1, 16, False, True),
+}
+
+
+def make_caf(local):
+    os.makedirs(CAF_OUT, exist_ok=True)
+
+    def output(command):
+        if local:
+            return subprocess.run(["sh", "-c", command.replace("/work/", CAF_OUT + "/")], check=True, capture_output=True).stdout
+        return subprocess.run(["docker", "run", "--rm", "-v", f"{CAF_OUT}:/work", IMAGE, "sh", "-c", command], check=True,
+                              capture_output=True).stdout
+
+    manifest = {}
+    for name, (args, rate, channels, bits, is_float, lossless) in CAF_CLIPS.items():
+        path = os.path.join(CAF_OUT, name)
+        if os.path.exists(path):
+            os.remove(path)
+        output("ffmpeg -y -v error -bitexact " + source(rate, channels, 0.3) + f" {args} /work/{name}")
+        probe = json.loads(output(f"ffprobe -v error -count_packets -show_streams -of json /work/{name}"))["streams"][0]
+        entry = {"packets": int(probe["nb_read_packets"]), "rate": rate, "channels": channels}
+        if lossless:
+            codec = "pcm_f32le" if is_float else {8: "pcm_s8", 16: "pcm_s16le", 24: "pcm_s24le", 32: "pcm_s32le"}[bits]
+            fmt = "f32le" if is_float else {8: "s8", 16: "s16le", 24: "s24le", 32: "s32le"}[bits]
+            raw = output(f"ffmpeg -v error -i /work/{name} -c:a {codec} -f {fmt} -")
+            width = 4 if is_float else (bits + 7) // 8
+            entry.update({"samples": len(raw) // (width * channels), "bits": bits, "float": is_float, "md5": hashlib.md5(raw).hexdigest()})
+        else:
+            entry["decodes"] = False
+        manifest[name] = entry
+        print(name, os.path.getsize(path), entry)
+    with open(os.path.join(CAF_OUT, "manifest.json"), "w", newline="\n") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+
+
 def gates():
     """Compares .cache/audio/gates/L<n> (Egami.Video's FLAC) with libFLAC at the same level; prints sizes and flac -d's time."""
     gates_dir = os.path.join(CACHE, "gates")
@@ -359,6 +419,9 @@ if __name__ == "__main__":
         sys.exit(1 if check(sys.argv[sys.argv.index("--check") + 1]) else 0)
     if "--opus" in sys.argv:
         make_opus()
+        sys.exit(0)
+    if "--caf" in sys.argv:
+        make_caf("--local" in sys.argv)
         sys.exit(0)
     if "--aiff" in sys.argv:
         make_aiff("--local" in sys.argv)
