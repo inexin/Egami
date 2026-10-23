@@ -1154,6 +1154,11 @@ are found on the finalizer thread after the call has ended; see <a href="guides/
 <td>The raster's LoopCount was not 0; ANI animations always loop, so it was not written</td>
 </tr>
 <tr>
+<td><code>Save.AniTooLarge</code></td>
+<td>Warning</td>
+<td><code>AniWriterOptions.Encoding</code> is BMP at sizes whose entries do not all start within a frame's first 64 KiB, so Windows will not load the cursor</td>
+</tr>
+<tr>
 <td><code>Save.ColorsQuantized</code></td>
 <td>Warning</td>
 <td>The image has more colors than the palette holds; it was reduced</td>

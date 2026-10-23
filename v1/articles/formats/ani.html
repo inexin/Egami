@@ -137,6 +137,10 @@ spinner that comes back to its first picture costs nothing extra. Every stored f
 <p><code>AniWriterOptions</code> has the same words as <code>IcoWriterOptions</code>. <code>Sizes</code> gives every stored frame each size, from the frame resized
 with <code>Filter</code>; <code>AniWriterOptions.CursorSizes</code> (32, 48, 64, 96 and 128) are the sizes Windows draws cursors at as the display
 scale grows. Without <code>Sizes</code> the frames keep the raster's size, fitted down to 256 with the <code>Save.IcoFitted</code> warning when larger.
+With several sizes and no <code>Encoding</code>, every entry of every frame has one encoding: 32-bit BMP while each entry starts within the
+frame's first 64 KiB, else PNG, as for the five cursor sizes. Windows loads no animated cursor with an entry past that point,
+and given BMP and PNG entries in one frame it may draw a BMP entry of another size. <code>Encoding = IcoEntryEncoding.Bmp</code> at sizes
+that cannot fit is written as asked, with the <code>Save.AniTooLarge</code> warning.
 <code>Hotspot</code> sets every frame's hotspot at the raster's size, scaled to each entry; without it each frame keeps its own
 <code>IcoDetails.Hotspot</code>, so a cursor loaded from ANI or CUR saves with its hotspots. <code>Title</code> and <code>Artist</code> go into the <code>INFO</code> list,
 or come from a loaded cursor's <code>AniDetails</code>, else from the raster's <code>Title</code> and <code>Author</code> text entries, unless <code>StripMetadata</code>
