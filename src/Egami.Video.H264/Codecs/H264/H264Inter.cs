@@ -349,6 +349,22 @@ internal sealed class H264Inter
             Vector128<short> sw0 = Vector128.Create((short)w0), sw1 = Vector128.Create((short)w1), sRound = Vector128.Create((short)round),
                 sOffset = Vector128.Create((short)offset), sMax = Vector128.Create((short)max);
             bool average = w0 == w1 && offset == 0 && shift >= 1 && w0 == 1 << (shift - 1) && round == w0;
+            if (w == 16 && Vector256.IsHardwareAccelerated)
+            {
+                Vector256<short> lw0 = Vector256.Create((short)w0), lw1 = Vector256.Create((short)w1), lRound = Vector256.Create((short)round),
+                    lOffset = Vector256.Create((short)offset), lMax = Vector256.Create((short)max);
+                for (int y = 0; y < h; y++)
+                {
+                    nuint i = (nuint)(y * PredStride);
+                    Vector256<short> p0 = Vector256.LoadUnsafe(ref a, i).AsInt16(), p1 = Vector256.LoadUnsafe(ref b, i).AsInt16();
+                    Vector256<short> v = average ? (p0 + p1 + Vector256<short>.One) >>> 1
+                        : Vector256.Min(Vector256.Max((((p0 * lw0) + (p1 * lw1) + lRound) >> shift) + lOffset, Vector256<short>.Zero), lMax);
+                    H264Samples.Store16(ref d, y * stride, v);
+                }
+
+                return;
+            }
+
             for (int y = 0; y < h; y++)
             {
                 for (int x = 0; x < w; x += 8)
@@ -367,7 +383,14 @@ internal sealed class H264Inter
                         v = Vector128.Min(Vector128.Max(v, Vector128<short>.Zero), sMax);
                     }
 
-                    if (w == 4)                    {                        H264Samples.Store4(ref d, (y * stride) + x, v.AsInt16());                    }                    else                    {                        H264Samples.Store8(ref d, (y * stride) + x, v.AsInt16());                    }
+                    if (w == 4)
+                    {
+                        H264Samples.Store4(ref d, (y * stride) + x, v.AsInt16());
+                    }
+                    else
+                    {
+                        H264Samples.Store8(ref d, (y * stride) + x, v.AsInt16());
+                    }
                 }
             }
 
@@ -390,7 +413,14 @@ internal sealed class H264Inter
                     lo = Vector128.Min(Vector128.Max(lo, Vector128<int>.Zero), iMax);
                     hi = Vector128.Min(Vector128.Max(hi, Vector128<int>.Zero), iMax);
                     Vector128<ushort> v = Vector128.Narrow(lo.AsUInt32(), hi.AsUInt32());
-                    if (w == 4)                    {                        H264Samples.Store4(ref d, (y * stride) + x, v.AsInt16());                    }                    else                    {                        H264Samples.Store8(ref d, (y * stride) + x, v.AsInt16());                    }
+                    if (w == 4)
+                    {
+                        H264Samples.Store4(ref d, (y * stride) + x, v.AsInt16());
+                    }
+                    else
+                    {
+                        H264Samples.Store8(ref d, (y * stride) + x, v.AsInt16());
+                    }
                 }
             }
 
@@ -410,7 +440,14 @@ internal sealed class H264Inter
                 lo = Vector128.Min(Vector128.Max(lo, Vector128<int>.Zero), vMax);
                 hi = Vector128.Min(Vector128.Max(hi, Vector128<int>.Zero), vMax);
                 Vector128<ushort> v = Vector128.Narrow(lo.AsUInt32(), hi.AsUInt32());
-                if (w == 4)                {                    H264Samples.Store4(ref d, (y * stride) + x, v.AsInt16());                }                else                {                    H264Samples.Store8(ref d, (y * stride) + x, v.AsInt16());                }
+                if (w == 4)
+                {
+                    H264Samples.Store4(ref d, (y * stride) + x, v.AsInt16());
+                }
+                else
+                {
+                    H264Samples.Store8(ref d, (y * stride) + x, v.AsInt16());
+                }
             }
         }
     }
@@ -432,8 +469,7 @@ internal sealed class H264Inter
             switch (w)
             {
                 case 16:
-                    H264Samples.Store8(ref d, y * stride, Vector128.LoadUnsafe(ref from).AsInt16());
-                    H264Samples.Store8(ref d, (y * stride) + 8, Vector128.LoadUnsafe(ref from, 8).AsInt16());
+                    H264Samples.Store16(ref d, y * stride, Vector256.LoadUnsafe(ref from).AsInt16());
                     break;
                 case 8:
                     H264Samples.Store8(ref d, y * stride, Vector128.LoadUnsafe(ref from).AsInt16());
@@ -460,6 +496,17 @@ internal sealed class H264Inter
             ref ushort a = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(into), po);
             ref ushort b = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(other), po);
             Vector128<ushort> one = Vector128<ushort>.One;
+            if (w == 16 && Vector256.IsHardwareAccelerated)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    nuint i = (nuint)(y * PredStride);
+                    ((Vector256.LoadUnsafe(ref a, i) + Vector256.LoadUnsafe(ref b, i) + Vector256<ushort>.One) >>> 1).StoreUnsafe(ref a, i);
+                }
+
+                return;
+            }
+
             for (int y = 0; y < h; y++)
             {
                 for (int x = 0; x < w; x += 8)
@@ -618,6 +665,16 @@ internal sealed class H264Inter
         CheckReach(src, at, stride, h);
         ref T s = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at);
         ref ushort d = ref MemoryMarshal.GetArrayDataReference(dst);
+        if (w == 16 && Vector256.IsHardwareAccelerated)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                H264Samples.Load16(ref s, j * stride).AsUInt16().StoreUnsafe(ref d, (nuint)(j * PredStride));
+            }
+
+            return;
+        }
+
         for (int j = 0; j < h; j++)
         {
             for (int i = 0; i < w; i += 8)
@@ -630,6 +687,13 @@ internal sealed class H264Inter
     private static Vector128<short> Tap(Vector128<short> a, Vector128<short> b, Vector128<short> c, Vector128<short> d, Vector128<short> e, Vector128<short> f) =>
         ((c + d) * (short)20) - ((b + e) * (short)5) + (a + f);
 
+    private static Vector256<short> Tap(Vector256<short> a, Vector256<short> b, Vector256<short> c, Vector256<short> d, Vector256<short> e, Vector256<short> f) =>
+        ((c + d) * (short)20) - ((b + e) * (short)5) + (a + f);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Load16<T>(ref T at, int offset)
+        where T : unmanaged => H264Samples.Load16(ref at, offset);
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<short> Load<T>(ref T at, int offset)
         where T : unmanaged => H264Samples.Load8(ref at, offset);
@@ -641,6 +705,19 @@ internal sealed class H264Inter
         CheckReach(src, at, stride, h);
         ref T s0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at - 2);
         ref ushort d = ref MemoryMarshal.GetArrayDataReference(dst);
+        if (w == 16 && Vector256.IsHardwareAccelerated)
+        {
+            Vector256<short> wideRound = Vector256.Create((short)16), wideTop = Vector256.Create((short)max);
+            for (int j = 0; j < h; j++)
+            {
+                ref T s = ref Unsafe.Add(ref s0, j * stride);
+                Vector256<short> t = Tap(Load16(ref s, 0), Load16(ref s, 1), Load16(ref s, 2), Load16(ref s, 3), Load16(ref s, 4), Load16(ref s, 5));
+                Vector256.Min(Vector256.Max((t + wideRound) >> 5, Vector256<short>.Zero), wideTop).AsUInt16().StoreUnsafe(ref d, (nuint)(j * PredStride));
+            }
+
+            return;
+        }
+
         Vector128<short> round = Vector128.Create((short)16), top = Vector128.Create((short)max);
         for (int j = 0; j < h; j++)
         {
@@ -661,6 +738,22 @@ internal sealed class H264Inter
         CheckReach(src, at, stride, h);
         ref T s0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at - (2 * stride));
         ref ushort d = ref MemoryMarshal.GetArrayDataReference(dst);
+        if (w == 16 && Vector256.IsHardwareAccelerated)
+        {
+            Vector256<short> wideRound = Vector256.Create((short)16), wideTop = Vector256.Create((short)max);
+            Vector256<short> a = Load16(ref s0, 0), b = Load16(ref s0, stride), c = Load16(ref s0, 2 * stride), e = Load16(ref s0, 3 * stride),
+                f = Load16(ref s0, 4 * stride);
+            for (int j = 0; j < h; j++)
+            {
+                Vector256<short> g = Load16(ref s0, (j + 5) * stride);
+                Vector256<short> t = Tap(a, b, c, e, f, g);
+                Vector256.Min(Vector256.Max((t + wideRound) >> 5, Vector256<short>.Zero), wideTop).AsUInt16().StoreUnsafe(ref d, (nuint)(j * PredStride));
+                (a, b, c, e, f) = (b, c, e, f, g);
+            }
+
+            return;
+        }
+
         Vector128<short> round = Vector128.Create((short)16), top = Vector128.Create((short)max);
         for (int i = 0; i < w; i += 8)
         {
