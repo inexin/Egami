@@ -256,6 +256,40 @@ public class VideoAnalysis
         Assert.NotEmpty(meter.ShortTermSeries);
     }
 
+    [Fact]
+    public void Pictures()
+    {
+        using SampleFiles files = new();
+        WriteClip("shots.mkv");
+
+        #region analysis-pictures
+        // A waveform with each channel in its own strip, and a spectrogram on a logarithmic frequency axis in magma colors.
+        using Raster<Rgba8> waveform = AudioPictures.Waveform("shots.mkv", new WaveformOptions
+        {
+            Width = 1200,
+            Height = 240,
+            Channels = AudioPictureChannels.Stacked,
+        });
+        waveform.Save("waveform.png");
+
+        using Raster<Rgba8> spectrogram = AudioPictures.Spectrogram("shots.mkv", new SpectrogramOptions
+        {
+            Width = 1200,
+            Height = 400,
+            Scale = FrequencyScale.Logarithmic,
+            Floor = -100,
+        });
+        spectrogram.Save("spectrogram.png");
+        #endregion
+
+        Assert.Equal(1200, waveform.Width);
+        Assert.Equal(400, spectrogram.Height);
+
+        // The -18 dBFS tone reaches an eighth of each strip's half height from its middle.
+        int top = Enumerable.Range(0, 120).First(y => waveform.Row(y)[600].A != 0);
+        Assert.InRange(top, 51, 53);
+    }
+
     private sealed class DarkestFrame : IVideoDetector
     {
         private double _lowest = double.MaxValue;

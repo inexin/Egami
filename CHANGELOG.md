@@ -412,6 +412,16 @@ V1.4 stage C: audio detectors and the loudness meter.
   faster than real time on 48 kHz stereo, and is the meter V9.1's loudness normalization will use.
 - No detector allocates memory per frame once running.
 
+V1.4 stage D: audio pictures.
+
+- `AudioPictures.Waveform` draws each column's min-to-max outline with the RMS level shaded inside, linear or in dB, with the
+  channels together or stacked (`WaveformOptions`); about 800 times faster than real time on 48 kHz stereo.
+- `AudioPictures.Spectrogram` draws a Hann-windowed FFT per column (2048 samples by default) from -120 to 0 dBFS in magma or
+  grayscale, on a linear or logarithmic frequency axis, mixed or per channel (`SpectrogramOptions`); a row that spans several
+  bins shows the strongest, so pure tones never fall between rows. About 400 times faster than real time at 1800 x 512.
+- Both read a file or any run of `AudioFrame`s once with constant memory: three hours of audio cost no more than three
+  seconds. The pictures carry no text; the CLI adds axes and legends.
+
 V5.3: VP9 encoding. API review pending (combined encoders review).
 
 ### VP9 encoding
