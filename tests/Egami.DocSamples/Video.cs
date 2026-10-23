@@ -529,6 +529,61 @@ public class Video
     }
 
     [Fact]
+    public void Mp4Fragments()
+    {
+        using SampleFiles files = new();
+        using CancellationTokenSource cts = new();
+
+        #region video-fragments
+        // Fragmented MP4: moov first with only the setup, then the media in two-second moof and mdat pairs as it comes. A
+        // stream that cannot seek, such as a blob upload, gets it by default, with an mp4-fragmented warning.
+        using (Stream source = File.OpenRead("movie.webm"))
+        using (Stream upload = File.Create("movie.mp4"))
+        {
+            MediaFile.Remux(source, upload, "mp4", leaveOpen: true, cancellationToken: cts.Token);
+        }
+
+        // Ask for fragments on any output, with other cuts: here a fragment a second, at most 8 MB.
+        Mp4Format fragmented = new() { Fragments = new Mp4FragmentOptions { Duration = TimeSpan.FromSeconds(1), MaxBytes = 8 << 20 } };
+        MediaContext context = MediaContext.Default.WithContainer(fragmented);
+        MediaFile.Remux("movie.webm", "fragmented.mp4", context: context, cancellationToken: cts.Token);
+
+        // Or keep flat MP4 on forward-only streams, the media waiting in a temporary file until moov is written.
+        MediaContext flat = MediaContext.Default.WithContainer(new Mp4Format { NonSeekable = Mp4NonSeekableLayout.TempFile });
+        #endregion
+
+        Assert.NotNull(flat);
+
+        Assert.True(File.ReadAllBytes("fragmented.mp4").AsSpan().IndexOf("moof"u8) > 0);
+    }
+
+    [Fact]
+    public void Mp4Segments()
+    {
+        using SampleFiles files = new();
+
+        #region video-segments
+        // HLS and DASH: an init segment and six-second media segments a track, master.m3u8 and manifest.mpd, in a folder.
+        // Another constructor takes a Func<string, Stream> that opens each file, for blob storage.
+        using IDemuxer demuxer = MediaFile.OpenDemuxer("movie.webm");
+        using (Mp4SegmentWriter writer = new("stream", demuxer.Tracks, options: new Mp4SegmentOptions { SegmentDuration = TimeSpan.FromSeconds(6) }))
+        {
+            while (demuxer.ReadPacket() is { } packet)
+            {
+                using (packet)
+                {
+                    writer.WritePacket(packet);
+                }
+            }
+        }
+        #endregion
+
+        Assert.True(File.Exists(Path.Combine("stream", "master.m3u8")));
+        Assert.True(File.Exists(Path.Combine("stream", "manifest.mpd")));
+        Assert.True(File.Exists(Path.Combine("stream", "video1-init.mp4")));
+    }
+
+    [Fact]
     public void ReadAv1()
     {
         using SampleFiles files = new();

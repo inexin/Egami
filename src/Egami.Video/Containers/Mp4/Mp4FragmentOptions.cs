@@ -6,7 +6,7 @@ namespace Egami.Video.Containers;
 /// fragment starts at the first video keyframe after <see cref="Duration"/>; audio-only files cut every <see cref="Duration"/>.
 /// </summary>
 /// <example>
-/// <code language="csharp" source="../../tests/Egami.DocSamples/Video.cs" region="video-fragments"/>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Video.cs" region="video-fragments"/>
 /// </example>
 public sealed record Mp4FragmentOptions
 {
@@ -21,6 +21,9 @@ public sealed record Mp4FragmentOptions
 }
 
 /// <summary>What <see cref="Mp4Format"/> writes to a stream that cannot seek and read back (V4.3 Design Q2).</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Video.cs" region="video-fragments"/>
+/// </example>
 public enum Mp4NonSeekableLayout
 {
     /// <summary>Fragmented MP4 with the default <see cref="Mp4FragmentOptions"/>, written as it goes, with an mp4-fragmented warning.</summary>

@@ -12,7 +12,7 @@ namespace Egami.Video.Containers;
 /// playlists and encryption are not written (Q8, Q9).
 /// </summary>
 /// <example>
-/// <code language="csharp" source="../../tests/Egami.DocSamples/Video.cs" region="video-segments"/>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Video.cs" region="video-segments"/>
 /// </example>
 public sealed class Mp4SegmentWriter : IMuxer
 {
@@ -34,6 +34,9 @@ public sealed class Mp4SegmentWriter : IMuxer
     /// <param name="options">The options, or <see langword="null"/> for the defaults.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
     /// <exception cref="NotSupportedException">A track is not audio or video, or MP4 cannot hold its codec.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Video.cs" region="video-segments"/>
+    /// </example>
     public Mp4SegmentWriter(string folder, IReadOnlyList<TrackInfo> tracks, MediaMetadata? metadata = null, Mp4SegmentOptions? options = null, MediaContext? context = null)
         : this(InFolder(folder), tracks, metadata, options, context)
     {
@@ -49,6 +52,9 @@ public sealed class Mp4SegmentWriter : IMuxer
     /// <param name="options">The options, or <see langword="null"/> for the defaults.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
     /// <exception cref="NotSupportedException">A track is not audio or video, or MP4 cannot hold its codec.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Video.cs" region="video-segments"/>
+    /// </example>
     public Mp4SegmentWriter(Func<string, Stream> open, IReadOnlyList<TrackInfo> tracks, MediaMetadata? metadata = null, Mp4SegmentOptions? options = null, MediaContext? context = null)
     {
         ArgumentNullException.ThrowIfNull(open);
@@ -222,6 +228,9 @@ public sealed class Mp4SegmentWriter : IMuxer
 }
 
 /// <summary>Which playlists <see cref="Mp4SegmentWriter"/> writes with its segments (V4.3 Design Q7).</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Video.cs" region="video-segments"/>
+/// </example>
 [Flags]
 public enum SegmentPlaylists
 {
@@ -236,6 +245,9 @@ public enum SegmentPlaylists
 }
 
 /// <summary>How <see cref="Mp4SegmentWriter"/> cuts segments and which playlists it writes.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Video.cs" region="video-segments"/>
+/// </example>
 public sealed record Mp4SegmentOptions
 {
     /// <summary>Gets how long a segment lasts at least, up to the next video keyframe. Default 6 seconds, as Apple's HLS authoring spec suggests.</summary>
