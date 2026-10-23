@@ -157,7 +157,7 @@ egami-video ffprobe -v error -show_entries format=duration -of default=noprint_w
 <td><code>animate</code></td>
 </tr>
 <tr>
-<td><code>-vn</code>, <code>-c:a flac</code>, <code>-ar</code>, <code>-ac</code>, <code>-sample_fmt</code></td>
+<td><code>-vn</code>, <code>-c:a flac</code>, <code>-c:a libopus</code>, <code>-b:a</code>, <code>-ar</code>, <code>-ac</code>, <code>-sample_fmt</code></td>
 <td><code>audio</code></td>
 </tr>
 <tr>
@@ -175,11 +175,11 @@ in a warning. An output that exists needs <code>-y</code>, as in ffmpeg.</p>
 <h2 id="the-options">The options</h2>
 <p>ffmpeg mode takes <code>-i</code>, <code>-f</code>, <code>-y</code>, <code>-n</code>, <code>-ss</code>, <code>-to</code>, <code>-t</code>, <code>-itsoffset</code>, <code>-framerate</code>, <code>-safe</code>, <code>-map</code>, <code>-c</code>, <code>-codec</code>, <code>-c:v</code>,
 <code>-c:a</code>, <code>-c:s</code>, <code>-vcodec</code>, <code>-acodec</code>, <code>-scodec</code>, <code>-an</code>, <code>-vn</code>, <code>-sn</code>, <code>-dn</code>, <code>-r</code>, <code>-s</code>, <code>-frames:v</code>, <code>-vframes</code>, <code>-q:v</code>,
-<code>-qscale:v</code>, <code>-ar</code>, <code>-ac</code>, <code>-sample_fmt</code>, <code>-metadata</code>, <code>-map_metadata</code>, <code>-map_chapters</code>, <code>-vf</code>, <code>-filter:v</code>, <code>-lavfi</code> and
+<code>-qscale:v</code>, <code>-ar</code>, <code>-b:a</code>, <code>-ab</code>, <code>-ac</code>, <code>-sample_fmt</code>, <code>-metadata</code>, <code>-map_metadata</code>, <code>-map_chapters</code>, <code>-vf</code>, <code>-filter:v</code>, <code>-lavfi</code> and
 <code>-filter_complex</code> (psnr and ssim), <code>-segment_time</code>, <code>-segment_times</code>, <code>-update</code>, <code>-progress</code>, <code>-stats</code>, <code>-nostats</code>,
 <code>-stats_period</code>, <code>-hide_banner</code>, <code>-loglevel</code>, <code>-v</code> and <code>-nostdin</code>, with <code>pipe:</code> and <code>%d</code> patterns. The filters are scale, crop,
-pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile. Codecs: <code>copy</code>, <code>mjpeg</code> and <code>rawvideo</code> for video, <code>flac</code>
-and the <code>pcm_</code> codecs for audio.</p>
+pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile. Codecs: <code>copy</code>, <code>mjpeg</code> and <code>rawvideo</code> for video, <code>flac</code>,
+<code>libopus</code> (or <code>opus</code>) and the <code>pcm_</code> codecs for audio.</p>
 <p>ffprobe mode takes <code>-i</code>, <code>-show_streams</code>, <code>-show_format</code>, <code>-show_packets</code>, <code>-show_frames</code>, <code>-show_chapters</code>, <code>-select_streams</code>,
 <code>-show_entries</code>, <code>-of</code> (also <code>-print_format</code>, <code>-output_format</code>) with the json, csv, compact, default, flat and xml writers and
 their <code>nokey</code>, <code>noprint_wrappers</code>, <code>print_section</code> and <code>item_sep</code> options, <code>-v</code>, <code>-loglevel</code>, <code>-hide_banner</code> and <code>-pretty</code>. Its
