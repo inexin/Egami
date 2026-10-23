@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Vp8FramePlan | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Vp8FramePlan | Egami ">
+      
+      <meta name="description" content="How  codes one frame: its type, quality and references.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Webp_Vp8FramePlan.md&amp;value=---%0Auid%3A%20Egami.Formats.Webp.Vp8FramePlan%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Webp.Vp8FramePlan">
+
+
+
+  <h1 id="Egami_Formats_Webp_Vp8FramePlan" data-uid="Egami.Formats.Webp.Vp8FramePlan" class="text-break">
+Class Vp8FramePlan  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L255"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Webp.html">Webp</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>How <a class="xref" href="Egami.Formats.Webp.Vp8StreamEncoder.html#Egami_Formats_Webp_Vp8StreamEncoder_Encode_Egami_YuvRaster_System_Byte__Egami_Formats_Webp_Vp8FramePlan_">Encode(YuvRaster&lt;byte&gt;, Vp8FramePlan)</a> codes one frame: its type, quality and references.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record Vp8FramePlan : IEquatable&lt;Vp8FramePlan&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Vp8FramePlan</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Formats.Webp.Vp8FramePlan.html">Vp8FramePlan</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Webp_Vp8FramePlan_examples">Examples</h2>
+  <pre><code class="lang-csharp">// 4:2:0 pictures of one size, here decoded from a clip; Egami.Video writes WebM and IVF and plans the frames for you.
+using Vp8StreamEncoder encoder = new(pictures[0].Width, pictures[0].Height);
+for (int i = 0; i &lt; pictures.Count; i++)
+{
+    Vp8FramePlan plan = new()
+    {
+        KeyFrame = i % 30 == 0,     // a key frame a second at 30 frames a second
+        RefreshGolden = i % 10 == 0, // and a golden frame to fall back on every tenth
+        Quality = 70,
+    };
+    Vp8EncodedFrame frame = encoder.Encode(pictures[i], plan);
+    packets.Add(frame.Data.ToArray()); // a WebM block or an IVF frame; frame.LumaPsnr says how close it came
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_AlternateSignBias_" data-uid="Egami.Formats.Webp.Vp8FramePlan.AlternateSignBias*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_AlternateSignBias" data-uid="Egami.Formats.Webp.Vp8FramePlan.AlternateSignBias">
+  AlternateSignBias
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L333"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the alternate frame's vectors point the other way, as for a hidden alternate frame in the future.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AlternateSignBias { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_CopyToAlternate_" data-uid="Egami.Formats.Webp.Vp8FramePlan.CopyToAlternate*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_CopyToAlternate" data-uid="Egami.Formats.Webp.Vp8FramePlan.CopyToAlternate">
+  CopyToAlternate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L327"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what an inter frame that does not refresh the alternate frame copies into it first: nothing, the last frame or the
+golden frame, as they were before this frame (the golden copy, if any, comes after).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Vp8ReferenceCopy CopyToAlternate { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Webp.Vp8ReferenceCopy.html">Vp8ReferenceCopy</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_CopyToGolden_" data-uid="Egami.Formats.Webp.Vp8FramePlan.CopyToGolden*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_CopyToGolden" data-uid="Egami.Formats.Webp.Vp8FramePlan.CopyToGolden">
+  CopyToGolden
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L321"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what an inter frame that does not refresh the golden frame copies into it first: nothing, the last frame or the
+alternate frame, as they were before this frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Vp8ReferenceCopy CopyToGolden { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Webp.Vp8ReferenceCopy.html">Vp8ReferenceCopy</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_Default_" data-uid="Egami.Formats.Webp.Vp8FramePlan.Default*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_Default" data-uid="Egami.Formats.Webp.Vp8FramePlan.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L264"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the plan of an inter frame against all references that refreshes the last frame, at the default quality and effort.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Vp8FramePlan Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Webp.Vp8FramePlan.html">Vp8FramePlan</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_Effort_" data-uid="Egami.Formats.Webp.Vp8FramePlan.Effort*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_Effort" data-uid="Egami.Formats.Webp.Vp8FramePlan.Effort">
+  Effort
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L296"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how hard the encoder works, 0 (fastest) to 10 (smallest frames): how far and how finely it searches for motion,
+whether it tries split vectors and every intra mode, and whether it tries loop filter levels. Defaults to 4.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Effort { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 10.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_FilterLevel_" data-uid="Egami.Formats.Webp.Vp8FramePlan.FilterLevel*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_FilterLevel" data-uid="Egami.Formats.Webp.Vp8FramePlan.FilterLevel">
+  FilterLevel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L351"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the loop filter level, 0 (off) to 63; null (the default) for the encoder to choose it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? FilterLevel { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 63.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_GoldenSignBias_" data-uid="Egami.Formats.Webp.Vp8FramePlan.GoldenSignBias*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_GoldenSignBias" data-uid="Egami.Formats.Webp.Vp8FramePlan.GoldenSignBias">
+  GoldenSignBias
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L330"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the golden frame's vectors point the other way, as for a golden frame in the future.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool GoldenSignBias { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_KeyFrame_" data-uid="Egami.Formats.Webp.Vp8FramePlan.KeyFrame*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_KeyFrame" data-uid="Egami.Formats.Webp.Vp8FramePlan.KeyFrame">
+  KeyFrame
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L267"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the frame is a key frame, which decodes on its own and refreshes every reference.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool KeyFrame { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_Partitions_" data-uid="Egami.Formats.Webp.Vp8FramePlan.Partitions*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_Partitions" data-uid="Egami.Formats.Webp.Vp8FramePlan.Partitions">
+  Partitions
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L343"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the number of token partitions, 1, 2, 4 or 8: one is smallest, more let decoders work in parallel. Defaults to 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Partitions { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not 1, 2, 4 or 8.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_Quality_" data-uid="Egami.Formats.Webp.Vp8FramePlan.Quality*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_Quality" data-uid="Egami.Formats.Webp.Vp8FramePlan.Quality">
+  Quality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L274"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the quality, 0 (smallest) to 100 (best), on the scale of lossy WebP's quality. Defaults to 75. Ignored when
+<a class="xref" href="Egami.Formats.Webp.Vp8FramePlan.html#Egami_Formats_Webp_Vp8FramePlan_Quantizer">Quantizer</a> is set.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Quality { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_Quantizer_" data-uid="Egami.Formats.Webp.Vp8FramePlan.Quantizer*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_Quantizer" data-uid="Egami.Formats.Webp.Vp8FramePlan.Quantizer">
+  Quantizer
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L285"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets VP8's quantizer index, 0 (finest) to 127, which rate control sets to replace <a class="xref" href="Egami.Formats.Webp.Vp8FramePlan.html#Egami_Formats_Webp_Vp8FramePlan_Quality">Quality</a>; null (the
+default) to use the quality. A key frame with a quantizer has one quantizer for the whole frame instead of four segments.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? Quantizer { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 127.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_References_" data-uid="Egami.Formats.Webp.Vp8FramePlan.References*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_References" data-uid="Egami.Formats.Webp.Vp8FramePlan.References">
+  References
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L306"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets which references an inter frame may predict from. Defaults to all; with none, every macroblock is intra.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Vp8References References { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Webp.Vp8References.html">Vp8References</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_RefreshAlternate_" data-uid="Egami.Formats.Webp.Vp8FramePlan.RefreshAlternate*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_RefreshAlternate" data-uid="Egami.Formats.Webp.Vp8FramePlan.RefreshAlternate">
+  RefreshAlternate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L315"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether an inter frame becomes the alternate frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool RefreshAlternate { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_RefreshEntropy_" data-uid="Egami.Formats.Webp.Vp8FramePlan.RefreshEntropy*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_RefreshEntropy" data-uid="Egami.Formats.Webp.Vp8FramePlan.RefreshEntropy">
+  RefreshEntropy
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L339"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the frame's probability updates carry over to the frames after it. Defaults to true; false makes the stream
+error resilient, as real-time streams want: a lost frame then does not spoil the probabilities of the next.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool RefreshEntropy { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_RefreshGolden_" data-uid="Egami.Formats.Webp.Vp8FramePlan.RefreshGolden*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_RefreshGolden" data-uid="Egami.Formats.Webp.Vp8FramePlan.RefreshGolden">
+  RefreshGolden
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L312"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether an inter frame becomes the golden frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool RefreshGolden { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_RefreshLast_" data-uid="Egami.Formats.Webp.Vp8FramePlan.RefreshLast*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_RefreshLast" data-uid="Egami.Formats.Webp.Vp8FramePlan.RefreshLast">
+  RefreshLast
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L309"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether an inter frame becomes the last frame. Defaults to true.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool RefreshLast { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Webp_Vp8FramePlan_Show_" data-uid="Egami.Formats.Webp.Vp8FramePlan.Show*"></a>
+
+  <h3 id="Egami_Formats_Webp_Vp8FramePlan_Show" data-uid="Egami.Formats.Webp.Vp8FramePlan.Show">
+  Show
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L303"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the frame is shown. A hidden frame, typically an alternate reference, only updates the references. Defaults to true.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Show { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Webp/Vp8StreamEncoder.cs/#L255" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

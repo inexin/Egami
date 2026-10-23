@@ -7811,6 +7811,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Webp.Vp8EncodedFrame.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Webp.Vp8EncodedFrame.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Webp.Vp8EncodedFrame",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Webp.Vp8EncodedFrame.yml\" sourcestartlinenumber=\"1\">One frame <xref href=\"Egami.Formats.Webp.Vp8StreamEncoder.Encode(Egami.YuvRaster%7bSystem.Byte%7d%2cEgami.Formats.Webp.Vp8FramePlan)\" data-throw-if-not-resolved=\"false\"></xref> wrote, and what it cost.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Webp.Vp8FrameInfo.yml",
       "output": {
         ".html": {
@@ -7825,6 +7839,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Webp.Vp8FramePlan.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Webp.Vp8FramePlan.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Webp.Vp8FramePlan",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Webp.Vp8FramePlan.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Formats.Webp.Vp8StreamEncoder.Encode(Egami.YuvRaster%7bSystem.Byte%7d%2cEgami.Formats.Webp.Vp8FramePlan)\" data-throw-if-not-resolved=\"false\"></xref> codes one frame: its type, quality and references.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Webp.Vp8ReferenceCopy.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Webp.Vp8ReferenceCopy.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Webp.Vp8ReferenceCopy",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Webp.Vp8ReferenceCopy.yml\" sourcestartlinenumber=\"1\">A reference a VP8 inter frame copies into the golden or alternate frame.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Webp.Vp8References.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Webp.Vp8References.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Webp.Vp8References",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Webp.Vp8References.yml\" sourcestartlinenumber=\"1\">The references a VP8 inter frame may predict from.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Webp.Vp8StreamDecoder.yml",
       "output": {
         ".html": {
@@ -7836,6 +7892,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Webp.Vp8StreamDecoder",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Webp.Vp8StreamDecoder.yml\" sourcestartlinenumber=\"1\">Decodes a VP8 video stream (RFC 6386) a frame at a time, as WebM and IVF files carry it: key frames and inter frames, with the\nlast, golden and alternate references, motion vectors and hidden frames. The frames equal libvpx's sample for sample. Feed the\nframes in stream order; decoding starts at a key frame. Containers are not read here: Egami.Video reads WebM and IVF and uses\nthis decoder, and any other source of VP8 frames can too.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Webp.Vp8StreamEncoder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Webp.Vp8StreamEncoder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Webp.Vp8StreamEncoder",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Webp.Vp8StreamEncoder.yml\" sourcestartlinenumber=\"1\">Encodes a VP8 video stream (RFC 6386) a frame at a time: key frames, and inter frames that search the last, golden and\nalternate references for motion and code every VP8 vector mode. Each frame's <xref href=\"Egami.Formats.Webp.Vp8FramePlan\" data-throw-if-not-resolved=\"false\"></xref> says what it is (key\nor inter, shown or hidden), its quality or quantizer, and which references it uses and refreshes, so rate control and\ngroup-of-frames planning stay with the caller: Egami.Video drives this encoder for WebM, MKV and IVF, and any other source of\nframes can too. The frames decode in libvpx exactly as in <xref href=\"Egami.Formats.Webp.Vp8StreamDecoder\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",

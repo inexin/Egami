@@ -50,7 +50,7 @@ settings, safety limits and registered formats a call uses.
 - [Radiance](https://inexin.github.io/Egami/v1/articles/formats/radiance.html): Radiance pictures hold three 8-bit mantissas and a shared exponent per pixel (RGBE), or CIE X, Y and Z the same way (XYZE).
 - [TGA](https://inexin.github.io/Egami/v1/articles/formats/tga.html): Egami reads Truevision TGA files.
 - [TIFF](https://inexin.github.io/Egami/v1/articles/formats/tiff.html): Egami reads and writes TIFF and BigTIFF, written from the TIFF 6.0 specification, Adobe's technical notes and supplements and the BigTIFF design note, starting from the reader in Lars's ClassicMac.
-- [VP8 video frames](https://inexin.github.io/Egami/v1/articles/formats/vp8.html): `Vp8StreamDecoder` decodes VP8 video (RFC 6386) a frame at a time.
+- [VP8 video frames](https://inexin.github.io/Egami/v1/articles/formats/vp8.html): `Vp8StreamDecoder` decodes VP8 video frame by frame and `Vp8StreamEncoder` encodes it; both work on frames, and Egami.Video uses them for WebM, Matroska and IVF files.
 - [WebP](https://inexin.github.io/Egami/v1/articles/formats/webp.html): Egami reads and writes WebP.
 - [Your own format](https://inexin.github.io/Egami/v1/articles/formats/custom.html): Egami's formats are plug-ins like any other.
 
