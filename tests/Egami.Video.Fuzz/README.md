@@ -17,6 +17,7 @@ reports hangs. Limits are lowered so a valid but huge file cannot exhaust memory
 | `obu` | The container path, seeded with AV1 low-overhead OBU and Annex B files | `tests/video/fuzz-seeds/obu/*` |
 | `av1` | An AV1 IVF, WebM, Matroska, OBU or Annex B file read through VideoReader with Skip, Conceal and Throw, as for VP9. Instruments Egami.dll too, where the AV1 decoder is | `tests/video/fuzz-seeds/av1/*` |
 | `av1raw` | AV1 temporal units without a container (an av1C, then length-prefixed units): each described with and without the references, split into frames and merged back, its av1C extracted, then decoded on one thread and on two | `tests/video/fuzz-seeds/av1raw/*` |
+| `opusenc` | Opus encoding: the first bytes pick 1 to 8 channels, the rate (the five Opus rates, or 44.1 kHz through the resampler) and every `OpusEncoderOptions` setting; the rest is 16-bit audio, encoded in odd-sized frames and decoded again. Every packet must parse, and the decoder must give back exactly the samples that went in | `tests/video/fuzz-seeds/opusenc/*` |
 | `mjpeg` | One Motion JPEG packet: decoded at full and 1/4 scale (DHT splicing, AVI1 field weaving, junk trimming), converted to RGB, encoded back | `tests/video/fuzz-seeds/mjpeg/*` |
 
 The seeds are written by `dotnet run --project tests/Egami.Video.Fuzz -- seeds tests/video/fuzz-seeds`.

@@ -2,7 +2,7 @@
 
 Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:
 
-- Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and Vorbis I decode.
+- Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and encode, and Vorbis I decode.
 - Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC and Ogg, read and written; FLAC, PCM,
   Opus and Vorbis in Matroska, WebM and MP4 too.
 - A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.
@@ -37,7 +37,7 @@ sample exact.
 ## Writing audio
 
 `AudioWriter` encodes frames into a file or stream; the container comes from the extension. `AudioWriterOptions` sets the
-`Codec` (FLAC for .flac, PCM elsewhere by default), the `SampleRate` and `Layout` to write (converted when the frames differ),
+`Codec` (FLAC for .flac, Opus for Ogg and WebM, PCM elsewhere by default), the `SampleRate` and `Layout` to write (converted when the frames differ),
 the `BitsPerSample` and the compression `Level`. Frames may have any length and format.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-write)]
@@ -97,6 +97,8 @@ timestamps, is concealed, or recovered from the next packet's in-band FEC when i
 8251 test vectors.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-opus)]
+
+`OpusCodec` encodes too, with the packets libopus 1.5.2 makes: see [Encoding Opus](opus-encoding.md).
 
 ## Vorbis
 

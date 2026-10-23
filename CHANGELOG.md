@@ -260,6 +260,26 @@ after V5.6 (Design Q17).
 - The lookahead places keyframes at scene cuts, plans groups with hidden, temporally filtered alternate references where the
   group's first frame still predicts its last well, and gives each frame its quantizer. Output bytes do not depend on the thread count.
 
+V5.7: Opus encoding, translated from libopus 1.5.2. Part of the V5 encoders' combined API review (Design Q17).
+
+### Opus encoding
+
+- `OpusCodec.CanEncode` and `CreateEncoder`: SILK, CELT and hybrid in every mode, 1 to 8 channels (mapping family 0 for mono
+  and stereo, 1 with libopus's surround masking and stream split above), 8, 12, 16, 24 and 48 kHz with other rates resampled
+  to 48 kHz and kept in the header. The packets are byte for byte libopus 1.5.2's in 46 reference settings (every application,
+  rate mode, frame duration from 2.5 to 120 ms, FEC, DTX, forced modes and bandwidths, multistream up to 7.1).
+- `OpusEncoderOptions` (`AudioEncoderOptions.Opus`, `AudioWriterOptions.Opus`): `Bitrate` (64 kbit/s per channel by default),
+  `RateMode` (`OpusRateMode.Vbr`, `ConstrainedVbr`, `Cbr`), `Application` (`OpusApplication.Audio`, `Voice`, `LowDelay`),
+  `FrameDuration` (20 ms), `Effort` (0 to 10, libopus's complexity, default 10), `Bandwidth` (`OpusBandwidth`), `InbandFec`,
+  `ExpectedLoss` and `Dtx`.
+- The pre-skip is the encoder's look-ahead (312 samples at 48 kHz) in OpusHead and `CodecDelay`, and the last packet's
+  duration trims the end, so .opus, WebM, Matroska and MP4 files decode to exactly the samples written in `AudioReader`,
+  opusdec and FFmpeg (which keeps the end padding of MP4).
+- `AudioWriter` writes Opus by default for Ogg (.opus, .ogg, .oga) and WebM files, and `MediaFile.Transcode` with no codec
+  and a WebM output encodes the audio in Opus unless it is Opus or Vorbis.
+- 60 s of stereo at 128 kbit/s encodes in 0.70 s, 1.4 times libopus 1.5.2's plain C build on the same machine, and
+  steady-state encoding allocates nothing per packet.
+
 ## Egami.Video 0.5.0 (unreleased)
 
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;

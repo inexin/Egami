@@ -118,7 +118,7 @@ internal sealed class OpusEncoder
     private readonly float[] _pcmBuf;
     private readonly short[] _pcmSilk;
     private readonly float[] _tmpPrefill;
-    private readonly byte[] _tmpData = new byte[1276 + 6];
+    private byte[] _tmpData = new byte[1276 + 6];
     private readonly byte[] _dummy = new byte[2];
 
     /// <summary>opus_encoder_init: an encoder for <paramref name="channels"/> (1 or 2) channels at <paramref name="sampleRate"/>.</summary>
@@ -1104,7 +1104,13 @@ internal sealed class OpusEncoder
 
             int maxLenSum = nbFrames + repacketizeLen - maxHeaderBytes;
 
-            byte[] tmpData = _tmpData.Length >= maxLenSum ? _tmpData : new byte[maxLenSum];
+            if (_tmpData.Length < maxLenSum)
+            {
+                // Kept for the next packets of this size, so long frames allocate once.
+                _tmpData = new byte[maxLenSum];
+            }
+
+            byte[] tmpData = _tmpData;
             _rp.Init();
 
             int bakToMono = _silkMode.ToMono;
