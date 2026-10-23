@@ -13,7 +13,7 @@ namespace Egami.Formats.Avif;
 /// has transparency, is a monochrome AV1 image linked by an auxl reference. The encoder needs every pixel first, so rows are
 /// gathered and encoded at <see cref="RowEncoder{TPixel}.Complete"/>.
 /// </summary>
-internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
+internal sealed partial class AvifWriter : IFormatWriter, IRowFormatWriter
 {
     internal static readonly AvifWriter Instance = new();
 
@@ -48,7 +48,9 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
     {
         AvifWriterOptions avif = start.Options as AvifWriterOptions ?? AvifWriterOptions.Default;
         start.Refuse("AVIF", "AV1 encoding", "Save from a whole raster.");
-        SaveLosses.Report(start, "AVIF", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc | SaveKeeps.GainMap);
+        bool animated = (start.Whole?.FrameCount ?? 1) > 1;
+        SaveLosses.Report(start, "AVIF", SaveKeeps.Alpha | SaveKeeps.Wide | SaveKeeps.Exif | SaveKeeps.Xmp | SaveKeeps.Icc
+            | (animated ? SaveKeeps.Frames : SaveKeeps.GainMap));
         return new Encoder<TPixel>(output, start, avif);
     }
 
@@ -541,16 +543,17 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
     }
 
     /// <summary>The av1C property (AV1 Codec ISO Media File Format Binding, section 2.3): the configuration, then the sequence header OBU.</summary>
-    internal static byte[] ConfigurationBox(Av1Encoder encoded)
+    internal static byte[] ConfigurationBox(Av1Encoder encoded) => ConfigurationBox(encoded.Sequence, encoded.SequenceHeaderObu);
+
+    /// <summary>The av1C box of a sequence header and its OBU.</summary>
+    internal static byte[] ConfigurationBox(Av1SequenceHeader s, ReadOnlySpan<byte> obu)
     {
-        Av1SequenceHeader s = encoded.Sequence;
-        byte[] obu = encoded.SequenceHeaderObu;
         byte[] content = new byte[4 + obu.Length];
         content[0] = 0x81;
         content[1] = (byte)((s.Profile << 5) | s.OperatingPoints[0].Level);
         content[2] = (byte)((s.OperatingPoints[0].Tier << 7) | ((s.BitDepth > 8 ? 1 : 0) << 6) | ((s.BitDepth == 12 ? 1 : 0) << 5)
             | ((s.Monochrome ? 1 : 0) << 4) | (s.SubsamplingX << 3) | (s.SubsamplingY << 2) | s.ChromaSamplePosition);
-        obu.CopyTo(content, 4);
+        obu.CopyTo(content.AsSpan(4));
         return HeifWriter.Box("av1C", content);
     }
 
@@ -765,7 +768,14 @@ internal sealed class AvifWriter : IFormatWriter, IRowFormatWriter
         public override void Complete()
         {
             Raster<TPixel> raster = _whole ?? start.Whole ?? throw new InvalidOperationException("No raster was written.");
-            WriteImage(raster, start.Metadata, options, start.Context, output);
+            if (raster.FrameCount > 1)
+            {
+                WriteSequence(raster, start.Metadata, options, start.Context, output);
+            }
+            else
+            {
+                WriteImage(raster, start.Metadata, options, start.Context, output);
+            }
         }
     }
 }

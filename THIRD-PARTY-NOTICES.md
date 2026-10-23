@@ -507,7 +507,11 @@ cost of `rd.c` and `cost.c` (`Av1SymbolSink.cs`), the trellis quantization and c
 and `aq_variance.c` (`Av1VarianceBoost.cs`), the deblocking level guess of `picklpf.c` and the CDEF strength search of
 `pickcdef.c` (`Av1FilterSearch.cs`), the screen content detection of `encoder.c` (`Av1ScreenContent.cs`), the palette search of
 `palette.c` (`Av1TileEncoder.Palette.cs`), and the intra block copy search and vector checks of `rdopt.c` and `mvref_common.h`
-(`Av1TileEncoder.Intrabc.cs`). libaom is distributed under the BSD 2-clause license:
+(`Av1TileEncoder.Intrabc.cs`). The inter encoder (2.9.9) writes the inter mode info its `bitstream.c` writes
+(`Av1TileWriter.Inter.cs`, sharing the derivations of `mvref_common.c` and `pred_common.c` with the decoder in
+`Av1TileState.Inter.cs`), and follows the structure of its inter mode search and motion search (`rdopt.c`, `mcomp.c`;
+`Av1TileEncoder.Inter.cs`, `Av1MotionSearch.cs`) and of its global motion estimation (`global_motion.c`, `ransac.c`;
+`Av1GlobalMotion.cs`). libaom is distributed under the BSD 2-clause license:
 
     Copyright (c) 2016, Alliance for Open Media. All rights reserved.
 

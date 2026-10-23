@@ -38,6 +38,9 @@ internal interface IHeifSequence
     /// <summary>Gets whether the sequence repeats (an edit list that loops).</summary>
     bool Repeats { get; }
 
+    /// <summary>Gets how many times the sequence plays, 0 for forever (<see cref="HeifTrack.LoopCount"/>).</summary>
+    int LoopCount { get; }
+
     /// <summary>Gets the color track's sample count.</summary>
     int SampleCount { get; }
 
@@ -80,7 +83,7 @@ internal sealed partial class HeifImageReader
             ImageCount = 1,
             HasMetadata = !sequence.Icc.IsEmpty,
             EstimatedBytes = (long)width * height * layout.BytesPerPixel * frames,
-            LoopCount = sequence.Repeats ? 0 : 1,
+            LoopCount = sequence.LoopCount,
             Access = RasterAccess.Buffered,
         };
     }
@@ -189,7 +192,7 @@ internal sealed partial class HeifImageReader
             }
 
             Adopt(raster!.Metadata, gathered);
-            raster.Metadata.LoopCount = sequence.Repeats ? 0 : 1;
+            raster.Metadata.LoopCount = sequence.LoopCount;
             return raster;
         }
         catch

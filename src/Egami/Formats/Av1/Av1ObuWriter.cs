@@ -1,11 +1,84 @@
 namespace Egami.Formats.Av1;
 
 /// <summary>
-/// What an encoder chose for one key frame, as the uncompressed header of section 5.9 codes it: the fields the header writes;
-/// the variables the specification derives from them are what <see cref="Av1FrameHeader.Parse"/> reads back.
+/// What an encoder chose for one frame, as the uncompressed header of section 5.9 codes it: the fields the header writes; the
+/// variables the specification derives from them are what <see cref="Av1FrameHeader.Parse"/> reads back. The defaults make a
+/// shown key frame.
 /// </summary>
 internal sealed class Av1FrameParameters
 {
+    /// <summary>Gets or sets frame_type.</summary>
+    internal Av1FrameType FrameType { get; set; } = Av1FrameType.Key;
+
+    /// <summary>Gets or sets show_frame.</summary>
+    internal bool ShowFrame { get; set; } = true;
+
+    /// <summary>Gets or sets showable_frame, which a hidden frame writes (a shown one implies it).</summary>
+    internal bool ShowableFrame { get; set; }
+
+    /// <summary>Gets or sets error_resilient_mode, which a frame other than a shown key frame or a switch frame writes.</summary>
+    internal bool ErrorResilientMode { get; set; }
+
+    /// <summary>Gets or sets order_hint, in the sequence's order hint bits.</summary>
+    internal int OrderHint { get; set; }
+
+    /// <summary>Gets or sets primary_ref_frame: the reference (0 for LAST to 6 for ALTREF) whose CDFs and state load, or 7 for none.</summary>
+    internal int PrimaryRefFrame { get; set; } = 7;
+
+    /// <summary>Gets or sets refresh_frame_flags, which a frame other than a shown key frame or a switch frame writes.</summary>
+    internal int RefreshFrameFlags { get; set; } = 0xFF;
+
+    /// <summary>Gets each slot's order hint, which an error resilient frame that keeps references writes (ref_order_hint).</summary>
+    internal int[] RefOrderHints { get; } = new int[8];
+
+    /// <summary>Gets ref_frame_idx: the slot each of LAST to ALTREF reads.</summary>
+    internal int[] RefFrameIdx { get; } = new int[7];
+
+    internal bool AllowHighPrecisionMv { get; set; }
+
+    /// <summary>Gets or sets interpolation_filter: <see cref="Interp.Switchable"/>, or one filter for the frame.</summary>
+    internal int InterpolationFilter { get; set; } = Interp.Switchable;
+
+    internal bool IsMotionModeSwitchable { get; set; }
+
+    internal bool UseRefFrameMvs { get; set; }
+
+    internal bool ReferenceSelect { get; set; }
+
+    /// <summary>Gets or sets whether skip_mode_present is written: the frame's references allow skip mode (skipModeAllowed).</summary>
+    internal bool SkipModeAllowed { get; set; }
+
+    internal bool SkipModePresent { get; set; }
+
+    internal bool AllowWarpedMotion { get; set; }
+
+    /// <summary>Gets each reference's global motion type (<see cref="GlobalMotion"/>), LAST at 1.</summary>
+    internal int[] GmType { get; } = new int[8];
+
+    /// <summary>Gets each reference's global motion parameters, LAST at 1.</summary>
+    internal int[][] GmParams { get; } = [.. Enumerable.Range(0, 8).Select(_ => Av1FrameHeader.DefaultWarpParams())];
+
+    /// <summary>Gets or sets the primary reference frame's global motion parameters the frame's are coded against, LAST at 1; null for the defaults.</summary>
+    internal int[][]? PreviousGmParams { get; set; }
+
+    /// <summary>Gets or sets segmentation_update_map, which a frame with a primary reference frame writes.</summary>
+    internal bool SegmentationUpdateMap { get; set; } = true;
+
+    /// <summary>Gets or sets segmentation_update_data, which a frame with a primary reference frame writes.</summary>
+    internal bool SegmentationUpdateData { get; set; } = true;
+
+    /// <summary>Gets or sets the loop filter deltas the frame starts from: the primary reference frame's, or null for the defaults.</summary>
+    internal int[]? PreviousLoopFilterRefDeltas { get; set; }
+
+    /// <summary>Gets or sets the mode deltas the frame starts from, with <see cref="PreviousLoopFilterRefDeltas"/>.</summary>
+    internal int[]? PreviousLoopFilterModeDeltas { get; set; }
+
+    /// <summary>Gets or sets the reference slots the header is read back against, for a frame of a stream; null for a still.</summary>
+    internal Av1Frame?[]? Slots { get; set; }
+
+    /// <summary>Gets whether the frame is a key or intra-only frame.</summary>
+    internal bool FrameIsIntra => FrameType is Av1FrameType.Key or Av1FrameType.IntraOnly;
+
     /// <summary>Gets or sets the frame's width; a full header writes it as a frame size override when it differs from the sequence's.</summary>
     internal int Width { get; set; }
 
@@ -282,17 +355,34 @@ internal static class Av1ObuWriter
     }
 
     /// <summary>
-    /// Writes a shown key frame's uncompressed header (section 5.9) into <paramref name="w"/>, without trailing bits or byte
-    /// alignment: a frame OBU follows it with byte_alignment and the tile group, a frame header OBU with trailing_bits.
+    /// Writes a frame's uncompressed header (section 5.9) into <paramref name="w"/>, without trailing bits or byte alignment: a
+    /// frame OBU follows it with byte_alignment and the tile group, a frame header OBU with trailing_bits. The sequence has no
+    /// frame ids or decoder model, and inter frames name their references in full.
     /// </summary>
     internal static void FrameHeader(Av1BitWriter w, Av1SequenceHeader s, Av1FrameParameters f)
     {
         int numPlanes = s.Monochrome ? 1 : 3;
+        bool intra = f.FrameIsIntra;
+        bool shownKey = f.FrameType == Av1FrameType.Key && f.ShowFrame;
+        bool errorResilient = f.FrameType == Av1FrameType.Switch || shownKey || f.ErrorResilientMode;
         if (!s.ReducedStillPictureHeader)
         {
             w.Flag(false); // show_existing_frame
-            w.Bits((int)Av1FrameType.Key, 2);
-            w.Flag(true); // show_frame; a shown key frame is error resilient by definition
+            w.Bits((int)f.FrameType, 2);
+            w.Flag(f.ShowFrame);
+            if (!f.ShowFrame)
+            {
+                w.Flag(f.ShowableFrame);
+            }
+
+            if (f.FrameType != Av1FrameType.Switch && !shownKey)
+            {
+                w.Flag(f.ErrorResilientMode);
+            }
+        }
+        else if (!shownKey)
+        {
+            throw new ArgumentException("A reduced still picture header codes one shown key frame.", nameof(f));
         }
 
         w.Flag(f.DisableCdfUpdate);
@@ -307,32 +397,84 @@ internal static class Av1ObuWriter
             w.Flag(f.ForceIntegerMv);
         }
 
-        bool overrideSize = f.Width != s.MaxFrameWidth || f.Height != s.MaxFrameHeight;
+        bool forceIntegerMv = intra || (screenContent && (s.ForceIntegerMv == 2 ? f.ForceIntegerMv : s.ForceIntegerMv == 1));
+        bool overrideSize = f.FrameType == Av1FrameType.Switch || f.Width != s.MaxFrameWidth || f.Height != s.MaxFrameHeight;
         if (!s.ReducedStillPictureHeader)
         {
-            w.Flag(overrideSize);
-            w.Bits(0, s.OrderHintBits);
+            if (f.FrameType != Av1FrameType.Switch)
+            {
+                w.Flag(overrideSize);
+            }
+
+            w.Bits(f.OrderHint, s.OrderHintBits);
+            if (!intra && !errorResilient)
+            {
+                w.Bits(f.PrimaryRefFrame, 3);
+            }
+
+            if (f.FrameType != Av1FrameType.Switch && !shownKey)
+            {
+                w.Bits(f.RefreshFrameFlags, 8);
+            }
+
+            if ((!intra || f.RefreshFrameFlags != 0xFF) && errorResilient && s.EnableOrderHint)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    w.Bits(f.RefOrderHints[i], s.OrderHintBits);
+                }
+            }
         }
         else if (overrideSize)
         {
             throw new ArgumentException("A reduced still picture header codes the sequence's size only.", nameof(f));
         }
 
-        if (overrideSize)
+        if (intra)
         {
-            w.Bits(f.Width - 1, s.FrameWidthBits);
-            w.Bits(f.Height - 1, s.FrameHeightBits);
+            FrameSize(w, s, f, overrideSize);
+            if (screenContent)
+            {
+                w.Flag(f.AllowIntrabc);
+            }
         }
-
-        if (s.EnableSuperres)
+        else
         {
-            w.Flag(false); // use_superres
-        }
+            if (s.EnableOrderHint)
+            {
+                w.Flag(false); // frame_refs_short_signaling
+            }
 
-        w.Flag(false); // render_and_frame_size_different
-        if (screenContent)
-        {
-            w.Flag(f.AllowIntrabc);
+            for (int i = 0; i < 7; i++)
+            {
+                w.Bits(f.RefFrameIdx[i], 3);
+            }
+
+            if (overrideSize && !errorResilient)
+            {
+                for (int i = 0; i < 7; i++)
+                {
+                    w.Flag(false); // found_ref
+                }
+            }
+
+            FrameSize(w, s, f, overrideSize);
+            if (!forceIntegerMv)
+            {
+                w.Flag(f.AllowHighPrecisionMv);
+            }
+
+            w.Flag(f.InterpolationFilter == Interp.Switchable);
+            if (f.InterpolationFilter != Interp.Switchable)
+            {
+                w.Bits(f.InterpolationFilter, 2);
+            }
+
+            w.Flag(f.IsMotionModeSwitchable);
+            if (!errorResilient && s.EnableRefFrameMvs)
+            {
+                w.Flag(f.UseRefFrameMvs);
+            }
         }
 
         if (!s.ReducedStillPictureHeader && !f.DisableCdfUpdate)
@@ -378,9 +520,21 @@ internal static class Av1ObuWriter
             }
         }
 
-        // segmentation_params: an intra frame sends the map and the data.
+        // segmentation_params: a frame without a primary reference frame sends the map and the data.
+        bool primary = !intra && !errorResilient && f.PrimaryRefFrame != 7;
         w.Flag(f.SegmentationEnabled);
-        if (f.SegmentationEnabled)
+        if (f.SegmentationEnabled && primary)
+        {
+            w.Flag(f.SegmentationUpdateMap);
+            if (f.SegmentationUpdateMap)
+            {
+                w.Flag(false); // segmentation_temporal_update
+            }
+
+            w.Flag(f.SegmentationUpdateData);
+        }
+
+        if (f.SegmentationEnabled && (!primary || f.SegmentationUpdateData))
         {
             for (int i = 0; i < 8; i++)
             {
@@ -443,7 +597,8 @@ internal static class Av1ObuWriter
                 w.Flag(f.LoopFilterRefDeltas is not null);
                 if (f.LoopFilterRefDeltas is int[] refDeltas)
                 {
-                    ReadOnlySpan<int> defaults = [1, 0, 0, 0, -1, 0, -1, -1];
+                    ReadOnlySpan<int> defaults = f.PreviousLoopFilterRefDeltas ?? [1, 0, 0, 0, -1, 0, -1, -1];
+                    ReadOnlySpan<int> modeDefaults = f.PreviousLoopFilterModeDeltas ?? [0, 0];
                     for (int i = 0; i < 8; i++)
                     {
                         w.Flag(refDeltas[i] != defaults[i]);
@@ -455,8 +610,8 @@ internal static class Av1ObuWriter
 
                     for (int i = 0; i < 2; i++)
                     {
-                        w.Flag(f.LoopFilterModeDeltas[i] != 0);
-                        if (f.LoopFilterModeDeltas[i] != 0)
+                        w.Flag(f.LoopFilterModeDeltas[i] != modeDefaults[i]);
+                        if (f.LoopFilterModeDeltas[i] != modeDefaults[i])
                         {
                             w.Signed(f.LoopFilterModeDeltas[i], 7);
                         }
@@ -529,13 +684,141 @@ internal static class Av1ObuWriter
             w.Flag(f.TxModeSelect);
         }
 
+        if (!intra)
+        {
+            w.Flag(f.ReferenceSelect);
+        }
+
+        if (f.SkipModeAllowed)
+        {
+            w.Flag(f.SkipModePresent);
+        }
+
+        if (!intra && !errorResilient && s.EnableWarpedMotion)
+        {
+            w.Flag(f.AllowWarpedMotion);
+        }
+
         w.Flag(f.ReducedTxSet);
-        if (s.FilmGrainParamsPresent)
+        if (!intra)
+        {
+            GlobalMotionParams(w, f, !forceIntegerMv && f.AllowHighPrecisionMv);
+        }
+
+        if (s.FilmGrainParamsPresent && (f.ShowFrame || f.ShowableFrame))
         {
             w.Flag(false); // apply_grain
         }
 
         static int Secondary(int strength) => strength == 4 ? 3 : strength;
+    }
+
+    /// <summary>Writes frame_size, superres_params (off) and render_size (the frame's own).</summary>
+    private static void FrameSize(Av1BitWriter w, Av1SequenceHeader s, Av1FrameParameters f, bool overrideSize)
+    {
+        if (overrideSize)
+        {
+            w.Bits(f.Width - 1, s.FrameWidthBits);
+            w.Bits(f.Height - 1, s.FrameHeightBits);
+        }
+
+        if (s.EnableSuperres)
+        {
+            w.Flag(false); // use_superres
+        }
+
+        w.Flag(false); // render_and_frame_size_different
+    }
+
+    /// <summary>Writes global_motion_params, each reference's against the primary reference frame's.</summary>
+    private static void GlobalMotionParams(Av1BitWriter w, Av1FrameParameters f, bool allowHp)
+    {
+        const int alphaMax = 1 << 12, alphaPrecDiff = Av1FrameHeader.WarpPrecBits - 15;
+        for (int frame = Ref.Last; frame <= Ref.Alt; frame++)
+        {
+            int[] prev = f.PreviousGmParams?[frame] ?? Av1FrameHeader.DefaultWarpParams();
+            int type = f.GmType[frame];
+            int[] p = f.GmParams[frame];
+            w.Flag(type != GlobalMotion.Identity);
+            if (type != GlobalMotion.Identity)
+            {
+                w.Flag(type == GlobalMotion.RotZoom);
+                if (type != GlobalMotion.RotZoom)
+                {
+                    w.Flag(type == GlobalMotion.Translation);
+                }
+            }
+
+            if (type >= GlobalMotion.RotZoom)
+            {
+                SignedRefSubexpFin(w, alphaMax + 1, (prev[2] >> alphaPrecDiff) - (1 << 15), (p[2] >> alphaPrecDiff) - (1 << 15));
+                SignedRefSubexpFin(w, alphaMax + 1, prev[3] >> alphaPrecDiff, p[3] >> alphaPrecDiff);
+            }
+
+            if (type >= GlobalMotion.Affine)
+            {
+                SignedRefSubexpFin(w, alphaMax + 1, prev[4] >> alphaPrecDiff, p[4] >> alphaPrecDiff);
+                SignedRefSubexpFin(w, alphaMax + 1, (prev[5] >> alphaPrecDiff) - (1 << 15), (p[5] >> alphaPrecDiff) - (1 << 15));
+            }
+
+            if (type >= GlobalMotion.Translation)
+            {
+                int hp = allowHp ? 0 : 1;
+                int transBits = type == GlobalMotion.Translation ? 9 - hp : 12;
+                int precDiff = type == GlobalMotion.Translation ? Av1FrameHeader.WarpPrecBits - 3 + hp : Av1FrameHeader.WarpPrecBits - 6;
+                SignedRefSubexpFin(w, (1 << transBits) + 1, prev[0] >> precDiff, p[0] >> precDiff);
+                SignedRefSubexpFin(w, (1 << transBits) + 1, prev[1] >> precDiff, p[1] >> precDiff);
+            }
+        }
+    }
+
+    /// <summary>aom_wb_write_signed_primitive_refsubexpfin with k = 3: a value in [-(n - 1), n - 1] coded against a reference.</summary>
+    internal static void SignedRefSubexpFin(Av1BitWriter w, int n, int reference, int value)
+    {
+        reference += n - 1;
+        value += n - 1;
+        int scaledN = (2 * n) - 1;
+        if (value < 0 || value >= scaledN)
+        {
+            throw new ArgumentOutOfRangeException(nameof(value), "A global motion parameter is out of range.");
+        }
+
+        int v = (reference << 1) <= scaledN ? Recenter(reference, value) : Recenter(scaledN - 1 - reference, scaledN - 1 - value);
+        const int k = 3;
+        int i = 0, mk = 0;
+        while (true)
+        {
+            int b = i != 0 ? k + i - 1 : k;
+            int a = 1 << b;
+            if (scaledN <= mk + (3 * a))
+            {
+                w.NonSymmetric((uint)(v - mk), (uint)(scaledN - mk));
+                return;
+            }
+
+            bool more = v >= mk + a;
+            w.Flag(more);
+            if (!more)
+            {
+                w.Bits(v - mk, b);
+                return;
+            }
+
+            i++;
+            mk += a;
+        }
+
+        static int Recenter(int r, int v) => v > r << 1 ? v : v >= r ? (v - r) << 1 : ((r - v) << 1) - 1;
+    }
+
+    /// <summary>Writes a show_existing_frame header (section 5.9.1) as a frame header OBU's payload, with its trailing bits.</summary>
+    internal static byte[] ShowExistingFrame(int slot)
+    {
+        Av1BitWriter w = new();
+        w.Flag(true);
+        w.Bits(slot, 3);
+        w.TrailingBits();
+        return w.ToArray();
     }
 
     /// <summary>

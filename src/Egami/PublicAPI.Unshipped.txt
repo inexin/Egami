@@ -581,6 +581,17 @@ Egami.Formats.Av1.Av1DecoderOptions.OperatingPoint.get -> int
 Egami.Formats.Av1.Av1DecoderOptions.OperatingPoint.init -> void
 Egami.Formats.Av1.Av1DecoderOptions.OutputAllLayers.get -> bool
 Egami.Formats.Av1.Av1DecoderOptions.OutputAllLayers.init -> void
+Egami.Formats.Av1.Av1EncodedFrame
+Egami.Formats.Av1.Av1EncodedFrame.Bits.get -> long
+Egami.Formats.Av1.Av1EncodedFrame.ChromaSquaredError.get -> long
+Egami.Formats.Av1.Av1EncodedFrame.Data.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Av1.Av1EncodedFrame.IsShown.get -> bool
+Egami.Formats.Av1.Av1EncodedFrame.IsShownExisting.get -> bool
+Egami.Formats.Av1.Av1EncodedFrame.Kind.get -> Egami.Formats.Av1.Av1FrameKind
+Egami.Formats.Av1.Av1EncodedFrame.LumaPsnr.get -> double
+Egami.Formats.Av1.Av1EncodedFrame.LumaSquaredError.get -> long
+Egami.Formats.Av1.Av1EncodedFrame.OrderHint.get -> int
+Egami.Formats.Av1.Av1EncodedFrame.QIndex.get -> int
 Egami.Formats.Av1.Av1FrameInfo
 Egami.Formats.Av1.Av1FrameInfo.Av1FrameInfo() -> void
 Egami.Formats.Av1.Av1FrameInfo.Av1FrameInfo(Egami.Formats.Av1.Av1FrameKind Kind, bool IsShownKeyFrame, int Width, int Height, int RenderWidth, int RenderHeight, int BitDepth, Egami.Pixels.ChromaFormat Chroma, int TemporalId, int SpatialId, Egami.Colors.ColorCodePoints Color) -> void
@@ -613,6 +624,68 @@ Egami.Formats.Av1.Av1FrameKind.Inter = 1 -> Egami.Formats.Av1.Av1FrameKind
 Egami.Formats.Av1.Av1FrameKind.IntraOnly = 2 -> Egami.Formats.Av1.Av1FrameKind
 Egami.Formats.Av1.Av1FrameKind.Key = 0 -> Egami.Formats.Av1.Av1FrameKind
 Egami.Formats.Av1.Av1FrameKind.Switch = 3 -> Egami.Formats.Av1.Av1FrameKind
+Egami.Formats.Av1.Av1FramePlan
+Egami.Formats.Av1.Av1FramePlan.<Clone>$() -> Egami.Formats.Av1.Av1FramePlan!
+Egami.Formats.Av1.Av1FramePlan.Av1FramePlan() -> void
+Egami.Formats.Av1.Av1FramePlan.DeltaQuantizers.get -> bool
+Egami.Formats.Av1.Av1FramePlan.DeltaQuantizers.init -> void
+Egami.Formats.Av1.Av1FramePlan.Effort.get -> int
+Egami.Formats.Av1.Av1FramePlan.Effort.init -> void
+Egami.Formats.Av1.Av1FramePlan.Equals(Egami.Formats.Av1.Av1FramePlan? other) -> bool
+Egami.Formats.Av1.Av1FramePlan.ErrorResilient.get -> bool
+Egami.Formats.Av1.Av1FramePlan.ErrorResilient.init -> void
+Egami.Formats.Av1.Av1FramePlan.Kind.get -> Egami.Formats.Av1.Av1FrameKind
+Egami.Formats.Av1.Av1FramePlan.Kind.init -> void
+Egami.Formats.Av1.Av1FramePlan.OrderHint.get -> int?
+Egami.Formats.Av1.Av1FramePlan.OrderHint.init -> void
+Egami.Formats.Av1.Av1FramePlan.PrimaryReference.get -> int?
+Egami.Formats.Av1.Av1FramePlan.PrimaryReference.init -> void
+Egami.Formats.Av1.Av1FramePlan.QIndex.get -> int?
+Egami.Formats.Av1.Av1FramePlan.QIndex.init -> void
+Egami.Formats.Av1.Av1FramePlan.Quality.get -> int
+Egami.Formats.Av1.Av1FramePlan.Quality.init -> void
+Egami.Formats.Av1.Av1FramePlan.References.get -> Egami.Formats.Av1.Av1References
+Egami.Formats.Av1.Av1FramePlan.References.init -> void
+Egami.Formats.Av1.Av1FramePlan.ReferenceSlots.get -> System.Collections.Generic.IReadOnlyList<int>!
+Egami.Formats.Av1.Av1FramePlan.ReferenceSlots.init -> void
+Egami.Formats.Av1.Av1FramePlan.RefreshSlots.get -> int
+Egami.Formats.Av1.Av1FramePlan.RefreshSlots.init -> void
+Egami.Formats.Av1.Av1FramePlan.ScreenContent.get -> bool?
+Egami.Formats.Av1.Av1FramePlan.ScreenContent.init -> void
+Egami.Formats.Av1.Av1FramePlan.Show.get -> bool
+Egami.Formats.Av1.Av1FramePlan.Show.init -> void
+Egami.Formats.Av1.Av1FramePlan.Showable.get -> bool
+Egami.Formats.Av1.Av1FramePlan.Showable.init -> void
+Egami.Formats.Av1.Av1References
+Egami.Formats.Av1.Av1References.All = Egami.Formats.Av1.Av1References.Last | Egami.Formats.Av1.Av1References.Last2 | Egami.Formats.Av1.Av1References.Last3 | Egami.Formats.Av1.Av1References.Golden | Egami.Formats.Av1.Av1References.Backward | Egami.Formats.Av1.Av1References.Alternate2 | Egami.Formats.Av1.Av1References.Alternate -> Egami.Formats.Av1.Av1References
+Egami.Formats.Av1.Av1References.Alternate = 64 -> Egami.Formats.Av1.Av1References
+Egami.Formats.Av1.Av1References.Alternate2 = 32 -> Egami.Formats.Av1.Av1References
+Egami.Formats.Av1.Av1References.Backward = 16 -> Egami.Formats.Av1.Av1References
+Egami.Formats.Av1.Av1References.Golden = 8 -> Egami.Formats.Av1.Av1References
+Egami.Formats.Av1.Av1References.Last = 1 -> Egami.Formats.Av1.Av1References
+Egami.Formats.Av1.Av1References.Last2 = 2 -> Egami.Formats.Av1.Av1References
+Egami.Formats.Av1.Av1References.Last3 = 4 -> Egami.Formats.Av1.Av1References
+Egami.Formats.Av1.Av1References.None = 0 -> Egami.Formats.Av1.Av1References
+Egami.Formats.Av1.Av1SequenceOptions
+Egami.Formats.Av1.Av1SequenceOptions.<Clone>$() -> Egami.Formats.Av1.Av1SequenceOptions!
+Egami.Formats.Av1.Av1SequenceOptions.Av1SequenceOptions() -> void
+Egami.Formats.Av1.Av1SequenceOptions.BitDepth.get -> int
+Egami.Formats.Av1.Av1SequenceOptions.BitDepth.init -> void
+Egami.Formats.Av1.Av1SequenceOptions.Chroma.get -> Egami.Pixels.ChromaFormat
+Egami.Formats.Av1.Av1SequenceOptions.Chroma.init -> void
+Egami.Formats.Av1.Av1SequenceOptions.ChromaSiting.get -> Egami.Pixels.ChromaSiting?
+Egami.Formats.Av1.Av1SequenceOptions.ChromaSiting.init -> void
+Egami.Formats.Av1.Av1SequenceOptions.CodePoints.get -> Egami.Colors.ColorCodePoints
+Egami.Formats.Av1.Av1SequenceOptions.CodePoints.init -> void
+Egami.Formats.Av1.Av1SequenceOptions.Equals(Egami.Formats.Av1.Av1SequenceOptions? other) -> bool
+Egami.Formats.Av1.Av1SequenceOptions.Height.get -> int
+Egami.Formats.Av1.Av1SequenceOptions.Height.init -> void
+Egami.Formats.Av1.Av1SequenceOptions.HighTier.get -> bool
+Egami.Formats.Av1.Av1SequenceOptions.HighTier.init -> void
+Egami.Formats.Av1.Av1SequenceOptions.Level.get -> int?
+Egami.Formats.Av1.Av1SequenceOptions.Level.init -> void
+Egami.Formats.Av1.Av1SequenceOptions.Width.get -> int
+Egami.Formats.Av1.Av1SequenceOptions.Width.init -> void
 Egami.Formats.Av1.Av1StreamDecoder
 Egami.Formats.Av1.Av1StreamDecoder.Av1StreamDecoder(Egami.Formats.Av1.Av1DecoderOptions? options = null, Egami.EgamiContext? context = null) -> void
 Egami.Formats.Av1.Av1StreamDecoder.Dispose() -> void
@@ -621,6 +694,14 @@ Egami.Formats.Av1.Av1StreamDecoder.NextFrame.get -> Egami.Formats.Av1.Av1FrameIn
 Egami.Formats.Av1.Av1StreamDecoder.Reset() -> void
 Egami.Formats.Av1.Av1StreamDecoder.Send(System.ReadOnlySpan<byte> temporalUnit) -> void
 Egami.Formats.Av1.Av1StreamDecoder.TryReceiveFrame(Egami.YuvRaster! destination, out Egami.Formats.Av1.Av1FrameInfo info) -> bool
+Egami.Formats.Av1.Av1StreamEncoder
+Egami.Formats.Av1.Av1StreamEncoder.Av1StreamEncoder(Egami.Formats.Av1.Av1SequenceOptions! sequence, Egami.EgamiContext? context = null) -> void
+Egami.Formats.Av1.Av1StreamEncoder.Dispose() -> void
+Egami.Formats.Av1.Av1StreamEncoder.Encode(Egami.YuvRaster! frame, Egami.Formats.Av1.Av1FramePlan! plan) -> Egami.Formats.Av1.Av1EncodedFrame!
+Egami.Formats.Av1.Av1StreamEncoder.Height.get -> int
+Egami.Formats.Av1.Av1StreamEncoder.SequenceHeader.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Av1.Av1StreamEncoder.ShowExisting(int slot) -> Egami.Formats.Av1.Av1EncodedFrame!
+Egami.Formats.Av1.Av1StreamEncoder.Width.get -> int
 Egami.Formats.Avif.AvifDetails
 Egami.Formats.Avif.AvifDetails.AlphaPremultiplied.get -> bool
 Egami.Formats.Avif.AvifDetails.AlphaPremultiplied.set -> void
@@ -2848,6 +2929,12 @@ override Egami.Formats.Av1.Av1DecoderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Av1.Av1DecoderOptions.GetHashCode() -> int
 override Egami.Formats.Av1.Av1DecoderOptions.ToString() -> string!
 override Egami.Formats.Av1.Av1FrameInfo.GetHashCode() -> int
+override Egami.Formats.Av1.Av1FramePlan.Equals(object? obj) -> bool
+override Egami.Formats.Av1.Av1FramePlan.GetHashCode() -> int
+override Egami.Formats.Av1.Av1FramePlan.ToString() -> string!
+override Egami.Formats.Av1.Av1SequenceOptions.Equals(object? obj) -> bool
+override Egami.Formats.Av1.Av1SequenceOptions.GetHashCode() -> int
+override Egami.Formats.Av1.Av1SequenceOptions.ToString() -> string!
 override Egami.Formats.Avif.AvifDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Avif.AvifFilmGrain.Equals(object? obj) -> bool
 override Egami.Formats.Avif.AvifFilmGrain.GetHashCode() -> int
@@ -3233,6 +3320,12 @@ static Egami.Formats.Av1.Av1DecoderOptions.operator !=(Egami.Formats.Av1.Av1Deco
 static Egami.Formats.Av1.Av1DecoderOptions.operator ==(Egami.Formats.Av1.Av1DecoderOptions? left, Egami.Formats.Av1.Av1DecoderOptions? right) -> bool
 static Egami.Formats.Av1.Av1FrameInfo.operator !=(Egami.Formats.Av1.Av1FrameInfo left, Egami.Formats.Av1.Av1FrameInfo right) -> bool
 static Egami.Formats.Av1.Av1FrameInfo.operator ==(Egami.Formats.Av1.Av1FrameInfo left, Egami.Formats.Av1.Av1FrameInfo right) -> bool
+static Egami.Formats.Av1.Av1FramePlan.Default.get -> Egami.Formats.Av1.Av1FramePlan!
+static Egami.Formats.Av1.Av1FramePlan.operator !=(Egami.Formats.Av1.Av1FramePlan? left, Egami.Formats.Av1.Av1FramePlan? right) -> bool
+static Egami.Formats.Av1.Av1FramePlan.operator ==(Egami.Formats.Av1.Av1FramePlan? left, Egami.Formats.Av1.Av1FramePlan? right) -> bool
+static Egami.Formats.Av1.Av1SequenceOptions.FromSequenceHeader(System.ReadOnlySpan<byte> obus) -> Egami.Formats.Av1.Av1SequenceOptions!
+static Egami.Formats.Av1.Av1SequenceOptions.operator !=(Egami.Formats.Av1.Av1SequenceOptions? left, Egami.Formats.Av1.Av1SequenceOptions? right) -> bool
+static Egami.Formats.Av1.Av1SequenceOptions.operator ==(Egami.Formats.Av1.Av1SequenceOptions? left, Egami.Formats.Av1.Av1SequenceOptions? right) -> bool
 static Egami.Formats.Avif.AvifFilmGrain.operator !=(Egami.Formats.Avif.AvifFilmGrain? left, Egami.Formats.Avif.AvifFilmGrain? right) -> bool
 static Egami.Formats.Avif.AvifFilmGrain.operator ==(Egami.Formats.Avif.AvifFilmGrain? left, Egami.Formats.Avif.AvifFilmGrain? right) -> bool
 static Egami.Formats.Avif.AvifFormat.Info.get -> Egami.Formats.FormatInfo!

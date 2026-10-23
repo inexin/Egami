@@ -66,6 +66,16 @@ whatever the number of threads.
 
 Every file Egami writes decodes in dav1d and libavif to the same pixels as in Egami; `tools/check-avif-interop.py` checks this.
 
+### Animated AVIF
+
+A raster with more than one frame saves as an image sequence (the avis brand), as libavif writes one: the frames as one AV1 stream of
+a key frame and inter frames in a track, each with its delay, and the loop count in the edit list. When any frame has transparency
+the alpha goes into a second, monochrome track; it is exact unless `AlphaQuality` is below 100. The first frame is also the file's
+primary image, so readers of stills show it. `Quality`, `Effort`, `Lossless`, `Chroma` and `BitDepth` apply to every frame; gain
+maps and grids are for stills only. avifdec decodes every frame exactly as Egami does.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Avif.cs#write-animation)]
+
 ## HDR
 
 PQ and HLG files keep their curve; converting to sRGB as they load tone maps them, the peak taken from the file's clli box:

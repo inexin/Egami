@@ -63,6 +63,9 @@ internal sealed class Av1BlockInfo
     /// <summary>Gets or sets the second reference frame: <see cref="Ref.None"/> for one reference, <see cref="Ref.Intra"/> for inter-intra.</summary>
     internal int RefFrame1 { get; set; } = Ref.None;
 
+    /// <summary>Gets or sets which of the reference vector stack's candidates a new or near mode starts from (ref_mv_idx).</summary>
+    internal int RefMvIdx { get; set; }
+
     /// <summary>Gets or sets whether the block takes skip mode (two references, no residual, no other syntax).</summary>
     internal bool SkipMode { get; set; }
 

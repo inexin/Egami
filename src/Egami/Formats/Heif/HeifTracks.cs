@@ -45,8 +45,14 @@ internal sealed class HeifTrack
     /// <summary>Gets the samples in decoding order.</summary>
     internal List<HeifSample> Samples { get; } = [];
 
-    /// <summary>Gets whether the edit list repeats the track (an infinite loop).</summary>
+    /// <summary>Gets whether the edit list repeats the track.</summary>
     internal bool Repeats { get; init; }
+
+    /// <summary>
+    /// Gets how many times the track plays: 1 without a repeating edit list; with one, the track header's duration over the edit's
+    /// segment, or 0 (forever) when that duration is unknown (all ones) or not a whole number of plays.
+    /// </summary>
+    internal int LoopCount { get; init; } = 1;
 }
 
 /// <summary>Reads the tracks of a moov box.</summary>
@@ -103,6 +109,7 @@ internal static class HeifTracks
         uint id = 0, handler = 0, timescale = 0;
         int width = 0, height = 0;
         bool repeats = false;
+        ulong trackDuration = ulong.MaxValue, segment = 0;
         IsoBox? stbl = null;
         Dictionary<uint, uint[]> references = [];
         IsoBoxReader children = new(bytes, trak.ContentIndex, trak.EndIndex, file.FormatName);
@@ -115,6 +122,12 @@ internal static class HeifTracks
                 int at = c.Length > 0 && c[0] == 1 ? 4 + 16 : 4 + 8;
                 Need(file, box, c, at + 4);
                 id = BinaryPrimitives.ReadUInt32BigEndian(c[at..]);
+                if (c.Length >= at + 8 + (c[0] == 1 ? 8 : 4))
+                {
+                    trackDuration = c[0] == 1 ? BinaryPrimitives.ReadUInt64BigEndian(c[(at + 8)..])
+                        : BinaryPrimitives.ReadUInt32BigEndian(c[(at + 8)..]) is uint d && d != uint.MaxValue ? d : ulong.MaxValue;
+                }
+
                 if (c.Length >= 8)
                 {
                     width = (int)(BinaryPrimitives.ReadUInt32BigEndian(c[^8..]) >> 16);
@@ -144,6 +157,10 @@ internal static class HeifTracks
                     ReadOnlySpan<byte> e = elst.Content(bytes);
                     // Bit 0 of the edit list's flags repeats it.
                     repeats |= elst.Type == Elst && e.Length >= 4 && (e[3] & 1) != 0;
+                    if (elst.Type == Elst && e.Length >= 8 + (e[0] == 1 ? 8 : 4))
+                    {
+                        segment = e[0] == 1 ? BinaryPrimitives.ReadUInt64BigEndian(e[8..]) : BinaryPrimitives.ReadUInt32BigEndian(e[8..]);
+                    }
                 }
             }
             else if (box.Type == Mdia)
@@ -175,7 +192,10 @@ internal static class HeifTracks
             }
         }
 
-        HeifTrack track = new() { Id = id, Handler = handler, Width = width, Height = height, Timescale = timescale, Repeats = repeats };
+        int loops = !repeats ? 1
+            : trackDuration == ulong.MaxValue || segment == 0 || trackDuration % segment != 0 || trackDuration / segment > int.MaxValue ? 0
+            : (int)(trackDuration / segment);
+        HeifTrack track = new() { Id = id, Handler = handler, Width = width, Height = height, Timescale = timescale, Repeats = repeats, LoopCount = loops };
         foreach ((uint type, uint[] ids) in references)
         {
             track.References[type] = ids;

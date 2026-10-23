@@ -19,6 +19,9 @@ internal sealed partial class Av1Reconstructor<T> : IAv1Reconstructor
     private bool _cflComputed;
 
     /// <summary>Starts reconstructing a tile of a frame.</summary>
+    /// <summary>Gets or sets whether inter prediction predicts luma alone, as an encoder's search does to rank its choices.</summary>
+    internal bool LumaOnly { get; set; }
+
     internal Av1Reconstructor(Av1Frame frame)
     {
         _frame = frame;

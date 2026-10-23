@@ -7,7 +7,7 @@ namespace Egami.Formats.Av1;
 /// pred_common.c and mvref_common.c (BSD 2-clause, see THIRD-PARTY-NOTICES). <see cref="IAv1Reconstructor"/> reads the current
 /// block from here.
 /// </summary>
-internal abstract class Av1TileState
+internal abstract partial class Av1TileState
 {
     private protected const int MaxMibMask = 31;
 

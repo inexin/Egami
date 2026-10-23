@@ -35,6 +35,15 @@ if (args is ["--time-av1", .. string[] av1s])
     return;
 }
 
+// Time AV1 inter encoding (2.9.9): -- --encode-av1 <frames> <quality> <efforts, comma-separated> <file.ivf> [--one-thread]
+if (args is ["--encode-av1", string av1Frames, string av1Quality, string av1Efforts, string av1Clip, .. string[] av1Rest])
+{
+    Av1Timing.Encode(int.Parse(av1Frames, System.Globalization.CultureInfo.InvariantCulture), int.Parse(av1Quality, System.Globalization.CultureInfo.InvariantCulture),
+        [.. av1Efforts.Split(',').Select(e => int.Parse(e, System.Globalization.CultureInfo.InvariantCulture))], av1Clip,
+        av1Rest.Contains("--one-thread") ? 1 : Environment.ProcessorCount);
+    return;
+}
+
 // Time VP8 decoding (Phase 2.3.5 speed gate) at one thread and all cores: -- --time-vp8 <file.ivf>...
 if (args is ["--time-vp8", .. string[] ivfs])
 {

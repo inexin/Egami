@@ -86,6 +86,8 @@ internal sealed class HeicSequence : IHeifSequence
 
     public bool Repeats => Color.Repeats;
 
+    public int LoopCount => Color.LoopCount;
+
     public int SampleCount => Color.Samples.Count;
 
     /// <summary>Gets whether every sample is a sync sample (an IRAP picture, intra coded).</summary>

@@ -88,6 +88,8 @@ internal sealed class AvifSequence : IHeifSequence
 
     public bool Repeats => Color.Repeats;
 
+    public int LoopCount => Color.LoopCount;
+
     public int SampleCount => Color.Samples.Count;
 
     public IEnumerable<HeifProblem> Problems => Heif.Problems;

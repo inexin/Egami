@@ -24,7 +24,7 @@ internal sealed partial class Av1Reconstructor<T>
     {
         Av1BlockInfo b = tile.Block;
         Av1Frame frame = _frame;
-        int planes = tile.IsChromaRef ? frame.Header.NumPlanes : 1;
+        int planes = tile.IsChromaRef && !LumaOnly ? frame.Header.NumPlanes : 1;
         for (int plane = 0; plane < planes; plane++)
         {
             int ssx = plane > 0 ? _ssx : 0, ssy = plane > 0 ? _ssy : 0;

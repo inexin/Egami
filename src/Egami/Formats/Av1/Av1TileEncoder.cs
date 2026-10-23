@@ -415,12 +415,26 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         _b = b;
         SetBlockPosition(miRow, miCol, bw, bh);
         _rdmult = BlockRdmult(miRow, miCol, bsize);
+        _blockSegment = b.SegmentId;
+        _blockQIndex = b.QIndex;
         bool lossless = _header.LosslessArray[b.SegmentId];
         Snapshot start = Take(miRow, miCol, bsize, pixels: true);
         bool chroma = _planes > 1 && _isChromaRef;
         bool cfl = chroma && CflAllowed();
+        (long Cost, InterChoice Choice) inter = _header.FrameIsIntra ? (long.MaxValue, default) : SearchInter(bsize, start, budget, chroma);
+        budget = Math.Min(budget, inter.Cost);
         (long Cost, int Row, int Col) intrabc = IntrabcAllowed(bsize) ? SearchIntrabc(bsize, start, budget, chroma) : (long.MaxValue, 0, 0);
         budget = Math.Min(budget, intrabc.Cost);
+
+        // An inter block predicted well enough to drop its residual is not searched for an intra mode, below the efforts that
+        // search everything (libaom's skip_intra_in_interframe).
+        if (inter.Cost != long.MaxValue && inter.Choice.Skip && !_profile.IntraAfterSkip)
+        {
+            start.Restore(this);
+            long kept = EncodeInterWinner(inter.Choice, start, chroma);
+            Give(start);
+            return kept;
+        }
 
         // Luma: the modes whose prediction alone costs least, coded in full at the largest transform; then the best of them at
         // each smaller transform depth. Chroma's own symbols count at DC.
@@ -471,7 +485,11 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         {
             start.Restore(this);
             long cost = long.MaxValue;
-            if (intrabc.Cost != long.MaxValue)
+            if (inter.Cost != long.MaxValue)
+            {
+                cost = EncodeInterWinner(inter.Choice, start, chroma);
+            }
+            else if (intrabc.Cost != long.MaxValue)
             {
                 _winner = true;
                 Intrabc(intrabc.Row, intrabc.Col, bsize, long.MaxValue);
@@ -537,6 +555,11 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             best = FinishBlock(start, bsize, chroma);
         }
 
+        if (inter.Cost < best)
+        {
+            best = EncodeInterWinner(inter.Choice, start, chroma);
+        }
+
         Give(start);
         return best;
     }
@@ -548,6 +571,12 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     private long FinishBlock(Snapshot start, int bsize, bool chroma)
     {
         _b.Skip = !AnyCoefficient(bsize);
+        if (_b.Skip && _b.IsInter)
+        {
+            SetSkipTxSize(bsize);
+        }
+
+        KeepSkipSegment();
         KeepColorMaps();
         start.RestoreContexts(this);
 
@@ -564,6 +593,36 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         cdef.CopyTo(_cdefTransmitted);
         long distortion = _planeDistortion[0] + (chroma ? _planeDistortion[1] + _planeDistortion[2] : 0);
         return Av1Rate.RdCost(_rdmult, rate.Cost, distortion);
+    }
+
+    /// <summary>
+    /// Gives an inter block without residual the transform size the decoder takes for it, the largest (read_tx_size without
+    /// tx_size symbols), its residual being none at any size.
+    /// </summary>
+    private void SetSkipTxSize(int bsize)
+    {
+        int tx;
+        if (_header.LosslessArray[_b.SegmentId])
+        {
+            tx = Tx.T4x4;
+        }
+        else if (bsize > Bs.B4x4)
+        {
+            int largest = _header.TxMode == Av1TxMode.Only4x4 ? Tx.T4x4 : Tx.T64x64;
+            int maxRect = Av1Tables.MaxTxSizeRectLookup[bsize];
+            tx = Av1Tables.TxSizeSqrMap[maxRect] <= largest ? maxRect : largest;
+        }
+        else
+        {
+            tx = Av1Tables.MaxTxSizeRectLookup[bsize];
+        }
+
+        _b.TxSize = tx;
+        int xMis = Math.Min(_bw, _miCols - _miCol), yMis = Math.Min(_bh, _frame.MiRows - _miRow);
+        for (int y = 0; y < yMis; y++)
+        {
+            _frame.TxSizeMap.AsSpan(((_miRow + y) * _miCols) + _miCol, xMis).Fill((byte)tx);
+        }
     }
 
     /// <summary>Keeps the <paramref name="count"/> candidates of lowest score in <see cref="_scores"/>, in order of score.</summary>
@@ -1214,17 +1273,23 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         Span<bool> cdef = stackalloc bool[4];
         _cdefTransmitted.CopyTo(cdef);
         Av1CostSink rate = new(false);
-        CodeIntraFrameModeInfo(ref rate);
+        CodeModeInfo(ref rate);
         bool lossless = _header.LosslessArray[_b.SegmentId];
-        if (_b.IsInter && _header.TxMode == Av1TxMode.Select && _b.Size > Bs.B4x4 && !lossless)
+        if (_b.IsInter && _header.TxMode == Av1TxMode.Select && _b.Size > Bs.B4x4 && !lossless && !_b.Skip)
         {
-            // An intra block copy block's unsplit transform tree, assuming it has a residual.
-            rate.Symbol(_cdf, Av1FrameContext.TxfmPartition[TxfmPartitionContext(0, 0, _b.Size, _b.TxSize)], 2, 0);
+            // The transform tree, assuming the block has a residual, its contexts put back after.
+            Span<byte> above = stackalloc byte[16], left = stackalloc byte[16];
+            _aboveTxfm.AsSpan(_miCol - MiColStart, _bw).CopyTo(above);
+            _leftTxfm.AsSpan(_miRow & MaxMibMask, _bh).CopyTo(left);
+            CodeVarTxTree(ref rate, _b.Size);
+            above[.._bw].CopyTo(_aboveTxfm.AsSpan(_miCol - MiColStart));
+            left[.._bh].CopyTo(_leftTxfm.AsSpan(_miRow & MaxMibMask));
         }
-        else
+        else if (!_b.IsInter || !_b.Skip)
         {
-            CodeTxSize(ref rate, _b.Size, false, true, lossless);
+            CodeTxSize(ref rate, _b.Size, _b.IsInter, true, lossless);
         }
+
         _currentQIndex = savedQIndex;
         deltaLf.CopyTo(_deltaLf);
         cdef.CopyTo(_cdefTransmitted);
@@ -1614,6 +1679,36 @@ internal sealed class Av1SearchProfile
 
     internal int[] TxTypes { get; init; } = [TxType.DctDct];
 
+    /// <summary>Gets how far the whole-sample motion search reaches from its start, in samples.</summary>
+    internal int SearchRange { get; init; } = 32;
+
+    /// <summary>Gets how many reference frames an inter block searches, nearest first.</summary>
+    internal int InterReferences { get; init; } = 7;
+
+    /// <summary>Gets how many inter choices, ranked by their luma prediction and mode rate, are coded in full.</summary>
+    internal int InterCandidates { get; init; } = 2;
+
+    /// <summary>Gets which compound predictions are tried: 0 none, 1 averaged, 2 distance-weighted too, 3 wedge and difference-weighted too.</summary>
+    internal int Compound { get; init; }
+
+    /// <summary>Gets whether inter-intra prediction is tried.</summary>
+    internal bool InterIntra { get; init; }
+
+    /// <summary>Gets whether overlapped and local warped motion are tried.</summary>
+    internal bool MotionModes { get; init; }
+
+    /// <summary>Gets which interpolation filters are tried: 0 regular, 1 the three filters, 2 every pair of them (dual filters).</summary>
+    internal int Filters { get; init; }
+
+    /// <summary>Gets whether an inter block also tries its transform split once.</summary>
+    internal bool InterTxSplit { get; init; }
+
+    /// <summary>Gets whether each reference's global motion is estimated.</summary>
+    internal bool GlobalMotion { get; init; }
+
+    /// <summary>Gets whether an inter block whose prediction needs no residual still searches the intra modes.</summary>
+    internal bool IntraAfterSkip { get; init; }
+
     /// <summary>Gets a buffer for the transform types of one size.</summary>
     internal int[] TxTypeBuffer { get; } = new int[16];
 
@@ -1645,6 +1740,16 @@ internal sealed class Av1SearchProfile
             IntrabcCandidates = effort <= 3 ? 1 : effort <= 6 ? 2 : 4,
             PaletteSizes = effort <= 1 ? 0 : effort <= 5 ? 1 : 2,
             TxTypes = effort <= 2 ? [TxType.DctDct] : effort <= 5 ? twoD : [.. Enumerable.Range(0, 16)],
+            SearchRange = effort <= 2 ? 16 : effort <= 4 ? 32 : effort <= 6 ? 64 : 96,
+            InterReferences = effort <= 1 ? 1 : effort <= 3 ? 3 : 7,
+            InterCandidates = effort <= 2 ? 1 : effort <= 4 ? 2 : effort <= 6 ? 3 : 5,
+            Compound = effort <= 2 ? 0 : effort <= 4 ? 1 : effort <= 5 ? 2 : 3,
+            InterIntra = effort >= 6,
+            MotionModes = effort >= 6,
+            Filters = effort <= 4 ? 0 : effort <= 6 ? 1 : 2,
+            InterTxSplit = effort >= 5,
+            GlobalMotion = effort >= 7,
+            IntraAfterSkip = effort >= 8,
         };
 
     }

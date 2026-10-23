@@ -108,6 +108,26 @@ def inside():
         elif rgba != expected:
             first = next(i for i in range(len(rgba)) if rgba[i] != expected[i])
             failures.append(f"{name}: avifdec's pixels differ from Egami's at byte {first}")
+        if os.path.exists(base + ".frames"):
+            # An animation: avifdec decodes every frame to Egami's, and plays it as many times as Egami wrote.
+            for old in [f for f in os.listdir("/tmp") if f.startswith("frame-")]:
+                os.remove(os.path.join("/tmp", old))
+            result = subprocess.run(["avifdec", "-d", depth, "--index", "all", base + ".avif", "/tmp/frame.png"], capture_output=True, text=True)
+            if result.returncode != 0:
+                failures.append(f"{name}: avifdec cannot decode its frames: {result.stdout.strip()} {result.stderr.strip()}")
+            else:
+                frames = open(base + ".frames", "rb").read()
+                size = len(expected)
+                pngs = sorted(f for f in os.listdir("/tmp") if f.startswith("frame-"))
+                if len(pngs) * size != len(frames):
+                    failures.append(f"{name}: avifdec gives {len(pngs)} frames, not {len(frames) // size}")
+                for i, png in enumerate(pngs):
+                    if read_png(os.path.join("/tmp", png))[2] != frames[i * size:(i + 1) * size]:
+                        failures.append(f"{name}: avifdec's frame {i} differs from Egami's")
+            info = subprocess.run(["avifdec", "--info", base + ".avif"], capture_output=True, text=True).stdout
+            repeat = "Infinite" if "loop" not in name else str(int(name.split("loop")[1].split("-")[0]) - 1)
+            if f"Repeat Count   : {repeat}" not in info:
+                failures.append(f"{name}: avifdec does not repeat it {repeat} times: {info}")
         result = subprocess.run(["avifitems", base + ".avif"], capture_output=True, text=True)
         if result.returncode != 0:
             failures.append(f"{name}: avifitems fails: {result.stdout.strip()} {result.stderr.strip()}")

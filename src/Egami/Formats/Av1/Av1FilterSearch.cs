@@ -311,7 +311,7 @@ internal static class Av1FilterSearch
     {
         Av1BitWriter bits = new();
         Av1ObuWriter.FrameHeader(bits, sequence, parameters);
-        return Av1FrameHeader.Parse(bits.ToArray(), sequence, 0, 0, "AV1");
+        return Av1FrameHeader.Parse(bits.ToArray(), sequence, 0, 0, "AV1", parameters.Slots is null ? null : (Av1Frame?[])parameters.Slots.Clone());
     }
 
     private static long PlaneError(Av1Frame frame, Av1EncoderSource source, int plane)
