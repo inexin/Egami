@@ -19,6 +19,7 @@
   <ItemGroup>
     <None Include="../video/corpus/h264/**/*" LinkBase="corpus/h264" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/fuzz-regressions/h264/**/*" LinkBase="fuzz-regressions" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/vp9/hdr10plus.webm" Link="corpus/hdr10plus.webm" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

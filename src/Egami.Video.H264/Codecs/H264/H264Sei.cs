@@ -17,8 +17,8 @@ internal sealed class H264Sei
     /// <summary>Gets preferred_transfer_characteristics of an alternative transfer SEI, or -1.</summary>
     internal int PreferredTransfer { get; private set; } = -1;
 
-    /// <summary>Gets the payload of an ITU-T T.35 message, from itu_t_t35_country_code on, or null.</summary>
-    internal byte[]? T35 { get; private set; }
+    /// <summary>Gets the HDR10+ metadata of the first ITU-T T.35 message that holds it, or null.</summary>
+    internal Hdr10PlusMetadata? Hdr10Plus { get; private set; }
 
     /// <summary>Reads the SEI messages of a NAL unit into this access unit's set. A broken message ends the walk quietly.</summary>
     internal void Read(byte[] rbsp)
@@ -44,7 +44,7 @@ internal sealed class H264Sei
                     payload[i] = (byte)r.U(8, "itu_t_t35_payload_byte");
                 }
 
-                T35 ??= payload;
+                Hdr10Plus ??= Hdr10PlusMetadata.Parse(payload);
                 break;
             case 6:
                 RecoveryFrameCount = (int)r.Ue("recovery_frame_cnt", 65535);

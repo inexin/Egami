@@ -261,7 +261,7 @@ V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version.
 - Decoding starts at the first IDR or recovery point; a broken slice reports `H264.CorruptSlice` and its macroblocks are
   concealed from the frame before (`Skip` and `Conceal`) or the frame is finished and the error thrown (`Throw`); a missing
   reference reports `H264.MissingReference`. Colour comes from the VUI, then the container, then BT.601 or BT.709 by size; HDR10
-  mastering display and content light level SEI become `Hdr`.
+  mastering display and content light level SEI become `Hdr`, HDR10+ (T.35 user data SEI) `Hdr10Plus`.
 - Slices of a frame decode in parallel and deblocking runs as a wavefront on `MaxParallelism` threads, with the same frames as
   one thread. Motion compensation, deblocking and the output copy use Vector128 with a scalar reference the tests compare.
 - `H264Format`: raw Annex B streams (.h264, .264, .avc), read with a keyframe index for seeking, timed by the VUI frame rate,
@@ -269,6 +269,9 @@ V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version.
 - The CABAC initialisation values and CAVLC tables are transcribed from OpenH264 (BSD-2), see THIRD-PARTY-NOTICES.md.
 
 ## Egami.Video 0.6.0 (unreleased)
+
+- `Hdr10PlusMetadata.Parse` is public, so codec packages such as Egami.Video.H264 read HDR10+ T.35 payloads with Egami.Video's
+  parser (internals are made public as outside packages need them).
 
 V4.3: fragmented MP4 writing, and HLS and DASH segments. API reviewed and accepted 2026-10-23 (all as recommended).
 

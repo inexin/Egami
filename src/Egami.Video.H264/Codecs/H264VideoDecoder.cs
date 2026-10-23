@@ -198,7 +198,7 @@ internal sealed class H264VideoDecoder : IVideoDecoder
 
         raster.Metadata.CodePoints = color;
         raster.Metadata.Hdr = _hdr;
-        return new YuvVideoFrame(raster, time, duration, color) { Hdr = _hdr };
+        return new YuvVideoFrame(raster, time, duration, color) { Hdr = _hdr, Hdr10Plus = picture.Sei?.Hdr10Plus };
     }
 
     private static void Copy(H264Picture picture, H264Sps sps, YuvRaster<byte> target)
