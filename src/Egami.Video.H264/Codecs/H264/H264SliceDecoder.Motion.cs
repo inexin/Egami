@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Egami.Video.Codecs.H264;
 
@@ -143,10 +144,12 @@ internal sealed partial class H264SliceDecoder
     {
         int w4 = _mb.W4;
         int b = Block(bx, by);
+        sbyte[] refIdxs = _pic.RefIdx[list];
+        int[] ids = _pic.RefPicId[list];
         for (int y = 0; y < h; y++, b += w4)
         {
-            _pic.RefIdx[list].AsSpan(b, w).Fill((sbyte)refIdx);
-            _pic.RefPicId[list].AsSpan(b, w).Fill(id);
+            refIdxs.AsSpan(b, w).Fill((sbyte)refIdx);
+            ids.AsSpan(b, w).Fill(id);
         }
     }
 
@@ -155,16 +158,16 @@ internal sealed partial class H264SliceDecoder
     {
         int w4 = _mb.W4;
         int b = Block(bx, by);
-        byte mx = (byte)(mvd & 255), my = (byte)(mvd >> 8);
-        for (int y = 0; y < h; y++, b += w4)
+        int[] mvs = _pic.Mv[list];
+        byte[] mvds = _mb.Mvd[list];
+        int row = ((1 << w) - 1) << (bx + (by * 4));
+        for (int y = 0; y < h; y++, b += w4, row <<= 4)
         {
-            _pic.Mv[list].AsSpan(b, w).Fill(mv);
-            for (int x = 0; x < w; x++)
-            {
-                _mb.Mvd[list][((b + x) * 2) + 0] = mx;
-                _mb.Mvd[list][((b + x) * 2) + 1] = my;
-                _decodedMask |= 1 << (bx + x + ((by + y) * 4));
-            }
+            mvs.AsSpan(b, w).Fill(mv);
+
+            // x in the low byte, y in the high one: a little-endian 16-bit value per block.
+            MemoryMarshal.Cast<byte, ushort>(mvds.AsSpan(b * 2, w * 2)).Fill(BitConverter.IsLittleEndian ? (ushort)mvd : (ushort)((mvd >> 8) | (mvd << 8)));
+            _decodedMask |= row;
         }
     }
 
@@ -473,31 +476,35 @@ internal sealed partial class H264SliceDecoder
     private void WriteDirectRefs(int list, int bx, int by)
     {
         H264Picture[] refs = list == 0 ? _list0 : _list1;
+        sbyte[] refIdxs = _pic.RefIdx[list];
+        int[] ids = _pic.RefPicId[list];
         for (int y = by; y < by + 2; y++)
         {
             for (int x = bx; x < bx + 2; x++)
             {
                 int r = _directRefBlock[(list * 16) + (y * 4) + x];
                 int b = Block(x, y);
-                _pic.RefIdx[list][b] = (sbyte)r;
-                _pic.RefPicId[list][b] = r >= 0 && r < refs.Length ? refs[r].Id : -1;
+                refIdxs[b] = (sbyte)r;
+                ids[b] = r >= 0 && r < refs.Length ? refs[r].Id : -1;
             }
         }
     }
 
     private void WriteDirectMvs(int list, int bx, int by)
     {
+        int[] mvs = _pic.Mv[list];
+        byte[] mvds = _mb.Mvd[list];
         for (int y = by; y < by + 2; y++)
         {
-            for (int x = bx; x < bx + 2; x++)
+            int b = Block(bx, y);
+            for (int x = bx; x < bx + 2; x++, b++)
             {
-                int b = Block(x, y);
                 bool used = _directRefBlock[(list * 16) + (y * 4) + x] >= 0;
-                _pic.Mv[list][b] = used ? _directMv[(list * 16) + (y * 4) + x] : 0;
-                _mb.Mvd[list][b * 2] = 0;
-                _mb.Mvd[list][(b * 2) + 1] = 0;
-                _decodedMask |= 1 << (x + (y * 4));
+                mvs[b] = used ? _directMv[(list * 16) + (y * 4) + x] : 0;
             }
+
+            mvds.AsSpan(Block(bx, y) * 2, 4).Clear();
+            _decodedMask |= 3 << (bx + (y * 4));
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Video.Codecs.H264;
 
@@ -93,6 +94,21 @@ internal sealed class H264Inter
         H264Picture? p0 = r0 >= 0 ? _list0[r0] : null;
         H264Picture? p1 = r1 >= 0 ? _list1[r1] : null;
         int w = w4 * 4, h = h4 * 4, x = x4 * 4, y = y4 * 4;
+        if ((x4 & 3) == 0 && (y4 & 3) == 0)
+        {
+            // The first partition of a macroblock: the next macroblock likely moves the same way, so its reference samples
+            // are fetched into the cache while this one is predicted.
+            if (p0 is not null)
+            {
+                Prefetch(p0, x + 16, y, mv0);
+            }
+
+            if (p1 is not null)
+            {
+                Prefetch(p1, x + 16, y, mv1);
+            }
+        }
+
         if (p0 is not null)
         {
             Luma(p0, x, y, w, h, mv0, _pred0);
@@ -126,6 +142,44 @@ internal sealed class H264Inter
             Combine(plane, _pic.ChromaOrigin + (cy * _pic.ChromaStride) + cx, _pic.ChromaStride, cw, ch, r0, r1, 1 + c, _maxC, _shiftC);
         }
     }
+
+    /// <summary>Asks the cache for the reference samples a 16x16 block at (x, y) moved by mv reads, luma and chroma.</summary>
+    private void Prefetch(H264Picture refPic, int x, int y, int mv)
+    {
+        if (!Sse.IsSupported)
+        {
+            return;
+        }
+
+        int pad = H264Picture.Pad;
+        int xs = Math.Clamp(x + (H264SliceDecoder.MvX(mv) >> 2) - 2, -pad, refPic.Width + pad - 24);
+        int ys = Math.Clamp(y + (H264SliceDecoder.MvY(mv) >> 2) - 2, -pad, refPic.Height + pad - 21);
+        ref ushort luma = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(refPic.Y), refPic.Origin + (ys * refPic.Stride) + xs);
+        for (int row = 0; row < 21; row++)
+        {
+            ref ushort at = ref Unsafe.Add(ref luma, row * refPic.Stride);
+            Prefetch(ref at);
+            Prefetch(ref Unsafe.Add(ref at, 23));
+        }
+
+        if (_chroma != 1)
+        {
+            return;
+        }
+
+        int cx = Math.Clamp((x >> 1) + (H264SliceDecoder.MvX(mv) >> 3), -pad, refPic.ChromaWidth + pad - 9);
+        int cy = Math.Clamp((y >> 1) + (H264SliceDecoder.MvY(mv) >> 3), -pad, refPic.ChromaHeight + pad - 9);
+        int c = refPic.ChromaOrigin + (cy * refPic.ChromaStride) + cx;
+        ref ushort cb = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(refPic.Cb), c);
+        ref ushort cr = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(refPic.Cr), c);
+        for (int row = 0; row < 9; row++)
+        {
+            Prefetch(ref Unsafe.Add(ref cb, row * refPic.ChromaStride));
+            Prefetch(ref Unsafe.Add(ref cr, row * refPic.ChromaStride));
+        }
+    }
+
+    private static unsafe void Prefetch(ref ushort at) => Sse.Prefetch0(Unsafe.AsPointer(ref at));
 
     /// <summary>Weighted sample prediction (8.4.2.3): default, explicit or implicit, into the picture.</summary>
     private void Combine(ushort[] plane, int at, int stride, int w, int h, int r0, int r1, int component, int max, int bitShift)

@@ -259,13 +259,15 @@ internal sealed partial class H264SliceDecoder
     {
         int w4 = _mb.W4;
         int b = Block(0, 0);
+        byte[] nzLuma = _mb.NzLuma, nonzero = _mb.Nonzero, mvd0 = _mb.Mvd[0], mvd1 = _mb.Mvd[1];
+        sbyte[] intraModes = _mb.IntraModes;
         for (int y = 0; y < 4; y++, b += w4)
         {
-            _mb.NzLuma.AsSpan(b, 4).Clear();
-            _mb.Nonzero.AsSpan(b, 4).Clear();
-            _mb.IntraModes.AsSpan(b, 4).Fill(-1);
-            _mb.Mvd[0].AsSpan(b * 2, 8).Clear();
-            _mb.Mvd[1].AsSpan(b * 2, 8).Clear();
+            nzLuma.AsSpan(b, 4).Clear();
+            nonzero.AsSpan(b, 4).Clear();
+            intraModes.AsSpan(b, 4).Fill(-1);
+            mvd0.AsSpan(b * 2, 8).Clear();
+            mvd1.AsSpan(b * 2, 8).Clear();
             if (intra)
             {
                 _pic.RefIdx[0].AsSpan(b, 4).Fill(-1);
