@@ -59,6 +59,13 @@ internal sealed record RateSettings
     /// inter frames: right when hidden frames cost as much as the shown ones, as AV1's pyramid does.
     /// </summary>
     public bool PlanHiddenAhead { get; init; }
+
+    /// <summary>
+    /// Whether a probe of a keyframe alone (real time, where no second frame is in yet) also sets the inter frames' model, at the
+    /// keyframe's: cautious, as an inter frame then costs what its complexity would as a keyframe, which keeps a constant bitrate
+    /// buffer from running dry on the first inter frame.
+    /// </summary>
+    public bool InterFromKeyProbe { get; init; }
 }
 
 /// <summary>
@@ -123,6 +130,14 @@ internal sealed class RateController
             _correction[(int)FrameType.Golden] = inter * 1.6;
             _correction[(int)FrameType.AltRef] = inter * 2;
             _correction[(int)FrameType.Overlay] = inter;
+        }
+        else if (_settings.InterFromKeyProbe)
+        {
+            double key = _correction[(int)FrameType.Key];
+            _correction[(int)FrameType.Inter] = key;
+            _correction[(int)FrameType.Golden] = key;
+            _correction[(int)FrameType.AltRef] = key;
+            _correction[(int)FrameType.Overlay] = key;
         }
     }
 

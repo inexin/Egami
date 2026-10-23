@@ -35,6 +35,7 @@ import subprocess
 import numpy as np
 
 OUT = ".cache/av1enc"
+CLIP_DIR = ".cache/av1enc/clips"
 CLIPS = ["crowd_run", "ducks_take_off", "park_joy", "old_town_cross"]
 QUALITIES = [30, 45, 60, 75]
 AOM_IMAGE = "egami-av1encref:v5.4"
@@ -53,11 +54,11 @@ def docker(image, command):
 
 
 def clip_path(name, size):
-    return f"{OUT}/clips/{name}-{size}.y4m"
+    return f"{CLIP_DIR}/{name}-{size}.y4m"
 
 
 def ensure_clips(size, source):
-    os.makedirs(f"{OUT}/clips", exist_ok=True)
+    os.makedirs(CLIP_DIR, exist_ok=True)
     for name in CLIPS:
         path = clip_path(name, size)
         if not os.path.exists(path):
@@ -255,28 +256,32 @@ def run_time(args):
 def run_rc(args):
     """One-pass and two-pass bitrate against the target, and constant bitrate's buffer, from the packet sizes."""
     os.makedirs(f"{OUT}/runs", exist_ok=True)
-    rows = []
-    for clip in args.clips.split(","):
+    modes = (("vbr", f"--bitrate={args.kbps * 1000}"), ("two-pass", f"--bitrate={args.kbps * 1000} --two-pass"),
+             ("cbr", f"--bitrate={args.kbps * 1000} --cbr --realtime"))
+
+    def job(clip, mode, extra):
         src = clip_path(clip, args.size)
         _, _, fps = y4m_info(src)
-        for mode, extra in (("vbr", f"--bitrate={args.kbps * 1000}"), ("two-pass", f"--bitrate={args.kbps * 1000} --two-pass"),
-                            ("cbr", f"--bitrate={args.kbps * 1000} --cbr --realtime")):
-            out, _, size = egami(src, args.frames, None, args.effort, os.cpu_count(), f"rc-{clip}-{mode}", extra)
-            kbps = size * 8 * fps / args.frames / 1000
-            row = {"clip": clip, "mode": mode, "kbps": kbps, "off": (kbps / args.kbps - 1) * 100}
-            if mode == "cbr":
-                # The leaky bucket the encoder keeps: one second of the bitrate, starting three quarters full.
-                buffer = args.kbps * 1000.0
-                level, lowest = buffer * 0.75, buffer
-                for packet in ivf_sizes(out + ".ivf"):
-                    level = min(buffer, level + args.kbps * 1000.0 / fps) - packet * 8
-                    lowest = min(lowest, level)
-                row["lowest"] = lowest / buffer * 100
-            rows.append(row)
-            print(f"  {clip:16s} {mode:9s} {kbps:8.1f} kbit/s, {row['off']:+5.1f} %"
-                  + (f", buffer never below {row['lowest']:.0f} %" if "lowest" in row else ""), flush=True)
+        out, _, size = egami(src, args.frames, None, args.effort, 1, f"rc-{clip}-{mode}", extra)
+        kbps = size * 8 * fps / args.frames / 1000
+        row = {"clip": clip, "mode": mode, "kbps": kbps, "off": (kbps / args.kbps - 1) * 100}
+        if mode == "cbr":
+            # The leaky bucket the encoder keeps: one second of the bitrate, starting three quarters full.
+            buffer = args.kbps * 1000.0
+            level, lowest = buffer * 0.75, buffer
+            for packet in ivf_sizes(out + ".ivf"):
+                level = min(buffer, level + args.kbps * 1000.0 / fps) - packet * 8
+                lowest = min(lowest, level)
+            row["lowest"] = lowest / buffer * 100
+        return row
+
+    with concurrent.futures.ThreadPoolExecutor(args.jobs) as pool:
+        rows = list(pool.map(lambda j: job(*j), [(c, m, e) for c in args.clips.split(",") for m, e in modes]))
+    for row in rows:
+        print(f"  {row['clip']:16s} {row['mode']:9s} {row['kbps']:8.1f} kbit/s, {row['off']:+5.1f} %"
+              + (f", buffer never below {row['lowest']:.0f} %" if "lowest" in row else ""))
     with open(f"{OUT}/rc-{args.size}.json", "w") as f:
-        json.dump({"kbps": args.kbps, "frames": args.frames, "rows": rows}, f, indent=1)
+        json.dump({"kbps": args.kbps, "frames": args.frames, "effort": args.effort, "rows": rows}, f, indent=1)
 
 
 def ivf_sizes(path):
@@ -313,6 +318,7 @@ def report(args):
 
 
 def main():
+    global OUT, BENCH
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", choices=["bd", "time", "rc", "report"])
     parser.add_argument("--size", default=None)
@@ -329,7 +335,11 @@ def main():
     parser.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 4) // 3))
     parser.add_argument("--reuse", action="store_true", help="keep the runs already in the bd file and add only what is missing")
     parser.add_argument("--clips-from", default=".cache/video/derf")
+    parser.add_argument("--out", default=OUT, help="where runs and results go (clips stay in .cache/av1enc/clips)")
+    parser.add_argument("--bench", default=BENCH, help="the benchmark build to time Egami with")
     args = parser.parse_args()
+    OUT = args.out
+    BENCH = args.bench
     if args.mode == "bd":
         args.size = args.size or "720"
         args.frames = args.frames or 60
