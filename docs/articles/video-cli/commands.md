@@ -32,7 +32,7 @@ Commands:
   embed <inputs>                Add tracks from other files, attachments and cover art to a file without decoding, and set track languages, names and defaults. Track numbers count the output's tracks from 1.
   metadata <inputs>             Write tags, chapters, track names and languages and attachment names as JSON, or copy a file with them changed from such a JSON or with --set, --remove and --chapter.
   frames <inputs>               Write video frames as images: every frame, one every few seconds, at given times, keyframes or a few evenly spaced.
-  encode <inputs>               Make a clip from images, an image sequence or a Y4M stream, with Motion JPEG or uncompressed video, and audio from another file.
+  encode <inputs>               Make a clip from images, an image sequence or a Y4M stream, with Motion JPEG, VP8 or uncompressed video, and audio from another file.
   run <inputs-and-steps>        Run egami's steps over every frame of a video, separated by +, and encode it again: 'egami-video run in.mkv crop 0 60 1920 960 + resize 1280x + save out.mkv'. 'egami-video run --list' lists the steps; audio and subtitles are copied, and frames keep their times.
   thumbnail <inputs>            Write a representative frame of each video as an image: a typical frame of its opening, not a black or empty one, or the frame at --at.
   scenes <inputs>               Find the cuts between shots: list where each scene starts (frame, time and how sharp the cut is), and optionally write a frame of each.
@@ -324,7 +324,7 @@ Options:
 
 ```text
 Description:
-  Make a clip from images, an image sequence or a Y4M stream, with Motion JPEG or uncompressed video, and audio from another file.
+  Make a clip from images, an image sequence or a Y4M stream, with Motion JPEG, VP8 or uncompressed video, and audio from another file.
 
 Usage:
   egami-video encode <inputs>... [options]
@@ -336,8 +336,10 @@ Options:
   -o, --output <path>            The clip to write, or - for standard output (with --format).
   -f, --format <container>       The container by name or extension (mkv, avi, mp4, y4m), when -o's extension does not say; always for -o -.
   --rate <fps>                   Frames per second, such as 25, 29.97 or 30000/1001; 25 for images, and a video's own rate for a video.
-  -c, --codec <codec>            The video codec: mjpeg (the default) or raw (uncompressed, the default for y4m).
-  --quality <0-100>              Motion JPEG quality from 0 to 100; 75 by default.
+  -c, --codec <codec>            The video codec: mjpeg (the default), vp8 (for webm, mkv and ivf), or raw (uncompressed, the default for y4m).
+  --quality <0-100>              Quality from 0 to 100: 75 by default for Motion JPEG, 60 for VP8.
+  --effort <0-10>                VP8: how hard to work, 0 (fastest) to 10 (smallest); 4 by default.
+  -b, --bitrate <bits/s>         VP8: aim at this average bitrate instead of a quality, such as 2000k or 1.5M.
   --size <WxH>                   Fit every frame into this size, keeping its shape, with black around it; images take the first image's size by default.
   --chroma <420|422|444>         Chroma subsampling for frames made from images: 420 (the default), 422 or 444.
   --audio <file>                 Add the first audio track of this file, copied without decoding, up to the end of the video.
@@ -358,7 +360,7 @@ Arguments:
 Options:
   -o, --output <path>            Where the video goes when save has no path: a file, a folder, a template with {name}, or - with --format.
   -f, --format <container>       The output container (mkv, avi …), when the output's extension does not say.
-  --codec <codec>                The video codec to encode with: mjpeg or raw. The input's codec when Egami.Video can encode it, else mjpeg.
+  --codec <codec>                The video codec to encode with: mjpeg, vp8 or raw. The input's codec when Egami.Video can encode it, else mjpeg.
   --quality <1-100>              The encoder's quality from 1 to 100.
   --rate <fps>                   Frames per second of the output, dropping or repeating frames to match; frames keep their own times by default.
   -t, --track <track>            Which video track to run the steps over: v:1 for the second, or a track number; audio and subtitle tracks are copied.

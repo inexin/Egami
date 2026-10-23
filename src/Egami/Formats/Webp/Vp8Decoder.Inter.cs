@@ -138,7 +138,7 @@ internal sealed partial class Vp8Decoder
         }
     }
 
-    private static FilterInfo Strength(int level, int sharpness, bool key)
+    internal static FilterInfo Strength(int level, int sharpness, bool key)
     {
         if (level == 0)
         {
@@ -469,9 +469,10 @@ internal sealed partial class Vp8Decoder
     /// Predicts macroblock (<paramref name="mbx"/>, <paramref name="mby"/>) of a frame <paramref name="mbWidth"/> ×
     /// <paramref name="mbHeight"/> macroblocks from <paramref name="frame"/> as <paramref name="info"/> describes it at
     /// <paramref name="here"/>: luma into <paramref name="dstY"/> at <paramref name="dy"/>, chroma into <paramref name="dstU"/> and
-    /// <paramref name="dstV"/> at <paramref name="dc"/>. The encoder predicts with it too, so its references match the decoder's.
+    /// <paramref name="dstV"/> at <paramref name="dc"/>. The encoder predicts with it too, so its references match the decoder's;
+    /// without <paramref name="luma"/>, a macroblock of one vector predicts its chroma only (the encoder has its luma).
     /// </summary>
-    internal static void PredictMacroblock(Vp8ModeInfo info, int here, Vp8FrameBuffer frame, int mbx, int mby, int mbWidth, int mbHeight, int version, Span<byte> dstY, int dy, int strideY, Span<byte> dstU, Span<byte> dstV, int dc, int strideC)
+    internal static void PredictMacroblock(Vp8ModeInfo info, int here, Vp8FrameBuffer frame, int mbx, int mby, int mbWidth, int mbHeight, int version, Span<byte> dstY, int dy, int strideY, Span<byte> dstU, Span<byte> dstV, int dc, int strideC, bool luma = true)
     {
         bool sixTap = version == 0;
         bool fullPixel = version == 3;
@@ -493,7 +494,10 @@ internal sealed partial class Vp8Decoder
                 ClampToBorder(ref row, ref col, toLeft, toRight, toTop, toBottom);
             }
 
-            Vp8InterPredict.Predict(frame.Y, frame.OriginY, frame.StrideY, frame.AlignedWidth, frame.AlignedHeight, Vp8FrameBuffer.Border, x, y, 16, 16, row, col, sixTap, dstY, dy, strideY);
+            if (luma)
+            {
+                Vp8InterPredict.Predict(frame.Y, frame.OriginY, frame.StrideY, frame.AlignedWidth, frame.AlignedHeight, Vp8FrameBuffer.Border, x, y, 16, 16, row, col, sixTap, dstY, dy, strideY);
+            }
 
             // Chroma moves half as far, rounded away from zero, in eighths of a chroma pixel.
             row = (short)((short)(row + (1 | (row >> 31))) / 2);

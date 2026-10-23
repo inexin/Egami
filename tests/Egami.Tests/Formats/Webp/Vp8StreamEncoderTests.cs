@@ -162,6 +162,48 @@ public class Vp8StreamEncoderTests
         source.ForEach(f => f.Dispose());
     }
 
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(4, 1)]
+    [InlineData(4, 8)]
+    [InlineData(8, 3)]
+    public void FilteredFramesMatchAnotherDecoder(int effort, int threads)
+    {
+        // The encoder's references are its reconstruction filtered at the level it searched for, without reading the tokens back:
+        // another decoder must make the same frames of the stream, mid-stream key frames and golden refreshes included.
+        List<YuvRaster<byte>> source = Source("v0-pan", 12);
+        int w = source[0].Width, h = source[0].Height;
+        using Vp8StreamEncoder encoder = new(w, h, EgamiContext.Default with { MaxParallelism = threads });
+        using Vp8StreamDecoder decoder = new();
+        using YuvRaster<byte> decoded = YuvRaster.Create(w, h, ChromaFormat.Yuv420, YuvColor.Bt601Limited);
+        for (int i = 0; i < source.Count; i++)
+        {
+            Vp8EncodedFrame frame = encoder.Encode(source[i], new Vp8FramePlan { Effort = effort, Quantizer = 60, KeyFrame = i == 7, RefreshGolden = i == 4 });
+            decoder.Decode(frame.Data.Span);
+            decoder.CopyFrameTo(decoded);
+            Assert.True(frame.FilterLevel > 0, $"frame {i} is not filtered");
+            Assert.Equal(LumaError(source[i], decoded), frame.LumaSquaredError);
+            Assert.Equal(ChromaError(source[i], decoded), frame.ChromaSquaredError);
+        }
+
+        source.ForEach(f => f.Dispose());
+
+        static long ChromaError(YuvRaster<byte> a, YuvRaster<byte> b)
+        {
+            long sum = 0;
+            for (int y = 0; y < (a.Height + 1) / 2; y++)
+            {
+                for (int x = 0; x < (a.Width + 1) / 2; x++)
+                {
+                    int du = a.U!.Row(y)[x] - b.U!.Row(y)[x], dv = a.V!.Row(y)[x] - b.V!.Row(y)[x];
+                    sum += (du * du) + (dv * dv);
+                }
+            }
+
+            return sum;
+        }
+    }
+
     [Fact]
     public void MoreEffortCostsFewerBits()
     {

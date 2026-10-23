@@ -48,8 +48,9 @@ Each call takes a `Vp8FramePlan`, so the caller decides what the stream looks li
 
 - `KeyFrame` starts a frame that decodes on its own; the first frame is always one.
 - `Quality` (0 to 100, the scale of lossy WebP) or `Quantizer` (VP8's index, 0 to 127, for rate control) sets the frame's
-  quantizer, and `Effort` (0 to 10, default 4) how hard the encoder searches: how far it looks for motion, whether it tries split
-  vectors and every intra mode, and whether it tries loop filter levels by decoding the frame with each.
+  quantizer, and `Effort` (0 to 10, default 4) how hard the encoder searches: how far it looks for motion, how many candidates it
+  codes in full, which split layouts it tries, where it tries the intra modes and the golden and alternate frames, and how many
+  loop filter levels it tries.
 - `References` (a `Vp8References`) says which references an inter frame may predict from, and `RefreshLast`, `RefreshGolden`,
   `RefreshAlternate`, `CopyToGolden` and `CopyToAlternate` (a `Vp8ReferenceCopy`) what becomes of them. `GoldenSignBias` and `AlternateSignBias` mark a reference that lies in
   the future, as a hidden alternate frame does.
@@ -64,6 +65,7 @@ the decoded frame against the picture (`LumaPsnr` from it), and how many macrobl
 control needs to plan the next frame.
 
 At the default effort the frames are about as small as libvpx's at `--good --cpu-used=1` for the same luma PSNR, within a few
-percent on natural pictures and about 10% larger on synthetic test patterns, and higher efforts come out smaller still. The
-encoder keeps the stream's four frame buffers from the context's memory source and decodes each frame it writes to keep its
-references; its output does not depend on `MaxParallelism`. Lossy WebP stills are not affected: they encode as before.
+percent on natural pictures and up to about 10% larger on synthetic test patterns, and higher efforts come out smaller still.
+The encoder codes a frame's macroblock rows on the context's `MaxParallelism` threads, each row a little behind the one above
+it; its output does not depend on the thread count. It keeps the stream's four frame buffers from the context's memory source.
+Lossy WebP stills are not affected: they encode as before.

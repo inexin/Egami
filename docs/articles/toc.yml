@@ -142,6 +142,8 @@
       href: guides/video.md
     - name: Streaming MP4
       href: guides/streaming-mp4.md
+    - name: Encoding video
+      href: guides/video-encoding.md
     - name: Audio
       href: guides/audio.md
 - name: Egami.Video.Cli

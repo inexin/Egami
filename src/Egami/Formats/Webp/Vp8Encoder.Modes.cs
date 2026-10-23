@@ -72,6 +72,13 @@ internal sealed partial class Vp8Encoder
 
     private void MainLoop()
     {
+        if (_options.Video)
+        {
+            // A video key frame codes its rows like an inter frame, on any number of threads with the same result.
+            CodeRows();
+            return;
+        }
+
         Array.Clear(_topNz);
         Array.Clear(_modesAbove);
         Array.Clear(_topDerr);
@@ -405,10 +412,11 @@ internal sealed partial class Vp8Encoder
         }
 
         SetScore(dqm.LambdaMode, rd);
-        if ((rd.Nz & 0x100FFFF) == 0x1000000 && rd.D > dqm.MinDisto)
+        // Key frames only: an inter frame's filter level does not follow its intra edges.
+        if (_inter is null && (rd.Nz & 0x100FFFF) == 0x1000000 && rd.D > dqm.MinDisto)
         {
             int v = Math.Max(Math.Abs((int)rd.YDc[1]), Math.Max(Math.Abs((int)rd.YDc[2]), Math.Abs((int)rd.YDc[4])));
-            dqm.MaxEdge = Math.Max(dqm.MaxEdge, v);
+            dqm.RaiseMaxEdge(v);
         }
     }
 

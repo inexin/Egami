@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Formats.Webp;
 
@@ -164,6 +166,123 @@ internal static class Vp8EncDsp
                 int d = ra[x] - rb[x];
                 sum += d * d;
             }
+        }
+
+        return sum;
+    }
+
+    /// <summary>
+    /// The sum of absolute differences of a <paramref name="w"/> × <paramref name="h"/> block of the work-stride buffer
+    /// <paramref name="src"/> at <paramref name="s"/> and a plane of <paramref name="stride"/> bytes a row at <paramref name="p"/>:
+    /// the motion search's measure. Two rows at a time with 256-bit vectors, one with 128-bit ones.
+    /// </summary>
+    internal static int Sad(ReadOnlySpan<byte> src, int s, ReadOnlySpan<byte> plane, int p, int stride, int w, int h)
+    {
+        if ((w == 16 || w == 8) && (h & 1) == 0 && Sse2.IsSupported)
+        {
+            _ = src.Slice(s, ((h - 1) * S) + w);
+            _ = plane.Slice(p, ((h - 1) * stride) + w);
+            ref byte a = ref Unsafe.Add(ref MemoryMarshal.GetReference(src), s);
+            ref byte b = ref Unsafe.Add(ref MemoryMarshal.GetReference(plane), p);
+            if (w == 16 && Avx2.IsSupported)
+            {
+                Vector256<ulong> sum = Vector256<ulong>.Zero;
+                for (int y = 0; y < h; y += 2)
+                {
+                    Vector256<byte> va = Vector256.Create(Vector128.LoadUnsafe(ref a), Vector128.LoadUnsafe(ref Unsafe.Add(ref a, S)));
+                    Vector256<byte> vb = Vector256.Create(Vector128.LoadUnsafe(ref b), Vector128.LoadUnsafe(ref Unsafe.Add(ref b, stride)));
+                    sum += Avx2.SumAbsoluteDifferences(va, vb).AsUInt64();
+                    a = ref Unsafe.Add(ref a, 2 * S);
+                    b = ref Unsafe.Add(ref b, 2 * stride);
+                }
+
+                return (int)Vector256.Sum(sum);
+            }
+
+            Vector128<ulong> total = Vector128<ulong>.Zero;
+            for (int y = 0; y < h; y += 2)
+            {
+                Vector128<byte> va, vb;
+                if (w == 16)
+                {
+                    total += Sse2.SumAbsoluteDifferences(Vector128.LoadUnsafe(ref a), Vector128.LoadUnsafe(ref b)).AsUInt64();
+                    va = Vector128.LoadUnsafe(ref Unsafe.Add(ref a, S));
+                    vb = Vector128.LoadUnsafe(ref Unsafe.Add(ref b, stride));
+                }
+                else
+                {
+                    va = Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref a), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref a, S))).AsByte();
+                    vb = Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref b), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref b, stride))).AsByte();
+                }
+
+                total += Sse2.SumAbsoluteDifferences(va, vb).AsUInt64();
+                a = ref Unsafe.Add(ref a, 2 * S);
+                b = ref Unsafe.Add(ref b, 2 * stride);
+            }
+
+            return (int)Vector128.Sum(total);
+        }
+
+        if (w == 16 && Vector128.IsHardwareAccelerated)
+        {
+            // Byte differences summed in 16-bit lanes: 16 rows of two lanes' worth stay under 8160.
+            _ = src.Slice(s, ((h - 1) * S) + 16);
+            _ = plane.Slice(p, ((h - 1) * stride) + 16);
+            ref byte a = ref Unsafe.Add(ref MemoryMarshal.GetReference(src), s);
+            ref byte b = ref Unsafe.Add(ref MemoryMarshal.GetReference(plane), p);
+            Vector128<ushort> sum = Vector128<ushort>.Zero;
+            for (int y = 0; y < h; y++)
+            {
+                Vector128<byte> va = Vector128.LoadUnsafe(ref a), vb = Vector128.LoadUnsafe(ref b);
+                (Vector128<ushort> lo, Vector128<ushort> hi) = Vector128.Widen(Vector128.Max(va, vb) - Vector128.Min(va, vb));
+                sum += lo + hi;
+                a = ref Unsafe.Add(ref a, S);
+                b = ref Unsafe.Add(ref b, stride);
+            }
+
+            return (int)(Vector128.Sum(Vector128.WidenLower(sum)) + Vector128.Sum(Vector128.WidenUpper(sum)));
+        }
+
+        int t = 0;
+        for (int y = 0; y < h; y++, s += S, p += stride)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                t += Math.Abs(src[s + x] - plane[p + x]);
+            }
+        }
+
+        return t;
+    }
+
+    /// <summary>The sum of squared differences of two rows of samples of the same length.</summary>
+    internal static long SquaredError(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
+    {
+        Debug.Assert(a.Length == b.Length);
+        int n = a.Length, x = 0;
+        long sum = 0;
+        if (Vector128.IsHardwareAccelerated && n >= 16)
+        {
+            // Each lane takes four squares a step, so 32-bit lanes hold any row a frame can have.
+            ref byte ra = ref MemoryMarshal.GetReference(a);
+            ref byte rb = ref MemoryMarshal.GetReference(b);
+            Vector128<uint> acc = Vector128<uint>.Zero;
+            for (; x <= n - 16; x += 16)
+            {
+                Vector128<byte> va = Vector128.LoadUnsafe(ref ra, (nuint)x), vb = Vector128.LoadUnsafe(ref rb, (nuint)x);
+                (Vector128<ushort> lo, Vector128<ushort> hi) = Vector128.Widen(Vector128.Max(va, vb) - Vector128.Min(va, vb));
+                lo *= lo;
+                hi *= hi;
+                acc += Vector128.WidenLower(lo) + Vector128.WidenUpper(lo) + Vector128.WidenLower(hi) + Vector128.WidenUpper(hi);
+            }
+
+            sum = Vector128.Sum(acc);
+        }
+
+        for (; x < n; x++)
+        {
+            int d = a[x] - b[x];
+            sum += d * d;
         }
 
         return sum;

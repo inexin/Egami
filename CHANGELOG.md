@@ -38,8 +38,13 @@ changes that break code come only in a new major version.
   sign biases, hidden frames, error resilience and token partitions; `Vp8References` and `Vp8ReferenceCopy` go with it.
   `Vp8EncodedFrame` returns the frame's data with its bits, quantizer, filter level, squared error and macroblock counts.
 - At the default effort the frames are within a few percent of libvpx `--good --cpu-used=1` in BD-rate on natural clips (about
-  10% larger on test patterns), taking 1.3 to 2.9 times libvpx's time on one thread. Lossy WebP stills are unchanged, byte for
-  byte.
+  6% larger on test patterns). Lossy WebP stills are unchanged, byte for byte.
+- The encoder codes each frame's macroblock rows on `EgamiContext.MaxParallelism` threads with the same output on any number of
+  threads, measures loop filter levels on its own reconstruction instead of decoding the frame for each, and gates the golden
+  and alternate frame searches and the intra modes where they rarely win. At 1080p and the default effort it takes 0.5 to 1.0
+  times libvpx `--good --cpu-used=1`'s time on one thread and 0.6 to 0.8 times on all cores (2.3 to 3.6 times faster than
+  before on one thread); the efforts are retuned so that each step buys compression (split vectors from effort 1, 4 × 4 splits
+  from 5, the trellis from 6).
 
 ### AV1 video encoding
 
@@ -157,6 +162,34 @@ which needs no .NET runtime.
 - `Barcode.Code128` takes about 0.6 times ZXing.Net 0.16.10's time (1.6 times before): the code set search runs on the
   stack, and the symbol characters and bars are built without lists or copies. Code 128 and Code 39 no longer copy
   text without control characters for the human-readable text.
+
+## Egami.Video 0.7.0 (unreleased)
+
+V5.2: VP8 encoding, on an encoder core that VP9 and AV1 encoding will share. The V5 encoder steps get one combined API review
+after V5.6 (Design Q17).
+
+### VP8 encoding
+
+- `Vp8Codec.CreateEncoder` and `VideoWriterOptions.Codec = VideoCodecs.Vp8`: VP8 into WebM, Matroska and IVF through Egami's
+  `Vp8StreamEncoder`, with WebM alpha as a second VP8 stream in each packet's addition 1. 8-bit 4:2:0 planes are coded as
+  they are; other frames are converted to BT.601 limited range.
+- `Vp8EncoderOptions` (`VideoEncoderOptions.Vp8`): quantizer limits, alternate references, golden frame spacing, temporal
+  filter frames and strength, token partitions, error resilience, alpha.
+- `egami-video encode --codec vp8` with `--effort` and `--bitrate`, and `run` keeps VP8 sources VP8; `egami-video ffmpeg`
+  takes `-c:v libvpx`.
+
+### Encoder settings
+
+- `VideoEncoderOptions` (and `VideoWriterOptions`) gain `Effort`, `RateControl` (`RateControlMode.Quality`, the default,
+  `Bitrate`, `ConstantBitrate`, `Quantizer`), `Bitrate`, `MaxBitrate`, `BufferSize`, `Quantizer`, `LatencyMode` (`Quality`
+  with a 25-frame lookahead, or `Realtime`), `KeyframeInterval` (10 seconds by default), `SceneCutKeyframes` and
+  `FirstPassStats`.
+- `IVideoEncoder.Send(VideoFrame, EncodeFrameOptions)` with `EncodeFrameOptions.ForceKeyframe`; Motion JPEG and uncompressed
+  video treat it as `Send(VideoFrame)`.
+- Two passes: `VideoWriter.AnalyzeFirstPass` over frames or a file gives `FirstPassStats`, which `Save` and `Load` keep in a
+  file.
+- The lookahead places keyframes at scene cuts, plans groups with hidden, temporally filtered alternate references where the
+  group's first frame still predicts its last well, and gives each frame its quantizer. Output bytes do not depend on the thread count.
 
 ## Egami.Video.Cli 0.5.0 (unreleased)
 
