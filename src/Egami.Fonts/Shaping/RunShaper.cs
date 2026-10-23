@@ -22,6 +22,7 @@ internal sealed class RunRequest
     public bool RemoveDefaultIgnorables;
     public bool DoNotInsertDottedCircle;
     public bool ProduceUnsafeToConcat;
+    public bool ProduceSafeToInsertTatweel;
     public uint Invisible;
     public uint NotFound;
     public uint NotFoundVariationSelector = uint.MaxValue;
@@ -74,6 +75,7 @@ internal static class RunShaper
         buffer.RemoveDefaultIgnorables = request.RemoveDefaultIgnorables;
         buffer.DoNotInsertDottedCircle = request.DoNotInsertDottedCircle;
         buffer.ProduceUnsafeToConcat = request.ProduceUnsafeToConcat;
+        buffer.ProduceSafeToInsertTatweel = request.ProduceSafeToInsertTatweel;
         buffer.Invisible = request.Invisible;
         buffer.NotFound = request.NotFound;
         buffer.NotFoundVariationSelector = request.NotFoundVariationSelector;

@@ -41,6 +41,10 @@ Specifications, textbooks and papers are always fine. Code under GPL, LGPL or AG
 For barcodes, ZBar (LGPL) is never used, and of zint only the backend library (BSD-3) may be studied: its frontends and GUI are
 under the GPL and are never used.
 
+For kashida justification (2.8.3), the W3C Arabic Layout Requirements, Microsoft's public notes on Arabic justification and
+ECMA-376 (Word's three kashida levels) are the references; HarfBuzz gives the safe-to-insert-tatweel flag. LibreOffice
+(MPL-2.0) is not read.
+
 For HEIC, libheif and libde265 (LGPL-3), FFmpeg's HEVC decoder and openHEVC (LGPL-2.1) and x265 (GPL-2) are never read; they
 only run as black-box tools in Docker to make test files and references. Nokia's HEIF code (non-commercial licence) is never
 read.

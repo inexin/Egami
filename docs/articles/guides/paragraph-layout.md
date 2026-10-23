@@ -111,8 +111,17 @@ is the start for justified paragraphs. Trailing spaces hang past the line's end 
 
 `TextJustify` says where justified lines stretch: `InterWord` at word separators, `InterCharacter` between any two grapheme
 clusters except inside cursive scripts such as Arabic, and `Auto` (the default) at word separators and around Chinese,
-Japanese and Korean characters, as browsers justify. `None` leaves justified lines at the start. Arabic is justified at its
-word spaces; kashida stretching waits for real demand.
+Japanese and Korean characters, as browsers justify. `None` leaves justified lines at the start.
+
+`Kashida` justifies Arabic the way Word and Arabic typesetting do: words grow with tatweels (U+0640, kashida) before the
+spaces widen. Each word gets one point, the best one the shaping marks safe for a tatweel (after Seen or Sad, before a final
+Heh, Alef or Lam, and so on), and whole tatweel glyphs of the run's font go there; `ParagraphStyle.Kashida` caps them at one
+(`Low`), two (`Medium`, the default) or four (`High`) per word, and word spaces take the rest. Lines break as they would
+without kashida, text in other scripts and fonts without a tatweel justify at spaces, and vertical lines never get kashida.
+The tatweels join the character before them, so carets, selections and hit tests stay on character boundaries, and
+`DrawTextLayout` marks them with an empty ActualText so extracted text keeps the paragraph's words.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#kashida)]
 
 ### Line limits and the ellipsis
 

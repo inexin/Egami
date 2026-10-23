@@ -16,6 +16,11 @@ public enum GlyphFlags
 
     /// <summary>Shaping the text before and after this point separately and joining the results may differ from shaping it whole.</summary>
     UnsafeToConcat = 2,
+
+    /// <summary>A tatweel (U+0640) can go before this glyph's cluster to lengthen the word without changing the shaping around it,
+    /// as kashida justification needs; only set when <see cref="ShapingOptions.ProduceSafeToInsertTatweel"/> or
+    /// <see cref="RunProperties.ProduceSafeToInsertTatweel"/> asks for it. Where it is set, <see cref="UnsafeToBreak"/> is too.</summary>
+    SafeToInsertTatweel = 4,
 }
 
 /// <summary>How a shaped glyph moves the pen and sits relative to it, in the units of the <see cref="Font"/> it was shaped with.</summary>
@@ -112,7 +117,7 @@ public sealed class GlyphBuffer
             GlyphPos pos = buffer.Pos[i];
             _glyphs[i] = info.Codepoint <= ushort.MaxValue ? (ushort)info.Codepoint : (ushort)0;
             _clusters[i] = info.Cluster;
-            _flags[i] = (GlyphFlags)(info.Mask & 3);
+            _flags[i] = (GlyphFlags)(info.Mask & LayoutBuffer.FlagDefined);
             _positions[i] = new GlyphPosition(pos.XAdvance * scale, pos.YAdvance * scale, pos.XOffset * scale, pos.YOffset * scale);
         }
 

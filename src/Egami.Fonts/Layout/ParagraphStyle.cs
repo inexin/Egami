@@ -37,6 +37,9 @@ public sealed record class ParagraphStyle
     /// <summary>Gets how justified lines stretch.</summary>
     public TextJustify Justify { get; init; }
 
+    /// <summary>Gets how far <see cref="TextJustify.Kashida"/> lengthens words before word spaces take the rest.</summary>
+    public KashidaLevel Kashida { get; init; } = KashidaLevel.Medium;
+
     /// <summary>Gets where lines may break.</summary>
     public LineBreakOptions LineBreaking { get; init; }
 
@@ -165,6 +168,27 @@ public enum TextJustify
 
     /// <summary>No stretching; justified lines align at the start.</summary>
     None = 3,
+
+    /// <summary>Tatweels (kashida) lengthen words in Arabic and the other scripts that join with U+0640, as Word's kashida
+    /// justification does, up to <see cref="ParagraphStyle.Kashida"/>; word separators take the rest, and the only stretch in other
+    /// scripts.</summary>
+    Kashida = 4,
+}
+
+/// <summary>How far <see cref="TextJustify.Kashida"/> lengthens a word, as Word's three kashida justifications.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="kashida"/>
+/// </example>
+public enum KashidaLevel
+{
+    /// <summary>Up to one tatweel per word (Word's <c>lowKashida</c>).</summary>
+    Low = 0,
+
+    /// <summary>Up to two tatweels per word (Word's <c>mediumKashida</c>).</summary>
+    Medium = 1,
+
+    /// <summary>Up to four tatweels per word (Word's <c>highKashida</c>).</summary>
+    High = 2,
 }
 
 /// <summary>How lines are filled.</summary>

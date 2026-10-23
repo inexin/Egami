@@ -183,6 +183,8 @@ internal sealed class LineBuilder
     private readonly AdvanceTable _m;
     private readonly Dictionary<(int, int), GlyphBuffer> _reshaped = [];
     private readonly Dictionary<Font, (GlyphBuffer Ltr, GlyphBuffer Rtl)?> _hyphens = [];
+    private Dictionary<Font, (ushort Glyph, float Advance)?>? _tatweels;
+    private bool[]? _safeForTatweel;
     private float _tabInterval = -1;
 
     public LineBuilder(Paragraph paragraph)
@@ -1039,11 +1041,12 @@ internal sealed class LineBuilder
         // Alignment: the last line and lines before a hard break use AlignLast; justified lines stretch from the start edge.
         TextAlignLast alignment = Alignment(draft.HardBreak || draft.End >= _text.Length);
         Dictionary<(DraftRun, int), float>? expansion = null;
+        Dictionary<DraftRun, List<Tatweels>>? tatweels = null;
         float contentWidth = draft.ContentWidth;
         float free = boxWidth - draft.ContentWidth;
         if (alignment == TextAlignLast.Justify && free > 0 && float.IsFinite(width))
         {
-            expansion = Justify(draft, free);
+            expansion = Justify(draft, free, out tatweels);
             if (expansion is not null)
             {
                 contentWidth = boxWidth;
@@ -1068,6 +1071,9 @@ internal sealed class LineBuilder
         {
             float x = origin + piece.X + stretch;
             float[] advances = piece.Advances;
+            ushort[] ids = piece.Glyphs;
+            int[] clusters = piece.Clusters;
+            Vector2[] offsets = piece.Offsets;
             float pieceAdvance = piece.Advance;
             if (expansion is not null)
             {
@@ -1089,19 +1095,26 @@ internal sealed class LineBuilder
                 }
             }
 
+            if (tatweels is not null && piece.Kind == RunKind.Text)
+            {
+                float added = InsertTatweels(piece, tatweels, ref ids, ref clusters, ref advances, ref offsets);
+                pieceAdvance += added;
+                stretch += added;
+            }
+
             float shift = _paragraph.Styles[piece.Style].BaselineShift;
             GlyphRun? glyphs = null;
             if (piece.Kind == RunKind.Text && !Vertical)
             {
-                Vector2[] points = new Vector2[piece.Glyphs.Length];
+                Vector2[] points = new Vector2[ids.Length];
                 float pen = x;
                 for (int g = 0; g < points.Length; g++)
                 {
-                    points[g] = new Vector2(pen + piece.Offsets[g].X, baseline + shift - piece.Offsets[g].Y);
+                    points[g] = new Vector2(pen + offsets[g].X, baseline + shift - offsets[g].Y);
                     pen += advances[g];
                 }
 
-                glyphs = new GlyphRun(piece.Font, piece.Glyphs, points, _text, piece.Clusters, null, advances)
+                glyphs = new GlyphRun(piece.Font, ids, points, _text, clusters, null, advances)
                 {
                     BidiLevel = piece.Level,
                     Script = piece.Script,
@@ -1306,12 +1319,14 @@ internal sealed class LineBuilder
     /// <summary>
     /// The extra advance each justification opportunity gets, keyed by piece and glyph (-1 for a placeholder's box), or null
     /// when the line has none. Opportunities sit between grapheme clusters of the content: after word separators
-    /// (<see cref="TextJustify.InterWord"/>), between any two clusters outside cursive scripts
+    /// (<see cref="TextJustify.InterWord"/> and <see cref="TextJustify.Kashida"/>), between any two clusters outside cursive scripts
     /// (<see cref="TextJustify.InterCharacter"/>), or, for <see cref="TextJustify.Auto"/>, after word separators and on both sides
-    /// of Chinese, Japanese and Korean characters, as browsers justify; never after the content's last cluster.
+    /// of Chinese, Japanese and Korean characters, as browsers justify; never after the content's last cluster. With
+    /// <see cref="TextJustify.Kashida"/>, <paramref name="tatweels"/> first takes what whole tatweels can (see <see cref="Kashida"/>).
     /// </summary>
-    private Dictionary<(DraftRun, int), float>? Justify(LineDraft draft, float free)
+    private Dictionary<(DraftRun, int), float>? Justify(LineDraft draft, float free, out Dictionary<DraftRun, List<Tatweels>>? tatweels)
     {
+        tatweels = null;
         TextJustify mode = _paragraph.Style.Justify;
         if (mode == TextJustify.None)
         {
@@ -1347,7 +1362,10 @@ internal sealed class LineBuilder
         }
 
         clusters.Sort((a, b) => a.Cluster.CompareTo(b.Cluster));
+        bool kashida = mode == TextJustify.Kashida && !Vertical;
         List<(DraftRun Piece, int Glyph)> opportunities = [];
+        List<KashidaPoint>? points = kashida ? [] : null;
+        KashidaPoint? best = null;
         for (int i = 0; i + 1 < clusters.Count; i++)
         {
             int cp = TextSegmenter.CodePointAt(_text, clusters[i].Cluster, out _);
@@ -1355,7 +1373,7 @@ internal sealed class LineBuilder
             bool separator = AdvanceTable.IsWordSeparator(cp);
             bool opportunity = mode switch
             {
-                TextJustify.InterWord => separator,
+                TextJustify.InterWord or TextJustify.Kashida => separator,
                 TextJustify.InterCharacter => separator || (!AdvanceTable.IsCursive(clusters[i].Piece.Script) && !AdvanceTable.IsCursive(clusters[i + 1].Piece.Script)),
                 _ => separator || IsCjk(cp) || IsCjk(next),
             };
@@ -1363,14 +1381,40 @@ internal sealed class LineBuilder
             {
                 opportunities.Add((clusters[i].Piece, clusters[i].Glyph));
             }
+
+            if (kashida)
+            {
+                // One point per word: the best safe one, the later of equals.
+                if (KashidaPointAt(clusters[i], clusters[i + 1]) is KashidaPoint point && (best is null || point.Priority <= best.Value.Priority))
+                {
+                    best = point;
+                }
+
+                if (separator && best is not null)
+                {
+                    points!.Add(best.Value);
+                    best = null;
+                }
+            }
+        }
+
+        if (best is not null)
+        {
+            points!.Add(best.Value);
+        }
+
+        float remaining = free;
+        if (points is { Count: > 0 })
+        {
+            tatweels = PlaceTatweels(points, Kashida.Cap(_paragraph.Style.Kashida), opportunities.Count > 0, ref remaining);
         }
 
         if (opportunities.Count == 0)
         {
-            return null;
+            return tatweels is null ? null : [];
         }
 
-        float each = free / opportunities.Count;
+        float each = Math.Max(0, remaining) / opportunities.Count;
         Dictionary<(DraftRun, int), float> result = [];
         foreach ((DraftRun piece, int glyph) in opportunities)
         {
@@ -1379,6 +1423,209 @@ internal sealed class LineBuilder
 
         return result;
     }
+
+    /// <summary>
+    /// Spreads a line's free space over its words' kashida points: whole tatweels, a round at a time over the words, best points
+    /// first, up to <paramref name="cap"/> each. What is left stays in <paramref name="remaining"/> for the separators; with none,
+    /// one more tatweel, overlapping the letter after it, takes it in the word with fewest. (Kept out of
+    /// <see cref="Justify"/> so that its lambdas allocate nothing on lines without kashida.)
+    /// </summary>
+    private static Dictionary<DraftRun, List<Tatweels>>? PlaceTatweels(List<KashidaPoint> points, int cap, bool separators, ref float remaining)
+    {
+        int[] counts = new int[points.Count];
+        float[] last = new float[points.Count];
+        int[] order = [.. Enumerable.Range(0, points.Count).OrderBy(k => points[k].Priority)];
+        for (int round = 0; round < cap; round++)
+        {
+            bool took = false;
+            foreach (int k in order)
+            {
+                if (points[k].Width <= remaining + Epsilon)
+                {
+                    counts[k]++;
+                    remaining -= points[k].Width;
+                    took = true;
+                }
+            }
+
+            if (!took)
+            {
+                break;
+            }
+        }
+
+        for (int k = 0; k < points.Count; k++)
+        {
+            last[k] = points[k].Width;
+        }
+
+        if (!separators && remaining > Epsilon)
+        {
+            int k = order.MinBy(k => counts[k]);
+            counts[k]++;
+            last[k] = remaining;
+            remaining = 0;
+        }
+
+        Dictionary<DraftRun, List<Tatweels>>? tatweels = null;
+        for (int k = 0; k < points.Count; k++)
+        {
+            if (counts[k] > 0)
+            {
+                KashidaPoint point = points[k];
+                tatweels ??= [];
+                if (!tatweels.TryGetValue(point.Piece, out List<Tatweels>? list))
+                {
+                    list = [];
+                    tatweels[point.Piece] = list;
+                }
+
+                list.Add(new Tatweels(InsertionIndex(point.Piece, point.AfterGlyph), point.Glyph, point.Cluster, counts[k], point.Width, last[k]));
+            }
+        }
+
+        return tatweels;
+    }
+
+    /// <summary>
+    /// The kashida point before the cluster <paramref name="after"/>, or null: both clusters in one text piece of a script that joins
+    /// with U+0640, the shaping marking the cluster safe for a tatweel, and the piece's font having one. Tatweels go just before the
+    /// cluster's glyphs in logical order, so after them visually in right-to-left pieces, and join the cluster before.
+    /// </summary>
+    private KashidaPoint? KashidaPointAt((int Cluster, DraftRun Piece, int Glyph) before, (int Cluster, DraftRun Piece, int Glyph) after)
+    {
+        DraftRun piece = after.Piece;
+        if (before.Piece != piece || piece.Kind != RunKind.Text || piece.Upright || !Kashida.Joins(piece.Script) || after.Glyph < 0
+            || !SafeForTatweel(after.Cluster) || TatweelOf(piece.Font) is not (ushort glyph, float width))
+        {
+            return null;
+        }
+
+        return new KashidaPoint(piece, after.Glyph, before.Cluster, Kashida.Priority(_text, before.Cluster, after.Cluster), glyph, width);
+    }
+
+    /// <summary>Where in a piece's visual order tatweels go before the cluster of <paramref name="glyph"/> (its logically last
+    /// glyph): after the cluster's glyphs in right-to-left pieces, before them in left-to-right ones.</summary>
+    private static int InsertionIndex(DraftRun piece, int glyph)
+    {
+        int cluster = piece.Clusters[glyph];
+        int g = glyph;
+        if ((piece.Level & 1) != 0)
+        {
+            while (g < piece.Clusters.Length && piece.Clusters[g] == cluster)
+            {
+                g++;
+            }
+
+            return g;
+        }
+
+        while (g > 0 && piece.Clusters[g - 1] == cluster)
+        {
+            g--;
+        }
+
+        return g;
+    }
+
+    /// <summary>Whether the paragraph's shaping marked the cluster starting at an index safe for a tatweel before it.</summary>
+    private bool SafeForTatweel(int cluster)
+    {
+        if (_safeForTatweel is null)
+        {
+            bool[] safe = new bool[_text.Length];
+            foreach (ParagraphRun run in _paragraph.Runs)
+            {
+                if (run.Glyphs is GlyphBuffer glyphs && run.Properties.ProduceSafeToInsertTatweel)
+                {
+                    for (int g = 0; g < glyphs.Count; g++)
+                    {
+                        if ((glyphs.Flags[g] & GlyphFlags.SafeToInsertTatweel) != 0)
+                        {
+                            safe[glyphs.Clusters[g]] = true;
+                        }
+                    }
+                }
+            }
+
+            _safeForTatweel = safe;
+        }
+
+        return _safeForTatweel[cluster];
+    }
+
+    /// <summary>A font's tatweel glyph and advance, or null when it has none.</summary>
+    private (ushort Glyph, float Advance)? TatweelOf(Font font)
+    {
+        _tatweels ??= [];
+        if (!_tatweels.TryGetValue(font, out var tatweel))
+        {
+            ushort glyph = font.Typeface.GetGlyph(Kashida.Tatweel);
+            float advance = glyph == 0 ? 0 : font.GetAdvance(glyph);
+            tatweel = advance > 0 ? (glyph, advance) : null;
+            _tatweels[font] = tatweel;
+        }
+
+        return tatweel;
+    }
+
+    /// <summary>Puts a piece's tatweels into its glyph arrays and returns their total advance.</summary>
+    private static float InsertTatweels(DraftRun piece, Dictionary<DraftRun, List<Tatweels>> tatweels, ref ushort[] ids, ref int[] clusters, ref float[] advances, ref Vector2[] offsets)
+    {
+        if (!tatweels.TryGetValue(piece, out List<Tatweels>? list))
+        {
+            return 0;
+        }
+
+        list.Sort((a, b) => a.Index.CompareTo(b.Index));
+        int n = ids.Length + list.Sum(t => t.Count);
+        ushort[] newIds = new ushort[n];
+        int[] newClusters = new int[n];
+        float[] newAdvances = new float[n];
+        Vector2[] newOffsets = new Vector2[n];
+        float added = 0;
+        int o = 0;
+        int next = 0;
+        for (int g = 0; g <= ids.Length; g++)
+        {
+            while (next < list.Count && list[next].Index == g)
+            {
+                Tatweels t = list[next++];
+                for (int k = 0; k < t.Count; k++)
+                {
+                    float advance = k == t.Count - 1 ? t.Last : t.Advance;
+                    newIds[o] = t.Glyph;
+                    newClusters[o] = t.Cluster;
+                    newAdvances[o] = advance;
+                    added += advance;
+                    o++;
+                }
+            }
+
+            if (g < ids.Length)
+            {
+                newIds[o] = ids[g];
+                newClusters[o] = clusters[g];
+                newAdvances[o] = advances[g];
+                newOffsets[o] = offsets[g];
+                o++;
+            }
+        }
+
+        ids = newIds;
+        clusters = newClusters;
+        advances = newAdvances;
+        offsets = newOffsets;
+        return added;
+    }
+
+    /// <summary>A word's kashida point: tatweels go before the cluster of the piece's glyph <see cref="AfterGlyph"/> and join
+    /// <see cref="Cluster"/>.</summary>
+    private readonly record struct KashidaPoint(DraftRun Piece, int AfterGlyph, int Cluster, int Priority, ushort Glyph, float Width);
+
+    /// <summary>Tatweels put into a piece before its glyph <see cref="Index"/> (in visual order): <see cref="Count"/> glyphs, each
+    /// <see cref="Advance"/> wide but the last, which is <see cref="Last"/> wide (less where it overlaps the letter after it).</summary>
+    private readonly record struct Tatweels(int Index, ushort Glyph, int Cluster, int Count, float Advance, float Last);
 
     /// <summary>Chinese, Japanese and Korean characters, which justify between each other: ideographs, kana, Hangul, Bopomofo
     /// and their fullwidth punctuation and symbols.</summary>

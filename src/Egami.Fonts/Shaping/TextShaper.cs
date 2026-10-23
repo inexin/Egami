@@ -22,6 +22,10 @@ public readonly record struct RunProperties
 
     /// <summary>Gets how characters group into clusters.</summary>
     public ClusterLevel ClusterLevel { get; init; }
+
+    /// <summary>Gets whether glyphs say where a tatweel can lengthen a word (<see cref="GlyphFlags.SafeToInsertTatweel"/>), as
+    /// HarfBuzz's <c>HB_BUFFER_FLAG_PRODUCE_SAFE_TO_INSERT_TATWEEL</c>.</summary>
+    public bool ProduceSafeToInsertTatweel { get; init; }
 }
 
 /// <summary>
@@ -119,6 +123,7 @@ public static class TextShaper
             ClusterLevel = (LayoutClusterLevel)properties.ClusterLevel,
             BeginningOfText = start == 0,
             EndOfText = end == text.Length,
+            ProduceSafeToInsertTatweel = properties.ProduceSafeToInsertTatweel,
         };
 
         List<FeatureSetting> features = [];

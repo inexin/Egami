@@ -541,6 +541,8 @@ internal static class Itemizer
                     Language = style.Language,
                     Direction = p.Upright ? TextDirection.TopToBottom : (p.Level & 1) != 0 ? TextDirection.RightToLeft : TextDirection.LeftToRight,
                     Features = features,
+                    ProduceSafeToInsertTatweel = paragraph.Justify == TextJustify.Kashida && paragraph.WritingMode == WritingMode.HorizontalTb
+                        && Kashida.Joins(p.Script),
                 };
                 glyphs = new GlyphBuffer();
                 TextShaper.ShapeRun(text, p.Start, p.Length, p.Font, properties, glyphs);

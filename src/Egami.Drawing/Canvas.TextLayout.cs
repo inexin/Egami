@@ -40,7 +40,8 @@ public abstract partial class Canvas
     /// then line-throughs. Each run uses its style's <see cref="TextStyle.Paint"/> or <see cref="TextStyle.Color"/> (black when
     /// neither is set), each decoration its own paint or color. Lines outside <paramref name="visibleRect"/> and the clip are
     /// skipped. An ellipsis is drawn as marked content whose ActualText is the text it stands for on its line, and a soft
-    /// hyphen's hyphen as one whose ActualText is the soft hyphen, so text extracted from a PDF stays the paragraph's.
+    /// hyphen's hyphen as one whose ActualText is the soft hyphen, and the tatweels <see cref="TextJustify.Kashida"/> put in as one
+    /// whose ActualText is empty, so text extracted from a PDF stays the paragraph's.
     /// </summary>
     /// <param name="layout">The layout.</param>
     /// <param name="origin">Where the layout's top-left corner goes, in local coordinates.</param>
@@ -211,17 +212,29 @@ public abstract partial class Canvas
                 OnDrawGlyphRun(glyphs, origin, paint);
                 EndMarkedContent();
             }
-            else if (SoftHyphenGlyphs(paragraph.Text, line, glyphs) is List<int> hyphen)
+            else if ((SoftHyphenGlyphs(paragraph.Text, line, glyphs), KashidaGlyphs(paragraph, run, glyphs)) is var (hyphen, tatweels)
+                && (hyphen.Count > 0 || tatweels.Count > 0))
             {
-                List<int> rest = [.. Enumerable.Range(0, glyphs.Count).Except(hyphen)];
+                List<int> rest = [.. Enumerable.Range(0, glyphs.Count).Except(hyphen).Except(tatweels)];
                 if (rest.Count > 0)
                 {
                     OnDrawGlyphRun(Subrun(glyphs, rest), origin, paint);
                 }
 
-                BeginMarkedContent(new MarkedContent("Span") { ActualText = "\u00AD" });
-                OnDrawGlyphRun(Subrun(glyphs, hyphen), origin, paint);
-                EndMarkedContent();
+                if (hyphen.Count > 0)
+                {
+                    BeginMarkedContent(new MarkedContent("Span") { ActualText = "\u00AD" });
+                    OnDrawGlyphRun(Subrun(glyphs, hyphen), origin, paint);
+                    EndMarkedContent();
+                }
+
+                if (tatweels.Count > 0)
+                {
+                    // Tatweels kashida justification put in stand for no text.
+                    BeginMarkedContent(new MarkedContent("Span") { ActualText = string.Empty });
+                    OnDrawGlyphRun(Subrun(glyphs, tatweels), origin, paint);
+                    EndMarkedContent();
+                }
             }
             else
             {
@@ -236,12 +249,12 @@ public abstract partial class Canvas
     }
 
     /// <summary>The glyphs a line ending at a soft hyphen added for its hyphen: those of the soft hyphen's cluster.</summary>
-    private static List<int>? SoftHyphenGlyphs(string text, TextLine line, GlyphRun glyphs)
+    private static List<int> SoftHyphenGlyphs(string text, TextLine line, GlyphRun glyphs)
     {
         int end = line.Start + line.Length;
         if (end == 0 || text[end - 1] != '\u00AD' || glyphs.Clusters.IsEmpty)
         {
-            return null;
+            return [];
         }
 
         List<int> indices = [];
@@ -253,7 +266,43 @@ public abstract partial class Canvas
             }
         }
 
-        return indices.Count > 0 ? indices : null;
+        return indices;
+    }
+
+    /// <summary>The tatweels <see cref="TextJustify.Kashida"/> put into a run: U+0640 glyphs in clusters whose text has no U+0640.</summary>
+    private static List<int> KashidaGlyphs(Paragraph paragraph, LayoutRun run, GlyphRun glyphs)
+    {
+        List<int> indices = [];
+        if (paragraph.Style.Justify != TextJustify.Kashida || glyphs.Clusters.IsEmpty || glyphs.Font.Typeface.GetGlyph(0x0640) is not (> 0 and ushort tatweel))
+        {
+            return indices;
+        }
+
+        for (int g = 0; g < glyphs.Count; g++)
+        {
+            if (glyphs.Glyphs[g] == tatweel && !ClusterText(paragraph.Text, glyphs.Clusters, glyphs.Clusters[g], run.Start + run.Length).Contains('\u0640'))
+            {
+                indices.Add(g);
+            }
+        }
+
+        return indices;
+    }
+
+    /// <summary>The text of the cluster starting at <paramref name="cluster"/>: up to the next larger cluster start in the run, or
+    /// the run's end.</summary>
+    private static ReadOnlySpan<char> ClusterText(string text, ReadOnlySpan<int> clusters, int cluster, int runEnd)
+    {
+        int end = runEnd;
+        foreach (int c in clusters)
+        {
+            if (c > cluster && c < end)
+            {
+                end = c;
+            }
+        }
+
+        return text.AsSpan(cluster, end - cluster);
     }
 
     private void FillDecoration(DecorationShape shape, Vector2 origin, Paint paint)
