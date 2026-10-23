@@ -6,7 +6,9 @@ Inputs and outputs:
                                              (spatial and temporal direct), several slices, several reference frames, explicit and
                                              implicit weighted prediction, the 8x8 transform with and without scaling matrices,
                                              High 10, High 4:2:2 at 8 and 10 bits, monochrome, the Intra profiles and a cropped
-                                             size.
+                                             size; also open GOPs, periodic intra refresh, constrained intra prediction, 16
+                                             reference frames, many slices per frame, CAVLC weighted prediction, deblocking
+                                             offsets, very low and high QPs, and a picture smaller than a motion search window.
   tests/video/corpus/h264/<clip>.mp4         some of the same streams in MP4 (avcC, length-prefixed samples).
   tests/video/corpus/h264/<clip>.frames.json the stream's size and bit depth, and per frame in output order the MD5 of FFmpeg's
                                              decode: the planes at the cropped size one after the other, one byte per sample at 8

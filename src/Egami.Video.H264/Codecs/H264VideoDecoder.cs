@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Intrinsics;
 
 using Egami.Colors;
 using Egami.Pixels;
@@ -30,13 +31,20 @@ internal sealed class H264VideoDecoder : IVideoDecoder
         _track = track;
         _egami = context.Egami;
         _errors = options.Errors;
-        _decoder = new H264Decoder(_egami.Limits, _errors) { Report = (id, message) => Report(DiagnosticLevel.Warning, id, message) };
+        _decoder = new H264Decoder(_egami.Limits, _errors)
+        {
+            MaxParallelism = Math.Max(1, _egami.MaxParallelism),
+            Report = (id, message) => Report(DiagnosticLevel.Warning, id, message),
+        };
         _hdr = track.Hdr;
-        if (!track.CodecPrivate.IsEmpty && H264Config.Parse(track.CodecPrivate) is { } config)
+        if (!track.CodecPrivate.IsEmpty)
         {
             try
             {
-                _decoder.Configure(config);
+                if (H264Config.Parse(track.CodecPrivate) is { } config)
+                {
+                    _decoder.Configure(config);
+                }
             }
             catch (CorruptDataException e)
             {
@@ -223,7 +231,17 @@ internal sealed class H264VideoDecoder : IVideoDecoder
         {
             ReadOnlySpan<ushort> row = source.AsSpan(at + (y * stride), target.Width);
             Span<byte> output = target.Row(y);
-            for (int x = 0; x < row.Length; x++)
+            int x = 0;
+            if (Vector128.IsHardwareAccelerated)
+            {
+                // Samples are at most 255 here, so narrowing keeps each one.
+                for (; x + 16 <= row.Length; x += 16)
+                {
+                    Vector128.Narrow(Vector128.Create(row.Slice(x, 8)), Vector128.Create(row.Slice(x + 8, 8))).CopyTo(output.Slice(x, 16));
+                }
+            }
+
+            for (; x < row.Length; x++)
             {
                 output[x] = (byte)row[x];
             }

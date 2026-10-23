@@ -75,6 +75,7 @@ static Action<Stream> Target(string name) => name switch
     "vp8" => ReadVp8,
     "vp9" => ReadVp9,
     "vp9raw" => DecodeVp9Packets,
+    "h264" => ReadH264,
     "wav" or "flac" or "ogg" => ReadAudio,
     "opusraw" => DecodeOpusPackets,
     "vorbisraw" => DecodeVorbisPackets,
@@ -86,7 +87,7 @@ static Action<Stream> Target(string name) => name switch
     "opusenc" => EncodeOpus,
     "subs" => ReadSubtitles,
     "subtrack" => ReadSubtitleTracks,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, av1, av1raw, wav, flac, ogg, opusraw, vorbisraw, vp8enc, mp3, mp3raw, opusenc, subs, subtrack."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, opusraw, vorbisraw, vp8enc, mp3, mp3raw, opusenc, subs, subtrack."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -675,9 +676,19 @@ static void ReadVp9(Stream stream) => ReadVideo(stream, "VP9");
 // An AV1 file (IVF, WebM, Matroska, low-overhead OBUs or Annex B), as for VP9.
 static void ReadAv1(Stream stream) => ReadVideo(stream, "AV1");
 
-static void ReadVideo(Stream stream, string codec)
+// A raw H.264 stream, MP4 or Matroska file with Egami.Video.H264 registered, as for VP9; then decoded again on two threads.
+static void ReadH264(Stream stream)
 {
-    MediaContext context = Context() with { Egami = Context().Egami with { Diagnostics = _ => { } } };
+    byte[] data = ReadAll(stream);
+    ReadVideo(new MemoryStream(data), "H.264", Context().WithH264());
+    MediaContext threaded = Context().WithH264() with { Egami = Context().Egami with { MaxParallelism = 2 } };
+    ReadVideo(new MemoryStream(data), "H.264", threaded);
+}
+
+static void ReadVideo(Stream stream, string codec, MediaContext? baseContext = null)
+{
+    baseContext ??= Context();
+    MediaContext context = baseContext with { Egami = baseContext.Egami with { Diagnostics = _ => { } } };
     byte[] data = ReadAll(stream);
     foreach (DecodeErrorMode mode in (DecodeErrorMode[])[DecodeErrorMode.Skip, DecodeErrorMode.Conceal, DecodeErrorMode.Throw])
     {

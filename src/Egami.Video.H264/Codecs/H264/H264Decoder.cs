@@ -18,7 +18,11 @@ internal sealed class H264Decoder
     private readonly H264SliceDecoder _slices = new();
     private readonly H264Deblock _deblock = new();
     private readonly List<int> _removed = [];
-    private byte[] _padded = new byte[1024];
+    private readonly List<byte[]> _padded = [];
+    private readonly List<SliceJob> _jobs = [];
+    private readonly List<H264SliceDecoder> _sliceDecoders = [];
+    private readonly List<H264Deblock> _deblocks = [];
+    private int[] _rowProgress = [];
 
     private H264Sps? _active;
     private H264MbState? _mb;
@@ -52,6 +56,9 @@ internal sealed class H264Decoder
     internal SafetyLimits Limits { get; }
 
     internal DecodeErrorMode Errors { get; }
+
+    /// <summary>Gets or sets how many threads decode slices and deblock: 1 decodes on the calling thread only.</summary>
+    internal int MaxParallelism { get; set; } = 1;
 
     /// <summary>Gets or sets the size of the NAL unit lengths of each packet, or 0 for Annex B packets.</summary>
     internal int LengthSize { get; set; }
@@ -162,33 +169,33 @@ internal sealed class H264Decoder
                 _sei.Read(NalFraming.Unescape(span));
                 break;
             case 7:
-            {
-                FinishPictureBeforeNonVcl();
-                byte[] rbsp = NalFraming.Unescape(span);
-                H264Sps sps = H264Sps.Read(rbsp, Limits);
-                if (_sps[sps.Id] is { } old && old.Rbsp.AsSpan().SequenceEqual(rbsp))
                 {
+                    FinishPictureBeforeNonVcl();
+                    byte[] rbsp = NalFraming.Unescape(span);
+                    H264Sps sps = H264Sps.Read(rbsp, Limits);
+                    if (_sps[sps.Id] is { } old && old.Rbsp.AsSpan().SequenceEqual(rbsp))
+                    {
+                        break;
+                    }
+
+                    _sps[sps.Id] = sps;
                     break;
                 }
-
-                _sps[sps.Id] = sps;
-                break;
-            }
 
             case 8:
-            {
-                FinishPictureBeforeNonVcl();
-                byte[] rbsp = NalFraming.Unescape(span);
-                (int ppsId, _) = H264Pps.ReadIds(rbsp);
-                if (_ppsRbsp[ppsId] is { } old && old.AsSpan().SequenceEqual(rbsp))
                 {
+                    FinishPictureBeforeNonVcl();
+                    byte[] rbsp = NalFraming.Unescape(span);
+                    (int ppsId, _) = H264Pps.ReadIds(rbsp);
+                    if (_ppsRbsp[ppsId] is { } old && old.AsSpan().SequenceEqual(rbsp))
+                    {
+                        break;
+                    }
+
+                    _ppsRbsp[ppsId] = rbsp;
+                    _pps[ppsId] = null;
                     break;
                 }
-
-                _ppsRbsp[ppsId] = rbsp;
-                _pps[ppsId] = null;
-                break;
-            }
 
             case 9 or 10 or 11:
                 FinishPictureBeforeNonVcl();
@@ -239,7 +246,13 @@ internal sealed class H264Decoder
         }
         catch (CorruptDataException e)
         {
-            Fail("H264.CorruptSlice", $"A slice header cannot be read ({e.Message}).", e);
+            // Before the first IDR picture or recovery point, slices whose parameter sets came earlier in the stream are
+            // passed over like any other picture decoding cannot start at.
+            if (_started)
+            {
+                Fail("H264.CorruptSlice", $"A slice header cannot be read ({e.Message}).", e);
+            }
+
             return;
         }
 
@@ -376,60 +389,60 @@ internal sealed class H264Decoder
         switch (sps.PocType)
         {
             case 0:
-            {
-                int maxLsb = 1 << sps.Log2MaxPocLsb;
-                int lsb = h.PocLsb;
-                int msb = lsb < _prevPocLsb && _prevPocLsb - lsb >= maxLsb / 2 ? _prevPocMsb + maxLsb
-                    : lsb > _prevPocLsb && lsb - _prevPocLsb > maxLsb / 2 ? _prevPocMsb - maxLsb
-                    : _prevPocMsb;
-                _curPocMsb = msb;
-                pic.TopPoc = msb + lsb;
-                pic.BottomPoc = pic.TopPoc + h.DeltaPocBottom;
-                break;
-            }
+                {
+                    int maxLsb = 1 << sps.Log2MaxPocLsb;
+                    int lsb = h.PocLsb;
+                    int msb = lsb < _prevPocLsb && _prevPocLsb - lsb >= maxLsb / 2 ? _prevPocMsb + maxLsb
+                        : lsb > _prevPocLsb && lsb - _prevPocLsb > maxLsb / 2 ? _prevPocMsb - maxLsb
+                        : _prevPocMsb;
+                    _curPocMsb = msb;
+                    pic.TopPoc = msb + lsb;
+                    pic.BottomPoc = pic.TopPoc + h.DeltaPocBottom;
+                    break;
+                }
 
             case 1:
-            {
-                int cycle = sps.OffsetForRefFrame.Length;
-                int absFrameNum = cycle != 0 ? frameNumOffset + h.FrameNum : 0;
-                if (h.NalRefIdc == 0 && absFrameNum > 0)
                 {
-                    absFrameNum--;
-                }
-
-                long expected = 0;
-                if (absFrameNum > 0)
-                {
-                    long deltaPerCycle = 0;
-                    foreach (int offset in sps.OffsetForRefFrame)
+                    int cycle = sps.OffsetForRefFrame.Length;
+                    int absFrameNum = cycle != 0 ? frameNumOffset + h.FrameNum : 0;
+                    if (h.NalRefIdc == 0 && absFrameNum > 0)
                     {
-                        deltaPerCycle += offset;
+                        absFrameNum--;
                     }
 
-                    int cycleCount = (absFrameNum - 1) / cycle, inCycle = (absFrameNum - 1) % cycle;
-                    expected = cycleCount * deltaPerCycle;
-                    for (int i = 0; i <= inCycle; i++)
+                    long expected = 0;
+                    if (absFrameNum > 0)
                     {
-                        expected += sps.OffsetForRefFrame[i];
+                        long deltaPerCycle = 0;
+                        foreach (int offset in sps.OffsetForRefFrame)
+                        {
+                            deltaPerCycle += offset;
+                        }
+
+                        int cycleCount = (absFrameNum - 1) / cycle, inCycle = (absFrameNum - 1) % cycle;
+                        expected = cycleCount * deltaPerCycle;
+                        for (int i = 0; i <= inCycle; i++)
+                        {
+                            expected += sps.OffsetForRefFrame[i];
+                        }
                     }
-                }
 
-                if (h.NalRefIdc == 0)
-                {
-                    expected += sps.OffsetForNonRefPic;
-                }
+                    if (h.NalRefIdc == 0)
+                    {
+                        expected += sps.OffsetForNonRefPic;
+                    }
 
-                pic.TopPoc = (int)(expected + h.DeltaPoc0);
-                pic.BottomPoc = pic.TopPoc + sps.OffsetForTopToBottomField + h.DeltaPoc1;
-                break;
-            }
+                    pic.TopPoc = (int)(expected + h.DeltaPoc0);
+                    pic.BottomPoc = pic.TopPoc + sps.OffsetForTopToBottomField + h.DeltaPoc1;
+                    break;
+                }
 
             default:
-            {
-                int temp = h.Idr ? 0 : h.NalRefIdc == 0 ? (2 * (frameNumOffset + h.FrameNum)) - 1 : 2 * (frameNumOffset + h.FrameNum);
-                pic.TopPoc = pic.BottomPoc = temp;
-                break;
-            }
+                {
+                    int temp = h.Idr ? 0 : h.NalRefIdc == 0 ? (2 * (frameNumOffset + h.FrameNum)) - 1 : 2 * (frameNumOffset + h.FrameNum);
+                    pic.TopPoc = pic.BottomPoc = temp;
+                    break;
+                }
         }
     }
 
@@ -505,20 +518,162 @@ internal sealed class H264Decoder
                 }
             }
 
-            if (_padded.Length < rbsp.Length + 16)
+            if (MaxParallelism > 1)
             {
-                _padded = new byte[rbsp.Length + 1024];
+                // Kept until the picture ends, when its slices decode side by side.
+                _jobs.Add(new SliceJob(h, Pad(_jobs.Count, rbsp), rbsp.Length, sliceNum, list0, list1, implicitWeights));
+                return;
             }
 
-            rbsp.CopyTo(_padded, 0);
-            _padded.AsSpan(rbsp.Length, 16).Clear();
-            _slices.Decode(h, _padded, rbsp.Length, pic, _mb!, sliceNum, list0, list1, implicitWeights);
+            byte[] padded = Pad(0, rbsp);
+            _slices.Decode(h, padded, rbsp.Length, pic, _mb!, sliceNum, list0, list1, implicitWeights);
         }
         catch (CorruptDataException e)
         {
             _curDamaged = true;
             Fail("H264.CorruptSlice", $"A slice of frame_num {h.FrameNum} cannot be decoded ({e.Message}).", e);
         }
+    }
+
+    /// <summary>Copies a slice's RBSP into reused buffer <paramref name="index"/> with 16 zero bytes after it for the bit reader.</summary>
+    private byte[] Pad(int index, byte[] rbsp)
+    {
+        while (_padded.Count <= index)
+        {
+            _padded.Add([]);
+        }
+
+        byte[] padded = _padded[index];
+        if (padded.Length < rbsp.Length + 16)
+        {
+            padded = _padded[index] = new byte[rbsp.Length + 1024];
+        }
+
+        rbsp.CopyTo(padded, 0);
+        padded.AsSpan(rbsp.Length, 16).Clear();
+        return padded;
+    }
+
+    /// <summary>Decodes the slices kept for the picture, side by side: slices predict only from their own macroblocks.</summary>
+    /// <returns>The first slice's error, which Throw mode raises once the picture is finished.</returns>
+    private CorruptDataException? RunJobs()
+    {
+        if (_jobs.Count == 0)
+        {
+            return null;
+        }
+
+        while (_sliceDecoders.Count < Math.Min(_jobs.Count, MaxParallelism))
+        {
+            _sliceDecoders.Add(new H264SliceDecoder());
+        }
+
+        Exception?[] errors = new Exception?[_jobs.Count];
+        H264Picture pic = _cur!;
+        H264MbState mb = _mb!;
+        if (_jobs.Count == 1)
+        {
+            errors[0] = Run(_slices, _jobs[0], pic, mb);
+        }
+        else
+        {
+            int next = -1;
+            Parallel.For(0, _sliceDecoders.Count, new ParallelOptions { MaxDegreeOfParallelism = MaxParallelism }, worker =>
+            {
+                H264SliceDecoder decoder = _sliceDecoders[worker];
+                int job;
+                while ((job = Interlocked.Increment(ref next)) < _jobs.Count)
+                {
+                    errors[job] = Run(decoder, _jobs[job], pic, mb);
+                }
+            });
+        }
+
+        CorruptDataException? first = null;
+        for (int i = 0; i < _jobs.Count; i++)
+        {
+            if (errors[i] is CorruptDataException e)
+            {
+                _curDamaged = true;
+                Report?.Invoke("H264.CorruptSlice", $"A slice of frame_num {_jobs[i].Header.FrameNum} cannot be decoded ({e.Message}).");
+                first ??= e;
+            }
+        }
+
+        _jobs.Clear();
+        return first;
+
+        static Exception? Run(H264SliceDecoder decoder, SliceJob job, H264Picture pic, H264MbState mb)
+        {
+            try
+            {
+                decoder.Decode(job.Header, job.Data, job.Length, pic, mb, job.SliceNum, job.List0, job.List1, job.ImplicitWeights);
+                return null;
+            }
+            catch (CorruptDataException e)
+            {
+                return e;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Deblocks the picture on <see cref="MaxParallelism"/> threads in a wavefront: each takes the next macroblock row and filters
+    /// a macroblock once the row above has filtered the one up and to its right, whose left edge filter reaches the samples this
+    /// macroblock's top edge filter reads. The result equals filtering in address order.
+    /// </summary>
+    private void Deblock(H264Picture pic, H264MbState mb, H264Sps sps)
+    {
+        int rows = sps.HeightInMbs, cols = sps.WidthInMbs;
+        int workers = Math.Min(MaxParallelism, rows);
+        if (workers <= 1)
+        {
+            _deblock.Filter(pic, mb, _sliceParams, sps.BitDepthLuma, sps.BitDepthChroma, 0, rows);
+            return;
+        }
+
+        while (_deblocks.Count < workers)
+        {
+            _deblocks.Add(new H264Deblock());
+        }
+
+        if (_rowProgress.Length < rows)
+        {
+            _rowProgress = new int[rows];
+        }
+
+        int[] progress = _rowProgress;
+        Array.Clear(progress, 0, rows);
+        int next = -1;
+        Parallel.For(0, workers, new ParallelOptions { MaxDegreeOfParallelism = workers }, worker =>
+        {
+            H264Deblock deblock = _deblocks[worker];
+            int row;
+            while ((row = Interlocked.Increment(ref next)) < rows)
+            {
+                // The row above is read only when the last value seen is not enough, and this row's progress is published
+                // every few macroblocks, so the threads touch the shared counters rarely.
+                int above = row > 0 ? 0 : cols;
+                for (int x = 0; x < cols; x++)
+                {
+                    int need = Math.Min(x + 2, cols);
+                    if (above < need)
+                    {
+                        SpinWait spin = default;
+                        while ((above = Volatile.Read(ref progress[row - 1])) < need)
+                        {
+                            spin.SpinOnce(sleep1Threshold: -1);
+                        }
+                    }
+
+                    deblock.FilterOne(pic, mb, _sliceParams, sps.BitDepthLuma, sps.BitDepthChroma, x, row);
+                    if ((x & 7) == 7 || x == cols - 1)
+                    {
+                        Volatile.Write(ref progress[row], x + 1);
+                    }
+                }
+            }
+        });
     }
 
     private void Fail(string id, string message, Exception e)
@@ -726,6 +881,8 @@ internal sealed class H264Decoder
             return;
         }
 
+        CorruptDataException? pending = RunJobs();
+        pending = Errors == DecodeErrorMode.Throw ? pending : null;
         H264Sps sps = h.Sps;
         H264MbState mb = _mb!;
         int missing = 0;
@@ -737,7 +894,12 @@ internal sealed class H264Decoder
         if (missing > 0)
         {
             _curDamaged = true;
+            string problem = $"{missing} of {mb.Slice.Length} macroblocks of frame_num {h.FrameNum} are missing";
+            Report?.Invoke("H264.CorruptSlice", problem + "; they are filled from the frame before.");
             Conceal(pic, mb, sps);
+
+            // In Throw mode the picture is still finished, so the decoder stays whole, and the error comes after.
+            pending ??= Errors == DecodeErrorMode.Throw ? H264Errors.Corrupt(problem + ".") : null;
         }
 
         if (_curMissingReference)
@@ -745,7 +907,7 @@ internal sealed class H264Decoder
             _curDamaged = true;
         }
 
-        _deblock.Filter(pic, mb, _sliceParams, sps.BitDepthLuma, sps.BitDepthChroma, 0, sps.HeightInMbs);
+        Deblock(pic, mb, sps);
         pic.ExtendEdges();
         pic.Damaged = _curDamaged;
         pic.Sei = _sei;
@@ -801,6 +963,10 @@ internal sealed class H264Decoder
         _lastDecoded = pic;
         _cur = null;
         _first = null;
+        if (pending is not null)
+        {
+            throw pending;
+        }
     }
 
     /// <summary>Stores a decoded frame in the buffer and outputs what the bumping process lets go (C.4.4, C.4.5).</summary>
@@ -872,16 +1038,12 @@ internal sealed class H264Decoder
                 switch (op.Op)
                 {
                     case 1:
-                    {
-                        int picNum = h.FrameNum - op.DifferenceOfPicNums;
-                        if (FindShortTerm(sps, h.FrameNum, picNum) is { } p)
+                        if (FindShortTerm(sps, h.FrameNum, h.FrameNum - op.DifferenceOfPicNums) is { } unmarked)
                         {
-                            p.IsShortTermReference = false;
+                            unmarked.IsShortTermReference = false;
                         }
 
                         break;
-                    }
-
                     case 2:
                         if (FindLongTerm(op.LongTermPicNum) is { } lt)
                         {
@@ -890,23 +1052,19 @@ internal sealed class H264Decoder
 
                         break;
                     case 3:
-                    {
-                        int picNum = h.FrameNum - op.DifferenceOfPicNums;
-                        if (FindShortTerm(sps, h.FrameNum, picNum) is { } p)
+                        if (FindShortTerm(sps, h.FrameNum, h.FrameNum - op.DifferenceOfPicNums) is { } made)
                         {
-                            if (FindLongTerm(op.LongTermFrameIdx) is { } old && old != p)
+                            if (FindLongTerm(op.LongTermFrameIdx) is { } old && old != made)
                             {
                                 old.IsLongTermReference = false;
                             }
 
-                            p.IsShortTermReference = false;
-                            p.IsLongTermReference = true;
-                            p.LongTermFrameIdx = op.LongTermFrameIdx;
+                            made.IsShortTermReference = false;
+                            made.IsLongTermReference = true;
+                            made.LongTermFrameIdx = op.LongTermFrameIdx;
                         }
 
                         break;
-                    }
-
                     case 4:
                         _maxLongTermFrameIdx = op.MaxLongTermFrameIdxPlus1 - 1;
                         foreach (H264Picture p in _dpb.Pictures())
@@ -1090,4 +1248,7 @@ internal sealed class H264Decoder
             }
         }
     }
+
+    /// <summary>A slice kept for decoding at the end of its picture.</summary>
+    private readonly record struct SliceJob(H264SliceHeader Header, byte[] Data, int Length, int SliceNum, H264Picture[] List0, H264Picture[] List1, int[] ImplicitWeights);
 }

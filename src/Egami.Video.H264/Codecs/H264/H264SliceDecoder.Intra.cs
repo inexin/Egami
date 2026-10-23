@@ -265,39 +265,39 @@ internal sealed partial class H264SliceDecoder
                             : (T(0) + (2 * _topLeft) + L(0) + 2) >> 2;
                         break;
                     case 5:
-                    {
-                        int z = (2 * x) - y;
-                        v = z >= 0 && (z & 1) == 0 ? (T(x - (y >> 1) - 1) + T(x - (y >> 1)) + 1) >> 1
-                            : z > 0 ? (T(x - (y >> 1) - 2) + (2 * T(x - (y >> 1) - 1)) + T(x - (y >> 1)) + 2) >> 2
-                            : z == -1 ? (L(0) + (2 * _topLeft) + T(0) + 2) >> 2
-                            : (L(y - (2 * x) - 1) + (2 * L(y - (2 * x) - 2)) + L(y - (2 * x) - 3) + 2) >> 2;
-                        break;
-                    }
+                        {
+                            int z = (2 * x) - y;
+                            v = z >= 0 && (z & 1) == 0 ? (T(x - (y >> 1) - 1) + T(x - (y >> 1)) + 1) >> 1
+                                : z > 0 ? (T(x - (y >> 1) - 2) + (2 * T(x - (y >> 1) - 1)) + T(x - (y >> 1)) + 2) >> 2
+                                : z == -1 ? (L(0) + (2 * _topLeft) + T(0) + 2) >> 2
+                                : (L(y - (2 * x) - 1) + (2 * L(y - (2 * x) - 2)) + L(y - (2 * x) - 3) + 2) >> 2;
+                            break;
+                        }
 
                     case 6:
-                    {
-                        int z = (2 * y) - x;
-                        v = z >= 0 && (z & 1) == 0 ? (L(y - (x >> 1) - 1) + L(y - (x >> 1)) + 1) >> 1
-                            : z > 0 ? (L(y - (x >> 1) - 2) + (2 * L(y - (x >> 1) - 1)) + L(y - (x >> 1)) + 2) >> 2
-                            : z == -1 ? (L(0) + (2 * _topLeft) + T(0) + 2) >> 2
-                            : (T(x - (2 * y) - 1) + (2 * T(x - (2 * y) - 2)) + T(x - (2 * y) - 3) + 2) >> 2;
-                        break;
-                    }
+                        {
+                            int z = (2 * y) - x;
+                            v = z >= 0 && (z & 1) == 0 ? (L(y - (x >> 1) - 1) + L(y - (x >> 1)) + 1) >> 1
+                                : z > 0 ? (L(y - (x >> 1) - 2) + (2 * L(y - (x >> 1) - 1)) + L(y - (x >> 1)) + 2) >> 2
+                                : z == -1 ? (L(0) + (2 * _topLeft) + T(0) + 2) >> 2
+                                : (T(x - (2 * y) - 1) + (2 * T(x - (2 * y) - 2)) + T(x - (2 * y) - 3) + 2) >> 2;
+                            break;
+                        }
 
                     case 7:
                         v = (y & 1) == 0 ? (T(x + (y >> 1)) + T(x + (y >> 1) + 1) + 1) >> 1
                             : (T(x + (y >> 1)) + (2 * T(x + (y >> 1) + 1)) + T(x + (y >> 1) + 2) + 2) >> 2;
                         break;
                     default:
-                    {
-                        int z = x + (2 * y);
-                        int last = (2 * n) - 3;
-                        v = z > last ? L(n - 1)
-                            : z == last ? (L(n - 2) + (3 * L(n - 1)) + 2) >> 2
-                            : (z & 1) == 0 ? (L(y + (x >> 1)) + L(y + (x >> 1) + 1) + 1) >> 1
-                            : (L(y + (x >> 1)) + (2 * L(y + (x >> 1) + 1)) + L(y + (x >> 1) + 2) + 2) >> 2;
-                        break;
-                    }
+                        {
+                            int z = x + (2 * y);
+                            int last = (2 * n) - 3;
+                            v = z > last ? L(n - 1)
+                                : z == last ? (L(n - 2) + (3 * L(n - 1)) + 2) >> 2
+                                : (z & 1) == 0 ? (L(y + (x >> 1)) + L(y + (x >> 1) + 1) + 1) >> 1
+                                : (L(y + (x >> 1)) + (2 * L(y + (x >> 1) + 1)) + L(y + (x >> 1) + 2) + 2) >> 2;
+                            break;
+                        }
                 }
 
                 plane[row + x] = (ushort)v;
@@ -362,37 +362,37 @@ internal sealed partial class H264SliceDecoder
 
                 break;
             case 2:
-            {
-                int v = PredictDc(16, left, top, 1 << (_bitDepthY - 1));
-                for (int y = 0; y < 16; y++)
                 {
-                    plane.AsSpan(at + (y * stride), 16).Fill((ushort)v);
-                }
+                    int v = PredictDc(16, left, top, 1 << (_bitDepthY - 1));
+                    for (int y = 0; y < 16; y++)
+                    {
+                        plane.AsSpan(at + (y * stride), 16).Fill((ushort)v);
+                    }
 
-                break;
-            }
+                    break;
+                }
 
             default:
-            {
-                int hSum = 0, vSum = 0;
-                for (int i = 0; i < 8; i++)
                 {
-                    hSum += (i + 1) * (_top[8 + i] - T(6 - i));
-                    vSum += (i + 1) * (_left[8 + i] - L(6 - i));
-                }
-
-                int a = 16 * (_left[15] + _top[15]);
-                int b = ((5 * hSum) + 32) >> 6, c = ((5 * vSum) + 32) >> 6;
-                for (int y = 0; y < 16; y++)
-                {
-                    for (int x = 0; x < 16; x++)
+                    int hSum = 0, vSum = 0;
+                    for (int i = 0; i < 8; i++)
                     {
-                        plane[at + (y * stride) + x] = (ushort)Math.Clamp((a + (b * (x - 7)) + (c * (y - 7)) + 16) >> 5, 0, max);
+                        hSum += (i + 1) * (_top[8 + i] - T(6 - i));
+                        vSum += (i + 1) * (_left[8 + i] - L(6 - i));
                     }
-                }
 
-                break;
-            }
+                    int a = 16 * (_left[15] + _top[15]);
+                    int b = ((5 * hSum) + 32) >> 6, c = ((5 * vSum) + 32) >> 6;
+                    for (int y = 0; y < 16; y++)
+                    {
+                        for (int x = 0; x < 16; x++)
+                        {
+                            plane[at + (y * stride) + x] = (ushort)Math.Clamp((a + (b * (x - 7)) + (c * (y - 7)) + 16) >> 5, 0, max);
+                        }
+                    }
+
+                    break;
+                }
         }
     }
 
@@ -471,32 +471,32 @@ internal sealed partial class H264SliceDecoder
 
                 break;
             default:
-            {
-                int xCF = 0, yCF = _chromaArrayType != 1 ? 4 : 0;
-                int hSum = 0, vSum = 0;
-                for (int x = 0; x <= 3 + xCF; x++)
                 {
-                    hSum += (x + 1) * (_top[4 + xCF + x] - T(2 + xCF - x));
-                }
-
-                for (int y = 0; y <= 3 + yCF; y++)
-                {
-                    vSum += (y + 1) * (_left[4 + yCF + y] - L(2 + yCF - y));
-                }
-
-                int a = 16 * (_left[h - 1] + _top[w - 1]);
-                int b = ((34 * hSum) + 32) >> 6;
-                int c = (((_chromaArrayType != 1 ? 5 : 34) * vSum) + 32) >> 6;
-                for (int y = 0; y < h; y++)
-                {
-                    for (int x = 0; x < w; x++)
+                    int xCF = 0, yCF = _chromaArrayType != 1 ? 4 : 0;
+                    int hSum = 0, vSum = 0;
+                    for (int x = 0; x <= 3 + xCF; x++)
                     {
-                        plane[at + (y * stride) + x] = (ushort)Math.Clamp((a + (b * (x - 3 - xCF)) + (c * (y - 3 - yCF)) + 16) >> 5, 0, max);
+                        hSum += (x + 1) * (_top[4 + xCF + x] - T(2 + xCF - x));
                     }
-                }
 
-                break;
-            }
+                    for (int y = 0; y <= 3 + yCF; y++)
+                    {
+                        vSum += (y + 1) * (_left[4 + yCF + y] - L(2 + yCF - y));
+                    }
+
+                    int a = 16 * (_left[h - 1] + _top[w - 1]);
+                    int b = ((34 * hSum) + 32) >> 6;
+                    int c = (((_chromaArrayType != 1 ? 5 : 34) * vSum) + 32) >> 6;
+                    for (int y = 0; y < h; y++)
+                    {
+                        for (int x = 0; x < w; x++)
+                        {
+                            plane[at + (y * stride) + x] = (ushort)Math.Clamp((a + (b * (x - 3 - xCF)) + (c * (y - 3 - yCF)) + 16) >> 5, 0, max);
+                        }
+                    }
+
+                    break;
+                }
         }
     }
 }

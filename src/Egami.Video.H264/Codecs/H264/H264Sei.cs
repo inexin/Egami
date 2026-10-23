@@ -53,24 +53,24 @@ internal sealed class H264Sei
                 r.U(2, "changing_slice_group_idc");
                 break;
             case 137 when size >= 24:
-            {
-                // Display primaries in G, B, R order then the white point, x and y in 0.00002 units; luminance in 0.0001 cd/m2.
-                Span<double> c = stackalloc double[8];
-                for (int i = 0; i < 8; i++)
                 {
-                    c[i] = r.U(16, "display_primaries") * 0.00002;
-                }
+                    // Display primaries in G, B, R order then the white point, x and y in 0.00002 units; luminance in 0.0001 cd/m2.
+                    Span<double> c = stackalloc double[8];
+                    for (int i = 0; i < 8; i++)
+                    {
+                        c[i] = r.U(16, "display_primaries") * 0.00002;
+                    }
 
-                double max = r.U(32, "max_display_mastering_luminance") * 0.0001;
-                double min = r.U(32, "min_display_mastering_luminance") * 0.0001;
-                Hdr = (Hdr ?? new HdrMetadata()) with
-                {
-                    MasteringPrimaries = new ColorPrimaries(new(c[4], c[5]), new(c[0], c[1]), new(c[2], c[3]), new(c[6], c[7])),
-                    MasteringMaxLuminance = max,
-                    MasteringMinLuminance = min,
-                };
-                break;
-            }
+                    double max = r.U(32, "max_display_mastering_luminance") * 0.0001;
+                    double min = r.U(32, "min_display_mastering_luminance") * 0.0001;
+                    Hdr = (Hdr ?? new HdrMetadata()) with
+                    {
+                        MasteringPrimaries = new ColorPrimaries(new(c[4], c[5]), new(c[0], c[1]), new(c[2], c[3]), new(c[6], c[7])),
+                        MasteringMaxLuminance = max,
+                        MasteringMinLuminance = min,
+                    };
+                    break;
+                }
 
             case 144 when size >= 4:
                 Hdr = (Hdr ?? new HdrMetadata()) with

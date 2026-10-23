@@ -197,7 +197,14 @@ internal sealed class H264Demuxer : IDemuxer
             Add(unit, offset);
             if ((unit[0] & 31) == 7)
             {
-                return H264Sps.Read(NalFraming.Unescape(unit), _context.Egami.Limits);
+                try
+                {
+                    return H264Sps.Read(NalFraming.Unescape(unit), _context.Egami.Limits);
+                }
+                catch (CorruptDataException)
+                {
+                    // A broken SPS gives no track: look on for one that reads, as the decoder skips the broken one.
+                }
             }
 
             if (_bufferOffset + _length - start > _context.Limits.MaxHeaderBytes)

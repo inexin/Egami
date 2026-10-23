@@ -11,3 +11,7 @@ The files in audio/ were generated the same way by tools/video/make-audio-corpus
 The IETF CELLAR flac-test-files (https://github.com/ietf-wg-cellar/flac-test-files) are CC0 1.0 per their LICENSE.txt. They are
 fetched into .cache/audio/flac-test-files by make-audio-corpus.py --ietf rather than committed, because of their size (about
 300 MB).
+
+The files in h264/ were generated the same way by tools/video/make-h264-corpus.py: FFmpeg with libx264 on synthetic lavfi
+sources (testsrc2 and mandelbrot); each .frames.json holds the MD5 of every frame FFmpeg decodes. They too contain no
+third-party content.

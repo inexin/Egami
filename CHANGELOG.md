@@ -241,6 +241,26 @@ recommended).
   method's own default `--threshold`, and `--min-gap` 0.6 s by default; `ffmpeg -vf select='gt(scene,X)'` maps to
   `--method content`.
 
+## Egami.Video.H264 0.6.0 (unreleased)
+
+V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version. The API review is still to come.
+
+- `H264Codec` and `WithH264()`: a managed H.264 decoder written from ITU-T H.264 for progressive Constrained Baseline, Main,
+  High, High 10 and High 4:2:2 streams, 8 and 10 bit, 4:0:0, 4:2:0 and 4:2:2, and their Intra profiles: CAVLC and CABAC, B
+  slices with spatial and temporal direct prediction, explicit and implicit weighted prediction, the 8x8 transform and scaling
+  matrices, long-term references and memory management, and several slices per frame. Frames equal FFmpeg's decode on all 31
+  corpus clips. Interlaced streams, 4:4:4, lossless, FMO, ASO, SP and SI slices and data partitions give
+  `UnsupportedFormatException`.
+- Decoding starts at the first IDR or recovery point; a broken slice reports `H264.CorruptSlice` and its macroblocks are
+  concealed from the frame before (`Skip` and `Conceal`) or the frame is finished and the error thrown (`Throw`); a missing
+  reference reports `H264.MissingReference`. Colour comes from the VUI, then the container, then BT.601 or BT.709 by size; HDR10
+  mastering display and content light level SEI become `Hdr`.
+- Slices of a frame decode in parallel and deblocking runs as a wavefront on `MaxParallelism` threads, with the same frames as
+  one thread. Motion compensation, deblocking and the output copy use Vector128 with a scalar reference the tests compare.
+- `H264Format`: raw Annex B streams (.h264, .264, .avc), read with a keyframe index for seeking, timed by the VUI frame rate,
+  25 fps, or `FrameRate`.
+- The CABAC initialisation values and CAVLC tables are transcribed from OpenH264 (BSD-2), see THIRD-PARTY-NOTICES.md.
+
 ## Egami.Video 0.6.0 (unreleased)
 
 V4.3: fragmented MP4 writing, and HLS and DASH segments. API reviewed and accepted 2026-10-23 (all as recommended).

@@ -9,7 +9,7 @@ namespace Egami.Video.Containers;
 /// sequence parameter set. Reading only: to store H.264, use MP4 or Matroska.
 /// </summary>
 /// <example>
-/// <code language="csharp" source="../../tests/Egami.DocSamples/VideoH264.cs" region="raw"/>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoH264.cs" region="raw"/>
 /// </example>
 public sealed class H264Format : ContainerFormat
 {

@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+
+using Egami.Nal;
+
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>The residual (7.3.5.3): coefficient levels read with CAVLC or CABAC, then scaled (8.5.9, 8.5.12.1).</summary>
@@ -534,17 +538,53 @@ internal sealed partial class H264SliceDecoder
         int numCoeff = maxNumCoeff;
         int count = 0;
         bool last = false;
-        for (int i = 0; i < numCoeff - 1; i++)
+        ref byte sig = ref _ctx[sigBase];
+        ref byte lastCtx = ref _ctx[lastBase];
+        CabacEngine engine = _engine;
+        if (cat == 5)
         {
-            int sigInc = cat == 5 ? H264Tables.Significant8x8[i] : cat == 3 ? Math.Min(i / numC8x8, 2) : i;
-            if (Bin(sigBase + sigInc) != 0)
+            ReadOnlySpan<byte> sigInc = H264Tables.Significant8x8, lastInc = H264Tables.Last8x8;
+            for (int i = 0; i < 63; i++)
             {
-                significant[count++] = (byte)i;
-                int lastInc = cat == 5 ? H264Tables.Last8x8[i] : cat == 3 ? Math.Min(i / numC8x8, 2) : i;
-                if (Bin(lastBase + lastInc) != 0)
+                if (engine.Decode(ref Unsafe.Add(ref sig, sigInc[i])) != 0)
                 {
-                    last = true;
-                    break;
+                    significant[count++] = (byte)i;
+                    if (engine.Decode(ref Unsafe.Add(ref lastCtx, lastInc[i])) != 0)
+                    {
+                        last = true;
+                        break;
+                    }
+                }
+            }
+        }
+        else if (cat == 3)
+        {
+            for (int i = 0; i < numCoeff - 1; i++)
+            {
+                int inc = Math.Min(i / numC8x8, 2);
+                if (engine.Decode(ref Unsafe.Add(ref sig, inc)) != 0)
+                {
+                    significant[count++] = (byte)i;
+                    if (engine.Decode(ref Unsafe.Add(ref lastCtx, inc)) != 0)
+                    {
+                        last = true;
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < numCoeff - 1; i++)
+            {
+                if (engine.Decode(ref Unsafe.Add(ref sig, i)) != 0)
+                {
+                    significant[count++] = (byte)i;
+                    if (engine.Decode(ref Unsafe.Add(ref lastCtx, i)) != 0)
+                    {
+                        last = true;
+                        break;
+                    }
                 }
             }
         }
@@ -557,19 +597,20 @@ internal sealed partial class H264SliceDecoder
 
         int eq1 = 0, gt1 = 0;
         int maxGt1Inc = cat == 3 ? 3 : 4;
+        ref byte abs = ref _ctx[absBase];
         for (int k = count - 1; k >= 0; k--)
         {
             int inc = gt1 != 0 ? 0 : Math.Min(4, 1 + eq1);
             int value;
-            if (Bin(absBase + inc) == 0)
+            if (engine.Decode(ref Unsafe.Add(ref abs, inc)) == 0)
             {
                 value = 1;
             }
             else
             {
-                int ctx = absBase + 5 + Math.Min(maxGt1Inc, gt1);
+                ref byte ctx = ref Unsafe.Add(ref abs, 5 + Math.Min(maxGt1Inc, gt1));
                 int prefix = 1;
-                while (prefix < 14 && Bin(ctx) != 0)
+                while (prefix < 14 && engine.Decode(ref ctx) != 0)
                 {
                     prefix++;
                 }

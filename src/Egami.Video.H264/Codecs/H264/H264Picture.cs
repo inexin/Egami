@@ -11,6 +11,9 @@ internal sealed class H264Picture : INalDpbPicture
     /// <summary>The border around each plane, in samples: motion vectors reaching further read through a clamped copy.</summary>
     internal const int Pad = 32;
 
+    /// <summary>Extra samples after each plane, so vector loads of a block near the last row may read a little past it.</summary>
+    internal const int Slack = 32;
+
     private static int s_nextId;
 
     internal H264Picture(int widthMbs, int heightMbs, int chromaFormatIdc)
@@ -21,11 +24,11 @@ internal sealed class H264Picture : INalDpbPicture
         Width = widthMbs * 16;
         Height = heightMbs * 16;
         Stride = Width + (2 * Pad);
-        Y = new ushort[Stride * (Height + (2 * Pad))];
+        Y = new ushort[(Stride * (Height + (2 * Pad))) + Slack];
         ChromaWidth = chromaFormatIdc == 0 ? 0 : Width / 2;
         ChromaHeight = chromaFormatIdc switch { 0 => 0, 1 => Height / 2, _ => Height };
         ChromaStride = ChromaWidth + (2 * Pad);
-        int chromaSize = chromaFormatIdc == 0 ? 0 : ChromaStride * (ChromaHeight + (2 * Pad));
+        int chromaSize = chromaFormatIdc == 0 ? 0 : (ChromaStride * (ChromaHeight + (2 * Pad))) + Slack;
         Cb = new ushort[chromaSize];
         Cr = new ushort[chromaSize];
         int blocks = widthMbs * 4 * heightMbs * 4;

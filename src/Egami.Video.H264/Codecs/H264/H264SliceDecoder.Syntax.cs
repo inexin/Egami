@@ -41,30 +41,30 @@ internal sealed partial class H264SliceDecoder
         switch (_h.Type)
         {
             case H264SliceType.I:
-            {
-                int inc = (Available(left) && _mb.Kind[left] is not (H264MbKind.I4x4 or H264MbKind.I8x8) ? 1 : 0)
-                    + (Available(top) && _mb.Kind[top] is not (H264MbKind.I4x4 or H264MbKind.I8x8) ? 1 : 0);
-                if (Bin(3 + inc) == 0)
                 {
-                    return 0;
-                }
+                    int inc = (Available(left) && _mb.Kind[left] is not (H264MbKind.I4x4 or H264MbKind.I8x8) ? 1 : 0)
+                        + (Available(top) && _mb.Kind[top] is not (H264MbKind.I4x4 or H264MbKind.I8x8) ? 1 : 0);
+                    if (Bin(3 + inc) == 0)
+                    {
+                        return 0;
+                    }
 
-                if (_engine.Terminate() != 0)
-                {
-                    return 25;
-                }
+                    if (_engine.Terminate() != 0)
+                    {
+                        return 25;
+                    }
 
-                int luma = Bin(3 + 3);
-                int chroma = Bin(3 + 4);
-                if (chroma != 0)
-                {
-                    chroma += Bin(3 + 5);
-                }
+                    int luma = Bin(3 + 3);
+                    int chroma = Bin(3 + 4);
+                    if (chroma != 0)
+                    {
+                        chroma += Bin(3 + 5);
+                    }
 
-                int mode = Bin(3 + 6) << 1;
-                mode |= Bin(3 + 7);
-                return 1 + mode + (4 * chroma) + (12 * luma);
-            }
+                    int mode = Bin(3 + 6) << 1;
+                    mode |= Bin(3 + 7);
+                    return 1 + mode + (4 * chroma) + (12 * luma);
+                }
 
             case H264SliceType.P:
                 if (Bin(14) != 0)
@@ -79,41 +79,41 @@ internal sealed partial class H264SliceDecoder
 
                 return Bin(16) != 0 ? 3 : 0;
             default:
-            {
-                int inc = (Available(left) && _mb.Kind[left] is not (H264MbKind.BSkip or H264MbKind.BDirect) ? 1 : 0)
-                    + (Available(top) && _mb.Kind[top] is not (H264MbKind.BSkip or H264MbKind.BDirect) ? 1 : 0);
-                if (Bin(27 + inc) == 0)
                 {
-                    return 0;
-                }
+                    int inc = (Available(left) && _mb.Kind[left] is not (H264MbKind.BSkip or H264MbKind.BDirect) ? 1 : 0)
+                        + (Available(top) && _mb.Kind[top] is not (H264MbKind.BSkip or H264MbKind.BDirect) ? 1 : 0);
+                    if (Bin(27 + inc) == 0)
+                    {
+                        return 0;
+                    }
 
-                if (Bin(27 + 3) == 0)
-                {
-                    return 1 + Bin(27 + 5);
-                }
+                    if (Bin(27 + 3) == 0)
+                    {
+                        return 1 + Bin(27 + 5);
+                    }
 
-                int bits = Bin(27 + 4) << 3;
-                bits |= Bin(27 + 5) << 2;
-                bits |= Bin(27 + 5) << 1;
-                bits |= Bin(27 + 5);
-                if (bits < 8)
-                {
-                    return bits + 3;
-                }
+                    int bits = Bin(27 + 4) << 3;
+                    bits |= Bin(27 + 5) << 2;
+                    bits |= Bin(27 + 5) << 1;
+                    bits |= Bin(27 + 5);
+                    if (bits < 8)
+                    {
+                        return bits + 3;
+                    }
 
-                switch (bits)
-                {
-                    case 13:
-                        return 23 + ReadIntraSuffix(32);
-                    case 14:
-                        return 11;
-                    case 15:
-                        return 22;
-                }
+                    switch (bits)
+                    {
+                        case 13:
+                            return 23 + ReadIntraSuffix(32);
+                        case 14:
+                            return 11;
+                        case 15:
+                            return 22;
+                    }
 
-                bits = (bits << 1) | Bin(27 + 5);
-                return bits - 4;
-            }
+                    bits = (bits << 1) | Bin(27 + 5);
+                    return bits - 4;
+                }
         }
     }
 

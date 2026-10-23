@@ -27,7 +27,34 @@ public sealed class DecodeTests
     {
         using FileStream stream = File.OpenRead(PathOf(clip + ".h264"));
         using IDemuxer demuxer = H264Format.Instance.OpenDemuxer(stream, MediaContext.Default, leaveOpen: true);
-        Check(clip, demuxer);
+        Check(clip, demuxer, 1);
+    }
+
+    [Theory]
+    [MemberData(nameof(Clips))]
+    public void ThreadsGiveTheSameFrames(string clip)
+    {
+        using FileStream stream = File.OpenRead(PathOf(clip + ".h264"));
+        using IDemuxer demuxer = H264Format.Instance.OpenDemuxer(stream, MediaContext.Default, leaveOpen: true);
+        Check(clip, demuxer, 4);
+    }
+
+    [Theory]
+    [MemberData(nameof(Clips))]
+    public void ScalarFormsMatchFfmpeg(string clip)
+    {
+        // The tests of this class run one at a time, so turning the vector forms off here does not reach the others.
+        Codecs.H264.H264Inter.UseVectors = false;
+        Codecs.H264.H264Deblock.UseVectors = false;
+        try
+        {
+            RawStreamMatchesFfmpeg(clip);
+        }
+        finally
+        {
+            Codecs.H264.H264Inter.UseVectors = System.Runtime.Intrinsics.Vector128.IsHardwareAccelerated;
+            Codecs.H264.H264Deblock.UseVectors = Codecs.H264.H264Deblock.VectorsSupported;
+        }
     }
 
     [Theory]
@@ -37,17 +64,17 @@ public sealed class DecodeTests
     {
         using FileStream stream = File.OpenRead(PathOf(clip + ".mp4"));
         using IDemuxer demuxer = Mp4Format.Instance.OpenDemuxer(stream, MediaContext.Default, leaveOpen: true);
-        Check(clip, demuxer);
+        Check(clip, demuxer, 1);
     }
 
-    private static void Check(string clip, IDemuxer demuxer)
+    private static void Check(string clip, IDemuxer demuxer, int threads)
     {
         using JsonDocument json = JsonDocument.Parse(File.ReadAllText(PathOf(clip + ".frames.json")));
         string[] expected = [.. json.RootElement.GetProperty("md5").EnumerateArray().Select(e => e.GetString()!)];
         int width = json.RootElement.GetProperty("width").GetInt32(), height = json.RootElement.GetProperty("height").GetInt32();
         VideoTrackInfo track = demuxer.Info.VideoTrack!;
         Assert.Equal((width, height), (track.Width, track.Height));
-        MediaContext context = MediaContext.Default.WithH264();
+        MediaContext context = MediaContext.Default.WithH264() with { Egami = EgamiContext.Default with { MaxParallelism = threads } };
         using IVideoDecoder decoder = H264Codec.Instance.CreateDecoder(track, null, context);
         List<string> actual = [];
         List<MediaTime> times = [];
