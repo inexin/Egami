@@ -238,6 +238,17 @@ public class AudioRoundTripTests
     }
 
     [Fact]
+    public void TranscodesOpusAtTheRateItDecodesTo()
+    {
+        // The Opus header gives the source's rate (8 kHz here); Opus always decodes at 48 kHz, so the encoder must take that.
+        string path = OutputPath("opus-to-flac.mkv");
+        MediaFile.Transcode(Corpus.PathOf("webm-vp8-opus.webm"), path, audio: FlacCodec.Instance, cancellationToken: TestContext.Current.CancellationToken);
+        AudioTrackInfo flac = Assert.Single(MediaFile.Probe(path).Tracks.OfType<AudioTrackInfo>());
+        Assert.Equal(CodecIds.Flac, flac.CodecId);
+        Assert.Equal(48000, flac.SampleRate);
+    }
+
+    [Fact]
     public void VideoWriterEncodesAnAudioTrack()
     {
         using AudioFrame input = Signal(2, 16, rate: 48000, samples: 48000);

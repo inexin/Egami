@@ -1,8 +1,8 @@
-"""Writes the egami command reference from the tool itself: docs/articles/cli/commands.md from every command's --help, and
-docs/articles/cli/steps.md from 'egami run --list', so the reference never lags the tool. Rerun after changing a command, an
-option or a RasterOps method.
+"""Writes the command references from the tools themselves: docs/articles/cli/commands.md from every egami command's --help,
+docs/articles/cli/steps.md from 'egami run --list', and docs/articles/video-cli/commands.md from every egami-video command's
+--help, so the references never lag the tools. Rerun after changing a command, an option or a RasterOps method.
 
-Usage: python tools/make-cli-reference.py          (from the repo root; builds src/Egami.Cli in Release first)
+Usage: python tools/make-cli-reference.py          (from the repo root; builds src/Egami.Cli and src/Egami.Video.Cli in Release first)
        python tools/make-cli-reference.py --check  (exit 1 when the pages are out of date)
 """
 import os
@@ -14,10 +14,18 @@ PROJECT = "src/Egami.Cli/Egami.Cli.csproj"
 TOOL = "src/Egami.Cli/bin/Release/net10.0/Egami.Cli.dll"
 COMMANDS_PAGE = "docs/articles/cli/commands.md"
 STEPS_PAGE = "docs/articles/cli/steps.md"
+VIDEO_PROJECT = "src/Egami.Video.Cli/Egami.Video.Cli.csproj"
+VIDEO_TOOL = "src/Egami.Video.Cli/bin/Release/net10.0/Egami.Video.Cli.dll"
+VIDEO_COMMANDS_PAGE = "docs/articles/video-cli/commands.md"
 
 
 def egami(*args):
     result = subprocess.run(["dotnet", TOOL, *args], capture_output=True, text=True, encoding="utf-8")
+    return result.stdout.replace("\r\n", "\n")
+
+
+def egami_video(*args):
+    result = subprocess.run(["dotnet", VIDEO_TOOL, *args], capture_output=True, text=True, encoding="utf-8")
     return result.stdout.replace("\r\n", "\n")
 
 
@@ -55,9 +63,28 @@ def commands_page():
     return "\n".join(lines)
 
 
+def video_commands_page():
+    root = egami_video("--help")
+    lines = [
+        "# egami-video command reference",
+        "",
+        "Every egami-video command with its arguments and options, as `egami-video <command> --help` prints them. The options of all",
+        "commands (`-v`, `-vv`, `-q`, `--limit`, `--progress`, `--progress-format`) are listed once, at the top. [The egami-video",
+        "command](index.md) explains the conventions they share; `run` takes [egami's steps](../cli/steps.md).",
+        "",
+        "```text",
+        root.rstrip(),
+        "```",
+        "",
+    ]
+    for name in subcommands(root):
+        lines += [f"## {name}", "", "```text", strip_globals(egami_video(name, "--help")).rstrip(), "```", ""]
+    return "\n".join(lines)
+
+
 def strip_globals(text):
     """Leaves out the options every command shares, which the top of the page lists."""
-    shared = ("-?, -h, --help", "-v, --verbose", "-vv, --debug", "-q, --quiet", "--limit <")
+    shared = ("-?, -h, --help", "-v, --verbose", "-vv, --debug", "-q, --quiet", "--limit <", "--progress <", "--progress-format <")
     return "\n".join(line for line in text.splitlines() if not line.strip().startswith(shared))
 
 
@@ -101,7 +128,8 @@ def steps_page():
 
 def main():
     subprocess.run(["dotnet", "build", PROJECT, "-c", "Release", "-v", "q", "-nologo"], check=True, capture_output=True)
-    pages = {COMMANDS_PAGE: commands_page(), STEPS_PAGE: steps_page()}
+    subprocess.run(["dotnet", "build", VIDEO_PROJECT, "-c", "Release", "-v", "q", "-nologo"], check=True, capture_output=True)
+    pages = {COMMANDS_PAGE: commands_page(), STEPS_PAGE: steps_page(), VIDEO_COMMANDS_PAGE: video_commands_page()}
     stale = []
     for path, text in pages.items():
         old = open(path, encoding="utf-8").read() if os.path.exists(path) else None

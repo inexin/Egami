@@ -83,6 +83,12 @@ internal abstract class CliHostSession
     /// <summary>Gets or sets what hears of each finished file of a batch: files done so far, and the batch's size.</summary>
     public Action<int, int>? Progress { get; set; }
 
+    /// <summary>
+    /// Gets or sets what hears how far a long job within a file has come (the MCP server's progress notifications): work done,
+    /// the whole (files of the batch, so 1.5 of 3 is halfway through the second file), and a line saying where it is.
+    /// </summary>
+    public Action<double, double, string>? ProgressNote { get; set; }
+
     /// <summary>Gets the files written, in the order they were finished.</summary>
     public ConcurrentQueue<string> Written { get; } = new();
 

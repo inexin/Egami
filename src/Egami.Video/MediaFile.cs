@@ -302,6 +302,9 @@ public static class MediaFile
 
     private static readonly Dictionary<int, (IAudioDecoder Decoder, IAudioEncoder Encoder)> Empty = [];
 
+    /// <summary>The rate Opus always decodes at, whatever rate its header says the source had.</summary>
+    private const int OpusDecodeRate = 48000;
+
     private static FileStream OpenRead(string path) => new(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1 << 16, FileOptions.SequentialScan);
 
     /// <summary>
@@ -334,7 +337,7 @@ public static class MediaFile
                         encoder = audio.CreateEncoder(
                             new AudioEncoderOptions
                             {
-                                SampleRate = track.SampleRate,
+                                SampleRate = track.CodecId == CodecIds.Opus ? OpusDecodeRate : track.SampleRate,
                                 Layout = track.EffectiveLayout,
                                 BitsPerSample = audio.CodecId == CodecIds.PcmFloat ? 32 : track.BitsPerSample is > 0 and <= 32 && track.CodecId != CodecIds.PcmFloat ? track.BitsPerSample : audio.CodecId == CodecIds.Flac ? 24 : 16,
                                 Level = audioLevel,

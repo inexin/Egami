@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/inexin/Egami/main/docs/schemas/egami-video-info-1.json",
+  "title": "egami-video info",
+  "description": "What 'egami-video info --format json' (or --json) writes. 'info --format xml' writes the same fields as XML. Times are seconds; null means the file does not say.",
+  "type": "object",
+  "required": [ "schema", "files" ],
+  "properties": {
+    "schema": { "description": "The format's version.", "const": 1 },
+    "files": {
+      "description": "One object per input, in input order.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/file" }
+    }
+  },
+  "$defs": {
+    "tags": {
+      "description": "Text tags keyed by Matroska tag name (TITLE, ARTIST, COMMENT, ENCODER and so on).",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "seconds": { "type": [ "number", "null" ] },
+    "file": {
+      "type": "object",
+      "required": [ "path", "format", "tracks" ],
+      "properties": {
+        "path": { "description": "The input as given, or - for standard input.", "type": "string" },
+        "format": { "description": "The container: AVI, Matroska, WebM, MP4, QuickTime, IVF, YUV4MPEG2, WAV, Wave64, FLAC, Ogg, AV1 OBU.", "type": "string" },
+        "duration": { "$ref": "#/$defs/seconds" },
+        "size": { "description": "The file's size in bytes.", "type": [ "integer", "null" ] },
+        "bitRate": { "description": "The size over the duration, in bits per second.", "type": [ "integer", "null" ] },
+        "timecode": { "description": "The start timecode as SMPTE text, from an MP4 or QuickTime timecode track.", "type": [ "string", "null" ] },
+        "tags": { "$ref": "#/$defs/tags" },
+        "tracks": { "type": "array", "items": { "$ref": "#/$defs/track" } },
+        "chapters": { "type": "array", "items": { "$ref": "#/$defs/chapter" } },
+        "attachments": { "type": "array", "items": { "$ref": "#/$defs/attachment" } },
+        "packets": { "description": "With --packets.", "type": "array", "items": { "$ref": "#/$defs/packet" } },
+        "frames": { "description": "With --frames.", "type": "array", "items": { "$ref": "#/$defs/frame" } }
+      }
+    },
+    "track": {
+      "type": "object",
+      "required": [ "number", "index", "kind", "codec", "codecId", "timeBase" ],
+      "properties": {
+        "number": { "description": "The track number packets carry, as --track takes it.", "type": "integer" },
+        "index": { "description": "The position in the file, from 0 (ffprobe's stream index).", "type": "integer" },
+        "kind": { "enum": [ "video", "audio", "subtitle", "data" ] },
+        "codec": { "description": "The codec's name, such as VP9 or Opus.", "type": "string" },
+        "codecId": { "description": "The Matroska codec id, such as V_VP9.", "type": "string" },
+        "codecPrivateSize": { "description": "The size of the codec's setup bytes.", "type": "integer" },
+        "timeBase": { "description": "One tick of the packet timestamps, as n/d.", "type": "string" },
+        "duration": { "$ref": "#/$defs/seconds" },
+        "language": { "type": [ "string", "null" ] },
+        "name": { "type": [ "string", "null" ] },
+        "default": { "type": "boolean" },
+        "codecDelay": { "$ref": "#/$defs/seconds" },
+        "tags": { "$ref": "#/$defs/tags" },
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "frameRate": { "description": "The nominal frame rate as n/d, or null for variable rates.", "type": [ "string", "null" ] },
+        "pixelAspectRatio": { "type": "string" },
+        "bitDepth": { "type": [ "integer", "null" ] },
+        "chroma": { "description": "yuv420, yuv422, yuv444, yuv400, yuv411 or yuv410.", "type": [ "string", "null" ] },
+        "alpha": { "type": "boolean" },
+        "fieldOrder": { "enum": [ "progressive", "top field first", "bottom field first" ] },
+        "orientation": { "description": "How the frames are turned to show upright (an MP4 display matrix).", "type": "string" },
+        "fourcc": { "type": [ "string", "null" ] },
+        "color": {
+          "type": [ "object", "null" ],
+          "properties": {
+            "primaries": { "type": "string" },
+            "transfer": { "type": "string" },
+            "matrix": { "type": "string" },
+            "range": { "enum": [ "full", "limited" ] }
+          }
+        },
+        "hdr": { "description": "Whether the track carries HDR mastering metadata.", "type": "boolean" },
+        "sampleRate": { "description": "The decoded sample rate in hertz (48000 for Opus).", "type": "integer" },
+        "sourceSampleRate": { "description": "For Opus, the rate the source had, from its header.", "type": [ "integer", "null" ] },
+        "channels": { "type": "integer" },
+        "layout": { "description": "mono, stereo, 5.1 and so on.", "type": "string" },
+        "sampleFormat": { "description": "The decoder's sample format, in ffprobe's names: u8, s16, s32, flt, fltp, dbl.", "type": [ "string", "null" ] },
+        "bitsPerSample": { "description": "For PCM and FLAC.", "type": [ "integer", "null" ] },
+        "seekPreRoll": { "$ref": "#/$defs/seconds" },
+        "packets": { "description": "With --all: the number of packets.", "type": "integer" },
+        "keyframes": { "type": "integer" },
+        "bytes": { "type": "integer" },
+        "startTime": { "$ref": "#/$defs/seconds" },
+        "bitRate": { "type": [ "integer", "null" ] },
+        "headers": {
+          "description": "With --headers: the codec headers of the first frame.",
+          "type": "array",
+          "items": { "type": "object", "properties": { "name": { "type": "string" }, "value": { "type": "integer" } } }
+        }
+      }
+    },
+    "chapter": {
+      "type": "object",
+      "properties": {
+        "start": { "type": "number" },
+        "end": { "$ref": "#/$defs/seconds" },
+        "title": { "type": [ "string", "null" ] },
+        "language": { "type": [ "string", "null" ] }
+      }
+    },
+    "attachment": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "mediaType": { "type": "string" },
+        "size": { "type": "integer" },
+        "description": { "type": [ "string", "null" ] },
+        "coverArt": { "type": "boolean" }
+      }
+    },
+    "packet": {
+      "type": "object",
+      "properties": {
+        "track": { "type": "integer" },
+        "kind": { "type": "string" },
+        "pts": { "description": "In the track's time base.", "type": "integer" },
+        "ptsTime": { "type": "number" },
+        "dts": { "type": "integer" },
+        "dtsTime": { "type": "number" },
+        "duration": { "type": [ "integer", "null" ] },
+        "durationTime": { "$ref": "#/$defs/seconds" },
+        "size": { "type": "integer" },
+        "keyframe": { "type": "boolean" },
+        "discardable": { "type": "boolean" }
+      }
+    },
+    "frame": {
+      "type": "object",
+      "properties": {
+        "track": { "type": "integer" },
+        "kind": { "type": "string" },
+        "time": { "type": "number" },
+        "duration": { "$ref": "#/$defs/seconds" },
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "samples": { "type": "integer" },
+        "sampleRate": { "type": "integer" },
+        "channels": { "type": "integer" },
+        "sampleFormat": { "type": [ "string", "null" ] }
+      }
+    }
+  }
+}

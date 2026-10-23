@@ -140,6 +140,16 @@
       href: guides/video.md
     - name: Audio
       href: guides/audio.md
+- name: Egami.Video.Cli
+  items:
+    - name: The egami-video command
+      href: video-cli/index.md
+    - name: Command reference
+      href: video-cli/commands.md
+    - name: ffmpeg command lines
+      href: video-cli/ffmpeg.md
+    - name: egami-video for AI assistants
+      href: video-cli/assistants.md
 - name: Egami.Barcodes
   items:
     - name: Barcodes

@@ -10,6 +10,8 @@ changes that break code come only in a new major version.
 - A new package, Egami.Cli.Host: the command host of `egami` as source with internal types, so other command-line tools of the
   family (Egap's `egap`) build on the same exit codes, glob expansion, output templates, batches, folder policy and MCP server.
   It adds no public API and no assembly. `egami` now compiles it in and behaves as before.
+- Exit code 130 (`ExitCodes.Cancelled`) for a run stopped with Ctrl+C, and progress from within one file for the MCP server's
+  notifications, both for `egami-video`.
 
 ### Planar YUV
 
@@ -117,6 +119,45 @@ which needs no .NET runtime.
   stack, and the symbol characters and bars are built without lists or copies. Code 128 and Code 39 no longer copy
   text without control characters for the human-readable text.
 
+## Egami.Video.Cli 0.5.0 (unreleased)
+
+A new package: the `egami-video` command-line tool (Video V1.1), a .NET tool built on Egami.Video's public API that carries
+Egami.Video's version. It ships with the next Egami.Video release, after a command review.
+
+### Commands
+
+- `info`: container, duration, tracks, codecs, tags, chapters and attachments from the headers; `--all` adds packet and keyframe
+  counts and bit rates, `--headers` the codec headers, `--packets` and `--frames` every packet and decoded frame. `--format`
+  writes text, JSON (schema `egami-video-info-1.json`), CSV, XML with the JSON's fields, or JSON with ffprobe's field names.
+  Track counts, packet counts and timestamps equal ffprobe's on the corpus.
+- Stream copy, never decoding: `remux` (another container, chosen tracks, tags, chapters and attachments kept), `trim` (from the
+  keyframe at or before `--from`, exactly to `--to`, reporting the shift), `concat`, `segment` (`--every`, `--at`),
+  `timestamps` (`--shift`, `--rate`, `--fix`, `--start-at-zero`), `extract` (a track, attachments or cover art to their own
+  files), `embed` (tracks from other files, attachments, cover art, track languages, names and defaults) and `metadata` (tags,
+  chapters and track fields as JSON with schema `egami-video-metadata-1.json`, and loading them back).
+- Frames: `frames` (every frame, `--every`, `--at`, `--keyframes`, `--count`, ranges; Motion JPEG frames to JPEG byte for byte),
+  `encode` (images, image sequences or Y4M into Motion JPEG or uncompressed clips), `run` (egami's steps and `+` syntax on every
+  frame, the same pixels as `egami run`), `thumbnail`, `scenes`, `sheet` (a contact sheet with times) and `animate` (GIF, WebP,
+  APNG).
+- Checks: `hash` (per frame or packet, framemd5's layout and hashes) and `compare` (PSNR and SSIM per plane, within 0.01 dB of
+  ffmpeg's psnr filter; `--min-psnr`, `--min-ssim`).
+- `audio`: a track to WAV, Wave64, FLAC or Ogg FLAC with resampling, remixing and sample format conversion, or the audio of a
+  video file encoded again while its video is copied.
+- `formats`: the containers and codecs this build reads and writes.
+- `ffmpeg` and `ffprobe`: a documented subset of their command lines, mapped onto the commands above; anything else stops with
+  exit code 2 and names the option. `--explain` prints the native command.
+- `mcp`: the commands as tools for AI assistants over the Model Context Protocol, inside the folders allowed, with progress
+  notifications and cancellation.
+
+### Conventions
+
+- Tracks with `--track` (`v`, `a:1`, `s:eng`, a track number), `--no-audio` and `--no-subtitles`; times as seconds,
+  `[HH:]MM:SS[.mmm]` or `#frame`.
+- Globs, batches, output templates and `-` for standard input and output, read and written as they go.
+- A live progress line on a terminal; `--progress <file|->` writes ffmpeg's `-progress` keys, or JSON lines with
+  `--progress-format json`. Ctrl+C stops between packets, deletes the output it was writing and exits with 130.
+- `egami video <command>` runs it from the `egami` tool.
+
 ## Egami.Video 0.5.0 (unreleased)
 
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;
@@ -158,7 +199,8 @@ V4.2, API reviewed and accepted 2026-10-22 (all as recommended): AV1 decode, thr
 - `AudioReader` and `AudioReaderOptions`: the first audio track of any file as planar float, or the format, rate and layout
   asked for; codec delay and edit lists trimmed (`KeepAllSamples` keeps them); sample-exact `Seek`.
 - `AudioWriter` and `AudioWriterOptions`: frames of any length and format into WAV, Wave64, FLAC, Matroska or MP4.
-- `MediaFile.Transcode`: copies a file and encodes its audio again with another codec, for example FLAC in Matroska.
+- `MediaFile.Transcode`: copies a file and encodes its audio again with another codec, for example FLAC in Matroska. Opus
+  sources are encoded at the 48 kHz Opus decodes to, not the source rate its header names.
 - `VideoWriterOptions.AudioCodec` (with `AudioSampleRate`, `AudioLayout` and `AudioBitsPerSample`) and
   `VideoWriter.WriteAudio`: an audio track encoded next to the video.
 - AFL++ fuzz targets `wav` and `flac`.

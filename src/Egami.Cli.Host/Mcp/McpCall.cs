@@ -13,7 +13,11 @@ namespace Egami.Cli.Hosting.Mcp;
 /// <param name="MaxInputs">The most inputs one call may take.</param>
 /// <param name="Limit">The server's <c>--limit</c>, passed on to every call.</param>
 /// <param name="Progress">Hears of each finished file of a batch, or <see langword="null"/>.</param>
-internal sealed record CallScope(PathPolicy Paths, string WorkingDirectory, Func<string, string?> Environment, int MaxInputs, string? Limit, Action<int, int>? Progress);
+internal sealed record CallScope(PathPolicy Paths, string WorkingDirectory, Func<string, string?> Environment, int MaxInputs, string? Limit, Action<int, int>? Progress)
+{
+    /// <summary>Gets what hears progress within a file, for tools whose jobs report it (see <see cref="CliHostSession.ProgressNote"/>).</summary>
+    public Action<double, double, string>? Note { get; init; }
+}
 
 /// <summary>The outcome of one call, before it becomes a protocol result.</summary>
 /// <param name="ExitCode">The command line's exit code.</param>
@@ -201,6 +205,7 @@ internal static class McpCall
                 s.MaxInputs = scope.MaxInputs;
                 s.Cancellation = cancellationToken;
                 s.Progress = scope.Progress;
+                s.ProgressNote = scope.Note;
                 if (run is not null)
                 {
                     set.Workflow?.Attach(s, run);

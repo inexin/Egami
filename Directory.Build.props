@@ -23,6 +23,8 @@
          Egami.Cli and Egami.Cli.Host. They release together on the tag v<version>. Egami.Heic depends on exactly this version of
          Egami. The other packages (Barcodes, Metafiles, Fonts.Substitutes, Video) set their own version in their project file. -->
     <EgamiVersion>1.1.0</EgamiVersion>
+    <!-- Egami.Video's own version, which Egami.Video.Cli (egami-video) carries too (Video CLI design Q1). -->
+    <EgamiVideoVersion>0.5.0</EgamiVideoVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
