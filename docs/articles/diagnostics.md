@@ -273,9 +273,6 @@ are found on the finalizer thread after the call has ended; see [Memory and thre
 | `Streaming.BufferGrown` | Debug | An incremental decode's buffer grew past its first size to hold bytes not yet decoded |
 | `Streaming.ReadWhole` | Debug | A stream that cannot seek was read into memory whole, to find every image |
 | `Streaming.Replayed` | Debug | A transcode of a stream that cannot seek kept the bytes it read to plan, and read them again |
-| `Subtitle.Dropped` | Warning | The subtitle format written cannot store a feature the cues have (ASS tags, WebVTT settings, voices, ruby); it was left out. Once per kind, naming the first cue (Egami.Video) |
-| `Subtitle.Encoding` | Warning | A subtitle file has no byte order mark and is not UTF-8; it was read as UTF-16 or Windows-1252. SubtitleReaderOptions.Encoding names the right one (Egami.Video) |
-| `Subtitle.Repaired` | Warning | A malformed subtitle line was repaired (a '.' time separator, a missing cue number or blank line, a stray line skipped); with SubtitleReaderOptions.Strict it throws instead (Egami.Video) |
 | `Svg.Approximated` | Warning | A blend mode or call SVG cannot express was written as the nearest SVG can draw, or left out (Egami.Svg's SvgCanvas) |
 | `Svg.BadAttribute` | Warning | An attribute's value cannot be read (a length, number, list, viewBox or keyword); it is ignored, as browsers ignore it (Egami.Svg) |
 | `Svg.BadPathData` | Warning | Path data breaks the grammar; the path is drawn up to the error, as SVG says (Egami.Svg) |
