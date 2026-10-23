@@ -45,7 +45,8 @@ public sealed class AudioWriter : IDisposable
 
     /// <summary>
     /// Creates an audio file, choosing the container by the extension (.wav, .w64, .flac, .mkv, .mka, .mp4, .m4a and so on). An
-    /// existing file is replaced. Without a codec in the options, .flac files get FLAC and the others PCM.
+    /// existing file is replaced. Without a codec in the options, .flac files get FLAC, Ogg (.opus, .ogg, .oga) and WebM files
+    /// Opus, and the others PCM.
     /// </summary>
     /// <param name="path">The file path.</param>
     /// <param name="options">The codec, rate, layout, bit depth and level.</param>
@@ -166,7 +167,10 @@ public sealed class AudioWriter : IDisposable
         }
     }
 
-    internal static AudioCodec DefaultCodec(ContainerFormat format) => format == FlacFormat.Instance ? FlacCodec.Instance : PcmCodec.Instance;
+    internal static AudioCodec DefaultCodec(ContainerFormat format) =>
+        format == FlacFormat.Instance ? FlacCodec.Instance
+        : format == OggFormat.Instance || format == MatroskaFormat.WebM ? OpusCodec.Instance
+        : PcmCodec.Instance;
 
     /// <summary>Picks the stored bit depth: the option, else the first frame's valid bits where the codec stores them.</summary>
     internal static int BitsFor(AudioCodec codec, int requested, AudioFrame first)
@@ -201,6 +205,7 @@ public sealed class AudioWriter : IDisposable
                 Layout = layout,
                 BitsPerSample = BitsFor(_codec, _options.BitsPerSample, first),
                 Level = _options.Level,
+                Opus = _options.Opus,
             },
             _context);
         if (rate != first.SampleRate)
@@ -252,10 +257,13 @@ public sealed class AudioWriter : IDisposable
 /// </example>
 public sealed record AudioWriterOptions
 {
-    /// <summary>Gets the codec, or <see langword="null"/> for FLAC in .flac files and PCM elsewhere.</summary>
+    /// <summary>Gets the codec, or <see langword="null"/> for FLAC in .flac files, Opus in Ogg and WebM files and PCM elsewhere.</summary>
     public AudioCodec? Codec { get; init; }
 
-    /// <summary>Gets the sample rate to write, or <see langword="null"/> for the first frame's; other rates are resampled.</summary>
+    /// <summary>
+    /// Gets the sample rate to write, or <see langword="null"/> for the first frame's; other rates are resampled. Opus codes 8,
+    /// 12, 16, 24 and 48 kHz; other rates are resampled to 48 kHz, and the header records the rate asked for.
+    /// </summary>
     public int? SampleRate { get; init; }
 
     /// <summary>Gets the layout to write, or <see langword="null"/> for the first frame's; other layouts are mixed.</summary>
@@ -269,6 +277,12 @@ public sealed record AudioWriterOptions
 
     /// <summary>Gets the compression level, or <see langword="null"/> for the codec's default (FLAC: 0 to 8, default 5).</summary>
     public int? Level { get; init; }
+
+    /// <summary>Gets how Opus codes, or <see langword="null"/> for <see cref="OpusEncoderOptions.Default"/>.</summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Audio.cs" region="audio-opus-encode"/>
+    /// </example>
+    public OpusEncoderOptions? Opus { get; init; }
 
     /// <summary>Gets the resampler's quality, when the rate changes. Default <see cref="ResamplerQuality.Good"/>.</summary>
     public ResamplerQuality Quality { get; init; } = ResamplerQuality.Good;

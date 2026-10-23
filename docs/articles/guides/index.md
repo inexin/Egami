@@ -103,6 +103,7 @@ Operations that run on a raster through `Apply` and `Derive`.
 - [Video](video.md): probe, read, write and remux video, with Egami rasters as frames.
 - [Streaming MP4](streaming-mp4.md): fragmented MP4 for forward-only streams, and HLS and DASH segments.
 - [Audio](audio.md): decode, encode, resample and mix audio.
+- [Encoding Opus](opus-encoding.md): Opus files, settings and WebM audio.
 - [Subtitles](subtitles.md): read, edit, retime and convert SRT, WebVTT and ASS subtitle files.
 
 ## Egami.Barcodes

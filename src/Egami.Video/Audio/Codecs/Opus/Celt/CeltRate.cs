@@ -1,4 +1,4 @@
-// Translated from libopus 1.5.2 celt/rate.c (clt_compute_allocation and interp_bits2pulses, decoder side).
+// Translated from libopus 1.5.2 celt/rate.c (clt_compute_allocation and interp_bits2pulses).
 namespace Egami.Video.Audio.Codecs.Opus;
 
 /// <summary>CELT's bit allocation: splits the frame's bits between the bands' PVQ and fine energy, all in integer eighth bits.</summary>
@@ -17,6 +17,29 @@ internal static class CeltRate
     /// </summary>
     public static int ComputeAllocation(int start, int end, ReadOnlySpan<int> offsets, ReadOnlySpan<int> cap, int allocTrim, out int intensity,
         out bool dualStereo, int total, out int balance, Span<int> pulses, Span<int> ebits, Span<int> finePriority, int c, int lm, OpusRangeDecoder dec)
+    {
+        intensity = 0;
+        dualStereo = false;
+        return ComputeAllocation(start, end, offsets, cap, allocTrim, ref intensity, ref dualStereo, total, out balance, pulses, ebits, finePriority, c, lm,
+            dec, null, 0, 0);
+    }
+
+    /// <summary>
+    /// clt_compute_allocation for the encoder: decides and writes the skip, intensity and dual stereo symbols. <paramref name="intensity"/> and
+    /// <paramref name="dualStereo"/> come in as the encoder's choice and go out as coded; <paramref name="prev"/> is the previous frame's number
+    /// of coded bands and <paramref name="signalBandwidth"/> the last band with signal.
+    /// </summary>
+    public static int ComputeAllocation(int start, int end, ReadOnlySpan<int> offsets, ReadOnlySpan<int> cap, int allocTrim, ref int intensity,
+        ref bool dualStereo, int total, out int balance, Span<int> pulses, Span<int> ebits, Span<int> finePriority, int c, int lm, OpusRangeEncoder enc,
+        int prev, int signalBandwidth)
+    {
+        return ComputeAllocation(start, end, offsets, cap, allocTrim, ref intensity, ref dualStereo, total, out balance, pulses, ebits, finePriority, c, lm,
+            null, enc, prev, signalBandwidth);
+    }
+
+    private static int ComputeAllocation(int start, int end, ReadOnlySpan<int> offsets, ReadOnlySpan<int> cap, int allocTrim, ref int intensity,
+        ref bool dualStereo, int total, out int balance, Span<int> pulses, Span<int> ebits, Span<int> finePriority, int c, int lm, OpusRangeDecoder? dec,
+        OpusRangeEncoder? enc, int prev, int signalBandwidth)
     {
         const int BitRes = CeltTables.BitRes;
         const int Len = CeltTables.NbEBands;
@@ -134,13 +157,13 @@ internal static class CeltRate
             bits2[j] = bits2j;
         }
 
-        return InterpBits2Pulses(start, end, skipStart, bits1, bits2, thresh, cap, total, out balance, skipRsv, out intensity, intensityRsv,
-            out dualStereo, dualStereoRsv, pulses, ebits, finePriority, c, lm, dec);
+        return InterpBits2Pulses(start, end, skipStart, bits1, bits2, thresh, cap, total, out balance, skipRsv, ref intensity, intensityRsv,
+            ref dualStereo, dualStereoRsv, pulses, ebits, finePriority, c, lm, dec, enc, prev, signalBandwidth);
     }
 
     private static int InterpBits2Pulses(int start, int end, int skipStart, ReadOnlySpan<int> bits1, ReadOnlySpan<int> bits2, ReadOnlySpan<int> thresh,
-        ReadOnlySpan<int> cap, int total, out int outBalance, int skipRsv, out int intensity, int intensityRsv, out bool dualStereo, int dualStereoRsv,
-        Span<int> bits, Span<int> ebits, Span<int> finePriority, int c, int lm, OpusRangeDecoder dec)
+        ReadOnlySpan<int> cap, int total, out int outBalance, int skipRsv, ref int intensity, int intensityRsv, ref bool dualStereo, int dualStereoRsv,
+        Span<int> bits, Span<int> ebits, Span<int> finePriority, int c, int lm, OpusRangeDecoder? dec, OpusRangeEncoder? enc, int prev, int signalBandwidth)
     {
         const int BitRes = CeltTables.BitRes;
         ReadOnlySpan<short> eBands = CeltTables.EBands;
@@ -228,7 +251,21 @@ internal static class CeltRate
             // Only code a skip decision if we're above the threshold for this band; otherwise it is force-skipped.
             if (bandBits >= Math.Max(thresh[j], allocFloor + (1 << BitRes)))
             {
-                if (dec.DecodeBitLogp(1))
+                if (enc != null)
+                {
+                    // The only part of the allocation that is not a mandatory part of the bitstream: any bands we choose to skip
+                    // here must be explicitly signaled. The threshold has some hysteresis to keep bands from fluctuating in and out,
+                    // but we try not to fold below a certain point.
+                    int depthThreshold = codedBands > 17 ? (j < prev ? 7 : 9) : 0;
+                    if (codedBands <= start + 2 || (bandBits > (depthThreshold * bandWidth << lm << BitRes) >> 4 && j <= signalBandwidth))
+                    {
+                        enc.EncodeBitLogp(true, 1);
+                        break;
+                    }
+
+                    enc.EncodeBitLogp(false, 1);
+                }
+                else if (dec!.DecodeBitLogp(1))
                 {
                     break;
                 }
@@ -260,14 +297,44 @@ internal static class CeltRate
         }
 
         // Code the intensity and dual stereo parameters.
-        intensity = intensityRsv > 0 ? start + (int)dec.DecodeUint((uint)(codedBands + 1 - start)) : 0;
+        if (intensityRsv > 0)
+        {
+            if (enc != null)
+            {
+                intensity = Math.Min(intensity, codedBands);
+                enc.EncodeUint((uint)(intensity - start), (uint)(codedBands + 1 - start));
+            }
+            else
+            {
+                intensity = start + (int)dec!.DecodeUint((uint)(codedBands + 1 - start));
+            }
+        }
+        else
+        {
+            intensity = 0;
+        }
+
         if (intensity <= start)
         {
             total += dualStereoRsv;
             dualStereoRsv = 0;
         }
 
-        dualStereo = dualStereoRsv > 0 && dec.DecodeBitLogp(1);
+        if (dualStereoRsv > 0)
+        {
+            if (enc != null)
+            {
+                enc.EncodeBitLogp(dualStereo, 1);
+            }
+            else
+            {
+                dualStereo = dec!.DecodeBitLogp(1);
+            }
+        }
+        else
+        {
+            dualStereo = false;
+        }
 
         // Allocate the remaining bits.
         left = total - psum;

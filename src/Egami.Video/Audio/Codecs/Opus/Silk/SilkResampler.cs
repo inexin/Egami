@@ -1,15 +1,16 @@
 // Translated from libopus 1.5.2 silk/resampler.c, resampler_private_up2_HQ.c, resampler_private_IIR_FIR.c,
-// resampler_private_down_FIR.c, resampler_private_AR2.c, resampler_rom.h and resampler_structs.h (decoder side).
+// resampler_private_down_FIR.c, resampler_private_AR2.c, resampler_rom.h and resampler_structs.h.
 using static Egami.Video.Audio.Codecs.Opus.SilkMath;
 
 namespace Egami.Video.Audio.Codecs.Opus;
 
-/// <summary>SILK's resampler from the internal rate (8, 12 or 16 kHz) to the API rate (8, 12, 16, 24 or 48 kHz).</summary>
+/// <summary>SILK's resampler between the internal rate (8, 12 or 16 kHz) and the API rate (8, 12, 16, 24 or 48 kHz).</summary>
 internal sealed class SilkResampler
 {
     private const int MaxFirOrder = 36;
     private const int MaxIirOrder = 6;
     private const int MaxBatchSizeMs = 10;
+    private const int BatchSizeIn = 480;
     private const int DownOrderFir0 = 18;
     private const int DownOrderFir1 = 24;
     private const int DownOrderFir2 = 36;
@@ -33,6 +34,9 @@ internal sealed class SilkResampler
 
     // delay_matrix_dec: in (8, 12, 16) by out (8, 12, 16, 24, 48).
     private static ReadOnlySpan<sbyte> DelayMatrixDec => [4, 0, 2, 0, 0, 0, 9, 4, 7, 4, 0, 3, 12, 7, 7];
+
+    // delay_matrix_enc: in (8, 12, 16, 24, 48) by out (8, 12, 16).
+    private static ReadOnlySpan<sbyte> DelayMatrixEnc => [6, 0, 3, 0, 7, 3, 0, 1, 10, 0, 2, 6, 18, 10, 12];
 
     private static ReadOnlySpan<short> Up2Hq0 => [1746, 14986, 39083 - 65536];
 
@@ -106,17 +110,31 @@ internal sealed class SilkResampler
 
     private static int RateId(int r) => ((((r >> 12) - (r > 16000 ? 1 : 0)) >> (r > 24000 ? 1 : 0)) - 1);
 
-    /// <summary>silk_resampler_init for the decoder (forEnc = 0). Returns 0, or -1 for unsupported rates.</summary>
-    public int Init(int fsHzIn, int fsHzOut)
+    /// <summary>silk_resampler_init: <paramref name="forEncoder"/> selects the encoder's direction and delays. Returns 0, or -1 for unsupported rates.</summary>
+    public int Init(int fsHzIn, int fsHzOut, bool forEncoder = false)
     {
         Clear();
-        if ((fsHzIn != 8000 && fsHzIn != 12000 && fsHzIn != 16000) ||
-            (fsHzOut != 8000 && fsHzOut != 12000 && fsHzOut != 16000 && fsHzOut != 24000 && fsHzOut != 48000))
+        if (forEncoder)
         {
-            return -1;
+            if ((fsHzIn != 8000 && fsHzIn != 12000 && fsHzIn != 16000 && fsHzIn != 24000 && fsHzIn != 48000) ||
+                (fsHzOut != 8000 && fsHzOut != 12000 && fsHzOut != 16000))
+            {
+                return -1;
+            }
+
+            _inputDelay = DelayMatrixEnc[(RateId(fsHzIn) * 3) + RateId(fsHzOut)];
+        }
+        else
+        {
+            if ((fsHzIn != 8000 && fsHzIn != 12000 && fsHzIn != 16000) ||
+                (fsHzOut != 8000 && fsHzOut != 12000 && fsHzOut != 16000 && fsHzOut != 24000 && fsHzOut != 48000))
+            {
+                return -1;
+            }
+
+            _inputDelay = DelayMatrixDec[(RateId(fsHzIn) * 5) + RateId(fsHzOut)];
         }
 
-        _inputDelay = DelayMatrixDec[(RateId(fsHzIn) * 5) + RateId(fsHzOut)];
         _fsInKhz = fsHzIn / 1000;
         _fsOutKhz = fsHzOut / 1000;
         _batchSize = _fsInKhz * MaxBatchSizeMs;
@@ -320,6 +338,78 @@ internal sealed class SilkResampler
         }
 
         buf.Slice(nSamplesIn << 1, OrderFir12).CopyTo(_sFir16);
+    }
+
+    /// <summary>silk_resampler_down2: downsamples by two with allpass filters; <paramref name="s"/> holds two state values.</summary>
+    public static void Down2(Span<int> s, Span<short> output, ReadOnlySpan<short> input, int inLen)
+    {
+        const short Down20 = 9872;
+        const short Down21 = 39809 - 65536;
+        unchecked
+        {
+            int len2 = inLen >> 1;
+            for (int k = 0; k < len2; k++)
+            {
+                int in32 = input[2 * k] << 10;
+                int y = in32 - s[0];
+                int x = Smlawb(y, y, Down21);
+                int out32 = s[0] + x;
+                s[0] = in32 + x;
+                in32 = input[(2 * k) + 1] << 10;
+                y = in32 - s[1];
+                x = Smulwb(y, Down20);
+                out32 += s[1];
+                out32 += x;
+                s[1] = in32 + x;
+                output[k] = (short)Sat16(RShiftRound(out32, 11));
+            }
+        }
+    }
+
+    /// <summary>silk_resampler_down2_3: downsamples by 2/3 at low quality; <paramref name="s"/> holds six state values.</summary>
+    public static void Down23(Span<int> s, Span<short> output, ReadOnlySpan<short> input, int inLen)
+    {
+        const int OrderFir = 4;
+        ReadOnlySpan<short> coefs = SilkTables.Resampler23CoefsLq;
+        Span<int> buf = stackalloc int[BatchSizeIn + OrderFir];
+        s[..OrderFir].CopyTo(buf);
+        int o = 0;
+        int nSamplesIn;
+        while (true)
+        {
+            nSamplesIn = Math.Min(inLen, BatchSizeIn);
+            Ar2(s[OrderFir..], buf[OrderFir..], input, coefs, nSamplesIn);
+            int bufPtr = 0;
+            int counter = nSamplesIn;
+            while (counter > 2)
+            {
+                int resQ6 = Smulwb(buf[bufPtr], coefs[2]);
+                resQ6 = Smlawb(resQ6, buf[bufPtr + 1], coefs[3]);
+                resQ6 = Smlawb(resQ6, buf[bufPtr + 2], coefs[5]);
+                resQ6 = Smlawb(resQ6, buf[bufPtr + 3], coefs[4]);
+                output[o++] = (short)Sat16(RShiftRound(resQ6, 6));
+                resQ6 = Smulwb(buf[bufPtr + 1], coefs[4]);
+                resQ6 = Smlawb(resQ6, buf[bufPtr + 2], coefs[5]);
+                resQ6 = Smlawb(resQ6, buf[bufPtr + 3], coefs[3]);
+                resQ6 = Smlawb(resQ6, buf[bufPtr + 4], coefs[2]);
+                output[o++] = (short)Sat16(RShiftRound(resQ6, 6));
+                bufPtr += 3;
+                counter -= 3;
+            }
+
+            input = input[nSamplesIn..];
+            inLen -= nSamplesIn;
+            if (inLen > 0)
+            {
+                buf.Slice(nSamplesIn, OrderFir).CopyTo(buf);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        buf.Slice(nSamplesIn, OrderFir).CopyTo(s);
     }
 
     /// <summary>silk_resampler_private_AR2: second-order AR filter, output in Q8.</summary>

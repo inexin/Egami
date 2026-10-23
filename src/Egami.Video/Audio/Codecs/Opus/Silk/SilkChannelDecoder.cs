@@ -56,6 +56,21 @@ internal sealed class SilkSideInfoIndices
         LtpScaleIndex = 0;
         Seed = 0;
     }
+
+    public void CopyFrom(SilkSideInfoIndices other)
+    {
+        other.GainsIndices.CopyTo(GainsIndices, 0);
+        other.LtpIndex.CopyTo(LtpIndex, 0);
+        other.NlsfIndices.CopyTo(NlsfIndices, 0);
+        LagIndex = other.LagIndex;
+        ContourIndex = other.ContourIndex;
+        SignalType = other.SignalType;
+        QuantOffsetType = other.QuantOffsetType;
+        NlsfInterpCoefQ2 = other.NlsfInterpCoefQ2;
+        PerIndex = other.PerIndex;
+        LtpScaleIndex = other.LtpScaleIndex;
+        Seed = other.Seed;
+    }
 }
 
 /// <summary>silk_decoder_state: the SILK decoder of one channel (mid or side).</summary>

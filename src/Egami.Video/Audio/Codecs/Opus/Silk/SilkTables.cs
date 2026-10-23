@@ -1,8 +1,8 @@
-// Transcribed from libopus 1.5.2 silk/tables_*.c, pitch_est_tables.c, table_LSF_cos.c and resampler_rom.c by
+// Transcribed from libopus 1.5.2 silk/tables_*.c, pitch_est_tables.c, table_LSF_cos.c, resampler_rom.c and control_SNR.c by
 // tools/video/make-silk-tables.py; do not edit by hand.
 namespace Egami.Video.Audio.Codecs.Opus;
 
-/// <summary>The constant tables of the SILK decoder; multi-dimensional C arrays are flattened row by row.</summary>
+/// <summary>The constant tables of the SILK decoder and encoder; multi-dimensional C arrays are flattened row by row.</summary>
 internal static class SilkTables
 {
     /// <summary>silk_gain_iCDF (24 entries).</summary>
@@ -647,5 +647,179 @@ internal static class SilkTables
         189, -600, 617, 30567, 117, -159, -1070, 29704, 52, 221, -2392, 28276, -4, 529, -3350, 26341,
         -48, 758, -3956, 23973, -80, 905, -4235, 21254, -99, 972, -4222, 18278, -107, 967, -3957, 15143,
         -103, 896, -3487, 11950, -91, 773, -2865, 8798, -71, 611, -2143, 5784, -46, 425, -1375, 2996,
+    ];
+
+    /// <summary>silk_max_pulses_table (4 entries).</summary>
+    public static ReadOnlySpan<byte> MaxPulsesTable =>
+    [
+        8, 10, 12, 16,
+    ];
+
+    /// <summary>silk_pulses_per_block_BITS_Q5 (162 entries).</summary>
+    public static ReadOnlySpan<byte> PulsesPerBlockBitsQ5 =>
+    [
+        31, 57, 107, 160, 205, 205, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 69, 47, 67, 111, 166, 205, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 82, 74, 79, 95, 109, 128, 145, 160, 173, 205, 205, 205,
+        224, 255, 255, 224, 255, 224, 125, 74, 59, 69, 97, 141, 182, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 173, 115, 85, 73, 76, 92, 115, 145,
+        173, 205, 224, 224, 255, 255, 255, 255, 255, 255, 166, 134, 113, 102, 101, 102,
+        107, 118, 125, 138, 145, 155, 166, 182, 192, 192, 205, 150, 224, 182, 134, 101,
+        83, 79, 85, 97, 120, 145, 173, 205, 224, 255, 255, 255, 255, 255, 255, 224,
+        192, 150, 120, 101, 92, 89, 93, 102, 118, 134, 160, 182, 192, 224, 224, 224,
+        255, 224, 224, 182, 155, 134, 118, 109, 104, 102, 106, 111, 118, 131, 145, 160,
+        173, 131,
+    ];
+
+    /// <summary>silk_rate_levels_BITS_Q5 (18 entries).</summary>
+    public static ReadOnlySpan<byte> RateLevelsBitsQ5 =>
+    [
+        131, 74, 141, 79, 80, 138, 95, 104, 134, 95, 99, 91, 125, 93, 76, 123,
+        115, 123,
+    ];
+
+    /// <summary>silk_LTP_gain_BITS_Q5_0 (8 entries).</summary>
+    public static ReadOnlySpan<byte> LtpGainBitsQ50 =>
+    [
+        15, 131, 138, 138, 155, 155, 173, 173,
+    ];
+
+    /// <summary>silk_LTP_gain_BITS_Q5_1 (16 entries).</summary>
+    public static ReadOnlySpan<byte> LtpGainBitsQ51 =>
+    [
+        69, 93, 115, 118, 131, 138, 141, 138, 150, 150, 155, 150, 155, 160, 166, 160,
+    ];
+
+    /// <summary>silk_LTP_gain_BITS_Q5_2 (32 entries).</summary>
+    public static ReadOnlySpan<byte> LtpGainBitsQ52 =>
+    [
+        131, 128, 134, 141, 141, 141, 145, 145, 145, 150, 155, 155, 155, 155, 160, 160,
+        160, 160, 166, 166, 173, 173, 182, 192, 182, 192, 192, 192, 205, 192, 205, 224,
+    ];
+
+    /// <summary>silk_LTP_gain_vq_0_gain (8 entries).</summary>
+    public static ReadOnlySpan<byte> LtpGainVq0Gain =>
+    [
+        46, 2, 90, 87, 93, 91, 82, 98,
+    ];
+
+    /// <summary>silk_LTP_gain_vq_1_gain (16 entries).</summary>
+    public static ReadOnlySpan<byte> LtpGainVq1Gain =>
+    [
+        109, 120, 118, 12, 113, 115, 117, 119, 99, 59, 87, 111, 63, 111, 112, 80,
+    ];
+
+    /// <summary>silk_LTP_gain_vq_2_gain (32 entries).</summary>
+    public static ReadOnlySpan<byte> LtpGainVq2Gain =>
+    [
+        126, 124, 125, 124, 129, 121, 126, 23, 132, 127, 127, 127, 126, 127, 122, 133,
+        130, 134, 101, 118, 119, 145, 126, 86, 124, 120, 123, 119, 170, 173, 107, 109,
+    ];
+
+    /// <summary>silk_LTP_vq_sizes (3 entries).</summary>
+    public static ReadOnlySpan<sbyte> LtpVqSizes =>
+    [
+        8, 16, 32,
+    ];
+
+    /// <summary>silk_NLSF_CB2_BITS_NB_MB_Q5 (72 entries).</summary>
+    public static ReadOnlySpan<byte> NlsfCb2BitsNbMbQ5 =>
+    [
+        255, 255, 255, 131, 6, 145, 255, 255, 255, 255, 255, 236, 93, 15, 96, 255,
+        255, 255, 255, 255, 194, 83, 25, 71, 221, 255, 255, 255, 255, 162, 73, 34,
+        66, 162, 255, 255, 255, 210, 126, 73, 43, 57, 173, 255, 255, 255, 201, 125,
+        71, 48, 58, 130, 255, 255, 255, 166, 110, 73, 57, 62, 104, 210, 255, 255,
+        251, 123, 65, 55, 68, 100, 171, 255,
+    ];
+
+    /// <summary>silk_NLSF_CB2_BITS_WB_Q5 (72 entries).</summary>
+    public static ReadOnlySpan<byte> NlsfCb2BitsWbQ5 =>
+    [
+        255, 255, 255, 156, 4, 154, 255, 255, 255, 255, 255, 227, 102, 15, 92, 255,
+        255, 255, 255, 255, 213, 83, 24, 72, 236, 255, 255, 255, 255, 150, 76, 33,
+        63, 214, 255, 255, 255, 190, 121, 77, 43, 55, 185, 255, 255, 255, 245, 137,
+        71, 43, 59, 139, 255, 255, 255, 255, 131, 66, 50, 66, 107, 194, 255, 255,
+        166, 116, 76, 55, 53, 125, 255, 255,
+    ];
+
+    /// <summary>silk_Transition_LP_B_Q28 (15 entries).</summary>
+    public static ReadOnlySpan<int> TransitionLpBQ28 =>
+    [
+        250767114, 501534038, 250767114, 209867381, 419732057, 209867381, 170987846, 341967853, 170987846, 131531482, 263046905, 131531482, 89306658, 178584282, 89306658,
+    ];
+
+    /// <summary>silk_Transition_LP_A_Q28 (10 entries).</summary>
+    public static ReadOnlySpan<int> TransitionLpAQ28 =>
+    [
+        506393414, 239854379, 411067935, 169683996, 306733530, 116694253, 185807084, 77959395, 35497197, 57401098,
+    ];
+
+    /// <summary>silk_Lag_range_stage3 (24 entries).</summary>
+    public static ReadOnlySpan<sbyte> LagRangeStage3 =>
+    [
+        -5, 8, -1, 6, -1, 6, -4, 10, -6, 10, -2, 6, -1, 6, -5, 10,
+        -9, 12, -3, 7, -2, 7, -7, 13,
+    ];
+
+    /// <summary>silk_Lag_range_stage3_10_ms (4 entries).</summary>
+    public static ReadOnlySpan<sbyte> LagRangeStage310Ms =>
+    [
+        -3, 7, -2, 7,
+    ];
+
+    /// <summary>silk_nb_cbk_searchs_stage3 (3 entries).</summary>
+    public static ReadOnlySpan<sbyte> NbCbkSearchsStage3 =>
+    [
+        16, 24, 34,
+    ];
+
+    /// <summary>silk_Resampler_2_3_COEFS_LQ (6 entries).</summary>
+    public static ReadOnlySpan<short> Resampler23CoefsLq =>
+    [
+        -2797, -6507, 4697, 10739, 1567, 8276,
+    ];
+
+    /// <summary>silk_TargetRate_NB_21 (107 entries).</summary>
+    public static ReadOnlySpan<byte> TargetRateNb21 =>
+    [
+        0, 15, 39, 52, 61, 68, 74, 79, 84, 88, 92, 95, 99, 102, 105, 108,
+        111, 114, 117, 119, 122, 124, 126, 129, 131, 133, 135, 137, 139, 142, 143, 145,
+        147, 149, 151, 153, 155, 157, 158, 160, 162, 163, 165, 167, 168, 170, 171, 173,
+        174, 176, 177, 179, 180, 182, 183, 185, 186, 187, 189, 190, 192, 193, 194, 196,
+        197, 199, 200, 201, 203, 204, 205, 207, 208, 209, 211, 212, 213, 215, 216, 217,
+        219, 220, 221, 223, 224, 225, 227, 228, 230, 231, 232, 234, 235, 236, 238, 239,
+        241, 242, 243, 245, 246, 248, 249, 250, 252, 253, 255,
+    ];
+
+    /// <summary>silk_TargetRate_MB_21 (155 entries).</summary>
+    public static ReadOnlySpan<byte> TargetRateMb21 =>
+    [
+        0, 0, 28, 43, 52, 59, 65, 70, 74, 78, 81, 85, 87, 90, 93, 95,
+        98, 100, 102, 105, 107, 109, 111, 113, 115, 116, 118, 120, 122, 123, 125, 127,
+        128, 130, 131, 133, 134, 136, 137, 138, 140, 141, 143, 144, 145, 147, 148, 149,
+        151, 152, 153, 154, 156, 157, 158, 159, 160, 162, 163, 164, 165, 166, 167, 168,
+        169, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185,
+        186, 187, 188, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200,
+        201, 202, 203, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 214,
+        215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 224, 225, 226, 227, 228, 229,
+        230, 231, 232, 233, 234, 235, 236, 236, 237, 238, 239, 240, 241, 242, 243, 244,
+        245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255,
+    ];
+
+    /// <summary>silk_TargetRate_WB_21 (191 entries).</summary>
+    public static ReadOnlySpan<byte> TargetRateWb21 =>
+    [
+        0, 0, 0, 8, 29, 41, 49, 56, 62, 66, 70, 74, 77, 80, 83, 86,
+        88, 91, 93, 95, 97, 99, 101, 103, 105, 107, 108, 110, 112, 113, 115, 116,
+        118, 119, 121, 122, 123, 125, 126, 127, 129, 130, 131, 132, 134, 135, 136, 137,
+        138, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154,
+        156, 157, 158, 159, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170,
+        171, 171, 172, 173, 174, 175, 176, 177, 177, 178, 179, 180, 181, 181, 182, 183,
+        184, 185, 185, 186, 187, 188, 189, 189, 190, 191, 192, 192, 193, 194, 195, 195,
+        196, 197, 198, 198, 199, 200, 200, 201, 202, 203, 203, 204, 205, 206, 206, 207,
+        208, 209, 209, 210, 211, 211, 212, 213, 214, 214, 215, 216, 216, 217, 218, 219,
+        219, 220, 221, 221, 222, 223, 224, 224, 225, 226, 226, 227, 228, 229, 229, 230,
+        231, 232, 232, 233, 234, 234, 235, 236, 237, 237, 238, 239, 240, 240, 241, 242,
+        243, 243, 244, 245, 246, 246, 247, 248, 249, 249, 250, 251, 252, 253, 255,
     ];
 }

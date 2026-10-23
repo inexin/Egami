@@ -5,7 +5,7 @@ namespace Egami.Video.Audio.Codecs.Opus;
 /// libopus's mixed-radix FFT (opus_fft_impl) for the four static FFT sizes of the 48 kHz mode (480, 240, 120 and 60) and the
 /// inverse MDCT built on it (clt_mdct_backward). Complex values are interleaved: real at 2k, imaginary at 2k + 1.
 /// </summary>
-internal static class CeltMdct
+internal static partial class CeltMdct
 {
     // The factors of fft_state48000_960_0..3: radix, then the remaining length, per stage.
     private static ReadOnlySpan<short> Factors =>

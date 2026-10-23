@@ -111,6 +111,12 @@ public sealed record AudioEncoderOptions
 
     /// <summary>Gets the samples per packet, or 0 for the codec's default (FLAC: 1152 at levels 0 to 2, else 4096; PCM: 4096).</summary>
     public int FrameSize { get; init; }
+
+    /// <summary>
+    /// Gets how Opus codes, or <see langword="null"/> for <see cref="OpusEncoderOptions.Default"/>. Opus ignores
+    /// <see cref="FrameSize"/> and <see cref="Level"/>; the frame duration and effort are set here.
+    /// </summary>
+    public OpusEncoderOptions? Opus { get; init; }
 }
 
 /// <summary>
@@ -191,7 +197,7 @@ public static class AudioCodecs
     /// <summary>Gets the FLAC codec.</summary>
     public static AudioCodec Flac => FlacCodec.Instance;
 
-    /// <summary>Gets the Opus codec (decode only).</summary>
+    /// <summary>Gets the Opus codec.</summary>
     public static AudioCodec Opus => OpusCodec.Instance;
 
     /// <summary>Gets the Vorbis codec (decode only).</summary>

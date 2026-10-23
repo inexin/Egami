@@ -4,16 +4,6 @@ using System.Buffers.Binary;
 
 namespace Egami.Video.Audio.Codecs.Opus;
 
-/// <summary>Opus bandwidths, as the TOC byte names them (RFC 6716 section 3.1).</summary>
-internal enum OpusBandwidth
-{
-    Narrowband = 1101,
-    Mediumband = 1102,
-    Wideband = 1103,
-    Superwideband = 1104,
-    Fullband = 1105,
-}
-
 /// <summary>Reads an Opus packet's TOC byte and frame packing (RFC 6716 section 3).</summary>
 internal static class OpusPacket
 {

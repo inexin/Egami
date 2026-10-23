@@ -2,7 +2,7 @@
 namespace Egami.Video.Audio.Codecs.Opus;
 
 /// <summary>CELT's pyramid vector quantizer on the decoder side: codeword decoding (CWRS), spreading rotation and normalization.</summary>
-internal static class CeltVq
+internal static partial class CeltVq
 {
     private static readonly int[] s_spreadFactor = [15, 10, 5];
 

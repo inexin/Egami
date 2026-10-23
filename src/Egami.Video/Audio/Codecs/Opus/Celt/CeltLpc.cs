@@ -1,7 +1,7 @@
-// Translated from libopus 1.5.2 celt/celt_lpc.c and celt/pitch.c (float build; what the decoder's packet loss concealment uses).
+// Translated from libopus 1.5.2 celt/celt_lpc.c and celt/pitch.c (float build; the decoder's packet loss concealment and the encoder's prefilter use them).
 namespace Egami.Video.Audio.Codecs.Opus;
 
-/// <summary>The LPC analysis and filters and the pitch search of libopus's CELT that the pitch-based concealment uses.</summary>
+/// <summary>The LPC analysis and filters and the pitch search of libopus's CELT, for the concealment and the encoder's prefilter.</summary>
 internal static class CeltLpc
 {
     /// <summary>CELT_LPC_ORDER.</summary>
@@ -231,9 +231,9 @@ internal static class CeltLpc
     {
         Span<int> bestPitch = [0, 0];
         int lag = len + maxPitch;
-        float[] xLp4 = new float[len >> 2];
-        float[] yLp4 = new float[lag >> 2];
-        float[] xcorr = new float[maxPitch >> 1];
+        Span<float> xLp4 = stackalloc float[len >> 2];
+        Span<float> yLp4 = stackalloc float[lag >> 2];
+        Span<float> xcorr = stackalloc float[maxPitch >> 1];
 
         // Downsample by 2 again.
         for (int j = 0; j < len >> 2; j++)
@@ -292,6 +292,140 @@ internal static class CeltLpc
 
         return (2 * bestPitch[0]) - offset;
     }
+
+    /// <summary>
+    /// remove_doubling: checks the pitch <paramref name="t0"/> found on the half-rate <paramref name="x"/> (which holds
+    /// <paramref name="maxPeriod"/>/2 samples of history before the <paramref name="n"/>/2 current ones) against its submultiples, so
+    /// that the period is not a multiple of the true one; updates <paramref name="t0"/> and returns the pitch gain.
+    /// </summary>
+    public static float RemoveDoubling(ReadOnlySpan<float> x, int maxPeriod, int minPeriod, int n, ref int t0, int prevPeriod, float prevGain)
+    {
+        ReadOnlySpan<int> secondCheck = [0, 0, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 5, 2, 3, 2];
+        int minPeriod0 = minPeriod;
+        maxPeriod /= 2;
+        minPeriod /= 2;
+        t0 /= 2;
+        prevPeriod /= 2;
+        n /= 2;
+        int xo = maxPeriod;
+        if (t0 >= maxPeriod)
+        {
+            t0 = maxPeriod - 1;
+        }
+
+        int t = t0;
+        int tt0 = t0;
+        Span<float> yyLookup = stackalloc float[maxPeriod + 1];
+        ReadOnlySpan<float> xs = x[xo..];
+        CeltMath.DualInnerProduct(xs, xs, x[(xo - tt0)..], n, out float xx, out float xy);
+        yyLookup[0] = xx;
+        float yy = xx;
+        for (int i = 1; i <= maxPeriod; i++)
+        {
+            yy = yy + (x[xo - i] * x[xo - i]) - (x[xo + n - i] * x[xo + n - i]);
+            yyLookup[i] = MathF.Max(0, yy);
+        }
+
+        yy = yyLookup[tt0];
+        float bestXy = xy;
+        float bestYy = yy;
+        float g0 = ComputePitchGain(xy, xx, yy);
+        float g = g0;
+        // Look for any pitch at T/k.
+        for (int k = 2; k <= 15; k++)
+        {
+            int t1 = (int)((uint)((2 * tt0) + k) / (uint)(2 * k));
+            if (t1 < minPeriod)
+            {
+                break;
+            }
+
+            // Look for another strong correlation at T1b.
+            int t1b;
+            if (k == 2)
+            {
+                t1b = t1 + tt0 > maxPeriod ? tt0 : tt0 + t1;
+            }
+            else
+            {
+                t1b = (int)((uint)((2 * secondCheck[k] * tt0) + k) / (uint)(2 * k));
+            }
+
+            CeltMath.DualInnerProduct(xs, x[(xo - t1)..], x[(xo - t1b)..], n, out xy, out float xy2);
+            xy = .5f * (xy + xy2);
+            yy = .5f * (yyLookup[t1] + yyLookup[t1b]);
+            float g1 = ComputePitchGain(xy, xx, yy);
+            float cont;
+            if (Math.Abs(t1 - prevPeriod) <= 1)
+            {
+                cont = prevGain;
+            }
+            else if (Math.Abs(t1 - prevPeriod) <= 2 && 5 * k * k < tt0)
+            {
+                cont = .5f * prevGain;
+            }
+            else
+            {
+                cont = 0;
+            }
+
+            float thresh = MathF.Max(.3f, (.7f * g0) - cont);
+            // Bias against very high pitch (very short period) to avoid false-positives due to short-term correlation.
+            if (t1 < 3 * minPeriod)
+            {
+                thresh = MathF.Max(.4f, (.85f * g0) - cont);
+            }
+            else if (t1 < 2 * minPeriod)
+            {
+                thresh = MathF.Max(.5f, (.9f * g0) - cont);
+            }
+
+            if (g1 > thresh)
+            {
+                bestXy = xy;
+                bestYy = yy;
+                t = t1;
+                g = g1;
+            }
+        }
+
+        bestXy = MathF.Max(0, bestXy);
+        float pg = bestYy <= bestXy ? 1f : bestXy / (bestYy + 1);
+        Span<float> xcorr = stackalloc float[3];
+        for (int k = 0; k < 3; k++)
+        {
+            xcorr[k] = CeltMath.InnerProduct(xs, x[(xo - (t + k - 1))..], n);
+        }
+
+        int offset;
+        if (xcorr[2] - xcorr[0] > .7f * (xcorr[1] - xcorr[0]))
+        {
+            offset = 1;
+        }
+        else if (xcorr[0] - xcorr[2] > .7f * (xcorr[1] - xcorr[2]))
+        {
+            offset = -1;
+        }
+        else
+        {
+            offset = 0;
+        }
+
+        if (pg > g)
+        {
+            pg = g;
+        }
+
+        t0 = (2 * t) + offset;
+        if (t0 < minPeriod0)
+        {
+            t0 = minPeriod0;
+        }
+
+        return pg;
+    }
+
+    private static float ComputePitchGain(float xy, float xx, float yy) => xy / CeltMath.Sqrt(1 + (xx * yy));
 
     private static void FindBestPitch(ReadOnlySpan<float> xcorr, ReadOnlySpan<float> y, int len, int maxPitch, Span<int> bestPitch)
     {

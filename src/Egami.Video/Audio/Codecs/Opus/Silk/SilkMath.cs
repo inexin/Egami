@@ -86,6 +86,43 @@ internal static class SilkMath
         return ((a | b) & int.MinValue) == 0 ? int.MaxValue : sum;
     }
 
+    /// <summary>silk_ADD_POS_SAT32: adds two non-negative values, saturating to int.MaxValue.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int AddPosSat32(int a, int b)
+    {
+        int sum = unchecked(a + b);
+        return (sum & int.MinValue) != 0 ? int.MaxValue : sum;
+    }
+
+    /// <summary>silk_sigm_Q15: an approximate sigmoid in Q15 of a Q5 input.</summary>
+    public static int SigmQ15(int inQ5)
+    {
+        ReadOnlySpan<int> slopeQ10 = [237, 153, 73, 30, 12, 7];
+        ReadOnlySpan<int> posQ15 = [16384, 23955, 28861, 31213, 32178, 32548];
+        ReadOnlySpan<int> negQ15 = [16384, 8812, 3906, 1554, 589, 219];
+        if (inQ5 < 0)
+        {
+            inQ5 = -inQ5;
+            if (inQ5 >= 6 * 32)
+            {
+                return 0;
+            }
+
+            int ind = inQ5 >> 5;
+            return negQ15[ind] - Smulbb(slopeQ10[ind], inQ5 & 0x1F);
+        }
+        else
+        {
+            if (inQ5 >= 6 * 32)
+            {
+                return 32767;
+            }
+
+            int ind = inQ5 >> 5;
+            return posQ15[ind] + Smulbb(slopeQ10[ind], inQ5 & 0x1F);
+        }
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int SubSat32(int a, int b)
     {
