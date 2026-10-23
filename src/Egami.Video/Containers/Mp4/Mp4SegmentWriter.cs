@@ -149,6 +149,7 @@ public sealed class Mp4SegmentWriter : IMuxer
         }
         finally
         {
+            _fragmenter.Release();
             _head.Dispose();
             _moof.Dispose();
         }
@@ -222,7 +223,7 @@ public sealed class Mp4SegmentWriter : IMuxer
             using Stream stream = _open($"{NameOf(track)}-{number:D5}.m4s");
             _head.WriteTo(stream);
             _moof.WriteTo(stream);
-            stream.Write(track.Data.GetBuffer().AsSpan(0, (int)track.ReadyBytes));
+            track.Data.WriteTo(stream, track.ReadyBytes);
         }
     }
 }

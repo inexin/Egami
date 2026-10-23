@@ -118,6 +118,7 @@ internal sealed class Mp4FragmentMuxer : IMuxer
         }
         finally
         {
+            _fragmenter.Release();
             _boxes.Dispose();
             if (!_leaveOpen)
             {

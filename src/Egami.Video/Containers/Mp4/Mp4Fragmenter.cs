@@ -46,7 +46,7 @@ internal sealed class FragmentTrack
     public Rational TimeBase { get; }
 
     /// <summary>Gets the bytes of <see cref="Samples"/>, in order.</summary>
-    public MemoryStream Data { get; } = new();
+    public SampleBuffer Data { get; } = new();
 
     /// <summary>Gets the samples held: <see cref="Ready"/> of them with durations, and at most one more waiting for its next.</summary>
     public List<FragmentSample> Samples { get; } = [];
@@ -117,14 +117,6 @@ internal sealed class FragmentTrack
 
         int composition = (int)Math.Clamp(pts - dts, int.MinValue, int.MaxValue);
         Samples.Add(new FragmentSample { Size = packet.Data.Length, Dts = media, Composition = composition, Key = packet.IsKeyframe, Discard = packet.IsDiscardable, Duration = -1 });
-
-        // Grow in steps of 512 KB rather than doubling, so a fragment's buffer stays close to the fragment's size.
-        long needed = Data.Length + packet.Data.Length;
-        if (needed > Data.Capacity)
-        {
-            Data.Capacity = (int)Math.Min(Array.MaxLength, needed + (512 << 10));
-        }
-
         Data.Write(packet.Data.Span);
         long shown = media + composition;
         FirstPts = Math.Min(FirstPts, shown);
@@ -153,11 +145,7 @@ internal sealed class FragmentTrack
     public void Consume()
     {
         Samples.RemoveRange(0, Ready);
-        int rest = (int)(Data.Length - ReadyBytes);
-        byte[] buffer = Data.GetBuffer();
-        Buffer.BlockCopy(buffer, (int)ReadyBytes, buffer, 0, rest);
-        Data.SetLength(rest);
-        Data.Position = rest;
+        Data.Consume(ReadyBytes);
         Ready = 0;
         ReadyBytes = 0;
     }
@@ -270,6 +258,15 @@ internal sealed class Mp4Fragmenter
         }
 
         return _allStarted;
+    }
+
+    /// <summary>Gives the tracks' sample buffers back to the pool.</summary>
+    public void Release()
+    {
+        foreach (FragmentTrack track in Tracks)
+        {
+            track.Data.Dispose();
+        }
     }
 
     /// <summary>Ends every track and writes what is left.</summary>
@@ -584,7 +581,7 @@ internal static class Mp4FragmentBoxes
     {
         foreach (FragmentTrack track in tracks)
         {
-            stream.Write(track.Data.GetBuffer().AsSpan(0, (int)track.ReadyBytes));
+            track.Data.WriteTo(stream, track.ReadyBytes);
         }
     }
 
