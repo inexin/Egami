@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Encoding Opus | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Encoding Opus | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/opus-encoding.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="encoding-opus">Encoding Opus</h1>
+
+<p>Opus (RFC 6716) is the audio codec of WebM and of .opus files, and the best general-purpose lossy codec for both speech and
+music. Egami.Video encodes it fully managed: the encoder is translated from libopus 1.5.2 and gives the same packets, byte for
+byte, in every mode, so the quality and the bitrate are libopus's.</p>
+<ul>
+<li>SILK (speech), CELT (music) and hybrid frames, chosen per frame from the content and the bitrate, as libopus chooses.</li>
+<li>1 to 8 channels: mono and stereo in one stream (mapping family 0), and 3 to 8 channels as surround streams in Vorbis channel
+order (mapping family 1, up to 7.1), with libopus's surround masking and its bitrate split between streams.</li>
+<li>8, 12, 16, 24 and 48 kHz coded directly; other rates are resampled to 48 kHz first.</li>
+<li>Variable, constrained variable and constant bitrate, frames of 2.5 to 120 ms, in-band FEC and DTX.</li>
+</ul>
+<h2 id="writing-opus-files">Writing .opus files</h2>
+<p><code>AudioWriter</code> writes Opus by default for Ogg (.opus, .ogg, .oga) and WebM files; set <code>AudioWriterOptions.Codec</code> to
+<code>AudioCodecs.Opus</code> for Matroska (.mka, .mkv) and MP4. <code>AudioWriterOptions.Opus</code> takes an <code>OpusEncoderOptions</code>; leave it
+out for the defaults, which suit music and most speech.</p>
+<pre><code class="lang-csharp">// Speech at 32 kbit/s. Opus codes 8, 12, 16, 24 and 48 kHz, so this 44.1 kHz audio is resampled to 48 kHz; the
+// header keeps 44.1 kHz as the rate the audio came at.
+using (AudioWriter writer = AudioWriter.Create(&quot;voice.opus&quot;, new AudioWriterOptions
+{
+    Opus = new OpusEncoderOptions { Bitrate = 32_000, Application = OpusApplication.Voice },
+}))
+{
+    writer.Write(tone);
+}
+</code></pre>
+<p>The packets are timed at 48 kHz, as Opus always decodes. The encoder looks 6.5 ms ahead (2.5 ms with
+<code>OpusApplication.LowDelay</code>), so the stream starts with that much extra audio: the pre-skip, which the header (OpusHead) and
+the track's <code>CodecDelay</code> record and every decoder drops. At the end the encoder codes silence until the look-ahead is out, and
+the last packet's duration says where the input ended: Ogg writes it as the last granule position, Matroska and WebM as
+DiscardPadding and MP4 as the edit list. <code>AudioReader</code>, opusdec and FFmpeg give back exactly the samples written (FFmpeg
+ignores the end of an MP4 edit list, so it keeps the padding of an MP4 file).</p>
+<h2 id="settings">Settings</h2>
+<table>
+<thead>
+<tr>
+<th><code>OpusEncoderOptions</code></th>
+<th>Default</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Bitrate</code></td>
+<td>64 kbit/s per channel</td>
+<td>Bits per second for all channels together. Opus codes 6 to 510 kbit/s for stereo; 24 kbit/s is good speech, 64 to 96 kbit/s stereo is transparent for most music.</td>
+</tr>
+<tr>
+<td><code>RateMode</code></td>
+<td><code>Vbr</code></td>
+<td><code>Vbr</code> spends bits where the audio needs them, so the average follows the content; <code>ConstrainedVbr</code> keeps a short window near the bitrate, for streaming; <code>Cbr</code> gives every packet the same size.</td>
+</tr>
+<tr>
+<td><code>Application</code></td>
+<td><code>Audio</code></td>
+<td><code>Audio</code> codes for fidelity; <code>Voice</code> favours SILK and intelligibility; <code>LowDelay</code> turns SILK off and cuts the look-ahead to 2.5 ms.</td>
+</tr>
+<tr>
+<td><code>FrameDuration</code></td>
+<td>20 ms</td>
+<td>2.5, 5, 10, 20, 40, 60, 80, 100 or 120 ms. Short frames lower the delay and cost bits; long ones save a little on speech.</td>
+</tr>
+<tr>
+<td><code>Effort</code></td>
+<td>10</td>
+<td>0 to 10, libopus's complexity. Below 10 the tonality analysis is off and the searches are simpler.</td>
+</tr>
+<tr>
+<td><code>Bandwidth</code></td>
+<td>automatic</td>
+<td>The widest band coded, from <code>OpusBandwidth.Narrowband</code> (4 kHz) to <code>Fullband</code> (20 kHz).</td>
+</tr>
+<tr>
+<td><code>InbandFec</code></td>
+<td>off</td>
+<td>Speech packets carry a coarse copy of the packet before, which a decoder uses when that one is lost.</td>
+</tr>
+<tr>
+<td><code>ExpectedLoss</code></td>
+<td>0 %</td>
+<td>The share of packets expected to be lost, which the encoder protects against.</td>
+</tr>
+<tr>
+<td><code>Dtx</code></td>
+<td>off</td>
+<td>Speech silence is sent as one tiny packet every 400 ms.</td>
+</tr>
+</tbody>
+</table>
+<p>With <code>Vbr</code> the bitrate is an average over typical content, not a cap: a clip of pure tones may come out 20 % over it and
+noise 15 % under, exactly as with libopus. Use <code>ConstrainedVbr</code> when the rate must hold over each second.</p>
+<h2 id="the-encoder-by-hand">The encoder by hand</h2>
+<p><code>AudioCodecs.Opus.CreateEncoder</code> gives the <code>IAudioEncoder</code> the writer uses. <code>AudioEncoderOptions.Opus</code> carries the settings;
+<code>FrameSize</code> and <code>Level</code> are not used by Opus.</p>
+<pre><code class="lang-csharp">// Constant bitrate with 10 ms frames for a link that wants packets of one size: 96 kbit/s gives 120 bytes each.
+OpusEncoderOptions options = new()
+{
+    Bitrate = 96_000,
+    RateMode = OpusRateMode.Cbr,
+    FrameDuration = TimeSpan.FromMilliseconds(10),
+    Bandwidth = OpusBandwidth.Superwideband,
+};
+using IAudioEncoder encoder = AudioCodecs.Opus.CreateEncoder(
+    new AudioEncoderOptions { SampleRate = 48000, Layout = ChannelLayout.Stereo, Opus = options },
+    MediaContext.Default);
+encoder.Send(tone);
+encoder.Flush();
+int packets = 0;
+while (encoder.TryReceive(out EncodedPacket? packet))
+{
+    using (packet)
+    {
+        Console.WriteLine($&quot;{packet.Timestamp}: {packet.Data.Length} bytes&quot;);
+        packets++;
+    }
+}
+</code></pre><h2 id="transcoding-to-webm">Transcoding to WebM</h2>
+<p>WebM holds only Opus and Vorbis audio. <code>MediaFile.Transcode</code> with no codec and a WebM output copies Opus and Vorbis tracks and
+encodes the others in Opus, so a Matroska or MP4 file with FLAC or PCM audio becomes a valid WebM. Audio that no registered
+codec decodes is copied, and the WebM writer refuses it.</p>
+<pre><code class="lang-csharp">// WebM holds only Opus and Vorbis audio, so without a codec Transcode encodes the FLAC track in Opus.
+MediaFile.Transcode(&quot;talk.mka&quot;, &quot;talk.webm&quot;);
+</code></pre><h2 id="compared-with-libopus-and-ffmpeg">Compared with libopus and FFmpeg</h2>
+<p>The packets are libopus 1.5.2's, so files match what <code>opusenc</code> or <code>ffmpeg -c:a libopus</code> make with the same settings, apart from
+the container. FFmpeg's own <code>opus</code> encoder is a different, CELT-only encoder.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/opus-encoding.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

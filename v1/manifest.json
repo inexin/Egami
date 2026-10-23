@@ -11381,6 +11381,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.OpusApplication.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.OpusApplication.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.OpusApplication",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.OpusApplication.yml\" sourcestartlinenumber=\"1\">What the audio given to the Opus encoder is.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.OpusBandwidth.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.OpusBandwidth.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.OpusBandwidth",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.OpusBandwidth.yml\" sourcestartlinenumber=\"1\">The audio bands Opus codes, named by their upper edge.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Codecs.OpusCodec.yml",
       "output": {
         ".html": {
@@ -11391,7 +11419,35 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Audio.Codecs.OpusCodec",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.OpusCodec.yml\" sourcestartlinenumber=\"1\">Opus (RFC 6716 with the RFC 8251 updates), decode only: SILK, CELT and hybrid frames at every bandwidth, mono, stereo and\nthe multichannel mapping families 0, 1 and 255 (RFC 7845), with packet loss concealment and in-band FEC. Frames come out as\nplanar float at 48 kHz, Opus's own rate, in the canonical channel order; other rates go through a <xref href=\"Egami.Video.Audio.Resampler\" data-throw-if-not-resolved=\"false\"></xref>.\nThe decoder is translated from libopus 1.5.2. Ambisonic mappings (families 2 and 3) are not decoded.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.OpusCodec.yml\" sourcestartlinenumber=\"1\">Opus (RFC 6716 with the RFC 8251 updates). Decodes SILK, CELT and hybrid frames at every bandwidth, mono, stereo and\nthe multichannel mapping families 0, 1 and 255 (RFC 7845), with packet loss concealment and in-band FEC. Frames come out as\nplanar float at 48 kHz, Opus's own rate, in the canonical channel order; other rates go through a <xref href=\"Egami.Video.Audio.Resampler\" data-throw-if-not-resolved=\"false\"></xref>.\nEncodes 1 to 8 channels at 8, 12, 16, 24 or 48 kHz (mapping family 0 for mono and stereo, 1 above) in every mode, with the\nsettings of <xref href=\"Egami.Video.Audio.Codecs.OpusEncoderOptions\" data-throw-if-not-resolved=\"false\"></xref>; the default is 64 kbit/s per channel, variable bitrate, 20 ms frames. Both\nare translated from libopus 1.5.2 and match its output exactly. Ambisonic mappings (families 2 and 3) are not supported.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.OpusEncoderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.OpusEncoderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.OpusEncoderOptions.yml\" sourcestartlinenumber=\"1\">How the Opus encoder codes: the bitrate and how strictly it is kept, what the audio is, the frame duration, how hard the\nencoder searches, the widest band and the loss protection. Every one has a default that suits music and most speech.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.OpusRateMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.OpusRateMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.OpusRateMode",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.OpusRateMode.yml\" sourcestartlinenumber=\"1\">How strictly the Opus encoder keeps its bitrate.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -13342,6 +13398,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/ocr.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/opus-encoding.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/opus-encoding.html"
         }
       },
       "version": ""

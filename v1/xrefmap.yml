@@ -74449,6 +74449,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.AudioEncoderOptions.Level
   nameWithType: AudioEncoderOptions.Level
+- uid: Egami.Video.Audio.AudioEncoderOptions.Opus
+  name: Opus
+  href: api/Egami.Video.Audio.AudioEncoderOptions.html#Egami_Video_Audio_AudioEncoderOptions_Opus
+  commentId: P:Egami.Video.Audio.AudioEncoderOptions.Opus
+  fullName: Egami.Video.Audio.AudioEncoderOptions.Opus
+  nameWithType: AudioEncoderOptions.Opus
+- uid: Egami.Video.Audio.AudioEncoderOptions.Opus*
+  name: Opus
+  href: api/Egami.Video.Audio.AudioEncoderOptions.html#Egami_Video_Audio_AudioEncoderOptions_Opus_
+  commentId: Overload:Egami.Video.Audio.AudioEncoderOptions.Opus
+  isSpec: "True"
+  fullName: Egami.Video.Audio.AudioEncoderOptions.Opus
+  nameWithType: AudioEncoderOptions.Opus
 - uid: Egami.Video.Audio.AudioEncoderOptions.SampleRate
   name: SampleRate
   href: api/Egami.Video.Audio.AudioEncoderOptions.html#Egami_Video_Audio_AudioEncoderOptions_SampleRate
@@ -75309,12 +75322,85 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Codecs.Mp3Codec.Name
   nameWithType: Mp3Codec.Name
+- uid: Egami.Video.Audio.Codecs.OpusApplication
+  name: OpusApplication
+  href: api/Egami.Video.Audio.Codecs.OpusApplication.html
+  commentId: T:Egami.Video.Audio.Codecs.OpusApplication
+  fullName: Egami.Video.Audio.Codecs.OpusApplication
+  nameWithType: OpusApplication
+- uid: Egami.Video.Audio.Codecs.OpusApplication.Audio
+  name: Audio
+  href: api/Egami.Video.Audio.Codecs.OpusApplication.html#Egami_Video_Audio_Codecs_OpusApplication_Audio
+  commentId: F:Egami.Video.Audio.Codecs.OpusApplication.Audio
+  fullName: Egami.Video.Audio.Codecs.OpusApplication.Audio
+  nameWithType: OpusApplication.Audio
+- uid: Egami.Video.Audio.Codecs.OpusApplication.LowDelay
+  name: LowDelay
+  href: api/Egami.Video.Audio.Codecs.OpusApplication.html#Egami_Video_Audio_Codecs_OpusApplication_LowDelay
+  commentId: F:Egami.Video.Audio.Codecs.OpusApplication.LowDelay
+  fullName: Egami.Video.Audio.Codecs.OpusApplication.LowDelay
+  nameWithType: OpusApplication.LowDelay
+- uid: Egami.Video.Audio.Codecs.OpusApplication.Voice
+  name: Voice
+  href: api/Egami.Video.Audio.Codecs.OpusApplication.html#Egami_Video_Audio_Codecs_OpusApplication_Voice
+  commentId: F:Egami.Video.Audio.Codecs.OpusApplication.Voice
+  fullName: Egami.Video.Audio.Codecs.OpusApplication.Voice
+  nameWithType: OpusApplication.Voice
+- uid: Egami.Video.Audio.Codecs.OpusBandwidth
+  name: OpusBandwidth
+  href: api/Egami.Video.Audio.Codecs.OpusBandwidth.html
+  commentId: T:Egami.Video.Audio.Codecs.OpusBandwidth
+  fullName: Egami.Video.Audio.Codecs.OpusBandwidth
+  nameWithType: OpusBandwidth
+- uid: Egami.Video.Audio.Codecs.OpusBandwidth.Fullband
+  name: Fullband
+  href: api/Egami.Video.Audio.Codecs.OpusBandwidth.html#Egami_Video_Audio_Codecs_OpusBandwidth_Fullband
+  commentId: F:Egami.Video.Audio.Codecs.OpusBandwidth.Fullband
+  fullName: Egami.Video.Audio.Codecs.OpusBandwidth.Fullband
+  nameWithType: OpusBandwidth.Fullband
+- uid: Egami.Video.Audio.Codecs.OpusBandwidth.Mediumband
+  name: Mediumband
+  href: api/Egami.Video.Audio.Codecs.OpusBandwidth.html#Egami_Video_Audio_Codecs_OpusBandwidth_Mediumband
+  commentId: F:Egami.Video.Audio.Codecs.OpusBandwidth.Mediumband
+  fullName: Egami.Video.Audio.Codecs.OpusBandwidth.Mediumband
+  nameWithType: OpusBandwidth.Mediumband
+- uid: Egami.Video.Audio.Codecs.OpusBandwidth.Narrowband
+  name: Narrowband
+  href: api/Egami.Video.Audio.Codecs.OpusBandwidth.html#Egami_Video_Audio_Codecs_OpusBandwidth_Narrowband
+  commentId: F:Egami.Video.Audio.Codecs.OpusBandwidth.Narrowband
+  fullName: Egami.Video.Audio.Codecs.OpusBandwidth.Narrowband
+  nameWithType: OpusBandwidth.Narrowband
+- uid: Egami.Video.Audio.Codecs.OpusBandwidth.Superwideband
+  name: Superwideband
+  href: api/Egami.Video.Audio.Codecs.OpusBandwidth.html#Egami_Video_Audio_Codecs_OpusBandwidth_Superwideband
+  commentId: F:Egami.Video.Audio.Codecs.OpusBandwidth.Superwideband
+  fullName: Egami.Video.Audio.Codecs.OpusBandwidth.Superwideband
+  nameWithType: OpusBandwidth.Superwideband
+- uid: Egami.Video.Audio.Codecs.OpusBandwidth.Wideband
+  name: Wideband
+  href: api/Egami.Video.Audio.Codecs.OpusBandwidth.html#Egami_Video_Audio_Codecs_OpusBandwidth_Wideband
+  commentId: F:Egami.Video.Audio.Codecs.OpusBandwidth.Wideband
+  fullName: Egami.Video.Audio.Codecs.OpusBandwidth.Wideband
+  nameWithType: OpusBandwidth.Wideband
 - uid: Egami.Video.Audio.Codecs.OpusCodec
   name: OpusCodec
   href: api/Egami.Video.Audio.Codecs.OpusCodec.html
   commentId: T:Egami.Video.Audio.Codecs.OpusCodec
   fullName: Egami.Video.Audio.Codecs.OpusCodec
   nameWithType: OpusCodec
+- uid: Egami.Video.Audio.Codecs.OpusCodec.CanEncode
+  name: CanEncode
+  href: api/Egami.Video.Audio.Codecs.OpusCodec.html#Egami_Video_Audio_Codecs_OpusCodec_CanEncode
+  commentId: P:Egami.Video.Audio.Codecs.OpusCodec.CanEncode
+  fullName: Egami.Video.Audio.Codecs.OpusCodec.CanEncode
+  nameWithType: OpusCodec.CanEncode
+- uid: Egami.Video.Audio.Codecs.OpusCodec.CanEncode*
+  name: CanEncode
+  href: api/Egami.Video.Audio.Codecs.OpusCodec.html#Egami_Video_Audio_Codecs_OpusCodec_CanEncode_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusCodec.CanEncode
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusCodec.CanEncode
+  nameWithType: OpusCodec.CanEncode
 - uid: Egami.Video.Audio.Codecs.OpusCodec.CodecId
   name: CodecId
   href: api/Egami.Video.Audio.Codecs.OpusCodec.html#Egami_Video_Audio_Codecs_OpusCodec_CodecId
@@ -75344,6 +75430,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Codecs.OpusCodec.CreateDecoder
   nameWithType: OpusCodec.CreateDecoder
+- uid: Egami.Video.Audio.Codecs.OpusCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions,Egami.Video.MediaContext)
+  name: CreateEncoder(AudioEncoderOptions, MediaContext)
+  href: api/Egami.Video.Audio.Codecs.OpusCodec.html#Egami_Video_Audio_Codecs_OpusCodec_CreateEncoder_Egami_Video_Audio_AudioEncoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Audio.Codecs.OpusCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions,Egami.Video.MediaContext)
+  fullName: Egami.Video.Audio.Codecs.OpusCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions, Egami.Video.MediaContext)
+  nameWithType: OpusCodec.CreateEncoder(AudioEncoderOptions, MediaContext)
+- uid: Egami.Video.Audio.Codecs.OpusCodec.CreateEncoder*
+  name: CreateEncoder
+  href: api/Egami.Video.Audio.Codecs.OpusCodec.html#Egami_Video_Audio_Codecs_OpusCodec_CreateEncoder_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusCodec.CreateEncoder
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusCodec.CreateEncoder
+  nameWithType: OpusCodec.CreateEncoder
 - uid: Egami.Video.Audio.Codecs.OpusCodec.Instance
   name: Instance
   href: api/Egami.Video.Audio.Codecs.OpusCodec.html#Egami_Video_Audio_Codecs_OpusCodec_Instance
@@ -75370,6 +75469,166 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Codecs.OpusCodec.Name
   nameWithType: OpusCodec.Name
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions
+  name: OpusEncoderOptions
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html
+  commentId: T:Egami.Video.Audio.Codecs.OpusEncoderOptions
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions
+  nameWithType: OpusEncoderOptions
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Application
+  name: Application
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Application
+  commentId: P:Egami.Video.Audio.Codecs.OpusEncoderOptions.Application
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Application
+  nameWithType: OpusEncoderOptions.Application
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Application*
+  name: Application
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Application_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusEncoderOptions.Application
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Application
+  nameWithType: OpusEncoderOptions.Application
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Bandwidth
+  name: Bandwidth
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Bandwidth
+  commentId: P:Egami.Video.Audio.Codecs.OpusEncoderOptions.Bandwidth
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Bandwidth
+  nameWithType: OpusEncoderOptions.Bandwidth
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Bandwidth*
+  name: Bandwidth
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Bandwidth_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusEncoderOptions.Bandwidth
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Bandwidth
+  nameWithType: OpusEncoderOptions.Bandwidth
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Bitrate
+  name: Bitrate
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Bitrate
+  commentId: P:Egami.Video.Audio.Codecs.OpusEncoderOptions.Bitrate
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Bitrate
+  nameWithType: OpusEncoderOptions.Bitrate
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Bitrate*
+  name: Bitrate
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Bitrate_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusEncoderOptions.Bitrate
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Bitrate
+  nameWithType: OpusEncoderOptions.Bitrate
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Default
+  name: Default
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Default
+  commentId: P:Egami.Video.Audio.Codecs.OpusEncoderOptions.Default
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Default
+  nameWithType: OpusEncoderOptions.Default
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Default*
+  name: Default
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Default_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusEncoderOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Default
+  nameWithType: OpusEncoderOptions.Default
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Dtx
+  name: Dtx
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Dtx
+  commentId: P:Egami.Video.Audio.Codecs.OpusEncoderOptions.Dtx
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Dtx
+  nameWithType: OpusEncoderOptions.Dtx
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Dtx*
+  name: Dtx
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Dtx_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusEncoderOptions.Dtx
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Dtx
+  nameWithType: OpusEncoderOptions.Dtx
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Effort
+  name: Effort
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Effort
+  commentId: P:Egami.Video.Audio.Codecs.OpusEncoderOptions.Effort
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Effort
+  nameWithType: OpusEncoderOptions.Effort
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.Effort*
+  name: Effort
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_Effort_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusEncoderOptions.Effort
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.Effort
+  nameWithType: OpusEncoderOptions.Effort
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.ExpectedLoss
+  name: ExpectedLoss
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_ExpectedLoss
+  commentId: P:Egami.Video.Audio.Codecs.OpusEncoderOptions.ExpectedLoss
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.ExpectedLoss
+  nameWithType: OpusEncoderOptions.ExpectedLoss
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.ExpectedLoss*
+  name: ExpectedLoss
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_ExpectedLoss_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusEncoderOptions.ExpectedLoss
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.ExpectedLoss
+  nameWithType: OpusEncoderOptions.ExpectedLoss
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.FrameDuration
+  name: FrameDuration
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_FrameDuration
+  commentId: P:Egami.Video.Audio.Codecs.OpusEncoderOptions.FrameDuration
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.FrameDuration
+  nameWithType: OpusEncoderOptions.FrameDuration
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.FrameDuration*
+  name: FrameDuration
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_FrameDuration_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusEncoderOptions.FrameDuration
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.FrameDuration
+  nameWithType: OpusEncoderOptions.FrameDuration
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.InbandFec
+  name: InbandFec
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_InbandFec
+  commentId: P:Egami.Video.Audio.Codecs.OpusEncoderOptions.InbandFec
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.InbandFec
+  nameWithType: OpusEncoderOptions.InbandFec
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.InbandFec*
+  name: InbandFec
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_InbandFec_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusEncoderOptions.InbandFec
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.InbandFec
+  nameWithType: OpusEncoderOptions.InbandFec
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.RateMode
+  name: RateMode
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_RateMode
+  commentId: P:Egami.Video.Audio.Codecs.OpusEncoderOptions.RateMode
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.RateMode
+  nameWithType: OpusEncoderOptions.RateMode
+- uid: Egami.Video.Audio.Codecs.OpusEncoderOptions.RateMode*
+  name: RateMode
+  href: api/Egami.Video.Audio.Codecs.OpusEncoderOptions.html#Egami_Video_Audio_Codecs_OpusEncoderOptions_RateMode_
+  commentId: Overload:Egami.Video.Audio.Codecs.OpusEncoderOptions.RateMode
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.OpusEncoderOptions.RateMode
+  nameWithType: OpusEncoderOptions.RateMode
+- uid: Egami.Video.Audio.Codecs.OpusRateMode
+  name: OpusRateMode
+  href: api/Egami.Video.Audio.Codecs.OpusRateMode.html
+  commentId: T:Egami.Video.Audio.Codecs.OpusRateMode
+  fullName: Egami.Video.Audio.Codecs.OpusRateMode
+  nameWithType: OpusRateMode
+- uid: Egami.Video.Audio.Codecs.OpusRateMode.Cbr
+  name: Cbr
+  href: api/Egami.Video.Audio.Codecs.OpusRateMode.html#Egami_Video_Audio_Codecs_OpusRateMode_Cbr
+  commentId: F:Egami.Video.Audio.Codecs.OpusRateMode.Cbr
+  fullName: Egami.Video.Audio.Codecs.OpusRateMode.Cbr
+  nameWithType: OpusRateMode.Cbr
+- uid: Egami.Video.Audio.Codecs.OpusRateMode.ConstrainedVbr
+  name: ConstrainedVbr
+  href: api/Egami.Video.Audio.Codecs.OpusRateMode.html#Egami_Video_Audio_Codecs_OpusRateMode_ConstrainedVbr
+  commentId: F:Egami.Video.Audio.Codecs.OpusRateMode.ConstrainedVbr
+  fullName: Egami.Video.Audio.Codecs.OpusRateMode.ConstrainedVbr
+  nameWithType: OpusRateMode.ConstrainedVbr
+- uid: Egami.Video.Audio.Codecs.OpusRateMode.Vbr
+  name: Vbr
+  href: api/Egami.Video.Audio.Codecs.OpusRateMode.html#Egami_Video_Audio_Codecs_OpusRateMode_Vbr
+  commentId: F:Egami.Video.Audio.Codecs.OpusRateMode.Vbr
+  fullName: Egami.Video.Audio.Codecs.OpusRateMode.Vbr
+  nameWithType: OpusRateMode.Vbr
 - uid: Egami.Video.Audio.Codecs.PcmCodec
   name: PcmCodec
   href: api/Egami.Video.Audio.Codecs.PcmCodec.html
@@ -76742,6 +77001,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.AudioWriterOptions.Metadata
   nameWithType: AudioWriterOptions.Metadata
+- uid: Egami.Video.AudioWriterOptions.Opus
+  name: Opus
+  href: api/Egami.Video.AudioWriterOptions.html#Egami_Video_AudioWriterOptions_Opus
+  commentId: P:Egami.Video.AudioWriterOptions.Opus
+  fullName: Egami.Video.AudioWriterOptions.Opus
+  nameWithType: AudioWriterOptions.Opus
+- uid: Egami.Video.AudioWriterOptions.Opus*
+  name: Opus
+  href: api/Egami.Video.AudioWriterOptions.html#Egami_Video_AudioWriterOptions_Opus_
+  commentId: Overload:Egami.Video.AudioWriterOptions.Opus
+  isSpec: "True"
+  fullName: Egami.Video.AudioWriterOptions.Opus
+  nameWithType: AudioWriterOptions.Opus
 - uid: Egami.Video.AudioWriterOptions.Quality
   name: Quality
   href: api/Egami.Video.AudioWriterOptions.html#Egami_Video_AudioWriterOptions_Quality

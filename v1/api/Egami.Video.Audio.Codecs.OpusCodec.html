@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class OpusCodec | Egami ">
       
-      <meta name="description" content="Opus (RFC 6716 with the RFC 8251 updates), decode only: SILK, CELT and hybrid frames at every bandwidth, mono, stereo and the multichannel mapping families 0, 1 and 255 (RFC 7845), with packet loss concealment and in-band FEC. Frames come out as planar float at 48 kHz, Opus&#39;s own rate, in the canonical channel order; other rates go through a . The decoder is translated from libopus 1.5.2. Ambisonic mappings (families 2 and 3) are not decoded.">
+      <meta name="description" content="Opus (RFC 6716 with the RFC 8251 updates). Decodes SILK, CELT and hybrid frames at every bandwidth, mono, stereo and the multichannel mapping families 0, 1 and 255 (RFC 7845), with packet loss concealment and in-band FEC. Frames come out as planar float at 48 kHz, Opus&#39;s own rate, in the canonical channel order; other rates go through a . Encodes 1 to 8 channels at 8, 12, 16, 24 or 48 kHz (mapping family 0 for mono and stereo, 1 above) in every mode, with the settings of ; the default is 64 kbit/s per channel, variable bitrate, 20 ms frames. Both are translated from libopus 1.5.2 and match its output exactly. Ambisonic mappings (families 2 and 3) are not supported.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_Audio_Codecs_OpusCodec" data-uid="Egami.Video.Audio.Codecs.OpusCodec" class="text-break">
-Class OpusCodec  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L14"><i class="bi bi-code-slash"></i></a>
+Class OpusCodec  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L16"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -97,10 +97,12 @@ Class OpusCodec  <a class="header-action link-secondary" title="View source" hre
   <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>Opus (RFC 6716 with the RFC 8251 updates), decode only: SILK, CELT and hybrid frames at every bandwidth, mono, stereo and
+  <div class="markdown summary"><p>Opus (RFC 6716 with the RFC 8251 updates). Decodes SILK, CELT and hybrid frames at every bandwidth, mono, stereo and
 the multichannel mapping families 0, 1 and 255 (RFC 7845), with packet loss concealment and in-band FEC. Frames come out as
 planar float at 48 kHz, Opus's own rate, in the canonical channel order; other rates go through a <a class="xref" href="Egami.Video.Audio.Resampler.html">Resampler</a>.
-The decoder is translated from libopus 1.5.2. Ambisonic mappings (families 2 and 3) are not decoded.</p>
+Encodes 1 to 8 channels at 8, 12, 16, 24 or 48 kHz (mapping family 0 for mono and stereo, 1 above) in every mode, with the
+settings of <a class="xref" href="Egami.Video.Audio.Codecs.OpusEncoderOptions.html">OpusEncoderOptions</a>; the default is 64 kbit/s per channel, variable bitrate, 20 ms frames. Both
+are translated from libopus 1.5.2 and match its output exactly. Ambisonic mappings (families 2 and 3) are not supported.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -126,13 +128,7 @@ The decoder is translated from libopus 1.5.2. Ambisonic mappings (families 2 and
     <dt>Inherited Members</dt>
     <dd>
     <div>
-      <a class="xref" href="Egami.Video.Audio.AudioCodec.html#Egami_Video_Audio_AudioCodec_CanEncode">AudioCodec.CanEncode</a>
-    </div>
-    <div>
       <a class="xref" href="Egami.Video.Audio.AudioCodec.html#Egami_Video_Audio_AudioCodec_CanDecode_Egami_Video_TrackInfo_">AudioCodec.CanDecode(TrackInfo)</a>
-    </div>
-    <div>
-      <a class="xref" href="Egami.Video.Audio.AudioCodec.html#Egami_Video_Audio_AudioCodec_CreateEncoder_Egami_Video_Audio_AudioEncoderOptions_Egami_Video_MediaContext_">AudioCodec.CreateEncoder(AudioEncoderOptions, MediaContext)</a>
     </div>
     <div>
       <a class="xref" href="Egami.Video.Audio.AudioCodec.html#Egami_Video_Audio_AudioCodec_ToString">AudioCodec.ToString()</a>
@@ -176,11 +172,43 @@ while (reader.TryRead(out AudioFrame? frame))
 </h2>
 
 
+  <a id="Egami_Video_Audio_Codecs_OpusCodec_CanEncode_" data-uid="Egami.Video.Audio.Codecs.OpusCodec.CanEncode*"></a>
+
+  <h3 id="Egami_Video_Audio_Codecs_OpusCodec_CanEncode" data-uid="Egami.Video.Audio.Codecs.OpusCodec.CanEncode">
+  CanEncode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Audio.AudioCodec.html#Egami_Video_Audio_AudioCodec_CreateEncoder_Egami_Video_Audio_AudioEncoderOptions_Egami_Video_MediaContext_">CreateEncoder(AudioEncoderOptions, MediaContext)</a> is supported.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool CanEncode { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_Audio_Codecs_OpusCodec_CodecId_" data-uid="Egami.Video.Audio.Codecs.OpusCodec.CodecId*"></a>
 
   <h3 id="Egami_Video_Audio_Codecs_OpusCodec_CodecId" data-uid="Egami.Video.Audio.Codecs.OpusCodec.CodecId">
   CodecId
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L29"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the Matroska codec id that encoders write (<a class="xref" href="Egami.Video.CodecIds.html">CodecIds</a>).</p>
@@ -212,7 +240,7 @@ while (reader.TryRead(out AudioFrame? frame))
 
   <h3 id="Egami_Video_Audio_Codecs_OpusCodec_Instance" data-uid="Egami.Video.Audio.Codecs.OpusCodec.Instance">
   Instance
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L21"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L23"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the Opus codec.</p>
@@ -244,7 +272,7 @@ while (reader.TryRead(out AudioFrame? frame))
 
   <h3 id="Egami_Video_Audio_Codecs_OpusCodec_Name" data-uid="Egami.Video.Audio.Codecs.OpusCodec.Name">
   Name
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L26"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the codec's name, such as &quot;FLAC&quot;.</p>
@@ -280,7 +308,7 @@ while (reader.TryRead(out AudioFrame? frame))
 
   <h3 id="Egami_Video_Audio_Codecs_OpusCodec_CreateDecoder_Egami_Video_AudioTrackInfo_Egami_Video_Audio_AudioDecoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Audio.Codecs.OpusCodec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)">
   CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L38"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a decoder for a track.</p>
@@ -342,11 +370,72 @@ while (reader.TryRead(out AudioFrame? frame))
 
 
 
+  <a id="Egami_Video_Audio_Codecs_OpusCodec_CreateEncoder_" data-uid="Egami.Video.Audio.Codecs.OpusCodec.CreateEncoder*"></a>
+
+  <h3 id="Egami_Video_Audio_Codecs_OpusCodec_CreateEncoder_Egami_Video_Audio_AudioEncoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Audio.Codecs.OpusCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions,Egami.Video.MediaContext)">
+  CreateEncoder(AudioEncoderOptions, MediaContext)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates an encoder.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IAudioEncoder CreateEncoder(AudioEncoderOptions options, MediaContext context)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Audio.AudioEncoderOptions.html">AudioEncoderOptions</a></dt>
+    <dd><p>The sample rate, layout, bit depth and level.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Audio.IAudioEncoder.html">IAudioEncoder</a></dt>
+    <dd><p>The encoder.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Audio_Codecs_OpusCodec_CreateEncoder_Egami_Video_Audio_AudioEncoderOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp"></code></pre>
+
+  <pre><code class="lang-csharp">// Speech at 32 kbit/s. Opus codes 8, 12, 16, 24 and 48 kHz, so this 44.1 kHz audio is resampled to 48 kHz; the
+// header keeps 44.1 kHz as the rate the audio came at.
+using (AudioWriter writer = AudioWriter.Create("voice.opus", new AudioWriterOptions
+{
+    Opus = new OpusEncoderOptions { Bitrate = 32_000, Application = OpusApplication.Voice },
+}))
+{
+    writer.Write(tone);
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The codec cannot encode, or cannot encode these settings.</p>
+</dd>
+  </dl>
+
+
+
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L14" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/Codecs/OpusCodec.cs/#L16" class="edit-link">Edit this page</a>
         </div>
 
 

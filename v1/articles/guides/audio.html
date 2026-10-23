@@ -89,8 +89,8 @@
 
 <p>Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:</p>
 <ul>
-<li>Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode, Vorbis I decode and MPEG audio
-(MP3, MP2 and MP1) decode.</li>
+<li>Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and encode, Vorbis I decode and
+MPEG audio (MP3, MP2 and MP1) decode.</li>
 <li>Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC, Ogg and MP3, read and written; FLAC,
 PCM, Opus, Vorbis and MP3 in Matroska, WebM and MP4 too.</li>
 <li>A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.</li>
@@ -148,7 +148,7 @@ AudioReaderOptions options = new() { SampleFormat = SampleFormat.S16, SampleRate
 using AudioReader mono = AudioReader.Open(&quot;tone.wav&quot;, options);
 </code></pre><h2 id="writing-audio">Writing audio</h2>
 <p><code>AudioWriter</code> encodes frames into a file or stream; the container comes from the extension. <code>AudioWriterOptions</code> sets the
-<code>Codec</code> (FLAC for .flac, PCM elsewhere by default), the <code>SampleRate</code> and <code>Layout</code> to write (converted when the frames differ),
+<code>Codec</code> (FLAC for .flac, Opus for Ogg and WebM, PCM elsewhere by default), the <code>SampleRate</code> and <code>Layout</code> to write (converted when the frames differ),
 the <code>BitsPerSample</code> and the compression <code>Level</code>. Frames may have any length and format.</p>
 <pre><code class="lang-csharp">// FLAC for .flac files, PCM for .wav, .w64, .mka and .mp4 unless the options name a codec; FLAC levels run 0 to 8.
 using (AudioWriter writer = AudioWriter.Create(&quot;tone.flac&quot;, new AudioWriterOptions { Level = 8, BitsPerSample = 24 }))
@@ -273,7 +273,9 @@ while (reader.TryRead(out AudioFrame? frame))
         samples += frame.SampleCount;
     }
 }
-</code></pre><h2 id="vorbis">Vorbis</h2>
+</code></pre>
+<p><code>OpusCodec</code> encodes too, with the packets libopus 1.5.2 makes: see <a href="opus-encoding.html">Encoding Opus</a>.</p>
+<h2 id="vorbis">Vorbis</h2>
 <p><code>VorbisCodec</code> decodes Vorbis I streams from Ogg, WebM, Matroska and MP4: mono to 255 channels, every rate, both floor types
 and all three residue types (floor 0, which no current encoder writes, is untested). Frames come out as planar float at the stream's rate, with 3 to 8 channels remapped from Vorbis
 order to the canonical order. The end is trimmed to Ogg's last granule position, or to Matroska's DiscardPadding, and output

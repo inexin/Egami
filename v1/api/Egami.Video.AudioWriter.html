@@ -243,7 +243,7 @@ using (AudioWriter writer = AudioWriter.Create("tone.wav", new AudioWriterOption
 
   <h3 id="Egami_Video_AudioWriter_Create_System_IO_Stream_System_String_Egami_Video_AudioWriterOptions_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.AudioWriter.Create(System.IO.Stream,System.String,Egami.Video.AudioWriterOptions,Egami.Video.MediaContext,System.Boolean)">
   Create(Stream, string, AudioWriterOptions?, MediaContext?, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioWriter.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioWriter.cs/#L79"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a writer to a stream in the named container.</p>
@@ -307,11 +307,12 @@ using (AudioWriter writer = AudioWriter.Create("tone.wav", new AudioWriterOption
 
   <h3 id="Egami_Video_AudioWriter_Create_System_String_Egami_Video_AudioWriterOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.AudioWriter.Create(System.String,Egami.Video.AudioWriterOptions,Egami.Video.MediaContext)">
   Create(string, AudioWriterOptions?, MediaContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioWriter.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioWriter.cs/#L59"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates an audio file, choosing the container by the extension (.wav, .w64, .flac, .mkv, .mka, .mp4, .m4a and so on). An
-existing file is replaced. Without a codec in the options, .flac files get FLAC and the others PCM.</p>
+existing file is replaced. Without a codec in the options, .flac files get FLAC, Ogg (.opus, .ogg, .oga) and WebM files
+Opus, and the others PCM.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -372,7 +373,7 @@ using (AudioWriter writer = AudioWriter.Create("tone.wav", new AudioWriterOption
 
   <h3 id="Egami_Video_AudioWriter_Dispose" data-uid="Egami.Video.AudioWriter.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioWriter.cs/#L155"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioWriter.cs/#L156"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Finishes the file and closes it.</p>
@@ -399,7 +400,7 @@ using (AudioWriter writer = AudioWriter.Create("tone.wav", new AudioWriterOption
 
   <h3 id="Egami_Video_AudioWriter_Finish" data-uid="Egami.Video.AudioWriter.Finish">
   Finish()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioWriter.cs/#L119"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioWriter.cs/#L120"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Flushes the encoder and finishes the file. Called by <a class="xref" href="Egami.Video.AudioWriter.html#Egami_Video_AudioWriter_Dispose">Dispose()</a>.</p>
@@ -426,7 +427,7 @@ using (AudioWriter writer = AudioWriter.Create("tone.wav", new AudioWriterOption
 
   <h3 id="Egami_Video_AudioWriter_Write_Egami_Video_Audio_AudioFrame_" data-uid="Egami.Video.AudioWriter.Write(Egami.Video.Audio.AudioFrame)">
   Write(AudioFrame)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioWriter.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/AudioWriter.cs/#L93"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes a frame. Its samples follow the ones before; its timestamp is not used.</p>
