@@ -227,7 +227,41 @@ Egami.Video.Containers.Av1ObuFormat.Av1ObuFormat() -> void
 Egami.Video.Containers.Av1ObuFormat.FrameRate.get -> Egami.Video.Rational
 Egami.Video.Containers.Av1ObuFormat.FrameRate.init -> void
 Egami.Video.Containers.FlacFormat
+Egami.Video.Containers.Mp4Format.Fragments.get -> Egami.Video.Containers.Mp4FragmentOptions?
+Egami.Video.Containers.Mp4Format.Fragments.init -> void
+Egami.Video.Containers.Mp4Format.NonSeekable.get -> Egami.Video.Containers.Mp4NonSeekableLayout
+Egami.Video.Containers.Mp4Format.NonSeekable.init -> void
+Egami.Video.Containers.Mp4FragmentOptions
+Egami.Video.Containers.Mp4FragmentOptions.<Clone>$() -> Egami.Video.Containers.Mp4FragmentOptions!
+Egami.Video.Containers.Mp4FragmentOptions.Duration.get -> System.TimeSpan
+Egami.Video.Containers.Mp4FragmentOptions.Duration.init -> void
+Egami.Video.Containers.Mp4FragmentOptions.Equals(Egami.Video.Containers.Mp4FragmentOptions? other) -> bool
+Egami.Video.Containers.Mp4FragmentOptions.MaxBytes.get -> long
+Egami.Video.Containers.Mp4FragmentOptions.MaxBytes.init -> void
+Egami.Video.Containers.Mp4FragmentOptions.Mp4FragmentOptions() -> void
+Egami.Video.Containers.Mp4NonSeekableLayout
+Egami.Video.Containers.Mp4NonSeekableLayout.Fragment = 0 -> Egami.Video.Containers.Mp4NonSeekableLayout
+Egami.Video.Containers.Mp4NonSeekableLayout.TempFile = 1 -> Egami.Video.Containers.Mp4NonSeekableLayout
+Egami.Video.Containers.Mp4SegmentOptions
+Egami.Video.Containers.Mp4SegmentOptions.<Clone>$() -> Egami.Video.Containers.Mp4SegmentOptions!
+Egami.Video.Containers.Mp4SegmentOptions.Equals(Egami.Video.Containers.Mp4SegmentOptions? other) -> bool
+Egami.Video.Containers.Mp4SegmentOptions.Mp4SegmentOptions() -> void
+Egami.Video.Containers.Mp4SegmentOptions.Playlists.get -> Egami.Video.Containers.SegmentPlaylists
+Egami.Video.Containers.Mp4SegmentOptions.Playlists.init -> void
+Egami.Video.Containers.Mp4SegmentOptions.SegmentDuration.get -> System.TimeSpan
+Egami.Video.Containers.Mp4SegmentOptions.SegmentDuration.init -> void
+Egami.Video.Containers.Mp4SegmentWriter
+Egami.Video.Containers.Mp4SegmentWriter.Dispose() -> void
+Egami.Video.Containers.Mp4SegmentWriter.Finish() -> void
+Egami.Video.Containers.Mp4SegmentWriter.Mp4SegmentWriter(string! folder, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata? metadata = null, Egami.Video.Containers.Mp4SegmentOptions? options = null, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Containers.Mp4SegmentWriter.Mp4SegmentWriter(System.Func<string!, System.IO.Stream!>! open, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata? metadata = null, Egami.Video.Containers.Mp4SegmentOptions? options = null, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Containers.Mp4SegmentWriter.Tracks.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>!
+Egami.Video.Containers.Mp4SegmentWriter.WritePacket(Egami.Video.EncodedPacket! packet) -> void
 Egami.Video.Containers.OggFormat
+Egami.Video.Containers.SegmentPlaylists
+Egami.Video.Containers.SegmentPlaylists.Dash = 2 -> Egami.Video.Containers.SegmentPlaylists
+Egami.Video.Containers.SegmentPlaylists.Hls = 1 -> Egami.Video.Containers.SegmentPlaylists
+Egami.Video.Containers.SegmentPlaylists.None = 0 -> Egami.Video.Containers.SegmentPlaylists
 Egami.Video.Containers.WavFormat
 Egami.Video.MediaContext.AudioCodecs.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Audio.AudioCodec!>!
 Egami.Video.MediaContext.AudioCodecs.init -> void
@@ -326,6 +360,12 @@ override Egami.Video.Containers.FlacFormat.IsMatch(System.ReadOnlySpan<byte> hea
 override Egami.Video.Containers.FlacFormat.Name.get -> string!
 override Egami.Video.Containers.FlacFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
 override Egami.Video.Containers.FlacFormat.SignatureLength.get -> int
+override Egami.Video.Containers.Mp4FragmentOptions.Equals(object? obj) -> bool
+override Egami.Video.Containers.Mp4FragmentOptions.GetHashCode() -> int
+override Egami.Video.Containers.Mp4FragmentOptions.ToString() -> string!
+override Egami.Video.Containers.Mp4SegmentOptions.Equals(object? obj) -> bool
+override Egami.Video.Containers.Mp4SegmentOptions.GetHashCode() -> int
+override Egami.Video.Containers.Mp4SegmentOptions.ToString() -> string!
 override Egami.Video.Containers.OggFormat.CanMux.get -> bool
 override Egami.Video.Containers.OggFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
 override Egami.Video.Containers.OggFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -399,6 +439,10 @@ static Egami.Video.Codecs.VideoCodecs.Av1.get -> Egami.Video.Codecs.VideoCodec!
 static Egami.Video.Containers.Av1AnnexBFormat.Instance.get -> Egami.Video.Containers.Av1AnnexBFormat!
 static Egami.Video.Containers.Av1ObuFormat.Instance.get -> Egami.Video.Containers.Av1ObuFormat!
 static Egami.Video.Containers.FlacFormat.Instance.get -> Egami.Video.Containers.FlacFormat!
+static Egami.Video.Containers.Mp4FragmentOptions.operator !=(Egami.Video.Containers.Mp4FragmentOptions? left, Egami.Video.Containers.Mp4FragmentOptions? right) -> bool
+static Egami.Video.Containers.Mp4FragmentOptions.operator ==(Egami.Video.Containers.Mp4FragmentOptions? left, Egami.Video.Containers.Mp4FragmentOptions? right) -> bool
+static Egami.Video.Containers.Mp4SegmentOptions.operator !=(Egami.Video.Containers.Mp4SegmentOptions? left, Egami.Video.Containers.Mp4SegmentOptions? right) -> bool
+static Egami.Video.Containers.Mp4SegmentOptions.operator ==(Egami.Video.Containers.Mp4SegmentOptions? left, Egami.Video.Containers.Mp4SegmentOptions? right) -> bool
 static Egami.Video.Containers.OggFormat.Instance.get -> Egami.Video.Containers.OggFormat!
 static Egami.Video.Containers.WavFormat.Instance.get -> Egami.Video.Containers.WavFormat!
 static Egami.Video.Containers.WavFormat.Wave64.get -> Egami.Video.Containers.WavFormat!

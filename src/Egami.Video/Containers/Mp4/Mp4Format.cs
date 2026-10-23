@@ -19,6 +19,9 @@ namespace Egami.Video.Containers;
 /// </example>
 public sealed class Mp4Format : ContainerFormat
 {
+    private readonly bool _moovAtEnd;
+    private readonly Mp4FragmentOptions? _fragments;
+
     /// <summary>Gets the MP4 format, which applies edit lists.</summary>
     public static Mp4Format Instance { get; } = new();
 
@@ -43,7 +46,47 @@ public sealed class Mp4Format : ContainerFormat
     /// downloads: on a stream that can seek and read, the media is written in place and moved forward at the end, else it waits
     /// in a temporary file. With moov at the end the media goes straight to the output, which must be able to seek.
     /// </summary>
-    public bool MoovAtEnd { get; init; }
+    /// <exception cref="ArgumentException">Set together with <see cref="Fragments"/>.</exception>
+    public bool MoovAtEnd
+    {
+        get => _moovAtEnd;
+        init
+        {
+            if (value && _fragments is not null)
+            {
+                throw new ArgumentException("Fragmented MP4 has no moov at the end; set MoovAtEnd or Fragments, not both.", nameof(MoovAtEnd));
+            }
+
+            _moovAtEnd = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets how writers fragment the file (V4.3 Design Q1), or <see langword="null"/> for flat MP4. Fragmented, moov holds only
+    /// the setup and the media follows as moof and mdat pairs, written as packets come: nothing waits on disk or is moved, so
+    /// it suits cloud blobs and browsers' Media Source Extensions. A seekable output gets its durations written back at the end.
+    /// </summary>
+    /// <exception cref="ArgumentException">Set together with <see cref="MoovAtEnd"/>.</exception>
+    public Mp4FragmentOptions? Fragments
+    {
+        get => _fragments;
+        init
+        {
+            if (value is not null && _moovAtEnd)
+            {
+                throw new ArgumentException("Fragmented MP4 has no moov at the end; set MoovAtEnd or Fragments, not both.", nameof(Fragments));
+            }
+
+            _fragments = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets what writers do when <see cref="Fragments"/> is not set and the output cannot seek and read back, as with an upload
+    /// stream (V4.3 Design Q2). By default the file is fragmented with the default <see cref="Mp4FragmentOptions"/> and an
+    /// mp4-fragmented warning; <see cref="Mp4NonSeekableLayout.TempFile"/> writes flat MP4 with the media held in a temporary file.
+    /// </summary>
+    public Mp4NonSeekableLayout NonSeekable { get; init; }
 
     /// <inheritdoc/>
     public override bool CanMux => true;
@@ -77,7 +120,8 @@ public sealed class Mp4Format : ContainerFormat
     /// by time, edit lists for start offsets and codec delays, the display matrix from <see cref="VideoTrackInfo.Orientation"/>,
     /// tags as iTunes items, cover art, and chapters both as Nero chpl and as a QuickTime chapter track. Holds AV1, VP9, VP8,
     /// Motion JPEG, H.264, HEVC, MPEG-4 Part 2, Opus, FLAC, AAC, MP3, PCM, mov_text, and tracks read from MP4 or QuickTime with
-    /// any other codec. A file read as QuickTime is written as MP4 (Q11).
+    /// any other codec. A file read as QuickTime is written as MP4 (Q11). With <see cref="Fragments"/> set, or on an output that
+    /// cannot seek and read back (see <see cref="NonSeekable"/>), the file is fragmented MP4 instead, with Nero chapters only.
     /// </summary>
     /// <param name="stream">Where to write.</param>
     /// <param name="tracks">The tracks.</param>
@@ -92,6 +136,17 @@ public sealed class Mp4Format : ContainerFormat
         ArgumentNullException.ThrowIfNull(tracks);
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(context);
+        if (Fragments is { } fragments)
+        {
+            return new Mp4FragmentMuxer(stream, tracks, metadata, context, leaveOpen, fragments);
+        }
+
+        if (!MoovAtEnd && !(stream.CanSeek && stream.CanRead) && NonSeekable == Mp4NonSeekableLayout.Fragment)
+        {
+            context.Warnings?.Invoke(new MediaWarning("mp4-fragmented", "The output cannot seek and read back, so the MP4 file is written fragmented, which needs no temporary file; set Mp4Format.NonSeekable to TempFile for flat MP4."));
+            return new Mp4FragmentMuxer(stream, tracks, metadata, context, leaveOpen, new Mp4FragmentOptions());
+        }
+
         return new Mp4Muxer(stream, tracks, metadata, context, leaveOpen, MoovAtEnd);
     }
 }

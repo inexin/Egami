@@ -210,7 +210,8 @@ public static class MediaFile
     /// <see cref="Remux(string, string, Func{TrackInfo, bool}?, MediaContext?, IProgress{MediaProgress}?, CancellationToken)"/>
     /// does for files: for example from one cloud blob to another without a local copy. The input may be non-seekable, except
     /// for MP4 files with moov after the media. Matroska, WebM, IVF and YUV4MPEG2 write to a non-seekable stream as they go;
-    /// MP4 holds its media in a temporary file and writes moov first; AVI needs a seekable stream.
+    /// so does MP4, written fragmented there with an mp4-fragmented warning (see <see cref="Mp4Format.NonSeekable"/>); AVI
+    /// needs a seekable stream.
     /// </summary>
     /// <param name="input">The source, read from its current position.</param>
     /// <param name="output">Where to write.</param>

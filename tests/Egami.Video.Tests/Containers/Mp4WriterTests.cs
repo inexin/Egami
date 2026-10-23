@@ -9,9 +9,9 @@ public class Mp4WriterTests
 
     private static string PathOf(string clip) => Path.Combine(Corpus.Directory, "mp4", clip);
 
-    private sealed record Packet(int Track, long Pts, long Dts, long? Duration, bool Key, bool Discard, byte[] Data);
+    internal sealed record Packet(int Track, long Pts, long Dts, long? Duration, bool Key, bool Discard, byte[] Data);
 
-    private static List<Packet> ReadAll(IDemuxer demuxer)
+    internal static List<Packet> ReadAll(IDemuxer demuxer)
     {
         Dictionary<int, int> index = demuxer.Tracks.Select((t, i) => (t.Number, i)).ToDictionary();
         List<Packet> packets = [];
@@ -26,7 +26,7 @@ public class Mp4WriterTests
         return packets;
     }
 
-    private static byte[] Remux(string path, Func<Stream, Stream>? wrap = null, Mp4Format? format = null)
+    internal static byte[] Remux(string path, Func<Stream, Stream>? wrap = null, Mp4Format? format = null)
     {
         using IDemuxer demuxer = MediaFile.OpenDemuxer(path);
         MemoryStream output = new();
@@ -54,7 +54,7 @@ public class Mp4WriterTests
         foreach ((string layout, byte[] file) in new[]
         {
             ("moov first, in place", Remux(PathOf(clip))),
-            ("moov first, from a temporary file", Remux(PathOf(clip), s => new NonSeekableWriteStream(s))),
+            ("moov first, from a temporary file", Remux(PathOf(clip), s => new NonSeekableWriteStream(s), new Mp4Format { NonSeekable = Mp4NonSeekableLayout.TempFile })),
             ("moov at the end", Remux(PathOf(clip), format: new Mp4Format { MoovAtEnd = true })),
         })
         {
@@ -176,7 +176,7 @@ public class Mp4WriterTests
     }
 
     /// <summary>A stream that can only be written forward, as a pipe or a network socket is.</summary>
-    private sealed class NonSeekableWriteStream(Stream inner) : Stream
+    internal sealed class NonSeekableWriteStream(Stream inner) : Stream
     {
         public override bool CanRead => false;
 
