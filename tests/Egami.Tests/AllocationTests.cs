@@ -1,6 +1,6 @@
 using Egami.Formats.Png;
-using Egami.Tests.Formats.Ani;
 using Egami.Pixels;
+using Egami.Tests.Formats.Ani;
 using Egami.Tests.Memory;
 
 namespace Egami.Tests;
