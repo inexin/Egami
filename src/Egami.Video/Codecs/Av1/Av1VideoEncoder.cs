@@ -313,20 +313,20 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
 
     private VideoTrackInfo MakeTrack(VideoFrame? first, int depth = 8, ChromaFormat chroma = ChromaFormat.Yuv420, ColorCodePoints? color = null,
         ChromaSiting? siting = null) => new()
-    {
-        Number = 1,
-        Kind = TrackKind.Video,
-        CodecId = CodecIds.Av1,
-        TimeBase = _options.FrameRate.Reciprocal(),
-        Width = _options.Width,
-        Height = _options.Height,
-        FrameRate = _options.FrameRate,
-        BitDepth = depth,
-        ChromaFormat = chroma,
-        ChromaSiting = siting,
-        Color = color ?? DefaultColor,
-        Hdr = first?.Hdr,
-    };
+        {
+            Number = 1,
+            Kind = TrackKind.Video,
+            CodecId = CodecIds.Av1,
+            TimeBase = _options.FrameRate.Reciprocal(),
+            Width = _options.Width,
+            Height = _options.Height,
+            FrameRate = _options.FrameRate,
+            BitDepth = depth,
+            ChromaFormat = chroma,
+            ChromaSiting = siting,
+            Color = color ?? DefaultColor,
+            Hdr = first?.Hdr,
+        };
 
     /// <summary>
     /// The bit depth and chroma format to code: the options' depth, else the planes' (16-bit planes of 9 or 10 bits code 10,

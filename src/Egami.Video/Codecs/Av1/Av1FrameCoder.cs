@@ -56,58 +56,58 @@ internal sealed class Av1FrameCoder : IFrameCoder
         switch (decision.Type)
         {
             case FrameType.Key:
-            {
-                Av1EncodedFrame key = _encoder.Encode(source, common with { Kind = Av1FrameKind.Key });
-                Array.Fill(_slots, index);
-                _golden = 0;
-                return Shown(key, index, decision.Quantizer);
-            }
+                {
+                    Av1EncodedFrame key = _encoder.Encode(source, common with { Kind = Av1FrameKind.Key });
+                    Array.Fill(_slots, index);
+                    _golden = 0;
+                    return Shown(key, index, decision.Quantizer);
+                }
 
             case FrameType.AltRef:
-            {
-                int slot = Victim(hidden: true);
-                Av1EncodedFrame hidden = _encoder.Encode(source, common with
                 {
-                    Show = false,
-                    ReferenceSlots = References(index),
-                    RefreshSlots = 1 << slot,
-                });
-                _slots[slot] = index;
-                int length = (int)(hidden.Bits / 8);
-                int bytes = 1 + Av1Obus.Leb128Length((ulong)length) + length;
-                _hiddenBytes += bytes;
-                return new CodedFrame(ReadOnlyMemory<byte>.Empty, null, hidden.QIndex, 0, bytes * 8L);
-            }
+                    int slot = Victim(hidden: true);
+                    Av1EncodedFrame hidden = _encoder.Encode(source, common with
+                    {
+                        Show = false,
+                        ReferenceSlots = References(index),
+                        RefreshSlots = 1 << slot,
+                    });
+                    _slots[slot] = index;
+                    int length = (int)(hidden.Bits / 8);
+                    int bytes = 1 + Av1Obus.Leb128Length((ulong)length) + length;
+                    _hiddenBytes += bytes;
+                    return new CodedFrame(ReadOnlyMemory<byte>.Empty, null, hidden.QIndex, 0, bytes * 8L);
+                }
 
             case FrameType.Overlay:
-            {
-                int slot = Array.IndexOf(_slots, index);
-                if (slot < 0)
                 {
-                    throw new InvalidOperationException($"No slot holds the hidden frame {index} to show.");
-                }
+                    int slot = Array.IndexOf(_slots, index);
+                    if (slot < 0)
+                    {
+                        throw new InvalidOperationException($"No slot holds the hidden frame {index} to show.");
+                    }
 
-                Av1EncodedFrame shown = _encoder.ShowExisting(slot);
-                if (decision.RefreshGolden)
-                {
-                    _golden = slot;
-                }
+                    Av1EncodedFrame shown = _encoder.ShowExisting(slot);
+                    if (decision.RefreshGolden)
+                    {
+                        _golden = slot;
+                    }
 
-                return Shown(shown, index, decision.Quantizer);
-            }
+                    return Shown(shown, index, decision.Quantizer);
+                }
 
             default:
-            {
-                int slot = Victim(hidden: false);
-                Av1EncodedFrame inter = _encoder.Encode(source, common with { ReferenceSlots = References(index), RefreshSlots = 1 << slot });
-                _slots[slot] = index;
-                if (decision.RefreshGolden)
                 {
-                    _golden = slot;
-                }
+                    int slot = Victim(hidden: false);
+                    Av1EncodedFrame inter = _encoder.Encode(source, common with { ReferenceSlots = References(index), RefreshSlots = 1 << slot });
+                    _slots[slot] = index;
+                    if (decision.RefreshGolden)
+                    {
+                        _golden = slot;
+                    }
 
-                return Shown(inter, index, decision.Quantizer);
-            }
+                    return Shown(inter, index, decision.Quantizer);
+                }
         }
     }
 
