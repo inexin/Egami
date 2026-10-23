@@ -87,10 +87,10 @@
         <article data-uid="">
 <h1 id="encoding-video">Encoding video</h1>
 
-<p>Egami.Video encodes VP8 into WebM, Matroska and IVF, with alpha in WebM and Matroska. The frame coding is Egami's
-<code>Vp8StreamEncoder</code>; Egami.Video decides how each frame is coded: where keyframes go, which frames become references, and how
-many bits each frame gets. The same settings will drive VP9 and AV1 when they can encode. Motion JPEG and uncompressed video
-encode too, without these settings: every frame is a keyframe.</p>
+<p>Egami.Video encodes VP8 and VP9 into WebM, Matroska and IVF (VP9 into MP4 too), with alpha in WebM and Matroska. VP8's frame
+coding is Egami's <code>Vp8StreamEncoder</code>, VP9's Egami.Video's own; for both, Egami.Video decides how each frame is coded: where
+keyframes go, which frames become references, and how many bits each frame gets. The same settings will drive AV1 when it can
+encode. Motion JPEG and uncompressed video encode too, without these settings: every frame is a keyframe.</p>
 <h2 id="writing-vp8">Writing VP8</h2>
 <p>Set <code>VideoWriterOptions.Codec</code> to <code>VideoCodecs.Vp8</code>. <code>Quality</code> runs from 0 to 100 (default 60, the scale of Egami's AVIF
 writer) and <code>Effort</code> from 0 (fastest) to 10 (smallest files, default 4). Frames given as 8-bit 4:2:0 planes are coded as they
@@ -112,7 +112,55 @@ VideoWriterOptions tuned = options with { Vp8 = new Vp8EncoderOptions { Alternat
 </code></pre>
 <p><code>Vp8EncoderOptions</code> holds the expert settings: quantizer limits, alternate reference frames on or off, golden frame spacing,
 the temporal filter's frames and strength, token partitions, error resilience and alpha.</p>
-<h2 id="how-bits-are-spent">How bits are spent</h2>
+<h2 id="writing-vp9">Writing VP9</h2>
+<p>Set <code>VideoWriterOptions.Codec</code> to <code>VideoCodecs.Vp9</code>. <code>Quality</code> and <code>Effort</code> work as for VP8 (default 60 and 4); <code>Quantizer</code>
+runs from 0 to 255, and 0 is lossless. The encoder searches each 64x64 superblock's partition down to 4x4, its intra modes,
+motion vectors to 1/8 pixel with three interpolation filters, compound prediction from two references and its transform sizes
+by rate and distortion, quantizes with a trellis, and picks the loop filter level per frame. Hidden alternate references go
+out in a superframe with the next shown frame, so every packet shows one frame.</p>
+<pre><code class="lang-csharp">// VP9 in WebM at constant quality, on the same Quality and Effort scales as VP8.
+VideoWriterOptions options = new() { Codec = VideoCodecs.Vp9, FrameRate = new Rational(30, 1), Quality = 70, Effort = 2 };
+using (VideoWriter writer = VideoWriter.Create(&quot;duck-vp9.webm&quot;, options))
+{
+    for (int i = 0; i &lt; 10; i++)
+    {
+        using Raster&lt;Rgb8&gt; frame = duck.Derive(ops =&gt; ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+}
+
+// Expert settings: two tile columns, adaptive quantization, quantizer limits on VP9's 0 to 255 scale.
+VideoWriterOptions tuned = options with
+{
+    Vp9 = new Vp9EncoderOptions { TileColumns = 2, AdaptiveQuantization = true, MinQuantizer = 20, MaxQuantizer = 200 },
+};
+</code></pre>
+<p><code>Vp9EncoderOptions</code> holds the expert settings: quantizer limits, alternate reference frames on or off, golden frame spacing,
+the temporal filter's frames and strength, tile columns, adaptive quantization by block detail (libvpx's aq-mode 1), error
+resilience, the bit depth and alpha. Frames are split into up to four tile columns by default (each at least 256 pixels
+wide), which the encoder searches on separate threads, superblock rows running as a wavefront within them.</p>
+<h3 id="bit-depths-chroma-and-hdr">Bit depths, chroma and HDR</h3>
+<p>8-bit 4:2:0 planes are coded as they are (profile 0); 4:2:2 and 4:4:4 planes as profile 1; 10 and 12-bit planes as profile 2
+(4:2:0) or 3. <code>Vp9EncoderOptions.BitDepth</code> codes another depth, and <code>VideoEncoderOptions.ChromaFormat</code> sets the chroma format
+for RGB frames. The track's color comes from the frames: their code points (primaries, transfer, matrix, range), and their
+static HDR metadata (mastering display, content light levels), which WebM and Matroska keep in the Colour element and MP4 in its
+<code>colr</code>, <code>mdcv</code> and <code>clli</code> boxes. Frames with alpha get a second, 8-bit 4:2:0 VP9 stream for the alpha plane. Alternate
+references of other formats than 8-bit 4:2:0 are their frame unfiltered.</p>
+<pre><code class="lang-csharp">// 10-bit planes code profile 2 (4:2:0) or 3 (4:2:2, 4:4:4); the frames' code points and HDR metadata go into the
+// container's Colour (WebM, Matroska) or colr, mdcv and clli boxes (MP4).
+ColorCodePoints pq = new(9, 16, 9, false);
+HdrMetadata hdr = new() { MasteringMaxLuminance = 1000, MasteringMinLuminance = 0.005, MaxContentLightLevel = 1000, MaxFrameAverageLightLevel = 400 };
+VideoWriterOptions options = new() { Codec = VideoCodecs.Vp9, Quality = 80, Effort = 1 };
+using (VideoWriter writer = VideoWriter.Create(&quot;hdr.mp4&quot;, options))
+{
+    for (int i = 0; i &lt; 5; i++)
+    {
+        YuvRaster&lt;ushort&gt; planes = YuvRaster.Create(64, 48, ChromaFormat.Yuv420, 10, new YuvColor(YuvMatrix.Bt2020Ncl, YuvRange.Limited, ChromaSiting.Center));
+        using YuvVideoFrame frame = new(planes, new MediaTime(i, new Rational(1, 30)), color: pq) { Hdr = hdr };
+        writer.WriteFrame(frame);
+    }
+}
+</code></pre><h2 id="how-bits-are-spent">How bits are spent</h2>
 <p><code>RateControl</code> picks one of four modes:</p>
 <table>
 <thead>
@@ -196,8 +244,8 @@ the frames before it can predict from it. That happens only where the group's fi
 packet carries the timestamp of the shown frame after it, and gives no frame when decoded. Turn <code>SceneCutKeyframes</code> off for
 keyframes at a fixed spacing.</p>
 <p><code>LatencyMode.Realtime</code> looks nowhere ahead: each packet comes out as soon as its frame goes in, there are no hidden frames,
-frames keep no probability updates for the next (so a lost packet spoils one frame), and 720p and larger frames get two or four
-token partitions so decoders can use more threads.</p>
+frames keep no probability updates for the next (so a lost packet spoils one frame), and 720p and larger VP8 frames get two or
+four token partitions so decoders can use more threads.</p>
 <pre><code class="lang-csharp">// Live: no lookahead, so each packet comes out as soon as its frame goes in, at a constant bitrate.
 VideoEncoderOptions options = new()
 {
@@ -228,7 +276,8 @@ encoder.Flush();
 muxer.Finish();
 </code></pre><h2 id="threads-and-repeatability">Threads and repeatability</h2>
 <p>The output depends only on the frames and the options, never on the number of threads or the machine, so a test can compare
-hashes. <code>EgamiContext.MaxParallelism</code> on the <code>MediaContext</code> sets how many threads the encoder uses.</p>
+hashes. <code>EgamiContext.MaxParallelism</code> on the <code>MediaContext</code> sets how many threads the encoder uses. VP9's tile columns depend
+on the frame width and <code>Vp9EncoderOptions.TileColumns</code>, never on the threads.</p>
 
 </article>
 

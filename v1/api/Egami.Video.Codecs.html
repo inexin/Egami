@@ -198,7 +198,14 @@ every frame equal to libvpx's sample for sample. Frames come out at their own co
 keyframes) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; hidden frames (alternate references) give no frame. A
 WebM track with alpha (<a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_HasAlpha">HasAlpha</a>) decodes its second VP9 stream, carried in each packet's
 addition 1, into the frame's alpha plane unless <a class="xref" href="Egami.Video.Codecs.VideoDecoderOptions.html#Egami_Video_Codecs_VideoDecoderOptions_DecodeAlpha">DecodeAlpha</a> is off. 4:4:0 streams are not
-decoded. Decode only.</p>
+decoded. Encoding goes through <a class="xref" href="Egami.Video.Codecs.Vp9Codec.html#Egami_Video_Codecs_Vp9Codec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_">CreateEncoder(VideoEncoderOptions, MediaContext)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.Vp9EncoderOptions.html">Vp9EncoderOptions</a></dt>
+      <dd><p>The VP9 settings beyond <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a>, for experts: quantizer limits, alternate reference frames,
+golden frame spacing, tile columns, adaptive quantization, error resilience, the bit depth and alpha. Every one has a
+default that suits most uses.</p>
 </dd>
     </dl>
     <h3 id="structs">
