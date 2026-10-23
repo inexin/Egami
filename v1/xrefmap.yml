@@ -74295,6 +74295,80 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Analysis.AudioLevelReport.Samples
   nameWithType: AudioLevelReport.Samples
+- uid: Egami.Video.Analysis.AudioPictureChannels
+  name: AudioPictureChannels
+  href: api/Egami.Video.Analysis.AudioPictureChannels.html
+  commentId: T:Egami.Video.Analysis.AudioPictureChannels
+  fullName: Egami.Video.Analysis.AudioPictureChannels
+  nameWithType: AudioPictureChannels
+- uid: Egami.Video.Analysis.AudioPictureChannels.Mixed
+  name: Mixed
+  href: api/Egami.Video.Analysis.AudioPictureChannels.html#Egami_Video_Analysis_AudioPictureChannels_Mixed
+  commentId: F:Egami.Video.Analysis.AudioPictureChannels.Mixed
+  fullName: Egami.Video.Analysis.AudioPictureChannels.Mixed
+  nameWithType: AudioPictureChannels.Mixed
+- uid: Egami.Video.Analysis.AudioPictureChannels.Stacked
+  name: Stacked
+  href: api/Egami.Video.Analysis.AudioPictureChannels.html#Egami_Video_Analysis_AudioPictureChannels_Stacked
+  commentId: F:Egami.Video.Analysis.AudioPictureChannels.Stacked
+  fullName: Egami.Video.Analysis.AudioPictureChannels.Stacked
+  nameWithType: AudioPictureChannels.Stacked
+- uid: Egami.Video.Analysis.AudioPictures
+  name: AudioPictures
+  href: api/Egami.Video.Analysis.AudioPictures.html
+  commentId: T:Egami.Video.Analysis.AudioPictures
+  fullName: Egami.Video.Analysis.AudioPictures
+  nameWithType: AudioPictures
+- uid: Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext)
+  name: Spectrogram(IEnumerable<AudioFrame>, MediaTime, SpectrogramOptions?, MediaContext?)
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Spectrogram_System_Collections_Generic_IEnumerable_Egami_Video_Audio_AudioFrame__Egami_Video_MediaTime_Egami_Video_Analysis_SpectrogramOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext)
+  name.vb: Spectrogram(IEnumerable(Of AudioFrame), MediaTime, SpectrogramOptions, MediaContext)
+  fullName: Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame>, Egami.Video.MediaTime, Egami.Video.Analysis.SpectrogramOptions?, Egami.Video.MediaContext?)
+  fullName.vb: Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable(Of Egami.Video.Audio.AudioFrame), Egami.Video.MediaTime, Egami.Video.Analysis.SpectrogramOptions, Egami.Video.MediaContext)
+  nameWithType: AudioPictures.Spectrogram(IEnumerable<AudioFrame>, MediaTime, SpectrogramOptions?, MediaContext?)
+  nameWithType.vb: AudioPictures.Spectrogram(IEnumerable(Of AudioFrame), MediaTime, SpectrogramOptions, MediaContext)
+- uid: Egami.Video.Analysis.AudioPictures.Spectrogram(System.String,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext)
+  name: Spectrogram(string, SpectrogramOptions?, MediaContext?)
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Spectrogram_System_String_Egami_Video_Analysis_SpectrogramOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Analysis.AudioPictures.Spectrogram(System.String,Egami.Video.Analysis.SpectrogramOptions,Egami.Video.MediaContext)
+  name.vb: Spectrogram(String, SpectrogramOptions, MediaContext)
+  fullName: Egami.Video.Analysis.AudioPictures.Spectrogram(string, Egami.Video.Analysis.SpectrogramOptions?, Egami.Video.MediaContext?)
+  fullName.vb: Egami.Video.Analysis.AudioPictures.Spectrogram(String, Egami.Video.Analysis.SpectrogramOptions, Egami.Video.MediaContext)
+  nameWithType: AudioPictures.Spectrogram(string, SpectrogramOptions?, MediaContext?)
+  nameWithType.vb: AudioPictures.Spectrogram(String, SpectrogramOptions, MediaContext)
+- uid: Egami.Video.Analysis.AudioPictures.Spectrogram*
+  name: Spectrogram
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Spectrogram_
+  commentId: Overload:Egami.Video.Analysis.AudioPictures.Spectrogram
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.AudioPictures.Spectrogram
+  nameWithType: AudioPictures.Spectrogram
+- uid: Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext)
+  name: Waveform(IEnumerable<AudioFrame>, MediaTime, WaveformOptions?, MediaContext?)
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Waveform_System_Collections_Generic_IEnumerable_Egami_Video_Audio_AudioFrame__Egami_Video_MediaTime_Egami_Video_Analysis_WaveformOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable{Egami.Video.Audio.AudioFrame},Egami.Video.MediaTime,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext)
+  name.vb: Waveform(IEnumerable(Of AudioFrame), MediaTime, WaveformOptions, MediaContext)
+  fullName: Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame>, Egami.Video.MediaTime, Egami.Video.Analysis.WaveformOptions?, Egami.Video.MediaContext?)
+  fullName.vb: Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable(Of Egami.Video.Audio.AudioFrame), Egami.Video.MediaTime, Egami.Video.Analysis.WaveformOptions, Egami.Video.MediaContext)
+  nameWithType: AudioPictures.Waveform(IEnumerable<AudioFrame>, MediaTime, WaveformOptions?, MediaContext?)
+  nameWithType.vb: AudioPictures.Waveform(IEnumerable(Of AudioFrame), MediaTime, WaveformOptions, MediaContext)
+- uid: Egami.Video.Analysis.AudioPictures.Waveform(System.String,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext)
+  name: Waveform(string, WaveformOptions?, MediaContext?)
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Waveform_System_String_Egami_Video_Analysis_WaveformOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Analysis.AudioPictures.Waveform(System.String,Egami.Video.Analysis.WaveformOptions,Egami.Video.MediaContext)
+  name.vb: Waveform(String, WaveformOptions, MediaContext)
+  fullName: Egami.Video.Analysis.AudioPictures.Waveform(string, Egami.Video.Analysis.WaveformOptions?, Egami.Video.MediaContext?)
+  fullName.vb: Egami.Video.Analysis.AudioPictures.Waveform(String, Egami.Video.Analysis.WaveformOptions, Egami.Video.MediaContext)
+  nameWithType: AudioPictures.Waveform(string, WaveformOptions?, MediaContext?)
+  nameWithType.vb: AudioPictures.Waveform(String, WaveformOptions, MediaContext)
+- uid: Egami.Video.Analysis.AudioPictures.Waveform*
+  name: Waveform
+  href: api/Egami.Video.Analysis.AudioPictures.html#Egami_Video_Analysis_AudioPictures_Waveform_
+  commentId: Overload:Egami.Video.Analysis.AudioPictures.Waveform
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.AudioPictures.Waveform
+  nameWithType: AudioPictures.Waveform
 - uid: Egami.Video.Analysis.BlackDetector
   name: BlackDetector
   href: api/Egami.Video.Analysis.BlackDetector.html
@@ -75647,6 +75721,24 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Analysis.FreezeOptions.Noise
   nameWithType: FreezeOptions.Noise
+- uid: Egami.Video.Analysis.FrequencyScale
+  name: FrequencyScale
+  href: api/Egami.Video.Analysis.FrequencyScale.html
+  commentId: T:Egami.Video.Analysis.FrequencyScale
+  fullName: Egami.Video.Analysis.FrequencyScale
+  nameWithType: FrequencyScale
+- uid: Egami.Video.Analysis.FrequencyScale.Linear
+  name: Linear
+  href: api/Egami.Video.Analysis.FrequencyScale.html#Egami_Video_Analysis_FrequencyScale_Linear
+  commentId: F:Egami.Video.Analysis.FrequencyScale.Linear
+  fullName: Egami.Video.Analysis.FrequencyScale.Linear
+  nameWithType: FrequencyScale.Linear
+- uid: Egami.Video.Analysis.FrequencyScale.Logarithmic
+  name: Logarithmic
+  href: api/Egami.Video.Analysis.FrequencyScale.html#Egami_Video_Analysis_FrequencyScale_Logarithmic
+  commentId: F:Egami.Video.Analysis.FrequencyScale.Logarithmic
+  fullName: Egami.Video.Analysis.FrequencyScale.Logarithmic
+  nameWithType: FrequencyScale.Logarithmic
 - uid: Egami.Video.Analysis.IAudioDetector
   name: IAudioDetector
   href: api/Egami.Video.Analysis.IAudioDetector.html
@@ -77840,6 +77932,173 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Analysis.SilenceOptions.PerChannel
   nameWithType: SilenceOptions.PerChannel
+- uid: Egami.Video.Analysis.SpectrogramColors
+  name: SpectrogramColors
+  href: api/Egami.Video.Analysis.SpectrogramColors.html
+  commentId: T:Egami.Video.Analysis.SpectrogramColors
+  fullName: Egami.Video.Analysis.SpectrogramColors
+  nameWithType: SpectrogramColors
+- uid: Egami.Video.Analysis.SpectrogramColors.Grayscale
+  name: Grayscale
+  href: api/Egami.Video.Analysis.SpectrogramColors.html#Egami_Video_Analysis_SpectrogramColors_Grayscale
+  commentId: F:Egami.Video.Analysis.SpectrogramColors.Grayscale
+  fullName: Egami.Video.Analysis.SpectrogramColors.Grayscale
+  nameWithType: SpectrogramColors.Grayscale
+- uid: Egami.Video.Analysis.SpectrogramColors.Magma
+  name: Magma
+  href: api/Egami.Video.Analysis.SpectrogramColors.html#Egami_Video_Analysis_SpectrogramColors_Magma
+  commentId: F:Egami.Video.Analysis.SpectrogramColors.Magma
+  fullName: Egami.Video.Analysis.SpectrogramColors.Magma
+  nameWithType: SpectrogramColors.Magma
+- uid: Egami.Video.Analysis.SpectrogramOptions
+  name: SpectrogramOptions
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html
+  commentId: T:Egami.Video.Analysis.SpectrogramOptions
+  fullName: Egami.Video.Analysis.SpectrogramOptions
+  nameWithType: SpectrogramOptions
+- uid: Egami.Video.Analysis.SpectrogramOptions.Ceiling
+  name: Ceiling
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Ceiling
+  commentId: P:Egami.Video.Analysis.SpectrogramOptions.Ceiling
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Ceiling
+  nameWithType: SpectrogramOptions.Ceiling
+- uid: Egami.Video.Analysis.SpectrogramOptions.Ceiling*
+  name: Ceiling
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Ceiling_
+  commentId: Overload:Egami.Video.Analysis.SpectrogramOptions.Ceiling
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Ceiling
+  nameWithType: SpectrogramOptions.Ceiling
+- uid: Egami.Video.Analysis.SpectrogramOptions.Channels
+  name: Channels
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Channels
+  commentId: P:Egami.Video.Analysis.SpectrogramOptions.Channels
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Channels
+  nameWithType: SpectrogramOptions.Channels
+- uid: Egami.Video.Analysis.SpectrogramOptions.Channels*
+  name: Channels
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Channels_
+  commentId: Overload:Egami.Video.Analysis.SpectrogramOptions.Channels
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Channels
+  nameWithType: SpectrogramOptions.Channels
+- uid: Egami.Video.Analysis.SpectrogramOptions.Colors
+  name: Colors
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Colors
+  commentId: P:Egami.Video.Analysis.SpectrogramOptions.Colors
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Colors
+  nameWithType: SpectrogramOptions.Colors
+- uid: Egami.Video.Analysis.SpectrogramOptions.Colors*
+  name: Colors
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Colors_
+  commentId: Overload:Egami.Video.Analysis.SpectrogramOptions.Colors
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Colors
+  nameWithType: SpectrogramOptions.Colors
+- uid: Egami.Video.Analysis.SpectrogramOptions.Default
+  name: Default
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Default
+  commentId: P:Egami.Video.Analysis.SpectrogramOptions.Default
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Default
+  nameWithType: SpectrogramOptions.Default
+- uid: Egami.Video.Analysis.SpectrogramOptions.Default*
+  name: Default
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Default_
+  commentId: Overload:Egami.Video.Analysis.SpectrogramOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Default
+  nameWithType: SpectrogramOptions.Default
+- uid: Egami.Video.Analysis.SpectrogramOptions.Floor
+  name: Floor
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Floor
+  commentId: P:Egami.Video.Analysis.SpectrogramOptions.Floor
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Floor
+  nameWithType: SpectrogramOptions.Floor
+- uid: Egami.Video.Analysis.SpectrogramOptions.Floor*
+  name: Floor
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Floor_
+  commentId: Overload:Egami.Video.Analysis.SpectrogramOptions.Floor
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Floor
+  nameWithType: SpectrogramOptions.Floor
+- uid: Egami.Video.Analysis.SpectrogramOptions.Height
+  name: Height
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Height
+  commentId: P:Egami.Video.Analysis.SpectrogramOptions.Height
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Height
+  nameWithType: SpectrogramOptions.Height
+- uid: Egami.Video.Analysis.SpectrogramOptions.Height*
+  name: Height
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Height_
+  commentId: Overload:Egami.Video.Analysis.SpectrogramOptions.Height
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Height
+  nameWithType: SpectrogramOptions.Height
+- uid: Egami.Video.Analysis.SpectrogramOptions.MinFrequency
+  name: MinFrequency
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_MinFrequency
+  commentId: P:Egami.Video.Analysis.SpectrogramOptions.MinFrequency
+  fullName: Egami.Video.Analysis.SpectrogramOptions.MinFrequency
+  nameWithType: SpectrogramOptions.MinFrequency
+- uid: Egami.Video.Analysis.SpectrogramOptions.MinFrequency*
+  name: MinFrequency
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_MinFrequency_
+  commentId: Overload:Egami.Video.Analysis.SpectrogramOptions.MinFrequency
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.SpectrogramOptions.MinFrequency
+  nameWithType: SpectrogramOptions.MinFrequency
+- uid: Egami.Video.Analysis.SpectrogramOptions.Scale
+  name: Scale
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Scale
+  commentId: P:Egami.Video.Analysis.SpectrogramOptions.Scale
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Scale
+  nameWithType: SpectrogramOptions.Scale
+- uid: Egami.Video.Analysis.SpectrogramOptions.Scale*
+  name: Scale
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Scale_
+  commentId: Overload:Egami.Video.Analysis.SpectrogramOptions.Scale
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Scale
+  nameWithType: SpectrogramOptions.Scale
+- uid: Egami.Video.Analysis.SpectrogramOptions.Track
+  name: Track
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Track
+  commentId: P:Egami.Video.Analysis.SpectrogramOptions.Track
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Track
+  nameWithType: SpectrogramOptions.Track
+- uid: Egami.Video.Analysis.SpectrogramOptions.Track*
+  name: Track
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Track_
+  commentId: Overload:Egami.Video.Analysis.SpectrogramOptions.Track
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Track
+  nameWithType: SpectrogramOptions.Track
+- uid: Egami.Video.Analysis.SpectrogramOptions.Width
+  name: Width
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Width
+  commentId: P:Egami.Video.Analysis.SpectrogramOptions.Width
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Width
+  nameWithType: SpectrogramOptions.Width
+- uid: Egami.Video.Analysis.SpectrogramOptions.Width*
+  name: Width
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_Width_
+  commentId: Overload:Egami.Video.Analysis.SpectrogramOptions.Width
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.SpectrogramOptions.Width
+  nameWithType: SpectrogramOptions.Width
+- uid: Egami.Video.Analysis.SpectrogramOptions.WindowSize
+  name: WindowSize
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_WindowSize
+  commentId: P:Egami.Video.Analysis.SpectrogramOptions.WindowSize
+  fullName: Egami.Video.Analysis.SpectrogramOptions.WindowSize
+  nameWithType: SpectrogramOptions.WindowSize
+- uid: Egami.Video.Analysis.SpectrogramOptions.WindowSize*
+  name: WindowSize
+  href: api/Egami.Video.Analysis.SpectrogramOptions.html#Egami_Video_Analysis_SpectrogramOptions_WindowSize_
+  commentId: Overload:Egami.Video.Analysis.SpectrogramOptions.WindowSize
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.SpectrogramOptions.WindowSize
+  nameWithType: SpectrogramOptions.WindowSize
 - uid: Egami.Video.Analysis.TestAudioFormat
   name: TestAudioFormat
   href: api/Egami.Video.Analysis.TestAudioFormat.html
@@ -78155,6 +78414,160 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Analysis.TestVideoFormat.Width
   nameWithType: TestVideoFormat.Width
+- uid: Egami.Video.Analysis.WaveformOptions
+  name: WaveformOptions
+  href: api/Egami.Video.Analysis.WaveformOptions.html
+  commentId: T:Egami.Video.Analysis.WaveformOptions
+  fullName: Egami.Video.Analysis.WaveformOptions
+  nameWithType: WaveformOptions
+- uid: Egami.Video.Analysis.WaveformOptions.Background
+  name: Background
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Background
+  commentId: P:Egami.Video.Analysis.WaveformOptions.Background
+  fullName: Egami.Video.Analysis.WaveformOptions.Background
+  nameWithType: WaveformOptions.Background
+- uid: Egami.Video.Analysis.WaveformOptions.Background*
+  name: Background
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Background_
+  commentId: Overload:Egami.Video.Analysis.WaveformOptions.Background
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.WaveformOptions.Background
+  nameWithType: WaveformOptions.Background
+- uid: Egami.Video.Analysis.WaveformOptions.Channels
+  name: Channels
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Channels
+  commentId: P:Egami.Video.Analysis.WaveformOptions.Channels
+  fullName: Egami.Video.Analysis.WaveformOptions.Channels
+  nameWithType: WaveformOptions.Channels
+- uid: Egami.Video.Analysis.WaveformOptions.Channels*
+  name: Channels
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Channels_
+  commentId: Overload:Egami.Video.Analysis.WaveformOptions.Channels
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.WaveformOptions.Channels
+  nameWithType: WaveformOptions.Channels
+- uid: Egami.Video.Analysis.WaveformOptions.Default
+  name: Default
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Default
+  commentId: P:Egami.Video.Analysis.WaveformOptions.Default
+  fullName: Egami.Video.Analysis.WaveformOptions.Default
+  nameWithType: WaveformOptions.Default
+- uid: Egami.Video.Analysis.WaveformOptions.Default*
+  name: Default
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Default_
+  commentId: Overload:Egami.Video.Analysis.WaveformOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.WaveformOptions.Default
+  nameWithType: WaveformOptions.Default
+- uid: Egami.Video.Analysis.WaveformOptions.Floor
+  name: Floor
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Floor
+  commentId: P:Egami.Video.Analysis.WaveformOptions.Floor
+  fullName: Egami.Video.Analysis.WaveformOptions.Floor
+  nameWithType: WaveformOptions.Floor
+- uid: Egami.Video.Analysis.WaveformOptions.Floor*
+  name: Floor
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Floor_
+  commentId: Overload:Egami.Video.Analysis.WaveformOptions.Floor
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.WaveformOptions.Floor
+  nameWithType: WaveformOptions.Floor
+- uid: Egami.Video.Analysis.WaveformOptions.Foreground
+  name: Foreground
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Foreground
+  commentId: P:Egami.Video.Analysis.WaveformOptions.Foreground
+  fullName: Egami.Video.Analysis.WaveformOptions.Foreground
+  nameWithType: WaveformOptions.Foreground
+- uid: Egami.Video.Analysis.WaveformOptions.Foreground*
+  name: Foreground
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Foreground_
+  commentId: Overload:Egami.Video.Analysis.WaveformOptions.Foreground
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.WaveformOptions.Foreground
+  nameWithType: WaveformOptions.Foreground
+- uid: Egami.Video.Analysis.WaveformOptions.Height
+  name: Height
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Height
+  commentId: P:Egami.Video.Analysis.WaveformOptions.Height
+  fullName: Egami.Video.Analysis.WaveformOptions.Height
+  nameWithType: WaveformOptions.Height
+- uid: Egami.Video.Analysis.WaveformOptions.Height*
+  name: Height
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Height_
+  commentId: Overload:Egami.Video.Analysis.WaveformOptions.Height
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.WaveformOptions.Height
+  nameWithType: WaveformOptions.Height
+- uid: Egami.Video.Analysis.WaveformOptions.Rms
+  name: Rms
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Rms
+  commentId: P:Egami.Video.Analysis.WaveformOptions.Rms
+  fullName: Egami.Video.Analysis.WaveformOptions.Rms
+  nameWithType: WaveformOptions.Rms
+- uid: Egami.Video.Analysis.WaveformOptions.Rms*
+  name: Rms
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Rms_
+  commentId: Overload:Egami.Video.Analysis.WaveformOptions.Rms
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.WaveformOptions.Rms
+  nameWithType: WaveformOptions.Rms
+- uid: Egami.Video.Analysis.WaveformOptions.Scale
+  name: Scale
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Scale
+  commentId: P:Egami.Video.Analysis.WaveformOptions.Scale
+  fullName: Egami.Video.Analysis.WaveformOptions.Scale
+  nameWithType: WaveformOptions.Scale
+- uid: Egami.Video.Analysis.WaveformOptions.Scale*
+  name: Scale
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Scale_
+  commentId: Overload:Egami.Video.Analysis.WaveformOptions.Scale
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.WaveformOptions.Scale
+  nameWithType: WaveformOptions.Scale
+- uid: Egami.Video.Analysis.WaveformOptions.Track
+  name: Track
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Track
+  commentId: P:Egami.Video.Analysis.WaveformOptions.Track
+  fullName: Egami.Video.Analysis.WaveformOptions.Track
+  nameWithType: WaveformOptions.Track
+- uid: Egami.Video.Analysis.WaveformOptions.Track*
+  name: Track
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Track_
+  commentId: Overload:Egami.Video.Analysis.WaveformOptions.Track
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.WaveformOptions.Track
+  nameWithType: WaveformOptions.Track
+- uid: Egami.Video.Analysis.WaveformOptions.Width
+  name: Width
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Width
+  commentId: P:Egami.Video.Analysis.WaveformOptions.Width
+  fullName: Egami.Video.Analysis.WaveformOptions.Width
+  nameWithType: WaveformOptions.Width
+- uid: Egami.Video.Analysis.WaveformOptions.Width*
+  name: Width
+  href: api/Egami.Video.Analysis.WaveformOptions.html#Egami_Video_Analysis_WaveformOptions_Width_
+  commentId: Overload:Egami.Video.Analysis.WaveformOptions.Width
+  isSpec: "True"
+  fullName: Egami.Video.Analysis.WaveformOptions.Width
+  nameWithType: WaveformOptions.Width
+- uid: Egami.Video.Analysis.WaveformScale
+  name: WaveformScale
+  href: api/Egami.Video.Analysis.WaveformScale.html
+  commentId: T:Egami.Video.Analysis.WaveformScale
+  fullName: Egami.Video.Analysis.WaveformScale
+  nameWithType: WaveformScale
+- uid: Egami.Video.Analysis.WaveformScale.Decibel
+  name: Decibel
+  href: api/Egami.Video.Analysis.WaveformScale.html#Egami_Video_Analysis_WaveformScale_Decibel
+  commentId: F:Egami.Video.Analysis.WaveformScale.Decibel
+  fullName: Egami.Video.Analysis.WaveformScale.Decibel
+  nameWithType: WaveformScale.Decibel
+- uid: Egami.Video.Analysis.WaveformScale.Linear
+  name: Linear
+  href: api/Egami.Video.Analysis.WaveformScale.html#Egami_Video_Analysis_WaveformScale_Linear
+  commentId: F:Egami.Video.Analysis.WaveformScale.Linear
+  fullName: Egami.Video.Analysis.WaveformScale.Linear
+  nameWithType: WaveformScale.Linear
 - uid: Egami.Video.AttachmentInfo
   name: AttachmentInfo
   href: api/Egami.Video.AttachmentInfo.html

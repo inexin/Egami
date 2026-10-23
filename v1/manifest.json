@@ -11283,6 +11283,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.AudioPictureChannels.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.AudioPictureChannels.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.AudioPictureChannels",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.AudioPictureChannels.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Analysis.AudioPictures\" data-throw-if-not-resolved=\"false\"></xref> lays out the channels.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.AudioPictures.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.AudioPictures.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.AudioPictures",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.AudioPictures.yml\" sourcestartlinenumber=\"1\">Draws pictures of audio: a waveform (the min and max of each column with the RMS level shaded inside, as editors and podcast\nplayers show it) and a spectrogram (frequency over time, loudness as color). Both read the audio once with constant memory,\nso a three-hour file costs no more memory than a short one, and return a plain <xref href=\"Egami.Raster%601\" data-throw-if-not-resolved=\"false\"></xref> without text;\nthe CLI adds axes and legends.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Analysis.BlackDetector.yml",
       "output": {
         ".html": {
@@ -11532,6 +11560,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.FreezeOptions",
       "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.FreezeOptions.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.FreezeDetector\" data-throw-if-not-resolved=\"false\"></xref> counts as frozen. The defaults are ffmpeg freezedetect's.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.FrequencyScale.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.FrequencyScale.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.FrequencyScale",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.FrequencyScale.yml\" sourcestartlinenumber=\"1\">The frequency axis of <xref href=\"Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable%7bEgami.Video.Audio.AudioFrame%7d%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.SpectrogramOptions%2cEgami.Video.MediaContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -11927,6 +11969,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SpectrogramColors.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SpectrogramColors.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SpectrogramColors",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SpectrogramColors.yml\" sourcestartlinenumber=\"1\">The colors of <xref href=\"Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable%7bEgami.Video.Audio.AudioFrame%7d%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.SpectrogramOptions%2cEgami.Video.MediaContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SpectrogramOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SpectrogramOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SpectrogramOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SpectrogramOptions.yml\" sourcestartlinenumber=\"1\">The size, window, scale and colors of an <xref href=\"Egami.Video.Analysis.AudioPictures\" data-throw-if-not-resolved=\"false\"></xref> spectrogram.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Analysis.TestAudioFormat.yml",
       "output": {
         ".html": {
@@ -11966,6 +12036,34 @@
       "IsMRef": true,
       "Title": "Egami.Video.Analysis.TestVideoFormat",
       "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.TestVideoFormat.yml\" sourcestartlinenumber=\"1\">The size, rate and planes of the video <xref href=\"Egami.Video.Analysis.TestSources\" data-throw-if-not-resolved=\"false\"></xref> generates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.WaveformOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.WaveformOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.WaveformOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.WaveformOptions.yml\" sourcestartlinenumber=\"1\">The size, layout and colors of an <xref href=\"Egami.Video.Analysis.AudioPictures\" data-throw-if-not-resolved=\"false\"></xref> waveform.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.WaveformScale.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.WaveformScale.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.WaveformScale",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.WaveformScale.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable%7bEgami.Video.Audio.AudioFrame%7d%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.WaveformOptions%2cEgami.Video.MediaContext)\" data-throw-if-not-resolved=\"false\"></xref> scales sample values.</p>\n"
     },
     {
       "type": "ManagedReference",

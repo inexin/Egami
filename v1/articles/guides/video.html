@@ -634,6 +634,30 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 {
     Console.WriteLine($&quot;{value.Time.ToTimeSpan()}: {value.Loudness:0.0} LUFS&quot;);
 }
+</code></pre>
+<p><code>AudioPictures</code> draws audio as a <code>Raster&lt;Rgba8&gt;</code>, reading it once with constant memory however long it runs. <code>Waveform</code>
+shows each column's min-to-max outline with the RMS level shaded inside, linear or in dB (<code>WaveformScale</code>), with the
+channels together or stacked (<code>AudioPictureChannels</code>); <code>WaveformOptions</code> sets the size and colors. <code>Spectrogram</code> shows
+frequency over time with a Hann-windowed FFT per column, on a linear or logarithmic <code>FrequencyScale</code>, colored by level from
+<code>Floor</code> to <code>Ceiling</code> with magma or grayscale (<code>SpectrogramColors</code>); <code>SpectrogramOptions</code> sets the window length too. The
+pictures carry no text: add axes and labels with Egami.Drawing.</p>
+<pre><code class="lang-csharp">// A waveform with each channel in its own strip, and a spectrogram on a logarithmic frequency axis in magma colors.
+using Raster&lt;Rgba8&gt; waveform = AudioPictures.Waveform(&quot;shots.mkv&quot;, new WaveformOptions
+{
+    Width = 1200,
+    Height = 240,
+    Channels = AudioPictureChannels.Stacked,
+});
+waveform.Save(&quot;waveform.png&quot;);
+
+using Raster&lt;Rgba8&gt; spectrogram = AudioPictures.Spectrogram(&quot;shots.mkv&quot;, new SpectrogramOptions
+{
+    Width = 1200,
+    Height = 400,
+    Scale = FrequencyScale.Logarithmic,
+    Floor = -100,
+});
+spectrogram.Save(&quot;spectrogram.png&quot;);
 </code></pre><h2 id="limits-and-warnings">Limits and warnings</h2>
 <p>A <code>MediaContext</code> holds the containers and codecs, the Egami context (memory, threads, safety limits), the <code>MediaLimits</code> for
 files from outside (packet, header and index sizes, tracks, nesting) and a handler for <code>MediaWarning</code>s: what a reader
