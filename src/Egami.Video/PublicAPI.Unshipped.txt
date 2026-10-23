@@ -1617,3 +1617,163 @@ override Egami.Video.Containers.AiffFormat.CanMux.get -> bool
 override Egami.Video.Containers.AiffFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
 override Egami.Video.Containers.AiffFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
 override Egami.Video.Containers.AiffFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+const Egami.Video.Analysis.AudioLevelMeter.HistogramBins = 145 -> int
+Egami.Video.Analysis.AudioLevelMeter
+Egami.Video.Analysis.AudioLevelMeter.Add(Egami.Video.Audio.AudioFrame! frame) -> void
+Egami.Video.Analysis.AudioLevelMeter.AudioLevelMeter() -> void
+Egami.Video.Analysis.AudioLevelMeter.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Analysis.AudioLevelMeter.Report() -> Egami.Video.Analysis.AudioLevelReport!
+Egami.Video.Analysis.AudioLevelMeter.SampleCount.get -> long
+Egami.Video.Analysis.AudioLevelReport
+Egami.Video.Analysis.AudioLevelReport.<Clone>$() -> Egami.Video.Analysis.AudioLevelReport!
+Egami.Video.Analysis.AudioLevelReport.AudioLevelReport(long Samples, int SampleRate, Egami.Video.Analysis.ChannelLevels! Overall, System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.ChannelLevels!>! Channels) -> void
+Egami.Video.Analysis.AudioLevelReport.Channels.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.ChannelLevels!>!
+Egami.Video.Analysis.AudioLevelReport.Channels.init -> void
+Egami.Video.Analysis.AudioLevelReport.Deconstruct(out long Samples, out int SampleRate, out Egami.Video.Analysis.ChannelLevels! Overall, out System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.ChannelLevels!>! Channels) -> void
+Egami.Video.Analysis.AudioLevelReport.Equals(Egami.Video.Analysis.AudioLevelReport? other) -> bool
+Egami.Video.Analysis.AudioLevelReport.Overall.get -> Egami.Video.Analysis.ChannelLevels!
+Egami.Video.Analysis.AudioLevelReport.Overall.init -> void
+Egami.Video.Analysis.AudioLevelReport.SampleRate.get -> int
+Egami.Video.Analysis.AudioLevelReport.SampleRate.init -> void
+Egami.Video.Analysis.AudioLevelReport.Samples.get -> long
+Egami.Video.Analysis.AudioLevelReport.Samples.init -> void
+Egami.Video.Analysis.ChannelLevels
+Egami.Video.Analysis.ChannelLevels.<Clone>$() -> Egami.Video.Analysis.ChannelLevels!
+Egami.Video.Analysis.ChannelLevels.ChannelLevels(double Peak, double Rms, double DcOffset, double CrestFactor, double Min, double Max, long Clipped, long PeakCount, double NoiseFloor, long ZeroCrossings, System.Collections.Generic.IReadOnlyList<long>! Histogram) -> void
+Egami.Video.Analysis.ChannelLevels.Clipped.get -> long
+Egami.Video.Analysis.ChannelLevels.Clipped.init -> void
+Egami.Video.Analysis.ChannelLevels.CrestFactor.get -> double
+Egami.Video.Analysis.ChannelLevels.CrestFactor.init -> void
+Egami.Video.Analysis.ChannelLevels.DcOffset.get -> double
+Egami.Video.Analysis.ChannelLevels.DcOffset.init -> void
+Egami.Video.Analysis.ChannelLevels.Deconstruct(out double Peak, out double Rms, out double DcOffset, out double CrestFactor, out double Min, out double Max, out long Clipped, out long PeakCount, out double NoiseFloor, out long ZeroCrossings, out System.Collections.Generic.IReadOnlyList<long>! Histogram) -> void
+Egami.Video.Analysis.ChannelLevels.Equals(Egami.Video.Analysis.ChannelLevels? other) -> bool
+Egami.Video.Analysis.ChannelLevels.Histogram.get -> System.Collections.Generic.IReadOnlyList<long>!
+Egami.Video.Analysis.ChannelLevels.Histogram.init -> void
+Egami.Video.Analysis.ChannelLevels.Max.get -> double
+Egami.Video.Analysis.ChannelLevels.Max.init -> void
+Egami.Video.Analysis.ChannelLevels.Min.get -> double
+Egami.Video.Analysis.ChannelLevels.Min.init -> void
+Egami.Video.Analysis.ChannelLevels.NoiseFloor.get -> double
+Egami.Video.Analysis.ChannelLevels.NoiseFloor.init -> void
+Egami.Video.Analysis.ChannelLevels.Peak.get -> double
+Egami.Video.Analysis.ChannelLevels.Peak.init -> void
+Egami.Video.Analysis.ChannelLevels.PeakCount.get -> long
+Egami.Video.Analysis.ChannelLevels.PeakCount.init -> void
+Egami.Video.Analysis.ChannelLevels.Rms.get -> double
+Egami.Video.Analysis.ChannelLevels.Rms.init -> void
+Egami.Video.Analysis.ChannelLevels.ZeroCrossings.get -> long
+Egami.Video.Analysis.ChannelLevels.ZeroCrossings.init -> void
+Egami.Video.Analysis.SilenceDetector
+Egami.Video.Analysis.SilenceDetector.Add(Egami.Video.Audio.AudioFrame! frame) -> void
+Egami.Video.Analysis.SilenceDetector.ChannelRanges.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.DetectedRange!>!>!
+Egami.Video.Analysis.SilenceDetector.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Analysis.SilenceDetector.Options.get -> Egami.Video.Analysis.SilenceOptions!
+Egami.Video.Analysis.SilenceDetector.Ranges.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.DetectedRange!>!
+Egami.Video.Analysis.SilenceDetector.SampleCount.get -> long
+Egami.Video.Analysis.SilenceDetector.SilenceDetector(Egami.Video.Analysis.SilenceOptions? options = null) -> void
+Egami.Video.Analysis.SilenceOptions
+Egami.Video.Analysis.SilenceOptions.<Clone>$() -> Egami.Video.Analysis.SilenceOptions!
+Egami.Video.Analysis.SilenceOptions.Equals(Egami.Video.Analysis.SilenceOptions? other) -> bool
+Egami.Video.Analysis.SilenceOptions.MinDuration.get -> Egami.Video.MediaTime
+Egami.Video.Analysis.SilenceOptions.MinDuration.init -> void
+Egami.Video.Analysis.SilenceOptions.Noise.get -> double
+Egami.Video.Analysis.SilenceOptions.Noise.init -> void
+Egami.Video.Analysis.SilenceOptions.PerChannel.get -> bool
+Egami.Video.Analysis.SilenceOptions.PerChannel.init -> void
+Egami.Video.Analysis.SilenceOptions.SilenceOptions() -> void
+Egami.Video.Audio.LoudnessMeter
+Egami.Video.Audio.LoudnessMeter.Add(Egami.Video.Audio.AudioFrame! frame) -> void
+Egami.Video.Audio.LoudnessMeter.Complete(Egami.Video.MediaTime endTime) -> void
+Egami.Video.Audio.LoudnessMeter.Duration.get -> Egami.Video.MediaTime
+Egami.Video.Audio.LoudnessMeter.Integrated.get -> double
+Egami.Video.Audio.LoudnessMeter.LoudnessMeter(Egami.Video.Audio.LoudnessOptions? options = null) -> void
+Egami.Video.Audio.LoudnessMeter.MaxMomentary.get -> double
+Egami.Video.Audio.LoudnessMeter.MaxShortTerm.get -> double
+Egami.Video.Audio.LoudnessMeter.Momentary.get -> double
+Egami.Video.Audio.LoudnessMeter.MomentarySeries.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Audio.LoudnessValue>!
+Egami.Video.Audio.LoudnessMeter.Options.get -> Egami.Video.Audio.LoudnessOptions!
+Egami.Video.Audio.LoudnessMeter.Range.get -> double
+Egami.Video.Audio.LoudnessMeter.Report() -> Egami.Video.Audio.LoudnessReport!
+Egami.Video.Audio.LoudnessMeter.SamplePeak.get -> double
+Egami.Video.Audio.LoudnessMeter.ShortTerm.get -> double
+Egami.Video.Audio.LoudnessMeter.ShortTermSeries.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Audio.LoudnessValue>!
+Egami.Video.Audio.LoudnessMeter.TruePeak.get -> double
+Egami.Video.Audio.LoudnessOptions
+Egami.Video.Audio.LoudnessOptions.<Clone>$() -> Egami.Video.Audio.LoudnessOptions!
+Egami.Video.Audio.LoudnessOptions.Equals(Egami.Video.Audio.LoudnessOptions? other) -> bool
+Egami.Video.Audio.LoudnessOptions.KeepSeries.get -> bool
+Egami.Video.Audio.LoudnessOptions.KeepSeries.init -> void
+Egami.Video.Audio.LoudnessOptions.LoudnessOptions() -> void
+Egami.Video.Audio.LoudnessOptions.TruePeak.get -> bool
+Egami.Video.Audio.LoudnessOptions.TruePeak.init -> void
+Egami.Video.Audio.LoudnessReport
+Egami.Video.Audio.LoudnessReport.<Clone>$() -> Egami.Video.Audio.LoudnessReport!
+Egami.Video.Audio.LoudnessReport.ChannelTruePeaks.get -> System.Collections.Generic.IReadOnlyList<double>!
+Egami.Video.Audio.LoudnessReport.ChannelTruePeaks.init -> void
+Egami.Video.Audio.LoudnessReport.Deconstruct(out double Integrated, out double Range, out double RangeLow, out double RangeHigh, out double IntegratedThreshold, out double RangeThreshold, out double TruePeak, out double SamplePeak, out double MaxMomentary, out double MaxShortTerm, out Egami.Video.MediaTime Duration, out System.Collections.Generic.IReadOnlyList<double>! ChannelTruePeaks) -> void
+Egami.Video.Audio.LoudnessReport.Duration.get -> Egami.Video.MediaTime
+Egami.Video.Audio.LoudnessReport.Duration.init -> void
+Egami.Video.Audio.LoudnessReport.Equals(Egami.Video.Audio.LoudnessReport? other) -> bool
+Egami.Video.Audio.LoudnessReport.Integrated.get -> double
+Egami.Video.Audio.LoudnessReport.Integrated.init -> void
+Egami.Video.Audio.LoudnessReport.IntegratedThreshold.get -> double
+Egami.Video.Audio.LoudnessReport.IntegratedThreshold.init -> void
+Egami.Video.Audio.LoudnessReport.LoudnessReport(double Integrated, double Range, double RangeLow, double RangeHigh, double IntegratedThreshold, double RangeThreshold, double TruePeak, double SamplePeak, double MaxMomentary, double MaxShortTerm, Egami.Video.MediaTime Duration, System.Collections.Generic.IReadOnlyList<double>! ChannelTruePeaks) -> void
+Egami.Video.Audio.LoudnessReport.MaxMomentary.get -> double
+Egami.Video.Audio.LoudnessReport.MaxMomentary.init -> void
+Egami.Video.Audio.LoudnessReport.MaxShortTerm.get -> double
+Egami.Video.Audio.LoudnessReport.MaxShortTerm.init -> void
+Egami.Video.Audio.LoudnessReport.Range.get -> double
+Egami.Video.Audio.LoudnessReport.Range.init -> void
+Egami.Video.Audio.LoudnessReport.RangeHigh.get -> double
+Egami.Video.Audio.LoudnessReport.RangeHigh.init -> void
+Egami.Video.Audio.LoudnessReport.RangeLow.get -> double
+Egami.Video.Audio.LoudnessReport.RangeLow.init -> void
+Egami.Video.Audio.LoudnessReport.RangeThreshold.get -> double
+Egami.Video.Audio.LoudnessReport.RangeThreshold.init -> void
+Egami.Video.Audio.LoudnessReport.SamplePeak.get -> double
+Egami.Video.Audio.LoudnessReport.SamplePeak.init -> void
+Egami.Video.Audio.LoudnessReport.TruePeak.get -> double
+Egami.Video.Audio.LoudnessReport.TruePeak.init -> void
+Egami.Video.Audio.LoudnessValue
+Egami.Video.Audio.LoudnessValue.Deconstruct(out Egami.Video.MediaTime Time, out double Loudness) -> void
+Egami.Video.Audio.LoudnessValue.Equals(Egami.Video.Audio.LoudnessValue other) -> bool
+Egami.Video.Audio.LoudnessValue.Loudness.get -> double
+Egami.Video.Audio.LoudnessValue.Loudness.init -> void
+Egami.Video.Audio.LoudnessValue.LoudnessValue() -> void
+Egami.Video.Audio.LoudnessValue.LoudnessValue(Egami.Video.MediaTime Time, double Loudness) -> void
+Egami.Video.Audio.LoudnessValue.Time.get -> Egami.Video.MediaTime
+Egami.Video.Audio.LoudnessValue.Time.init -> void
+override Egami.Video.Analysis.AudioLevelReport.Equals(object? obj) -> bool
+override Egami.Video.Analysis.AudioLevelReport.GetHashCode() -> int
+override Egami.Video.Analysis.AudioLevelReport.ToString() -> string!
+override Egami.Video.Analysis.ChannelLevels.Equals(object? obj) -> bool
+override Egami.Video.Analysis.ChannelLevels.GetHashCode() -> int
+override Egami.Video.Analysis.ChannelLevels.ToString() -> string!
+override Egami.Video.Analysis.SilenceOptions.Equals(object? obj) -> bool
+override Egami.Video.Analysis.SilenceOptions.GetHashCode() -> int
+override Egami.Video.Analysis.SilenceOptions.ToString() -> string!
+override Egami.Video.Audio.LoudnessOptions.Equals(object? obj) -> bool
+override Egami.Video.Audio.LoudnessOptions.GetHashCode() -> int
+override Egami.Video.Audio.LoudnessOptions.ToString() -> string!
+override Egami.Video.Audio.LoudnessReport.Equals(object? obj) -> bool
+override Egami.Video.Audio.LoudnessReport.GetHashCode() -> int
+override Egami.Video.Audio.LoudnessReport.ToString() -> string!
+override Egami.Video.Audio.LoudnessValue.GetHashCode() -> int
+static Egami.Video.Analysis.AudioLevelReport.operator !=(Egami.Video.Analysis.AudioLevelReport? left, Egami.Video.Analysis.AudioLevelReport? right) -> bool
+static Egami.Video.Analysis.AudioLevelReport.operator ==(Egami.Video.Analysis.AudioLevelReport? left, Egami.Video.Analysis.AudioLevelReport? right) -> bool
+static Egami.Video.Analysis.ChannelLevels.operator !=(Egami.Video.Analysis.ChannelLevels? left, Egami.Video.Analysis.ChannelLevels? right) -> bool
+static Egami.Video.Analysis.ChannelLevels.operator ==(Egami.Video.Analysis.ChannelLevels? left, Egami.Video.Analysis.ChannelLevels? right) -> bool
+static Egami.Video.Analysis.SilenceOptions.Default.get -> Egami.Video.Analysis.SilenceOptions!
+static Egami.Video.Analysis.SilenceOptions.operator !=(Egami.Video.Analysis.SilenceOptions? left, Egami.Video.Analysis.SilenceOptions? right) -> bool
+static Egami.Video.Analysis.SilenceOptions.operator ==(Egami.Video.Analysis.SilenceOptions? left, Egami.Video.Analysis.SilenceOptions? right) -> bool
+static Egami.Video.Audio.LoudnessOptions.Default.get -> Egami.Video.Audio.LoudnessOptions!
+static Egami.Video.Audio.LoudnessOptions.operator !=(Egami.Video.Audio.LoudnessOptions? left, Egami.Video.Audio.LoudnessOptions? right) -> bool
+static Egami.Video.Audio.LoudnessOptions.operator ==(Egami.Video.Audio.LoudnessOptions? left, Egami.Video.Audio.LoudnessOptions? right) -> bool
+static Egami.Video.Audio.LoudnessReport.operator !=(Egami.Video.Audio.LoudnessReport? left, Egami.Video.Audio.LoudnessReport? right) -> bool
+static Egami.Video.Audio.LoudnessReport.operator ==(Egami.Video.Audio.LoudnessReport? left, Egami.Video.Audio.LoudnessReport? right) -> bool
+static Egami.Video.Audio.LoudnessValue.operator !=(Egami.Video.Audio.LoudnessValue left, Egami.Video.Audio.LoudnessValue right) -> bool
+static Egami.Video.Audio.LoudnessValue.operator ==(Egami.Video.Audio.LoudnessValue left, Egami.Video.Audio.LoudnessValue right) -> bool
+~override Egami.Video.Audio.LoudnessValue.Equals(object obj) -> bool
+~override Egami.Video.Audio.LoudnessValue.ToString() -> string
