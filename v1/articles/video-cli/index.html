@@ -136,7 +136,7 @@ egami-video audio in.mkv -o sound.flac
 </tr>
 <tr>
 <td><code>segment</code></td>
-<td>Split every <code>--every</code> or at <code>--at</code> times, at keyframes</td>
+<td>Split every <code>--every</code>, at <code>--at</code> times or at <code>--scenes</code>, at keyframes</td>
 <td><code>-f segment</code></td>
 </tr>
 <tr>
@@ -183,6 +183,26 @@ egami-video audio in.mkv -o sound.flac
 <td><code>scenes</code></td>
 <td>Where the scenes start, and a frame of each</td>
 <td><code>select='gt(scene,0.4)'</code></td>
+</tr>
+<tr>
+<td><code>analyze</code></td>
+<td>Black, frozen, silent, cropped, interlaced and duplicate stretches, scenes, signal levels and loudness, in one pass</td>
+<td><code>blackdetect</code>, <code>silencedetect</code>, <code>ebur128</code> … with <code>-f null -</code></td>
+</tr>
+<tr>
+<td><code>waveform</code></td>
+<td>A picture of the sound's waveform</td>
+<td><code>-lavfi showwavespic</code></td>
+</tr>
+<tr>
+<td><code>spectrum</code></td>
+<td>A spectrogram picture</td>
+<td><code>-lavfi showspectrumpic</code></td>
+</tr>
+<tr>
+<td><code>generate</code></td>
+<td>Test clips and sounds: bars, a pattern, solid colors, gradients, tones, noise, sweeps</td>
+<td><code>-f lavfi -i testsrc2</code>, <code>smptebars</code>, <code>sine</code></td>
 </tr>
 <tr>
 <td><code>sheet</code></td>
@@ -265,9 +285,13 @@ attachment.</p>
 <p>Times are seconds (<code>90.5</code>, <code>500ms</code>, <code>2m</code>), <code>[HH:]MM:SS[.mmm]</code> (<code>1:30</code>, <code>01:02:03.250</code>) or a frame number in presentation order
 (<code>#1234</code>, counted from 0).</p>
 <p>A stream copy can only start on a keyframe. <code>trim</code> starts at the video keyframe at or before <code>--from</code>, ends exactly at <code>--to</code>,
-and says on standard error how far the start moved. <code>segment</code> starts each part at the first keyframe at or after its split point.</p>
+and says on standard error how far the start moved. <code>segment</code> starts each part at the first keyframe at or after its split point;
+<code>segment --scenes</code> starts each part at the keyframe at or before its scene's first frame and says on standard error how far
+before, with a warning when that is over a second. Starting exactly on the scene needs smart cut (<code>--exact</code>), which comes with
+a later step.</p>
 <pre><code class="lang-sh">egami-video trim in.webm --from 0.5 --duration 1 -o cut.webm
 egami-video segment in.mkv --every 1 -o parts/{part:000}.mkv
+egami-video segment in.mkv --scenes -o shots/{part:000}.mkv -v
 egami-video concat parts/001.mkv parts/002.mkv -o joined.mkv
 egami-video timestamps in.mkv --shift 0.5 --track a -o later.mkv
 </code></pre>
@@ -278,9 +302,13 @@ JPEG frames written as JPEG are the stored frames, byte for byte, without decodi
 egami-video frames in.webm --at 0.5,1.5 -o at-{frame}.png
 egami-video thumbnail in.webm -o thumb.jpg --size 320x
 egami-video scenes in.mkv --json
+egami-video scenes in.mkv --fades --frame middle --series scores.csv -o shots/{scene:000}.jpg
 egami-video sheet in.mkv --grid 3x2 --timestamps -o sheet.png
 egami-video animate in.webm --rate 10 --size 120x -o clip.gif
 </code></pre>
+<p><code>scenes</code> finds cuts with the adaptive method by default (<code>--method content</code> or <code>histogram</code>, <code>--threshold</code>); <code>--min-length</code>
+(once <code>--min-gap</code>) sets the shortest scene, <code>--fades</code> names scenes that start inside a fade and lists the fades, <code>--flash suppress</code> drops flashes instead of merging them, <code>--frame middle</code> or <code>last</code> picks the frame written for each scene, and
+<code>--series</code> writes every frame's score to a CSV file.</p>
 <p><code>encode</code> goes the other way: images in name order, an image sequence (<code>shots/{frame:000}.jpg</code> reads frame 0, 1, 2 until one is
 missing), or a Y4M file or stream.</p>
 <pre><code class="lang-sh">egami-video encode &quot;shots/*.jpg&quot; --rate 2 -o slideshow.mkv
@@ -291,6 +319,35 @@ output keeps the source codec when Egami.Video can encode it, else Motion JPEG; 
 and every frame keeps its time.</p>
 <pre><code class="lang-sh">egami-video run in.avi resize 80x + sharpen 0.5 -o small.mkv
 egami-video run in.mkv crop 0 10 160 100 + grayscale + save gray.avi --quality 90
+egami-video run in.mkv --crop auto resize 80x -o cropped.mkv
+</code></pre>
+<p><code>--crop auto</code> reads the video once to find its black bars, as <code>analyze -d crop</code> does, and crops them off before the other
+steps.</p>
+<h2 id="analysis">Analysis</h2>
+<p><code>analyze</code> reads a file once and runs the detectors <code>--detect</code> (<code>-d</code>) names, or every one with <code>--all</code>: <code>scenes</code>, <code>black</code>,
+<code>freeze</code>, <code>crop</code>, <code>interlace</code>, <code>duplicates</code>, <code>signal</code>, <code>blur</code>, <code>blockiness</code>, <code>silence</code>, <code>levels</code> and <code>loudness</code>. Each keeps the
+measure and defaults of the ffmpeg filter it stands for, and its settings take that filter's names: <code>--black-min</code> is
+blackdetect's <code>d</code>, <code>--silence-noise -50dB</code> silencedetect's <code>n</code>, <code>--crop-limit</code> cropdetect's <code>limit</code>. <code>--start</code> and <code>--duration</code>
+look at part of the file. The report is text, <code>--json</code> or <code>--csv</code> (one row per range or value), and <code>--series file.csv</code> adds
+per-frame and per-100 ms values: scene scores, black share, signal levels, momentary and short-term loudness.</p>
+<pre><code class="lang-sh">egami-video analyze in.mkv --all
+egami-video analyze in.mkv -d black,silence --black-min 0.5 --json
+egami-video analyze in.mkv -d loudness --series loudness.csv
+egami-video analyze in.mkv -d black --ffmpeg-log blackdetect
+</code></pre>
+<p>In JSON each file has <code>start</code>, <code>end</code> and <code>frames</code>, and one entry per detector: <code>scenes</code> (scene, frame, start, end, score, kind)
+and <code>fades</code>; lists of <code>{start, end, duration}</code> ranges with a value for <code>black</code>, <code>freeze</code>, <code>duplicates</code> and <code>silence</code> (and
+<code>silence.1</code>, <code>silence.2</code> … per channel); and objects for <code>crop</code>, <code>interlace</code>, <code>signal</code>, <code>levels</code> and <code>loudness</code>. Levels and
+loudness that do not exist (silence has no peak) are <code>null</code>. <code>--ffmpeg-log</code> prints the lines ffmpeg's filters log instead,
+for scripts that read them (<a href="ffmpeg.html">ffmpeg command lines</a>).</p>
+<p><code>waveform</code> and <code>spectrum</code> draw the audio as a picture: <code>--size</code>, <code>--channels mixed|stacked</code>, a linear or dB <code>--scale</code> for the
+waveform and a linear or log frequency <code>--scale</code> for the spectrum, colors, and <code>--legend</code> for a time axis and level or
+frequency labels. <code>generate</code> makes test files: <code>pattern</code>, <code>bars</code>, <code>solid</code> and <code>gradient</code> pictures, with <code>--tone</code> or <code>--audio</code>
+for sound, and <code>sine</code>, <code>silence</code>, <code>noise</code> and <code>sweep</code> sounds.</p>
+<pre><code class="lang-sh">egami-video waveform in.mkv --legend --scale db -o wave.png
+egami-video spectrum in.mkv --scale log --legend --size 1200x400 -o spectrum.png
+egami-video generate bars --tone -t 10 bars.mkv
+egami-video generate sweep -t 5 sweep.flac
 </code></pre>
 <h2 id="audio">Audio</h2>
 <p><code>audio</code> decodes the picked audio track to WAV, Wave64, FLAC, Ogg FLAC or Opus, resampling with <code>--rate</code>, mixing with <code>--channels</code>

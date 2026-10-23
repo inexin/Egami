@@ -168,17 +168,54 @@ egami-video ffprobe -v error -show_entries format=duration -of default=noprint_w
 <td><code>-i distorted -i reference -lavfi psnr</code> or <code>ssim</code></td>
 <td><code>compare</code></td>
 </tr>
+<tr>
+<td><code>-vf blackdetect</code>, <code>freezedetect</code>, <code>cropdetect</code>, <code>idet</code>, <code>signalstats</code>, <code>blurdetect</code>, <code>blockdetect</code> or <code>-af silencedetect</code>, <code>volumedetect</code>, <code>astats</code>, <code>ebur128</code>, with <code>-f null -</code></td>
+<td><code>analyze --ffmpeg-log</code></td>
+</tr>
+<tr>
+<td><code>-f lavfi -i testsrc2</code>, <code>smptebars</code>, <code>smptehdbars</code>, <code>color</code>, <code>sine</code>, <code>anullsrc</code>, <code>anoisesrc</code></td>
+<td><code>generate</code></td>
+</tr>
+<tr>
+<td><code>-lavfi showwavespic</code> or <code>showspectrumpic</code> (with or without <code>-frames:v 1</code>)</td>
+<td><code>waveform</code>, <code>spectrum</code></td>
+</tr>
 </tbody>
 </table>
+<h2 id="detection-filters">Detection filters</h2>
+<p>ffmpeg's detection filters write what they find to its log, and scripts read those lines back. With <code>-f null -</code> the filters
+map to <code>analyze</code>, and <code>--ffmpeg-log</code> makes it print the same lines on standard error, in the shapes ffmpeg's documentation
+shows: <code>black_start:1 black_end:3.4 black_duration:2.4</code>, <code>silence_start: 1</code> then <code>silence_end: 3.4 | silence_duration: 2.4</code>,
+<code>lavfi.freezedetect.freeze_start</code>, cropdetect's <code>crop=w:h:x:y</code>, idet's field counts, volumedetect's <code>mean_volume</code> and
+<code>max_volume</code>, astats's per-channel block and ebur128's summary. Each line starts with <code>[Parsed_&lt;filter&gt;_&lt;n&gt; @ egami]</code>, the
+filter numbered within its <code>-vf</code> or <code>-af</code> chain as ffmpeg numbers it, so the usual regular expressions still match.</p>
+<pre><code class="lang-sh">egami-video ffmpeg -i in.mkv -vf blackdetect=d=0.5 -af silencedetect=noise=-50dB:d=1 -f null -
+egami-video ffmpeg -i in.mkv -af ebur128=peak=true -f null -
+</code></pre>
+<p>The filters take their documented options by name: blackdetect <code>d</code>, <code>pic_th</code> and <code>pix_th</code>; freezedetect <code>n</code> and <code>d</code>;
+cropdetect <code>limit</code>, <code>round</code> and <code>skip</code>; silencedetect <code>n</code>, <code>d</code> and <code>mono</code>; ebur128 <code>peak</code> (the summary always has the sample
+and true peaks). signalstats, blurdetect and blockdetect have no log shape in ffmpeg's documentation, so they print the lines
+<code>analyze</code> writes. crop runs print one cropdetect line each, not one a frame.</p>
+<h2 id="test-sources-and-pictures-of-sound">Test sources and pictures of sound</h2>
+<p><code>-f lavfi</code> sources become <code>generate</code>: testsrc and testsrc2 the moving pattern, smptebars and smptehdbars the SD and HD bars,
+color a solid picture, and sine, anullsrc and anoisesrc (white or pink) a sound; a picture source and a sound source together
+make one clip. The length comes from <code>d=</code> or <code>-t</code>, as ffmpeg's sources run until stopped.</p>
+<pre><code class="lang-sh">egami-video ffmpeg -f lavfi -i smptehdbars=s=1920x1080 -f lavfi -i sine=frequency=1000 -t 10 bars.mkv
+egami-video ffmpeg -i in.mkv -lavfi showwavespic=split_channels=1:s=1024x800 waveform.png
+egami-video ffmpeg -i in.mkv -lavfi showspectrumpic=s=1024x512:fscale=log spectrogram.png
+</code></pre>
+<p>showwavespic takes <code>s</code>, <code>split_channels</code>, <code>colors</code> (the first) and <code>scale</code> (lin or log); showspectrumpic takes <code>s</code>, <code>mode</code>,
+<code>color</code> (magma), <code>scale</code> (log), <code>fscale</code> and <code>legend</code>, and draws a legend unless <code>legend=0</code>, as ffmpeg does.</p>
 <p>ffmpeg encodes again by default; egami-video copies streams where ffmpeg would encode with a codec it does not have, and says so
 in a warning. An output that exists needs <code>-y</code>, as in ffmpeg.</p>
 <h2 id="the-options">The options</h2>
 <p>ffmpeg mode takes <code>-i</code>, <code>-f</code>, <code>-y</code>, <code>-n</code>, <code>-ss</code>, <code>-to</code>, <code>-t</code>, <code>-itsoffset</code>, <code>-framerate</code>, <code>-safe</code>, <code>-map</code>, <code>-c</code>, <code>-codec</code>, <code>-c:v</code>,
 <code>-c:a</code>, <code>-c:s</code>, <code>-vcodec</code>, <code>-acodec</code>, <code>-scodec</code>, <code>-an</code>, <code>-vn</code>, <code>-sn</code>, <code>-dn</code>, <code>-r</code>, <code>-s</code>, <code>-frames:v</code>, <code>-vframes</code>, <code>-q:v</code>,
 <code>-qscale:v</code>, <code>-ar</code>, <code>-b:a</code>, <code>-ab</code>, <code>-ac</code>, <code>-sample_fmt</code>, <code>-metadata</code>, <code>-map_metadata</code>, <code>-map_chapters</code>, <code>-vf</code>, <code>-filter:v</code>, <code>-lavfi</code> and
-<code>-filter_complex</code> (psnr and ssim), <code>-segment_time</code>, <code>-segment_times</code>, <code>-update</code>, <code>-progress</code>, <code>-stats</code>, <code>-nostats</code>,
+<code>-filter_complex</code> (psnr, ssim, showwavespic and showspectrumpic), <code>-af</code> and <code>-filter:a</code> (detection filters), <code>-segment_time</code>, <code>-segment_times</code>, <code>-update</code>, <code>-progress</code>, <code>-stats</code>, <code>-nostats</code>,
 <code>-stats_period</code>, <code>-hide_banner</code>, <code>-loglevel</code>, <code>-v</code> and <code>-nostdin</code>, with <code>pipe:</code> and <code>%d</code> patterns. The filters are scale, crop,
-pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile. Codecs: <code>copy</code>, <code>mjpeg</code> and <code>rawvideo</code> for video, <code>flac</code>,
+pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile, and with <code>-f null</code> the detection filters above; the
+<code>-f lavfi</code> sources are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc. Codecs: <code>copy</code>, <code>mjpeg</code> and <code>rawvideo</code> for video, <code>flac</code>,
 <code>libopus</code> (or <code>opus</code>) and the <code>pcm_</code> codecs for audio.</p>
 <p>ffprobe mode takes <code>-i</code>, <code>-show_streams</code>, <code>-show_format</code>, <code>-show_packets</code>, <code>-show_frames</code>, <code>-show_chapters</code>, <code>-select_streams</code>,
 <code>-show_entries</code>, <code>-of</code> (also <code>-print_format</code>, <code>-output_format</code>) with the json, csv, compact, default, flat and xml writers and
