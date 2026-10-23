@@ -117,6 +117,7 @@ public sealed class ErrorTests
         using FileStream stream = File.OpenRead(PathOf("high-crop.h264"));
         using IDemuxer demuxer = H264Format.Instance.OpenDemuxer(stream, MediaContext.Default, leaveOpen: true);
         VideoTrackInfo track = demuxer.Info.VideoTrack!;
+        Assert.Equal("H.264 Annex B", demuxer.Info.FormatName);
         Assert.Equal(CodecIds.Avc, track.CodecId);
         Assert.Equal((170, 100), (track.Width, track.Height));
         Assert.Equal(8, track.BitDepth);
@@ -156,7 +157,7 @@ public sealed class ErrorTests
         List<string> diagnostics = [];
         List<string> concealed = Decode(track, packets, DecodeErrorMode.Conceal, diagnostics);
         Assert.Equal(expected.Length, concealed.Count);
-        Assert.Contains("H264.CorruptSlice", diagnostics);
+        Assert.Contains("H264.CorruptFrame", diagnostics);
         Assert.Equal(expected[0], concealed[0]);
 
         List<string> skipped = Decode(track, packets, DecodeErrorMode.Skip);

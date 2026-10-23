@@ -20,7 +20,7 @@ namespace Egami.Video.Codecs;
 /// The frame's color comes from the stream's VUI, else from the container (<see cref="VideoTrackInfo.Color"/>); mastering
 /// display, content light level and HDR10+ SEI messages fill <see cref="VideoFrame.Hdr"/> and <see cref="VideoFrame.Hdr10Plus"/>.
 /// Broken data follows <see cref="VideoDecoderOptions.Errors"/> and is reported through the Egami context's diagnostics as
-/// <c>H264.CorruptSlice</c> (a slice cannot be decoded) or <c>H264.MissingReference</c> (a picture refers to one that is not
+/// <c>H264.CorruptFrame</c> (a slice cannot be decoded) or <c>H264.MissingReference</c> (a picture refers to one that is not
 /// there). In <see cref="DecodeErrorMode.Conceal"/> mode the macroblocks a broken slice leaves are copied from the previous
 /// picture.
 /// </para>
