@@ -121,6 +121,9 @@ internal static class HarfBuzzCases
                 case "--unsafe-to-concat":
                     request.ProduceUnsafeToConcat = true;
                     break;
+                case "--safe-to-insert-tatweel":
+                    request.ProduceSafeToInsertTatweel = true;
+                    break;
                 case "--invisible-glyph":
                     request.Invisible = uint.Parse(value, CultureInfo.InvariantCulture);
                     break;
@@ -201,7 +204,7 @@ internal static class HarfBuzzCases
         {
             GlyphInfo info = buffer.Info[i];
             GlyphPos pos = buffer.Pos[i];
-            actual.Add(Format((int)info.Codepoint, info.Cluster, (int)(info.Mask & (request.ProduceUnsafeToConcat ? 3u : 1u)), pos.XAdvance, pos.YAdvance, pos.XOffset, pos.YOffset, noPositions, noClusters, showFlags));
+            actual.Add(Format((int)info.Codepoint, info.Cluster, (int)(info.Mask & (1u | (request.ProduceUnsafeToConcat ? 2u : 0u) | (request.ProduceSafeToInsertTatweel ? 4u : 0u))), pos.XAdvance, pos.YAdvance, pos.XOffset, pos.YOffset, noPositions, noClusters, showFlags));
         }
 
         foreach (ShapingReferences.Glyph g in expected)

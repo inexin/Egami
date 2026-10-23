@@ -120,6 +120,30 @@
       "name": "NotoSansSinhala-Regular.sinhala",
       "font": "tests/fonts/shaping/NotoSansSinhala-Regular.ttf",
       "text": "sinhala"
+    },
+    {
+      "name": "Amiri-Regular.arabic.tatweel",
+      "font": "tests/fonts/shaping/Amiri-Regular.ttf",
+      "text": "arabic",
+      "options": [
+        "--safe-to-insert-tatweel"
+      ]
+    },
+    {
+      "name": "NotoSansArabic-Regular.persian.tatweel",
+      "font": "tests/fonts/shaping/NotoSansArabic-Regular.ttf",
+      "text": "persian",
+      "options": [
+        "--safe-to-insert-tatweel"
+      ]
+    },
+    {
+      "name": "ScheherazadeNew-Regular.urdu.tatweel",
+      "font": "tests/fonts/shaping/ScheherazadeNew-Regular.ttf",
+      "text": "urdu",
+      "options": [
+        "--safe-to-insert-tatweel"
+      ]
     }
   ]
 }

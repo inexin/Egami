@@ -45,6 +45,7 @@ public sealed class HarfBuzzShapingTests
         "ScheherazadeNew-Regular.urdu", "NotoSansHebrew-Regular.hebrew", "NotoSansDevanagari-Regular.hindi", "Mukta-Regular.hindi",
         "NotoSansBengali-Regular.bengali", "NotoSansTamil-Regular.tamil", "NotoSansThai-Regular.thai", "NotoSansLao-Regular.lao",
         "NotoSansKhmer-Regular.khmer", "NotoSansMyanmar-Regular.burmese", "NotoSansSinhala-Regular.sinhala",
+        "Amiri-Regular.arabic.tatweel", "NotoSansArabic-Regular.persian.tatweel", "ScheherazadeNew-Regular.urdu.tatweel",
     ];
 
     /// <summary>Corpus runs whose script shapers come in a later 2.8.1 task.</summary>
@@ -58,11 +59,12 @@ public sealed class HarfBuzzShapingTests
     {
         System.Text.Json.JsonElement root = ShapingReferences.Load(Path.Combine("corpus", name + ".json.gz"));
         Typeface face = Typeface.FromFile(Path.Combine(TestFonts.Root, root.GetProperty("font").GetString()!));
+        bool tatweel = root.GetProperty("options").EnumerateArray().Any(o => o.GetString() == "--safe-to-insert-tatweel");
         List<string> failures = [];
         foreach (System.Text.Json.JsonElement line in root.GetProperty("lines").EnumerateArray())
         {
             string text = line.GetProperty("text").GetString()!;
-            string? difference = CorpusLine.Compare(face, text, line.GetProperty("glyphs"));
+            string? difference = CorpusLine.Compare(face, text, line.GetProperty("glyphs"), tatweel);
             if (difference is not null)
             {
                 failures.Add(difference);

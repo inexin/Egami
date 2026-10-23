@@ -36,6 +36,10 @@ public sealed record class ShapingOptions
     /// <summary>Gets how characters group into clusters.</summary>
     public ClusterLevel ClusterLevel { get; init; }
 
+    /// <summary>Gets whether glyphs say where a tatweel can lengthen a word (<see cref="GlyphFlags.SafeToInsertTatweel"/>), as
+    /// HarfBuzz's <c>HB_BUFFER_FLAG_PRODUCE_SAFE_TO_INSERT_TATWEEL</c>.</summary>
+    public bool ProduceSafeToInsertTatweel { get; init; }
+
     /// <summary>Gets styled ranges of the text, each overriding the font, language or features for its range; they must not
     /// overlap.</summary>
     public IReadOnlyList<TextSpan>? Spans { get; init; }

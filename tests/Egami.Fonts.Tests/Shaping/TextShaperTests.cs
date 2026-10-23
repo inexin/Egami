@@ -48,6 +48,28 @@ public sealed class TextShaperTests
     }
 
     [Fact]
+    public void SafeToInsertTatweelIsOnlyProducedWhenAskedFor()
+    {
+        // "كتاب": kaf joins teh and teh joins alef, so a tatweel fits before teh and before alef (hb-shape --safe-to-insert-tatweel
+        // flags clusters 1 and 2 in Noto Sans Arabic); nothing joins alef to beh.
+        Font font = new(TestFonts.Load(Path.Combine("shaping", "NotoSansArabic-Regular.ttf")), 20);
+        const string Text = "\u0643\u062A\u0627\u0628";
+        GlyphBuffer plain = new(), flagged = new();
+        TextShaper.ShapeRun(Text, 0, Text.Length, font, default, plain);
+        TextShaper.ShapeRun(Text, 0, Text.Length, font, new RunProperties { ProduceSafeToInsertTatweel = true }, flagged);
+
+        Assert.DoesNotContain(plain.Flags.ToArray(), f => (f & GlyphFlags.SafeToInsertTatweel) != 0);
+        Assert.Equal(plain.GlyphIds.ToArray(), flagged.GlyphIds.ToArray());
+        int[] safe = [.. Enumerable.Range(0, flagged.Count).Where(g => (flagged.Flags[g] & GlyphFlags.SafeToInsertTatweel) != 0).Select(g => flagged.Clusters[g]).Distinct().Order()];
+        Assert.Equal([1, 2], safe);
+        Assert.All(Enumerable.Range(0, flagged.Count).Where(g => (flagged.Flags[g] & GlyphFlags.SafeToInsertTatweel) != 0),
+            g => Assert.True((flagged.Flags[g] & GlyphFlags.UnsafeToBreak) != 0));
+
+        ShapedText shaped = TextShaper.Shape(Text, font, new ShapingOptions { ProduceSafeToInsertTatweel = true });
+        Assert.Contains(shaped.Lines[0].Runs[0].Glyphs.Flags.ToArray(), f => (f & GlyphFlags.SafeToInsertTatweel) != 0);
+    }
+
+    [Fact]
     public void TopToBottomRunsUseVerticalMetricsAtTheFacesPosition()
     {
         Typeface face = Typeface.FromFile(Path.Combine(TestFonts.Root, "tests", "fonts", "harfbuzz", "in-house", "fonts", "NotoSansCJK-VF.abc.otf"));

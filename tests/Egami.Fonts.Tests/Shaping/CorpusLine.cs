@@ -4,25 +4,27 @@ using Egami.Fonts.Shaping;
 
 namespace Egami.Fonts.Tests.Shaping;
 
-/// <summary>Shapes one corpus line as hb-shape did (no language, cluster level 0, no beginning-of-text flag) and compares.</summary>
+/// <summary>Shapes one corpus line as hb-shape did (no language, cluster level 0, no beginning-of-text flag) and compares; runs
+/// made with <c>--safe-to-insert-tatweel</c> compare that flag too.</summary>
 internal static class CorpusLine
 {
-    public static string? Compare(Typeface face, string text, JsonElement expectedGlyphs)
+    public static string? Compare(Typeface face, string text, JsonElement expectedGlyphs, bool tatweel = false)
     {
         int[] codePoints = [.. text.EnumerateRunes().Select(r => r.Value)];
         int[] clusters = [.. Enumerable.Range(0, codePoints.Length)];
         LayoutBuffer buffer = new();
-        RunShaper.Shape(face, codePoints, clusters, new RunRequest(), buffer);
+        RunShaper.Shape(face, codePoints, clusters, new RunRequest { ProduceSafeToInsertTatweel = tatweel }, buffer);
+        uint flags = tatweel ? 5u : 1u;
         ShapingReferences.Glyph[] expected = ShapingReferences.Glyphs(expectedGlyphs);
         List<string> actual = [];
         for (int i = 0; i < buffer.Len; i++)
         {
             GlyphInfo info = buffer.Info[i];
             GlyphPos pos = buffer.Pos[i];
-            actual.Add($"{info.Codepoint}={info.Cluster}@{pos.XOffset},{pos.YOffset}+{pos.XAdvance},{pos.YAdvance}#{info.Mask & 1}");
+            actual.Add($"{info.Codepoint}={info.Cluster}@{pos.XOffset},{pos.YOffset}+{pos.XAdvance},{pos.YAdvance}#{info.Mask & flags}");
         }
 
-        List<string> wanted = [.. expected.Select(g => $"{g.Id}={g.Cluster}@{g.XOffset},{g.YOffset}+{g.XAdvance},{g.YAdvance}#{g.Flags & 1}")];
+        List<string> wanted = [.. expected.Select(g => $"{g.Id}={g.Cluster}@{g.XOffset},{g.YOffset}+{g.XAdvance},{g.YAdvance}#{g.Flags & flags}")];
         if (actual.SequenceEqual(wanted))
         {
             return null;

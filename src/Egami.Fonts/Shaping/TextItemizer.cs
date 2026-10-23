@@ -172,6 +172,7 @@ internal static class TextItemizer
                 Direction = vertical ? TextDirection.TopToBottom : (run.Level & 1) != 0 ? TextDirection.RightToLeft : TextDirection.LeftToRight,
                 Features = features,
                 ClusterLevel = options.ClusterLevel,
+                ProduceSafeToInsertTatweel = options.ProduceSafeToInsertTatweel,
             };
             GlyphBuffer glyphs = new();
             TextShaper.ShapeRun(text, lineStart + run.Start, run.Length, run.Font, properties, glyphs);
@@ -244,6 +245,7 @@ internal static class TextItemizer
             Direction = TextDirection.LeftToRight,
             Features = options.Features,
             ClusterLevel = options.ClusterLevel,
+            ProduceSafeToInsertTatweel = options.ProduceSafeToInsertTatweel,
         };
         GlyphBuffer glyphs = new();
         TextShaper.ShapeRun(text, lineStart, lineLength, font, properties, glyphs);

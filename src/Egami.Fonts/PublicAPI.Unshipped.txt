@@ -1,1 +1,6 @@
 #nullable enable
+Egami.Fonts.Shaping.GlyphFlags.SafeToInsertTatweel = 4 -> Egami.Fonts.Shaping.GlyphFlags
+Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel.get -> bool
+Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel.init -> void
+Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel.get -> bool
+Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel.init -> void
