@@ -75,9 +75,22 @@ internal sealed class H264Deblock
 
     private void FilterMacroblock(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
     {
+        if (_pic.Narrow)
+        {
+            FilterMacroblock<byte>(mbX, mbY, addr, left, top, p);
+        }
+        else
+        {
+            FilterMacroblock<ushort>(mbX, mbY, addr, left, top, p);
+        }
+    }
+
+    private void FilterMacroblock<T>(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
+        where T : unmanaged
+    {
         if (UseVectors && Avx2.IsSupported)
         {
-            FilterMacroblockWide(mbX, mbY, addr, left, top, p);
+            FilterMacroblockWide<T>(mbX, mbY, addr, left, top, p);
             return;
         }
 
@@ -98,25 +111,26 @@ internal sealed class H264Deblock
                 int qpP = edge == 0 ? _mb.Qp[dir == 0 ? addr - 1 : addr - _widthMbs] : qp;
                 int qpAv = (qpP + qp + 1) >> 1;
                 int at = dir == 0 ? origin + (edge * 4) : origin + (edge * 4 * stride);
-                FilterEdge(_pic.Y, at, stride, dir, 16, qpAv, p, edge, false, 4, _bitDepthY);
+                FilterEdge(_pic.Y<T>(), at, stride, dir, 16, qpAv, p, edge, false, 4, _bitDepthY);
             }
         }
 
         if (_chroma != 0)
         {
-            FilterChromaPlanes(mbX, mbY, addr, left, top, p);
+            FilterChromaPlanes<T>(mbX, mbY, addr, left, top, p);
         }
     }
 
     /// <summary>Filters the chroma edges of the macroblock, plane by plane, with the strengths of its luma edges.</summary>
-    private void FilterChromaPlanes(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
+    private void FilterChromaPlanes<T>(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
+        where T : unmanaged
     {
         int cStride = _pic.ChromaStride;
         int cw = 8, ch = _chroma == 1 ? 8 : 16;
         int cOrigin = _pic.ChromaOrigin + (mbY * ch * cStride) + (mbX * cw);
         for (int c = 0; c < 2; c++)
         {
-            ushort[] plane = c == 0 ? _pic.Cb : _pic.Cr;
+            T[] plane = c == 0 ? _pic.Cb<T>() : _pic.Cr<T>();
             sbyte[] qpc = _mb.QpC[c];
             for (int dir = 0; dir < 2; dir++)
             {
@@ -145,7 +159,8 @@ internal sealed class H264Deblock
     /// <see cref="FilterMacroblock"/> with 256-bit vectors: a luma edge's 16 samples at once, and the Cb and Cr edges of 4:2:0
     /// side by side in one vector, so each filter runs half as often as in eight lanes.
     /// </summary>
-    private void FilterMacroblockWide(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
+    private void FilterMacroblockWide<T>(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
+        where T : unmanaged
     {
         ComputeStrengths(mbX, mbY, addr, left, top);
         ref int bs = ref MemoryMarshal.GetArrayDataReference(_bs);
@@ -153,13 +168,13 @@ internal sealed class H264Deblock
         sbyte[] qps = _mb.Qp;
         int stride = _pic.Stride;
         int origin = _pic.Origin + (mbY * 16 * stride) + (mbX * 16);
-        ushort[] luma = _pic.Y;
+        T[] luma = _pic.Y<T>();
         if (origin - (4 * stride) - 4 < 0 || origin + (19 * stride) + 16 > luma.Length)
         {
             throw H264Errors.Corrupt("A deblocking edge lies outside the picture.");
         }
 
-        ref ushort y0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(luma), origin);
+        ref T y0 = ref H264Samples.At(luma, origin);
         int qp = qps[addr];
         int scaleY = 1 << (_bitDepthY - 8);
         Vector256<short> maxY = Vector256.Create((short)((1 << _bitDepthY) - 1));
@@ -193,7 +208,7 @@ internal sealed class H264Deblock
                 Vector256<short> tc0 = TcLanes(bs16, indexA, scaleY);
                 if (dir == 1)
                 {
-                    ref ushort q = ref Unsafe.Add(ref y0, edge * 4 * stride);
+                    ref T q = ref Unsafe.Add(ref y0, edge * 4 * stride);
                     Vector256<short> p3 = Row256(ref q, -4 * stride), p2 = Row256(ref q, -3 * stride), p1 = Row256(ref q, -2 * stride),
                         p0 = Row256(ref q, -stride), q0 = Row256(ref q, 0), q1 = Row256(ref q, stride), q2 = Row256(ref q, 2 * stride),
                         q3 = Row256(ref q, 3 * stride);
@@ -208,8 +223,8 @@ internal sealed class H264Deblock
                 else
                 {
                     // Sixteen rows of eight samples across the edge, transposed in two halves into eight columns of sixteen.
-                    ref ushort r = ref Unsafe.Add(ref y0, (edge * 4) - 4);
-                    ref ushort s = ref Unsafe.Add(ref r, 8 * stride);
+                    ref T r = ref Unsafe.Add(ref y0, (edge * 4) - 4);
+                    ref T s = ref Unsafe.Add(ref r, 8 * stride);
                     Vector128<short> a0 = Row(ref r, 0), a1 = Row(ref r, stride), a2 = Row(ref r, 2 * stride), a3 = Row(ref r, 3 * stride),
                         a4 = Row(ref r, 4 * stride), a5 = Row(ref r, 5 * stride), a6 = Row(ref r, 6 * stride), a7 = Row(ref r, 7 * stride);
                     Vector128<short> c0 = Row(ref s, 0), c1 = Row(ref s, stride), c2 = Row(ref s, 2 * stride), c3 = Row(ref s, 3 * stride),
@@ -246,28 +261,29 @@ internal sealed class H264Deblock
 
         if (_chroma == 1)
         {
-            FilterChromaWide(mbX, mbY, addr, left, top, p);
+            FilterChromaWide<T>(mbX, mbY, addr, left, top, p);
         }
         else if (_chroma != 0)
         {
-            FilterChromaPlanes(mbX, mbY, addr, left, top, p);
+            FilterChromaPlanes<T>(mbX, mbY, addr, left, top, p);
         }
     }
 
     /// <summary>The 4:2:0 chroma edges of the macroblock, Cb in the low half of each vector and Cr in the high half.</summary>
-    private void FilterChromaWide(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
+    private void FilterChromaWide<T>(int mbX, int mbY, int addr, bool left, bool top, H264FilterParams p)
+        where T : unmanaged
     {
         ref int bs = ref MemoryMarshal.GetArrayDataReference(_bs);
         int stride = _pic.ChromaStride;
         int origin = _pic.ChromaOrigin + (mbY * 8 * stride) + (mbX * 8);
-        ushort[] cbPlane = _pic.Cb, crPlane = _pic.Cr;
+        T[] cbPlane = _pic.Cb<T>(), crPlane = _pic.Cr<T>();
         if (origin - (4 * stride) - 4 < 0 || origin + (11 * stride) + 8 > Math.Min(cbPlane.Length, crPlane.Length))
         {
             throw H264Errors.Corrupt("A deblocking edge lies outside the picture.");
         }
 
-        ref ushort cb0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(cbPlane), origin);
-        ref ushort cr0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(crPlane), origin);
+        ref T cb0 = ref H264Samples.At(cbPlane, origin);
+        ref T cr0 = ref H264Samples.At(crPlane, origin);
         sbyte[] qpCb = _mb.QpC[0], qpCr = _mb.QpC[1];
         int scale = 1 << (_bitDepthC - 8);
         Vector256<short> max = Vector256.Create((short)((1 << _bitDepthC) - 1));
@@ -305,7 +321,7 @@ internal sealed class H264Deblock
                 Vector256<short> beta = Vector256.Create(Vector128.Create((short)betaCb), Vector128.Create((short)betaCr));
                 if (dir == 1)
                 {
-                    ref ushort qb = ref Unsafe.Add(ref cb0, ce * 4 * stride), qr = ref Unsafe.Add(ref cr0, ce * 4 * stride);
+                    ref T qb = ref Unsafe.Add(ref cb0, ce * 4 * stride), qr = ref Unsafe.Add(ref cr0, ce * 4 * stride);
                     Vector256<short> p1 = Vector256.Create(Row(ref qb, -2 * stride), Row(ref qr, -2 * stride));
                     Vector256<short> p0 = Vector256.Create(Row(ref qb, -stride), Row(ref qr, -stride));
                     Vector256<short> q0 = Vector256.Create(Row(ref qb, 0), Row(ref qr, 0));
@@ -318,7 +334,7 @@ internal sealed class H264Deblock
                 }
                 else
                 {
-                    ref ushort rb = ref Unsafe.Add(ref cb0, (ce * 4) - 4), rr = ref Unsafe.Add(ref cr0, (ce * 4) - 4);
+                    ref T rb = ref Unsafe.Add(ref cb0, (ce * 4) - 4), rr = ref Unsafe.Add(ref cr0, (ce * 4) - 4);
                     Vector128<short> a0 = Row(ref rb, 0), a1 = Row(ref rb, stride), a2 = Row(ref rb, 2 * stride), a3 = Row(ref rb, 3 * stride),
                         a4 = Row(ref rb, 4 * stride), a5 = Row(ref rb, 5 * stride), a6 = Row(ref rb, 6 * stride), a7 = Row(ref rb, 7 * stride);
                     Vector128<short> c0 = Row(ref rr, 0), c1 = Row(ref rr, stride), c2 = Row(ref rr, 2 * stride), c3 = Row(ref rr, 3 * stride),
@@ -358,14 +374,17 @@ internal sealed class H264Deblock
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<short> Row256(ref ushort at, int offset) => Vector256.LoadUnsafe(ref Unsafe.Add(ref at, offset)).AsInt16();
+    private static Vector256<short> Row256<T>(ref T at, int offset)
+        where T : unmanaged => H264Samples.Load16(ref at, offset);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Store256(Vector256<short> v, ref ushort at, int offset) => v.AsUInt16().StoreUnsafe(ref Unsafe.Add(ref at, offset));
+    private static void Store256<T>(Vector256<short> v, ref T at, int offset)
+        where T : unmanaged => H264Samples.Store16(ref at, offset, v);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void StoreRows(ref ushort r, int stride, Vector128<short> a0, Vector128<short> a1, Vector128<short> a2, Vector128<short> a3,
+    private static void StoreRows<T>(ref T r, int stride, Vector128<short> a0, Vector128<short> a1, Vector128<short> a2, Vector128<short> a3,
         Vector128<short> a4, Vector128<short> a5, Vector128<short> a6, Vector128<short> a7)
+        where T : unmanaged
     {
         Store(a0, ref r, 0);
         Store(a1, ref r, stride);
@@ -453,7 +472,8 @@ internal sealed class H264Deblock
     /// Filters one edge of <paramref name="length"/> samples. The strength of sample k is bS[dir][edge][k / segment]: a luma edge has
     /// four segments of 4 samples; a chroma edge takes its luma edge's strengths over fewer samples.
     /// </summary>
-    private void FilterEdge(ushort[] plane, int at, int stride, int dir, int length, int qpAv, H264FilterParams p, int edge, bool chroma, int segment, int bitDepth)
+    private void FilterEdge<T>(T[] plane, int at, int stride, int dir, int length, int qpAv, H264FilterParams p, int edge, bool chroma, int segment, int bitDepth)
+        where T : unmanaged
     {
         int first = (dir * 16) + (edge * 4);
         if ((_bs[first] | _bs[first + 1] | _bs[first + 2] | _bs[first + 3]) == 0)
@@ -491,8 +511,8 @@ internal sealed class H264Deblock
             }
 
             int q0At = at + (k * along);
-            int p0 = plane[q0At - step], q0 = plane[q0At];
-            int p1 = plane[q0At - (2 * step)], q1 = plane[q0At + step];
+            int p0 = H264Samples.Get(plane, q0At - step), q0 = H264Samples.Get(plane, q0At);
+            int p1 = H264Samples.Get(plane, q0At - (2 * step)), q1 = H264Samples.Get(plane, q0At + step);
             if (Math.Abs(p0 - q0) >= alpha || Math.Abs(p1 - p0) >= beta || Math.Abs(q1 - q0) >= beta)
             {
                 continue;
@@ -504,35 +524,35 @@ internal sealed class H264Deblock
                 {
                     int tc = (H264Tables.Tc0[(indexA * 3) + bS - 1] * scale) + 1;
                     int delta = Math.Clamp((((q0 - p0) << 2) + (p1 - q1) + 4) >> 3, -tc, tc);
-                    plane[q0At - step] = (ushort)Math.Clamp(p0 + delta, 0, max);
-                    plane[q0At] = (ushort)Math.Clamp(q0 - delta, 0, max);
+                    H264Samples.Set(plane, q0At - step, Math.Clamp(p0 + delta, 0, max));
+                    H264Samples.Set(plane, q0At, Math.Clamp(q0 - delta, 0, max));
                 }
                 else
                 {
-                    plane[q0At - step] = (ushort)(((2 * p1) + p0 + q1 + 2) >> 2);
-                    plane[q0At] = (ushort)(((2 * q1) + q0 + p1 + 2) >> 2);
+                    H264Samples.Set(plane, q0At - step, (((2 * p1) + p0 + q1 + 2) >> 2));
+                    H264Samples.Set(plane, q0At, (((2 * q1) + q0 + p1 + 2) >> 2));
                 }
 
                 continue;
             }
 
-            int p2 = plane[q0At - (3 * step)], q2 = plane[q0At + (2 * step)];
+            int p2 = H264Samples.Get(plane, q0At - (3 * step)), q2 = H264Samples.Get(plane, q0At + (2 * step));
             int ap = Math.Abs(p2 - p0), aq = Math.Abs(q2 - q0);
             if (bS < 4)
             {
                 int tc0 = H264Tables.Tc0[(indexA * 3) + bS - 1] * scale;
                 int tc = tc0 + (ap < beta ? 1 : 0) + (aq < beta ? 1 : 0);
                 int delta = Math.Clamp((((q0 - p0) << 2) + (p1 - q1) + 4) >> 3, -tc, tc);
-                plane[q0At - step] = (ushort)Math.Clamp(p0 + delta, 0, max);
-                plane[q0At] = (ushort)Math.Clamp(q0 - delta, 0, max);
+                H264Samples.Set(plane, q0At - step, Math.Clamp(p0 + delta, 0, max));
+                H264Samples.Set(plane, q0At, Math.Clamp(q0 - delta, 0, max));
                 if (ap < beta)
                 {
-                    plane[q0At - (2 * step)] = (ushort)(p1 + Math.Clamp((p2 + ((p0 + q0 + 1) >> 1) - (p1 << 1)) >> 1, -tc0, tc0));
+                    H264Samples.Set(plane, q0At - (2 * step), (p1 + Math.Clamp((p2 + ((p0 + q0 + 1) >> 1) - (p1 << 1)) >> 1, -tc0, tc0)));
                 }
 
                 if (aq < beta)
                 {
-                    plane[q0At + step] = (ushort)(q1 + Math.Clamp((q2 + ((p0 + q0 + 1) >> 1) - (q1 << 1)) >> 1, -tc0, tc0));
+                    H264Samples.Set(plane, q0At + step, (q1 + Math.Clamp((q2 + ((p0 + q0 + 1) >> 1) - (q1 << 1)) >> 1, -tc0, tc0)));
                 }
 
                 continue;
@@ -541,32 +561,33 @@ internal sealed class H264Deblock
             bool strong = Math.Abs(p0 - q0) < ((alpha >> 2) + 2);
             if (ap < beta && strong)
             {
-                int p3 = plane[q0At - (4 * step)];
-                plane[q0At - step] = (ushort)((p2 + (2 * p1) + (2 * p0) + (2 * q0) + q1 + 4) >> 3);
-                plane[q0At - (2 * step)] = (ushort)((p2 + p1 + p0 + q0 + 2) >> 2);
-                plane[q0At - (3 * step)] = (ushort)(((2 * p3) + (3 * p2) + p1 + p0 + q0 + 4) >> 3);
+                int p3 = H264Samples.Get(plane, q0At - (4 * step));
+                H264Samples.Set(plane, q0At - step, ((p2 + (2 * p1) + (2 * p0) + (2 * q0) + q1 + 4) >> 3));
+                H264Samples.Set(plane, q0At - (2 * step), ((p2 + p1 + p0 + q0 + 2) >> 2));
+                H264Samples.Set(plane, q0At - (3 * step), (((2 * p3) + (3 * p2) + p1 + p0 + q0 + 4) >> 3));
             }
             else
             {
-                plane[q0At - step] = (ushort)(((2 * p1) + p0 + q1 + 2) >> 2);
+                H264Samples.Set(plane, q0At - step, (((2 * p1) + p0 + q1 + 2) >> 2));
             }
 
             if (aq < beta && strong)
             {
-                int q3 = plane[q0At + (3 * step)];
-                plane[q0At] = (ushort)((p1 + (2 * p0) + (2 * q0) + (2 * q1) + q2 + 4) >> 3);
-                plane[q0At + step] = (ushort)((p0 + q0 + q1 + q2 + 2) >> 2);
-                plane[q0At + (2 * step)] = (ushort)(((2 * q3) + (3 * q2) + q1 + q0 + p0 + 4) >> 3);
+                int q3 = H264Samples.Get(plane, q0At + (3 * step));
+                H264Samples.Set(plane, q0At, ((p1 + (2 * p0) + (2 * q0) + (2 * q1) + q2 + 4) >> 3));
+                H264Samples.Set(plane, q0At + step, ((p0 + q0 + q1 + q2 + 2) >> 2));
+                H264Samples.Set(plane, q0At + (2 * step), (((2 * q3) + (3 * q2) + q1 + q0 + p0 + 4) >> 3));
             }
             else
             {
-                plane[q0At] = (ushort)(((2 * q1) + q0 + p1 + 2) >> 2);
+                H264Samples.Set(plane, q0At, (((2 * q1) + q0 + p1 + 2) >> 2));
             }
         }
     }
 
     /// <summary>Filters one edge as <see cref="FilterEdge"/> does, eight samples along it at a time.</summary>
-    private void FilterEdgeVector(ushort[] plane, int at, int stride, int dir, int length, int qpAv, H264FilterParams p, int edge, bool chroma, int segment, int bitDepth)
+    private void FilterEdgeVector<T>(T[] plane, int at, int stride, int dir, int length, int qpAv, H264FilterParams p, int edge, bool chroma, int segment, int bitDepth)
+        where T : unmanaged
     {
         int indexA = Math.Clamp(qpAv + p.OffsetA, 0, 51);
         int indexB = Math.Clamp(qpAv + p.OffsetB, 0, 51);
@@ -584,7 +605,7 @@ internal sealed class H264Deblock
             throw H264Errors.Corrupt("A deblocking edge lies outside the picture.");
         }
 
-        ref ushort origin = ref MemoryMarshal.GetArrayDataReference(plane);
+        ref T origin = ref MemoryMarshal.GetArrayDataReference(plane);
         int first = (dir * 16) + (edge * 4);
         int tc1 = H264Tables.Tc0[indexA * 3] * scale, tc2 = H264Tables.Tc0[(indexA * 3) + 1] * scale, tc3 = H264Tables.Tc0[(indexA * 3) + 2] * scale;
         for (int k0 = 0; k0 < length; k0 += 8)
@@ -618,7 +639,7 @@ internal sealed class H264Deblock
             Vector128<short> p3, p2, p1, p0, q0, q1, q2, q3;
             if (dir == 1)
             {
-                ref ushort q = ref Unsafe.Add(ref origin, at + k0);
+                ref T q = ref Unsafe.Add(ref origin, at + k0);
                 p3 = Row(ref q, -4 * stride);
                 p2 = Row(ref q, -3 * stride);
                 p1 = Row(ref q, -2 * stride);
@@ -630,7 +651,7 @@ internal sealed class H264Deblock
             }
             else
             {
-                ref ushort r = ref Unsafe.Add(ref origin, at + (k0 * stride) - 4);
+                ref T r = ref Unsafe.Add(ref origin, at + (k0 * stride) - 4);
                 p3 = Row(ref r, 0);
                 p2 = Row(ref r, stride);
                 p1 = Row(ref r, 2 * stride);
@@ -653,7 +674,7 @@ internal sealed class H264Deblock
 
             if (dir == 1)
             {
-                ref ushort q = ref Unsafe.Add(ref origin, at + k0);
+                ref T q = ref Unsafe.Add(ref origin, at + k0);
                 if (!chroma)
                 {
                     Store(p2, ref q, -3 * stride);
@@ -668,7 +689,7 @@ internal sealed class H264Deblock
             else
             {
                 Transpose(ref p3, ref p2, ref p1, ref p0, ref q0, ref q1, ref q2, ref q3);
-                ref ushort r = ref Unsafe.Add(ref origin, at + (k0 * stride) - 4);
+                ref T r = ref Unsafe.Add(ref origin, at + (k0 * stride) - 4);
                 Store(p3, ref r, 0);
                 Store(p2, ref r, stride);
                 Store(p1, ref r, 2 * stride);
@@ -682,10 +703,12 @@ internal sealed class H264Deblock
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<short> Row(ref ushort at, int offset) => Vector128.LoadUnsafe(ref Unsafe.Add(ref at, offset)).AsInt16();
+    private static Vector128<short> Row<T>(ref T at, int offset)
+        where T : unmanaged => H264Samples.Load8(ref at, offset);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Store(Vector128<short> v, ref ushort at, int offset) => v.AsUInt16().StoreUnsafe(ref Unsafe.Add(ref at, offset));
+    private static void Store<T>(Vector128<short> v, ref T at, int offset)
+        where T : unmanaged => H264Samples.Store8(ref at, offset, v);
 
     /// <summary>The luma filter of 8.7.2.3 and 8.7.2.4 for eight lanes: bS 1 to 3 by tc, bS 4 strong, others unchanged.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -20,7 +20,20 @@ internal sealed partial class H264SliceDecoder
             return;
         }
 
-        ushort[] plane = _pic.Y;
+        if (_pic.Narrow)
+        {
+            ReconstructIntra<byte>();
+        }
+        else
+        {
+            ReconstructIntra<ushort>();
+        }
+    }
+
+    private void ReconstructIntra<TSample>()
+        where TSample : unmanaged
+    {
+        TSample[] plane = _pic.Y<TSample>();
         int stride = _pic.Stride;
         int origin = _pic.Origin + (_mbY * 16 * stride) + (_mbX * 16);
         int max = (1 << _bitDepthY) - 1;
@@ -66,15 +79,28 @@ internal sealed partial class H264SliceDecoder
 
         if (_chromaArrayType is 1 or 2)
         {
-            PredictIntraChroma(_pic.Cb);
-            PredictIntraChroma(_pic.Cr);
-            AddChromaResidual();
+            PredictIntraChroma(_pic.Cb<TSample>());
+            PredictIntraChroma(_pic.Cr<TSample>());
+            AddChromaResidual<TSample>();
         }
     }
 
     private void ReconstructInterResidual()
     {
-        ushort[] plane = _pic.Y;
+        if (_pic.Narrow)
+        {
+            ReconstructInterResidual<byte>();
+        }
+        else
+        {
+            ReconstructInterResidual<ushort>();
+        }
+    }
+
+    private void ReconstructInterResidual<TSample>()
+        where TSample : unmanaged
+    {
+        TSample[] plane = _pic.Y<TSample>();
         int stride = _pic.Stride;
         int origin = _pic.Origin + (_mbY * 16 * stride) + (_mbX * 16);
         int max = (1 << _bitDepthY) - 1;
@@ -105,11 +131,12 @@ internal sealed partial class H264SliceDecoder
 
         if (_chromaArrayType is 1 or 2)
         {
-            AddChromaResidual();
+            AddChromaResidual<TSample>();
         }
     }
 
-    private void AddChromaResidual()
+    private void AddChromaResidual<TSample>()
+        where TSample : unmanaged
     {
         if (_chromaAcCoded == 0)
         {
@@ -123,7 +150,7 @@ internal sealed partial class H264SliceDecoder
         int blocks = _chromaArrayType == 1 ? 4 : 8;
         for (int c = 0; c < 2; c++)
         {
-            ushort[] plane = c == 0 ? _pic.Cb : _pic.Cr;
+            TSample[] plane = c == 0 ? _pic.Cb<TSample>() : _pic.Cr<TSample>();
             for (int blk = 0; blk < blocks; blk++)
             {
                 if ((_chromaAcCoded & (1 << ((c * 8) + blk))) != 0)
@@ -135,7 +162,8 @@ internal sealed partial class H264SliceDecoder
     }
 
     /// <summary>Intra4x4 (8.3.1.2) or Intra8x8 (8.3.2.2) prediction of the n by n block at 4x4 block (bx, by).</summary>
-    private void PredictIntraNxN(ushort[] plane, int at, int stride, int bx, int by, int n, int mode)
+    private void PredictIntraNxN<TSample>(TSample[] plane, int at, int stride, int bx, int by, int n, int mode)
+        where TSample : unmanaged
     {
         int bx4 = bx, by4 = by;
         bool left = bx4 > 0 || IntraAvailable(LeftMb);
@@ -160,12 +188,12 @@ internal sealed partial class H264SliceDecoder
         {
             for (int x = 0; x < n; x++)
             {
-                _top[x] = plane[at - stride + x];
+                _top[x] = H264Samples.Get(plane, at - stride + x);
             }
 
             for (int x = n; x < 2 * n; x++)
             {
-                _top[x] = topRight ? plane[at - stride + x] : _top[n - 1];
+                _top[x] = topRight ? H264Samples.Get(plane, at - stride + x) : _top[n - 1];
             }
         }
 
@@ -173,11 +201,11 @@ internal sealed partial class H264SliceDecoder
         {
             for (int y = 0; y < n; y++)
             {
-                _left[y] = plane[at + (y * stride) - 1];
+                _left[y] = H264Samples.Get(plane, at + (y * stride) - 1);
             }
         }
 
-        _topLeft = topLeft ? plane[at - stride - 1] : 0;
+        _topLeft = topLeft ? H264Samples.Get(plane, at - stride - 1) : 0;
         if (n == 8)
         {
             FilterReferences8x8(left, top, topLeft);
@@ -235,7 +263,8 @@ internal sealed partial class H264SliceDecoder
     private int L(int y) => y < 0 ? _topLeft : _left[y];
 
     /// <summary>The nine Intra4x4 and Intra8x8 modes, which share their formulas for block size n (8.3.1.2.x, 8.3.2.2.x).</summary>
-    private void Predict(ushort[] plane, int at, int stride, int n, int mode, bool left, bool top, int dc)
+    private void Predict<TSample>(TSample[] plane, int at, int stride, int n, int mode, bool left, bool top, int dc)
+        where TSample : unmanaged
     {
         for (int y = 0; y < n; y++)
         {
@@ -253,7 +282,7 @@ internal sealed partial class H264SliceDecoder
                         break;
                     case 2:
                         v = PredictDc(n, left, top, dc);
-                        plane.AsSpan(row, n).Fill((ushort)v);
+                        plane.AsSpan(row, n).Fill(H264Samples.Of<TSample>(v));
                         goto NextRow;
                     case 3:
                         v = x == n - 1 && y == n - 1 ? (T((2 * n) - 2) + (3 * T((2 * n) - 1)) + 2) >> 2
@@ -300,7 +329,7 @@ internal sealed partial class H264SliceDecoder
                         }
                 }
 
-                plane[row + x] = (ushort)v;
+                H264Samples.Set(plane, row + x, v);
             }
 
         NextRow:;
@@ -330,17 +359,18 @@ internal sealed partial class H264SliceDecoder
         return left && top ? (sum + n) >> (shift + 1) : left || top ? (sum + (n >> 1)) >> shift : dc;
     }
 
-    private void PredictIntra16x16(ushort[] plane, int at, int stride)
+    private void PredictIntra16x16<TSample>(TSample[] plane, int at, int stride)
+        where TSample : unmanaged
     {
         bool left = IntraAvailable(LeftMb), top = IntraAvailable(TopMb);
         bool topLeft = IntraAvailable(_mbX > 0 && _mbY > 0 ? _mbAddr - _widthMbs - 1 : -1);
         for (int i = 0; i < 16; i++)
         {
-            _top[i] = top ? plane[at - stride + i] : 0;
-            _left[i] = left ? plane[at + (i * stride) - 1] : 0;
+            _top[i] = top ? H264Samples.Get(plane, at - stride + i) : 0;
+            _left[i] = left ? H264Samples.Get(plane, at + (i * stride) - 1) : 0;
         }
 
-        _topLeft = topLeft ? plane[at - stride - 1] : 0;
+        _topLeft = topLeft ? H264Samples.Get(plane, at - stride - 1) : 0;
         int max = (1 << _bitDepthY) - 1;
         switch (_i16Mode)
         {
@@ -349,7 +379,7 @@ internal sealed partial class H264SliceDecoder
                 {
                     for (int x = 0; x < 16; x++)
                     {
-                        plane[at + (y * stride) + x] = (ushort)_top[x];
+                        H264Samples.Set(plane, at + (y * stride) + x, _top[x]);
                     }
                 }
 
@@ -357,7 +387,7 @@ internal sealed partial class H264SliceDecoder
             case 1:
                 for (int y = 0; y < 16; y++)
                 {
-                    plane.AsSpan(at + (y * stride), 16).Fill((ushort)_left[y]);
+                    plane.AsSpan(at + (y * stride), 16).Fill(H264Samples.Of<TSample>(_left[y]));
                 }
 
                 break;
@@ -366,7 +396,7 @@ internal sealed partial class H264SliceDecoder
                     int v = PredictDc(16, left, top, 1 << (_bitDepthY - 1));
                     for (int y = 0; y < 16; y++)
                     {
-                        plane.AsSpan(at + (y * stride), 16).Fill((ushort)v);
+                        plane.AsSpan(at + (y * stride), 16).Fill(H264Samples.Of<TSample>(v));
                     }
 
                     break;
@@ -387,7 +417,7 @@ internal sealed partial class H264SliceDecoder
                     {
                         for (int x = 0; x < 16; x++)
                         {
-                            plane[at + (y * stride) + x] = (ushort)Math.Clamp((a + (b * (x - 7)) + (c * (y - 7)) + 16) >> 5, 0, max);
+                            H264Samples.Set(plane, at + (y * stride) + x, Math.Clamp((a + (b * (x - 7)) + (c * (y - 7)) + 16) >> 5, 0, max));
                         }
                     }
 
@@ -397,7 +427,8 @@ internal sealed partial class H264SliceDecoder
     }
 
     /// <summary>Chroma intra prediction (8.3.4) of one plane of the macroblock.</summary>
-    private void PredictIntraChroma(ushort[] plane)
+    private void PredictIntraChroma<TSample>(TSample[] plane)
+        where TSample : unmanaged
     {
         int stride = _pic.ChromaStride;
         int w = _sps.MbWidthC, h = _sps.MbHeightC;
@@ -406,15 +437,15 @@ internal sealed partial class H264SliceDecoder
         bool topLeft = IntraAvailable(_mbX > 0 && _mbY > 0 ? _mbAddr - _widthMbs - 1 : -1);
         for (int i = 0; i < w; i++)
         {
-            _top[i] = top ? plane[at - stride + i] : 0;
+            _top[i] = top ? H264Samples.Get(plane, at - stride + i) : 0;
         }
 
         for (int i = 0; i < h; i++)
         {
-            _left[i] = left ? plane[at + (i * stride) - 1] : 0;
+            _left[i] = left ? H264Samples.Get(plane, at + (i * stride) - 1) : 0;
         }
 
-        _topLeft = topLeft ? plane[at - stride - 1] : 0;
+        _topLeft = topLeft ? H264Samples.Get(plane, at - stride - 1) : 0;
         int max = (1 << _bitDepthC) - 1;
         int dcDefault = 1 << (_bitDepthC - 1);
         switch (_mb.ChromaPredMode[_mbAddr])
@@ -447,7 +478,7 @@ internal sealed partial class H264SliceDecoder
 
                         for (int y = 0; y < 4; y++)
                         {
-                            plane.AsSpan(at + ((yo + y) * stride) + xo, 4).Fill((ushort)v);
+                            plane.AsSpan(at + ((yo + y) * stride) + xo, 4).Fill(H264Samples.Of<TSample>(v));
                         }
                     }
                 }
@@ -456,7 +487,7 @@ internal sealed partial class H264SliceDecoder
             case 1:
                 for (int y = 0; y < h; y++)
                 {
-                    plane.AsSpan(at + (y * stride), w).Fill((ushort)_left[y]);
+                    plane.AsSpan(at + (y * stride), w).Fill(H264Samples.Of<TSample>(_left[y]));
                 }
 
                 break;
@@ -465,7 +496,7 @@ internal sealed partial class H264SliceDecoder
                 {
                     for (int x = 0; x < w; x++)
                     {
-                        plane[at + (y * stride) + x] = (ushort)_top[x];
+                        H264Samples.Set(plane, at + (y * stride) + x, _top[x]);
                     }
                 }
 
@@ -491,7 +522,7 @@ internal sealed partial class H264SliceDecoder
                     {
                         for (int x = 0; x < w; x++)
                         {
-                            plane[at + (y * stride) + x] = (ushort)Math.Clamp((a + (b * (x - 3 - xCF)) + (c * (y - 3 - yCF)) + 16) >> 5, 0, max);
+                            H264Samples.Set(plane, at + (y * stride) + x, Math.Clamp((a + (b * (x - 3 - xCF)) + (c * (y - 3 - yCF)) + 16) >> 5, 0, max));
                         }
                     }
 

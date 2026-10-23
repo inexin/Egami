@@ -4,7 +4,8 @@ namespace Egami.Video.Codecs.H264;
 internal static class H264Transform
 {
     /// <summary>Transforms scaled coefficients d (raster order, row by row) and adds (r + 32) &gt;&gt; 6 to the 4x4 block at <paramref name="at"/>.</summary>
-    internal static void Add4x4(Span<int> d, ushort[] plane, int at, int stride, int max)
+    internal static void Add4x4<T>(Span<int> d, T[] plane, int at, int stride, int max)
+        where T : unmanaged
     {
         bool dcOnly = true;
         for (int i = 1; i < 16 && dcOnly; i++)
@@ -20,7 +21,7 @@ internal static class H264Transform
                 int row = at + (y * stride);
                 for (int x = 0; x < 4; x++)
                 {
-                    plane[row + x] = (ushort)Math.Clamp(plane[row + x] + dc, 0, max);
+                    H264Samples.Set(plane, row + x, Math.Clamp(H264Samples.Get(plane, row + x) + dc, 0, max));
                 }
             }
 
@@ -50,7 +51,8 @@ internal static class H264Transform
     }
 
     /// <summary>Transforms an 8x8 block of scaled coefficients (raster order) and adds it to the plane.</summary>
-    internal static void Add8x8(Span<int> d, ushort[] plane, int at, int stride, int max)
+    internal static void Add8x8<T>(Span<int> d, T[] plane, int at, int stride, int max)
+        where T : unmanaged
     {
         Span<int> m = stackalloc int[64];
         for (int i = 0; i < 8; i++)
@@ -103,5 +105,6 @@ internal static class H264Transform
         o[7] = f0 - f7;
     }
 
-    private static void Add(ushort[] plane, int at, int max, int h) => plane[at] = (ushort)Math.Clamp(plane[at] + ((h + 32) >> 6), 0, max);
+    private static void Add<T>(T[] plane, int at, int max, int h)
+        where T : unmanaged => H264Samples.Set(plane, at, Math.Clamp(H264Samples.Get(plane, at) + ((h + 32) >> 6), 0, max));
 }

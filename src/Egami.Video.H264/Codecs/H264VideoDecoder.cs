@@ -201,54 +201,25 @@ internal sealed class H264VideoDecoder : IVideoDecoder
         return new YuvVideoFrame(raster, time, duration, color) { Hdr = _hdr, Hdr10Plus = picture.Sei?.Hdr10Plus };
     }
 
-    private static void Copy(H264Picture picture, H264Sps sps, YuvRaster<byte> target)
+    private static void Copy(H264Picture picture, H264Sps sps, YuvRaster<byte> target) => Copy<byte>(picture, sps, target.Y, target.U, target.V);
+
+    private static void Copy(H264Picture picture, H264Sps sps, YuvRaster<ushort> target) => Copy<ushort>(picture, sps, target.Y, target.U, target.V);
+
+    private static void Copy<T>(H264Picture picture, H264Sps sps, YuvPlane<T> y, YuvPlane<T>? u, YuvPlane<T>? v)
+        where T : unmanaged
     {
         int left = sps.CropLeft * sps.CropUnitX, top = sps.CropTop * sps.CropUnitY;
-        CopyPlane(picture.Y, picture.Origin + (top * picture.Stride) + left, picture.Stride, target.Y);
-        if (target.U is { } u)
+        CopyPlane(picture.Y<T>(), picture.Origin + (top * picture.Stride) + left, picture.Stride, y);
+        if (u is not null)
         {
             int at = picture.ChromaOrigin + (top / sps.SubHeightC * picture.ChromaStride) + (left / sps.SubWidthC);
-            CopyPlane(picture.Cb, at, picture.ChromaStride, u);
-            CopyPlane(picture.Cr, at, picture.ChromaStride, target.V!);
+            CopyPlane(picture.Cb<T>(), at, picture.ChromaStride, u);
+            CopyPlane(picture.Cr<T>(), at, picture.ChromaStride, v!);
         }
     }
 
-    private static void Copy(H264Picture picture, H264Sps sps, YuvRaster<ushort> target)
-    {
-        int left = sps.CropLeft * sps.CropUnitX, top = sps.CropTop * sps.CropUnitY;
-        CopyPlane(picture.Y, picture.Origin + (top * picture.Stride) + left, picture.Stride, target.Y);
-        if (target.U is { } u)
-        {
-            int at = picture.ChromaOrigin + (top / sps.SubHeightC * picture.ChromaStride) + (left / sps.SubWidthC);
-            CopyPlane(picture.Cb, at, picture.ChromaStride, u);
-            CopyPlane(picture.Cr, at, picture.ChromaStride, target.V!);
-        }
-    }
-
-    private static void CopyPlane(ushort[] source, int at, int stride, YuvPlane<byte> target)
-    {
-        for (int y = 0; y < target.Height; y++)
-        {
-            ReadOnlySpan<ushort> row = source.AsSpan(at + (y * stride), target.Width);
-            Span<byte> output = target.Row(y);
-            int x = 0;
-            if (Vector128.IsHardwareAccelerated)
-            {
-                // Samples are at most 255 here, so narrowing keeps each one.
-                for (; x + 16 <= row.Length; x += 16)
-                {
-                    Vector128.Narrow(Vector128.Create(row.Slice(x, 8)), Vector128.Create(row.Slice(x + 8, 8))).CopyTo(output.Slice(x, 16));
-                }
-            }
-
-            for (; x < row.Length; x++)
-            {
-                output[x] = (byte)row[x];
-            }
-        }
-    }
-
-    private static void CopyPlane(ushort[] source, int at, int stride, YuvPlane<ushort> target)
+    private static void CopyPlane<T>(T[] source, int at, int stride, YuvPlane<T> target)
+        where T : unmanaged
     {
         for (int y = 0; y < target.Height; y++)
         {

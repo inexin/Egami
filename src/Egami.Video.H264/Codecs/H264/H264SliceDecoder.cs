@@ -588,11 +588,25 @@ internal sealed partial class H264SliceDecoder
 
     private void ReadPcmSamples(Func<int, int> read, int luma)
     {
+        if (_pic.Narrow)
+        {
+            ReadPcmSamples<byte>(read, luma);
+        }
+        else
+        {
+            ReadPcmSamples<ushort>(read, luma);
+        }
+    }
+
+    private void ReadPcmSamples<T>(Func<int, int> read, int luma)
+        where T : unmanaged
+    {
+        T[] y0 = _pic.Y<T>();
         for (int y = 0; y < 16; y++)
         {
             for (int x = 0; x < 16; x++)
             {
-                _pic.Y[luma + (y * _pic.Stride) + x] = (ushort)read(_bitDepthY);
+                H264Samples.Set(y0, luma + (y * _pic.Stride) + x, read(_bitDepthY));
             }
         }
 
@@ -603,13 +617,13 @@ internal sealed partial class H264SliceDecoder
 
         int w = _sps.MbWidthC, hgt = _sps.MbHeightC;
         int chroma = _pic.ChromaOrigin + (_mbY * hgt * _pic.ChromaStride) + (_mbX * w);
-        foreach (ushort[] plane in new[] { _pic.Cb, _pic.Cr })
+        foreach (T[] plane in new[] { _pic.Cb<T>(), _pic.Cr<T>() })
         {
             for (int y = 0; y < hgt; y++)
             {
                 for (int x = 0; x < w; x++)
                 {
-                    plane[chroma + (y * _pic.ChromaStride) + x] = (ushort)read(_bitDepthC);
+                    H264Samples.Set(plane, chroma + (y * _pic.ChromaStride) + x, read(_bitDepthC));
                 }
             }
         }

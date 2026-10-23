@@ -362,7 +362,7 @@ internal sealed class H264Decoder
             return candidate;
         }
 
-        H264Picture pic = new(sps.WidthInMbs, sps.HeightInMbs, sps.ChromaFormatIdc);
+        H264Picture pic = new(sps.WidthInMbs, sps.HeightInMbs, sps.ChromaFormatIdc, sps.BitDepthLuma == 8 && sps.BitDepthChroma == 8);
         pic.Reset();
         _all.Add(pic);
         return pic;
@@ -471,11 +471,12 @@ internal sealed class H264Decoder
             gap.Sps = sps;
             gap.FrameNum = frameNum;
             Array.Fill(gap.MbIntra, true);
-            if (_lastDecoded is not null)
+            if (_lastDecoded is not null && _lastDecoded.Narrow == gap.Narrow && _lastDecoded.YPlane.Length == gap.YPlane.Length
+                && _lastDecoded.CbPlane.Length == gap.CbPlane.Length)
             {
-                Array.Copy(_lastDecoded.Y, gap.Y, gap.Y.Length);
-                Array.Copy(_lastDecoded.Cb, gap.Cb, gap.Cb.Length);
-                Array.Copy(_lastDecoded.Cr, gap.Cr, gap.Cr.Length);
+                Array.Copy(_lastDecoded.YPlane, gap.YPlane, gap.YPlane.Length);
+                Array.Copy(_lastDecoded.CbPlane, gap.CbPlane, gap.CbPlane.Length);
+                Array.Copy(_lastDecoded.CrPlane, gap.CrPlane, gap.CrPlane.Length);
             }
             else
             {
@@ -498,9 +499,17 @@ internal sealed class H264Decoder
 
     private static void FillGray(H264Picture pic, H264Sps sps)
     {
-        Array.Fill(pic.Y, (ushort)(1 << (sps.BitDepthLuma - 1)));
-        Array.Fill(pic.Cb, (ushort)(1 << (sps.BitDepthChroma - 1)));
-        Array.Fill(pic.Cr, (ushort)(1 << (sps.BitDepthChroma - 1)));
+        if (pic.Narrow)
+        {
+            Array.Fill(pic.Y<byte>(), (byte)128);
+            Array.Fill(pic.Cb<byte>(), (byte)128);
+            Array.Fill(pic.Cr<byte>(), (byte)128);
+            return;
+        }
+
+        Array.Fill(pic.Y<ushort>(), (ushort)(1 << (sps.BitDepthLuma - 1)));
+        Array.Fill(pic.Cb<ushort>(), (ushort)(1 << (sps.BitDepthChroma - 1)));
+        Array.Fill(pic.Cr<ushort>(), (ushort)(1 << (sps.BitDepthChroma - 1)));
     }
 
     private void DecodeSliceData(H264SliceHeader h, byte[] rbsp)
@@ -1247,14 +1256,15 @@ internal sealed class H264Decoder
             }
 
             int mbX = addr % sps.WidthInMbs, mbY = addr / sps.WidthInMbs;
-            CopyBlock(source?.Y, pic.Y, pic.Origin + (mbY * 16 * pic.Stride) + (mbX * 16), pic.Stride, 16, 16, (ushort)(1 << (sps.BitDepthLuma - 1)));
-            if (sps.ChromaFormatIdc != 0)
+            H264Picture? from = source is not null && source.Narrow == pic.Narrow && source.YPlane.Length == pic.YPlane.Length
+                && source.CbPlane.Length == pic.CbPlane.Length ? source : null;
+            if (pic.Narrow)
             {
-                int cw = sps.MbWidthC, ch = sps.MbHeightC;
-                int at = pic.ChromaOrigin + (mbY * ch * pic.ChromaStride) + (mbX * cw);
-                ushort gray = (ushort)(1 << (sps.BitDepthChroma - 1));
-                CopyBlock(source?.Cb, pic.Cb, at, pic.ChromaStride, cw, ch, gray);
-                CopyBlock(source?.Cr, pic.Cr, at, pic.ChromaStride, cw, ch, gray);
+                ConcealBlock<byte>(from, pic, sps, mbX, mbY);
+            }
+            else
+            {
+                ConcealBlock<ushort>(from, pic, sps, mbX, mbY);
             }
 
             pic.MbIntra[addr] = true;
@@ -1271,14 +1281,32 @@ internal sealed class H264Decoder
         }
     }
 
-    private static void CopyBlock(ushort[]? source, ushort[] target, int at, int stride, int w, int h, ushort gray)
+    private static void ConcealBlock<T>(H264Picture? source, H264Picture pic, H264Sps sps, int mbX, int mbY)
+        where T : unmanaged
+    {
+        CopyBlock(source?.Y<T>(), pic.Y<T>(), pic.Origin + (mbY * 16 * pic.Stride) + (mbX * 16), pic.Stride, 16, 16, 1 << (sps.BitDepthLuma - 1));
+        if (sps.ChromaFormatIdc != 0)
+        {
+            int cw = sps.MbWidthC, ch = sps.MbHeightC;
+            int at = pic.ChromaOrigin + (mbY * ch * pic.ChromaStride) + (mbX * cw);
+            int gray = 1 << (sps.BitDepthChroma - 1);
+            CopyBlock(source?.Cb<T>(), pic.Cb<T>(), at, pic.ChromaStride, cw, ch, gray);
+            CopyBlock(source?.Cr<T>(), pic.Cr<T>(), at, pic.ChromaStride, cw, ch, gray);
+        }
+    }
+
+    private static void CopyBlock<T>(T[]? source, T[] target, int at, int stride, int w, int h, int gray)
+        where T : unmanaged
     {
         for (int y = 0; y < h; y++)
         {
-            Span<ushort> row = target.AsSpan(at + (y * stride), w);
+            Span<T> row = target.AsSpan(at + (y * stride), w);
             if (source is null)
             {
-                row.Fill(gray);
+                for (int x = 0; x < w; x++)
+                {
+                    H264Samples.Set(target, at + (y * stride) + x, gray);
+                }
             }
             else
             {

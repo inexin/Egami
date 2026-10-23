@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
 using Egami.Nal;
 
 namespace Egami.Video.Codecs.H264;
@@ -16,21 +19,26 @@ internal sealed class H264Picture : INalDpbPicture
 
     private static int s_nextId;
 
-    internal H264Picture(int widthMbs, int heightMbs, int chromaFormatIdc)
+    private readonly Array _y;
+    private readonly Array _cb;
+    private readonly Array _cr;
+
+    internal H264Picture(int widthMbs, int heightMbs, int chromaFormatIdc, bool narrow)
     {
+        Narrow = narrow;
         WidthMbs = widthMbs;
         HeightMbs = heightMbs;
         ChromaFormatIdc = chromaFormatIdc;
         Width = widthMbs * 16;
         Height = heightMbs * 16;
         Stride = Width + (2 * Pad);
-        Y = new ushort[(Stride * (Height + (2 * Pad))) + Slack];
+        _y = narrow ? new byte[(Stride * (Height + (2 * Pad))) + Slack] : new ushort[(Stride * (Height + (2 * Pad))) + Slack];
         ChromaWidth = chromaFormatIdc == 0 ? 0 : Width / 2;
         ChromaHeight = chromaFormatIdc switch { 0 => 0, 1 => Height / 2, _ => Height };
         ChromaStride = ChromaWidth + (2 * Pad);
         int chromaSize = chromaFormatIdc == 0 ? 0 : (ChromaStride * (ChromaHeight + (2 * Pad))) + Slack;
-        Cb = new ushort[chromaSize];
-        Cr = new ushort[chromaSize];
+        _cb = narrow ? new byte[chromaSize] : new ushort[chromaSize];
+        _cr = narrow ? new byte[chromaSize] : new ushort[chromaSize];
         int blocks = widthMbs * 4 * heightMbs * 4;
         Mv = [new int[blocks], new int[blocks]];
         RefIdx = [new sbyte[blocks], new sbyte[blocks]];
@@ -59,12 +67,40 @@ internal sealed class H264Picture : INalDpbPicture
 
     internal int ChromaStride { get; }
 
-    /// <summary>Gets the luma plane, Stride by Height + 2 * Pad samples; sample (0, 0) is at <see cref="Origin"/>.</summary>
-    internal ushort[] Y { get; }
+    /// <summary>Gets whether the planes hold bytes (both bit depths 8) rather than 16-bit samples.</summary>
+    internal bool Narrow { get; }
 
-    internal ushort[] Cb { get; }
+    /// <summary>Gets the planes as arrays of either sample type, for copies that do not look at the samples.</summary>
+    internal Array YPlane => _y;
 
-    internal ushort[] Cr { get; }
+    internal Array CbPlane => _cb;
+
+    internal Array CrPlane => _cr;
+
+    /// <summary>
+    /// Gets the luma plane, Stride by Height + 2 * Pad samples; sample (0, 0) is at <see cref="Origin"/>. T is byte when
+    /// <see cref="Narrow"/>, else ushort.
+    /// </summary>
+    internal T[] Y<T>()
+        where T : unmanaged
+    {
+        Debug.Assert(H264Samples.Narrow<T>() == Narrow, "The sample type is the picture's.");
+        return Unsafe.As<T[]>(_y);
+    }
+
+    internal T[] Cb<T>()
+        where T : unmanaged
+    {
+        Debug.Assert(H264Samples.Narrow<T>() == Narrow, "The sample type is the picture's.");
+        return Unsafe.As<T[]>(_cb);
+    }
+
+    internal T[] Cr<T>()
+        where T : unmanaged
+    {
+        Debug.Assert(H264Samples.Narrow<T>() == Narrow, "The sample type is the picture's.");
+        return Unsafe.As<T[]>(_cr);
+    }
 
     internal int Origin => (Pad * Stride) + Pad;
 
@@ -137,17 +173,31 @@ internal sealed class H264Picture : INalDpbPicture
     /// <summary>Copies the edge samples into the border, so motion compensation can read past the edges.</summary>
     internal void ExtendEdges()
     {
-        ExtendPlane(Y, Stride, Width, Height);
-        if (ChromaFormatIdc != 0)
+        if (Narrow)
         {
-            ExtendPlane(Cb, ChromaStride, ChromaWidth, ChromaHeight);
-            ExtendPlane(Cr, ChromaStride, ChromaWidth, ChromaHeight);
+            ExtendEdges<byte>();
+        }
+        else
+        {
+            ExtendEdges<ushort>();
         }
     }
 
-    private static void ExtendPlane(ushort[] plane, int stride, int width, int height)
+    private void ExtendEdges<T>()
+        where T : unmanaged
     {
-        Span<ushort> p = plane;
+        ExtendPlane(Y<T>(), Stride, Width, Height);
+        if (ChromaFormatIdc != 0)
+        {
+            ExtendPlane(Cb<T>(), ChromaStride, ChromaWidth, ChromaHeight);
+            ExtendPlane(Cr<T>(), ChromaStride, ChromaWidth, ChromaHeight);
+        }
+    }
+
+    private static void ExtendPlane<T>(T[] plane, int stride, int width, int height)
+        where T : unmanaged
+    {
+        Span<T> p = plane;
         for (int y = 0; y < height; y++)
         {
             int row = (y + Pad) * stride;
@@ -155,13 +205,13 @@ internal sealed class H264Picture : INalDpbPicture
             p.Slice(row + Pad + width, Pad).Fill(p[row + Pad + width - 1]);
         }
 
-        Span<ushort> top = p.Slice(Pad * stride, stride);
+        Span<T> top = p.Slice(Pad * stride, stride);
         for (int y = 0; y < Pad; y++)
         {
             top.CopyTo(p.Slice(y * stride, stride));
         }
 
-        Span<ushort> bottom = p.Slice((Pad + height - 1) * stride, stride);
+        Span<T> bottom = p.Slice((Pad + height - 1) * stride, stride);
         for (int y = Pad + height; y < height + (2 * Pad); y++)
         {
             bottom.CopyTo(p.Slice(y * stride, stride));
