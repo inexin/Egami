@@ -181,7 +181,8 @@ string ass = captions.ToText(SubtitleFormat.Ass);
 <p>Any document saves to any writable format. Alignment and positions carry across: a WebVTT cue placed with <code>line</code> and
 <code>position</code> percentages becomes an ASS <code>\an</code> and <code>\pos</code>, and an ASS alignment becomes WebVTT <code>line</code> and <code>align</code> settings.
 SRT keeps bold, italic, underline, colors and fonts as the common <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code>, <code>&lt;u&gt;</code> and <code>&lt;font&gt;</code> tags and alignment as
-<code>{\an8}</code>. What a format cannot hold is left out and reported once per kind, such as ASS animation tags in SRT, or colors in
+<code>{\an8}</code>. An ASS style's bold, italics, underline and strikeout are part of its cues' spans, so they show in SRT and WebVTT
+as tags; ASS comment events are left out. What a format cannot hold is left out and reported once per kind, such as ASS animation tags in SRT, or colors in
 WebVTT.</p>
 <table>
 <thead>
@@ -271,6 +272,8 @@ track: its <code>Track</code> goes to the muxer, and its <code>Packets</code> go
 <p>mov_text keeps bold, italic, underline, colors and font sizes; alignment, positions and strikeout are reported as
 <code>Subtitle.Dropped</code>. Tracks written by FFmpeg, MKVToolNix and GPAC MP4Box read back to the cues of their source file, and
 those tools read the tracks Egami.Video writes.</p>
+<p>The egami-video command keeps subtitle tracks in step when it cuts: <code>trim</code> clips a cue shown across --from or --to to the cut,
+<code>concat</code> keeps each clip's cues inside that clip, and <code>timestamps --shift</code> moves cues with the other tracks.</p>
 <pre><code class="lang-csharp">// Read a subtitle track out of a container: mov_text, WebVTT, SRT and ASS tracks become a document.
 using (IDemuxer movie = MediaFile.OpenDemuxer(&quot;subtitled.mp4&quot;))
 {
@@ -305,8 +308,8 @@ using (IMuxer output = MediaFile.CreateMuxer(&quot;captioned.webm&quot;, [.. inp
 </code></pre><h2 id="encodings-and-diagnostics">Encodings and diagnostics</h2>
 <p>Files are read by their byte order mark (UTF-8, UTF-16 little or big-endian), then as UTF-8 when the bytes are valid UTF-8,
 then in <code>SubtitleReaderOptions.Encoding</code> when it is set. Without one, WebVTT is UTF-8 (as its spec says), and other files
-are read as UTF-16 when they look like it, or else as Windows-1252, with a <code>Subtitle.Encoding</code> warning. Output is always
-UTF-8. The warnings go to the <code>Diagnostics</code> handler of the <code>MediaContext</code>'s <code>Egami</code> context; see
+are read as UTF-16 when they look like it, or else as Windows-1252, with a <code>Subtitle.Encoding</code> warning. Bytes that are not
+valid in a file's own Unicode encoding are read as U+FFFD and reported the same way. Output is always UTF-8. The warnings go to the <code>Diagnostics</code> handler of the <code>MediaContext</code>'s <code>Egami</code> context; see
 <a href="../diagnostics.html">Diagnostics</a>.</p>
 <pre><code class="lang-csharp">// Files without a byte order mark that are not UTF-8 are read with the encoding you name, or else as Windows-1252, with a
 // Subtitle.Encoding warning. Output is always UTF-8. Strict turns every repaired line into an exception.
@@ -323,7 +326,39 @@ catch (CorruptDataException e)
 {
     Console.WriteLine(e.Message);
 }
-</code></pre>
+</code></pre><h2 id="compared-with-ffmpeg">Compared with FFmpeg</h2>
+<p>Converting between SRT, WebVTT and ASS gives the same cues as FFmpeg's conversions, in times, text, bold, italics and
+underline, on a set of 50 conversions (tools/video/make-subtitle-references.py). Where they differ, FFmpeg loses or changes
+what the source says:</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>FFmpeg</th>
+<th>Egami.Video</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A no-break space, written as SRT</td>
+<td>ASS's <code>\h</code> code</td>
+<td>The character</td>
+</tr>
+<tr>
+<td>SRT text <code>&lt; 3 &gt;</code>, written as WebVTT</td>
+<td>Copied, so it opens a tag and the text is lost</td>
+<td><code>&amp;lt; 3 &amp;gt;</code></td>
+</tr>
+<tr>
+<td>A time past 9:59:59.99, written as ASS</td>
+<td>Clipped to 9:59:59.99</td>
+<td>Written as it is, such as 10:00:00.00</td>
+</tr>
+</tbody>
+</table>
+<p>Reading a file of 20,000 cues and writing it as SRT takes Egami.Video 8 to 12 times less time than FFmpeg on an idle machine
+(tools/video/time-subtitles.py; FFmpeg's start-up is taken off its time).</p>
+
 </article>
 
         <div class="contribution d-print-none">
