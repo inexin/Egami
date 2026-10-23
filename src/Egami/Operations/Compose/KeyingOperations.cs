@@ -186,6 +186,100 @@ internal sealed class MakeTransparentOperation(Rgba8 color, float tolerance, flo
     }
 }
 
+/// <summary>
+/// Makes pixels whose chroma lies within a distance of a key color's transparent: the distance is taken between Rec. 709 Cb and Cr,
+/// so luma is left out and an unevenly lit screen stays close to the key. Per pixel, so it runs on views inside scopes.
+/// </summary>
+internal sealed class ChromaKeyOperation(Rgba8 color, float similarity, float blend) : IRasterOperation, IRunsOnViews
+{
+    // Rec. 709 luma weights and the scales that bring B − Y and R − Y to −0.5..0.5.
+    private const float Kr = 0.2126f, Kb = 0.0722f, Kg = 1 - Kr - Kb;
+    private const float CbScale = 1 / (2 * (1 - Kb)), CrScale = 1 / (2 * (1 - Kr));
+
+    /// <summary>The largest chroma distance in the RGB cube, between green and magenta, which a similarity of 1 reaches.</summary>
+    internal static readonly float MaxDistance = 2 * MathF.Sqrt((Kg * CbScale * Kg * CbScale) + (Kg * CrScale * Kg * CrScale));
+
+    public Size OutputSize(Size input) => input;
+
+    public void Run<TPixel>(OperationInput<TPixel> input)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        OperationRows.CopyIfSeparate(input);
+        if (TPixel.Layout.Alpha == AlphaKind.None)
+        {
+            return;
+        }
+
+        RgbaF32 key = RgbaF32.FromRgba8(color);
+        (float keyCb, float keyCr) = Chroma(key);
+        float inner = similarity * MaxDistance;
+        float band = blend * MaxDistance;
+        Keying.ForEachRow(input, (row, rgba) =>
+        {
+            bool changed = false;
+            for (int x = 0; x < rgba.Length; x++)
+            {
+                (float cb, float cr) = Chroma(rgba[x]);
+                float dcb = cb - keyCb, dcr = cr - keyCr;
+                float d = MathF.Sqrt((dcb * dcb) + (dcr * dcr));
+                if (d <= inner)
+                {
+                    rgba[x] = rgba[x] with { A = 0 };
+                    changed = true;
+                }
+                else if (band > 0 && d < inner + band)
+                {
+                    rgba[x] = rgba[x] with { A = rgba[x].A * ((d - inner) / band) };
+                    changed = true;
+                }
+            }
+
+            return changed;
+        });
+    }
+
+    internal static (float Cb, float Cr) Chroma(RgbaF32 p)
+    {
+        float y = (Kr * p.R) + (Kg * p.G) + (Kb * p.B);
+        return ((p.B - y) * CbScale, (p.R - y) * CrScale);
+    }
+}
+
+/// <summary>
+/// Holds the screen's channel down to a level taken from the other two, removing the colored cast a green or blue screen leaves on
+/// edges, hair and see-through pixels. Per pixel, so it runs on views inside scopes.
+/// </summary>
+internal sealed class DespillOperation(DespillColor screen, float mix, float expand) : IRasterOperation, IRunsOnViews
+{
+    public Size OutputSize(Size input) => input;
+
+    public void Run<TPixel>(OperationInput<TPixel> input)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        OperationRows.CopyIfSeparate(input);
+        bool green = screen == DespillColor.Green;
+        float keep = 1 - expand;
+        Keying.ForEachRow(input, (row, rgba) =>
+        {
+            bool changed = false;
+            for (int x = 0; x < rgba.Length; x++)
+            {
+                RgbaF32 p = rgba[x];
+                float a = p.R, b = green ? p.B : p.G, s = green ? p.G : p.B;
+                float low = (a + b) * 0.5f;
+                float limit = (low + ((MathF.Max(a, b) - low) * mix)) * keep;
+                if (s > limit)
+                {
+                    rgba[x] = green ? p with { G = limit } : p with { B = limit };
+                    changed = true;
+                }
+            }
+
+            return changed;
+        });
+    }
+}
+
 /// <summary>Replaces pixels within tolerance of one color with another (ImageMagick's -fuzz with -fill and -opaque).</summary>
 internal sealed class ReplaceColorOperation(Rgba8 from, Rgba8 to, float tolerance) : IRasterOperation, IRunsOnViews
 {

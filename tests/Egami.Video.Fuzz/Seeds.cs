@@ -125,6 +125,7 @@ internal static class Seeds
         WriteVp9(directory);
         WriteAv1(directory);
         WriteMp4(directory);
+        WriteMp3(directory);
         File.WriteAllBytes(Path.Combine(y4m, "420.y4m"), [.. "YUV4MPEG2 W4 H2 F25:1 Ip A1:1 C420jpeg XCOLORRANGE=FULL\n"u8, .. "FRAME\n"u8, .. new byte[12], .. "FRAME\n"u8, .. new byte[12]]);
         File.WriteAllBytes(Path.Combine(y4m, "444p10.y4m"), [.. "YUV4MPEG2 W2 H2 F30000:1001 It A4:3 C444p10\n"u8, .. "FRAME\n"u8, .. new byte[24]]);
 
@@ -149,6 +150,49 @@ internal static class Seeds
             Chapters = [new ChapterInfo(MediaTime.Zero, new MediaTime(1, new Rational(1, 25)), "c")],
             Attachments = [new AttachmentInfo("cover.jpg", "image/jpeg", frame)],
         }));
+    }
+
+    /// <summary>
+    /// MPEG audio seeds (V5.8): the small corpus files whole (tests/video/corpus/audio/mp3), and frames of two of them cut into
+    /// chunks of uneven length for the raw decoder target.
+    /// </summary>
+    public static void WriteMp3(string directory)
+    {
+        string mp3 = Directory.CreateDirectory(Path.Combine(directory, "mp3")).FullName;
+        string raw = Directory.CreateDirectory(Path.Combine(directory, "mp3raw")).FullName;
+        string corpus = Path.Combine("tests", "video", "corpus", "audio", "mp3");
+        foreach (string clip in (ReadOnlySpan<string>)["mp3-vbr-joint.mp3", "mp3-mpeg2-mono.mp3", "mp3-mpeg25-8k.mp3", "mp3-id3v1-noxing.mp3",
+            "mp3-id3v23-cover-chapters.mp3", "mp2-crc-mono.mp2"])
+        {
+            File.Copy(Path.Combine(corpus, clip), Path.Combine(mp3, clip), overwrite: true);
+        }
+
+        foreach ((string clip, byte flags) in (ReadOnlySpan<(string, byte)>)[("mp3-mpeg2-mono.mp3", 0), ("mp3-vbr-joint.mp3", 3), ("mp2-crc-mono.mp2", 4)])
+        {
+            using IDemuxer demuxer = MediaFile.OpenDemuxer(Path.Combine(corpus, clip));
+            List<byte> bytes = [];
+            for (int i = 0; i < 6 && demuxer.ReadPacket() is { } packet; i++)
+            {
+                using (packet)
+                {
+                    bytes.AddRange(packet.Data.Span);
+                }
+            }
+
+            MemoryStream output = new();
+            output.WriteByte(flags);
+            int p = 0;
+            for (int k = 0; p < bytes.Count; k++)
+            {
+                int length = Math.Min(bytes.Count - p, 100 + (k * 337 % 500));
+                output.WriteByte((byte)(length >> 8));
+                output.WriteByte((byte)length);
+                output.Write(bytes.GetRange(p, length).ToArray());
+                p += length;
+            }
+
+            File.WriteAllBytes(Path.Combine(raw, Path.GetFileNameWithoutExtension(clip) + ".bin"), output.ToArray());
+        }
     }
 
     /// <summary>

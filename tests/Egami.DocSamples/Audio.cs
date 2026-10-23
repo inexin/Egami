@@ -402,4 +402,27 @@ public class Audio
 
         Assert.Equal(CodecIds.Opus, MediaFile.Probe("talk.webm").Tracks[0].CodecId);
     }
+
+    [Fact]
+    public void Mp3()
+    {
+        using SampleFiles files = new();
+
+        #region audio-mp3
+        // MP3 decodes to planar float; the LAME tag's delay and padding are trimmed, so the length is the source's exact length.
+        MediaInfo info = MediaFile.Probe("podcast.mp3");
+        Console.WriteLine($"{info.Tags["TITLE"]}: {info.Duration?.ToTimeSpan()}, {info.Chapters.Count} chapters, cover {info.Attachments[0].Name}");
+        using (AudioReader reader = AudioReader.Open("podcast.mp3"))
+        {
+            reader.Seek(MediaTime.FromSeconds(0.15)); // exact: the next sample is the one at 150 ms
+            Console.WriteLine($"{reader.Track.CodecId}, {reader.SampleRate} Hz, {reader.Layout.ChannelCount} channels");
+        }
+
+        // An MP3 track leaves Matroska without a re-encode; the .mp3 gets an ID3v2.4 tag and a Xing header.
+        MediaFile.Remux("episode.mka", "episode.mp3");
+        #endregion
+
+        Assert.Equal(2, info.Chapters.Count);
+        Assert.Equal("MP3", MediaFile.Probe("episode.mp3").FormatName);
+    }
 }

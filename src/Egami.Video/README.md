@@ -16,7 +16,9 @@ Version 0.2 (V2) adds VP8 decode, WebM alpha, IVF and exact seeking. Version 0.3
 (V4.1) adds MP4 and QuickTime. Version 0.5 (V4.2) adds AV1 decode (8, 10 and 12 bit, 4:0:0 to 4:4:4, film grain), equal to
 libaom frame for frame, from WebM, Matroska, MP4 and IVF.
 
-Royalty-free codecs only, with Opus decode and encode (V5.1 and V5.7). No native code, no wrapped C or C++ libraries.
+Audio (V5) adds PCM and FLAC decode and encode, Opus decode and encode, Vorbis and MP3 decode, and WAV, FLAC, Ogg and MP3 files.
+
+Royalty-free codecs only (MP3's patents have expired). No native code, no wrapped C or C++ libraries.
 
 ## Read frames
 

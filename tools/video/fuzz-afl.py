@@ -21,8 +21,8 @@ SEEDS = {"avi": "tests/video/fuzz-seeds/avi/*", "mkv": "tests/video/fuzz-seeds/m
          "mp4": "tests/video/fuzz-seeds/mp4/*", "mp4mux": "tests/video/fuzz-seeds/mp4/*",
          "wav": "tests/video/fuzz-seeds/wav/*", "flac": "tests/video/fuzz-seeds/flac/*",
          "ogg": "tests/video/fuzz-seeds/ogg/*", "opusraw": "tests/video/fuzz-seeds/opusraw/*",
-         "vorbisraw": "tests/video/fuzz-seeds/vorbisraw/*", "vp8enc": "tests/video/fuzz-seeds/vp8enc/*",
-         "opusenc": "tests/video/fuzz-seeds/opusenc/*"}
+         "vorbisraw": "tests/video/fuzz-seeds/vorbisraw/*", "vp8enc": "tests/video/fuzz-seeds/vp8enc/*", "mp3": "tests/video/fuzz-seeds/mp3/*",
+         "mp3raw": "tests/video/fuzz-seeds/mp3raw/*", "opusenc": "tests/video/fuzz-seeds/opusenc/*"}
 
 # The VP8 decoder itself is in Egami; its own fuzzing (Egami 2.3.5) covers it, and the vp8 target instruments it too.
 INSTRUMENT = {"vp8": "sharpfuzz /out/Egami.dll", "av1": "sharpfuzz /out/Egami.dll", "av1raw": "sharpfuzz /out/Egami.dll"}

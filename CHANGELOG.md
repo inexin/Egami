@@ -5,6 +5,14 @@ changes that break code come only in a new major version.
 
 ## Egami 1.2.0 (unreleased)
 
+### Chroma key
+
+- `RasterOps.ChromaKey(color, similarity, blend)` keys out a green or blue screen by chroma: the distance between Rec. 709 Cb and
+  Cr, leaving luma out, so lighter and darker patches of an unevenly lit screen key with it. `blend` ramps alpha back up for
+  soft edges. `MakeTransparent` stays the RGB color key. As the `chroma-key` step in `egami run`.
+- `RasterOps.Despill(DespillColor, mix, expand)` takes a screen's green or blue cast off edges and see-through pixels by holding
+  that channel down to a limit from the other two. As the `despill` step.
+
 ### Command host
 
 - A new package, Egami.Cli.Host: the command host of `egami` as source with internal types, so other command-line tools of the
@@ -279,6 +287,22 @@ V5.7: Opus encoding, translated from libopus 1.5.2. Part of the V5 encoders' com
   and a WebM output encodes the audio in Opus unless it is Opus or Vorbis.
 - 60 s of stereo at 128 kbit/s encodes in 0.70 s, 1.4 times libopus 1.5.2's plain C build on the same machine, and
   steady-state encoding allocates nothing per packet.
+
+### MP3 (V5.8)
+
+V5.8: MPEG audio decoding and .mp3 files. The API review is still to come.
+
+- `Mp3Codec` (and `AudioCodecs.Mp3`, decode only), registered by default, translated from minimp3 (CC0): Layers I, II and III
+  of MPEG-1, MPEG-2 and MPEG-2.5, 8 to 48 kHz, every channel mode and free-format bit rates, as planar float. It passes the
+  ISO/IEC 11172-4 compliance streams at full accuracy (maximum error at most 2^-14, PSNR about 101 dB) and matches FFmpeg's
+  float decoder within 2e-7 on LAME files. Frames are found by three matching headers; damaged frames and CRC-16 mismatches
+  (`Mp3.CorruptFrame`, `Mp3.BadCrc`) become silence of their own length with `DecodeErrorMode.Conceal`. `CodecIds.Mp1` is new.
+- `Mp3Format` (.mp3, .mp2, .mp1, .mpa), registered by default, read and written. ID3v2.2 to 2.4 tags (text frames, APIC cover
+  art, CHAP chapters), ID3v1, APEv2 and Lyrics3 tags are read; Xing, Info and VBRI frames give the frame count, and the LAME
+  tag's delay and padding become `CodecDelay` and the last packet's duration, so LAME files decode to the source's exact
+  sample count. Seeks land on the exact sample (output equals a straight decode); `Mp3Format.FastSeek` seeks by the Xing table.
+  The writer stores ID3v2.4 and, on a seekable stream, a Xing header and LAME tag that FFmpeg reads gaplessly.
+- MP3 in Matroska gets sample-exact packet durations and its DiscardPadding; WAV's id3 chunk now reads ID3v2.2 too.
 
 ## Egami.Video 0.5.0 (unreleased)
 

@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 using Egami.Video.Audio;
 using Egami.Video.Audio.Codecs;
+using Egami.Video.Containers;
 
 namespace Egami.Video.Tests.Audio;
 
@@ -161,6 +162,63 @@ public class AudioGateTests(ITestOutputHelper output)
         }
 
         output.WriteLine($"Opus: {samples} samples ({samples / 48000.0:F0} s of audio) in {best:F3} s, {samples / 48000.0 / best:F0}x real time");
+    }
+
+    [Fact]
+    public void Mp3DecodeSpeed()
+    {
+        if (!Enabled || Mp3VectorTests.Directory() is not { } directory)
+        {
+            Assert.Skip("Set EGAMI_AUDIO_GATES=1 and fetch the MPEG audio compliance streams (make-audio-corpus.py --mp3).");
+            return;
+        }
+
+        // The Layer III compliance streams' frames through the frame decoder, best of three (egami-compare times minimp3 on the same).
+        List<(byte[][] Frames, int Rate)> streams = [];
+        foreach (string file in Directory.GetFiles(directory, "*.bit").Order(StringComparer.Ordinal))
+        {
+            string name = Path.GetFileName(file);
+            // l3-nonstandard-sideinfo-size is one damaged 100-byte frame that no reader locks onto.
+            if ((!name.StartsWith("l3-", StringComparison.Ordinal) && !name.StartsWith("M2L3", StringComparison.Ordinal)) || name == "l3-nonstandard-sideinfo-size.bit")
+            {
+                continue;
+            }
+
+            using IDemuxer demuxer = Mp3Format.Instance.OpenDemuxer(File.OpenRead(file), MediaContext.Default, leaveOpen: false);
+            List<byte[]> frames = [];
+            while (demuxer.ReadPacket() is { } packet)
+            {
+                using (packet)
+                {
+                    frames.Add(packet.Data.ToArray());
+                }
+            }
+
+            streams.Add(([.. frames], ((AudioTrackInfo)demuxer.Tracks[0]).SampleRate));
+        }
+
+        float[] left = new float[Egami.Video.Audio.Codecs.Mp3.Mp3FrameDecoder.MaxSamples];
+        float[] right = new float[Egami.Video.Audio.Codecs.Mp3.Mp3FrameDecoder.MaxSamples];
+        double best = double.MaxValue;
+        double seconds = 0;
+        for (int run = 0; run < 3; run++)
+        {
+            seconds = 0;
+            Stopwatch watch = Stopwatch.StartNew();
+            foreach ((byte[][] frames, int rate) in streams)
+            {
+                Egami.Video.Audio.Codecs.Mp3.Mp3FrameDecoder decoder = new();
+                foreach (byte[] frame in frames)
+                {
+                    decoder.Decode(frame, left, right);
+                    seconds += (double)new Egami.Video.Audio.Codecs.Mp3.MpegAudioHeader(frame).SamplesPerFrame / rate;
+                }
+            }
+
+            best = Math.Min(best, watch.Elapsed.TotalSeconds);
+        }
+
+        output.WriteLine($"MP3: about {seconds:F0} s of audio in {best:F3} s, {seconds / best:F0}x real time");
     }
 
     /// <summary>The IETF subset files libFLAC decodes, without the ones made to stress metadata.</summary>

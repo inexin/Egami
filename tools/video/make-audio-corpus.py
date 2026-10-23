@@ -11,6 +11,11 @@ Usage, from the repo root:
   python tools/video/make-audio-corpus.py --opus       V5.1: Ogg and Opus clips into tests/video/corpus/audio/opus (checked in),
                                                        each with opusdec's 16-bit decode, and the RFC 8251 test vectors fetched
                                                        into .cache/audio/opus-vectors
+  python tools/video/make-audio-corpus.py --mp3        V5.8: MP3 and MP2 clips into tests/video/corpus/audio/mp3 (checked in), each with
+                                                       FFmpeg's gapless float decode (.f32.gz) and ffprobe's packet count in
+                                                       manifest.json, and the minimp3 copy of the ISO/IEC 11172-4 compliance
+                                                       streams fetched into .cache/audio/mp3-vectors (not checked in: ISO terms)
+                                                       Add --local to run FFmpeg from the PATH instead of in Docker.
   python tools/video/make-audio-corpus.py --check DIR  run flac -t on every .flac file in DIR (Egami.Video's own output)
   python tools/video/make-audio-corpus.py --gates      after the EGAMI_AUDIO_GATES=1 tests: flac -t on Egami.Video's encodings
                                                        of the IETF files, their size against flac -0 to -8, and flac -d's time
@@ -18,6 +23,7 @@ Usage, from the repo root:
 manifest.json maps each clip to {samples, rate, channels, bits, md5}: the MD5 of every sample interleaved, little-endian, signed,
 in whole bytes of the stream's depth (24-bit in 3 bytes), as FLAC's STREAMINFO defines it; float clips use 32-bit floats.
 """
+import gzip
 import hashlib
 import json
 import os
@@ -180,6 +186,94 @@ def make_opus():
         subprocess.run(["tar", "xzf", "v.tar.gz"], cwd=vectors, check=True)
 
 
+# name: shell command making {out} from the sources in /tmp (a.wav: stereo 44.1 kHz, b.wav: stereo 48 kHz, m.wav: mono 22.05 kHz,
+# e.wav: mono 8 kHz, cover.png, chapters.txt). FFmpeg's libmp3lame and mp3 muxer write the Xing/Info and LAME tags, ID3v2.4 by
+# default; libtwolame writes Layer II with CRCs.
+MP3_OUT = os.path.join(OUT, "mp3")
+MP3_CLIPS = {
+    "mp3-cbr-stereo.mp3": "ffmpeg -v error -i /tmp/a.wav -c:a libmp3lame -b:a 128k -metadata title='Corpus tone' -metadata artist=Egami {out}",
+    "mp3-vbr-joint.mp3": "ffmpeg -v error -i /tmp/a.wav -c:a libmp3lame -q:a 4 {out}",
+    "mp3-mpeg2-mono.mp3": "ffmpeg -v error -i /tmp/m.wav -c:a libmp3lame -b:a 32k {out}",
+    "mp3-mpeg25-8k.mp3": "ffmpeg -v error -i /tmp/e.wav -c:a libmp3lame -b:a 16k {out}",
+    "mp3-id3v23-cover-chapters.mp3": "ffmpeg -v error -i /tmp/a.wav -i /tmp/cover.png -i /tmp/chapters.txt -map 0:a -map 1:v -map_metadata 2"
+                                     " -map_chapters 2 -c:a libmp3lame -b:a 96k -c:v copy -disposition:v attached_pic -id3v2_version 3 {out}",
+    "mp3-id3v1-noxing.mp3": "ffmpeg -v error -i /tmp/a.wav -c:a libmp3lame -b:a 112k -write_xing 0 -id3v2_version 0 {out}",
+    "mp2-stereo.mp2": "ffmpeg -v error -i /tmp/b.wav -c:a mp2 -b:a 192k {out}",
+    "mp2-crc-mono.mp2": "ffmpeg -v error -i /tmp/m.wav -c:a libtwolame -b:a 64k -error_protection 1 {out}",
+    "mka-mp3.mka": "ffmpeg -v error -i /tmp/a.wav -c:a libmp3lame -b:a 128k -y /tmp/x.mp3 && ffmpeg -v error -i /tmp/x.mp3 -c:a copy {out}",
+    "m4a-mp3.m4a": "ffmpeg -v error -i /tmp/a.wav -c:a libmp3lame -b:a 128k -y /tmp/x.mp3 && ffmpeg -v error -i /tmp/x.mp3 -c:a copy -f mp4 {out}",
+}
+
+# Clips that get an ID3v1.1 tag appended: title, artist, track number and genre index.
+MP3_ID3V1 = {"mp3-id3v1-noxing.mp3": ("Corpus tone", "Egami", 7, 13)}
+
+MP3_SOURCES = ("ffmpeg -v error -y " + source(44100, 2, 0.3) + " -c:a pcm_s16le /tmp/a.wav && ffmpeg -v error -y " + source(48000, 2, 0.3)
+               + " -c:a pcm_s16le /tmp/b.wav && ffmpeg -v error -y " + source(22050, 1, 0.3) + " -c:a pcm_s16le /tmp/m.wav && ffmpeg -v error -y "
+               + source(8000, 1, 0.3) + " -c:a pcm_s16le /tmp/e.wav && ffmpeg -v error -y -f lavfi -i color=red:size=16x16 -frames:v 1 /tmp/cover.png"
+               " && printf ';FFMETADATA1\\ntitle=Corpus tone\\nartist=Egami\\n[CHAPTER]\\nTIMEBASE=1/1000\\nSTART=0\\nEND=150\\ntitle=One\\n"
+               "[CHAPTER]\\nTIMEBASE=1/1000\\nSTART=150\\nEND=300\\ntitle=Two\\n' > /tmp/chapters.txt")
+
+# The ISO/IEC 11172-4 compliance streams (and minimp3's own damaged-stream vectors) with 16-bit references, from minimp3 (CC0).
+MP3_VECTORS = ["l1-fl1", "l1-fl2", "l1-fl3", "l1-fl4", "l1-fl5", "l1-fl6", "l1-fl7", "l1-fl8", "l2-fl10", "l2-fl11", "l2-fl12",
+               "l2-fl13", "l2-fl14", "l2-fl15", "l2-fl16", "l3-compl", "l3-he_32khz", "l3-he_44khz", "l3-he_48khz", "l3-he_free",
+               "l3-he_mode", "l3-hecommon", "l3-si", "l3-si_huff", "l3-sin1k0db", "l3-test45", "l3-test46", "M2L3_bitrate_16_all",
+               "M2L3_bitrate_22_all", "M2L3_bitrate_24_all", "M2L3_compl24", "M2L3_noise", "l3-nonstandard-compl-sideinfo-bigvalues",
+               "l3-nonstandard-compl-sideinfo-blocktype", "l3-nonstandard-compl-sideinfo-size", "l3-nonstandard-id3v1",
+               "l3-nonstandard-sideinfo-size"]
+MP3_VECTOR_URL = "https://raw.githubusercontent.com/lieff/minimp3/master/vectors/"
+
+
+def make_mp3(local):
+    os.makedirs(MP3_OUT, exist_ok=True)
+
+    def run(command):
+        if local:
+            subprocess.run(["sh", "-c", command.replace("/work/", MP3_OUT + "/")], check=True)
+        else:
+            subprocess.run(["docker", "run", "--rm", "-v", f"{MP3_OUT}:/work", IMAGE, "sh", "-c", command], check=True)
+
+    def output(command):
+        if local:
+            return subprocess.run(["sh", "-c", command.replace("/work/", MP3_OUT + "/")], check=True, capture_output=True).stdout
+        return subprocess.run(["docker", "run", "--rm", "-v", f"{MP3_OUT}:/work", IMAGE, "sh", "-c", command], check=True,
+                              capture_output=True).stdout
+
+    manifest = {}
+    for name, command in MP3_CLIPS.items():
+        path = os.path.join(MP3_OUT, name)
+        if os.path.exists(path):
+            os.remove(path)
+        run(MP3_SOURCES + " && " + command.format(out=f"/work/{name}"))
+        if name in MP3_ID3V1:
+            # FFmpeg 6.1's -write_id3v1 writes nothing here, so the 128-byte ID3v1.1 tag is appended by hand.
+            title, artist, track, genre = MP3_ID3V1[name]
+            tag = b"TAG" + title.encode("latin-1").ljust(30, b"\0") + artist.encode("latin-1").ljust(30, b"\0") + b"\0" * 30
+            tag += b"2026" + b"\0" * 28 + bytes([0, track, genre])
+            with open(path, "ab") as f:
+                f.write(tag)
+        # FFmpeg's float decode with its gapless trimming (the LAME tag's delay and padding, MP4 edit lists).
+        raw = output(f"ffmpeg -v error -i /work/{name} -map 0:a -c:a pcm_f32le -f f32le -")
+        with gzip.GzipFile(path + ".f32.gz", "wb", 9, mtime=0) as f:
+            f.write(raw)
+        info = json.loads(output(f"ffprobe -v error -count_packets -select_streams a -show_entries stream=channels,sample_rate,nb_read_packets"
+                                 f" -of json /work/{name}"))["streams"][0]
+        channels = int(info["channels"])
+        manifest[name] = {"channels": channels, "rate": int(info["sample_rate"]), "samples": len(raw) // 4 // channels,
+                          "packets": int(info["nb_read_packets"])}
+        print(name, os.path.getsize(path), manifest[name])
+    with open(os.path.join(MP3_OUT, "manifest.json"), "w", newline="\n") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+
+    vectors = os.path.join(CACHE, "mp3-vectors")
+    os.makedirs(vectors, exist_ok=True)
+    for name in MP3_VECTORS:
+        for ext in (".bit", ".pcm"):
+            target = os.path.join(vectors, name + ext)
+            if not os.path.exists(target):
+                subprocess.run(["curl", "-sSfL", "-o", target, MP3_VECTOR_URL + name + ext], check=ext == ".bit")
+
+
 def gates():
     """Compares .cache/audio/gates/L<n> (Egami.Video's FLAC) with libFLAC at the same level; prints sizes and flac -d's time."""
     gates_dir = os.path.join(CACHE, "gates")
@@ -209,6 +303,9 @@ if __name__ == "__main__":
         sys.exit(1 if check(sys.argv[sys.argv.index("--check") + 1]) else 0)
     if "--opus" in sys.argv:
         make_opus()
+        sys.exit(0)
+    if "--mp3" in sys.argv:
+        make_mp3("--local" in sys.argv)
         sys.exit(0)
     if "--ietf" in sys.argv:
         fetch_ietf()

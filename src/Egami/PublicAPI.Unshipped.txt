@@ -4019,3 +4019,8 @@ virtual Egami.Operations.SamplingOptions.PrintMembers(System.Text.StringBuilder!
 ~override Egami.Operations.OperationReach.ToString() -> string
 ~override Egami.Pixels.YuvColor.Equals(object obj) -> bool
 ~override Egami.Pixels.YuvColor.ToString() -> string
+Egami.Operations.DespillColor
+Egami.Operations.DespillColor.Blue = 1 -> Egami.Operations.DespillColor
+Egami.Operations.DespillColor.Green = 0 -> Egami.Operations.DespillColor
+Egami.Operations.RasterOps.ChromaKey(Egami.Pixels.Rgba8 color, float similarity = 0.1, float blend = 0.05) -> Egami.Operations.RasterOps!
+Egami.Operations.RasterOps.Despill(Egami.Operations.DespillColor screen = Egami.Operations.DespillColor.Green, float mix = 0.5, float expand = 0) -> Egami.Operations.RasterOps!
