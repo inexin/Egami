@@ -26,6 +26,11 @@ changes that break code come only in a new major version.
 - Egami.Cli (`egami`) and Egami.Cli.Host have their own icons on NuGet: a prompt on an indigo tile, and a terminal window on a
   slate tile.
 
+### Icons and cursors
+
+- A 32-bit BMP entry that is wholly transparent is written with black colors, so Windows, which ignores an alpha channel that is
+  0 everywhere and draws the colors through the AND mask, draws nothing.
+
 ### Text recognition (OCR)
 
 - A new namespace, `Egami.Ocr`: one shape for every OCR engine, so code that needs text from an image works with whichever engine
