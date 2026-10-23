@@ -27,13 +27,15 @@ public sealed class EncodeTests
     [InlineData("clip.webm", "vp8", "--quality", "80")]
     [InlineData("clip.ivf", "vp8", "--bitrate", "300k")]
     [InlineData("clip.mkv", "vp9", "--quality", "70")]
-    public void ImagesToVp8AndVp9AndBack(string output, string codec, string option, string value)
+    [InlineData("clip.mp4", "av1", "--quality", "70")]
+    [InlineData("clip.obu", "av1", "--bitrate", "200k")]
+    public void ImagesToVp8Vp9AndAv1AndBack(string output, string codec, string option, string value)
     {
         using Tool tool = new();
         MakeImages(tool, "in", 6, 64, 48);
         ToolRun run = tool.Run("encode", "in/*.png", "-o", output, "--codec", codec, "--effort", "2", option, value);
         Assert.True(run.Code == 0, run.Error);
-        Assert.Equal(codec == "vp8" ? CodecIds.Vp8 : CodecIds.Vp9, Video(tool.PathOf(output)).CodecId);
+        Assert.Equal(codec switch { "vp8" => CodecIds.Vp8, "vp9" => CodecIds.Vp9, _ => CodecIds.Av1 }, Video(tool.PathOf(output)).CodecId);
         Assert.Equal(0, tool.Run("frames", output, "-o", "back/{frame:000}.png").Code);
         Assert.Equal(6, FramesTests.Written(tool, "back").Length);
         Assert.Equal(2, tool.Run("encode", "in/*.png", "-o", "x.mkv", "--effort", "2").Code);
@@ -175,7 +177,7 @@ public sealed class EncodeTests
 
     [Theory]
     [InlineData(new[] { "in/*.png" }, "No output")]
-    [InlineData(new[] { "in/*.png", "-o", "a.mkv", "--codec", "av1" }, "can decode AV1 but not encode")]
+    [InlineData(new[] { "in/*.png", "-o", "a.mkv", "--effort", "2" }, "--effort and --bitrate are for --codec vp8, vp9 and av1")]
     [InlineData(new[] { "in/*.png", "-o", "a.mkv", "--codec", "nope" }, "not a codec")]
     [InlineData(new[] { "in/*.png", "-o", "a.y4m", "--codec", "mjpeg" }, "Y4M holds uncompressed video only")]
     [InlineData(new[] { "in/*.png", "-o", "a.mkv", "--quality", "101" }, "--quality must be")]

@@ -52,6 +52,7 @@
 => encode img{frame:000}.png -o out.avi --rate 25 --codec mjpeg | ffmpeg -framerate 25 -i img%03d.png -c:v mjpeg out.avi
 => encode frame{frame}.jpg -o out.mkv --rate 10 | ffmpeg -r 10 -i frame%d.jpg out.mkv
 => encode img{frame:0000}.png -o out.mkv --rate 24 --codec raw | ffmpeg -framerate 24 -i img%04d.png -c:v rawvideo out.mkv
+=> encode img{frame:0000}.png -o out.mp4 --rate 24 --codec av1 | ffmpeg -framerate 24 -i img%04d.png -c:v libaom-av1 out.mp4
 => encode - -o out.mkv | ffmpeg -f yuv4mpegpipe -i - out.mkv
 => encode - -o out.mkv --codec mjpeg --quality 98 | ffmpeg -f yuv4mpegpipe -i pipe: -c:v mjpeg -q:v 2 out.mkv
 => encode img{frame:0000}.png -o out.mkv --rate 30 --size 640x360 | ffmpeg -framerate 30 -i img%04d.png -s 640x360 out.mkv

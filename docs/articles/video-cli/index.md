@@ -56,7 +56,7 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 
 Commands that copy packets (`remux`, `trim`, `concat`, `segment`, `timestamps`, `extract`, `embed`, `metadata`) never decode, so
 they work on any codec, H.264 and AAC included. Commands that decode need a codec Egami.Video decodes: Motion JPEG, VP8, VP9, AV1
-and uncompressed video, and PCM, FLAC, Opus and Vorbis audio. `encode` and `run` write Motion JPEG, VP8, VP9 or uncompressed video; `encode --codec vp8` or `vp9` takes
+and uncompressed video, and PCM, FLAC, Opus and Vorbis audio. `encode` and `run` write Motion JPEG, VP8, VP9, AV1 or uncompressed video; `encode --codec vp8`, `vp9` or `av1` takes
 `--effort` and `--bitrate` (see [Encoding video](../guides/video-encoding.md)).
 
 ## Inspecting

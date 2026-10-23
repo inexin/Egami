@@ -344,10 +344,10 @@ Options:
   -o, --output <path>            The clip to write, or - for standard output (with --format).
   -f, --format <container>       The container by name or extension (mkv, avi, mp4, y4m), when -o's extension does not say; always for -o -.
   --rate <fps>                   Frames per second, such as 25, 29.97 or 30000/1001; 25 for images, and a video's own rate for a video.
-  -c, --codec <codec>            The video codec: mjpeg (the default), vp8 or vp9 (for webm, mkv and ivf), or raw (uncompressed, the default for y4m).
-  --quality <0-100>              Quality from 0 to 100: 75 by default for Motion JPEG, 60 for VP8 and VP9.
-  --effort <0-10>                VP8 and VP9: how hard to work, 0 (fastest) to 10 (smallest); 4 by default.
-  -b, --bitrate <bits/s>         VP8 and VP9: aim at this average bitrate instead of a quality, such as 2000k or 1.5M.
+  -c, --codec <codec>            The video codec: mjpeg (the default), vp8 or vp9 (for webm, mkv and ivf), av1 (also for mp4 and obu), or raw (uncompressed, the default for y4m).
+  --quality <0-100>              Quality from 0 to 100: 75 by default for Motion JPEG, 60 for VP8, VP9 and AV1.
+  --effort <0-10>                VP8, VP9 and AV1: how hard to work, 0 (fastest) to 10 (smallest); 4 by default.
+  -b, --bitrate <bits/s>         VP8, VP9 and AV1: aim at this average bitrate instead of a quality, such as 2000k or 1.5M.
   --size <WxH>                   Fit every frame into this size, keeping its shape, with black around it; images take the first image's size by default.
   --chroma <420|422|444>         Chroma subsampling for frames made from images: 420 (the default), 422 or 444.
   --audio <file>                 Add the first audio track of this file, copied without decoding, up to the end of the video.
@@ -368,7 +368,7 @@ Arguments:
 Options:
   -o, --output <path>            Where the video goes when save has no path: a file, a folder, a template with {name}, or - with --format.
   -f, --format <container>       The output container (mkv, avi …), when the output's extension does not say.
-  --codec <codec>                The video codec to encode with: mjpeg, vp8, vp9 or raw. The input's codec when Egami.Video can encode it, else mjpeg.
+  --codec <codec>                The video codec to encode with: mjpeg, vp8, vp9, av1 or raw. The input's codec when Egami.Video can encode it, else mjpeg.
   --quality <1-100>              The encoder's quality from 1 to 100.
   --crop <auto>                  auto finds the black bars of letterbox, pillarbox and windowbox video, as the analyze command's crop detector does, and crops them off before the other steps.
   --rate <fps>                   Frames per second of the output, dropping or repeating frames to match; frames keep their own times by default.

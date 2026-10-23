@@ -97,6 +97,8 @@ public sealed class RunTests
     [InlineData("mkv-raw-i420.mkv", null, CodecIds.Uncompressed)]
     [InlineData("webm-vp8-opus.webm", null, CodecIds.Vp8)]
     [InlineData("mkv-mjpeg-pcm.mkv", "raw", CodecIds.Uncompressed)]
+    [InlineData("av1/compound-masks.webm", null, CodecIds.Av1)]
+    [InlineData("mkv-mjpeg-pcm.mkv", "av1", CodecIds.Av1)]
     public void CodecIsTheSourcesWhenItCanBeEncoded(string clip, string? codec, string expected)
     {
         using Tool tool = new();
@@ -208,7 +210,6 @@ public sealed class RunTests
     [InlineData("No inputs", "run", "invert", "-o", "out.mkv")]
     [InlineData("one save", "run", "{clip}", "invert", "+", "save", "a.mkv", "+", "save", "b.mkv")]
     [InlineData("one save", "run", "{clip}", "save", "a.mkv", "+", "invert")]
-    [InlineData("cannot encode AV1", "run", "{clip}", "invert", "-o", "out.mkv", "--codec", "av1")]
     [InlineData("not a video codec", "run", "{clip}", "invert", "-o", "out.mkv", "--codec", "h265")]
     [InlineData("not a frame rate", "run", "{clip}", "invert", "-o", "out.mkv", "--rate", "fast")]
     [InlineData("run takes no --to", "run", "{clip}", "invert", "-o", "out.mkv", "--to", "srgb")]

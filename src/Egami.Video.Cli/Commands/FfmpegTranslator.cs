@@ -1151,8 +1151,9 @@ internal static class FfmpegTranslator
         "mjpeg" => "mjpeg",
         "libvpx" or "vp8" => "vp8",
         "libvpx-vp9" or "vp9" => "vp9",
+        "libaom-av1" or "libsvtav1" or "librav1e" or "av1" => "av1",
         "rawvideo" => "raw",
-        _ => throw FfmpegMode.Unsupported($"-c:v {codec}", why: "egami-video encodes mjpeg, libvpx (VP8), libvpx-vp9 and rawvideo, and copies"),
+        _ => throw FfmpegMode.Unsupported($"-c:v {codec}", why: "egami-video encodes mjpeg, libvpx (VP8), libvpx-vp9, libaom-av1 and rawvideo, and copies"),
     };
 
     private static string AudioCodec(string codec) => codec switch
