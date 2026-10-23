@@ -44,8 +44,14 @@ public sealed record Hdr10PlusMetadata
     /// <summary>Gets the T.35 payload as stored, kept so a remux writes it unchanged.</summary>
     public ReadOnlyMemory<byte> Raw { get; init; }
 
-    /// <summary>Reads an ITU-T T.35 HDR10+ payload, or returns <see langword="null"/> when it is not one or is cut off.</summary>
-    internal static Hdr10PlusMetadata? Parse(ReadOnlyMemory<byte> payload)
+    /// <summary>
+    /// Reads an ITU-T T.35 HDR10+ payload, as an H.264 or HEVC user data registered SEI message, an AV1 metadata OBU or a WebM
+    /// BlockAdditional carries it: from itu_t_t35_country_code (0xB5) on. Codec packages outside Egami.Video use it to give
+    /// <see cref="VideoFrame.Hdr10Plus"/>.
+    /// </summary>
+    /// <param name="payload">The T.35 payload, from the country code on.</param>
+    /// <returns>The metadata, or <see langword="null"/> when the payload is not HDR10+ or is cut off.</returns>
+    public static Hdr10PlusMetadata? Parse(ReadOnlyMemory<byte> payload)
     {
         BitReader r = new(payload.Span);
         try

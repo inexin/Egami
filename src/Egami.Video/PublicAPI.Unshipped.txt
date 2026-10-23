@@ -1797,3 +1797,4 @@ override Egami.Video.Containers.Ac3Format.Name.get -> string!
 override Egami.Video.Containers.Ac3Format.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
 override Egami.Video.Containers.Ac3Format.SignatureLength.get -> int
 static Egami.Video.Containers.Ac3Format.Instance.get -> Egami.Video.Containers.Ac3Format!
+static Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory<byte> payload) -> Egami.Video.Hdr10PlusMetadata?

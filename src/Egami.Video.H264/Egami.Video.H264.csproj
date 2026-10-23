@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.Video</RootNamespace>
+    <PackageId>Egami.Video.H264</PackageId>
+    <!-- Egami.Video.H264 ships at Egami.Video's version and depends on it through its public API only (H.264 and HEVC design,
+         question 4). -->
+    <Version>$(EgamiVideoVersion)</Version>
+    <Description>H.264 (AVC) decoding for Egami.Video, in managed code: progressive Constrained Baseline, Main, High, High 10 and High 4:2:2 streams in MP4, MOV, Matroska, AVI and raw .h264 files. H.264 is covered by patents; Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products may need one from the AVC patent pools or holders. Egami.Video itself contains no H.264 decoder and does not depend on this package.</Description>
+    <PackageTags>$(EgamiPackageTags);video;h264;avc;mp4</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <!-- For [SkipLocalsInit] on the decoder's hot paths: their scratch stackallocs are written before they are read. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Egami.Video\Egami.Video.csproj" />
+  </ItemGroup>
+
+  <!-- The NAL code Egami.Video.H264 shares with Egami.Heic, compiled into each as internal source (H.264 and HEVC design, Q1). -->
+  <ItemGroup>
+    <Compile Include="..\Shared\Nal\**\*.cs" Link="Shared\Nal\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Video.H264.Tests" />
+    <InternalsVisibleTo Include="Egami.Video.Benchmarks" />
+    <InternalsVisibleTo Include="Egami.Video.Fuzz" />
+  </ItemGroup>
+
+</Project>

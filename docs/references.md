@@ -97,6 +97,7 @@ LGPL code is never read.
 | ISO/IEC 11172-3 and 13818-3 (MPEG-1 and MPEG-2 audio), with MPEG-2.5's 8 to 12 kHz rates | MPEG audio Layers I, II and III, frame headers and the CRC-16; the ISO/IEC 11172-4 compliance streams test the decoder |
 | ID3 tag version 2.2, 2.3 and 2.4 and the ID3v1 layout (id3.org informal standards); APEv2 item layout (wiki.hydrogenaud.io) | Tags, pictures and chapters in .mp3 files |
 | Xing VBR header, Fraunhofer VBRI header, and the LAME "Mp3 Info Tag rev 1" specification (Gabriel Bouvigne) | Frame counts, seek tables, and the encoder delay and padding for gapless playback |
+| ITU-T H.264 (08/2024) and ISO/IEC 14496-15 (avcC) | Egami.Video.H264: the decoder, raw Annex B streams and avcC records |
 | WebVTT, W3C; WHATWG HTML named character references (as data) | WebVTT parsing and writing, cue text entities |
 | SubRip (SRT) as players read it; Sub Station Alpha v4.00+ script format | SRT, ASS and SSA files |
 | Audio Interchange File Format 1.3 (Apple, 1989); AIFF-C draft (Apple, 1991); Apple Core Audio Format specification (AudioChannelLayout) | AIFF and AIFF-C files, their compression types and the CHAN chunk |
@@ -113,6 +114,7 @@ LGPL code is never read.
 | mkvalidator (Matroska foundation-source) | BSD-3 |
 | libwebp, libvpx (the VP8 encoder: mode decision, loop filter deltas), dav1d, libaom | BSD |
 | libass (how ASS override tags behave), pysubs2 (subtitle edge cases) | ISC, MIT |
+| OpenH264 (Cisco), libavc (Android) | BSD-2, Apache-2.0 |
 
 ### Translated code (notice in THIRD-PARTY-NOTICES.md)
 
@@ -120,6 +122,7 @@ LGPL code is never read.
 | --- | --- | --- |
 | libvpx 1.14.1 | BSD-3, Google patent grant | The VP9 decoder (`src/Egami.Video/Codecs/Vp9`), so frames equal libvpx's sample for sample |
 | libopus 1.5.2 | BSD-3, royalty-free IETF patent licenses | The Opus decoder (`src/Egami.Video/Audio/Codecs/Opus`): RFC 6716 makes this decoder normative, and the RFC 8251 test vectors check it |
+| OpenH264 2.4.1 (Cisco) | BSD-2 | Egami.Video.H264's CABAC context initialisation values and CAVLC code tables (`H264Tables.Data.cs`, made by `tools/video/make-h264-tables.py`); the decoder itself is written from ITU-T H.264 |
 | minimp3 (lieff) | CC0 1.0 | The MPEG audio decoder (`src/Egami.Video/Audio/Codecs/Mp3`): frame decoding, tables, synthesis and frame search; its copies of the ISO compliance streams and references test it |
 
 ### Tools run as black boxes only (never read)
