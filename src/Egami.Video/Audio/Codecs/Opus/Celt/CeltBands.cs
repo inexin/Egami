@@ -18,9 +18,9 @@ internal sealed class CeltBands
         15, 0, 8, 7, 12, 3, 11, 4, 14, 1, 9, 6, 13, 2, 10, 5,
     ];
 
-    private static ReadOnlySpan<byte> BitInterleaveTable => [0, 1, 1, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3];
+    internal static ReadOnlySpan<byte> BitInterleaveTable => [0, 1, 1, 1, 2, 3, 3, 3, 2, 3, 3, 3, 2, 3, 3, 3];
 
-    private static ReadOnlySpan<byte> BitDeinterleaveTable =>
+    internal static ReadOnlySpan<byte> BitDeinterleaveTable =>
     [
         0x00, 0x03, 0x0C, 0x0F, 0x30, 0x33, 0x3C, 0x3F, 0xC0, 0xC3, 0xCC, 0xCF, 0xF0, 0xF3, 0xFC, 0xFF,
     ];
@@ -321,7 +321,7 @@ internal sealed class CeltBands
 
     private static float Max(float a, float b) => a > b ? a : b;
 
-    private static void SpecialHybridFolding(Span<float> norm, int norm2, int start, int m, bool dualStereo)
+    internal static void SpecialHybridFolding(Span<float> norm, int norm2, int start, int m, bool dualStereo)
     {
         ReadOnlySpan<short> eBands = CeltTables.EBands;
         int n1 = m * (eBands[start + 1] - eBands[start]);
@@ -337,7 +337,7 @@ internal sealed class CeltBands
         }
     }
 
-    private static void DeinterleaveHadamard(Span<float> x, int n0, int stride, bool hadamard, Span<float> tmp)
+    internal static void DeinterleaveHadamard(Span<float> x, int n0, int stride, bool hadamard, Span<float> tmp)
     {
         int n = n0 * stride;
         if (hadamard)
@@ -365,7 +365,7 @@ internal sealed class CeltBands
         tmp[..n].CopyTo(x);
     }
 
-    private static void InterleaveHadamard(Span<float> x, int n0, int stride, bool hadamard, Span<float> tmp)
+    internal static void InterleaveHadamard(Span<float> x, int n0, int stride, bool hadamard, Span<float> tmp)
     {
         int n = n0 * stride;
         if (hadamard)
@@ -393,7 +393,7 @@ internal sealed class CeltBands
         tmp[..n].CopyTo(x);
     }
 
-    private static int ComputeQn(int n, int b, int offset, int pulseCap, bool stereo)
+    internal static int ComputeQn(int n, int b, int offset, int pulseCap, bool stereo)
     {
         int n2 = (2 * n) - 1;
         if (stereo && n == 2)
@@ -420,7 +420,7 @@ internal sealed class CeltBands
         return qn;
     }
 
-    private static void StereoMerge(Span<float> x, Span<float> y, float mid, int n)
+    internal static void StereoMerge(Span<float> x, Span<float> y, float mid, int n)
     {
         // Compute the norm of X+Y and X-Y as |X|^2 + |Y|^2 +/- sum(xy).
         CeltMath.DualInnerProduct(y, x, y, n, out float xp, out float side);

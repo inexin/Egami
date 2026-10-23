@@ -328,4 +328,101 @@ public class Audio
 
         Assert.Equal("Ogg", info.FormatName);
     }
+
+    [Fact]
+    public void OpusEncode()
+    {
+        using SampleFiles files = new();
+        using AudioFrame tone = Tone(44100);
+
+        #region audio-opus-encode
+        // Speech at 32 kbit/s. Opus codes 8, 12, 16, 24 and 48 kHz, so this 44.1 kHz audio is resampled to 48 kHz; the
+        // header keeps 44.1 kHz as the rate the audio came at.
+        using (AudioWriter writer = AudioWriter.Create("voice.opus", new AudioWriterOptions
+        {
+            Opus = new OpusEncoderOptions { Bitrate = 32_000, Application = OpusApplication.Voice },
+        }))
+        {
+            writer.Write(tone);
+        }
+        #endregion
+
+        AudioTrackInfo track = (AudioTrackInfo)MediaFile.Probe("voice.opus").Tracks[0];
+        Assert.Equal(CodecIds.Opus, track.CodecId);
+        Assert.Equal(44100, track.Duration?.Rescale(new Rational(1, 44100)).Ticks);
+    }
+
+    [Fact]
+    public void OpusCbr()
+    {
+        using AudioFrame tone = Tone();
+
+        #region audio-opus-cbr
+        // Constant bitrate with 10 ms frames for a link that wants packets of one size: 96 kbit/s gives 120 bytes each.
+        OpusEncoderOptions options = new()
+        {
+            Bitrate = 96_000,
+            RateMode = OpusRateMode.Cbr,
+            FrameDuration = TimeSpan.FromMilliseconds(10),
+            Bandwidth = OpusBandwidth.Superwideband,
+        };
+        using IAudioEncoder encoder = AudioCodecs.Opus.CreateEncoder(
+            new AudioEncoderOptions { SampleRate = 48000, Layout = ChannelLayout.Stereo, Opus = options },
+            MediaContext.Default);
+        encoder.Send(tone);
+        encoder.Flush();
+        int packets = 0;
+        while (encoder.TryReceive(out EncodedPacket? packet))
+        {
+            using (packet)
+            {
+                Console.WriteLine($"{packet.Timestamp}: {packet.Data.Length} bytes");
+                packets++;
+            }
+        }
+        #endregion
+
+        Assert.Equal(101, packets);
+    }
+
+    [Fact]
+    public void OpusWebM()
+    {
+        using SampleFiles files = new();
+        using AudioFrame tone = Tone();
+        using (AudioWriter writer = AudioWriter.Create("talk.mka", new AudioWriterOptions { Codec = FlacCodec.Instance }))
+        {
+            writer.Write(tone);
+        }
+
+        #region audio-opus-webm
+        // WebM holds only Opus and Vorbis audio, so without a codec Transcode encodes the FLAC track in Opus.
+        MediaFile.Transcode("talk.mka", "talk.webm");
+        #endregion
+
+        Assert.Equal(CodecIds.Opus, MediaFile.Probe("talk.webm").Tracks[0].CodecId);
+    }
+
+    [Fact]
+    public void Mp3()
+    {
+        using SampleFiles files = new();
+
+        #region audio-mp3
+        // MP3 decodes to planar float; the LAME tag's delay and padding are trimmed, so the length is the source's exact length.
+        MediaInfo info = MediaFile.Probe("podcast.mp3");
+        Console.WriteLine($"{info.Tags["TITLE"]}: {info.Duration?.ToTimeSpan()}, {info.Chapters.Count} chapters, cover {info.Attachments[0].Name}");
+        using (AudioReader reader = AudioReader.Open("podcast.mp3"))
+        {
+            reader.Seek(MediaTime.FromSeconds(0.15)); // exact: the next sample is the one at 150 ms
+            Console.WriteLine($"{reader.Track.CodecId}, {reader.SampleRate} Hz, {reader.Layout.ChannelCount} channels");
+        }
+
+        // An MP3 track leaves Matroska without a re-encode; the .mp3 gets an ID3v2.4 tag and a Xing header.
+        MediaFile.Remux("episode.mka", "episode.mp3");
+        #endregion
+
+        Assert.Equal(2, info.Chapters.Count);
+        Assert.Equal("MP3", MediaFile.Probe("episode.mp3").FormatName);
+    }
 }

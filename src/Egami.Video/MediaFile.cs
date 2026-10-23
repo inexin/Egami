@@ -1,4 +1,5 @@
 using Egami.Video.Audio;
+using Egami.Video.Audio.Codecs;
 using Egami.Video.Containers;
 using Egami.Video.Containers.Flac;
 
@@ -240,11 +241,12 @@ public static class MediaFile
     /// Copies a file into another container like <see cref="Remux(string, string, Func{TrackInfo, bool}?, MediaContext?, IProgress{MediaProgress}?, CancellationToken)"/>,
     /// but decodes its audio tracks and encodes them again with <paramref name="audio"/>, at the same rate, layout and bit depth:
     /// for example keeping a WebM's video and turning its audio into FLAC in Matroska. Audio no registered codec decodes is
-    /// copied as it is. The output container comes from the extension.
+    /// copied as it is. The output container comes from the extension. Without a codec, a WebM output gets its audio in Opus:
+    /// Opus and Vorbis tracks are copied and the others encoded, so a Matroska or MP4 source turns into a valid WebM.
     /// </summary>
     /// <param name="inputPath">The source file.</param>
     /// <param name="outputPath">The file to write; an existing file is replaced.</param>
-    /// <param name="audio">The audio codec to encode with, or <see langword="null"/> to copy audio too.</param>
+    /// <param name="audio">The audio codec to encode with, or <see langword="null"/> to copy audio too (to WebM: to encode it in Opus unless it is Opus or Vorbis).</param>
     /// <param name="audioLevel">The audio codec's compression level, or <see langword="null"/> for its default.</param>
     /// <param name="tracks">Which tracks to keep, or <see langword="null"/> for all.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
@@ -262,7 +264,9 @@ public static class MediaFile
         ArgumentNullException.ThrowIfNull(inputPath);
         ArgumentNullException.ThrowIfNull(outputPath);
         ThrowIfCannotEncode(audio);
-        return RunJob(OpenRead(inputPath), false, new JobOutput(outputPath, null, null, false), audio, audioLevel, tracks, context ?? MediaContext.Default, progress, cancellationToken);
+        context ??= MediaContext.Default;
+        bool webM = audio is null && FormatForPath(outputPath, context) == MatroskaFormat.WebM;
+        return RunJob(OpenRead(inputPath), false, new JobOutput(outputPath, null, null, false), webM ? OpusCodec.Instance : audio, audioLevel, tracks, context, progress, cancellationToken, webM);
     }
 
     /// <summary>
@@ -273,7 +277,7 @@ public static class MediaFile
     /// <param name="input">The source, read from its current position.</param>
     /// <param name="output">Where to write.</param>
     /// <param name="outputFormat">The output container: "Matroska", ".mkv", "webm" and so on.</param>
-    /// <param name="audio">The audio codec to encode with, or <see langword="null"/> to copy audio too.</param>
+    /// <param name="audio">The audio codec to encode with, or <see langword="null"/> to copy audio too (to WebM: to encode it in Opus unless it is Opus or Vorbis).</param>
     /// <param name="audioLevel">The audio codec's compression level, or <see langword="null"/> for its default.</param>
     /// <param name="tracks">Which tracks to keep, or <see langword="null"/> for all.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
@@ -290,7 +294,9 @@ public static class MediaFile
         ArgumentNullException.ThrowIfNull(output);
         ArgumentNullException.ThrowIfNull(outputFormat);
         ThrowIfCannotEncode(audio);
-        return RunJob(input, leaveOpen, new JobOutput(null, output, outputFormat, leaveOpen), audio, audioLevel, tracks, context ?? MediaContext.Default, progress, cancellationToken);
+        context ??= MediaContext.Default;
+        bool webM = audio is null && context.FindContainer(outputFormat) == MatroskaFormat.WebM;
+        return RunJob(input, leaveOpen, new JobOutput(null, output, outputFormat, leaveOpen), webM ? OpusCodec.Instance : audio, audioLevel, tracks, context, progress, cancellationToken, webM);
     }
 
     private static void ThrowIfCannotEncode(AudioCodec? audio)
@@ -310,9 +316,10 @@ public static class MediaFile
 
     /// <summary>
     /// The remux and transcode loop. Owns <paramref name="input"/> unless <paramref name="leaveInputOpen"/>. Without a handler
-    /// and with a token that cannot be cancelled it runs exactly as a plain demux-mux loop: no wrapper, no clock.
+    /// and with a token that cannot be cancelled it runs exactly as a plain demux-mux loop: no wrapper, no clock. With
+    /// <paramref name="keepWebMAudio"/> Vorbis tracks are copied too, as WebM holds them.
     /// </summary>
-    private static long RunJob(Stream input, bool leaveInputOpen, JobOutput target, AudioCodec? audio, int? audioLevel, Func<TrackInfo, bool>? tracks, MediaContext context, IProgress<MediaProgress>? progress, CancellationToken cancellationToken)
+    private static long RunJob(Stream input, bool leaveInputOpen, JobOutput target, AudioCodec? audio, int? audioLevel, Func<TrackInfo, bool>? tracks, MediaContext context, IProgress<MediaProgress>? progress, CancellationToken cancellationToken, bool keepWebMAudio = false)
     {
         try
         {
@@ -326,7 +333,7 @@ public static class MediaFile
             {
                 for (int i = 0; i < kept.Length && recoded is not null; i++)
                 {
-                    if (kept[i] is not AudioTrackInfo track || track.CodecId == audio!.CodecId || context.FindAudioCodec(track) is not { } codec)
+                    if (kept[i] is not AudioTrackInfo track || track.CodecId == audio!.CodecId || (keepWebMAudio && track.CodecId == CodecIds.Vorbis) || context.FindAudioCodec(track) is not { } codec)
                     {
                         continue;
                     }

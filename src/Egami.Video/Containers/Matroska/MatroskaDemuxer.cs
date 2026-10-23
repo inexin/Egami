@@ -883,6 +883,16 @@ internal sealed class MatroskaDemuxer : IDemuxer
                 }
             }
 
+            else if (track.Track?.CodecId is CodecIds.Mp3 or CodecIds.Mp2 or CodecIds.Mp1 && frames == 1
+                && Audio.Codecs.Mp3.MpegAudioHeader.IsValid(payload) && track.Track is AudioTrackInfo { SampleRate: > 0 } mpeg)
+            {
+                // MPEG audio frames have a fixed length in samples, which millisecond block times round; DiscardPadding cuts the last one.
+                Rational sample = new(1, mpeg.SampleRate);
+                long samples = new Audio.Codecs.Mp3.MpegAudioHeader(payload).SamplesPerFrame;
+                long cut = discardPadding > 0 ? new MediaTime(discardPadding, Rational.Nanosecond).Rescale(sample).Ticks : 0;
+                packet.Duration = new MediaTime(Math.Max(0, samples - cut), sample);
+            }
+
             else if (track.Track?.CodecId == CodecIds.Vorbis && frames == 1)
             {
                 // Vorbis packets add half of two blocks; DiscardPadding cuts the end as Ogg's last granule position does.

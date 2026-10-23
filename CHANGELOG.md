@@ -271,6 +271,42 @@ after V5.6 (Design Q17).
 - The lookahead places keyframes at scene cuts, plans groups with hidden, temporally filtered alternate references where the
   group's first frame still predicts its last well, and gives each frame its quantizer. Output bytes do not depend on the thread count.
 
+V5.7: Opus encoding, translated from libopus 1.5.2. Part of the V5 encoders' combined API review (Design Q17).
+
+### Opus encoding
+
+- `OpusCodec.CanEncode` and `CreateEncoder`: SILK, CELT and hybrid in every mode, 1 to 8 channels (mapping family 0 for mono
+  and stereo, 1 with libopus's surround masking and stream split above), 8, 12, 16, 24 and 48 kHz with other rates resampled
+  to 48 kHz and kept in the header. The packets are byte for byte libopus 1.5.2's in 46 reference settings (every application,
+  rate mode, frame duration from 2.5 to 120 ms, FEC, DTX, forced modes and bandwidths, multistream up to 7.1).
+- `OpusEncoderOptions` (`AudioEncoderOptions.Opus`, `AudioWriterOptions.Opus`): `Bitrate` (64 kbit/s per channel by default),
+  `RateMode` (`OpusRateMode.Vbr`, `ConstrainedVbr`, `Cbr`), `Application` (`OpusApplication.Audio`, `Voice`, `LowDelay`),
+  `FrameDuration` (20 ms), `Effort` (0 to 10, libopus's complexity, default 10), `Bandwidth` (`OpusBandwidth`), `InbandFec`,
+  `ExpectedLoss` and `Dtx`.
+- The pre-skip is the encoder's look-ahead (312 samples at 48 kHz) in OpusHead and `CodecDelay`, and the last packet's
+  duration trims the end, so .opus, WebM, Matroska and MP4 files decode to exactly the samples written in `AudioReader`,
+  opusdec and FFmpeg (which keeps the end padding of MP4).
+- `AudioWriter` writes Opus by default for Ogg (.opus, .ogg, .oga) and WebM files, and `MediaFile.Transcode` with no codec
+  and a WebM output encodes the audio in Opus unless it is Opus or Vorbis.
+- 60 s of stereo at 128 kbit/s encodes in 0.70 s, 1.4 times libopus 1.5.2's plain C build on the same machine, and
+  steady-state encoding allocates nothing per packet.
+
+### MP3 (V5.8)
+
+V5.8: MPEG audio decoding and .mp3 files. The API review is still to come.
+
+- `Mp3Codec` (and `AudioCodecs.Mp3`, decode only), registered by default, translated from minimp3 (CC0): Layers I, II and III
+  of MPEG-1, MPEG-2 and MPEG-2.5, 8 to 48 kHz, every channel mode and free-format bit rates, as planar float. It passes the
+  ISO/IEC 11172-4 compliance streams at full accuracy (maximum error at most 2^-14, PSNR about 101 dB) and matches FFmpeg's
+  float decoder within 2e-7 on LAME files. Frames are found by three matching headers; damaged frames and CRC-16 mismatches
+  (`Mp3.CorruptFrame`, `Mp3.BadCrc`) become silence of their own length with `DecodeErrorMode.Conceal`. `CodecIds.Mp1` is new.
+- `Mp3Format` (.mp3, .mp2, .mp1, .mpa), registered by default, read and written. ID3v2.2 to 2.4 tags (text frames, APIC cover
+  art, CHAP chapters), ID3v1, APEv2 and Lyrics3 tags are read; Xing, Info and VBRI frames give the frame count, and the LAME
+  tag's delay and padding become `CodecDelay` and the last packet's duration, so LAME files decode to the source's exact
+  sample count. Seeks land on the exact sample (output equals a straight decode); `Mp3Format.FastSeek` seeks by the Xing table.
+  The writer stores ID3v2.4 and, on a seekable stream, a Xing header and LAME tag that FFmpeg reads gaplessly.
+- MP3 in Matroska gets sample-exact packet durations and its DiscardPadding; WAV's id3 chunk now reads ID3v2.2 too.
+
 V1.4 stage A: scene detection and the analysis pass, in the new `Egami.Video.Analysis` namespace. The API review comes once the
 whole step is built (V1.4 Build Plan).
 

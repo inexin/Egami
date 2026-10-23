@@ -281,6 +281,7 @@ Egami.Video.Audio.Codecs.FlacCodec
 Egami.Video.Audio.Codecs.OpusCodec
 Egami.Video.Audio.Codecs.PcmCodec
 Egami.Video.Audio.Codecs.VorbisCodec
+Egami.Video.Audio.Codecs.Mp3Codec
 Egami.Video.Audio.IAudioDecoder
 Egami.Video.Audio.IAudioDecoder.Flush() -> void
 Egami.Video.Audio.IAudioDecoder.Reset() -> void
@@ -638,6 +639,10 @@ override Egami.Video.Audio.Codecs.PcmCodec.Name.get -> string!
 override Egami.Video.Audio.Codecs.VorbisCodec.CodecId.get -> string!
 override Egami.Video.Audio.Codecs.VorbisCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
 override Egami.Video.Audio.Codecs.VorbisCodec.Name.get -> string!
+override Egami.Video.Audio.Codecs.Mp3Codec.CanDecode(Egami.Video.TrackInfo! track) -> bool
+override Egami.Video.Audio.Codecs.Mp3Codec.CodecId.get -> string!
+override Egami.Video.Audio.Codecs.Mp3Codec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
+override Egami.Video.Audio.Codecs.Mp3Codec.Name.get -> string!
 override Egami.Video.AudioReaderOptions.Equals(object? obj) -> bool
 override Egami.Video.AudioReaderOptions.GetHashCode() -> int
 override Egami.Video.AudioReaderOptions.ToString() -> string!
@@ -735,6 +740,8 @@ static Egami.Video.Audio.AudioCodecs.Get(string! codecId, Egami.Video.MediaConte
 static Egami.Video.Audio.AudioCodecs.Opus.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Pcm.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Vorbis.get -> Egami.Video.Audio.AudioCodec!
+static Egami.Video.Audio.AudioCodecs.Mp3.get -> Egami.Video.Audio.AudioCodec!
+static Egami.Video.Audio.Codecs.Mp3Codec.Instance.get -> Egami.Video.Audio.Codecs.Mp3Codec!
 static Egami.Video.Audio.AudioConvertOptions.Default.get -> Egami.Video.Audio.AudioConvertOptions!
 static Egami.Video.Audio.AudioConvertOptions.operator !=(Egami.Video.Audio.AudioConvertOptions? left, Egami.Video.Audio.AudioConvertOptions? right) -> bool
 static Egami.Video.Audio.AudioConvertOptions.operator ==(Egami.Video.Audio.AudioConvertOptions? left, Egami.Video.Audio.AudioConvertOptions? right) -> bool
@@ -820,3 +827,64 @@ virtual Egami.Video.Audio.AudioCodec.CreateEncoder(Egami.Video.Audio.AudioEncode
 ~override Egami.Video.Audio.ChannelLayout.Equals(object obj) -> bool
 ~override Egami.Video.MediaProgress.Equals(object obj) -> bool
 ~override Egami.Video.MediaProgress.ToString() -> string
+Egami.Video.Audio.AudioEncoderOptions.Opus.get -> Egami.Video.Audio.Codecs.OpusEncoderOptions?
+Egami.Video.Audio.AudioEncoderOptions.Opus.init -> void
+Egami.Video.Audio.Codecs.OpusApplication
+Egami.Video.Audio.Codecs.OpusApplication.Audio = 0 -> Egami.Video.Audio.Codecs.OpusApplication
+Egami.Video.Audio.Codecs.OpusApplication.LowDelay = 2 -> Egami.Video.Audio.Codecs.OpusApplication
+Egami.Video.Audio.Codecs.OpusApplication.Voice = 1 -> Egami.Video.Audio.Codecs.OpusApplication
+Egami.Video.Audio.Codecs.OpusBandwidth
+Egami.Video.Audio.Codecs.OpusBandwidth.Fullband = 1105 -> Egami.Video.Audio.Codecs.OpusBandwidth
+Egami.Video.Audio.Codecs.OpusBandwidth.Mediumband = 1102 -> Egami.Video.Audio.Codecs.OpusBandwidth
+Egami.Video.Audio.Codecs.OpusBandwidth.Narrowband = 1101 -> Egami.Video.Audio.Codecs.OpusBandwidth
+Egami.Video.Audio.Codecs.OpusBandwidth.Superwideband = 1104 -> Egami.Video.Audio.Codecs.OpusBandwidth
+Egami.Video.Audio.Codecs.OpusBandwidth.Wideband = 1103 -> Egami.Video.Audio.Codecs.OpusBandwidth
+Egami.Video.Audio.Codecs.OpusEncoderOptions
+Egami.Video.Audio.Codecs.OpusEncoderOptions.<Clone>$() -> Egami.Video.Audio.Codecs.OpusEncoderOptions!
+Egami.Video.Audio.Codecs.OpusEncoderOptions.Application.get -> Egami.Video.Audio.Codecs.OpusApplication
+Egami.Video.Audio.Codecs.OpusEncoderOptions.Application.init -> void
+Egami.Video.Audio.Codecs.OpusEncoderOptions.Bandwidth.get -> Egami.Video.Audio.Codecs.OpusBandwidth?
+Egami.Video.Audio.Codecs.OpusEncoderOptions.Bandwidth.init -> void
+Egami.Video.Audio.Codecs.OpusEncoderOptions.Bitrate.get -> int?
+Egami.Video.Audio.Codecs.OpusEncoderOptions.Bitrate.init -> void
+Egami.Video.Audio.Codecs.OpusEncoderOptions.Dtx.get -> bool
+Egami.Video.Audio.Codecs.OpusEncoderOptions.Dtx.init -> void
+Egami.Video.Audio.Codecs.OpusEncoderOptions.Effort.get -> int
+Egami.Video.Audio.Codecs.OpusEncoderOptions.Effort.init -> void
+Egami.Video.Audio.Codecs.OpusEncoderOptions.Equals(Egami.Video.Audio.Codecs.OpusEncoderOptions? other) -> bool
+Egami.Video.Audio.Codecs.OpusEncoderOptions.ExpectedLoss.get -> int
+Egami.Video.Audio.Codecs.OpusEncoderOptions.ExpectedLoss.init -> void
+Egami.Video.Audio.Codecs.OpusEncoderOptions.FrameDuration.get -> System.TimeSpan
+Egami.Video.Audio.Codecs.OpusEncoderOptions.FrameDuration.init -> void
+Egami.Video.Audio.Codecs.OpusEncoderOptions.InbandFec.get -> bool
+Egami.Video.Audio.Codecs.OpusEncoderOptions.InbandFec.init -> void
+Egami.Video.Audio.Codecs.OpusEncoderOptions.OpusEncoderOptions() -> void
+Egami.Video.Audio.Codecs.OpusEncoderOptions.RateMode.get -> Egami.Video.Audio.Codecs.OpusRateMode
+Egami.Video.Audio.Codecs.OpusEncoderOptions.RateMode.init -> void
+Egami.Video.Audio.Codecs.OpusRateMode
+Egami.Video.Audio.Codecs.OpusRateMode.Cbr = 2 -> Egami.Video.Audio.Codecs.OpusRateMode
+Egami.Video.Audio.Codecs.OpusRateMode.ConstrainedVbr = 1 -> Egami.Video.Audio.Codecs.OpusRateMode
+Egami.Video.Audio.Codecs.OpusRateMode.Vbr = 0 -> Egami.Video.Audio.Codecs.OpusRateMode
+Egami.Video.AudioWriterOptions.Opus.get -> Egami.Video.Audio.Codecs.OpusEncoderOptions?
+Egami.Video.AudioWriterOptions.Opus.init -> void
+override Egami.Video.Audio.Codecs.OpusCodec.CanEncode.get -> bool
+override Egami.Video.Audio.Codecs.OpusCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
+override Egami.Video.Audio.Codecs.OpusEncoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Audio.Codecs.OpusEncoderOptions.GetHashCode() -> int
+override Egami.Video.Audio.Codecs.OpusEncoderOptions.ToString() -> string!
+static Egami.Video.Audio.Codecs.OpusEncoderOptions.Default.get -> Egami.Video.Audio.Codecs.OpusEncoderOptions!
+static Egami.Video.Audio.Codecs.OpusEncoderOptions.operator !=(Egami.Video.Audio.Codecs.OpusEncoderOptions? left, Egami.Video.Audio.Codecs.OpusEncoderOptions? right) -> bool
+static Egami.Video.Audio.Codecs.OpusEncoderOptions.operator ==(Egami.Video.Audio.Codecs.OpusEncoderOptions? left, Egami.Video.Audio.Codecs.OpusEncoderOptions? right) -> bool
+const Egami.Video.CodecIds.Mp1 = "A_MPEG/L1" -> string!
+Egami.Video.Containers.Mp3Format
+Egami.Video.Containers.Mp3Format.Mp3Format() -> void
+static Egami.Video.Containers.Mp3Format.Instance.get -> Egami.Video.Containers.Mp3Format!
+override Egami.Video.Containers.Mp3Format.Name.get -> string!
+override Egami.Video.Containers.Mp3Format.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.Mp3Format.SignatureLength.get -> int
+override Egami.Video.Containers.Mp3Format.CanMux.get -> bool
+Egami.Video.Containers.Mp3Format.FastSeek.get -> bool
+Egami.Video.Containers.Mp3Format.FastSeek.init -> void
+override Egami.Video.Containers.Mp3Format.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.Mp3Format.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.Mp3Format.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!

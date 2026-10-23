@@ -77,10 +77,13 @@ static Action<Stream> Target(string name) => name switch
     "wav" or "flac" or "ogg" => ReadAudio,
     "opusraw" => DecodeOpusPackets,
     "vorbisraw" => DecodeVorbisPackets,
+    "mp3" => ReadMp3,
+    "mp3raw" => DecodeMp3Packets,
     "av1" => ReadAv1,
     "av1raw" => DecodeAv1Packets,
     "vp8enc" => EncodeVp8,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, av1, av1raw, wav, flac, ogg, opusraw, vorbisraw."),
+    "opusenc" => EncodeOpus,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, av1, av1raw, wav, flac, ogg, opusraw, vorbisraw, vp8enc, mp3, mp3raw, opusenc."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -246,6 +249,151 @@ static void ReadAudio(Stream stream)
     }
     catch (EgamiException)
     {
+    }
+}
+
+// An MPEG audio file (V5.8): read as any audio file (exact seeks), then with Mp3Format.FastSeek, seeking by the Xing table.
+static void ReadMp3(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    ReadAudio(new MemoryStream(data));
+    MediaContext context = Context();
+    try
+    {
+        using IDemuxer demuxer = new Mp3Format { FastSeek = true }.OpenDemuxer(new MemoryStream(data), context, leaveOpen: false);
+        ReadAndDecode(demuxer, context, maxPackets: 50);
+        demuxer.Seek(MediaTime.FromSeconds(0.2));
+        ReadAndDecode(demuxer, context, maxPackets: 20);
+    }
+    catch (EgamiException)
+    {
+    }
+}
+
+// Raw MPEG audio bytes (V5.8): the first byte picks mono or stereo and the error mode, then chunks with 16-bit big-endian
+// lengths go to the decoder as packets, so frames are cut anywhere, as AVI chunks cut them; a zero length is a lost packet.
+static void DecodeMp3Packets(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 1)
+    {
+        return;
+    }
+
+    MediaContext context = Context() with { Egami = Context().Egami with { Diagnostics = _ => { } } };
+    Egami.Video.AudioTrackInfo track = new() { Number = 1, Kind = TrackKind.Audio, CodecId = CodecIds.Mp3, TimeBase = new Rational(1, 44100), SampleRate = 44100, Channels = (data[0] & 1) + 1 };
+    Egami.Video.Audio.AudioDecoderOptions options = new() { Errors = (data[0] & 2) != 0 ? DecodeErrorMode.Skip : DecodeErrorMode.Conceal, KeepPadding = (data[0] & 4) != 0 };
+    using Egami.Video.Audio.IAudioDecoder decoder = Egami.Video.Audio.Codecs.Mp3Codec.Instance.CreateDecoder(track, options, context);
+    int p = 1;
+    int n = 0;
+    while (p + 2 <= data.Length && n < 200)
+    {
+        int length = Math.Min((data[p] << 8) | data[p + 1], data.Length - p - 2);
+        if (length == 0)
+        {
+            decoder.SendLoss(new MediaTime(1152, track.TimeBase));
+        }
+        else
+        {
+            using EncodedPacket packet = EncodedPacket.Rent(1, length, new MediaTime(n * 1152L, track.TimeBase));
+            data.AsSpan(p + 2, length).CopyTo(packet.GetWritableData().Span);
+            packet.Duration = n % 7 == 6 ? new MediaTime(500, track.TimeBase) : null;
+            decoder.Send(packet);
+        }
+
+        p += 2 + length;
+        n++;
+        while (decoder.TryReceive(out Egami.Video.Audio.AudioFrame? frame))
+        {
+            frame.Dispose();
+        }
+    }
+
+    decoder.Flush();
+    while (decoder.TryReceive(out Egami.Video.Audio.AudioFrame? frame))
+    {
+        frame.Dispose();
+    }
+}
+
+// Opus encoding (V5.7): the first bytes pick the channels (1 to 8), the rate (the five Opus rates, or 44.1 kHz through the
+// resampler) and every encoder setting; the rest is 16-bit audio, encoded in odd-sized frames, then decoded again. Every
+// packet must parse and the decoder must give back exactly the samples that went in.
+static void EncodeOpus(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 8)
+    {
+        return;
+    }
+
+    int channels = 1 + (data[0] % 8);
+    int rate = (data[1] % 6) switch { 0 => 8000, 1 => 12000, 2 => 16000, 3 => 24000, 4 => 44100, _ => 48000 };
+    double[] durations = [2.5, 5, 10, 20, 40, 60, 80, 100, 120];
+    Egami.Video.Audio.Codecs.OpusEncoderOptions opus = new()
+    {
+        Bitrate = (data[2] & 0x80) != 0 ? null : 500 + (data[2] * 2000 * channels),
+        RateMode = (Egami.Video.Audio.Codecs.OpusRateMode)(data[3] % 3),
+        Application = (Egami.Video.Audio.Codecs.OpusApplication)((data[3] >> 2) % 3),
+        FrameDuration = TimeSpan.FromMilliseconds(durations[data[4] % durations.Length]),
+        Effort = data[5] % 11,
+        Bandwidth = (data[6] & 7) is var b && b < 5 ? (Egami.Video.Audio.Codecs.OpusBandwidth)(1101 + b) : null,
+        InbandFec = (data[6] & 8) != 0,
+        Dtx = (data[6] & 16) != 0,
+        ExpectedLoss = data[7] % 101,
+    };
+    Egami.Video.Audio.ChannelLayout layout = Egami.Video.Audio.ChannelLayout.ForChannelCount(channels);
+    MediaContext context = Context();
+    using Egami.Video.Audio.IAudioEncoder encoder = Egami.Video.Audio.AudioCodecs.Opus.CreateEncoder(
+        new Egami.Video.Audio.AudioEncoderOptions { SampleRate = rate, Layout = layout, Opus = opus }, context);
+    int samples = Math.Min((data.Length - 8) / 2 / channels, 48000);
+    List<EncodedPacket> packets = [];
+    int at = 0;
+    while (at < samples)
+    {
+        int n = Math.Min(samples - at, 1 + (data[8 + (at % (data.Length - 8))] * 7));
+        using Egami.Video.Audio.AudioFrame frame = new(Egami.Video.Audio.SampleFormat.S16, layout, rate, n, new MediaTime(at, new Rational(1, rate)), context);
+        data.AsSpan(8 + (at * 2 * channels), n * 2 * channels).CopyTo(frame.GetBytes(0));
+        encoder.Send(frame);
+        at += n;
+        while (encoder.TryReceive(out EncodedPacket? packet))
+        {
+            packets.Add(packet);
+        }
+    }
+
+    encoder.Flush();
+    while (encoder.TryReceive(out EncodedPacket? packet))
+    {
+        packets.Add(packet);
+    }
+
+    using Egami.Video.Audio.IAudioDecoder decoder = Egami.Video.Audio.AudioCodecs.CreateDecoder(encoder.Track, null, context);
+    long decoded = 0;
+    foreach (EncodedPacket packet in packets)
+    {
+        using (packet)
+        {
+            if (Egami.Video.Audio.Codecs.Opus.OpusPacket.SampleCount(packet.Data.Span, 48000) <= 0)
+            {
+                throw new InvalidOperationException($"The encoder made a packet that does not parse ({packet.Data.Length} bytes).");
+            }
+
+            decoder.Send(packet);
+            while (decoder.TryReceive(out Egami.Video.Audio.AudioFrame? frame))
+            {
+                // The decoder starts at minus the pre-skip; AudioReader drops that part, so count only what follows 0.
+                long start = frame.Timestamp.Rescale(new Rational(1, 48000)).Ticks;
+                decoded += Math.Max(0, Math.Min(frame.SampleCount, start + frame.SampleCount));
+                frame.Dispose();
+            }
+        }
+    }
+
+    long expected = rate == 44100 ? -1 : samples * 48000L / rate;
+    if (expected >= 0 && decoded != expected)
+    {
+        throw new InvalidOperationException($"{samples} samples at {rate} Hz went in, {decoded} at 48 kHz came out.");
     }
 }
 
