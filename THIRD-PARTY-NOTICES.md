@@ -962,3 +962,33 @@ To the extent possible under law, the author(s) have dedicated all copyright and
 software to the public domain worldwide. This software is distributed without any warranty.
 See <http://creativecommons.org/publicdomain/zero/1.0/>.
 ```
+
+## libebur128
+
+Egami.Video's `LoudnessMeter` (`src/Egami.Video/Audio/LoudnessMeter.cs`) designs its K-weighting filters for any sample rate
+from the analog shelf and high-pass parameters that reproduce the 48 kHz coefficients of ITU-R BS.1770 (centre frequencies,
+gain, Q and the shelf's mid-band exponent), and the bilinear-transform formulas that turn them into biquads, as libebur128 by
+Jan Kokemüller does in `ebur128/ebur128.c`. The gating, loudness range and true-peak code is written from BS.1770 and EBU
+Tech 3341 and 3342. libebur128 is distributed under the MIT license:
+
+```
+Copyright (c) 2011 Jan Kokemüller
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```

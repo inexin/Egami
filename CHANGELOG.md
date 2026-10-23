@@ -399,6 +399,17 @@ stream's range so 8-bit and 10-bit video behave alike; they run in `MediaAnalysi
 - `SignalMeter` (as signalstats and colordetect): `PlaneLevels` for Y, Cb, Cr and saturation, the share of pixels outside
   broadcast range, the `SignalRange` really used and `AlphaUse`; with `Blur` the mean edge width (blurdetect's thresholds) and
   with `Blockiness` how much a block grid stands out (blockdetect's periods). Per-frame `SignalFrame`s with `KeepSeries`.
+
+V1.4 stage C: audio detectors and the loudness meter.
+
+- `SilenceDetector` (as silencedetect: under -60 dBFS for 2 s) returns silent stretches exact to the sample, over all channels
+  together or, with `PerChannel`, for each channel.
+- `AudioLevelMeter` (as volumedetect and astats): an `AudioLevelReport` with `ChannelLevels` per channel and overall: peak,
+  RMS, DC offset, crest factor, clipped samples, peak count, noise floor, zero crossings and a 1 dB histogram.
+- `LoudnessMeter` in `Egami.Video.Audio` (ITU-R BS.1770-5, EBU R 128): momentary and short-term loudness every 100 ms, gated
+  integrated loudness, loudness range (EBU Tech 3342), 4x oversampled true peak and sample peak, at any rate from 8 to 384 kHz
+  with the surround channels weighted and LFE left out. It passes the EBU Tech 3341 and 3342 tone cases, runs about 200 times
+  faster than real time on 48 kHz stereo, and is the meter V9.1's loudness normalization will use.
 - No detector allocates memory per frame once running.
 
 V5.3: VP9 encoding. API review pending (combined encoders review).
