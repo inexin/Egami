@@ -70,7 +70,7 @@ internal sealed class FragmentTrack
     /// <summary>Gets each fragment's first sync sample for mfra: its presentation time, its moof's offset, its traf and its number.</summary>
     public List<(long Time, long Moof, int Traf, int Sample)> Index { get; } = [];
 
-    /// <summary>Gets the media ticks each written fragment starts at, how long it lasts and how many bytes its moof and mdat take.</summary>
+    /// <summary>Gets each written fragment's decode time (its tfdt) in media ticks, its samples' total duration, and its moof and mdat's size.</summary>
     public List<(long Start, long Duration, long Bytes)> Fragments { get; } = [];
 
     /// <summary>Gets or sets the empty edit written in moov, in media ticks (0 for none).</summary>

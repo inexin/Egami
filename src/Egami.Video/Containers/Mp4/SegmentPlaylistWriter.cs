@@ -68,7 +68,9 @@ internal static class SegmentPlaylistWriter
 
     public static void Dash(Func<string, Stream> open, IReadOnlyList<FragmentTrack> tracks)
     {
-        double duration = tracks.Max(t => t.Fragments.Count == 0 ? 0 : Seconds(t, t.Fragments[^1].Start + t.Fragments[^1].Duration - t.Offset));
+        // The media's own end, before the edit lists shift it: players cut what is appended past the presentation's end, and an
+        // edit that ends exactly at the last frame's end can lose that frame to rounding.
+        double duration = tracks.Max(t => t.Fragments.Count == 0 ? 0 : Seconds(t, t.Fragments[^1].Start + t.Fragments[^1].Duration));
         double longest = tracks.Max(t => t.Fragments.Count == 0 ? 0 : t.Fragments.Max(f => Seconds(t, f.Duration)));
         using Stream stream = open("manifest.mpd");
         using XmlWriter x = XmlWriter.Create(stream, new XmlWriterSettings { Encoding = Utf8, Indent = true, NewLineChars = "\n" });
@@ -123,17 +125,15 @@ internal static class SegmentPlaylistWriter
             x.WriteAttributeString("initialization", $"{Mp4SegmentWriter.NameOf(track)}-init.mp4");
             x.WriteAttributeString("media", $"{Mp4SegmentWriter.NameOf(track)}-$Number%05d$.m4s");
             x.WriteAttributeString("startNumber", "1");
-            if (track.Offset > 0)
-            {
-                x.WriteAttributeString("presentationTimeOffset", Invariant($"{track.Offset}"));
-            }
-
+            // The times are the segments' decode times (tfdt), each lasting until the next starts, with no presentationTimeOffset:
+            // the init segment's edit list shifts the media to the presentation, and players that read MP4 apply it.
             x.WriteStartElement("SegmentTimeline");
+            long Length(int i) => i + 1 < track.Fragments.Count ? track.Fragments[i + 1].Start - track.Fragments[i].Start : track.Fragments[i].Duration;
             for (int i = 0; i < track.Fragments.Count;)
             {
-                (long start, long length, _) = track.Fragments[i];
+                long start = track.Fragments[i].Start, length = Length(i);
                 int repeat = 0;
-                while (i + repeat + 1 < track.Fragments.Count && track.Fragments[i + repeat + 1].Duration == length)
+                while (i + repeat + 1 < track.Fragments.Count && Length(i + repeat + 1) == length)
                 {
                     repeat++;
                 }
