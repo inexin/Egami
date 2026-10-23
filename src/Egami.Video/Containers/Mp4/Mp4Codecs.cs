@@ -287,6 +287,11 @@ internal static class Mp4Codecs
                 codecPrivate = ReadOnlyMemory<byte>.Empty;
                 _ = signed;
                 break;
+            case "ulaw" or "alaw":
+                codecId = type == "ulaw" ? CodecIds.G711MuLaw : CodecIds.G711ALaw;
+                bits = 8;
+                codecPrivate = ReadOnlyMemory<byte>.Empty;
+                break;
             case "fl32" or "fl64" or "fpcm":
                 codecId = bigEndian && type != "fpcm" ? codecId : CodecIds.PcmFloat;
                 bits = type switch { "fl32" => 32, "fl64" => 64, _ => bits };

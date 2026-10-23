@@ -379,6 +379,24 @@ whole step is built (V1.4 Build Plan).
   any bit depth, a moving pattern with a frame counter, solid colors and gradients as video; sine tones, silence, white and
   pink noise and log sweeps as audio, at a level in dBFS.
 
+V5.9 stage A: AIFF and AIFF-C, and G.711.
+
+### AIFF
+
+- `AiffFormat`: .aif, .aiff and .aifc files. Reads big-endian PCM, AIFF-C's sowt, in24, in32, fl32 and fl64 and G.711 (ulaw,
+  alaw), at the sample count COMM gives; other AIFF-C compressions (ima4, MACE, QDesign) pass through as `X_AIFC/<type>`
+  packets. NAME, AUTH, "(c) " and ANNO become tags, an ID3 chunk adds tags, cover art and chapters, MARK markers become
+  chapters and a CHAN chunk gives the channel layout. Seeking is sample exact.
+- Writes integer PCM (8 to 32 bits, either byte order in) as AIFF and float as AIFF-C, with text chunks, ID3, MARK and CHAN,
+  through a temporary file when the output cannot seek. `AudioWriter` defaults to big-endian PCM for .aiff, and ffmpeg reads
+  the files sample for sample with their layout and tags.
+
+### G.711
+
+- `G711Codec.MuLaw` and `G711Codec.ALaw` (`CodecIds.G711MuLaw`, `CodecIds.G711ALaw`) decode ITU-T G.711 to 16-bit samples, from
+  AIFF-C, WAV, AVI (format tags 6 and 7) and MP4 and MOV (ulaw, alaw). Matroska has no G.711 id, so it does not take them.
+- Fuzz target `aiff`.
+
 ## Egami.Video 0.5.0 (unreleased)
 
 V5.0 audio core: decoded audio, PCM and FLAC, WAV and FLAC files, resampling and channel mixing; V5.1: Opus decoding and Ogg;

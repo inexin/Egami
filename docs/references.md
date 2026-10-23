@@ -98,6 +98,8 @@ LGPL code is never read.
 | Xing VBR header, Fraunhofer VBRI header, and the LAME "Mp3 Info Tag rev 1" specification (Gabriel Bouvigne) | Frame counts, seek tables, and the encoder delay and padding for gapless playback |
 | WebVTT, W3C; WHATWG HTML named character references (as data) | WebVTT parsing and writing, cue text entities |
 | SubRip (SRT) as players read it; Sub Station Alpha v4.00+ script format | SRT, ASS and SSA files |
+| Audio Interchange File Format 1.3 (Apple, 1989); AIFF-C draft (Apple, 1991); Apple Core Audio Format specification (AudioChannelLayout) | AIFF and AIFF-C files, their compression types and the CHAN chunk |
+| ITU-T G.711 | μ-law and A-law expansion |
 | Matroska subtitle codec mapping; WebM WebVTT mapping | `S_TEXT/*` and `D_WEBVTT/*` tracks |
 | ISO/IEC 14496-30; 3GPP TS 26.245 | WebVTT (`wvtt`) and timed text (`tx3g`) in MP4 |
 

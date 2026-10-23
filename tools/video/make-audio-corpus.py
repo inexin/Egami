@@ -16,6 +16,9 @@ Usage, from the repo root:
                                                        manifest.json, and the minimp3 copy of the ISO/IEC 11172-4 compliance
                                                        streams fetched into .cache/audio/mp3-vectors (not checked in: ISO terms)
                                                        Add --local to run FFmpeg from the PATH instead of in Docker.
+  python tools/video/make-audio-corpus.py --aiff       V5.9: AIFF and AIFF-C clips, and G.711 in WAV and MOV, into
+                                                       tests/video/corpus/audio/aiff (checked in) with FFmpeg's decode MD5 in
+                                                       manifest.json. Add --local to run FFmpeg from the PATH instead of in Docker.
   python tools/video/make-audio-corpus.py --check DIR  run flac -t on every .flac file in DIR (Egami.Video's own output)
   python tools/video/make-audio-corpus.py --gates      after the EGAMI_AUDIO_GATES=1 tests: flac -t on Egami.Video's encodings
                                                        of the IETF files, their size against flac -0 to -8, and flac -d's time
@@ -274,6 +277,59 @@ def make_mp3(local):
                 subprocess.run(["curl", "-sSfL", "-o", target, MP3_VECTOR_URL + name + ext], check=ext == ".bit")
 
 
+# name: (FFmpeg arguments after the source, rate, channels, bits of the reference decode, float, decodes). FFmpeg's aiff muxer writes
+# AIFF for big-endian integers and AIFF-C for the others; ima4 is there to check pass-through, so it has no reference.
+AIFF_OUT = os.path.join(OUT, "aiff")
+AIFF_CLIPS = {
+    "aiff-s16-stereo.aiff": ("-c:a pcm_s16be", 44100, 2, 16, False, True),
+    "aiff-s8-mono.aiff": ("-c:a pcm_s8", 8000, 1, 8, False, True),
+    "aiff-s24-51.aiff": ("-c:a pcm_s24be", 16000, 6, 24, False, True),
+    "aiff-s32-stereo.aiff": ("-c:a pcm_s32be", 22050, 2, 32, False, True),
+    "aifc-f32-stereo.aifc": ("-c:a pcm_f32be -f aiff", 22050, 2, 32, True, True),
+    "aifc-f64-mono.aifc": ("-c:a pcm_f64be -f aiff", 22050, 1, 32, True, True),
+    "aifc-sowt-stereo.aifc": ("-c:a pcm_s16le -f aiff", 44100, 2, 16, False, True),
+    "aifc-ulaw-mono.aifc": ("-c:a pcm_mulaw -f aiff", 8000, 1, 16, False, True),
+    "aifc-alaw-mono.aifc": ("-c:a pcm_alaw -f aiff", 8000, 1, 16, False, True),
+    "aifc-ima4-stereo.aifc": ("-c:a adpcm_ima_qt -f aiff", 22050, 2, 16, False, False),
+    "aiff-tags-id3.aiff": ("-c:a pcm_s16be -write_id3v2 1 -metadata title='Corpus tone' -metadata artist=Egami -metadata album='Egami corpus'"
+                           " -metadata comment='Test clip'", 22050, 1, 16, False, True),
+    "wav-ulaw-mono.wav": ("-c:a pcm_mulaw", 8000, 1, 16, False, True),
+    "wav-alaw-mono.wav": ("-c:a pcm_alaw", 8000, 1, 16, False, True),
+    "mov-ulaw-mono.mov": ("-c:a pcm_mulaw", 8000, 1, 16, False, True),
+}
+
+
+def make_aiff(local):
+    os.makedirs(AIFF_OUT, exist_ok=True)
+
+    def output(command):
+        if local:
+            return subprocess.run(["sh", "-c", command.replace("/work/", AIFF_OUT + "/")], check=True, capture_output=True).stdout
+        return subprocess.run(["docker", "run", "--rm", "-v", f"{AIFF_OUT}:/work", IMAGE, "sh", "-c", command], check=True,
+                              capture_output=True).stdout
+
+    manifest = {}
+    for name, (args, rate, channels, bits, is_float, decodes) in AIFF_CLIPS.items():
+        path = os.path.join(AIFF_OUT, name)
+        if os.path.exists(path):
+            os.remove(path)
+        output("ffmpeg -y -v error -bitexact " + source(rate, channels, 0.3) + f" {args} /work/{name}")
+        if not decodes:
+            manifest[name] = {"decodes": False}
+            print(name, os.path.getsize(path), "pass-through only")
+            continue
+        codec = "pcm_f32le" if is_float else {8: "pcm_s8", 16: "pcm_s16le", 24: "pcm_s24le", 32: "pcm_s32le"}[bits]
+        fmt = "f32le" if is_float else {8: "s8", 16: "s16le", 24: "s24le", 32: "s32le"}[bits]
+        raw = output(f"ffmpeg -v error -i /work/{name} -c:a {codec} -f {fmt} -")
+        width = 4 if is_float else (bits + 7) // 8
+        manifest[name] = {"samples": len(raw) // (width * channels), "rate": rate, "channels": channels, "bits": bits,
+                          "float": is_float, "md5": hashlib.md5(raw).hexdigest()}
+        print(name, os.path.getsize(path), manifest[name]["samples"], manifest[name]["md5"])
+    with open(os.path.join(AIFF_OUT, "manifest.json"), "w", newline="\n") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+
+
 def gates():
     """Compares .cache/audio/gates/L<n> (Egami.Video's FLAC) with libFLAC at the same level; prints sizes and flac -d's time."""
     gates_dir = os.path.join(CACHE, "gates")
@@ -303,6 +359,9 @@ if __name__ == "__main__":
         sys.exit(1 if check(sys.argv[sys.argv.index("--check") + 1]) else 0)
     if "--opus" in sys.argv:
         make_opus()
+        sys.exit(0)
+    if "--aiff" in sys.argv:
+        make_aiff("--local" in sys.argv)
         sys.exit(0)
     if "--mp3" in sys.argv:
         make_mp3("--local" in sys.argv)

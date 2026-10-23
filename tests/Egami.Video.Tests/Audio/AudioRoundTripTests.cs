@@ -79,6 +79,7 @@ public class AudioRoundTripTests
     [InlineData(".rf64", 16)]
     [InlineData(".mka", 24)]
     [InlineData(".mp4", 16)]
+    [InlineData(".aiff", 24)]
     public void PcmIsExact(string extension, int bits)
     {
         using AudioFrame input = Signal(2, bits);
