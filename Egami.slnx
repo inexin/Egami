@@ -33,6 +33,7 @@
     <Project Path="src/Egami.Metafiles/Egami.Metafiles.csproj" />
     <Project Path="src/Egami.Svg/Egami.Svg.csproj" />
     <Project Path="src/Egami.Video/Egami.Video.csproj" />
+    <Project Path="src/Egami.Video.Cli/Egami.Video.Cli.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Egami.AotSmoke/Egami.AotSmoke.csproj" />
@@ -49,6 +50,7 @@
     <Project Path="tests/Egami.Svg.Tests/Egami.Svg.Tests.csproj" />
     <Project Path="tests/Egami.Tests/Egami.Tests.csproj" />
     <Project Path="tests/Egami.Video.Fuzz/Egami.Video.Fuzz.csproj" />
+    <Project Path="tests/Egami.Video.Cli.Tests/Egami.Video.Cli.Tests.csproj" />
     <Project Path="tests/Egami.Video.Tests/Egami.Video.Tests.csproj" />
   </Folder>
 </Solution>

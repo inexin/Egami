@@ -85,20 +85,24 @@ internal sealed class McpServerHost : IDisposable
         PathPolicy policy = await PolicyAsync(cancellationToken).ConfigureAwait(false);
         string working = policy.Allows(_session.WorkingDirectory) ? _session.WorkingDirectory : policy.Folders[0];
         Action<int, int>? progress = null;
+        Action<double, double, string>? detail = null;
         List<Task> notes = [];
         if (request.ProgressToken is { } token && _server is { } server)
         {
-            progress = (done, total) =>
+            void Send(double done, double total, string message)
             {
-                Task note = server.NotifyProgressAsync(token, new ProgressNotificationValue { Progress = done, Total = total, Message = $"{done} of {total} files" }, cancellationToken: CancellationToken.None);
+                Task note = server.NotifyProgressAsync(token, new ProgressNotificationValue { Progress = (float)done, Total = (float)total, Message = message }, cancellationToken: CancellationToken.None);
                 lock (notes)
                 {
                     notes.Add(note);
                 }
-            };
+            }
+
+            progress = (done, total) => Send(done, total, $"{done} of {total} files");
+            detail = Send;
         }
 
-        CallScope scope = new(policy, working, _session.Environment, _maxInputs, _limit, progress);
+        CallScope scope = new(policy, working, _session.Environment, _maxInputs, _limit, progress) { Note = detail };
         _session.Info($"{tool.Name}: {request.Arguments?.Count ?? 0} arguments");
         CallToolResult result = await McpCall.InvokeAsync(_catalog.Set, tool, request.Arguments, scope, cancellationToken).ConfigureAwait(false);
 

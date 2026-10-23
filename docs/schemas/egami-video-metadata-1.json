@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/inexin/Egami/main/docs/schemas/egami-video-metadata-1.json",
+  "title": "egami-video metadata",
+  "description": "What 'egami-video metadata' writes, and what 'egami-video metadata --load' reads: a media file's tags, chapters, track names, languages and default flags, and attachment names. --load takes the whole document (with one file, or the file whose path names the input) or one file object; keys it leaves out stay as they were unless --clear is given.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "schema": { "description": "The format's version.", "const": 1 },
+    "files": {
+      "description": "One object per input file.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/file" }
+    },
+    "path": true,
+    "format": true,
+    "duration": true,
+    "tags": true,
+    "chapters": true,
+    "tracks": true,
+    "attachments": true
+  },
+  "$defs": {
+    "tags": {
+      "description": "Text tags keyed by Matroska tag name (TITLE, ARTIST, COMMENT, DATE and so on). On --load a null value removes the tag; numbers and true or false are stored as text.",
+      "type": "object",
+      "additionalProperties": { "type": [ "string", "number", "boolean", "null" ] }
+    },
+    "time": {
+      "description": "Seconds, or on --load also text as the command line writes times: 90.5, 1:30 or 01:02:03.250.",
+      "type": [ "number", "string" ]
+    },
+    "file": {
+      "type": "object",
+      "properties": {
+        "path": { "description": "The input as given on the command line; --load uses it to find the input's entry when there are several.", "type": "string" },
+        "format": { "description": "The container, such as Matroska or MP4. Ignored by --load.", "type": "string" },
+        "duration": { "description": "The duration in seconds, or null. Ignored by --load.", "type": [ "number", "null" ] },
+        "tags": { "$ref": "#/$defs/tags" },
+        "chapters": {
+          "description": "The chapters in time order. On --load the list replaces the file's chapters.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [ "start" ],
+            "properties": {
+              "start": { "$ref": "#/$defs/time" },
+              "end": { "description": "When the chapter ends, or null when the file does not say.", "anyOf": [ { "$ref": "#/$defs/time" }, { "type": "null" } ] },
+              "title": { "type": [ "string", "null" ] },
+              "language": { "description": "The title's language, such as eng.", "type": [ "string", "null" ] }
+            }
+          }
+        },
+        "tracks": {
+          "description": "The tracks. On --load each entry changes the track with its number (or its index, or its position in the list); the fields it has replace the track's.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": { "description": "The track number, as 'egami-video info' shows it.", "type": "integer", "minimum": 0 },
+              "index": { "description": "The track's position in the file, from 0.", "type": "integer", "minimum": 0 },
+              "kind": { "description": "Ignored by --load.", "enum": [ "video", "audio", "subtitle", "data" ] },
+              "codec": { "description": "Ignored by --load.", "type": "string" },
+              "language": { "description": "An IETF BCP 47 or ISO 639-2 language, or null.", "type": [ "string", "null" ] },
+              "name": { "type": [ "string", "null" ] },
+              "default": { "description": "Whether players pick the track by default.", "type": "boolean" },
+              "tags": { "$ref": "#/$defs/tags" }
+            }
+          }
+        },
+        "attachments": {
+          "description": "The attached files. On --load the list keeps the attachments it names (and sets their descriptions) and drops the others; it cannot add files ('egami-video embed --attach' does).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [ "name" ],
+            "properties": {
+              "name": { "type": "string" },
+              "mediaType": { "description": "Ignored by --load.", "type": "string" },
+              "size": { "description": "Bytes. Ignored by --load.", "type": "integer", "minimum": 0 },
+              "description": { "type": [ "string", "null" ] },
+              "coverArt": { "description": "Whether it is cover art (named cover, small_cover, cover_land or small_cover_land). Ignored by --load.", "type": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

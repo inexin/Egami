@@ -14,6 +14,9 @@ internal static class ExitCodes
 
     /// <summary>An input exceeded a safety limit.</summary>
     public const int Limit = 3;
+
+    /// <summary>The user stopped the run with Ctrl+C (128 plus SIGINT's 2, as shells report it).</summary>
+    public const int Cancelled = 130;
 }
 
 /// <summary>A mistake in the command line; the message says what to change. Exits with <see cref="ExitCodes.Usage"/>.</summary>

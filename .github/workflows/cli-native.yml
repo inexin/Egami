@@ -1,5 +1,6 @@
-# Builds the egami command as a native program (Native AOT, no .NET runtime needed) for win-x64, linux-x64 and osx-arm64,
-# checks that each one runs, and keeps them as the run's artifacts. It publishes nothing: no release, no tag, no NuGet.
+# Builds the egami and egami-video commands as native programs (Native AOT, no .NET runtime needed) for win-x64, linux-x64
+# and osx-arm64, checks that each one runs, and keeps them as the run's artifacts. It publishes nothing: no release, no tag,
+# no NuGet.
 name: CLI native builds
 
 on:
@@ -27,7 +28,7 @@ env:
 
 jobs:
   native:
-    name: egami (${{ matrix.rid }})
+    name: egami and egami-video (${{ matrix.rid }})
     strategy:
       fail-fast: false
       matrix:
@@ -35,12 +36,15 @@ jobs:
           - rid: win-x64
             os: windows-latest
             exe: egami.exe
+            video: egami-video.exe
           - rid: linux-x64
             os: ubuntu-latest
             exe: egami
+            video: egami-video
           - rid: osx-arm64
             os: macos-latest
             exe: egami
+            video: egami-video
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -62,4 +66,21 @@ jobs:
         with:
           name: egami-${{ matrix.rid }}
           path: artifacts/egami-${{ matrix.rid }}/${{ matrix.exe }}
+          if-no-files-found: error
+      # egami-video is AOT-clean from its first release (Video CLI design Q11); its binaries ship with Egami.Video 1.0.
+      - name: Publish egami-video
+        run: dotnet publish src/Egami.Video.Cli -c Release -r ${{ matrix.rid }} -p:EgamiNativeAot=true -o artifacts/egami-video-${{ matrix.rid }}
+      - name: Check egami-video runs
+        shell: bash
+        run: |
+          tool=artifacts/egami-video-${{ matrix.rid }}/${{ matrix.video }}
+          "$tool" --version
+          "$tool" info tests/video/corpus/avi-mjpeg-420-pcm.avi --all
+          "$tool" remux tests/video/corpus/avi-mjpeg-420-pcm.avi -o artifacts/remux.mkv
+          "$tool" frames artifacts/remux.mkv --count 2 -o artifacts/frame-{frame}.png
+          "$tool" info artifacts/remux.mkv
+      - uses: actions/upload-artifact@v7
+        with:
+          name: egami-video-${{ matrix.rid }}
+          path: artifacts/egami-video-${{ matrix.rid }}/${{ matrix.video }}
           if-no-files-found: error

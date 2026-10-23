@@ -53,8 +53,8 @@ licence and minimum version, set in `Directory.Packages.props`. Raise a minimum 
 
 | Package | Licence | Minimum | Used by | Approved |
 | --- | --- | --- | --- | --- |
-| System.CommandLine | MIT (.NET Foundation) | 2.0.13 | Egami.Cli, the egami tool (an app, not a library): argument parsing, help, response files | CLI design Q3, 2026-10-16 |
-| ModelContextProtocol.Core | Apache-2.0 (Model Context Protocol project; brings Microsoft.Extensions.AI.Abstractions, Microsoft.Extensions.DependencyInjection.Abstractions and Microsoft.Extensions.Logging.Abstractions, all MIT) | 2.3.0 | Egami.Cli's `egami mcp` mode: the MCP protocol over standard input and output | MCP design Q1, 2026-10-22 |
+| System.CommandLine | MIT (.NET Foundation) | 2.0.13 | Egami.Cli and Egami.Video.Cli, the egami and egami-video tools (apps, not libraries): argument parsing, help, response files | CLI design Q3, 2026-10-16; Video CLI design Q2, 2026-10-22 |
+| ModelContextProtocol.Core | Apache-2.0 (Model Context Protocol project; brings Microsoft.Extensions.AI.Abstractions, Microsoft.Extensions.DependencyInjection.Abstractions and Microsoft.Extensions.Logging.Abstractions, all MIT) | 2.3.0 | Egami.Cli's `egami mcp` and Egami.Video.Cli's `egami-video mcp` modes: the MCP protocol over standard input and output | MCP design Q1, 2026-10-22; Video CLI design Q10, 2026-10-22 |
 | Microsoft.CodeAnalysis.CSharp | MIT (.NET Foundation) | 4.14.0 | Egami.Cli's build-time source generator only; ships nothing | Follows from Q3 and Q15 (no reflection) |
 
 Egap's format add-ons follow the same rule and keep their own list in Egap's docs/references.md.

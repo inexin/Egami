@@ -1,0 +1,116 @@
+# The ffmpeg-mode set (Video CLI design Q14, Build Plan task 23): over a hundred common ffmpeg and ffprobe command lines of the kinds
+# FFmpeg's documentation and wiki show (remux, seek and cut, thumbnails, image sequences, scaling, audio extraction, concat,
+# segment, metadata, quality metrics, ffprobe queries). Each line is: what egami-video does with it | the line after the tool name.
+# "=> words" is the start of the native command --explain prints; "!! option" is the option the refusal must name (exit 2).
+# Written for this test from the options' documented meaning; no FFmpeg code or test data.
+=> remux in.avi -o out.mkv | ffmpeg -i in.avi -c copy out.mkv
+=> remux in.mp4 -o out.mkv | ffmpeg -i in.mp4 -map 0 -c copy out.mkv
+=> remux in.mkv -o out.mp4 | ffmpeg -y -i in.mkv -c copy out.mp4
+=> remux in.mkv -o out.webm | ffmpeg -hide_banner -i in.mkv -c copy out.webm
+=> remux in.mkv -o out.mkv --track v --track a:0 | ffmpeg -i in.mkv -map 0:v -map 0:a:0 -c copy out.mkv
+=> remux in.mkv -o out.mkv --track a:1 | ffmpeg -i in.mkv -map 0:a:1 -c copy out.mkv
+=> remux in.mkv -o out.mkv --no-audio | ffmpeg -i in.mkv -c copy -an out.mkv
+=> remux in.mkv -o out.mkv --no-subtitles | ffmpeg -i in.mkv -c copy -sn out.mkv
+=> remux in.mkv -o out.mkv --track v | ffmpeg -i in.mkv -map 0:v? -c copy out.mkv
+=> remux in.avi -o out.mkv | ffmpeg -i in.avi -c:v copy -c:a copy out.mkv
+=> remux in.avi -o out.mkv | ffmpeg -i in.avi out.mkv
+=> remux in.mkv -o - --format mkv | ffmpeg -i in.mkv -c copy -f matroska pipe:1
+=> remux - -o out.mkv | ffmpeg -i pipe:0 -c copy out.mkv
+=> remux in.mkv -o out.ivf | ffmpeg -i in.mkv -map 0:v:0 -c copy out.ivf
+=> remux in.mkv -o out.mkv --progress - | ffmpeg -i in.mkv -c copy -progress pipe:1 out.mkv
+=> remux in.mkv -o out.mkv --progress progress.txt | ffmpeg -nostats -i in.mkv -c copy -progress progress.txt out.mkv
+=> remux in.mkv -o out.mkv | ffmpeg -loglevel error -i in.mkv -c copy out.mkv
+=> remux in.mkv -o out.mkv | ffmpeg -v quiet -stats -i in.mkv -c copy out.mkv
+=> trim in.mp4 -o cut.mp4 --from 00:01:30 --to 00:02:00 | ffmpeg -ss 00:01:30 -to 00:02:00 -i in.mp4 -c copy cut.mp4
+=> trim in.mp4 -o cut.mp4 --from 90 --duration 30 | ffmpeg -ss 90 -t 30 -i in.mp4 -c copy cut.mp4
+=> trim in.mp4 -o cut.mp4 --from 10 --to 20 | ffmpeg -i in.mp4 -ss 10 -to 20 -c copy cut.mp4
+=> trim in.mkv -o cut.mkv --duration 60 | ffmpeg -i in.mkv -t 60 -c copy cut.mkv
+=> trim in.mkv -o cut.mkv --from 0:30 --track v --track a | ffmpeg -ss 0:30 -i in.mkv -map 0:v -map 0:a -c copy cut.mkv
+=> trim in.webm -o cut.webm --from 5.5 --to 9 | ffmpeg -ss 5.5 -i in.webm -to 9 -c copy cut.webm
+=> trim in.mkv -o cut.mkv --from 1:00 --no-audio | ffmpeg -ss 1:00 -i in.mkv -c copy -an cut.mkv
+=> frames in.mp4 -o thumb.png --at 00:00:05 | ffmpeg -ss 00:00:05 -i in.mp4 -frames:v 1 thumb.png
+=> frames in.mp4 -o thumb.jpg --at 10 | ffmpeg -i in.mp4 -ss 10 -vframes 1 thumb.jpg
+=> frames in.mp4 -o out{frame:0000}.png | ffmpeg -i in.mp4 out%04d.png
+=> frames in.mp4 -o frames/{frame:000}.jpg | ffmpeg -i in.mp4 frames/%03d.jpg
+=> frames in.mp4 -o img{frame:000}.png --every 1 | ffmpeg -i in.mp4 -vf fps=1 img%03d.png
+=> frames in.mp4 -o img{frame:000}.jpg --every 60 | ffmpeg -i in.mp4 -vf fps=1/60 img%03d.jpg
+=> frames in.mp4 -o img{frame:000}.jpg --every 2 | ffmpeg -i in.mp4 -vf fps=0.5 img%03d.jpg
+=> frames in.mp4 -o out{frame}.png --every 0.1 | ffmpeg -i in.mp4 -r 10 out%d.png
+=> frames in.mp4 -o img{frame:00}.jpg --to #10 | ffmpeg -i in.mp4 -frames:v 10 img%02d.jpg
+=> frames in.mkv -o shot{frame:000}.jpg --quality 95 | ffmpeg -i in.mkv -q:v 3 shot%03d.jpg
+=> frames in.mkv -o img{frame:0000}.png --from 30 --duration 5 | ffmpeg -ss 30 -t 5 -i in.mkv img%04d.png
+=> frames in.mkv -o img{frame:0000}.png --track v:1 | ffmpeg -i in.mkv -map 0:v:1 img%04d.png
+=> frames in.avi -o img{frame:0000}.jpg | ffmpeg -i in.avi -f image2 img%04d.jpg
+=> frames in.avi -o img{frame:0000}.jpg | ffmpeg -i in.avi -c:v copy -f image2 img%04d.jpg
+=> thumbnail in.mp4 -o thumb.png | ffmpeg -i in.mp4 -vf thumbnail -frames:v 1 thumb.png
+=> thumbnail in.mkv -o best.jpg | ffmpeg -i in.mkv -vf thumbnail best.jpg
+=> scenes in.mp4 --threshold 0.4 -o scene{scene:000}.png | ffmpeg -i in.mp4 -vf select='gt(scene,0.4)' scene%03d.png
+=> scenes in.mp4 --threshold 0.3 -o s{scene}.jpg | ffmpeg -i in.mp4 -vf "select=gt(scene\,0.3)" s%d.jpg
+=> sheet in.mp4 -o sheet.png --grid 4x4 | ffmpeg -i in.mp4 -vf tile=4x4 sheet.png
+=> sheet in.mkv -o tiles.jpg --grid 3x2 | ffmpeg -i in.mkv -vf tile=layout=3x2 tiles.jpg
+=> encode img{frame:0000}.png -o out.mkv --rate 30 | ffmpeg -framerate 30 -i img%04d.png out.mkv
+=> encode img{frame:000}.png -o out.avi --rate 25 --codec mjpeg | ffmpeg -framerate 25 -i img%03d.png -c:v mjpeg out.avi
+=> encode frame{frame}.jpg -o out.mkv --rate 10 | ffmpeg -r 10 -i frame%d.jpg out.mkv
+=> encode img{frame:0000}.png -o out.mkv --rate 24 --codec raw | ffmpeg -framerate 24 -i img%04d.png -c:v rawvideo out.mkv
+=> encode - -o out.mkv | ffmpeg -f yuv4mpegpipe -i - out.mkv
+=> encode - -o out.mkv --codec mjpeg --quality 98 | ffmpeg -f yuv4mpegpipe -i pipe: -c:v mjpeg -q:v 2 out.mkv
+=> encode img{frame:0000}.png -o out.mkv --rate 30 --size 640x360 | ffmpeg -framerate 30 -i img%04d.png -s 640x360 out.mkv
+=> encode still.png -o still.mkv | ffmpeg -i still.png still.mkv
+=> run in.mp4 resize 1280x720! -o out.mkv | ffmpeg -i in.mp4 -vf scale=1280:720 -c:v mjpeg out.mkv
+=> run in.mp4 resize 640 -o out.avi --codec mjpeg | ffmpeg -i in.mp4 -vf scale=640:-1 -c:v mjpeg out.avi
+=> run in.mp4 resize x480 -o out.mkv | ffmpeg -i in.mp4 -vf scale=-2:480 -c:v mjpeg out.mkv
+=> run in.mp4 resize 50% -o out.mkv | ffmpeg -i in.mp4 -vf scale=iw/2:ih/2 -c:v mjpeg out.mkv
+=> run in.mkv crop 100 50 640 360 -o out.mkv | ffmpeg -i in.mkv -vf crop=640:360:100:50 -c:v mjpeg out.mkv
+=> run in.mkv crop 0 0 320 240 -o out.mkv | ffmpeg -i in.mkv -vf crop=w=320:h=240:x=0:y=0 -c:v mjpeg out.mkv
+=> run in.mkv pad 1920 1080 -o out.mkv | ffmpeg -i in.mkv -vf pad=1920:1080:(ow-iw)/2:(oh-ih)/2 -c:v mjpeg out.mkv
+=> run in.mkv rotate 90 -o out.mkv | ffmpeg -i in.mkv -vf transpose=1 -c:v mjpeg out.mkv
+=> run in.mkv rotate 270 -o out.mkv | ffmpeg -i in.mkv -vf transpose=2 -c:v mjpeg out.mkv
+=> run in.mkv rotate 270 + flip vertical -o out.mkv | ffmpeg -i in.mkv -vf transpose=0 -c:v mjpeg out.mkv
+=> run in.mkv flip horizontal -o out.mkv | ffmpeg -i in.mkv -vf hflip -c:v mjpeg out.mkv
+=> run in.mkv flip vertical + flip horizontal -o out.mkv | ffmpeg -i in.mkv -vf vflip,hflip -c:v mjpeg out.mkv
+=> run in.mkv resize 1280x720! + flip horizontal -o out.mkv --codec mjpeg --quality 95 | ffmpeg -i in.mkv -vf scale=1280:720,hflip -c:v mjpeg -q:v 3 out.mkv
+=> run in.mkv resize 640x480! -o out.mkv | ffmpeg -i in.mkv -s 640x480 -c:v mjpeg out.mkv
+=> animate in.mp4 -o out.gif | ffmpeg -i in.mp4 out.gif
+=> animate in.mp4 -o out.gif --from 5 --duration 3 --rate 10 --size 320 | ffmpeg -ss 5 -t 3 -i in.mp4 -vf fps=10,scale=320:-1 out.gif
+=> animate in.mkv -o out.webp --rate 15 | ffmpeg -i in.mkv -vf fps=15 out.webp
+=> animate in.mkv -o out.apng | ffmpeg -i in.mkv out.apng
+=> audio in.mp4 -o out.wav | ffmpeg -i in.mp4 -vn out.wav
+=> audio in.mkv -o out.flac --codec flac | ffmpeg -i in.mkv -vn -c:a flac out.flac
+=> audio in.mkv -o out.wav --codec pcm | ffmpeg -i in.mkv -vn -acodec pcm_s16le out.wav
+=> audio in.mkv -o out.wav --rate 44100 --channels 2 | ffmpeg -i in.mkv -vn -ar 44100 -ac 2 out.wav
+=> audio in.mkv -o out.wav --sample-format s16 | ffmpeg -i in.mkv -vn -sample_fmt s16 out.wav
+=> audio in.mkv -o out.mkv --codec flac | ffmpeg -i in.mkv -c:v copy -c:a flac out.mkv
+=> audio in.mkv -o out.flac --track a:1 | ffmpeg -i in.mkv -map 0:a:1 out.flac
+=> audio in.mkv -o out.wav --rate 16000 --channels 1 | ffmpeg -i in.mkv -ar 16000 -ac 1 out.wav
+=> embed video.mkv --add audio.flac -o out.mkv | ffmpeg -i video.mkv -i audio.flac -c copy out.mkv
+=> embed video.mkv --add audio.wav:a:0 -o out.mkv | ffmpeg -i video.mkv -i audio.wav -map 0 -map 1:a:0 -c copy out.mkv
+=> embed in.mkv --add commentary.mka -o out.mkv | ffmpeg -i in.mkv -i commentary.mka -map 0 -map 1 -c copy out.mkv
+=> timestamps in.mkv -o out.mkv --shift 0.5 | ffmpeg -itsoffset 0.5 -i in.mkv -c copy out.mkv
+=> timestamps in.mkv -o out.mkv --rate 25 | ffmpeg -i in.mkv -c copy -r 25 out.mkv
+=> metadata in.mkv -o out.mkv --set "title=My clip" | ffmpeg -i in.mkv -c copy -metadata "title=My clip" out.mkv
+=> metadata in.mkv -o out.mkv --set artist=Lars --set year=2026 | ffmpeg -i in.mkv -metadata artist=Lars -metadata year=2026 -c copy out.mkv
+=> metadata in.mkv -o out.mkv --remove comment | ffmpeg -i in.mkv -c copy -metadata comment= out.mkv
+=> metadata in.mkv -o out.mkv --clear | ffmpeg -i in.mkv -map_metadata -1 -c copy out.mkv
+=> segment in.mkv -o part{part:000}.mkv --every 60 | ffmpeg -i in.mkv -c copy -f segment -segment_time 60 part%03d.mkv
+=> segment in.mkv -o out{part}.mkv --at 30,90 | ffmpeg -i in.mkv -c copy -f segment -segment_times 30,90 out%d.mkv
+=> concat a.mkv b.mkv -o all.mkv | ffmpeg -f concat -safe 0 -i list.txt -c copy all.mkv
+=> hash in.mkv --algorithm md5 | ffmpeg -i in.mkv -f framemd5 -
+=> hash in.mkv --algorithm md5 --packets -o hashes.txt | ffmpeg -i in.mkv -c copy -f framemd5 hashes.txt
+=> hash in.mkv --algorithm sha256 --track v | ffmpeg -i in.mkv -map 0:v -f framehash -
+=> compare ref.mkv dist.mkv --metric psnr | ffmpeg -i dist.mkv -i ref.mkv -lavfi psnr -f null -
+=> compare ref.mkv dist.mkv --metric ssim | ffmpeg -i dist.mkv -i ref.mkv -lavfi ssim -f null -
+!! -b:v | ffmpeg -i in.mp4 -c:v mjpeg -b:v 2M out.mkv
+!! -crf | ffmpeg -i in.mp4 -c:v libx264 -crf 23 out.mp4
+!! -c:a aac | ffmpeg -i in.mp4 -c:v copy -c:a aac out.mp4
+!! -vf eq | ffmpeg -i in.mp4 -vf eq=brightness=0.1 -c:v mjpeg out.mkv
+!! -af | ffmpeg -i in.mp4 -af volume=2 out.wav
+!! -preset | ffmpeg -i in.mp4 -preset slow out.mkv
+!! -f hls | ffmpeg -i in.mp4 -c copy -f hls out.m3u8
+!! -movflags | ffmpeg -i in.mkv -c copy -movflags +faststart out.mp4
+!! -lavfi overlay | ffmpeg -i a.mkv -i logo.png -lavfi overlay out.mkv
+=> info in.mp4 --format ffprobe | ffprobe -v quiet -print_format json -show_format -show_streams in.mp4
+=> info in.mkv --format ffprobe --packets --track v:0 | ffprobe -select_streams v:0 -show_packets -of csv in.mkv
+=> info in.mkv --format ffprobe --track v:0 | ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 in.mkv
+=> info in.mkv --format ffprobe | ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 in.mkv
+=> info in.mkv --format ffprobe --frames --track v | ffprobe -show_frames -select_streams v -of json in.mkv
+!! -count_frames | ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames in.mkv

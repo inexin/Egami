@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3.mtp-off" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Egami.Cli.Hosting" />
+    <Using Include="Egami.Video.Containers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../video/corpus/**/*" LinkBase="corpus" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="ffmpeg-lines.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Egami.Video.Cli\Egami.Video.Cli.csproj" />
+    <!-- Built for the test of 'egami video', which runs egami-video from the egami tool. -->
+    <ProjectReference Include="..\..\src\Egami.Cli\Egami.Cli.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

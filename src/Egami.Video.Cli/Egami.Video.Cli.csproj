@@ -1,0 +1,76 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Egami.Video.Cli</RootNamespace>
+    <AssemblyName>Egami.Video.Cli</AssemblyName>
+    <PackageId>Egami.Video.Cli</PackageId>
+    <!-- Carries Egami.Video's version and ships with it on the Egami.Video-v* tag (Video CLI design Q1). -->
+    <Version>$(EgamiVideoVersion)</Version>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>egami-video</ToolCommandName>
+    <PackageType>McpServer</PackageType>
+    <Description>The egami-video command: inspect, remux, cut, join, export frames, make clips and convert audio from a shell with Egami.Video, a fully managed video library. ffprobe- and ffmpeg-style jobs without native code.</Description>
+    <PackageTags>$(EgamiPackageTags);video;cli;tool;remux;ffprobe;mkv;mp4;webm</PackageTags>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- AOT-clean from day one (Video CLI design Q11); native binaries come with Egami.Video 1.0. -->
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
+    <TieredCompilationQuickJitForLoops>false</TieredCompilationQuickJitForLoops>
+    <PublishAot Condition="'$(EgamiNativeAot)' == 'true'">true</PublishAot>
+    <StripSymbols>true</StripSymbols>
+    <OptimizationPreference Condition="'$(EgamiNativeAot)' == 'true'">Speed</OptimizationPreference>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="ModelContextProtocol.Core" />
+  </ItemGroup>
+
+  <!-- Egami.Video, and what egami run's steps and the contact sheet need (Video CLI design Q7). -->
+  <ItemGroup>
+    <ProjectReference Include="..\Egami.Video\Egami.Video.csproj" />
+    <ProjectReference Include="..\Egami\Egami.csproj" />
+    <ProjectReference Include="..\Egami.Drawing\Egami.Drawing.csproj" />
+    <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
+    <ProjectReference Include="..\Egami.Fonts.Substitutes\Egami.Fonts.Substitutes.csproj" />
+    <ProjectReference Include="..\Egami.Svg\Egami.Svg.csproj" />
+    <ProjectReference Include="..\Egami.Metafiles\Egami.Metafiles.csproj" />
+    <ProjectReference Include="..\Egami.Cli.Generators\Egami.Cli.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained;EgamiNativeAot" />
+  </ItemGroup>
+
+  <!-- The step catalog generator reads help text from Egami's XML documentation, as in Egami.Cli. -->
+  <Target Name="AddEgamiDocumentation" AfterTargets="ResolveProjectReferences" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <AdditionalFiles Include="$(MSBuildThisFileDirectory)..\Egami\bin\$(Configuration)\$(TargetFramework)\Egami.xml" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="NameNativeProgram" AfterTargets="CopyNativeBinary" Condition="'$(EgamiNativeAot)' == 'true'">
+    <Move SourceFiles="$(PublishDir)$(TargetName)$(_NativeExecutableExtension)" DestinationFiles="$(PublishDir)egami-video$(_NativeExecutableExtension)" />
+  </Target>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\docs\schemas\egami-workflow-1.json" LogicalName="egami-workflow-1.json" />
+    <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/" />
+  </ItemGroup>
+
+  <!--
+    The shared command host (src/Egami.Cli.Host), and egami's step engine (its session, steps, plans and run parser), compiled in
+    as source so egami-video run takes the same steps as egami run (Video CLI design Q2, Q7). Egami.Cli never references Video.
+  -->
+  <ItemGroup>
+    <Compile Include="..\Egami.Cli.Host\**\*.cs" Exclude="..\Egami.Cli.Host\bin\**;..\Egami.Cli.Host\obj\**" Link="Hosting\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\Egami.Cli\Steps\*.cs" Link="Image\Steps\%(Filename)%(Extension)" />
+    <Compile Include="..\Egami.Cli\Pipeline\*.cs" Link="Image\Pipeline\%(Filename)%(Extension)" />
+    <Compile Include="..\Egami.Cli\Host\*.cs" Link="Image\Host\%(Filename)%(Extension)" />
+    <Compile Include="..\Egami.Cli\Commands\RunCommand.cs;..\Egami.Cli\Commands\Workflow.cs" Link="Image\Commands\%(Filename)%(Extension)" />
+    <Using Include="Egami.Cli.Hosting" />
+    <Using Include="Egami.Video.Containers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Video.Cli.Tests" />
+  </ItemGroup>
+
+</Project>
