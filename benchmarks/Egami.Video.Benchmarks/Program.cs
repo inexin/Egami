@@ -37,4 +37,11 @@ if (args is ["--encode-vp9", .. string[] rest9])
     return;
 }
 
+// Time and write an AV1 encode (V5.4 gates): -- --encode-av1 <clip.y4m> [--out=file.ivf --quality=Q ...]
+if (args is ["--encode-av1", .. string[] rest1])
+{
+    Vp9EncodeTiming.Run(rest1, Egami.Video.Codecs.VideoCodecs.Av1);
+    return;
+}
+
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);

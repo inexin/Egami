@@ -91,8 +91,9 @@ static Action<Stream> Target(string name) => name switch
     "opusenc" => EncodeOpus,
     "subs" => ReadSubtitles,
     "subtrack" => ReadSubtitleTracks,
-    "vp9enc" => EncodeVp9,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc."),
+    "vp9enc" => stream => EncodeVp9OrAv1(stream, VideoCodecs.Vp9),
+    "av1enc" => stream => EncodeVp9OrAv1(stream, VideoCodecs.Av1),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -193,7 +194,8 @@ static void EncodeVp8(Stream stream)
 
 // The VP9 encoder: the first bytes pick the size, format and options, the rest fills the frames; every frame must come back out
 // of Egami's decoder at the coded depth and chroma format, and nothing may throw, since every option it can pick is valid.
-static void EncodeVp9(Stream stream)
+// VP9 or AV1 encoding of random frames with random options (AV1 smaller, as it is slower), every packet decoded again.
+static void EncodeVp9OrAv1(Stream stream, VideoCodec codec)
 {
     byte[] data = ReadAll(stream);
     if (data.Length < 10)
@@ -201,7 +203,8 @@ static void EncodeVp9(Stream stream)
         return;
     }
 
-    int width = 1 + (data[0] % 80), height = 1 + (data[1] % 48), frames = 1 + (data[2] % 10);
+    bool av1 = codec == VideoCodecs.Av1;
+    int width = 1 + (data[0] % (av1 ? 48 : 80)), height = 1 + (data[1] % (av1 ? 32 : 48)), frames = 1 + (data[2] % (av1 ? 8 : 10));
     RateControlMode mode = (RateControlMode)(data[3] % 4);
     int depth = (data[8] & 3) switch { 1 => 10, 2 => 12, _ => 8 };
     ChromaFormat chroma = ((data[8] >> 2) % 3) switch { 1 => ChromaFormat.Yuv422, 2 => ChromaFormat.Yuv444, _ => ChromaFormat.Yuv420 };
@@ -224,9 +227,18 @@ static void EncodeVp9(Stream stream)
             GoldenInterval = 4 + (data[6] % 8),
             TileColumns = 1 << ((data[8] >> 5) & 3),
         },
+        Av1 = new Av1EncoderOptions
+        {
+            AlternateReference = (data[7] & 4) == 0,
+            Pyramid = (data[8] & 32) == 0,
+            AdaptiveQuantization = (data[7] & 8) == 0,
+            ErrorResilient = (data[8] & 16) != 0,
+            GoldenInterval = 4 + (data[6] % 8),
+            ScreenContent = ((data[8] >> 6) & 3) switch { 1 => true, 2 => false, _ => null },
+        },
     };
     MediaContext context = Context();
-    using IVideoEncoder encoder = VideoCodecs.Vp9.CreateEncoder(options, context);
+    using IVideoEncoder encoder = codec.CreateEncoder(options, context);
     List<EncodedPacket> packets = [];
     int at = 0;
     for (int f = 0; f < frames; f++)
@@ -282,7 +294,7 @@ static void EncodeVp9(Stream stream)
         packets.Add(packet);
     }
 
-    using IVideoDecoder decoder = VideoCodecs.Vp9.CreateDecoder(encoder.Track, null, context);
+    using IVideoDecoder decoder = codec.CreateDecoder(encoder.Track, null, context);
     int shown = 0;
     foreach (EncodedPacket packet in packets)
     {
