@@ -1,3 +1,4 @@
+using Egami.Formats.Ani;
 using Egami.Formats.Png;
 using Egami.Pixels;
 using Egami.Tests.Formats.Ani;
@@ -51,6 +52,19 @@ public class AllocationTests
         long loadFew = Allocated(() => Raster.Load(fewFile).Dispose());
         long loadMany = Allocated(() => Raster.Load(manyFile).Dispose());
         Assert.True((loadMany - loadFew) / 60 < 1024, $"64 steps allocated {loadMany:N0} bytes against {loadFew:N0} for 4.");
+    }
+
+    [Fact]
+    public void AniSaveOfStepsThatRepeatAFrameAllocatesLittleEach()
+    {
+        AllocationMeter.SkipUnlessOnDemand();
+        using Raster<Rgba8> few = AniWriterTests.Animation(48, [.. Enumerable.Repeat(1, 4)], [.. Enumerable.Repeat(100, 4)], [.. Enumerable.Repeat(new Point(4, 4), 4)]);
+        using Raster<Rgba8> many = AniWriterTests.Animation(48, [.. Enumerable.Repeat(1, 64)], [.. Enumerable.Repeat(100, 64)], [.. Enumerable.Repeat(new Point(4, 4), 64)]);
+
+        // A repeated frame is compared, not encoded: each further step costs its rate and sequence entries.
+        long saveFew = Allocated(() => few.Save(Stream.Null, AniFormat.Info));
+        long saveMany = Allocated(() => many.Save(Stream.Null, AniFormat.Info));
+        Assert.True((saveMany - saveFew) / 60 < 256, $"64 steps allocated {saveMany:N0} bytes against {saveFew:N0} for 4.");
     }
 
     /// <summary>The fewest bytes one call allocated over several tries; see <see cref="AllocationMeter"/>.</summary>
