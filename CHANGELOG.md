@@ -200,7 +200,7 @@ recommended).
 
 ## Egami.Video 0.6.0 (unreleased)
 
-V4.3: fragmented MP4 writing, and HLS and DASH segments. The API review is pending.
+V4.3: fragmented MP4 writing, and HLS and DASH segments. API reviewed and accepted 2026-10-23 (all as recommended).
 
 - `Mp4Format.Fragments` and `Mp4FragmentOptions`: fragmented MP4 (ISO/IEC 14496-12 8.8), moov with mvex and then a moof and
   mdat pair a fragment as packets come, cut at the first video keyframe after `Duration` (2 s) or at `MaxBytes` (32 MB), with
