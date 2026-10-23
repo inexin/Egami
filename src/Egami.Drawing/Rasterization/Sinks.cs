@@ -335,6 +335,45 @@ internal sealed class KnockoutSink<TPixel>(RasterTarget<TPixel> target, RasterTa
     }
 }
 
+/// <summary>
+/// Draws into a layer inside a knockout layer: each run passes on unchanged, and its coverage, with the clip's, is added to the
+/// layer's shape, which decides how much of the knockout layer the merged layer replaces.
+/// </summary>
+internal sealed class ShapeSink(RasterTarget target, ISpanSink inner, ClipMask? mask, byte scale) : ISpanSink
+{
+    public bool FillsDirectly => false;
+
+    public void Fill(int y, int x, int length, byte coverage, Span<byte> scratch)
+    {
+        Span<byte> row = scratch[..length];
+        row.Fill(coverage);
+        Blend(y, x, row);
+    }
+
+    public void Blend(int y, int x, Span<byte> coverage)
+    {
+        int n = coverage.Length;
+        float[] shape = System.Buffers.ArrayPool<float>.Shared.Rent(n);
+        try
+        {
+            ReadOnlySpan<byte> clip = mask is null ? default : mask.Row(y).Slice(x - mask.Bounds.X, n);
+            float k = scale / (255f * 255f);
+            for (int i = 0; i < n; i++)
+            {
+                shape[i] = coverage[i] * k * (clip.IsEmpty ? 1 : clip[i] / 255f);
+            }
+
+            target.AddShape(y, x, shape.AsSpan(0, n));
+        }
+        finally
+        {
+            System.Buffers.ArrayPool<float>.Shared.Return(shape);
+        }
+
+        inner.Blend(y, x, coverage);
+    }
+}
+
 /// <summary>Multiplies each run's coverage by an image mask's alpha before passing it on: <see cref="Canvas.DrawImageMask"/>'s sink.</summary>
 internal sealed class MaskedSink(ISpanSink inner, Shader mask) : ISpanSink
 {

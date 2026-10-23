@@ -45,6 +45,48 @@ internal abstract class RasterTarget(Rect area) : IDisposable
     }
 
     /// <summary>
+    /// Gets or sets, for a layer inside a knockout layer, the layer's shape: the union of the coverage of everything drawn into it,
+    /// one value per pixel of <see cref="Area"/>. Merging the layer replaces the knockout layer's content by this shape, not by
+    /// the layer's alpha (ISO 32000 11.4.6.2). <see langword="null"/> for every other target.
+    /// </summary>
+    internal float[]? Shape { get; set; }
+
+    /// <summary>Unions shape values into <see cref="Shape"/> from device (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    internal void AddShape(int y, int x, ReadOnlySpan<float> shape)
+    {
+        float[] s = Shape!;
+        int at = ((y - Area.Y) * Area.Width) + (x - Area.X);
+        for (int i = 0; i < shape.Length; i++)
+        {
+            float v = Math.Clamp(shape[i], 0, 1);
+            s[at + i] += v * (1 - s[at + i]);
+        }
+    }
+
+    /// <summary>
+    /// Mixes these pixels with <paramref name="before"/>'s over <paramref name="area"/>: each pixel moves from what
+    /// <paramref name="before"/> holds toward what this holds by its weight, one per pixel of the area, row by row.
+    /// </summary>
+    internal virtual void Mix(RasterTarget before, Rect area, ReadOnlySpan<float> weight)
+    {
+        PremulRgbaF32[] row = new PremulRgbaF32[area.Width], from = new PremulRgbaF32[area.Width];
+        for (int y = area.Y; y < area.Bottom; y++)
+        {
+            ReadRow<PremulRgbaF32>(y, area.X, row);
+            before.ReadRow<PremulRgbaF32>(y, area.X, from);
+            ReadOnlySpan<float> w = weight.Slice((y - area.Y) * area.Width, area.Width);
+            for (int i = 0; i < row.Length; i++)
+            {
+                PremulRgbaF32 a = from[i], b = row[i];
+                float c = w[i];
+                row[i] = new PremulRgbaF32(a.R + ((b.R - a.R) * c), a.G + ((b.G - a.G) * c), a.B + ((b.B - a.B) * c), a.A + ((b.A - a.A) * c));
+            }
+
+            WriteRow<PremulRgbaF32>(y, area.X, row);
+        }
+    }
+
+    /// <summary>
     /// Turns a non-isolated layer into the group result PDF composites: the backdrop's contribution removed by
     /// C = Cn + (Cn − C0)·(α0 / αg − α0), with the group alpha αg.
     /// </summary>
@@ -179,19 +221,23 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
     {
         // In a knockout layer the paint composites fully with the layer's first content, and the coverage only chooses how much of
         // that result replaces what is there.
+        ISpanSink? sink;
         if (KnockoutBackdrop is RasterTarget backdrop)
         {
             ISpanSink? inner = CreatePaintSink(paint, matrix, colorSpace, null, 255);
-            return inner is null ? null : new KnockoutSink<TPixel>(this, backdrop, inner, mask, scale);
+            sink = inner is null ? null : new KnockoutSink<TPixel>(this, backdrop, inner, mask, scale);
         }
-
-        if (GroupAlpha is not null)
+        else if (GroupAlpha is not null)
         {
             ISpanSink? inner = CreatePaintSink(paint, matrix, colorSpace, mask, scale);
-            return inner is null ? null : new GroupAlphaSink<TPixel>(this, inner);
+            sink = inner is null ? null : new GroupAlphaSink<TPixel>(this, inner);
+        }
+        else
+        {
+            sink = CreatePaintSink(paint, matrix, colorSpace, mask, scale);
         }
 
-        return CreatePaintSink(paint, matrix, colorSpace, mask, scale);
+        return sink is not null && Shape is not null ? new ShapeSink(this, sink, mask, scale) : sink;
     }
 
     private ISpanSink? CreatePaintSink(Paint paint, Matrix3x2 matrix, ColorSpace colorSpace, ClipMask? mask, byte scale)
@@ -305,7 +351,7 @@ internal sealed class RasterTarget<TPixel> : RasterTarget
 
     internal override void DrawImage(DrawTools tools, Raster image, RectF source, RectF destination, Matrix3x2 matrix, SamplingOptions sampling, Paint? paint, Rect clip, ClipMask? mask)
     {
-        if (KnockoutBackdrop is not null || GroupAlpha is not null)
+        if (KnockoutBackdrop is not null || GroupAlpha is not null || Shape is not null)
         {
             DrawImageAsPaint(tools, image, source, destination, matrix, sampling, paint, clip, mask);
             return;
