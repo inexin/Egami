@@ -1,0 +1,7 @@
+WEBVTT
+
+00:01.000 --> 00:02.000
+<i>italic</i> <b>bold</b> <u>under</u>
+
+00:03.000 --> 00:04.000
+<b><i>both</i></b> plain

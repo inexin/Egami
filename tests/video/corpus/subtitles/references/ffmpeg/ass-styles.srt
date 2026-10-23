@@ -1,0 +1,8 @@
+1
+00:00:01,000 --> 00:00:02,000
+<font size="24" color="#ffff00"><b>{\an8}Sign text</b></font>
+
+2
+00:00:01,000 --> 00:00:02,000
+<font size="20">Dialogue under it</font>
+

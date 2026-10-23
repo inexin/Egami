@@ -24,7 +24,7 @@ Options:
 Commands:
   info <inputs>                 Show what media files hold: container, duration, tracks and codecs, tags, chapters and attachments; with options, packets and frames. Like ffprobe.
   remux <inputs>                Copy tracks into another container without decoding: change AVI to Matroska, pick tracks, keep tags, chapters and attachments.
-  trim <inputs>                 Cut a part out of files without decoding: every track from the video keyframe at or before --from up to --to, with timestamps starting at 0. Like ffmpeg -ss -to -c copy.
+  trim <inputs>                 Cut a part out of files without decoding: every track from the video keyframe at or before --from up to --to, with timestamps starting at 0; subtitle cues shown across the cut are clipped to it. Like ffmpeg -ss -to -c copy.
   concat <inputs>               Join clips with the same tracks and codecs into one file without decoding, one after another in the order given (globs sorted by name).
   segment <inputs>              Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}.
   timestamps <inputs>           Change packet timestamps without decoding: shift tracks, re-time video to a constant frame rate, repair broken timestamps or start at 0. With --track, --shift, --rate and --fix change only those tracks; every track is written.
@@ -103,7 +103,7 @@ Options:
 
 ```text
 Description:
-  Cut a part out of files without decoding: every track from the video keyframe at or before --from up to --to, with timestamps starting at 0. Like ffmpeg -ss -to -c copy.
+  Cut a part out of files without decoding: every track from the video keyframe at or before --from up to --to, with timestamps starting at 0; subtitle cues shown across the cut are clipped to it. Like ffmpeg -ss -to -c copy.
 
 Usage:
   egami-video trim <inputs>... [options]
@@ -201,7 +201,7 @@ Options:
   --fail-fast                    Stop at the first file that fails.
   --shift <time>                 Move timestamps later, or earlier with a minus sign: seconds or [HH:]MM:SS[.mmm], such as 1.5, -1.5 or --shift=-0:01.
   --rate <fps>                   Re-time video packets to a constant frame rate in presentation order, such as 25 or 30000/1001; audio stays as it is.
-  --fix                          Repair duplicated or out-of-order timestamps and missing durations: decode order, strictly increasing times per track, durations from the frame rate or the next packet.
+  --fix                          Repair duplicated or out-of-order timestamps and missing durations: decode order, strictly increasing times per track (subtitle cues may start together), durations from the frame rate or the next packet.
   --start-at-zero                Move every track by the same amount so the earliest packet starts at 0.
 ```
 

@@ -3,6 +3,7 @@ using Egami.Pixels;
 using Egami.Video;
 using Egami.Video.Codecs;
 using Egami.Video.Containers;
+using Egami.Video.Subtitles;
 
 using SharpFuzz;
 
@@ -83,7 +84,9 @@ static Action<Stream> Target(string name) => name switch
     "av1raw" => DecodeAv1Packets,
     "vp8enc" => EncodeVp8,
     "opusenc" => EncodeOpus,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, av1, av1raw, wav, flac, ogg, opusraw, vorbisraw, vp8enc, mp3, mp3raw, opusenc."),
+    "subs" => ReadSubtitles,
+    "subtrack" => ReadSubtitleTracks,
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, mp4mux, mjpeg, vp8, vp9, vp9raw, av1, av1raw, wav, flac, ogg, opusraw, vorbisraw, vp8enc, mp3, mp3raw, opusenc, subs, subtrack."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -858,6 +861,115 @@ static void DecodeAv1Packets(Stream stream)
         catch (EgamiException e) when (e is not CorruptDataException { FormatName: "AV1" })
         {
             // Safety limits; broken frames are concealed.
+        }
+    }
+}
+
+// A subtitle file (V1.2): read leniently, which only fails when the format is not recognised; a file read without repairs or an
+// encoding guess must save back to the same bytes, and retimed must save to a file with as many cues. Then converted to every
+// format and read back, and read strictly.
+static void ReadSubtitles(Stream stream)
+{
+    List<EgamiDiagnostic> reported = [];
+    MediaContext context = Context() with { Egami = Context().Egami with { Diagnostics = reported.Add } };
+    byte[] data = ReadAll(stream);
+    SubtitleDocument document;
+    try
+    {
+        document = SubtitleDocument.Load(data, context: context);
+    }
+    catch (UnsupportedFormatException)
+    {
+        return;
+    }
+
+    bool clean = !reported.Any(d => d.Id is "Subtitle.Repaired" or "Subtitle.Encoding");
+    if (clean && document.Format != SubtitleFormat.Ssa)
+    {
+        using MemoryStream saved = new();
+        document.Save(saved, context: context);
+        if (!saved.ToArray().AsSpan().SequenceEqual(data))
+        {
+            throw new InvalidOperationException("An unchanged document saved to other bytes than it was read from.");
+        }
+    }
+
+    try
+    {
+        SubtitleDocument.Load(data, new SubtitleReaderOptions { Strict = true }, context);
+    }
+    catch (CorruptDataException)
+    {
+    }
+
+    SubtitleDocument retimed = document.Clone();
+    retimed.Shift(MediaTime.FromSeconds(1.5));
+    retimed.Scale(new Rational(1001, 1000));
+    retimed.Clip(MediaTime.FromSeconds(1), MediaTime.FromSeconds(3600));
+    retimed.FixOverlaps();
+    retimed.Sort();
+    foreach (SubtitleFormat format in (SubtitleFormat[])[SubtitleFormat.Srt, SubtitleFormat.WebVtt, SubtitleFormat.Ass])
+    {
+        foreach (SubtitleDocument source in (SubtitleDocument[])[document, retimed])
+        {
+            string text = source.ToText(format, context: context);
+            SubtitleDocument back = SubtitleDocument.Parse(text, format, context: context);
+            if (clean && format == source.Format && back.Cues.Count != source.Cues.Count)
+            {
+                throw new InvalidOperationException($"{format} written and read again has {back.Cues.Count} cues, not {source.Cues.Count}.");
+            }
+        }
+    }
+}
+
+// A container's text subtitle tracks (V1.2): each read into a document, then written as a track in Matroska, WebM and MP4 and
+// read back from the file.
+static void ReadSubtitleTracks(Stream stream)
+{
+    MediaContext context = Context() with { Egami = Context().Egami with { Diagnostics = _ => { } } };
+    byte[] data = ReadAll(stream);
+    List<SubtitleDocument> documents = [];
+    try
+    {
+        using IDemuxer demuxer = MediaFile.OpenDemuxer(new MemoryStream(data), context);
+        foreach (TrackInfo track in demuxer.Tracks.Where(t => SubtitleDocument.IsTextCodec(t.CodecId)))
+        {
+            demuxer.Seek(MediaTime.Zero);
+            try
+            {
+                documents.Add(SubtitleDocument.ReadTrack(demuxer, track, context: context));
+            }
+            catch (CorruptDataException)
+            {
+            }
+        }
+    }
+    catch (EgamiException)
+    {
+    }
+
+    foreach (SubtitleDocument document in documents.Take(2))
+    {
+        foreach (string container in (string[])["mkv", "webm", "mp4"])
+        {
+            SubtitleTrackWriter writer = new(document, 1, SubtitleTrackWriter.CodecIdFor(container, document.Format), context);
+            MemoryStream file = new();
+            using (IMuxer muxer = MediaFile.CreateMuxer(file, container, [writer.Track], leaveOpen: true, context: context))
+            {
+                foreach (EncodedPacket packet in writer.Packets)
+                {
+                    using (packet)
+                    {
+                        muxer.WritePacket(packet);
+                    }
+                }
+
+                muxer.Finish();
+            }
+
+            file.Position = 0;
+            using IDemuxer again = MediaFile.OpenDemuxer(file, context);
+            SubtitleDocument.ReadTrack(again, again.Tracks[0], context: context);
         }
     }
 }

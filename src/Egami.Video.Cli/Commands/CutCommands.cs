@@ -18,7 +18,7 @@ internal static class CutCommands
         Option<string?> from = new("--from") { Description = "Where the cut starts: seconds, [HH:]MM:SS[.mmm] or a frame number such as #250; the copy starts at the video keyframe at or before it.", HelpName = "time" };
         Option<string?> to = new("--to") { Description = "Where the cut ends, written as for --from; nothing that starts at or after it is kept.", HelpName = "time" };
         Option<string?> duration = new("--duration") { Description = "How long the cut is, counted from --from, instead of --to.", HelpName = "time" };
-        Command command = new("trim", "Cut a part out of files without decoding: every track from the video keyframe at or before --from up to --to, with timestamps starting at 0. Like ffmpeg -ss -to -c copy.");
+        Command command = new("trim", "Cut a part out of files without decoding: every track from the video keyframe at or before --from up to --to, with timestamps starting at 0; subtitle cues shown across the cut are clipped to it. Like ffmpeg -ss -to -c copy.");
         options.AddTo(command);
         command.Options.Add(from);
         command.Options.Add(to);
@@ -229,6 +229,9 @@ internal static class CutCommands
         private JobProgress? _progress;
         private MediaTime _start;
 
+        /// <summary>How far before --from a trim with subtitles starts reading, so cues shown across the cut are found.</summary>
+        private static readonly MediaTime CueLookBack = MediaTime.FromSeconds(30);
+
         public void Run(Stream output)
         {
             CountingStream counted = new(output);
@@ -270,7 +273,7 @@ internal static class CutCommands
                             // A later keyframe at or before --from: everything held before it is no longer needed.
                             MediaTime keyframe = packet.Timestamp;
                             candidate = keyframe;
-                            Drop(pending, p => p.TrackNumber == _main.Number || p.Timestamp < keyframe);
+                            Drop(pending, p => p.TrackNumber == _main.Number || Before(p, keyframe));
                             pending.Add(packet);
                             continue;
                         }
@@ -300,7 +303,7 @@ internal static class CutCommands
                         continue;
                     }
 
-                    if (candidate is { } c && packet.Timestamp < c)
+                    if (candidate is { } c && Before(packet, c))
                     {
                         packet.Dispose();
                     }
@@ -357,7 +360,21 @@ internal static class CutCommands
                 }
             }
 
-            demuxer.Seek(found is { } keyframe ? keyframe - CutTimes.FromNanoseconds(1) : from, _main.Number);
+            MediaTime target = found is { } keyframe ? keyframe - CutTimes.FromNanoseconds(1) : from;
+            if (tracks.Any(t => t.Kind == TrackKind.Subtitle))
+            {
+                // A cue that starts before the cut and is still shown at it is stored further back.
+                MediaTime back = from - CueLookBack;
+                target = back < target ? back : target;
+            }
+
+            if (target <= MediaTime.Zero)
+            {
+                demuxer.Seek(MediaTime.Zero, _main.Number);
+                return;
+            }
+
+            demuxer.Seek(target, _main.Number);
         }
 
         /// <summary>Opens the muxer once the start is known, says how far it moved, and copies the held packets.</summary>
@@ -404,7 +421,9 @@ internal static class CutCommands
             {
                 TrackInfo track = _tracks[packet.TrackNumber];
                 MediaTime time = packet.Timestamp;
-                bool inside = time >= _start && (to is not { } end || time < end);
+                bool inside = track.Kind == TrackKind.Subtitle
+                    ? CutTimes.ClipCue(packet, _start, to)
+                    : time >= _start && (to is not { } end || time < end);
                 if (track.Kind == TrackKind.Video && !_started.Contains(track.Number))
                 {
                     // A video track starts at a keyframe: the main track at the start itself, others at their first one after it.
@@ -429,6 +448,17 @@ internal static class CutCommands
 
                 return to is not null && _running.Count == 0 && tracks.Any(t => t.Kind is TrackKind.Video or TrackKind.Audio);
             }
+        }
+
+        /// <summary>
+        /// Whether a packet is over before <paramref name="time"/>: one that starts before it, or for a subtitle a cue that also
+        /// stops showing by then, since a cue shown across the start is clipped to it.
+        /// </summary>
+        private bool Before(EncodedPacket packet, MediaTime time)
+        {
+            return _tracks[packet.TrackNumber].Kind == TrackKind.Subtitle && packet.Duration is { } duration
+                ? packet.Timestamp + duration <= time
+                : packet.Timestamp < time;
         }
 
         private static void Drop(List<EncodedPacket> packets, Predicate<EncodedPacket> match)
@@ -570,6 +600,7 @@ internal static class CutCommands
         Dictionary<int, long> steps = [];
         Dictionary<int, MediaTime> last = [];
         List<EncodedPacket> held = [];
+        MediaTime? clipEnd = null;
 
         void Write(EncodedPacket packet)
         {
@@ -578,6 +609,12 @@ internal static class CutCommands
                 TrackInfo track = map[packet.TrackNumber];
                 packet.TrackNumber = track.Number;
                 CutTimes.ShiftBack(packet, shift!.Value);
+                if (track.Kind == TrackKind.Subtitle && !CutTimes.ClipCue(packet, first ? null : offset, clipEnd))
+                {
+                    // A cue held from before the clip's start, or shown past its end, would cover the clip next to it.
+                    return;
+                }
+
                 if (last.TryGetValue(track.Number, out MediaTime previous) && packet.Timestamp > previous)
                 {
                     long delta = CutTimes.Nanoseconds(packet.Timestamp - previous);
@@ -636,6 +673,7 @@ internal static class CutCommands
                     if (packet.TrackNumber == main && !packet.IsDiscardable)
                     {
                         shift = packet.Timestamp - offset;
+                        clipEnd = clip.Info.Duration is { } length && length > packet.Timestamp ? length - shift : null;
                         Flush();
                     }
 

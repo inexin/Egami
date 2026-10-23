@@ -411,7 +411,7 @@ internal static class WebVttCueText
             List<string> wanted = [];
             if (span.Voice is { } voice)
             {
-                wanted.Add(voice.Length > 0 ? "v " + Escape(voice.ReplaceLineEndings(" ")) : "v");
+                wanted.Add(voice.Length > 0 ? "v " + Escape(voice.ReplaceLineBreaks(" ")) : "v");
             }
 
             if (span.Language is { } language)

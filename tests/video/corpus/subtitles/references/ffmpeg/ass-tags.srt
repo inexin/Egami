@@ -1,0 +1,8 @@
+1
+00:00:01,000 --> 00:00:02,000
+<font size="20"><i>italic</i> <b>bold</b> <u>under</u></font>
+
+2
+00:00:03,000 --> 00:00:04,000
+<font size="20">{\an8}Top <font color="#ff0000">red</font></font>
+

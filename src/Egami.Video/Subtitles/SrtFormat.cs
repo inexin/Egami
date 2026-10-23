@@ -119,10 +119,18 @@ internal static class SrtFormat
         }
 
         CheckHeader(document, log);
+        int comments = 0;
         for (int index = 0; index < document.Cues.Count; index++)
         {
             SubtitleCue cue = document.Cues[index];
-            string number = (index + 1).ToString(CultureInfo.InvariantCulture);
+            if (cue.IsComment)
+            {
+                log.Dropped("ASS comment events", index + 1);
+                comments++;
+                continue;
+            }
+
+            string number = (index + 1 - comments).ToString(CultureInfo.InvariantCulture);
             CueSource? source = cue.Source is { Format: SubtitleFormat.Srt } s ? s : null;
             if (source is not null && output.Length > 0)
             {
@@ -144,7 +152,7 @@ internal static class SrtFormat
             string body = cue.TextUnchanged(SubtitleFormat.Srt) ? cue.RawText! : WriteText(document, cue, index, log);
             if (body.Length > 0)
             {
-                output.Append(body.ReplaceLineEndings(newLine)).Append(newLine);
+                output.Append(body.ReplaceLineBreaks(newLine)).Append(newLine);
             }
         }
 
@@ -272,7 +280,11 @@ internal static class SrtFormat
         }
 
         long hours = count == 3 ? parts[0] : 0, minutes = parts[count - 2], seconds = parts[count - 1];
-        long total = checked((((((hours * 60) + minutes) * 60) + seconds) * 1000) + ms);
+        if (!SubtitleText.TryTotal(hours, minutes, seconds, ms, 1000, out long total))
+        {
+            return false;
+        }
+
         time = new MediaTime(negative ? -total : total, SubtitleText.Milliseconds);
         return true;
     }

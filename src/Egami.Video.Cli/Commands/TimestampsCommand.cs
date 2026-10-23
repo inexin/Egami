@@ -20,7 +20,7 @@ internal static class TimestampsCommand
         MediaOptions options = new();
         Option<string?> shift = new("--shift") { Description = "Move timestamps later, or earlier with a minus sign: seconds or [HH:]MM:SS[.mmm], such as 1.5, -1.5 or --shift=-0:01.", HelpName = "time" };
         Option<string?> rate = new("--rate") { Description = "Re-time video packets to a constant frame rate in presentation order, such as 25 or 30000/1001; audio stays as it is.", HelpName = "fps" };
-        Option<bool> fix = new("--fix") { Description = "Repair duplicated or out-of-order timestamps and missing durations: decode order, strictly increasing times per track, durations from the frame rate or the next packet." };
+        Option<bool> fix = new("--fix") { Description = "Repair duplicated or out-of-order timestamps and missing durations: decode order, strictly increasing times per track (subtitle cues may start together), durations from the frame rate or the next packet." };
         Option<bool> zero = new("--start-at-zero") { Description = "Move every track by the same amount so the earliest packet starts at 0." };
         Command command = new("timestamps", "Change packet timestamps without decoding: shift tracks, re-time video to a constant frame rate, repair broken timestamps or start at 0. With --track, --shift, --rate and --fix change only those tracks; every track is written.");
         options.AddTo(command);
@@ -442,6 +442,17 @@ internal static class TimestampsCommand
                     }
 
                     previous = dts;
+                }
+                else if (track.Kind == TrackKind.Subtitle)
+                {
+                    // Cues may start at the same time: only a cue that starts before the one ahead of it is moved.
+                    if (previous is { } p && _pts[i] < p)
+                    {
+                        _pts[i] = p;
+                        moved = true;
+                    }
+
+                    previous = _pts[i];
                 }
                 else if (!reorders)
                 {
