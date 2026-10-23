@@ -12962,6 +12962,46 @@
       "version": ""
     },
     {
+      "type": "Conceptual",
+      "source_relative_path": "articles/video-cli/assistants.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/video-cli/assistants.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/video-cli/commands.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/video-cli/commands.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/video-cli/ffmpeg.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/video-cli/ffmpeg.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/video-cli/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/video-cli/index.html"
+        }
+      },
+      "version": ""
+    },
+    {
       "type": "Resource",
       "source_relative_path": "images/favicon.ico",
       "output": {

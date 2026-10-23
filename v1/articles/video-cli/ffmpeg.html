@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>ffmpeg command lines | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="ffmpeg command lines | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/video-cli/ffmpeg.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="ffmpeg-command-lines">ffmpeg command lines</h1>
+
+<p><code>egami-video ffmpeg</code> and <code>egami-video ffprobe</code> take the command lines people already know, find in answers online or have in
+scripts, and run them with egami-video's own commands. They accept a documented subset of FFmpeg's options. Anything outside it
+stops with exit code 2 and names the option: nothing is ignored silently.</p>
+<pre><code class="lang-sh">egami-video ffmpeg -i in.avi -c copy out.mkv
+egami-video ffmpeg -ss 0.5 -i in.webm -t 1 -c copy cut.webm
+egami-video ffmpeg -i in.mkv -vf fps=2 shot%03d.png
+egami-video ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 in.mkv
+</code></pre>
+<p><code>--explain</code> prints the native command a line stands for and stops, which is also the quickest way to learn the native syntax:</p>
+<pre><code class="lang-sh">egami-video ffmpeg -i in.mkv -vf scale=640:-1,hflip -c:v mjpeg out.mkv --explain
+</code></pre>
+<p>prints <code>egami-video run in.mkv resize 640 + flip horizontal -o out.mkv --codec mjpeg</code>.</p>
+<h2 id="what-a-line-becomes">What a line becomes</h2>
+<table>
+<thead>
+<tr>
+<th>ffmpeg line</th>
+<th>Native command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-i in -c copy out</code> (any container change, <code>-map</code>, <code>-an</code>, <code>-sn</code>)</td>
+<td><code>remux</code></td>
+</tr>
+<tr>
+<td><code>-ss</code>, <code>-to</code>, <code>-t</code> with <code>-c copy</code></td>
+<td><code>trim</code></td>
+</tr>
+<tr>
+<td>several <code>-i</code> with <code>-map 0 -map 1:a</code></td>
+<td><code>embed</code></td>
+</tr>
+<tr>
+<td><code>-f concat -i list.txt -c copy</code></td>
+<td><code>concat</code> with the files the list names</td>
+</tr>
+<tr>
+<td><code>-f segment -segment_time</code> or <code>-segment_times</code></td>
+<td><code>segment</code></td>
+</tr>
+<tr>
+<td><code>-itsoffset</code>, or <code>-r</code> with <code>-c copy</code></td>
+<td><code>timestamps</code></td>
+</tr>
+<tr>
+<td><code>-metadata key=value</code>, <code>-map_metadata -1</code></td>
+<td><code>metadata</code></td>
+</tr>
+<tr>
+<td>an image output, <code>%04d</code> patterns, <code>-vf fps=</code>, <code>-frames:v</code></td>
+<td><code>frames</code></td>
+</tr>
+<tr>
+<td>image or Y4M input (<code>-framerate</code>, <code>%04d</code>, <code>-f yuv4mpegpipe</code>)</td>
+<td><code>encode</code></td>
+</tr>
+<tr>
+<td><code>-vf</code> with scale, crop, pad, transpose, hflip, vflip; <code>-s</code>; <code>-c:v mjpeg</code> or <code>rawvideo</code></td>
+<td><code>run</code></td>
+</tr>
+<tr>
+<td><code>-vf thumbnail</code>, <code>select='gt(scene,0.4)'</code>, <code>tile=4x4</code></td>
+<td><code>thumbnail</code>, <code>scenes</code>, <code>sheet</code></td>
+</tr>
+<tr>
+<td><code>.gif</code>, <code>.apng</code> or <code>.webp</code> output</td>
+<td><code>animate</code></td>
+</tr>
+<tr>
+<td><code>-vn</code>, <code>-c:a flac</code>, <code>-ar</code>, <code>-ac</code>, <code>-sample_fmt</code></td>
+<td><code>audio</code></td>
+</tr>
+<tr>
+<td><code>-f framemd5</code>, <code>-f framehash</code></td>
+<td><code>hash</code></td>
+</tr>
+<tr>
+<td><code>-i distorted -i reference -lavfi psnr</code> or <code>ssim</code></td>
+<td><code>compare</code></td>
+</tr>
+</tbody>
+</table>
+<p>ffmpeg encodes again by default; egami-video copies streams where ffmpeg would encode with a codec it does not have, and says so
+in a warning. An output that exists needs <code>-y</code>, as in ffmpeg.</p>
+<h2 id="the-options">The options</h2>
+<p>ffmpeg mode takes <code>-i</code>, <code>-f</code>, <code>-y</code>, <code>-n</code>, <code>-ss</code>, <code>-to</code>, <code>-t</code>, <code>-itsoffset</code>, <code>-framerate</code>, <code>-safe</code>, <code>-map</code>, <code>-c</code>, <code>-codec</code>, <code>-c:v</code>,
+<code>-c:a</code>, <code>-c:s</code>, <code>-vcodec</code>, <code>-acodec</code>, <code>-scodec</code>, <code>-an</code>, <code>-vn</code>, <code>-sn</code>, <code>-dn</code>, <code>-r</code>, <code>-s</code>, <code>-frames:v</code>, <code>-vframes</code>, <code>-q:v</code>,
+<code>-qscale:v</code>, <code>-ar</code>, <code>-ac</code>, <code>-sample_fmt</code>, <code>-metadata</code>, <code>-map_metadata</code>, <code>-map_chapters</code>, <code>-vf</code>, <code>-filter:v</code>, <code>-lavfi</code> and
+<code>-filter_complex</code> (psnr and ssim), <code>-segment_time</code>, <code>-segment_times</code>, <code>-update</code>, <code>-progress</code>, <code>-stats</code>, <code>-nostats</code>,
+<code>-stats_period</code>, <code>-hide_banner</code>, <code>-loglevel</code>, <code>-v</code> and <code>-nostdin</code>, with <code>pipe:</code> and <code>%d</code> patterns. The filters are scale, crop,
+pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile. Codecs: <code>copy</code>, <code>mjpeg</code> and <code>rawvideo</code> for video, <code>flac</code>
+and the <code>pcm_</code> codecs for audio.</p>
+<p>ffprobe mode takes <code>-i</code>, <code>-show_streams</code>, <code>-show_format</code>, <code>-show_packets</code>, <code>-show_frames</code>, <code>-show_chapters</code>, <code>-select_streams</code>,
+<code>-show_entries</code>, <code>-of</code> (also <code>-print_format</code>, <code>-output_format</code>) with the json, csv, compact, default, flat and xml writers and
+their <code>nokey</code>, <code>noprint_wrappers</code>, <code>print_section</code> and <code>item_sep</code> options, <code>-v</code>, <code>-loglevel</code>, <code>-hide_banner</code> and <code>-pretty</code>. Its
+JSON is <code>egami-video info --format ffprobe</code>.</p>
+<p>The tests run more than a hundred common ffmpeg and ffprobe lines: each either maps to the native command it should or stops
+naming its option. The subset was written from FFmpeg's published documentation only.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/video-cli/ffmpeg.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

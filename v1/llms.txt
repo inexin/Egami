@@ -108,6 +108,13 @@ settings, safety limits and registered formats a call uses.
 - [Video](https://inexin.github.io/Egami/v1/articles/guides/video.html): Egami.Video reads and writes video with Egami rasters as frames, so resizing, color and drawing from Egami work on video with no copying.
 - [Audio](https://inexin.github.io/Egami/v1/articles/guides/audio.html): Egami.Video decodes and encodes audio with the same send and receive loop as video.
 
+## Egami.Video.Cli
+
+- [The egami-video command](https://inexin.github.io/Egami/v1/articles/video-cli/index.html): `egami-video` inspects, remuxes, cuts, joins and converts video and audio files from a shell or a build script, with no C# to write.
+- [Command reference](https://inexin.github.io/Egami/v1/articles/video-cli/commands.html): Every egami-video command with its arguments and options, as `egami-video <command> --help` prints them.
+- [ffmpeg command lines](https://inexin.github.io/Egami/v1/articles/video-cli/ffmpeg.html): `egami-video ffmpeg` and `egami-video ffprobe` take the command lines people already know, find in answers online or have in scripts, and run them with egami-video's own commands.
+- [egami-video for AI assistants](https://inexin.github.io/Egami/v1/articles/video-cli/assistants.html): `egami-video mcp` serves egami-video's commands as tools to an AI assistant (Claude, GitHub Copilot, Cursor) over the Model Context Protocol, on standard input and output.
+
 ## Egami.Barcodes
 
 - [Barcodes](https://inexin.github.io/Egami/v1/articles/guides/barcodes.html): Egami.Barcodes writes and reads barcodes.

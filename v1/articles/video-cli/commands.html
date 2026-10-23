@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>egami-video command reference | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="egami-video command reference | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/video-cli/commands.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="egami-video-command-reference">egami-video command reference</h1>
+
+<p>Every egami-video command with its arguments and options, as <code>egami-video &lt;command&gt; --help</code> prints them. The options of all
+commands (<code>-v</code>, <code>-vv</code>, <code>-q</code>, <code>--limit</code>, <code>--progress</code>, <code>--progress-format</code>) are listed once, at the top. <a href="index.html">The egami-video
+command</a> explains the conventions they share; <code>run</code> takes <a href="../cli/steps.html">egami's steps</a>.</p>
+<pre><code class="lang-text">Description:
+  Inspect, remux, cut, join and convert video and audio files, and export and make frames, with Egami.Video, a fully managed video library.
+
+Usage:
+  egami-video [command] [options]
+
+Options:
+  -v, --verbose                  Write information to standard error.
+  -vv, --debug                   Write debugging detail to standard error.
+  -q, --quiet                    Write only errors to standard error: no warnings and no progress line.
+  --limit &lt;name=value,...&gt;       Safety limits for decoded frames, such as pixels=100M,memory=2GB (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+  --progress &lt;file|-&gt;            Write progress to a file, or - for standard output: key=value lines as ffmpeg -progress writes them, or JSON with --progress-format json.
+  --progress-format &lt;keys|json&gt;  How --progress writes: keys (the default, ffmpeg's key=value blocks) or json (one object per line).
+  -?, -h, --help                 Show help and usage information
+  --version                      Show version information
+
+Commands:
+  info &lt;inputs&gt;                 Show what media files hold: container, duration, tracks and codecs, tags, chapters and attachments; with options, packets and frames. Like ffprobe.
+  remux &lt;inputs&gt;                Copy tracks into another container without decoding: change AVI to Matroska, pick tracks, keep tags, chapters and attachments.
+  trim &lt;inputs&gt;                 Cut a part out of files without decoding: every track from the video keyframe at or before --from up to --to, with timestamps starting at 0. Like ffmpeg -ss -to -c copy.
+  concat &lt;inputs&gt;               Join clips with the same tracks and codecs into one file without decoding, one after another in the order given (globs sorted by name).
+  segment &lt;inputs&gt;              Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}.
+  timestamps &lt;inputs&gt;           Change packet timestamps without decoding: shift tracks, re-time video to a constant frame rate, repair broken timestamps or start at 0. With --track, --shift, --rate and --fix change only those tracks; every track is written.
+  extract &lt;inputs&gt;              Copy a track into its own file without decoding (VP8, VP9 and AV1 to IVF, PCM to WAV, FLAC to FLAC, Opus and Vorbis to Ogg, the rest to Matroska), or write attachments and cover art as files.
+  embed &lt;inputs&gt;                Add tracks from other files, attachments and cover art to a file without decoding, and set track languages, names and defaults. Track numbers count the output's tracks from 1.
+  metadata &lt;inputs&gt;             Write tags, chapters, track names and languages and attachment names as JSON, or copy a file with them changed from such a JSON or with --set, --remove and --chapter.
+  frames &lt;inputs&gt;               Write video frames as images: every frame, one every few seconds, at given times, keyframes or a few evenly spaced.
+  encode &lt;inputs&gt;               Make a clip from images, an image sequence or a Y4M stream, with Motion JPEG or uncompressed video, and audio from another file.
+  run &lt;inputs-and-steps&gt;        Run egami's steps over every frame of a video, separated by +, and encode it again: 'egami-video run in.mkv crop 0 60 1920 960 + resize 1280x + save out.mkv'. 'egami-video run --list' lists the steps; audio and subtitles are copied, and frames keep their times.
+  thumbnail &lt;inputs&gt;            Write a representative frame of each video as an image: a typical frame of its opening, not a black or empty one, or the frame at --at.
+  scenes &lt;inputs&gt;               Find the cuts between shots: list where each scene starts (frame, time and how sharp the cut is), and optionally write a frame of each.
+  sheet &lt;inputs&gt;                Make a contact sheet: a grid of evenly spaced frames, with their times and a title if asked.
+  animate &lt;inputs&gt;              Make an animated GIF, WebP or PNG (APNG) from a stretch of video, at a frame rate and size of your choice.
+  hash &lt;inputs&gt;                 Hash every decoded frame or packet of each track, in the layout of ffmpeg -f framemd5, to check that decoding matches.
+  compare &lt;reference&gt; &lt;inputs&gt;  Measure PSNR and SSIM per plane between a reference clip and others, frame by frame in presentation order, as ffmpeg's psnr and ssim filters do.
+  audio &lt;inputs&gt;                Decode audio to WAV, FLAC or Ogg FLAC, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
+  formats                       List the containers and codecs egami-video reads and writes, like ffmpeg -formats and -codecs.
+  ffmpeg &lt;arguments&gt;            Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -lavfi, -filter_complex (psnr, ssim), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; anything else stops with exit code 2.
+  ffprobe &lt;arguments&gt;           Run an ffprobe command line with egami-video: 'egami-video ffprobe -of json -show_streams in.mkv'. --explain prints the native command instead. Takes -i, -show_streams, -show_format, -show_packets, -show_frames, -show_chapters, -select_streams, -show_entries, -of, -print_format, -output_format (json, csv, compact, default, flat, xml), -v, -loglevel, -hide_banner, -pretty; anything else stops with exit code 2.
+  mcp                           Serve egami-video's commands as tools to an AI assistant over the Model Context Protocol, on standard input and output. Tools read and write only inside the folders the assistant opened and those given with --allow, and never replace an input unless asked.
+</code></pre>
+<h2 id="info">info</h2>
+<pre><code class="lang-text">Description:
+  Show what media files hold: container, duration, tracks and codecs, tags, chapters and attachments; with options, packets and frames. Like ffprobe.
+
+Usage:
+  egami-video info &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -t, --track &lt;track&gt;                       Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                           Leave out audio tracks.
+  -sn, --no-subtitles                       Leave out subtitle tracks.
+  -r, --recursive                           Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;                        How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast                               Stop at the first file that fails.
+  -a, --all                                 Also read every packet: packet and keyframe counts, start times, sizes and bit rates per track.
+  --headers                                 Also show the codec headers of each track's first frame (profile, size, color and so on).
+  --packets                                 List every packet: track, timestamps, duration, size and flags.
+  --frames                                  Decode and list every frame: track, timestamp, duration, size or samples.
+  -f, --format &lt;text|json|csv|xml|ffprobe&gt;  How to write: text (the default), json, csv (packet and frame lists), xml (the json fields), or ffprobe (JSON with ffprobe's field names).
+  --json                                    Write JSON (schema 1); the same as --format json.
+  --csv                                     Write CSV; the same as --format csv.
+</code></pre>
+<h2 id="remux">remux</h2>
+<pre><code class="lang-text">Description:
+  Copy tracks into another container without decoding: change AVI to Matroska, pick tracks, keep tags, chapters and attachments.
+
+Usage:
+  egami-video remux &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;container&gt;       The output container by name or extension (mkv, webm, mp4, avi, ivf, y4m, wav, flac, ogg), when -o's extension does not say; always for -o -.
+  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                Leave out audio tracks.
+  -sn, --no-subtitles            Leave out subtitle tracks.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+</code></pre>
+<h2 id="trim">trim</h2>
+<pre><code class="lang-text">Description:
+  Cut a part out of files without decoding: every track from the video keyframe at or before --from up to --to, with timestamps starting at 0. Like ffmpeg -ss -to -c copy.
+
+Usage:
+  egami-video trim &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;container&gt;       The output container by name or extension (mkv, webm, mp4, avi, ivf, y4m, wav, flac, ogg), when -o's extension does not say; always for -o -.
+  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                Leave out audio tracks.
+  -sn, --no-subtitles            Leave out subtitle tracks.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  --from &lt;time&gt;                  Where the cut starts: seconds, [HH:]MM:SS[.mmm] or a frame number such as #250; the copy starts at the video keyframe at or before it.
+  --to &lt;time&gt;                    Where the cut ends, written as for --from; nothing that starts at or after it is kept.
+  --duration &lt;time&gt;              How long the cut is, counted from --from, instead of --to.
+</code></pre>
+<h2 id="concat">concat</h2>
+<pre><code class="lang-text">Description:
+  Join clips with the same tracks and codecs into one file without decoding, one after another in the order given (globs sorted by name).
+
+Usage:
+  egami-video concat &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;container&gt;       The output container by name or extension (mkv, webm, mp4, avi, ivf, y4m, wav, flac, ogg), when -o's extension does not say; always for -o -.
+  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                Leave out audio tracks.
+  -sn, --no-subtitles            Leave out subtitle tracks.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+</code></pre>
+<h2 id="segment">segment</h2>
+<pre><code class="lang-text">Description:
+  Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}.
+
+Usage:
+  egami-video segment &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;container&gt;       The output container by name or extension (mkv, webm, mp4, avi, ivf, y4m, wav, flac, ogg), when -o's extension does not say; always for -o -.
+  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                Leave out audio tracks.
+  -sn, --no-subtitles            Leave out subtitle tracks.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  --every &lt;time&gt;                 Split every so often, such as 10 or 1:00; each part starts at the first video keyframe at or after its split point.
+  --at &lt;times&gt;                   Split at these times, separated by commas, such as 1:00,2:30 or #250,#500; each part starts at the first video keyframe at or after its split point.
+  --keep-timestamps              Keep the input's timestamps in every part instead of starting each part at 0.
+</code></pre>
+<h2 id="timestamps">timestamps</h2>
+<pre><code class="lang-text">Description:
+  Change packet timestamps without decoding: shift tracks, re-time video to a constant frame rate, repair broken timestamps or start at 0. With --track, --shift, --rate and --fix change only those tracks; every track is written.
+
+Usage:
+  egami-video timestamps &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;container&gt;       The output container by name or extension (mkv, webm, mp4, avi, ivf, y4m, wav, flac, ogg), when -o's extension does not say; always for -o -.
+  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                Leave out audio tracks.
+  -sn, --no-subtitles            Leave out subtitle tracks.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  --shift &lt;time&gt;                 Move timestamps later, or earlier with a minus sign: seconds or [HH:]MM:SS[.mmm], such as 1.5, -1.5 or --shift=-0:01.
+  --rate &lt;fps&gt;                   Re-time video packets to a constant frame rate in presentation order, such as 25 or 30000/1001; audio stays as it is.
+  --fix                          Repair duplicated or out-of-order timestamps and missing durations: decode order, strictly increasing times per track, durations from the frame rate or the next packet.
+  --start-at-zero                Move every track by the same amount so the earliest packet starts at 0.
+</code></pre>
+<h2 id="extract">extract</h2>
+<pre><code class="lang-text">Description:
+  Copy a track into its own file without decoding (VP8, VP9 and AV1 to IVF, PCM to WAV, FLAC to FLAC, Opus and Vorbis to Ogg, the rest to Matroska), or write attachments and cover art as files.
+
+Usage:
+  egami-video extract &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;container&gt;       The output container by name or extension (mkv, webm, mp4, avi, ivf, y4m, wav, flac, ogg), when -o's extension does not say; always for -o -.
+  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                Leave out audio tracks.
+  -sn, --no-subtitles            Leave out subtitle tracks.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  --attachment &lt;name|index|all&gt;  Write attachments as files instead of a track: by name, by index counted from 0, or all.
+  --cover                        Write the cover art as a file instead of a track.
+</code></pre>
+<h2 id="embed">embed</h2>
+<pre><code class="lang-text">Description:
+  Add tracks from other files, attachments and cover art to a file without decoding, and set track languages, names and defaults. Track numbers count the output's tracks from 1.
+
+Usage:
+  egami-video embed &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;container&gt;       The output container by name or extension (mkv, webm, mp4, avi, ivf, y4m, wav, flac, ogg), when -o's extension does not say; always for -o -.
+  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                Leave out audio tracks.
+  -sn, --no-subtitles            Leave out subtitle tracks.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  --add &lt;file[:tracks]&gt;          Add the tracks of another file, all of them or those a track spec after ':' picks (audio.flac, other.mkv:a:1).
+  --attach &lt;file&gt;                Add a file as an attachment, such as a font for subtitles.
+  --cover &lt;image&gt;                Add a JPEG, PNG or WebP image as cover art, replacing any cover art the input has.
+  --language &lt;track=language&gt;    Set an output track's language, such as 2=eng or a:0=nor.
+  --name &lt;track=name&gt;            Set an output track's name, such as s:0=Commentary.
+  --default &lt;track&gt;              Make an output track the default one of its kind; the others of that kind are not.
+</code></pre>
+<h2 id="metadata">metadata</h2>
+<pre><code class="lang-text">Description:
+  Write tags, chapters, track names and languages and attachment names as JSON, or copy a file with them changed from such a JSON or with --set, --remove and --chapter.
+
+Usage:
+  egami-video metadata &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;container&gt;       The output container by name or extension (mkv, webm, mp4, avi, ivf, y4m, wav, flac, ogg), when -o's extension does not say; always for -o -.
+  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                Leave out audio tracks.
+  -sn, --no-subtitles            Leave out subtitle tracks.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  --load &lt;file.json&gt;             Take tags, chapters, track fields and attachments from a JSON file as metadata writes it; keys it leaves out stay.
+  --clear                        Drop the tags, chapters, track names, languages and attachments that --load's JSON leaves out (all of them without --load).
+  --set &lt;KEY=value&gt;              Set a file tag, such as TITLE=Holiday; repeat it for more.
+  --remove &lt;KEY&gt;                 Remove a file tag; repeat it for more.
+  --chapter &lt;start[-end]=title&gt;  Add a chapter, such as 1:30-2:45=Intro or 90=Part two; repeat it for more.
+</code></pre>
+<h2 id="frames">frames</h2>
+<pre><code class="lang-text">Description:
+  Write video frames as images: every frame, one every few seconds, at given times, keyframes or a few evenly spaced.
+
+Usage:
+  egami-video frames &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast                    Stop at the first file that fails.
+  -o, --output &lt;template&gt;        Where to write: a template with {frame} (the frame number from 0, padded as in {frame:0000}), {name}, {dir}, {index} and {format}, a folder, or - for standard output (one frame, with --format).
+  -f, --format &lt;format&gt;          The image format by name or extension (png, jpg, webp, ...), when -o's extension does not say; always for -o -.
+  --quality &lt;0-100&gt;              Lossy quality from 0 to 100 (JPEG, WebP, AVIF, JPEG XL).
+  --set &lt;fmt.key=value&gt;          Any writer setting as fmt.key=value, such as png.compression-level=9; 'egami formats png' lists the keys.
+  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  --every &lt;time|#n&gt;              One frame per length of time (10s, 1:00), or every nth frame with #n (#25).
+  --at &lt;t1,t2,...&gt;               Only the frames shown at these times, separated by commas (5, 1:30, #100).
+  --keyframes                    Only the keyframes.
+  --count &lt;n&gt;                    This many frames, evenly spaced from the first frame to the last.
+  --from &lt;time&gt;                  Start at this time, or at a frame number with #n.
+  --to &lt;time&gt;                    Stop before this time, or before a frame number with #n.
+  --auto-orient                  Turn the frames upright by the track's rotation, as players show them.
+</code></pre>
+<h2 id="encode">encode</h2>
+<pre><code class="lang-text">Description:
+  Make a clip from images, an image sequence or a Y4M stream, with Motion JPEG or uncompressed video, and audio from another file.
+
+Usage:
+  egami-video encode &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Images in order (files, or globs sorted by name), an image sequence such as shots/{frame:0000}.png or shots/%04d.png, a video such as a Y4M file, or - for Y4M or Matroska on standard input.
+
+Options:
+  -o, --output &lt;path&gt;            The clip to write, or - for standard output (with --format).
+  -f, --format &lt;container&gt;       The container by name or extension (mkv, avi, mp4, y4m), when -o's extension does not say; always for -o -.
+  --rate &lt;fps&gt;                   Frames per second, such as 25, 29.97 or 30000/1001; 25 for images, and a video's own rate for a video.
+  -c, --codec &lt;codec&gt;            The video codec: mjpeg (the default) or raw (uncompressed, the default for y4m).
+  --quality &lt;0-100&gt;              Motion JPEG quality from 0 to 100; 75 by default.
+  --size &lt;WxH&gt;                   Fit every frame into this size, keeping its shape, with black around it; images take the first image's size by default.
+  --chroma &lt;420|422|444&gt;         Chroma subsampling for frames made from images: 420 (the default), 422 or 444.
+  --audio &lt;file&gt;                 Add the first audio track of this file, copied without decoding, up to the end of the video.
+</code></pre>
+<h2 id="run">run</h2>
+<pre><code class="lang-text">Description:
+  Run egami's steps over every frame of a video, separated by +, and encode it again: 'egami-video run in.mkv crop 0 60 1920 960 + resize 1280x + save out.mkv'. 'egami-video run --list' lists the steps; audio and subtitles are copied, and frames keep their times.
+
+Usage:
+  egami-video run [&lt;inputs-and-steps&gt;...] [options] [[--] &lt;additional arguments&gt;...]]
+
+Arguments:
+  &lt;inputs-and-steps&gt;  Videos (files, globs, -), then steps separated by +, ending in save out.mkv if -o is not given.
+
+Options:
+  -o, --output &lt;path&gt;            Where the video goes when save has no path: a file, a folder, a template with {name}, or - with --format.
+  -f, --format &lt;container&gt;       The output container (mkv, avi …), when the output's extension does not say.
+  --codec &lt;codec&gt;                The video codec to encode with: mjpeg or raw. The input's codec when Egami.Video can encode it, else mjpeg.
+  --quality &lt;1-100&gt;              The encoder's quality from 1 to 100.
+  --rate &lt;fps&gt;                   Frames per second of the output, dropping or repeating frames to match; frames keep their own times by default.
+  -t, --track &lt;track&gt;            Which video track to run the steps over: v:1 for the second, or a track number; audio and subtitle tracks are copied.
+  -an, --no-audio                Leave out the audio tracks.
+  -sn, --no-subtitles            Leave out the subtitle tracks.
+  -w, --workflow &lt;file&gt;          Take the steps from an egami JSON workflow file.
+  --save-workflow &lt;file&gt;         Write the steps to a JSON workflow file (then run them, unless --dry-run).
+  --dry-run                      Print the steps and the file each input would write, and stop.
+  --list                         List every step with its arguments; --list &lt;step&gt; shows one.
+  -r, --recursive                Take every media file in folders given as inputs.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+
+Additional Arguments:
+  Arguments passed to the application that is being run.
+</code></pre>
+<h2 id="thumbnail">thumbnail</h2>
+<pre><code class="lang-text">Description:
+  Write a representative frame of each video as an image: a typical frame of its opening, not a black or empty one, or the frame at --at.
+
+Usage:
+  egami-video thumbnail &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir} and {index}, or - for standard output.
+  -f, --format &lt;format&gt;          The image format by name or extension (png, jpg, webp, gif …), when -o's extension does not say.
+  -t, --track &lt;track&gt;            Which video track: v:1 for the second, or a track number as info shows it; the first video track by default.
+  --quality &lt;0-100&gt;              Lossy quality from 0 to 100 for formats that have one.
+  --set &lt;fmt.key=value&gt;          Writer settings as fmt.key=value, as egami takes them.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  -s, --size &lt;size&gt;              The thumbnail's size in egami's size syntax: 320x, x180, 320x180 (fits inside), 50%.
+  --at &lt;time&gt;                    Take the frame shown at this time (seconds, [HH:]MM:SS[.mmm] or #frame) instead of choosing one.
+</code></pre>
+<h2 id="scenes">scenes</h2>
+<pre><code class="lang-text">Description:
+  Find the cuts between shots: list where each scene starts (frame, time and how sharp the cut is), and optionally write a frame of each.
+
+Usage:
+  egami-video scenes &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Also write the first frame of each scene: a folder, or a template with {scene} (from 1, padded as {scene:000}), {name}, {dir} and {index}.
+  -f, --format &lt;format&gt;          The image format by name or extension (png, jpg, webp, gif …), when -o's extension does not say.
+  -t, --track &lt;track&gt;            Which video track: v:1 for the second, or a track number as info shows it; the first video track by default.
+  --quality &lt;0-100&gt;              Lossy quality from 0 to 100 for formats that have one.
+  --set &lt;fmt.key=value&gt;          Writer settings as fmt.key=value, as egami takes them.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  --threshold &lt;0-1&gt;              How sharp a change starts a scene, from 0 to 1; lower finds more cuts. [default: 0.4]
+  --min-gap &lt;time&gt;               The shortest scene: a cut closer than this to the last one is not taken. [default: 1s]
+  --json                         Write the scenes as JSON.
+  --csv                          Write the scenes as CSV, one row per scene.
+</code></pre>
+<h2 id="sheet">sheet</h2>
+<pre><code class="lang-text">Description:
+  Make a contact sheet: a grid of evenly spaced frames, with their times and a title if asked.
+
+Usage:
+  egami-video sheet &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            Where to write: a file, a folder, a template with {name}, {ext}, {dir} and {index}, or - for standard output.
+  -f, --format &lt;format&gt;          The image format by name or extension (png, jpg, webp, gif …), when -o's extension does not say.
+  -t, --track &lt;track&gt;            Which video track: v:1 for the second, or a track number as info shows it; the first video track by default.
+  --quality &lt;0-100&gt;              Lossy quality from 0 to 100 for formats that have one.
+  --set &lt;fmt.key=value&gt;          Writer settings as fmt.key=value, as egami takes them.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  --grid &lt;CxR&gt;                   Columns and rows of frames, such as 4x4 or 5x3. [default: 4x4]
+  --width &lt;pixels&gt;               The sheet's width in pixels; the tiles share it and keep the video's shape. [default: 1280]
+  --timestamps                   Write each frame's time under it.
+  --title                        Write the file's name, length, size and codec above the frames.
+</code></pre>
+<h2 id="animate">animate</h2>
+<pre><code class="lang-text">Description:
+  Make an animated GIF, WebP or PNG (APNG) from a stretch of video, at a frame rate and size of your choice.
+
+Usage:
+  egami-video animate &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;            The animation to write: .gif, .webp or .png (APNG); a folder, or a template with {name}, {dir} and {index}.
+  -f, --format &lt;format&gt;          The image format by name or extension (png, jpg, webp, gif …), when -o's extension does not say.
+  -t, --track &lt;track&gt;            Which video track: v:1 for the second, or a track number as info shows it; the first video track by default.
+  --quality &lt;0-100&gt;              Lossy quality from 0 to 100 for formats that have one.
+  --set &lt;fmt.key=value&gt;          Writer settings as fmt.key=value, as egami takes them.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                     Allow outputs to replace their inputs.
+  --fail-fast                    Stop at the first file that fails.
+  --rate &lt;fps&gt;                   Frames per second of the animation; frames of the video are dropped or held to match. [default: 10]
+  -s, --size &lt;size&gt;              The animation's size in egami's size syntax: 320x, x180, 320x180 (fits inside), 50%.
+  --from &lt;time&gt;                  Start at this time (seconds, [HH:]MM:SS[.mmm] or #frame); the start of the video by default.
+  --to &lt;time&gt;                    End at this time; the end of the video by default.
+  --loop &lt;count&gt;                 How many times the animation plays; 0 (the default) loops forever.
+  --lossless                     Write lossless WebP.
+</code></pre>
+<h2 id="hash">hash</h2>
+<pre><code class="lang-text">Description:
+  Hash every decoded frame or packet of each track, in the layout of ffmpeg -f framemd5, to check that decoding matches.
+
+Usage:
+  egami-video hash &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                Leave out audio tracks.
+  -sn, --no-subtitles            Leave out subtitle tracks.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast                    Stop at the first file that fails.
+  --packets                      Hash every packet as stored instead of every decoded frame, as ffmpeg -c copy -f framemd5 does.
+  --algorithm &lt;md5|sha256&gt;       The hash: md5 (the default, as framemd5) or sha256. [default: md5]
+  --total                        End with a line per track that hashes all its frames or packets together.
+  --sample-format &lt;format&gt;       Convert decoded audio to u8, s16, s32, f32 or f64 before hashing; s16 matches ffmpeg's framemd5 default.
+  -f, --format &lt;text|json|csv&gt;   How to write: text (the default, framemd5's lines), json or csv.
+  --json                         Write JSON; the same as --format json.
+  --csv                          Write CSV; the same as --format csv.
+  -o, --output &lt;file&gt;            Write the hashes to this file instead of standard output.
+</code></pre>
+<h2 id="compare">compare</h2>
+<pre><code class="lang-text">Description:
+  Measure PSNR and SSIM per plane between a reference clip and others, frame by frame in presentation order, as ffmpeg's psnr and ssim filters do.
+
+Usage:
+  egami-video compare &lt;reference&gt; &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;reference&gt;  The original clip, or - for standard input.
+  &lt;inputs&gt;     The clips to measure against the reference: files, globs (*, ?, **), folders with --recursive, or - for standard input.
+
+Options:
+  -t, --track &lt;track&gt;            Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                Leave out audio tracks.
+  -sn, --no-subtitles            Leave out subtitle tracks.
+  -r, --recursive                Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
+  --fail-fast                    Stop at the first file that fails.
+  -m, --metric &lt;psnr,ssim&gt;       What to measure: psnr, ssim, or both separated by a comma (the default). [default: psnr,ssim]
+  --per-frame                    Also list the scores of every frame.
+  --scale                        Resize frames to the reference's size (bicubic) when the sizes differ.
+  --min-psnr &lt;dB&gt;                Exit with 1 when a clip's average PSNR is below this many decibels.
+  --min-ssim &lt;value&gt;             Exit with 1 when a clip's average SSIM is below this, from 0 to 1.
+  -f, --format &lt;text|json|csv&gt;   How to write: text (the default), json or csv.
+  --json                         Write JSON; the same as --format json.
+  --csv                          Write CSV; the same as --format csv.
+</code></pre>
+<h2 id="audio">audio</h2>
+<pre><code class="lang-text">Description:
+  Decode audio to WAV, FLAC or Ogg FLAC, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
+
+Usage:
+  egami-video audio &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;             Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format &lt;container&gt;        The output container by name or extension (mkv, webm, mp4, avi, ivf, y4m, wav, flac, ogg), when -o's extension does not say; always for -o -.
+  -t, --track &lt;track&gt;             Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                 Leave out audio tracks.
+  -sn, --no-subtitles             Leave out subtitle tracks.
+  -r, --recursive                 Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;              How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                      Allow outputs to replace their inputs.
+  --fail-fast                     Stop at the first file that fails.
+  -c, --codec &lt;flac|pcm&gt;          The audio codec to write: flac or pcm; by default FLAC, except PCM in WAV, Wave64 and AVI.
+  -ar, --rate &lt;Hz&gt;                Resample to this many samples per second.
+  -ac, --channels &lt;count|layout&gt;  Mix to this many channels or this layout: mono, stereo, 2.1, 3.0, quad, 5.0, 5.1, 5.1(side), 6.1, 7.1 or 7.1.4.
+  --sample-format &lt;format&gt;        The samples to store: u8, s16, s24, s32, f32 or f64 (float only with pcm); by default the source's depth.
+  --level &lt;0-8&gt;                   FLAC's compression level, from 0 (fastest) to 8 (smallest); 5 by default.
+  -vn, --no-video                 Leave out video tracks, keeping only audio (and subtitles) in a Matroska or MP4 output.
+</code></pre>
+<h2 id="formats">formats</h2>
+<pre><code class="lang-text">Description:
+  List the containers and codecs egami-video reads and writes, like ffmpeg -formats and -codecs.
+
+Usage:
+  egami-video formats [options]
+
+Options:
+  --json                         Write JSON instead of text.
+</code></pre>
+<h2 id="ffmpeg">ffmpeg</h2>
+<pre><code class="lang-text">Description:
+  Run an ffmpeg command line with egami-video: 'egami-video ffmpeg -i in.avi -c copy out.mkv'. --explain prints the native command instead. Takes -i, -f, -y, -n, -ss, -to, -t, -itsoffset, -framerate, -map, -c, -codec, -c:v, -c:a, -c:s, -vcodec, -acodec, -scodec, -an, -vn, -sn, -dn, -r, -s, -frames:v, -vframes, -q:v, -qscale:v, -ar, -ac, -sample_fmt, -metadata, -map_metadata, -map_chapters, -vf, -filter:v, -lavfi, -filter_complex (psnr, ssim), -segment_time, -segment_times, -update, -progress, -stats, -nostats, -stats_period, -hide_banner, -loglevel, -v, -nostdin, %d patterns and pipe:; filters scale, crop, pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile; anything else stops with exit code 2.
+
+Usage:
+  egami-video ffmpeg [&lt;arguments&gt;...] [options] [[--] &lt;additional arguments&gt;...]]
+
+Arguments:
+  &lt;arguments&gt;  ffmpeg's arguments, as ffmpeg takes them.
+
+Options:
+  --explain                      Print the egami-video command the line stands for, and stop.
+
+Additional Arguments:
+  Arguments passed to the application that is being run.
+</code></pre>
+<h2 id="ffprobe">ffprobe</h2>
+<pre><code class="lang-text">Description:
+  Run an ffprobe command line with egami-video: 'egami-video ffprobe -of json -show_streams in.mkv'. --explain prints the native command instead. Takes -i, -show_streams, -show_format, -show_packets, -show_frames, -show_chapters, -select_streams, -show_entries, -of, -print_format, -output_format (json, csv, compact, default, flat, xml), -v, -loglevel, -hide_banner, -pretty; anything else stops with exit code 2.
+
+Usage:
+  egami-video ffprobe [&lt;arguments&gt;...] [options] [[--] &lt;additional arguments&gt;...]]
+
+Arguments:
+  &lt;arguments&gt;  ffprobe's arguments, as ffprobe takes them.
+
+Options:
+  --explain                      Print the egami-video command the line stands for, and stop.
+
+Additional Arguments:
+  Arguments passed to the application that is being run.
+</code></pre>
+<h2 id="mcp">mcp</h2>
+<pre><code class="lang-text">Description:
+  Serve egami-video's commands as tools to an AI assistant over the Model Context Protocol, on standard input and output. Tools read and write only inside the folders the assistant opened and those given with --allow, and never replace an input unless asked.
+
+Usage:
+  egami-video mcp [options]
+
+Options:
+  --allow &lt;folder&gt;               A folder the tools may read and write, besides the folders the assistant opened; give it once per folder. With neither, the working folder.
+  --max-inputs &lt;count&gt;           The most files one tool call may take; 1000 by default. [default: 1000]
+</code></pre>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/video-cli/commands.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>The egami-video command | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="The egami-video command | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/video-cli/index.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="the-egami-video-command">The egami-video command</h1>
+
+<p><code>egami-video</code> inspects, remuxes, cuts, joins and converts video and audio files from a shell or a build script, with no C# to
+write. It does the jobs people use ffprobe and ffmpeg for, with Egami.Video's fully managed code. It is the <code>Egami.Video.Cli</code>
+package, a .NET tool that carries Egami.Video's version.</p>
+<pre><code class="lang-sh">egami-video info in.mkv
+egami-video remux in.avi -o out.mkv
+egami-video trim in.webm --from 0.5 --to 1.5 -o cut.webm
+egami-video frames in.mkv --every 0.5 -o shots/{name}-{frame:0000}.png
+egami-video run in.avi resize 80x + sharpen 0.5 -o small.mkv
+egami-video audio in.mkv -o sound.flac
+</code></pre>
+<p>The <a href="commands.html">command reference</a> lists every option. <a href="ffmpeg.html">ffmpeg command lines</a> explains <code>egami-video ffmpeg</code> and
+<code>egami-video ffprobe</code>, and <a href="assistants.html">egami-video for AI assistants</a> the <code>mcp</code> server.</p>
+<h2 id="installing">Installing</h2>
+<pre><code class="lang-sh">dotnet tool install --global Egami.Video.Cli
+</code></pre>
+<p>With the <code>egami</code> tool installed too, <code>egami video info clip.mkv</code> runs <code>egami-video info clip.mkv</code>: egami runs any
+<code>egami-&lt;name&gt;</code> program on the PATH. The tool is free of reflection and builds with the trimming and Native AOT analyzers on.</p>
+<h2 id="commands">Commands</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What it does</th>
+<th>Like</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>info</code></td>
+<td>Container, duration, tracks, codecs, tags, chapters, attachments; <code>--packets</code>, <code>--frames</code>, <code>--headers</code></td>
+<td><code>ffprobe</code></td>
+</tr>
+<tr>
+<td><code>remux</code></td>
+<td>Copy tracks into another container</td>
+<td><code>ffmpeg -c copy</code></td>
+</tr>
+<tr>
+<td><code>trim</code></td>
+<td>Cut from the keyframe at or before <code>--from</code> to <code>--to</code></td>
+<td><code>ffmpeg -ss -to -c copy</code></td>
+</tr>
+<tr>
+<td><code>concat</code></td>
+<td>Join clips with the same tracks and codecs</td>
+<td>the concat demuxer</td>
+</tr>
+<tr>
+<td><code>segment</code></td>
+<td>Split every <code>--every</code> or at <code>--at</code> times, at keyframes</td>
+<td><code>-f segment</code></td>
+</tr>
+<tr>
+<td><code>timestamps</code></td>
+<td>Shift, set a frame rate, repair timestamps</td>
+<td><code>-itsoffset</code>, <code>-r</code>, <code>setts</code></td>
+</tr>
+<tr>
+<td><code>extract</code></td>
+<td>One track, attachments or cover art to their own files</td>
+<td><code>-map 0:a:0 -c copy</code>, <code>-dump_attachment</code></td>
+</tr>
+<tr>
+<td><code>embed</code></td>
+<td>Add tracks, attachments and cover art; set languages and names</td>
+<td><code>-i a -i b -map 0 -map 1</code></td>
+</tr>
+<tr>
+<td><code>metadata</code></td>
+<td>Write tags and chapters as JSON, or change them</td>
+<td><code>-f ffmetadata</code>, <code>-metadata</code></td>
+</tr>
+<tr>
+<td><code>frames</code></td>
+<td>Frames as images; Motion JPEG frames as JPEG without decoding</td>
+<td><code>ffmpeg -i in out-%04d.png</code></td>
+</tr>
+<tr>
+<td><code>encode</code></td>
+<td>Images, an image sequence or Y4M into a clip</td>
+<td><code>ffmpeg -framerate 30 -i %04d.png</code></td>
+</tr>
+<tr>
+<td><code>run</code></td>
+<td>egami's steps on every frame, then encode</td>
+<td><code>-vf scale,crop,pad,transpose</code></td>
+</tr>
+<tr>
+<td><code>thumbnail</code></td>
+<td>A representative frame</td>
+<td><code>-vf thumbnail</code></td>
+</tr>
+<tr>
+<td><code>scenes</code></td>
+<td>Where the scenes start, and a frame of each</td>
+<td><code>select='gt(scene,0.4)'</code></td>
+</tr>
+<tr>
+<td><code>sheet</code></td>
+<td>A contact sheet of frames with their times</td>
+<td><code>-vf tile=4x4</code></td>
+</tr>
+<tr>
+<td><code>animate</code></td>
+<td>Animated GIF, WebP or APNG</td>
+<td><code>ffmpeg -i in.mp4 out.gif</code></td>
+</tr>
+<tr>
+<td><code>hash</code></td>
+<td>Hashes of every frame or packet</td>
+<td><code>-f framemd5</code></td>
+</tr>
+<tr>
+<td><code>compare</code></td>
+<td>PSNR and SSIM between clips</td>
+<td><code>-lavfi psnr</code>, <code>-lavfi ssim</code></td>
+</tr>
+<tr>
+<td><code>audio</code></td>
+<td>Audio to WAV or FLAC; audio again while copying video</td>
+<td><code>-vn -c:a flac</code>, <code>-ar</code>, <code>-ac</code></td>
+</tr>
+<tr>
+<td><code>formats</code></td>
+<td>The containers and codecs this build reads and writes</td>
+<td><code>ffmpeg -formats</code></td>
+</tr>
+</tbody>
+</table>
+<p>Commands that copy packets (<code>remux</code>, <code>trim</code>, <code>concat</code>, <code>segment</code>, <code>timestamps</code>, <code>extract</code>, <code>embed</code>, <code>metadata</code>) never decode, so
+they work on any codec, H.264 and AAC included. Commands that decode need a codec Egami.Video decodes: Motion JPEG, VP8, VP9, AV1
+and uncompressed video, and PCM, FLAC, Opus and Vorbis audio. <code>encode</code> and <code>run</code> write Motion JPEG or uncompressed video.</p>
+<h2 id="inspecting">Inspecting</h2>
+<p><code>info</code> reads the headers without decoding. <code>--all</code> reads every packet too, for packet and keyframe counts and bit rates;
+<code>--headers</code> shows the codec headers of each track's first frame; <code>--packets</code> and <code>--frames</code> list every packet and every decoded
+frame.</p>
+<pre><code class="lang-sh">egami-video info in.mkv --all
+egami-video info in.webm --packets --track v
+egami-video info in.mkv --json
+egami-video info in.mp4 --format ffprobe
+</code></pre>
+<p><code>--format</code> picks how it writes: <code>text</code> (the default), <code>json</code> (Egami's own schema, <code>docs/schemas/egami-video-info-1.json</code>), <code>csv</code>
+for packet and frame lists, <code>xml</code> with the same fields as JSON, or <code>ffprobe</code>: JSON with the field names <code>ffprobe -of json</code> uses,
+so scripts written for ffprobe read it unchanged. ffprobe lists Matroska cover art as a video stream; egami-video lists it as an
+attachment.</p>
+<h2 id="tracks-and-times">Tracks and times</h2>
+<p><code>--track</code> (<code>-t</code>) picks tracks by kind and position, language or number:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Picks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>v</code>, <code>a</code>, <code>s</code>, <code>d</code></td>
+<td>Every video, audio, subtitle or data track</td>
+</tr>
+<tr>
+<td><code>a:1</code></td>
+<td>The second audio track (counted from 0)</td>
+</tr>
+<tr>
+<td><code>s:eng</code></td>
+<td>Subtitle tracks in English (<code>eng</code> and <code>en</code> both match <code>en-US</code>)</td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td>Track 3, as <code>info</code> numbers it</td>
+</tr>
+</tbody>
+</table>
+<p>Repeat it, or separate values with commas, for several. <code>--no-audio</code> (<code>-an</code>) and <code>--no-subtitles</code> (<code>-sn</code>) leave those out.</p>
+<p>Times are seconds (<code>90.5</code>, <code>500ms</code>, <code>2m</code>), <code>[HH:]MM:SS[.mmm]</code> (<code>1:30</code>, <code>01:02:03.250</code>) or a frame number in presentation order
+(<code>#1234</code>, counted from 0).</p>
+<p>A stream copy can only start on a keyframe. <code>trim</code> starts at the video keyframe at or before <code>--from</code>, ends exactly at <code>--to</code>,
+and says on standard error how far the start moved. <code>segment</code> starts each part at the first keyframe at or after its split point.</p>
+<pre><code class="lang-sh">egami-video trim in.webm --from 0.5 --duration 1 -o cut.webm
+egami-video segment in.mkv --every 1 -o parts/{part:000}.mkv
+egami-video concat parts/001.mkv parts/002.mkv -o joined.mkv
+egami-video timestamps in.mkv --shift 0.5 --track a -o later.mkv
+</code></pre>
+<h2 id="frames-and-pictures">Frames and pictures</h2>
+<p><code>frames</code> writes decoded frames in any format egami writes; <code>{frame}</code> in the output is the frame's number in the video. Motion
+JPEG frames written as JPEG are the stored frames, byte for byte, without decoding.</p>
+<pre><code class="lang-sh">egami-video frames in.mkv --count 4 -o shots/{frame:000}.jpg
+egami-video frames in.webm --at 0.5,1.5 -o at-{frame}.png
+egami-video thumbnail in.webm -o thumb.jpg --size 320x
+egami-video scenes in.mkv --json
+egami-video sheet in.mkv --grid 3x2 --timestamps -o sheet.png
+egami-video animate in.webm --rate 10 --size 120x -o clip.gif
+</code></pre>
+<p><code>encode</code> goes the other way: images in name order, an image sequence (<code>shots/{frame:000}.jpg</code> reads frame 0, 1, 2 until one is
+missing), or a Y4M file or stream.</p>
+<pre><code class="lang-sh">egami-video encode &quot;shots/*.jpg&quot; --rate 2 -o slideshow.mkv
+</code></pre>
+<h2 id="steps-on-every-frame">Steps on every frame</h2>
+<p><code>run</code> takes the steps and <code>+</code> syntax of <code>egami run</code> (<a href="../cli/steps.html">steps for run</a>) and applies them to every frame. The
+output keeps the source codec when Egami.Video can encode it, else Motion JPEG; <code>--codec</code> chooses. Audio and subtitles are copied,
+and every frame keeps its time.</p>
+<pre><code class="lang-sh">egami-video run in.avi resize 80x + sharpen 0.5 -o small.mkv
+egami-video run in.mkv crop 0 10 160 100 + grayscale + save gray.avi --quality 90
+</code></pre>
+<h2 id="audio">Audio</h2>
+<p><code>audio</code> decodes the picked audio track to WAV, Wave64, FLAC or Ogg FLAC, resampling with <code>--rate</code>, mixing with <code>--channels</code> and
+converting with <code>--sample-format</code>. With a video container as output it copies the video unchanged and encodes the audio again.</p>
+<pre><code class="lang-sh">egami-video audio in.mkv -o sound.flac
+egami-video audio in.webm --rate 44100 --channels stereo --sample-format s16 -o sound.wav
+egami-video audio in.mkv --codec flac -o flac-audio.mkv
+</code></pre>
+<h2 id="checking">Checking</h2>
+<p><code>hash</code> writes a hash of every decoded frame (or every packet with <code>--packets</code>) in the layout of <code>ffmpeg -f framemd5</code>, and the
+hashes equal ffmpeg's for the same decoded planes. <code>compare</code> measures PSNR and SSIM per plane between a reference and other
+clips, and <code>--min-psnr</code> or <code>--min-ssim</code> turn it into a check that exits with 1.</p>
+<pre><code class="lang-sh">egami-video hash in.webm --total
+egami-video compare in.mkv small.mkv --scale --json
+</code></pre>
+<h2 id="files-batches-and-pipes">Files, batches and pipes</h2>
+<p>Inputs are files, globs (<code>*</code>, <code>?</code>, <code>[abc]</code>, <code>**</code>, expanded the same way in every shell), folders with <code>--recursive</code>, or <code>-</code> for
+standard input. Outputs are a file, a folder, a template with <code>{name}</code>, <code>{ext}</code>, <code>{dir}</code>, <code>{index}</code>, <code>{format}</code> and the
+command's part (<code>{frame}</code>, <code>{part}</code>, <code>{scene}</code>, <code>{track}</code>), or <code>-</code> for standard output with <code>--format</code>. Several inputs run at
+once (<code>--jobs</code>), a failed file is reported and the rest go on unless <code>--fail-fast</code>, and an output never replaces its input
+without <code>--in-place</code>.</p>
+<p>Standard input is read as it comes and standard output written as it goes, so egami-video sits between other programs without
+temporary files. Matroska, WebM, IVF, Y4M and WAV stream; AVI needs a file.</p>
+<pre><code class="lang-sh">egami-video remux - -o - --format mkv &lt; in.avi &gt; piped.mkv
+</code></pre>
+<h2 id="progress-and-stopping">Progress and stopping</h2>
+<p>A long job shows a line on standard error when it is a terminal: time, percent, frames, frames per second, size, speed and time
+left. <code>--progress &lt;file|-&gt;</code> writes the same reports as ffmpeg <code>-progress</code> does, as <code>key=value</code> blocks ending in
+<code>progress=continue</code> or <code>progress=end</code>, or one JSON object per line with <code>--progress-format json</code>. Batches report each file.
+<code>--quiet</code> turns the line off.</p>
+<p>Ctrl+C stops the job between packets: the output it was writing is deleted, and the exit code is 130. Outputs are written
+under a temporary name and get their own name only when complete.</p>
+<h2 id="exit-codes">Exit codes</h2>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Done</td>
+</tr>
+<tr>
+<td>1</td>
+<td>A file failed (unreadable, corrupt, unwritable), or <code>compare</code> missed <code>--min-psnr</code> or <code>--min-ssim</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>The command line is wrong; the message says what to change</td>
+</tr>
+<tr>
+<td>3</td>
+<td>An input exceeded a safety limit (<code>--limit</code>, <code>EGAMI_LIMITS</code>)</td>
+</tr>
+<tr>
+<td>130</td>
+<td>Stopped with Ctrl+C</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/video-cli/index.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
