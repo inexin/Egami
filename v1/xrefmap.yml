@@ -78541,15 +78541,24 @@ references:
   isSpec: "True"
   fullName: Egami.Video.MediaFile.ProbeAsync
   nameWithType: MediaFile.ProbeAsync
-- uid: Egami.Video.MediaFile.Remux(System.String,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext)
-  name: Remux(string, string, Func<TrackInfo, bool>?, MediaContext?)
-  href: api/Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_
-  commentId: M:Egami.Video.MediaFile.Remux(System.String,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext)
-  name.vb: Remux(String, String, Func(Of TrackInfo, Boolean), MediaContext)
-  fullName: Egami.Video.MediaFile.Remux(string, string, System.Func<Egami.Video.TrackInfo, bool>?, Egami.Video.MediaContext?)
-  fullName.vb: Egami.Video.MediaFile.Remux(String, String, System.Func(Of Egami.Video.TrackInfo, Boolean), Egami.Video.MediaContext)
-  nameWithType: MediaFile.Remux(string, string, Func<TrackInfo, bool>?, MediaContext?)
-  nameWithType.vb: MediaFile.Remux(String, String, Func(Of TrackInfo, Boolean), MediaContext)
+- uid: Egami.Video.MediaFile.Remux(System.IO.Stream,System.IO.Stream,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Remux(Stream, Stream, string, Func<TrackInfo, bool>?, MediaContext?, bool, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_System_IO_Stream_System_IO_Stream_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.MediaFile.Remux(System.IO.Stream,System.IO.Stream,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Remux(Stream, Stream, String, Func(Of TrackInfo, Boolean), MediaContext, Boolean, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.MediaFile.Remux(System.IO.Stream, System.IO.Stream, string, System.Func<Egami.Video.TrackInfo, bool>?, Egami.Video.MediaContext?, bool, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.MediaFile.Remux(System.IO.Stream, System.IO.Stream, String, System.Func(Of Egami.Video.TrackInfo, Boolean), Egami.Video.MediaContext, Boolean, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: MediaFile.Remux(Stream, Stream, string, Func<TrackInfo, bool>?, MediaContext?, bool, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: MediaFile.Remux(Stream, Stream, String, Func(Of TrackInfo, Boolean), MediaContext, Boolean, IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.MediaFile.Remux(System.String,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Remux(string, string, Func<TrackInfo, bool>?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.MediaFile.Remux(System.String,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Remux(String, String, Func(Of TrackInfo, Boolean), MediaContext, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.MediaFile.Remux(string, string, System.Func<Egami.Video.TrackInfo, bool>?, Egami.Video.MediaContext?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.MediaFile.Remux(String, String, System.Func(Of Egami.Video.TrackInfo, Boolean), Egami.Video.MediaContext, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: MediaFile.Remux(string, string, Func<TrackInfo, bool>?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: MediaFile.Remux(String, String, Func(Of TrackInfo, Boolean), MediaContext, IProgress(Of MediaProgress), CancellationToken)
 - uid: Egami.Video.MediaFile.Remux*
   name: Remux
   href: api/Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_
@@ -78557,15 +78566,24 @@ references:
   isSpec: "True"
   fullName: Egami.Video.MediaFile.Remux
   nameWithType: MediaFile.Remux
-- uid: Egami.Video.MediaFile.Transcode(System.String,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext)
-  name: Transcode(string, string, AudioCodec?, int?, Func<TrackInfo, bool>?, MediaContext?)
-  href: api/Egami.Video.MediaFile.html#Egami_Video_MediaFile_Transcode_System_String_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_
-  commentId: M:Egami.Video.MediaFile.Transcode(System.String,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext)
-  name.vb: Transcode(String, String, AudioCodec, Integer?, Func(Of TrackInfo, Boolean), MediaContext)
-  fullName: Egami.Video.MediaFile.Transcode(string, string, Egami.Video.Audio.AudioCodec?, int?, System.Func<Egami.Video.TrackInfo, bool>?, Egami.Video.MediaContext?)
-  fullName.vb: Egami.Video.MediaFile.Transcode(String, String, Egami.Video.Audio.AudioCodec, Integer?, System.Func(Of Egami.Video.TrackInfo, Boolean), Egami.Video.MediaContext)
-  nameWithType: MediaFile.Transcode(string, string, AudioCodec?, int?, Func<TrackInfo, bool>?, MediaContext?)
-  nameWithType.vb: MediaFile.Transcode(String, String, AudioCodec, Integer?, Func(Of TrackInfo, Boolean), MediaContext)
+- uid: Egami.Video.MediaFile.Transcode(System.IO.Stream,System.IO.Stream,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Transcode(Stream, Stream, string, AudioCodec?, int?, Func<TrackInfo, bool>?, MediaContext?, bool, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.MediaFile.html#Egami_Video_MediaFile_Transcode_System_IO_Stream_System_IO_Stream_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.MediaFile.Transcode(System.IO.Stream,System.IO.Stream,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Transcode(Stream, Stream, String, AudioCodec, Integer?, Func(Of TrackInfo, Boolean), MediaContext, Boolean, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.MediaFile.Transcode(System.IO.Stream, System.IO.Stream, string, Egami.Video.Audio.AudioCodec?, int?, System.Func<Egami.Video.TrackInfo, bool>?, Egami.Video.MediaContext?, bool, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.MediaFile.Transcode(System.IO.Stream, System.IO.Stream, String, Egami.Video.Audio.AudioCodec, Integer?, System.Func(Of Egami.Video.TrackInfo, Boolean), Egami.Video.MediaContext, Boolean, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: MediaFile.Transcode(Stream, Stream, string, AudioCodec?, int?, Func<TrackInfo, bool>?, MediaContext?, bool, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: MediaFile.Transcode(Stream, Stream, String, AudioCodec, Integer?, Func(Of TrackInfo, Boolean), MediaContext, Boolean, IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.MediaFile.Transcode(System.String,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Transcode(string, string, AudioCodec?, int?, Func<TrackInfo, bool>?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.MediaFile.html#Egami_Video_MediaFile_Transcode_System_String_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.MediaFile.Transcode(System.String,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Transcode(String, String, AudioCodec, Integer?, Func(Of TrackInfo, Boolean), MediaContext, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.MediaFile.Transcode(string, string, Egami.Video.Audio.AudioCodec?, int?, System.Func<Egami.Video.TrackInfo, bool>?, Egami.Video.MediaContext?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.MediaFile.Transcode(String, String, Egami.Video.Audio.AudioCodec, Integer?, System.Func(Of Egami.Video.TrackInfo, Boolean), Egami.Video.MediaContext, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: MediaFile.Transcode(string, string, AudioCodec?, int?, Func<TrackInfo, bool>?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: MediaFile.Transcode(String, String, AudioCodec, Integer?, Func(Of TrackInfo, Boolean), MediaContext, IProgress(Of MediaProgress), CancellationToken)
 - uid: Egami.Video.MediaFile.Transcode*
   name: Transcode
   href: api/Egami.Video.MediaFile.html#Egami_Video_MediaFile_Transcode_
@@ -78838,6 +78856,142 @@ references:
   isSpec: "True"
   fullName: Egami.Video.MediaMetadata.Tags
   nameWithType: MediaMetadata.Tags
+- uid: Egami.Video.MediaProgress
+  name: MediaProgress
+  href: api/Egami.Video.MediaProgress.html
+  commentId: T:Egami.Video.MediaProgress
+  fullName: Egami.Video.MediaProgress
+  nameWithType: MediaProgress
+- uid: Egami.Video.MediaProgress.BytesRead
+  name: BytesRead
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_BytesRead
+  commentId: P:Egami.Video.MediaProgress.BytesRead
+  fullName: Egami.Video.MediaProgress.BytesRead
+  nameWithType: MediaProgress.BytesRead
+- uid: Egami.Video.MediaProgress.BytesRead*
+  name: BytesRead
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_BytesRead_
+  commentId: Overload:Egami.Video.MediaProgress.BytesRead
+  isSpec: "True"
+  fullName: Egami.Video.MediaProgress.BytesRead
+  nameWithType: MediaProgress.BytesRead
+- uid: Egami.Video.MediaProgress.BytesWritten
+  name: BytesWritten
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_BytesWritten
+  commentId: P:Egami.Video.MediaProgress.BytesWritten
+  fullName: Egami.Video.MediaProgress.BytesWritten
+  nameWithType: MediaProgress.BytesWritten
+- uid: Egami.Video.MediaProgress.BytesWritten*
+  name: BytesWritten
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_BytesWritten_
+  commentId: Overload:Egami.Video.MediaProgress.BytesWritten
+  isSpec: "True"
+  fullName: Egami.Video.MediaProgress.BytesWritten
+  nameWithType: MediaProgress.BytesWritten
+- uid: Egami.Video.MediaProgress.Duration
+  name: Duration
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Duration
+  commentId: P:Egami.Video.MediaProgress.Duration
+  fullName: Egami.Video.MediaProgress.Duration
+  nameWithType: MediaProgress.Duration
+- uid: Egami.Video.MediaProgress.Duration*
+  name: Duration
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Duration_
+  commentId: Overload:Egami.Video.MediaProgress.Duration
+  isSpec: "True"
+  fullName: Egami.Video.MediaProgress.Duration
+  nameWithType: MediaProgress.Duration
+- uid: Egami.Video.MediaProgress.Elapsed
+  name: Elapsed
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Elapsed
+  commentId: P:Egami.Video.MediaProgress.Elapsed
+  fullName: Egami.Video.MediaProgress.Elapsed
+  nameWithType: MediaProgress.Elapsed
+- uid: Egami.Video.MediaProgress.Elapsed*
+  name: Elapsed
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Elapsed_
+  commentId: Overload:Egami.Video.MediaProgress.Elapsed
+  isSpec: "True"
+  fullName: Egami.Video.MediaProgress.Elapsed
+  nameWithType: MediaProgress.Elapsed
+- uid: Egami.Video.MediaProgress.Fraction
+  name: Fraction
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Fraction
+  commentId: P:Egami.Video.MediaProgress.Fraction
+  fullName: Egami.Video.MediaProgress.Fraction
+  nameWithType: MediaProgress.Fraction
+- uid: Egami.Video.MediaProgress.Fraction*
+  name: Fraction
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Fraction_
+  commentId: Overload:Egami.Video.MediaProgress.Fraction
+  isSpec: "True"
+  fullName: Egami.Video.MediaProgress.Fraction
+  nameWithType: MediaProgress.Fraction
+- uid: Egami.Video.MediaProgress.Frames
+  name: Frames
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Frames
+  commentId: P:Egami.Video.MediaProgress.Frames
+  fullName: Egami.Video.MediaProgress.Frames
+  nameWithType: MediaProgress.Frames
+- uid: Egami.Video.MediaProgress.Frames*
+  name: Frames
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Frames_
+  commentId: Overload:Egami.Video.MediaProgress.Frames
+  isSpec: "True"
+  fullName: Egami.Video.MediaProgress.Frames
+  nameWithType: MediaProgress.Frames
+- uid: Egami.Video.MediaProgress.IsFinal
+  name: IsFinal
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_IsFinal
+  commentId: P:Egami.Video.MediaProgress.IsFinal
+  fullName: Egami.Video.MediaProgress.IsFinal
+  nameWithType: MediaProgress.IsFinal
+- uid: Egami.Video.MediaProgress.IsFinal*
+  name: IsFinal
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_IsFinal_
+  commentId: Overload:Egami.Video.MediaProgress.IsFinal
+  isSpec: "True"
+  fullName: Egami.Video.MediaProgress.IsFinal
+  nameWithType: MediaProgress.IsFinal
+- uid: Egami.Video.MediaProgress.Packets
+  name: Packets
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Packets
+  commentId: P:Egami.Video.MediaProgress.Packets
+  fullName: Egami.Video.MediaProgress.Packets
+  nameWithType: MediaProgress.Packets
+- uid: Egami.Video.MediaProgress.Packets*
+  name: Packets
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Packets_
+  commentId: Overload:Egami.Video.MediaProgress.Packets
+  isSpec: "True"
+  fullName: Egami.Video.MediaProgress.Packets
+  nameWithType: MediaProgress.Packets
+- uid: Egami.Video.MediaProgress.Position
+  name: Position
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Position
+  commentId: P:Egami.Video.MediaProgress.Position
+  fullName: Egami.Video.MediaProgress.Position
+  nameWithType: MediaProgress.Position
+- uid: Egami.Video.MediaProgress.Position*
+  name: Position
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Position_
+  commentId: Overload:Egami.Video.MediaProgress.Position
+  isSpec: "True"
+  fullName: Egami.Video.MediaProgress.Position
+  nameWithType: MediaProgress.Position
+- uid: Egami.Video.MediaProgress.Speed
+  name: Speed
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Speed
+  commentId: P:Egami.Video.MediaProgress.Speed
+  fullName: Egami.Video.MediaProgress.Speed
+  nameWithType: MediaProgress.Speed
+- uid: Egami.Video.MediaProgress.Speed*
+  name: Speed
+  href: api/Egami.Video.MediaProgress.html#Egami_Video_MediaProgress_Speed_
+  commentId: Overload:Egami.Video.MediaProgress.Speed
+  isSpec: "True"
+  fullName: Egami.Video.MediaProgress.Speed
+  nameWithType: MediaProgress.Speed
 - uid: Egami.Video.MediaTime
   name: MediaTime
   href: api/Egami.Video.MediaTime.html

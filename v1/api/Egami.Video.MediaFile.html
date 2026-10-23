@@ -642,9 +642,92 @@ into memory asynchronously, as Egami's <code>LoadAsync</code> does, so no thread
 
   <a id="Egami_Video_MediaFile_Remux_" data-uid="Egami.Video.MediaFile.Remux*"></a>
 
-  <h3 id="Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_" data-uid="Egami.Video.MediaFile.Remux(System.String,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext)">
-  Remux(string, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L195"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Egami_Video_MediaFile_Remux_System_IO_Stream_System_IO_Stream_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Remux(System.IO.Stream,System.IO.Stream,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
+  Remux(Stream, Stream, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, bool, IProgress&lt;MediaProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L230"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Copies the packets of one stream into another container without decoding, as
+<a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Remux(string, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
+does for files: for example from one cloud blob to another without a local copy. The input may be non-seekable, except
+for MP4 files with moov after the media. Matroska, WebM, IVF and YUV4MPEG2 write to a non-seekable stream as they go;
+MP4 holds its media in a temporary file and writes moov first; AVI needs a seekable stream.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static long Remux(Stream input, Stream output, string outputFormat, Func&lt;TrackInfo, bool&gt;? tracks = null, MediaContext? context = null, bool leaveOpen = false, IProgress&lt;MediaProgress&gt;? progress = null, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The source, read from its current position.</p>
+</dd>
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write.</p>
+</dd>
+    <dt><code>outputFormat</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The output container: &quot;Matroska&quot;, &quot;.mkv&quot;, &quot;webm&quot; and so on.</p>
+</dd>
+    <dt><code>tracks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;<a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>&gt;</dt>
+    <dd><p>Which tracks to keep, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for all.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>leaveOpen</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the job leaves both streams open when it ends.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a>&gt;</dt>
+    <dd><p>Receives <a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a> reports on the job's thread, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Stops the job between packets; what was written to <code class="paramref">output</code> stays.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>How many packets were copied.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_MediaFile_Remux_System_IO_Stream_System_IO_Stream_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Any Stream works, seekable or not: a cloud blob's read and upload streams, an HTTP response body, a pipe.
+// Files stand in for them here.
+using Stream source = File.OpenRead("movie.webm");
+using Stream upload = File.Create("movie.mkv");
+long packets = MediaFile.Remux(source, upload, "mkv", leaveOpen: true, cancellationToken: cts.Token);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The input is not a registered container, or no container writes <code class="paramref">outputFormat</code>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The output container cannot hold one of the tracks, or needs a seekable output.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p>The job was cancelled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_MediaFile_Remux_" data-uid="Egami.Video.MediaFile.Remux*"></a>
+
+  <h3 id="Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Remux(System.String,System.String,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
+  Remux(string, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L201"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Copies the packets of one file into another container without decoding, for example AVI to Matroska keeping the
@@ -654,7 +737,7 @@ from the extension.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static long Remux(string inputPath, string outputPath, Func&lt;TrackInfo, bool&gt;? tracks = null, MediaContext? context = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public static long Remux(string inputPath, string outputPath, Func&lt;TrackInfo, bool&gt;? tracks = null, MediaContext? context = null, IProgress&lt;MediaProgress&gt;? progress = null, CancellationToken cancellationToken = default)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -671,6 +754,12 @@ from the extension.</p>
     <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
     <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
 </dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a>&gt;</dt>
+    <dd><p>Receives <a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a> reports on the job's thread, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Stops the job between packets; the output file is then deleted.</p>
+</dd>
   </dl>
 
   <h4 class="section">Returns</h4>
@@ -685,6 +774,13 @@ from the extension.</p>
 
 
 
+  <h4 class="section" id="Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Reports arrive once the output is open, then at most every 250 ms, then once more with IsFinal set.
+// Progress&lt;T&gt; runs the handler on the caller's synchronization context: the UI thread in WinForms, WPF or MAUI.
+IProgress&lt;MediaProgress&gt; progress = new Progress&lt;MediaProgress&gt;(p =&gt;
+    Console.Write($"\r{p.Position.ToTimeSpan():c} {p.Fraction ?? 0:P0} {p.Frames} frames {p.Speed:0.0}x"));
+long packets = MediaFile.Remux("camera.avi", "camera.mkv", progress: progress);</code></pre>
+
 
 
   <h4 class="section">Exceptions</h4>
@@ -695,25 +791,109 @@ from the extension.</p>
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
     <dd><p>The output container cannot hold one of the tracks.</p>
 </dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p>The job was cancelled.</p>
+</dd>
   </dl>
 
 
 
   <a id="Egami_Video_MediaFile_Transcode_" data-uid="Egami.Video.MediaFile.Transcode*"></a>
 
-  <h3 id="Egami_Video_MediaFile_Transcode_System_String_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_" data-uid="Egami.Video.MediaFile.Transcode(System.String,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext)">
-  Transcode(string, string, AudioCodec?, int?, Func&lt;TrackInfo, bool&gt;?, MediaContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L238"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Egami_Video_MediaFile_Transcode_System_IO_Stream_System_IO_Stream_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Transcode(System.IO.Stream,System.IO.Stream,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
+  Transcode(Stream, Stream, string, AudioCodec?, int?, Func&lt;TrackInfo, bool&gt;?, MediaContext?, bool, IProgress&lt;MediaProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L286"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Copies a file into another container like <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_">Remux(string, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?)</a>, but decodes its audio tracks and encodes them again with
-<code class="paramref">audio</code>, at the same rate, layout and bit depth: for example keeping a WebM's video and turning its audio
-into FLAC in Matroska. Audio no registered codec decodes is copied as it is. The output container comes from the extension.</p>
+  <div class="markdown level1 summary"><p>Copies a stream into another container, encoding its audio again, as
+<a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Transcode_System_String_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Transcode(string, string, AudioCodec?, int?, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
+does for files. The streams work as for <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_System_IO_Stream_System_IO_Stream_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Remux(Stream, Stream, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, bool, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static long Transcode(string inputPath, string outputPath, AudioCodec? audio = null, int? audioLevel = null, Func&lt;TrackInfo, bool&gt;? tracks = null, MediaContext? context = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public static long Transcode(Stream input, Stream output, string outputFormat, AudioCodec? audio = null, int? audioLevel = null, Func&lt;TrackInfo, bool&gt;? tracks = null, MediaContext? context = null, bool leaveOpen = false, IProgress&lt;MediaProgress&gt;? progress = null, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The source, read from its current position.</p>
+</dd>
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write.</p>
+</dd>
+    <dt><code>outputFormat</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The output container: &quot;Matroska&quot;, &quot;.mkv&quot;, &quot;webm&quot; and so on.</p>
+</dd>
+    <dt><code>audio</code> <a class="xref" href="Egami.Video.Audio.AudioCodec.html">AudioCodec</a></dt>
+    <dd><p>The audio codec to encode with, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to copy audio too.</p>
+</dd>
+    <dt><code>audioLevel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd><p>The audio codec's compression level, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for its default.</p>
+</dd>
+    <dt><code>tracks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;<a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>&gt;</dt>
+    <dd><p>Which tracks to keep, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for all.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>leaveOpen</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the job leaves both streams open when it ends.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a>&gt;</dt>
+    <dd><p>Receives <a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a> reports on the job's thread, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Stops the job between packets; what was written to <code class="paramref">output</code> stays.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>How many packets were written.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The input is not a registered container, or no container writes <code class="paramref">outputFormat</code>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The output container cannot hold one of the tracks or needs a seekable output, or the codec cannot encode.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p>The job was cancelled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_MediaFile_Transcode_" data-uid="Egami.Video.MediaFile.Transcode*"></a>
+
+  <h3 id="Egami_Video_MediaFile_Transcode_System_String_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Transcode(System.String,System.String,Egami.Video.Audio.AudioCodec,System.Nullable{System.Int32},System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
+  Transcode(string, string, AudioCodec?, int?, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L259"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Copies a file into another container like <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_System_String_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Remux(string, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>,
+but decodes its audio tracks and encodes them again with <code class="paramref">audio</code>, at the same rate, layout and bit depth:
+for example keeping a WebM's video and turning its audio into FLAC in Matroska. Audio no registered codec decodes is
+copied as it is. The output container comes from the extension.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static long Transcode(string inputPath, string outputPath, AudioCodec? audio = null, int? audioLevel = null, Func&lt;TrackInfo, bool&gt;? tracks = null, MediaContext? context = null, IProgress&lt;MediaProgress&gt;? progress = null, CancellationToken cancellationToken = default)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -736,6 +916,12 @@ into FLAC in Matroska. Audio no registered codec decodes is copied as it is. The
     <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
     <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
 </dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a>&gt;</dt>
+    <dd><p>Receives <a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a> reports on the job's thread, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Stops the job between packets; the output file is then deleted.</p>
+</dd>
   </dl>
 
   <h4 class="section">Returns</h4>
@@ -750,7 +936,7 @@ into FLAC in Matroska. Audio no registered codec decodes is copied as it is. The
 
 
 
-  <h4 class="section" id="Egami_Video_MediaFile_Transcode_System_String_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext__examples">Examples</h4>
+  <h4 class="section" id="Egami_Video_MediaFile_Transcode_System_String_System_String_Egami_Video_Audio_AudioCodec_System_Nullable_System_Int32__System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken__examples">Examples</h4>
   <pre><code class="lang-csharp">// Keep every other track as it is and turn the audio into FLAC.
 MediaFile.Transcode("talk.mka", "talk-flac.mkv", audio: FlacCodec.Instance, audioLevel: 8);</code></pre>
 
@@ -763,6 +949,9 @@ MediaFile.Transcode("talk.mka", "talk-flac.mkv", audio: FlacCodec.Instance, audi
 </dd>
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
     <dd><p>The output container cannot hold one of the tracks, or the codec cannot encode.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p>The job was cancelled.</p>
 </dd>
   </dl>
 

@@ -217,6 +217,53 @@ using (IMuxer muxer = MediaFile.CreateMuxer(&quot;movie.ivf&quot;, [demuxer.Info
 
     muxer.Finish();
 }
+</code></pre><h2 id="progress-cancellation-and-streams">Progress, cancellation and streams</h2>
+<p><code>MediaFile.Remux</code> and <code>MediaFile.Transcode</code> take an <code>IProgress&lt;MediaProgress&gt;</code> and a <code>CancellationToken</code> as their last
+parameters. A <code>MediaProgress</code> report carries the position, the duration, a 0 to 1 <code>Fraction</code>, frames, packets, bytes read and
+written, the elapsed time and the speed (media seconds per second, like FFmpeg's <code>speed=</code>). Reports come once the output is
+open, then at most every 250 ms, then once more with <code>IsFinal</code> set and <code>Fraction</code> 1. The fraction comes from the time when the
+input has a duration, else from the bytes read over the input's length, else it is <code>null</code>; it never goes backwards. The
+handler runs on the job's thread; <code>Progress&lt;T&gt;</code> moves it to the UI thread. If the handler throws, the job stops with that
+exception. Without a handler, nothing is built or timed.</p>
+<pre><code class="lang-csharp">// Reports arrive once the output is open, then at most every 250 ms, then once more with IsFinal set.
+// Progress&lt;T&gt; runs the handler on the caller's synchronization context: the UI thread in WinForms, WPF or MAUI.
+IProgress&lt;MediaProgress&gt; progress = new Progress&lt;MediaProgress&gt;(p =&gt;
+    Console.Write($&quot;\r{p.Position.ToTimeSpan():c} {p.Fraction ?? 0:P0} {p.Frames} frames {p.Speed:0.0}x&quot;));
+long packets = MediaFile.Remux(&quot;camera.avi&quot;, &quot;camera.mkv&quot;, progress: progress);
+</code></pre>
+<p>The token is checked before each packet. A cancelled job throws <code>OperationCanceledException</code> and does not finish the
+output: a file the job created is deleted, and a stream you passed in keeps what was written so far.</p>
+<pre><code class="lang-csharp">// Ctrl+C stops the job between two packets; the half-written camera.mkv is deleted.
+using CancellationTokenSource cts = new();
+ConsoleCancelEventHandler onCtrlC = (_, e) =&gt;
+{
+    e.Cancel = true;
+    cts.Cancel();
+};
+Console.CancelKeyPress += onCtrlC;
+try
+{
+    MediaFile.Remux(&quot;camera.avi&quot;, &quot;camera.mkv&quot;, cancellationToken: cts.Token);
+}
+catch (OperationCanceledException)
+{
+    Console.WriteLine(&quot;Cancelled.&quot;);
+}
+finally
+{
+    Console.CancelKeyPress -= onCtrlC;
+}
+</code></pre>
+<p>Both jobs also take a <code>Stream</code> in and a <code>Stream</code> out, with the output container named, so they can read from and write to
+cloud storage without a local copy. The input may be non-seekable; only MP4 files with moov after the media need a seekable
+one. Matroska, WebM, IVF and YUV4MPEG2 write to a non-seekable stream as they go, MP4 keeps its media in a temporary file and
+writes moov first, and AVI needs a seekable stream (<code>NotSupportedException</code> otherwise). <code>leaveOpen</code> keeps both streams open.
+The jobs are synchronous and block a thread while the network is slow; run them with <code>Task.Run</code> to keep a UI responsive.</p>
+<pre><code class="lang-csharp">// Any Stream works, seekable or not: a cloud blob's read and upload streams, an HTTP response body, a pipe.
+// Files stand in for them here.
+using Stream source = File.OpenRead(&quot;movie.webm&quot;);
+using Stream upload = File.Create(&quot;movie.mkv&quot;);
+long packets = MediaFile.Remux(source, upload, &quot;mkv&quot;, leaveOpen: true, cancellationToken: cts.Token);
 </code></pre><h2 id="codecs-by-hand">Codecs by hand</h2>
 <p><code>VideoCodecs</code> finds the codec for a track and creates an <code>IVideoDecoder</code>: send packets, receive frames. <code>VideoCodecs.CreateDecoder&lt;TPixel&gt;</code>
 gives an <code>IVideoDecoder&lt;TPixel&gt;</code> that hands out RGB frames.</p>
