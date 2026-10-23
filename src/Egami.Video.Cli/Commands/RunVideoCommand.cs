@@ -46,7 +46,7 @@ internal static class RunVideoCommand
         command.Arguments.Add(new Argument<string[]>("inputs-and-steps") { Description = "Videos (files, globs, -), then steps separated by +, ending in save out.mkv if -o is not given.", Arity = ArgumentArity.ZeroOrMore });
         command.Options.Add(new Option<string?>("--output", "-o") { Description = "Where the video goes when save has no path: a file, a folder, a template with {name}, or - with --format.", HelpName = "path" });
         command.Options.Add(new Option<string?>("--format", "-f") { Description = "The output container (mkv, avi …), when the output's extension does not say.", HelpName = "container" });
-        command.Options.Add(new Option<string?>("--codec") { Description = "The video codec to encode with: mjpeg, vp8 or raw. The input's codec when Egami.Video can encode it, else mjpeg.", HelpName = "codec" });
+        command.Options.Add(new Option<string?>("--codec") { Description = "The video codec to encode with: mjpeg, vp8, vp9 or raw. The input's codec when Egami.Video can encode it, else mjpeg.", HelpName = "codec" });
         command.Options.Add(new Option<int?>("--quality") { Description = "The encoder's quality from 1 to 100.", HelpName = "1-100" });
         command.Options.Add(new Option<string?>("--rate") { Description = "Frames per second of the output, dropping or repeating frames to match; frames keep their own times by default.", HelpName = "fps" });
         command.Options.Add(new Option<string?>("--track", "-t") { Description = "Which video track to run the steps over: v:1 for the second, or a track number; audio and subtitle tracks are copied.", HelpName = "track" });
@@ -307,9 +307,9 @@ internal static class RunVideoCommand
             "av1" => Av1Codec.Instance,
             _ => session.Context.Codecs.FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)),
         };
-        return codec is null ? throw new UsageException($"--codec '{name}' is not a video codec egami-video knows; give mjpeg, vp8 or raw.")
+        return codec is null ? throw new UsageException($"--codec '{name}' is not a video codec egami-video knows; give mjpeg, vp8, vp9 or raw.")
             : codec.CanEncode ? codec
-            : throw new UsageException($"egami-video cannot encode {codec.Name} yet; give --codec mjpeg, vp8 or raw.");
+            : throw new UsageException($"egami-video cannot encode {codec.Name} yet; give --codec mjpeg, vp8, vp9 or raw.");
     }
 
     private static void ListSteps(VideoSession session, string? name)

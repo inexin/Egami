@@ -466,6 +466,8 @@ Egami.Video.Codecs.VideoEncoderOptions.SceneCutKeyframes.get -> bool
 Egami.Video.Codecs.VideoEncoderOptions.SceneCutKeyframes.init -> void
 Egami.Video.Codecs.VideoEncoderOptions.Vp8.get -> Egami.Video.Codecs.Vp8EncoderOptions?
 Egami.Video.Codecs.VideoEncoderOptions.Vp8.init -> void
+Egami.Video.Codecs.VideoEncoderOptions.Vp9.get -> Egami.Video.Codecs.Vp9EncoderOptions?
+Egami.Video.Codecs.VideoEncoderOptions.Vp9.init -> void
 Egami.Video.Codecs.Vp8EncoderOptions
 Egami.Video.Codecs.Vp8EncoderOptions.<Clone>$() -> Egami.Video.Codecs.Vp8EncoderOptions!
 Egami.Video.Codecs.Vp8EncoderOptions.Alpha.get -> bool?
@@ -488,6 +490,32 @@ Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterFrames.init -> void
 Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterStrength.get -> int
 Egami.Video.Codecs.Vp8EncoderOptions.TemporalFilterStrength.init -> void
 Egami.Video.Codecs.Vp8EncoderOptions.Vp8EncoderOptions() -> void
+Egami.Video.Codecs.Vp9EncoderOptions
+Egami.Video.Codecs.Vp9EncoderOptions.<Clone>$() -> Egami.Video.Codecs.Vp9EncoderOptions!
+Egami.Video.Codecs.Vp9EncoderOptions.AdaptiveQuantization.get -> bool
+Egami.Video.Codecs.Vp9EncoderOptions.AdaptiveQuantization.init -> void
+Egami.Video.Codecs.Vp9EncoderOptions.Alpha.get -> bool?
+Egami.Video.Codecs.Vp9EncoderOptions.Alpha.init -> void
+Egami.Video.Codecs.Vp9EncoderOptions.AlternateReference.get -> bool
+Egami.Video.Codecs.Vp9EncoderOptions.AlternateReference.init -> void
+Egami.Video.Codecs.Vp9EncoderOptions.BitDepth.get -> int?
+Egami.Video.Codecs.Vp9EncoderOptions.BitDepth.init -> void
+Egami.Video.Codecs.Vp9EncoderOptions.Equals(Egami.Video.Codecs.Vp9EncoderOptions? other) -> bool
+Egami.Video.Codecs.Vp9EncoderOptions.ErrorResilient.get -> bool?
+Egami.Video.Codecs.Vp9EncoderOptions.ErrorResilient.init -> void
+Egami.Video.Codecs.Vp9EncoderOptions.GoldenInterval.get -> int?
+Egami.Video.Codecs.Vp9EncoderOptions.GoldenInterval.init -> void
+Egami.Video.Codecs.Vp9EncoderOptions.MaxQuantizer.get -> int
+Egami.Video.Codecs.Vp9EncoderOptions.MaxQuantizer.init -> void
+Egami.Video.Codecs.Vp9EncoderOptions.MinQuantizer.get -> int
+Egami.Video.Codecs.Vp9EncoderOptions.MinQuantizer.init -> void
+Egami.Video.Codecs.Vp9EncoderOptions.TemporalFilterFrames.get -> int
+Egami.Video.Codecs.Vp9EncoderOptions.TemporalFilterFrames.init -> void
+Egami.Video.Codecs.Vp9EncoderOptions.TemporalFilterStrength.get -> int
+Egami.Video.Codecs.Vp9EncoderOptions.TemporalFilterStrength.init -> void
+Egami.Video.Codecs.Vp9EncoderOptions.TileColumns.get -> int?
+Egami.Video.Codecs.Vp9EncoderOptions.TileColumns.init -> void
+Egami.Video.Codecs.Vp9EncoderOptions.Vp9EncoderOptions() -> void
 Egami.Video.Containers.Av1AnnexBFormat
 Egami.Video.Containers.Av1AnnexBFormat.Av1AnnexBFormat() -> void
 Egami.Video.Containers.Av1AnnexBFormat.FrameRate.get -> Egami.Video.Rational
@@ -877,6 +905,8 @@ override Egami.Video.Analysis.TestAudioFormat.ToString() -> string!
 override Egami.Video.Analysis.TestVideoFormat.Equals(object? obj) -> bool
 override Egami.Video.Analysis.TestVideoFormat.GetHashCode() -> int
 override Egami.Video.Analysis.TestVideoFormat.ToString() -> string!
+Egami.Video.VideoWriterOptions.Vp9.get -> Egami.Video.Codecs.Vp9EncoderOptions?
+Egami.Video.VideoWriterOptions.Vp9.init -> void
 override Egami.Video.Audio.AudioCodec.ToString() -> string!
 override Egami.Video.Audio.AudioConvertOptions.Equals(object? obj) -> bool
 override Egami.Video.Audio.AudioConvertOptions.GetHashCode() -> int
@@ -928,6 +958,11 @@ override Egami.Video.Codecs.Vp8Codec.CreateEncoder(Egami.Video.Codecs.VideoEncod
 override Egami.Video.Codecs.Vp8EncoderOptions.Equals(object? obj) -> bool
 override Egami.Video.Codecs.Vp8EncoderOptions.GetHashCode() -> int
 override Egami.Video.Codecs.Vp8EncoderOptions.ToString() -> string!
+override Egami.Video.Codecs.Vp9Codec.CanEncode.get -> bool
+override Egami.Video.Codecs.Vp9Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Codecs.IVideoEncoder!
+override Egami.Video.Codecs.Vp9EncoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Codecs.Vp9EncoderOptions.GetHashCode() -> int
+override Egami.Video.Codecs.Vp9EncoderOptions.ToString() -> string!
 override Egami.Video.Containers.Av1AnnexBFormat.CanMux.get -> bool
 override Egami.Video.Containers.Av1AnnexBFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
 override Egami.Video.Containers.Av1AnnexBFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -1090,6 +1125,9 @@ static Egami.Video.Codecs.VideoCodecs.Av1.get -> Egami.Video.Codecs.VideoCodec!
 static Egami.Video.Codecs.Vp8EncoderOptions.Default.get -> Egami.Video.Codecs.Vp8EncoderOptions!
 static Egami.Video.Codecs.Vp8EncoderOptions.operator !=(Egami.Video.Codecs.Vp8EncoderOptions? left, Egami.Video.Codecs.Vp8EncoderOptions? right) -> bool
 static Egami.Video.Codecs.Vp8EncoderOptions.operator ==(Egami.Video.Codecs.Vp8EncoderOptions? left, Egami.Video.Codecs.Vp8EncoderOptions? right) -> bool
+static Egami.Video.Codecs.Vp9EncoderOptions.Default.get -> Egami.Video.Codecs.Vp9EncoderOptions!
+static Egami.Video.Codecs.Vp9EncoderOptions.operator !=(Egami.Video.Codecs.Vp9EncoderOptions? left, Egami.Video.Codecs.Vp9EncoderOptions? right) -> bool
+static Egami.Video.Codecs.Vp9EncoderOptions.operator ==(Egami.Video.Codecs.Vp9EncoderOptions? left, Egami.Video.Codecs.Vp9EncoderOptions? right) -> bool
 static Egami.Video.Containers.Av1AnnexBFormat.Instance.get -> Egami.Video.Containers.Av1AnnexBFormat!
 static Egami.Video.Containers.Av1ObuFormat.Instance.get -> Egami.Video.Containers.Av1ObuFormat!
 static Egami.Video.Containers.FlacFormat.Instance.get -> Egami.Video.Containers.FlacFormat!

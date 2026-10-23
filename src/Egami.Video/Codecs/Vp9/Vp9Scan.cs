@@ -32,6 +32,9 @@ internal readonly struct Vp9Scan
     /// <summary>Gets the raster position of each coefficient, in coding order.</summary>
     public ReadOnlySpan<short> Order => _order;
 
+    /// <summary>Gets the order's array, which identifies the scan (for the encoder's inverse scans).</summary>
+    internal short[] OrderArray => _order;
+
     /// <summary>Gets two raster positions per coefficient (above and left in the scan's sense).</summary>
     public ReadOnlySpan<short> Neighbors => _neighbors;
 

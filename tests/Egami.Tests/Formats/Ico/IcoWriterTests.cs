@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+
 using Egami.Formats;
 using Egami.Formats.Ico;
 using Egami.Formats.Png;
@@ -47,7 +49,14 @@ public class IcoWriterTests
         using Raster<Rgba8> source = Source(width, height);
         byte[] data = Save([source], IcoFormat.Info);
         using Raster<Rgba8> loaded = Raster.Load<Rgba8>(data, options: new ReaderOptions { Recovery = RecoveryMode.Strict });
-        Assert.True(IcoReaderTests.Pixels(source).SequenceEqual(IcoReaderTests.Pixels(loaded)));
+        // A wholly transparent BMP entry (the 1 × 1 case) is written with black colors, which Windows needs to draw nothing.
+        Rgba8[] expected = IcoReaderTests.Pixels(source).ToArray();
+        if (expected.All(p => p.A == 0) && !(width == 256 && height == 256))
+        {
+            Array.Clear(expected);
+        }
+
+        Assert.True(expected.SequenceEqual(IcoReaderTests.Pixels(loaded)));
         IcoDetails details = (IcoDetails)loaded.Metadata.FormatDetails!;
         Assert.Equal(width == 256 && height == 256 ? IcoEntryEncoding.Png : IcoEntryEncoding.Bmp, details.Encoding);
         Assert.Equal(IcoFormat.Info, Raster.Probe(data).Format);
@@ -145,6 +154,24 @@ public class IcoWriterTests
         byte[] again = Save([loaded[1]], CurFormat.Info);
         using Raster reloaded = Raster.Load(again);
         Assert.Equal(new Point(40, 63), ((IcoDetails)reloaded.Metadata.FormatDetails!).Hotspot);
+    }
+
+    [Fact]
+    public void AWhollyTransparentBmpEntryHasBlackColorsSoWindowsDrawsNothing()
+    {
+        // Windows ignores an alpha channel that is 0 everywhere and draws the colors through the AND mask instead.
+        using Raster<Rgba8> clear = Raster.Create<Rgba8>(8, 8, new Rgba8(200, 100, 50, 0));
+        byte[] data = Save([clear], CurFormat.Info, new IcoWriterOptions { Encoding = IcoEntryEncoding.Bmp });
+        int offset = BinaryPrimitives.ReadInt32LittleEndian(data.AsSpan(6 + 12));
+        Assert.All(data.AsSpan(offset + 40, 8 * 8 * 4).ToArray(), b => Assert.Equal(0, b));
+        Assert.All(data.AsSpan(offset + 40 + (8 * 8 * 4)).ToArray(), b => Assert.True(b is 0xFF or 0));
+        using Raster<Rgba8> loaded = Raster.Load<Rgba8>(data);
+        Assert.All(Enumerable.Range(0, 8), y => Assert.All(loaded.Row(y).ToArray(), p => Assert.Equal(0, p.A)));
+
+        // One visible pixel keeps every color as given.
+        clear.Row(3)[4] = new Rgba8(1, 2, 3, 4);
+        byte[] kept = Save([clear], CurFormat.Info, new IcoWriterOptions { Encoding = IcoEntryEncoding.Bmp });
+        Assert.Equal(50, kept[offset + 40]);
     }
 
     [Fact]

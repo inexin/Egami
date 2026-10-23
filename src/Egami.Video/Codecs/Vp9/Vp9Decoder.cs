@@ -110,6 +110,19 @@ internal sealed partial class Vp9Decoder<T> : IDisposable
     /// <summary>Gets the size of the frame in reference slot <paramref name="slot"/>, or 0 by 0 when it is empty.</summary>
     public (int Width, int Height) SlotSize(int slot) => _slots[slot] is { } f ? (f.Width, f.Height) : (0, 0);
 
+    /// <summary>Gets the frame in a reference slot, or null (for the encoder, which predicts from what it decoded).</summary>
+    internal Vp9Frame<T>? Slot(int slot) => _slots[slot];
+
+    /// <summary>Gets a saved probability context (for the encoder, which codes its next frame with it).</summary>
+    internal Vp9FrameContext Context(int index) => _contexts[index];
+
+    /// <summary>Gets the previous frame's motion vectors, as the next frame's candidates read them.</summary>
+    internal Vp9MvRef[] PreviousMvs => _mvsPrevious;
+
+    /// <summary>Gets whether a next frame of this size, not error resilient, reads the previous frame's motion vectors.</summary>
+    internal bool UsesPreviousMvs(int width, int height) =>
+        width == _lastWidth && height == _lastHeight && !_intraOnly && _lastShowFrame && !_frameKey;
+
     /// <summary>Gets whether a keyframe or intra-only frame is needed before anything decodes.</summary>
     public bool NeedsResync => _needResync;
 
