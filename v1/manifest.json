@@ -12207,6 +12207,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.AlacCodec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.AlacCodec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.AlacCodec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.AlacCodec.yml\" sourcestartlinenumber=\"1\">Apple Lossless (ALAC), translated from Apple's Apache-2.0 reference codec: decodes 16, 20, 24 and 32-bit streams of 1 to 8\nchannels into planar integer frames; encodes them with packets byte for byte as Apple's encoder makes them, at level 1\n(normal, the default) or 0 (Apple's fast mode), 4096 samples per packet by default. Read and written in MP4 and M4A,\nMatroska and CAF; <xref href=\"Egami.Video.TrackInfo.CodecPrivate\" data-throw-if-not-resolved=\"false\"></xref> holds the 24-byte ALACSpecificConfig.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Codecs.FlacCodec.yml",
       "output": {
         ".html": {

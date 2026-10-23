@@ -78770,6 +78770,19 @@ references:
   commentId: T:Egami.Video.Audio.AudioCodecs
   fullName: Egami.Video.Audio.AudioCodecs
   nameWithType: AudioCodecs
+- uid: Egami.Video.Audio.AudioCodecs.Alac
+  name: Alac
+  href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Alac
+  commentId: P:Egami.Video.Audio.AudioCodecs.Alac
+  fullName: Egami.Video.Audio.AudioCodecs.Alac
+  nameWithType: AudioCodecs.Alac
+- uid: Egami.Video.Audio.AudioCodecs.Alac*
+  name: Alac
+  href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Alac_
+  commentId: Overload:Egami.Video.Audio.AudioCodecs.Alac
+  isSpec: "True"
+  fullName: Egami.Video.Audio.AudioCodecs.Alac
+  nameWithType: AudioCodecs.Alac
 - uid: Egami.Video.Audio.AudioCodecs.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
   name: CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext?)
   href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_CreateDecoder_Egami_Video_AudioTrackInfo_Egami_Video_Audio_AudioDecoderOptions_Egami_Video_MediaContext_
@@ -79740,6 +79753,93 @@ references:
   commentId: N:Egami.Video.Audio.Codecs
   fullName: Egami.Video.Audio.Codecs
   nameWithType: Egami.Video.Audio.Codecs
+- uid: Egami.Video.Audio.Codecs.AlacCodec
+  name: AlacCodec
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html
+  commentId: T:Egami.Video.Audio.Codecs.AlacCodec
+  fullName: Egami.Video.Audio.Codecs.AlacCodec
+  nameWithType: AlacCodec
+- uid: Egami.Video.Audio.Codecs.AlacCodec.CanEncode
+  name: CanEncode
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_CanEncode
+  commentId: P:Egami.Video.Audio.Codecs.AlacCodec.CanEncode
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.CanEncode
+  nameWithType: AlacCodec.CanEncode
+- uid: Egami.Video.Audio.Codecs.AlacCodec.CanEncode*
+  name: CanEncode
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_CanEncode_
+  commentId: Overload:Egami.Video.Audio.Codecs.AlacCodec.CanEncode
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.CanEncode
+  nameWithType: AlacCodec.CanEncode
+- uid: Egami.Video.Audio.Codecs.AlacCodec.CodecId
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_CodecId
+  commentId: P:Egami.Video.Audio.Codecs.AlacCodec.CodecId
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.CodecId
+  nameWithType: AlacCodec.CodecId
+- uid: Egami.Video.Audio.Codecs.AlacCodec.CodecId*
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_CodecId_
+  commentId: Overload:Egami.Video.Audio.Codecs.AlacCodec.CodecId
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.CodecId
+  nameWithType: AlacCodec.CodecId
+- uid: Egami.Video.Audio.Codecs.AlacCodec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name: CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_CreateDecoder_Egami_Video_AudioTrackInfo_Egami_Video_Audio_AudioDecoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Audio.Codecs.AlacCodec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name.vb: CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions?, Egami.Video.MediaContext)
+  fullName.vb: Egami.Video.Audio.Codecs.AlacCodec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions, Egami.Video.MediaContext)
+  nameWithType: AlacCodec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  nameWithType.vb: AlacCodec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+- uid: Egami.Video.Audio.Codecs.AlacCodec.CreateDecoder*
+  name: CreateDecoder
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_CreateDecoder_
+  commentId: Overload:Egami.Video.Audio.Codecs.AlacCodec.CreateDecoder
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.CreateDecoder
+  nameWithType: AlacCodec.CreateDecoder
+- uid: Egami.Video.Audio.Codecs.AlacCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions,Egami.Video.MediaContext)
+  name: CreateEncoder(AudioEncoderOptions, MediaContext)
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_CreateEncoder_Egami_Video_Audio_AudioEncoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Audio.Codecs.AlacCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions,Egami.Video.MediaContext)
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions, Egami.Video.MediaContext)
+  nameWithType: AlacCodec.CreateEncoder(AudioEncoderOptions, MediaContext)
+- uid: Egami.Video.Audio.Codecs.AlacCodec.CreateEncoder*
+  name: CreateEncoder
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_CreateEncoder_
+  commentId: Overload:Egami.Video.Audio.Codecs.AlacCodec.CreateEncoder
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.CreateEncoder
+  nameWithType: AlacCodec.CreateEncoder
+- uid: Egami.Video.Audio.Codecs.AlacCodec.Instance
+  name: Instance
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_Instance
+  commentId: P:Egami.Video.Audio.Codecs.AlacCodec.Instance
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.Instance
+  nameWithType: AlacCodec.Instance
+- uid: Egami.Video.Audio.Codecs.AlacCodec.Instance*
+  name: Instance
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_Instance_
+  commentId: Overload:Egami.Video.Audio.Codecs.AlacCodec.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.Instance
+  nameWithType: AlacCodec.Instance
+- uid: Egami.Video.Audio.Codecs.AlacCodec.Name
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_Name
+  commentId: P:Egami.Video.Audio.Codecs.AlacCodec.Name
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.Name
+  nameWithType: AlacCodec.Name
+- uid: Egami.Video.Audio.Codecs.AlacCodec.Name*
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.AlacCodec.html#Egami_Video_Audio_Codecs_AlacCodec_Name_
+  commentId: Overload:Egami.Video.Audio.Codecs.AlacCodec.Name
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AlacCodec.Name
+  nameWithType: AlacCodec.Name
 - uid: Egami.Video.Audio.Codecs.FlacCodec
   name: FlacCodec
   href: api/Egami.Video.Audio.Codecs.FlacCodec.html

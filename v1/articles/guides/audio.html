@@ -381,6 +381,23 @@ Console.WriteLine($&quot;{track.CodecId}: {track.SampleRate} Hz, {track.Channels
 // Into MP4 (an ac-3 sample entry with its dac3 box), Matroska or CAF without decoding.
 MediaFile.Remux(&quot;surround.ac3&quot;, &quot;surround.mp4&quot;);
 </code></pre>
+<p><code>AlacCodec</code> decodes and encodes Apple Lossless (ALAC) at 16, 20, 24 and 32 bits with 1 to 8 channels. It is translated from
+Apple's reference codec, so its packets are the bytes Apple's encoder makes: level 1, the default, searches the stereo matrix
+and predictor order, and level 0 is Apple's fast mode. Each packet holds 4096 samples unless <code>FrameSize</code> says otherwise, and
+the track's <code>CodecPrivate</code> is the 24-byte ALACSpecificConfig. ALAC goes in MP4 and M4A (an <code>alac</code> box), QuickTime MOV (read
+from its <code>wave</code> atom), Matroska (<code>A_ALAC</code>) and CAF. ALAC fixes the speakers by the channel count (for example center, left,
+right and back center for four channels), so a frame with the same number of channels is stored as it is and read back with
+ALAC's layout. Extracting an ALAC track with the CLI makes an .m4a file.</p>
+<pre><code class="lang-csharp">// Apple Lossless in an .m4a file (also .mov, .mka and .caf): level 1 (the default) or 0, Apple's fast mode.
+using (AudioWriter writer = AudioWriter.Create(&quot;tone.m4a&quot;, new AudioWriterOptions { Codec = AlacCodec.Instance, BitsPerSample = 24 }))
+{
+    writer.Write(tone);
+}
+
+// Decoding gives the 24-bit samples back exactly.
+using AudioReader reader = AudioReader.Open(&quot;tone.m4a&quot;, new AudioReaderOptions { SampleFormat = null });
+Console.WriteLine($&quot;{reader.Track.CodecId}, {reader.Track.BitsPerSample} bits&quot;);
+</code></pre>
 <p><code>OggFormat</code> reads and writes Ogg (.ogg, .opus, .oga) with Opus, Vorbis and FLAC. Timestamps come from the granule positions,
 seeking from an index built in one pass over the page headers, and pages with a bad CRC are skipped with an <code>ogg-crc</code>
 warning. A chained file (one stream after another) reads as one track when the settings stay the same, each link's TITLE a

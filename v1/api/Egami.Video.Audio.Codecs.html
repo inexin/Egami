@@ -95,6 +95,14 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Codecs.AlacCodec.html">AlacCodec</a></dt>
+      <dd><p>Apple Lossless (ALAC), translated from Apple's Apache-2.0 reference codec: decodes 16, 20, 24 and 32-bit streams of 1 to 8
+channels into planar integer frames; encodes them with packets byte for byte as Apple's encoder makes them, at level 1
+(normal, the default) or 0 (Apple's fast mode), 4096 samples per packet by default. Read and written in MP4 and M4A,
+Matroska and CAF; <a class="xref" href="Egami.Video.TrackInfo.html#Egami_Video_TrackInfo_CodecPrivate">CodecPrivate</a> holds the 24-byte ALACSpecificConfig.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Codecs.FlacCodec.html">FlacCodec</a></dt>
       <dd><p>FLAC (RFC 9639), lossless: decodes every stream the format allows (fixed and LPC prediction, every stereo mode, block sizes
 up to 65535, 4 to 32 bits per sample) into planar integer frames, checking the frame CRCs and STREAMINFO's MD5; encodes at
