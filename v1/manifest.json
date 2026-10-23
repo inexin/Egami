@@ -11227,6 +11227,342 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.ColorBarsStyle.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.ColorBarsStyle.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.ColorBarsStyle",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.ColorBarsStyle.yml\" sourcestartlinenumber=\"1\">Which color bar layout <xref href=\"Egami.Video.Analysis.TestSources.ColorBars(Egami.Video.Analysis.TestVideoFormat%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.ColorBarsStyle)\" data-throw-if-not-resolved=\"false\"></xref> draws.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.Fade.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.Fade.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.Fade",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.Fade.yml\" sourcestartlinenumber=\"1\">A fade to or from black (or white, when asked for) that <xref href=\"Egami.Video.Analysis.SceneDetector\" data-throw-if-not-resolved=\"false\"></xref> found.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.FadeKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.FadeKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.FadeKind",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.FadeKind.yml\" sourcestartlinenumber=\"1\">Whether a fade goes out to black or in from it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.FlashMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.FlashMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.FlashMode",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.FlashMode.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.SceneDetector\" data-throw-if-not-resolved=\"false\"></xref> does with a cut that comes back within the minimum scene length, as a camera flash does.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.IAudioDetector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.IAudioDetector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.IAudioDetector",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.IAudioDetector.yml\" sourcestartlinenumber=\"1\">A detector that listens to decoded audio one frame at a time. Feed it every frame in time order with <xref href=\"Egami.Video.Analysis.IAudioDetector.Add(Egami.Video.Audio.AudioFrame)\" data-throw-if-not-resolved=\"false\"></xref>, then\ncall <xref href=\"Egami.Video.Analysis.IAudioDetector.Complete(Egami.Video.MediaTime)\" data-throw-if-not-resolved=\"false\"></xref> once at the end; <xref href=\"Egami.Video.Analysis.MediaAnalysis.Run(System.String%2cEgami.Video.Analysis.MediaAnalysisOptions%2cEgami.Video.MediaContext%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> does both from one decode. A detector reads the\nsamples while <xref href=\"Egami.Video.Analysis.IAudioDetector.Add(Egami.Video.Audio.AudioFrame)\" data-throw-if-not-resolved=\"false\"></xref> runs and keeps no reference to the frame.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.IVideoDetector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.IVideoDetector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.IVideoDetector",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.IVideoDetector.yml\" sourcestartlinenumber=\"1\">A detector that looks at decoded pictures one at a time, such as <xref href=\"Egami.Video.Analysis.SceneDetector\" data-throw-if-not-resolved=\"false\"></xref>. Feed it every frame in\npresentation order with <xref href=\"Egami.Video.Analysis.IVideoDetector.Add(Egami.Video.YuvVideoFrame)\" data-throw-if-not-resolved=\"false\"></xref>, then call <xref href=\"Egami.Video.Analysis.IVideoDetector.Complete(Egami.Video.MediaTime)\" data-throw-if-not-resolved=\"false\"></xref> once at the end; <xref href=\"Egami.Video.Analysis.MediaAnalysis.Run(System.String%2cEgami.Video.Analysis.MediaAnalysisOptions%2cEgami.Video.MediaContext%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref>\ndoes both for every detector from one decode, and an app with its own decode loop can do the same. A detector reads the frame\nwhile <xref href=\"Egami.Video.Analysis.IVideoDetector.Add(Egami.Video.YuvVideoFrame)\" data-throw-if-not-resolved=\"false\"></xref> runs and keeps no reference to it, so the caller may dispose the frame right after.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.MediaAnalysis.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.MediaAnalysis.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.MediaAnalysis",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.MediaAnalysis.yml\" sourcestartlinenumber=\"1\">Analyzes a file in one pass: decodes its video and audio once each and feeds every detector the options ask for, then returns\nwhat they found. The video and audio are read side by side in time order, so progress moves evenly through the file.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.MediaAnalysisOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.MediaAnalysisOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.MediaAnalysisOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.MediaAnalysisOptions.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.MediaAnalysis.Run(System.String%2cEgami.Video.Analysis.MediaAnalysisOptions%2cEgami.Video.MediaContext%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> looks for and where.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.MediaAnalysisResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.MediaAnalysisResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.MediaAnalysisResult",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.MediaAnalysisResult.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Analysis.MediaAnalysis.Run(System.String%2cEgami.Video.Analysis.MediaAnalysisOptions%2cEgami.Video.MediaContext%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> found.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.NoiseColor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.NoiseColor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.NoiseColor",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.NoiseColor.yml\" sourcestartlinenumber=\"1\">The spectrum of <xref href=\"Egami.Video.Analysis.TestSources.Noise(Egami.Video.Analysis.TestAudioFormat%2cEgami.Video.MediaTime%2cEgami.Video.Analysis.NoiseColor%2cSystem.Double%2cSystem.Int32)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.Scene.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.Scene.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.Scene",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.Scene.yml\" sourcestartlinenumber=\"1\">A scene: a run of frames from one cut to the next, as <xref href=\"Egami.Video.Analysis.SceneDetector\" data-throw-if-not-resolved=\"false\"></xref> finds them.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SceneCut.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SceneCut.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SceneCut",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SceneCut.yml\" sourcestartlinenumber=\"1\">A point where a new scene starts, as <xref href=\"Egami.Video.Analysis.SceneDetector\" data-throw-if-not-resolved=\"false\"></xref> reports it while frames come in.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SceneDetector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SceneDetector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SceneDetector",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SceneDetector.yml\" sourcestartlinenumber=\"1\">Finds the scenes of a video: where one shot cuts to the next, and where a fade or cut through black separates two. Each frame\nis summarized from its planes (a 16 by 9 grid of mean Y, Cb and Cr and a luma histogram) and scored against the frame before\nby <xref href=\"Egami.Video.Analysis.SceneOptions.Method\" data-throw-if-not-resolved=\"false\"></xref>; a high enough score starts a scene, unless it comes within the minimum scene length or\nturns out to be a flash. Feed it every frame with <xref href=\"Egami.Video.Analysis.SceneDetector.Add(Egami.Video.YuvVideoFrame)\" data-throw-if-not-resolved=\"false\"></xref> and call <xref href=\"Egami.Video.Analysis.SceneDetector.Complete(Egami.Video.MediaTime)\" data-throw-if-not-resolved=\"false\"></xref> at the end, or let\n<xref href=\"Egami.Video.Analysis.MediaAnalysis.Run(System.String%2cEgami.Video.Analysis.MediaAnalysisOptions%2cEgami.Video.MediaContext%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref> do it. Memory stays flat over any length of video unless <xref href=\"Egami.Video.Analysis.SceneOptions.KeepSeries\" data-throw-if-not-resolved=\"false\"></xref>\nis set.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SceneFrame.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SceneFrame.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SceneFrame",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SceneFrame.yml\" sourcestartlinenumber=\"1\">A scene and a frame of it, from <xref href=\"Egami.Video.Analysis.SceneFrames.Read(Egami.Video.VideoReader%2cSystem.Collections.Generic.IEnumerable%7bEgami.Video.Analysis.Scene%7d%2cEgami.Video.Analysis.ScenePosition)\" data-throw-if-not-resolved=\"false\"></xref>. Dispose the frame.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SceneFrames.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SceneFrames.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SceneFrames",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SceneFrames.yml\" sourcestartlinenumber=\"1\">Reads a picture of each scene, such as for a shot list or a storyboard.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SceneMethod.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SceneMethod.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SceneMethod",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SceneMethod.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Analysis.SceneDetector\" data-throw-if-not-resolved=\"false\"></xref> scores the change between frames.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SceneOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SceneOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SceneOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SceneOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.Analysis.SceneDetector\" data-throw-if-not-resolved=\"false\"></xref> finds scenes. The defaults suit most footage; lower the threshold to find softer cuts.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.ScenePosition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.ScenePosition.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.ScenePosition",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.ScenePosition.yml\" sourcestartlinenumber=\"1\">Which frame of a scene <xref href=\"Egami.Video.Analysis.SceneFrames.Read(Egami.Video.VideoReader%2cSystem.Collections.Generic.IEnumerable%7bEgami.Video.Analysis.Scene%7d%2cEgami.Video.Analysis.ScenePosition)\" data-throw-if-not-resolved=\"false\"></xref> reads.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SceneScore.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SceneScore.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SceneScore",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SceneScore.yml\" sourcestartlinenumber=\"1\">One frame's scene measures, kept when <xref href=\"Egami.Video.Analysis.SceneOptions.KeepSeries\" data-throw-if-not-resolved=\"false\"></xref> is set, to plot or tune with.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.SceneStart.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.SceneStart.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.SceneStart",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.SceneStart.yml\" sourcestartlinenumber=\"1\">How a scene starts.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.TestAudioFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.TestAudioFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.TestAudioFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.TestAudioFormat.yml\" sourcestartlinenumber=\"1\">The rate, channels and frame size of the audio <xref href=\"Egami.Video.Analysis.TestSources\" data-throw-if-not-resolved=\"false\"></xref> generates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.TestSources.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.TestSources.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.TestSources",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.TestSources.yml\" sourcestartlinenumber=\"1\">Generates test video and audio: a moving test pattern with frame numbers and timecode, SMPTE color bars, solid colors and\ngradients, and sine tones, silence, white or pink noise and sweeps. The frames come out one at a time, so any length costs\nthe same memory; hand them to <xref href=\"Egami.Video.VideoWriter.WriteFrame(Egami.Video.VideoFrame)\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Egami.Video.VideoWriter.WriteAudio(Egami.Video.Audio.AudioFrame)\" data-throw-if-not-resolved=\"false\"></xref>, or\nto a detector. Dispose each frame.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.TestVideoFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.TestVideoFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis.TestVideoFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Analysis.TestVideoFormat.yml\" sourcestartlinenumber=\"1\">The size, rate and planes of the video <xref href=\"Egami.Video.Analysis.TestSources\" data-throw-if-not-resolved=\"false\"></xref> generates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Analysis.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Analysis.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Analysis",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.AttachmentInfo.yml",
       "output": {
         ".html": {

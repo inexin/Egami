@@ -469,6 +469,108 @@ using (VideoReader distorted = VideoReader.Open(&quot;movie.webm&quot;))
 
 PlaneScores psnr = quality.Psnr, ssim = quality.Ssim;
 Console.WriteLine($&quot;{quality.Frames} frames: PSNR Y {psnr.Y:0.00} dB, SSIM {ssim.Average:0.0000}&quot;);
+</code></pre><h2 id="scenes-and-analysis">Scenes and analysis</h2>
+<p><code>MediaAnalysis.Run</code> reads a file once and hands every frame to its detectors: the <code>SceneDetector</code> by default, and any
+<code>IVideoDetector</code> or <code>IAudioDetector</code> you add. Each <code>Scene</code> has its first and last frame, its start and end time and how it
+starts (<code>SceneStart</code>): at the first frame, at a cut, or inside a fade through black. <code>Cuts</code> lists each <code>SceneCut</code> and <code>Fades</code>
+each fade out and fade in (<code>FadeKind</code>).</p>
+<pre><code class="lang-csharp">// One pass over the file: the scene detector runs by default, and any detectors of your own run with it.
+MediaAnalysisResult result = MediaAnalysis.Run(&quot;shots.mkv&quot;);
+foreach (Scene scene in result.Scenes)
+{
+    Console.WriteLine($&quot;Scene {scene.Number}: {scene.Start.ToTimeSpan()} to {scene.End.ToTimeSpan()}, starts with a {scene.StartKind}&quot;);
+}
+</code></pre>
+<p><code>SceneOptions</code> picks the method and its threshold. <code>SceneMethod.Adaptive</code> weighs each frame's change against the frames
+around it, so a fast pan is not taken for a cut; <code>Content</code> compares with the frames just before, as ffmpeg's scene score does;
+<code>Histogram</code> compares luma histograms, which ignores motion inside a steady picture. A cut closer than <code>MinSceneLength</code> to the
+last is dropped, and with <code>FlashMode.Merge</code> a flash that comes back to the picture before it is no scene. <code>KeepSeries</code> keeps every frame's score.</p>
+<pre><code class="lang-csharp">// Content compares each frame with the one before, as ffmpeg's scene score does; Adaptive (the default) also weighs the
+// frames around it, so fast motion is not taken for a cut. Fades through black end a scene in the dark.
+SceneOptions options = new()
+{
+    Method = SceneMethod.Content,
+    Threshold = 0.3,
+    MinSceneLength = MediaTime.FromSeconds(0.5),
+    DetectFades = true,
+    KeepSeries = true,
+};
+MediaAnalysisResult result = MediaAnalysis.Run(&quot;shots.mkv&quot;, new MediaAnalysisOptions { Scenes = options });
+SceneScore sharpest = result.SceneScores.MaxBy(s =&gt; s.Score);
+Console.WriteLine($&quot;{result.Cuts.Count} cuts; the sharpest at {sharpest.Time.ToTimeSpan()}&quot;);
+</code></pre>
+<p>A detector of your own takes frames in time order, and the <code>SceneDetector</code> runs on its own too:</p>
+<pre><code class="lang-csharp">// A detector takes frames in time order; this one finds the darkest frame. The scene detector can run on its own too.
+DarkestFrame darkest = new();
+SceneDetector scenes = new(new SceneOptions { Method = SceneMethod.Histogram });
+using (VideoReader reader = VideoReader.Open(&quot;shots.mkv&quot;))
+{
+    foreach (YuvVideoFrame frame in reader.ReadFrames())
+    {
+        using (frame)
+        {
+            darkest.Add(frame);
+            if (scenes.Add(frame) is { } cut)
+            {
+                Console.WriteLine($&quot;Cut at frame {cut.Frame}&quot;);
+            }
+        }
+    }
+
+    scenes.Complete(reader.Info.Duration ?? MediaTime.Zero);
+}
+
+Console.WriteLine($&quot;Darkest frame at {darkest.Time.ToTimeSpan()}, {scenes.Scenes.Count} scenes&quot;);
+</code></pre><pre><code class="lang-csharp">// Audio detectors get the audio in blocks, interleaved with the video by time, in the same pass.
+Peak peak = new();
+MediaAnalysis.Run(&quot;shots.mkv&quot;, new MediaAnalysisOptions { AudioDetectors = [peak] });
+Console.WriteLine($&quot;Peak {20 * Math.Log10(peak.Value):0.0} dBFS&quot;);
+</code></pre>
+<p><code>SceneFrames.Read</code> seeks to the first, middle or last frame of each scene, for thumbnails or a shot list:</p>
+<pre><code class="lang-csharp">// A frame from each scene, read by seeking: the first, the middle or the last.
+MediaAnalysisResult result = MediaAnalysis.Run(&quot;shots.mkv&quot;);
+using VideoReader reader = VideoReader.Open(&quot;shots.mkv&quot;);
+foreach (SceneFrame scene in SceneFrames.Read(reader, result.Scenes, ScenePosition.Middle))
+{
+    using (scene.Frame)
+    using (Raster&lt;Rgba8&gt; picture = scene.Frame.ToRaster&lt;Rgba8&gt;())
+    {
+        picture.Save($&quot;scene-{scene.Scene.Number}.png&quot;);
+    }
+}
+</code></pre>
+<p><code>TestSources</code> makes pictures and sounds to test with: SMPTE color bars at their code values in any bit depth, a moving pattern
+with a frame counter, solid colors, gradients, tones, white or pink noise (<code>NoiseColor</code>) and sweeps. <code>TestVideoFormat</code> and
+<code>TestAudioFormat</code> set the size, rate and sample layout; <code>ColorBarsStyle</code> picks HD or SD bars.</p>
+<pre><code class="lang-csharp">// Generated pictures and sounds for tests and demos: bars, a moving pattern, solid colors, gradients, tones and noise.
+TestVideoFormat format = new() { Width = 320, Height = 180, FrameRate = new Rational(25, 1) };
+MediaTime second = MediaTime.FromSeconds(1);
+using VideoWriter writer = VideoWriter.Create(path, new VideoWriterOptions
+{
+    FrameRate = format.FrameRate,
+    AudioCodec = Egami.Video.Audio.Codecs.FlacCodec.Instance,
+    AudioSampleRate = 48000,
+    AudioLayout = ChannelLayout.Stereo,
+});
+IEnumerable&lt;YuvVideoFrame&gt; shots = TestSources.ColorBars(format, second)
+    .Concat(TestSources.Solid(format, second, new Rgba8(30, 40, 220, 255)))
+    .Concat(TestSources.Pattern(format, second));
+int index = 0;
+foreach (YuvVideoFrame frame in shots)
+{
+    using (frame)
+    {
+        writer.WriteFrame(frame.Raster, new MediaTime(index++, format.FrameRate.Reciprocal()));
+    }
+}
+
+foreach (AudioFrame block in TestSources.Sine(null, MediaTime.FromSeconds(3), frequency: 1000, level: -18))
+{
+    using (block)
+    {
+        writer.WriteAudio(block);
+    }
+}
 </code></pre><h2 id="limits-and-warnings">Limits and warnings</h2>
 <p>A <code>MediaContext</code> holds the containers and codecs, the Egami context (memory, threads, safety limits), the <code>MediaLimits</code> for
 files from outside (packet, header and index sizes, tracks, nesting) and a handler for <code>MediaWarning</code>s: what a reader

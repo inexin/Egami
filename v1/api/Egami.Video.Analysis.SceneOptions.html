@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class SceneOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class SceneOptions | Egami ">
+      
+      <meta name="description" content="How  finds scenes. The defaults suit most footage; lower the threshold to find softer cuts.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Analysis_SceneOptions.md&amp;value=---%0Auid%3A%20Egami.Video.Analysis.SceneOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Analysis.SceneOptions">
+
+
+
+  <h1 id="Egami_Video_Analysis_SceneOptions" data-uid="Egami.Video.Analysis.SceneOptions" class="text-break">
+Class SceneOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L7"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Analysis.html">Analysis</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>How <a class="xref" href="Egami.Video.Analysis.SceneDetector.html">SceneDetector</a> finds scenes. The defaults suit most footage; lower the threshold to find softer cuts.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record SceneOptions : IEquatable&lt;SceneOptions&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">SceneOptions</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.Analysis.SceneOptions.html">SceneOptions</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Analysis_SceneOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Content compares each frame with the one before, as ffmpeg's scene score does; Adaptive (the default) also weighs the
+// frames around it, so fast motion is not taken for a cut. Fades through black end a scene in the dark.
+SceneOptions options = new()
+{
+    Method = SceneMethod.Content,
+    Threshold = 0.3,
+    MinSceneLength = MediaTime.FromSeconds(0.5),
+    DetectFades = true,
+    KeepSeries = true,
+};
+MediaAnalysisResult result = MediaAnalysis.Run("shots.mkv", new MediaAnalysisOptions { Scenes = options });
+SceneScore sharpest = result.SceneScores.MaxBy(s =&gt; s.Score);
+Console.WriteLine($"{result.Cuts.Count} cuts; the sharpest at {sharpest.Time.ToTimeSpan()}");</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_AdaptiveRatio_" data-uid="Egami.Video.Analysis.SceneOptions.AdaptiveRatio*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_AdaptiveRatio" data-uid="Egami.Video.Analysis.SceneOptions.AdaptiveRatio">
+  AdaptiveRatio
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many times the mean change of the frames around it a change must be to count as a cut, for
+<a class="xref" href="Egami.Video.Analysis.SceneMethod.html#Egami_Video_Analysis_SceneMethod_Adaptive">Adaptive</a>. Default 3, as PySceneDetect's adaptive detector.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double AdaptiveRatio { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_Default_" data-uid="Egami.Video.Analysis.SceneOptions.Default*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_Default" data-uid="Egami.Video.Analysis.SceneOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L10"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the default options.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static SceneOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Analysis.SceneOptions.html">SceneOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_DetectFades_" data-uid="Egami.Video.Analysis.SceneOptions.DetectFades*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_DetectFades" data-uid="Egami.Video.Analysis.SceneOptions.DetectFades">
+  DetectFades
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether fades and cuts through black start a scene in the middle of the dark run instead of at its two ends. Default
+on. The fades themselves are listed in <a class="xref" href="Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Fades">Fades</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool DetectFades { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_FadeBias_" data-uid="Egami.Video.Analysis.SceneOptions.FadeBias*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_FadeBias" data-uid="Egami.Video.Analysis.SceneOptions.FadeBias">
+  FadeBias
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets where in a dark run the new scene starts, from -1 (the first dark frame) through 0 (the middle, the default) to 1 (the
+first frame after it), as PySceneDetect's fade bias.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double FadeBias { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_FadeLevel_" data-uid="Egami.Video.Analysis.SceneOptions.FadeLevel*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_FadeLevel" data-uid="Egami.Video.Analysis.SceneOptions.FadeLevel">
+  FadeLevel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the mean luma, from black level (0) to white level (1), at or under which a frame counts as black for
+<a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_DetectFades">DetectFades</a>. Default 0.06, about PySceneDetect's 12 on its 0 to 255 scale; white uses 1 less this.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double FadeLevel { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_FadeToWhite_" data-uid="Egami.Video.Analysis.SceneOptions.FadeToWhite*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_FadeToWhite" data-uid="Egami.Video.Analysis.SceneOptions.FadeToWhite">
+  FadeToWhite
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether runs of white count like runs of black for <a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_DetectFades">DetectFades</a>. Off by default, since a white shot is not a fade.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool FadeToWhite { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_Flash_" data-uid="Egami.Video.Analysis.SceneOptions.Flash*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_Flash" data-uid="Egami.Video.Analysis.SceneOptions.Flash">
+  Flash
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what happens to a cut that comes back within <a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_MinSceneLength">MinSceneLength</a>. Default <a class="xref" href="Egami.Video.Analysis.FlashMode.html#Egami_Video_Analysis_FlashMode_Merge">Merge</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public FlashMode Flash { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Analysis.FlashMode.html">FlashMode</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_KeepSeries_" data-uid="Egami.Video.Analysis.SceneOptions.KeepSeries*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_KeepSeries" data-uid="Egami.Video.Analysis.SceneOptions.KeepSeries">
+  KeepSeries
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Scores">Scores</a> keeps every frame's score and luma. Off by default to keep memory flat.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool KeepSeries { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_Method_" data-uid="Egami.Video.Analysis.SceneOptions.Method*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_Method" data-uid="Egami.Video.Analysis.SceneOptions.Method">
+  Method
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L13"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how changes are scored. Default <a class="xref" href="Egami.Video.Analysis.SceneMethod.html#Egami_Video_Analysis_SceneMethod_Adaptive">Adaptive</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SceneMethod Method { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Analysis.SceneMethod.html">SceneMethod</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_MinSceneLength_" data-uid="Egami.Video.Analysis.SceneOptions.MinSceneLength*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_MinSceneLength" data-uid="Egami.Video.Analysis.SceneOptions.MinSceneLength">
+  MinSceneLength
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the shortest scene: a cut closer than this to the previous scene's start (the first frame for the first cut) is not
+taken. Default 0.6 s, as PySceneDetect's 15 frames at 25 frames a second.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime MinSceneLength { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_Threshold_" data-uid="Egami.Video.Analysis.SceneOptions.Threshold*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_Threshold" data-uid="Egami.Video.Analysis.SceneOptions.Threshold">
+  Threshold
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lowest score, from 0 to 1, that starts a scene, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the method's own: 0.15 for
+<a class="xref" href="Egami.Video.Analysis.SceneMethod.html#Egami_Video_Analysis_SceneMethod_Adaptive">Adaptive</a> (which also needs <a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_AdaptiveRatio">AdaptiveRatio</a>), 0.4 for <a class="xref" href="Egami.Video.Analysis.SceneMethod.html#Egami_Video_Analysis_SceneMethod_Content">Content</a>
+and <a class="xref" href="Egami.Video.Analysis.SceneMethod.html#Egami_Video_Analysis_SceneMethod_Histogram">Histogram</a>. Lower finds more cuts.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double? Threshold { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneOptions_Window_" data-uid="Egami.Video.Analysis.SceneOptions.Window*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneOptions_Window" data-uid="Egami.Video.Analysis.SceneOptions.Window">
+  Window
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many frames on each side the adaptive mean takes, from 1 to 8. Default 2. A cut is reported this many frames late.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Window { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L7" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

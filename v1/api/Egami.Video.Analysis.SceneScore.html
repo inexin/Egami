@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct SceneScore | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct SceneScore | Egami ">
+      
+      <meta name="description" content="One frame&#39;s scene measures, kept when  is set, to plot or tune with.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Analysis_SceneScore.md&amp;value=---%0Auid%3A%20Egami.Video.Analysis.SceneScore%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Analysis.SceneScore">
+
+
+
+  <h1 id="Egami_Video_Analysis_SceneScore" data-uid="Egami.Video.Analysis.SceneScore" class="text-break">
+Struct SceneScore  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/Scene.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Analysis.html">Analysis</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>One frame's scene measures, kept when <a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_KeepSeries">KeepSeries</a> is set, to plot or tune with.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct SceneScore : IEquatable&lt;SceneScore&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.Analysis.SceneScore.html">SceneScore</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.tostring">ValueType.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Analysis_SceneScore_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Content compares each frame with the one before, as ffmpeg's scene score does; Adaptive (the default) also weighs the
+// frames around it, so fast motion is not taken for a cut. Fades through black end a scene in the dark.
+SceneOptions options = new()
+{
+    Method = SceneMethod.Content,
+    Threshold = 0.3,
+    MinSceneLength = MediaTime.FromSeconds(0.5),
+    DetectFades = true,
+    KeepSeries = true,
+};
+MediaAnalysisResult result = MediaAnalysis.Run("shots.mkv", new MediaAnalysisOptions { Scenes = options });
+SceneScore sharpest = result.SceneScores.MaxBy(s =&gt; s.Score);
+Console.WriteLine($"{result.Cuts.Count} cuts; the sharpest at {sharpest.Time.ToTimeSpan()}");</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_Analysis_SceneScore__ctor_" data-uid="Egami.Video.Analysis.SceneScore.#ctor*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneScore__ctor_System_Int64_Egami_Video_MediaTime_System_Double_System_Double_" data-uid="Egami.Video.Analysis.SceneScore.#ctor(System.Int64,Egami.Video.MediaTime,System.Double,System.Double)">
+  SceneScore(long, MediaTime, double, double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/Scene.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>One frame's scene measures, kept when <a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_KeepSeries">KeepSeries</a> is set, to plot or tune with.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SceneScore(long Frame, MediaTime Time, double Score, double Luma)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>Frame</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd><p>The frame, counted from 0.</p>
+</dd>
+    <dt><code>Time</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>Its timestamp.</p>
+</dd>
+    <dt><code>Score</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The method's change score against the frame before, from 0 to 1.</p>
+</dd>
+    <dt><code>Luma</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The frame's mean luma from black level (0) to white level (1).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Analysis_SceneScore__ctor_System_Int64_Egami_Video_MediaTime_System_Double_System_Double__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Content compares each frame with the one before, as ffmpeg's scene score does; Adaptive (the default) also weighs the
+// frames around it, so fast motion is not taken for a cut. Fades through black end a scene in the dark.
+SceneOptions options = new()
+{
+    Method = SceneMethod.Content,
+    Threshold = 0.3,
+    MinSceneLength = MediaTime.FromSeconds(0.5),
+    DetectFades = true,
+    KeepSeries = true,
+};
+MediaAnalysisResult result = MediaAnalysis.Run("shots.mkv", new MediaAnalysisOptions { Scenes = options });
+SceneScore sharpest = result.SceneScores.MaxBy(s =&gt; s.Score);
+Console.WriteLine($"{result.Cuts.Count} cuts; the sharpest at {sharpest.Time.ToTimeSpan()}");</code></pre>
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Analysis_SceneScore_Frame_" data-uid="Egami.Video.Analysis.SceneScore.Frame*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneScore_Frame" data-uid="Egami.Video.Analysis.SceneScore.Frame">
+  Frame
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/Scene.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The frame, counted from 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long Frame { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneScore_Luma_" data-uid="Egami.Video.Analysis.SceneScore.Luma*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneScore_Luma" data-uid="Egami.Video.Analysis.SceneScore.Luma">
+  Luma
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/Scene.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The frame's mean luma from black level (0) to white level (1).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Luma { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneScore_Score_" data-uid="Egami.Video.Analysis.SceneScore.Score*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneScore_Score" data-uid="Egami.Video.Analysis.SceneScore.Score">
+  Score
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/Scene.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The method's change score against the frame before, from 0 to 1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Score { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneScore_Time_" data-uid="Egami.Video.Analysis.SceneScore.Time*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneScore_Time" data-uid="Egami.Video.Analysis.SceneScore.Time">
+  Time
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/Scene.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Its timestamp.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MediaTime Time { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/Scene.cs/#L52" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

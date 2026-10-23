@@ -461,19 +461,20 @@ Arguments:
   &lt;inputs&gt;  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
 
 Options:
-  -o, --output &lt;path&gt;            Also write the first frame of each scene: a folder, or a template with {scene} (from 1, padded as {scene:000}), {name}, {dir} and {index}.
-  -f, --format &lt;format&gt;          The image format by name or extension (png, jpg, webp, gif …), when -o's extension does not say.
-  -t, --track &lt;track&gt;            Which video track: v:1 for the second, or a track number as info shows it; the first video track by default.
-  --quality &lt;0-100&gt;              Lossy quality from 0 to 100 for formats that have one.
-  --set &lt;fmt.key=value&gt;          Writer settings as fmt.key=value, as egami takes them.
-  -r, --recursive                Take every media file in folders given as inputs, at any depth.
-  -j, --jobs &lt;count&gt;             How many files to work on at once; 0 (the default) for one per processor.
-  --in-place                     Allow outputs to replace their inputs.
-  --fail-fast                    Stop at the first file that fails.
-  --threshold &lt;0-1&gt;              How sharp a change starts a scene, from 0 to 1; lower finds more cuts. [default: 0.4]
-  --min-gap &lt;time&gt;               The shortest scene: a cut closer than this to the last one is not taken. [default: 1s]
-  --json                         Write the scenes as JSON.
-  --csv                          Write the scenes as CSV, one row per scene.
+  -o, --output &lt;path&gt;                    Also write the first frame of each scene: a folder, or a template with {scene} (from 1, padded as {scene:000}), {name}, {dir} and {index}.
+  -f, --format &lt;format&gt;                  The image format by name or extension (png, jpg, webp, gif …), when -o's extension does not say.
+  -t, --track &lt;track&gt;                    Which video track: v:1 for the second, or a track number as info shows it; the first video track by default.
+  --quality &lt;0-100&gt;                      Lossy quality from 0 to 100 for formats that have one.
+  --set &lt;fmt.key=value&gt;                  Writer settings as fmt.key=value, as egami takes them.
+  -r, --recursive                        Take every media file in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;                     How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                             Allow outputs to replace their inputs.
+  --fail-fast                            Stop at the first file that fails.
+  --method &lt;adaptive|content|histogram&gt;  How changes are scored: adaptive (the default; ignores fast motion), content (a fixed threshold, as ffmpeg's scene value) or histogram. [default: adaptive]
+  --threshold &lt;0-1&gt;                      How sharp a change starts a scene, from 0 to 1; lower finds more cuts. Default 0.15 for adaptive, 0.4 for content and histogram.
+  --min-gap &lt;time&gt;                       The shortest scene: a cut closer than this to the last one is not taken. [default: 0.6s]
+  --json                                 Write the scenes as JSON.
+  --csv                                  Write the scenes as CSV, one row per scene.
 </code></pre>
 <h2 id="sheet">sheet</h2>
 <pre><code class="lang-text">Description:

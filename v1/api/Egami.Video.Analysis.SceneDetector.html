@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class SceneDetector | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class SceneDetector | Egami ">
+      
+      <meta name="description" content="Finds the scenes of a video: where one shot cuts to the next, and where a fade or cut through black separates two. Each frame is summarized from its planes (a 16 by 9 grid of mean Y, Cb and Cr and a luma histogram) and scored against the frame before by ; a high enough score starts a scene, unless it comes within the minimum scene length or turns out to be a flash. Feed it every frame with  and call  at the end, or let  do it. Memory stays flat over any length of video unless  is set.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Analysis_SceneDetector.md&amp;value=---%0Auid%3A%20Egami.Video.Analysis.SceneDetector%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Analysis.SceneDetector">
+
+
+
+  <h1 id="Egami_Video_Analysis_SceneDetector" data-uid="Egami.Video.Analysis.SceneDetector" class="text-break">
+Class SceneDetector  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L14"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Analysis.html">Analysis</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Finds the scenes of a video: where one shot cuts to the next, and where a fade or cut through black separates two. Each frame
+is summarized from its planes (a 16 by 9 grid of mean Y, Cb and Cr and a luma histogram) and scored against the frame before
+by <a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_Method">Method</a>; a high enough score starts a scene, unless it comes within the minimum scene length or
+turns out to be a flash. Feed it every frame with <a class="xref" href="Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Add_Egami_Video_YuvVideoFrame_">Add(YuvVideoFrame)</a> and call <a class="xref" href="Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Complete_Egami_Video_MediaTime_">Complete(MediaTime)</a> at the end, or let
+<a class="xref" href="Egami.Video.Analysis.MediaAnalysis.html#Egami_Video_Analysis_MediaAnalysis_Run_System_String_Egami_Video_Analysis_MediaAnalysisOptions_Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Run(string, MediaAnalysisOptions?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a> do it. Memory stays flat over any length of video unless <a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_KeepSeries">KeepSeries</a>
+is set.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class SceneDetector : IVideoDetector</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">SceneDetector</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Egami.Video.Analysis.IVideoDetector.html">IVideoDetector</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Analysis_SceneDetector_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A detector takes frames in time order; this one finds the darkest frame. The scene detector can run on its own too.
+DarkestFrame darkest = new();
+SceneDetector scenes = new(new SceneOptions { Method = SceneMethod.Histogram });
+using (VideoReader reader = VideoReader.Open("shots.mkv"))
+{
+    foreach (YuvVideoFrame frame in reader.ReadFrames())
+    {
+        using (frame)
+        {
+            darkest.Add(frame);
+            if (scenes.Add(frame) is { } cut)
+            {
+                Console.WriteLine($"Cut at frame {cut.Frame}");
+            }
+        }
+    }
+
+    scenes.Complete(reader.Info.Duration ?? MediaTime.Zero);
+}
+
+Console.WriteLine($"Darkest frame at {darkest.Time.ToTimeSpan()}, {scenes.Scenes.Count} scenes");</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Video_Analysis_SceneDetector__ctor_" data-uid="Egami.Video.Analysis.SceneDetector.#ctor*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneDetector__ctor_Egami_Video_Analysis_SceneOptions_" data-uid="Egami.Video.Analysis.SceneDetector.#ctor(Egami.Video.Analysis.SceneOptions)">
+  SceneDetector(SceneOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a detector.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SceneDetector(SceneOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Analysis.SceneOptions.html">SceneOptions</a></dt>
+    <dd><p>How to find scenes, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Analysis_SceneDetector__ctor_Egami_Video_Analysis_SceneOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A detector takes frames in time order; this one finds the darkest frame. The scene detector can run on its own too.
+DarkestFrame darkest = new();
+SceneDetector scenes = new(new SceneOptions { Method = SceneMethod.Histogram });
+using (VideoReader reader = VideoReader.Open("shots.mkv"))
+{
+    foreach (YuvVideoFrame frame in reader.ReadFrames())
+    {
+        using (frame)
+        {
+            darkest.Add(frame);
+            if (scenes.Add(frame) is { } cut)
+            {
+                Console.WriteLine($"Cut at frame {cut.Frame}");
+            }
+        }
+    }
+
+    scenes.Complete(reader.Info.Duration ?? MediaTime.Zero);
+}
+
+Console.WriteLine($"Darkest frame at {darkest.Time.ToTimeSpan()}, {scenes.Scenes.Count} scenes");</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>An option is out of range.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Analysis_SceneDetector_Cuts_" data-uid="Egami.Video.Analysis.SceneDetector.Cuts*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneDetector_Cuts" data-uid="Egami.Video.Analysis.SceneDetector.Cuts">
+  Cuts
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the cuts found so far, the first at the first frame. A cut is listed once it is settled.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;SceneCut&gt; Cuts { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.Analysis.SceneCut.html">SceneCut</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneDetector_Fades_" data-uid="Egami.Video.Analysis.SceneDetector.Fades*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneDetector_Fades" data-uid="Egami.Video.Analysis.SceneDetector.Fades">
+  Fades
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the fades found so far (with <a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_DetectFades">DetectFades</a>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Fade&gt; Fades { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.Analysis.Fade.html">Fade</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneDetector_FrameCount_" data-uid="Egami.Video.Analysis.SceneDetector.FrameCount*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneDetector_FrameCount" data-uid="Egami.Video.Analysis.SceneDetector.FrameCount">
+  FrameCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many frames the detector has taken.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long FrameCount { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneDetector_Options_" data-uid="Egami.Video.Analysis.SceneDetector.Options*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneDetector_Options" data-uid="Egami.Video.Analysis.SceneDetector.Options">
+  Options
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the options the detector runs with.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SceneOptions Options { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Analysis.SceneOptions.html">SceneOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneDetector_Scenes_" data-uid="Egami.Video.Analysis.SceneDetector.Scenes*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneDetector_Scenes" data-uid="Egami.Video.Analysis.SceneDetector.Scenes">
+  Scenes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the scenes found so far: one per cut, each running to the next cut. The last scene runs to the last frame seen, or to
+the end given to <a class="xref" href="Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Complete_Egami_Video_MediaTime_">Complete(MediaTime)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Scene&gt; Scenes { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.Analysis.Scene.html">Scene</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneDetector_Scores_" data-uid="Egami.Video.Analysis.SceneDetector.Scores*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneDetector_Scores" data-uid="Egami.Video.Analysis.SceneDetector.Scores">
+  Scores
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets every frame's score and luma, when <a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_KeepSeries">KeepSeries</a> is set; otherwise empty.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;SceneScore&gt; Scores { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Video.Analysis.SceneScore.html">SceneScore</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Analysis_SceneDetector_SettledFrames_" data-uid="Egami.Video.Analysis.SceneDetector.SettledFrames*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneDetector_SettledFrames" data-uid="Egami.Video.Analysis.SceneDetector.SettledFrames">
+  SettledFrames
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L119"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many frames are settled: no cut can still be added before this frame. A caller that keeps recent frames, to save
+the first frame of each scene for instance, may let go of the frames before it. The adaptive window, a cut held for the
+flash test and a dark run that may end in a fade keep it behind <a class="xref" href="Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_FrameCount">FrameCount</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long SettledFrames { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Analysis_SceneDetector_Add_" data-uid="Egami.Video.Analysis.SceneDetector.Add*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneDetector_Add_Egami_Video_YuvVideoFrame_" data-uid="Egami.Video.Analysis.SceneDetector.Add(Egami.Video.YuvVideoFrame)">
+  Add(YuvVideoFrame)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Takes the next frame.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SceneCut? Add(YuvVideoFrame frame)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frame</code> <a class="xref" href="Egami.Video.YuvVideoFrame.html">YuvVideoFrame</a></dt>
+    <dd><p>The frame, in presentation order.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Analysis.SceneCut.html">SceneCut</a></dt>
+    <dd><p>The newest cut this frame settled, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>; <a class="xref" href="Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Cuts">Cuts</a> lists every one.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p><a class="xref" href="Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Complete_Egami_Video_MediaTime_">Complete(MediaTime)</a> was called.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Analysis_SceneDetector_Complete_" data-uid="Egami.Video.Analysis.SceneDetector.Complete*"></a>
+
+  <h3 id="Egami_Video_Analysis_SceneDetector_Complete_Egami_Video_MediaTime_" data-uid="Egami.Video.Analysis.SceneDetector.Complete(Egami.Video.MediaTime)">
+  Complete(MediaTime)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L264"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Settles what the detector was still weighing: the last frames of the adaptive window, a held cut and an open fade.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Complete(MediaTime endTime)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>endTime</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>When the video ends; the last scene runs to it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneDetector.cs/#L14" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
