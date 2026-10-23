@@ -34,6 +34,16 @@ internal sealed class HeifWriter
     /// <summary>Gets the number of items added.</summary>
     internal int ItemCount => _items.Count;
 
+    /// <summary>
+    /// Gets or sets the builder of a moov box written after the meta box, for an image sequence: it gets the file offset of each
+    /// item's data (by item id less one; -1 for data in the idat) and of each block of <see cref="MediaData"/>, and returns the
+    /// whole box. Its size must not depend on the offsets' values.
+    /// </summary>
+    internal Func<long[], long[], byte[]>? Movie { get; set; }
+
+    /// <summary>Gets the blocks of data the mdat holds after the items' data, such as an image sequence's samples.</summary>
+    internal List<ReadOnlyMemory<byte>> MediaData { get; } = [];
+
     /// <summary>Adds an item and returns its id, numbered from 1 in the order added.</summary>
     /// <param name="type">The item type, such as av01, grid, tmap, Exif or mime.</param>
     /// <param name="data">The item's data.</param>
@@ -99,15 +109,43 @@ internal sealed class HeifWriter
             }
         }
 
-        // The meta box's size does not depend on the offsets, so it is built once with them at 0 to place the mdat.
+        long itemData = mdatData;
+        foreach (ReadOnlyMemory<byte> block in MediaData)
+        {
+            mdatData += block.Length;
+        }
+
+        // The meta and moov boxes' sizes do not depend on the offsets, so they are built once with them at 0 to place the mdat.
         byte[] ftyp = FileType();
         bool wide = ftyp.Length + 16 + mdatData > uint.MaxValue - 1024 * 1024;
         byte[] meta = Meta(0, wide);
+        long[] itemOffsets = new long[_items.Count], mediaOffsets = new long[MediaData.Count];
+        byte[] moov = Movie?.Invoke(itemOffsets, mediaOffsets) ?? [];
         long mdatHeader = mdatData + 8 > uint.MaxValue ? 16 : 8;
-        meta = Meta(ftyp.Length + meta.Length + mdatHeader, wide);
+        long mdatStart = ftyp.Length + meta.Length + moov.Length + mdatHeader;
+        meta = Meta(mdatStart, wide);
+        if (Movie is not null)
+        {
+            long at = mdatStart;
+            for (int i = 0; i < _items.Count; i++)
+            {
+                itemOffsets[i] = _items[i].InIdat ? -1 : at;
+                at += _items[i].InIdat ? 0 : _items[i].Data.Length;
+            }
+
+            at = mdatStart + itemData;
+            for (int i = 0; i < MediaData.Count; i++)
+            {
+                mediaOffsets[i] = at;
+                at += MediaData[i].Length;
+            }
+
+            moov = Movie(itemOffsets, mediaOffsets);
+        }
 
         output.Write(ftyp);
         output.Write(meta);
+        output.Write(moov);
         Span<byte> header = stackalloc byte[16];
         if (mdatHeader == 16)
         {
@@ -129,6 +167,11 @@ internal sealed class HeifWriter
             {
                 output.Write(item.Data.Span);
             }
+        }
+
+        foreach (ReadOnlyMemory<byte> block in MediaData)
+        {
+            output.Write(block.Span);
         }
     }
 
@@ -350,7 +393,7 @@ internal sealed class HeifWriter
 
     private static byte[] Id(uint id, bool longIds) => longIds ? U32(id) : U16((int)id);
 
-    private static byte[] U64(ulong value) => [.. U32((uint)(value >> 32)), .. U32((uint)value)];
+    internal static byte[] U64(ulong value) => [.. U32((uint)(value >> 32)), .. U32((uint)value)];
 
     private sealed record Entry(uint Id, uint Type, ReadOnlyMemory<byte> Data, string Name, bool Hidden, string? ContentType, bool InIdat)
     {

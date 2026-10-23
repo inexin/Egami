@@ -94,6 +94,16 @@ public sealed class Av1StreamEncoder : IDisposable
                 + $"{frame.BitDepth}-bit {frame.ChromaFormat} at {frame.Width}×{frame.Height}.", nameof(frame));
         }
 
+        return EncodePlanes(Input(frame), plan);
+    }
+
+    /// <summary>Gets the sequence header the stream codes.</summary>
+    internal Av1SequenceHeader Sequence => _sequence;
+
+    /// <summary>Encodes one frame from planes at the stream's size and depth, as <see cref="Encode(YuvRaster, Av1FramePlan)"/> does.</summary>
+    internal Av1EncodedFrame EncodePlanes(Av1EncoderInput input, Av1FramePlan plan)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         Av1FrameKind kind = _started ? plan.Kind : Av1FrameKind.Key;
         if (kind == Av1FrameKind.Switch)
         {
@@ -107,7 +117,6 @@ public sealed class Av1StreamEncoder : IDisposable
             orderHint = 0;
         }
 
-        Av1EncoderInput input = Input(frame);
         Av1EncoderSettings settings = new()
         {
             QIndex = plan.QIndex ?? AvifWriter.QIndexFor(plan.Quality),

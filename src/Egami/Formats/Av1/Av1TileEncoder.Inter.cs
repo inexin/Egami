@@ -537,6 +537,13 @@ internal sealed partial class Av1TileEncoder
                 _planeDistortion[plane] = plane == 0 || chroma ? Distortion(plane, _b.Size) : 0;
             }
 
+            // A lossless block drops its residual only when the prediction is exact.
+            if (_header.LosslessArray[_b.SegmentId] && _planeDistortion[0] + (chroma ? _planeDistortion[1] + _planeDistortion[2] : 0) > 0)
+            {
+                start.Restore(this);
+                return long.MaxValue;
+            }
+
             _reconstructor.InterDone(this);
             return FinishInter(start, _b.Size, chroma);
         }

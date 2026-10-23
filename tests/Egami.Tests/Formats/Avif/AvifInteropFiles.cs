@@ -41,6 +41,23 @@ public class AvifInteropFiles
                 // avifdec applies irot and imir; Egami turns the image when asked.
                 loaded.Apply(ops => ops.AutoOrient(), TestContext.Current.CancellationToken);
                 File.WriteAllBytes(stem + ".rgba", Rgba(loaded, deep));
+                if (loaded.FrameCount > 1)
+                {
+                    // Every frame of an animation, for avifdec --index all.
+                    using MemoryStream frames = new();
+                    for (int i = 0; i < loaded.FrameCount; i++)
+                    {
+                        using Raster<Rgba16> one = Raster.Create<Rgba16>(loaded.Width, loaded.Height);
+                        for (int y = 0; y < loaded.Height; y++)
+                        {
+                            loaded.Frames[i].Row(y).CopyTo(one.Row(y));
+                        }
+
+                        frames.Write(Rgba(one, deep));
+                    }
+
+                    File.WriteAllBytes(stem + ".frames", frames.ToArray());
+                }
                 File.WriteAllText(stem + ".txt", $"{loaded.Width} {loaded.Height} {(deep ? 16 : 8)} {(options.Lossless == true ? "lossless" : "lossy")}");
             }
         }
@@ -84,6 +101,12 @@ public class AvifInteropFiles
         yield return ("gainmap-sdr-q80", Raster.Load(Path.Combine(corpus, "gainmap-sdr-base.avif")), new AvifWriterOptions { Quality = 80 });
         yield return ("grid-q60", Photo(200, 130, alpha: true), new AvifWriterOptions { GridTileSize = new Size(96, 64) });
         yield return ("gainmap-hdr-q80", Raster.Load(Path.Combine(corpus, "gainmap-hdr-base.avif")), new AvifWriterOptions { Quality = 80 });
+        yield return ("anim-q60", AvifAnimationWriteTests.Animation(96, 64, 5, alpha: false), new AvifWriterOptions());
+        yield return ("anim-rgba-q50", AvifAnimationWriteTests.Animation(96, 64, 5, alpha: true), new AvifWriterOptions { Quality = 50, AlphaQuality = 60, Effort = 6 });
+        yield return ("anim-lossless", AvifAnimationWriteTests.Animation(40, 30, 4, alpha: true), new AvifWriterOptions { Lossless = true });
+        Raster<Rgba8> thrice = AvifAnimationWriteTests.Animation(64, 48, 3, alpha: false);
+        thrice.Metadata.LoopCount = 3;
+        yield return ("anim-loop3-q70", thrice, new AvifWriterOptions { Quality = 70 });
     }
 
     private static Raster<Rgba8> Photo(int width, int height, bool alpha) => AvifWriterTests.Pattern<Rgba8>(width, height, (x, y) =>

@@ -44,6 +44,37 @@ public class Av1StreamEncoderTests
         Assert.True(interBits / 4 < keyBits / 2, $"Inter frames took {interBits / 4} bits each, the key frame {keyBits}.");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GlobalMotionFollowsPansAndZooms(bool zoom)
+    {
+        using Av1StreamEncoder encoder = new(new Av1SequenceOptions { Width = 192, Height = 128 });
+        using Av1StreamDecoder decoder = new();
+        int global = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            using YuvRaster frame = zoom ? Zooming(192, 128, i) : Moving(192, 128, 8, ChromaFormat.Yuv420, i);
+            Av1EncodedFrame encoded = encoder.Encode(frame, new Av1FramePlan { Effort = 7, Quality = 50 });
+            global += i > 0 && encoder.Reconstruction!.Header.GmType[1] != 0 ? 1 : 0;
+            decoder.Send(encoded.Data.Span);
+            AssertDecodesToReconstruction(decoder, encoder.Reconstruction!, 192, 128, 8, ChromaFormat.Yuv420);
+        }
+
+        Assert.True(global >= 2, $"Only {global} of 3 inter frames found global motion.");
+    }
+
+    /// <summary>Gets frame <paramref name="index"/> of a picture zooming into the photo, 3% a frame.</summary>
+    internal static YuvRaster Zooming(int width, int height, int index)
+    {
+        using Raster<Rgba8> photo = Raster.Load<Rgba8>(Photo);
+        double scale = Math.Pow(0.97, index);
+        int w = (int)Math.Round(width * 1.2 * scale), h = (int)Math.Round(height * 1.2 * scale);
+        int x0 = 20 + (((int)(width * 1.2) - w) / 2), y0 = 20 + (((int)(height * 1.2) - h) / 2);
+        using Raster<Rgba8> crop = photo.Derive(r => r.Crop(new Rect(x0, y0, w, h)).Resize(width, height));
+        return YuvRaster.FromRaster(crop, ChromaFormat.Yuv420, YuvColor.Bt601Limited);
+    }
+
     /// <summary>Gets frame <paramref name="index"/> of a picture panning across the photo, two samples right and one down per frame.</summary>
     internal static YuvRaster Moving(int width, int height, int bitDepth, ChromaFormat chroma, int index)
     {

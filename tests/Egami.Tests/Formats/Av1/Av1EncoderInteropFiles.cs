@@ -27,6 +27,8 @@ public class Av1EncoderInteropFiles
         ["e3-400"] = (64, 48, 8, ChromaFormat.Yuv400, 3, "ipp"),
         ["e4-resilient"] = (96, 64, 8, ChromaFormat.Yuv420, 4, "resilient"),
         ["e4-intraonly"] = (96, 64, 8, ChromaFormat.Yuv420, 4, "intraonly"),
+        ["e7-zoom"] = (192, 128, 8, ChromaFormat.Yuv420, 7, "zoom"),
+        ["e9-zoom"] = (128, 96, 8, ChromaFormat.Yuv420, 9, "zoom"),
     };
 
     [Theory]
@@ -75,7 +77,7 @@ public class Av1EncoderInteropFiles
             }
         }
 
-        YuvRaster Frame(int i) => Av1StreamEncoderTests.Moving(width, height, bitDepth, chroma, i);
+        YuvRaster Frame(int i) => pattern == "zoom" ? Av1StreamEncoderTests.Zooming(width, height, i) : Av1StreamEncoderTests.Moving(width, height, bitDepth, chroma, i);
         Av1FramePlan plan = new() { Effort = effort, Quality = 55 };
         switch (pattern)
         {
