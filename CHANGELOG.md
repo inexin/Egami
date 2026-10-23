@@ -527,7 +527,7 @@ V5.9 stage C: ALAC.
   all four decode to FFmpeg's samples.
 - `AudioWriter` keeps 20-bit samples at 20 bits for ALAC and writes float as 24-bit ALAC. A track with no layout gets ALAC's
   layout for its channel count. The CLI extracts ALAC tracks to .m4a. ALAC decoding trims a packet to its duration, so
-  Matroska DiscardPadding and CAF remainder frames apply.
+  Matroska DiscardPadding and CAF remainder frames apply, and stays sample exact across Matroska's millisecond block times.
 - Fuzz target `alac`.
 
 V5.9 stage D (container part): AC-3 and E-AC-3.
