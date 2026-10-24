@@ -851,6 +851,7 @@ internal sealed class MatroskaDemuxer : IDemuxer
 
         long durationTicks = blockDuration ?? track.DefaultDurationTicks(_timestampScale) ?? 0;
         long frameDuration = frames > 1 && blockDuration is { } d ? d / frames : track.DefaultDurationTicks(_timestampScale) ?? 0;
+        long vorbisOffset = 0;
         for (int i = 0; i < frames; i++)
         {
             int size = sizes[i];
@@ -903,15 +904,23 @@ internal sealed class MatroskaDemuxer : IDemuxer
                 packet.Duration = new MediaTime(Math.Max(0, alacSamples - cut), sample);
             }
 
-            else if (track.Track?.CodecId == CodecIds.Vorbis && frames == 1)
+            else if (track.Track?.CodecId == CodecIds.Vorbis && (frames == 1 || frameDuration == 0)
+                && track.Track is AudioTrackInfo { SampleRate: > 0 } vorbis)
             {
-                // Vorbis packets add half of two blocks; DiscardPadding cuts the end as Ogg's last granule position does.
+                // Vorbis packets add half of two blocks; DiscardPadding cuts the end as Ogg's last granule position does. A block
+                // laces several packets under one time, so each after the first starts where the samples before it end.
                 track.Vorbis ??= Audio.Codecs.Vorbis.VorbisPacketClock.Create(track.Track.CodecPrivate.Span);
                 if (track.Vorbis?.Next(payload) is { } samples)
                 {
-                    Rational sample = new(1, ((AudioTrackInfo)track.Track).SampleRate);
-                    long cut = discardPadding > 0 ? new MediaTime(discardPadding, Rational.Nanosecond).Rescale(sample).Ticks : 0;
+                    Rational sample = new(1, vorbis.SampleRate);
+                    long cut = discardPadding > 0 && i == frames - 1 ? new MediaTime(discardPadding, Rational.Nanosecond).Rescale(sample).Ticks : 0;
                     packet.Duration = new MediaTime(Math.Max(0, samples - cut), sample);
+                    if (vorbisOffset > 0)
+                    {
+                        packet.Timestamp = new MediaTime(timestamp, TimeBase).Rescale(Rational.Nanosecond) + new MediaTime(vorbisOffset, sample).Rescale(Rational.Nanosecond);
+                    }
+
+                    vorbisOffset += samples;
                 }
             }
 

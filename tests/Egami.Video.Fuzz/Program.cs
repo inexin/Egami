@@ -93,6 +93,7 @@ static Action<Stream> Target(string name) => name switch
     "subtrack" => ReadSubtitleTracks,
     "vp9enc" => stream => EncodeVp9OrAv1(stream, VideoCodecs.Vp9),
     "av1enc" => stream => EncodeVp9OrAv1(stream, VideoCodecs.Av1),
+    "trim" => Trim,
     _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc."),
 };
 
@@ -354,6 +355,45 @@ static void Demux(Stream stream)
         ReadAndDecode(streaming, context, maxPackets: 200);
     }
     catch (EgamiException)
+    {
+    }
+}
+
+// Smart cut (V5.6): the first four bytes pick the mode, the start and end (in 1/64 s) and the output container, the rest is a
+// media file. A trim may fail only as the API says: broken data, a start past the end, a stream with no keyframe, or a track
+// the container cannot hold.
+static void Trim(Stream stream)
+{
+    MediaContext context = Context();
+    byte[] data = ReadAll(stream);
+    if (data.Length < 5)
+    {
+        return;
+    }
+
+    TrimMode mode = (TrimMode)(data[0] % 3);
+    MediaTime start = new(data[1], new Rational(1, 64));
+    MediaTime? end = data[2] == 0 ? null : start + new MediaTime(data[2], new Rational(1, 64));
+    string format = (data[3] % 4) switch { 0 => "mkv", 1 => "webm", 2 => "mp4", _ => "ivf" };
+    try
+    {
+        using MemoryStream output = new();
+        TrimResult result = MediaFile.Trim(new MemoryStream(data, 4, data.Length - 4), output, format, start, end, mode, context: context, leaveOpen: true);
+        if (result.Frames < result.ReencodedFrames || result.Start < MediaTime.Zero)
+        {
+            throw new InvalidOperationException($"The trim reports {result.Frames} frames, {result.ReencodedFrames} encoded again, from {result.Start}.");
+        }
+    }
+    catch (EgamiException)
+    {
+    }
+    catch (ArgumentOutOfRangeException e) when (e.ParamName == "start")
+    {
+    }
+    catch (InvalidDataException)
+    {
+    }
+    catch (NotSupportedException)
     {
     }
 }

@@ -3,6 +3,7 @@ using System.Globalization;
 
 using Egami.Video.Analysis;
 using Egami.Video.Cli.Host;
+using Egami.Video.Containers;
 
 namespace Egami.Video.Cli.Commands;
 
@@ -19,11 +20,15 @@ internal static class CutCommands
         Option<string?> from = new("--from") { Description = "Where the cut starts: seconds, [HH:]MM:SS[.mmm] or a frame number such as #250; the copy starts at the video keyframe at or before it.", HelpName = "time" };
         Option<string?> to = new("--to") { Description = "Where the cut ends, written as for --from; nothing that starts at or after it is kept.", HelpName = "time" };
         Option<string?> duration = new("--duration") { Description = "How long the cut is, counted from --from, instead of --to.", HelpName = "time" };
-        Command command = new("trim", "Cut a part out of files without decoding: every track from the video keyframe at or before --from up to --to, with timestamps starting at 0; subtitle cues shown across the cut are clipped to it. Like ffmpeg -ss -to -c copy.");
+        Option<bool> smart = new("--smart") { Description = "Cut on the exact frame: encode again only the VP8, VP9 or AV1 frames from --from up to the next keyframe, matching the stream at its own quantizer, and copy every other packet. Audio is cut at the sample where the container can say so (PCM, MP4, Matroska Opus)." };
+        Option<bool> reencode = new("--reencode") { Description = "Cut on the exact frame by encoding the whole cut's video again, with the same codec at the source's quantizer." };
+        Command command = new("trim", "Cut a part out of files: every track from --from up to --to, with timestamps starting at 0; subtitle cues shown across the cut are clipped to it. Without --smart or --reencode nothing is decoded and the cut starts at the video keyframe at or before --from, like ffmpeg -ss -to -c copy.");
         options.AddTo(command);
         command.Options.Add(from);
         command.Options.Add(to);
         command.Options.Add(duration);
+        command.Options.Add(smart);
+        command.Options.Add(reencode);
         command.SetAction(result =>
         {
             string? fromText = result.GetValue(from);
@@ -38,6 +43,13 @@ internal static class CutCommands
             {
                 throw new UsageException("Give --to or --duration, not both.");
             }
+
+            if (result.GetValue(smart) && result.GetValue(reencode))
+            {
+                throw new UsageException("Give --smart or --reencode, not both.");
+            }
+
+            TrimMode mode = result.GetValue(smart) ? TrimMode.Smart : result.GetValue(reencode) ? TrimMode.Reencode : TrimMode.Keyframe;
 
             TimeValue? start = fromText is null ? null : TimeValue.Parse(fromText, "--from");
             TimeValue? end = toText is null ? null : TimeValue.Parse(toText, "--to");
@@ -55,7 +67,7 @@ internal static class CutCommands
             return Batch.Run(session, inputs, batch, input =>
             {
                 MediaTarget target = MediaIO.Resolve(session, input, output, format, OutputExtension(session, input));
-                RunTrim(session, input, target, selection, start, end, length, inputs.Count);
+                RunTrim(session, input, target, selection, start, end, length, mode, inputs.Count);
                 return [target.Path];
             });
         });
@@ -105,7 +117,7 @@ internal static class CutCommands
         Option<bool> scenes = new("--scenes") { Description = "Split at scene changes, as the scenes command finds them; each part starts at the video keyframe at or before its scene's first frame, and the gap is reported." };
         Option<double?> threshold = new("--threshold") { Description = "With --scenes: how sharp a change starts a scene, from 0 to 1. Default 0.15.", HelpName = "0-1" };
         Option<string?> minLength = new("--min-length") { Description = "With --scenes: the shortest scene. Default 0.6s.", HelpName = "time" };
-        Option<bool> exact = new("--exact") { Description = "With --scenes: start every part on its scene's first frame. Needs smart cut (Video hub step V5.6), which is not built yet." };
+        Option<bool> exact = new("--exact") { Description = "With --scenes: start every part on its scene's first frame, by smart cut (trim --smart): only the frames from there up to the next keyframe are encoded again." };
         Command command = new("segment", "Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}.");
         options.AddTo(command);
         command.Options.Add(every);
@@ -130,9 +142,9 @@ internal static class CutCommands
                 throw new UsageException("--threshold, --min-length and --exact go with --scenes.");
             }
 
-            if (result.GetValue(exact))
+            if (result.GetValue(exact) && result.GetValue(keepTimestamps))
             {
-                throw new UsageException("--exact needs smart cut, which re-encodes only the head of each part (Video hub step V5.6, not built yet). Without --exact each part starts at the keyframe at or before its scene.");
+                throw new UsageException("--exact starts every part at 0; it does not go with --keep-timestamps.");
             }
 
             SceneOptions? sceneOptions = null;
@@ -179,6 +191,11 @@ internal static class CutCommands
             TrackSelection selection = options.Tracks(result);
             string? format = result.GetValue(options.Format);
             bool keep = result.GetValue(keepTimestamps);
+            if (result.GetValue(exact))
+            {
+                return Batch.Run(session, inputs, batch, input => RunExactScenes(session, input, output, format, selection, sceneOptions!, inputs.Count));
+            }
+
             return Batch.Run(session, inputs, batch, input => RunSegment(session, input, output, format, selection, interval, points, sceneOptions, keep, inputs.Count));
         });
         return command;
@@ -208,7 +225,7 @@ internal static class CutCommands
 
     private static string Seconds(MediaTime time) => Math.Abs(time.Seconds).ToString("0.000", CultureInfo.InvariantCulture);
 
-    private static void RunTrim(VideoSession session, InputFile input, MediaTarget target, TrackSelection selection, TimeValue? fromValue, TimeValue? toValue, TimeValue? lengthValue, int count)
+    private static void RunTrim(VideoSession session, InputFile input, MediaTarget target, TrackSelection selection, TimeValue? fromValue, TimeValue? toValue, TimeValue? lengthValue, TrimMode mode, int count)
     {
         IReadOnlyList<MediaTime>? frames = null;
         IReadOnlyList<MediaTime> FrameTimes() => frames ??= input.IsStdin
@@ -241,6 +258,12 @@ internal static class CutCommands
             throw new UsageException($"{input.Display}: --to ({TimeValue.Format(end)}) must be after --from ({TimeValue.Format(from)}).");
         }
 
+        if (mode != TrimMode.Keyframe)
+        {
+            RunExactTrim(session, input, target, selection, from, to, mode, count);
+            return;
+        }
+
         using IDemuxer demuxer = MediaIO.OpenDemuxer(session, input);
         TrackInfo[] tracks = [.. selection.Select(demuxer.Tracks, input.Display)];
         if (tracks.Length == 0)
@@ -250,6 +273,40 @@ internal static class CutCommands
 
         IProgress<MediaProgress>? progress = session.ProgressSink?.For(input, input.Index, count);
         MediaIO.Write(session, target.Path, output => new TrimJob(session, input, demuxer, tracks, target, from, to, fromValue is not null, progress).Run(output));
+    }
+
+    /// <summary>
+    /// <c>trim --smart</c> and <c>--reencode</c>: Egami.Video's <see cref="MediaFile.Trim(Stream, Stream, string, MediaTime, MediaTime?, TrimMode, Func{TrackInfo, bool}?, MediaContext?, bool, IProgress{MediaProgress}?, CancellationToken)"/>,
+    /// which decodes the head of the cut. It reports through the session's warnings; the tracks are chosen from the file's
+    /// headers first, so the input must be a file.
+    /// </summary>
+    private static void RunExactTrim(VideoSession session, InputFile input, MediaTarget target, TrackSelection selection, MediaTime from, MediaTime? to, TrimMode mode, int count)
+    {
+        if (input.IsStdin)
+        {
+            throw new UsageException($"trim --{(mode == TrimMode.Smart ? "smart" : "reencode")} reads a file, not standard input: give the file, or cut on keyframes without it.");
+        }
+
+        HashSet<int> kept = [.. selection.Select(MediaIO.Probe(session, input).Tracks, input.Display).Select(t => t.Number)];
+        if (kept.Count == 0)
+        {
+            throw new UsageException($"{input.Display}: no tracks left to write.");
+        }
+
+        if (target.IsStdout && target.Container is AviFormat)
+        {
+            throw new UsageException("AVI needs a file it can seek in; write mkv, webm, ivf or y4m to standard output.");
+        }
+
+        IProgress<MediaProgress>? progress = session.ProgressSink?.For(input, input.Index, count);
+        MediaIO.Write(session, target.Path, output =>
+        {
+            using Stream source = MediaIO.OpenStream(session, input);
+            TrimResult result = MediaFile.Trim(source, output, target.Container.Extensions[0], from, to, mode, t => kept.Contains(t.Number),
+                session.Context, leaveOpen: true, progress, session.Cancellation);
+            string encoded = result.ReencodedFrames == result.Frames ? "all encoded again" : result.ReencodedFrames == 0 ? "all copied" : $"{result.ReencodedFrames} encoded again, {result.Frames - result.ReencodedFrames} copied";
+            session.Info($"{input.Display}: starts at {TimeValue.Format(result.Start)}; {result.Frames} frame{(result.Frames == 1 ? string.Empty : "s")}, {encoded}");
+        });
     }
 
     /// <summary>
@@ -803,6 +860,42 @@ internal static class CutCommands
         }
 
         return splits;
+    }
+
+    /// <summary>
+    /// <c>segment --scenes --exact</c>: one smart cut per scene, from its first frame up to the next scene's, each a file of its
+    /// own written through a temporary name.
+    /// </summary>
+    private static List<string> RunExactScenes(VideoSession session, InputFile input, OutputTemplate output, string? format, TrackSelection selection, SceneOptions options, int count)
+    {
+        string path = input.Path ?? throw new UsageException("segment --scenes reads the file twice, so it needs a file, not standard input.");
+        MediaInfo info = MediaIO.Probe(session, input);
+        TrackInfo video = selection.SelectOne(info.Tracks, TrackKind.Video, input.Display);
+        HashSet<int> kept = [.. selection.Select(info.Tracks, input.Display).Select(t => t.Number)];
+        MediaAnalysisResult found = MediaAnalysis.Run(path, new MediaAnalysisOptions { Scenes = options, VideoTrack = video.Number },
+            session.Context, session.ProgressSink?.For(input, input.Index, count), session.Cancellation);
+        List<Scene> scenes = [.. found.Scenes];
+        string extension = OutputExtension(session, input);
+        List<string> written = [];
+        for (int i = 0; i < scenes.Count; i++)
+        {
+            MediaTime from = i == 0 ? MediaTime.Zero : scenes[i].Start;
+            MediaTime? to = i + 1 < scenes.Count ? scenes[i + 1].Start : null;
+            MediaTarget target = MediaIO.Resolve(session, input, output, format, extension, i + 1);
+            using CutFile file = CutFile.Create(session, target.Path);
+            using (Stream source = MediaIO.OpenStream(session, input))
+            {
+                TrimResult result = MediaFile.Trim(source, file.Stream, target.Container.Extensions[0], from, to, TrimMode.Smart, t => kept.Contains(t.Number),
+                    session.Context, leaveOpen: true, cancellationToken: session.Cancellation);
+                session.Info($"{input.Display}: part {i + 1} starts at {TimeValue.Format(result.Start)} (scene {scenes[i].Number}); {result.Frames} frames, {result.ReencodedFrames} encoded again");
+            }
+
+            file.Commit();
+            written.Add(target.Path);
+        }
+
+        session.Info($"{input.Display}: {written.Count} part{(written.Count == 1 ? string.Empty : "s")}");
+        return written;
     }
 
     /// <summary>The split points of a segment job, in order, from --every or --at.</summary>

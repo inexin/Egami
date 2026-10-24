@@ -24,7 +24,7 @@ Options:
 Commands:
   info <inputs>                 Show what media files hold: container, duration, tracks and codecs, tags, chapters and attachments; with options, packets and frames. Like ffprobe.
   remux <inputs>                Copy tracks into another container without decoding: change AVI to Matroska, pick tracks, keep tags, chapters and attachments.
-  trim <inputs>                 Cut a part out of files without decoding: every track from the video keyframe at or before --from up to --to, with timestamps starting at 0; subtitle cues shown across the cut are clipped to it. Like ffmpeg -ss -to -c copy.
+  trim <inputs>                 Cut a part out of files: every track from --from up to --to, with timestamps starting at 0; subtitle cues shown across the cut are clipped to it. Without --smart or --reencode nothing is decoded and the cut starts at the video keyframe at or before --from, like ffmpeg -ss -to -c copy.
   concat <inputs>               Join clips with the same tracks and codecs into one file without decoding, one after another in the order given (globs sorted by name).
   segment <inputs>              Split files into parts without decoding, at video keyframes: -o names the parts with {part} (from 1), such as out-{part:000}.mkv; a folder takes {name}-{part:000}.{ext}.
   timestamps <inputs>           Change packet timestamps without decoding: shift tracks, re-time video to a constant frame rate, repair broken timestamps or start at 0. With --track, --shift, --rate and --fix change only those tracks; every track is written.
@@ -107,7 +107,7 @@ Options:
 
 ```text
 Description:
-  Cut a part out of files without decoding: every track from the video keyframe at or before --from up to --to, with timestamps starting at 0; subtitle cues shown across the cut are clipped to it. Like ffmpeg -ss -to -c copy.
+  Cut a part out of files: every track from --from up to --to, with timestamps starting at 0; subtitle cues shown across the cut are clipped to it. Without --smart or --reencode nothing is decoded and the cut starts at the video keyframe at or before --from, like ffmpeg -ss -to -c copy.
 
 Usage:
   egami-video trim <inputs>... [options]
@@ -128,6 +128,8 @@ Options:
   --from <time>                  Where the cut starts: seconds, [HH:]MM:SS[.mmm] or a frame number such as #250; the copy starts at the video keyframe at or before it.
   --to <time>                    Where the cut ends, written as for --from; nothing that starts at or after it is kept.
   --duration <time>              How long the cut is, counted from --from, instead of --to.
+  --smart                        Cut on the exact frame: encode again only the VP8, VP9 or AV1 frames from --from up to the next keyframe, matching the stream at its own quantizer, and copy every other packet. Audio is cut at the sample where the container can say so (PCM, MP4, Matroska Opus).
+  --reencode                     Cut on the exact frame by encoding the whole cut's video again, with the same codec at the source's quantizer.
 ```
 
 ## concat
@@ -182,7 +184,7 @@ Options:
   --scenes                       Split at scene changes, as the scenes command finds them; each part starts at the video keyframe at or before its scene's first frame, and the gap is reported.
   --threshold <0-1>              With --scenes: how sharp a change starts a scene, from 0 to 1. Default 0.15.
   --min-length <time>            With --scenes: the shortest scene. Default 0.6s.
-  --exact                        With --scenes: start every part on its scene's first frame. Needs smart cut (Video hub step V5.6), which is not built yet.
+  --exact                        With --scenes: start every part on its scene's first frame, by smart cut (trim --smart): only the frames from there up to the next keyframe are encoded again.
 ```
 
 ## timestamps

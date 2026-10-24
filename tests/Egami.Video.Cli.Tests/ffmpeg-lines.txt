@@ -28,6 +28,8 @@
 => trim in.mkv -o cut.mkv --from 0:30 --track v --track a | ffmpeg -ss 0:30 -i in.mkv -map 0:v -map 0:a -c copy cut.mkv
 => trim in.webm -o cut.webm --from 5.5 --to 9 | ffmpeg -ss 5.5 -i in.webm -to 9 -c copy cut.webm
 => trim in.mkv -o cut.mkv --from 1:00 --no-audio | ffmpeg -ss 1:00 -i in.mkv -c copy -an cut.mkv
+=> trim in.webm -o cut.webm --from 5.5 --to 9 --smart | ffmpeg -ss 5.5 -to 9 -i in.webm cut.webm
+=> trim in.mkv -o cut.mkv --from 10 --no-audio --smart | ffmpeg -ss 10 -i in.mkv -an cut.mkv
 => frames in.mp4 -o thumb.png --at 00:00:05 | ffmpeg -ss 00:00:05 -i in.mp4 -frames:v 1 thumb.png
 => frames in.mp4 -o thumb.jpg --at 10 | ffmpeg -i in.mp4 -ss 10 -vframes 1 thumb.jpg
 => frames in.mp4 -o out{frame:0000}.png | ffmpeg -i in.mp4 out%04d.png

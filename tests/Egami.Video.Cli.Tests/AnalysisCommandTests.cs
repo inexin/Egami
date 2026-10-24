@@ -113,9 +113,23 @@ public sealed class AnalysisCommandTests
         Assert.Contains("scene 2 starts at 0:00:02.200; its part starts at the keyframe at 0:00:02.000, 0.200 s before", vp8.Error, StringComparison.Ordinal);
         Assert.Contains("part 2 starts at 0:00:02.000", vp8.Error, StringComparison.Ordinal);
 
-        ToolRun exact = tool.Run("segment", "clip.mkv", "--scenes", "--exact", "-o", "x/{part}.mkv");
-        Assert.Equal(2, exact.Code);
-        Assert.Contains("V5.6", exact.Error, StringComparison.Ordinal);
+        // --exact: every VP8 part starts on its scene's first frame, by smart cut; the parts hold every frame once.
+        ToolRun exact = tool.Run("segment", "vp8.mkv", "--scenes", "--exact", "-o", "x/{part}.mkv", "-v");
+        Assert.True(exact.Code == 0, exact.Error);
+        Assert.Contains("part 2 starts at 0:00:02.200 (scene 2)", exact.Error, StringComparison.Ordinal);
+        string[] exactParts = [.. Directory.GetFiles(tool.PathOf("x"), "*.mkv").Order(StringComparer.Ordinal)];
+        Assert.Equal(parts.Length, exactParts.Length);
+        Assert.Equal(170, exactParts.Sum(p =>
+        {
+            using VideoReader reader = VideoReader.Open(p);
+            return reader.ReadFrames().Count(f =>
+            {
+                f.Dispose();
+                return true;
+            });
+        }));
+        Assert.All(exactParts, p => Assert.True(CutTests.Read(p).First(k => k.Kind == TrackKind.Video).Keyframe));
+        Assert.Equal(2, tool.Run("segment", "vp8.mkv", "--scenes", "--exact", "--keep-timestamps", "-o", "w/{part}.mkv").Code);
         Assert.Equal(2, tool.Run("segment", "clip.mkv", "--every", "2", "--threshold", "0.3", "-o", "y/{part}.mkv").Code);
         Assert.Equal(2, tool.Run("segment", "clip.mkv", "--every", "2", "--scenes", "-o", "z/{part}.mkv").Code);
     }

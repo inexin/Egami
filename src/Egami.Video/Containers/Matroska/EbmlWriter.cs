@@ -43,6 +43,20 @@ internal static class EbmlWriter
         Element(output, id, b[skip..]);
     }
 
+    /// <summary>Writes a signed integer element in as few bytes as hold it with its sign (EBML's two's complement).</summary>
+    public static void Signed(Stream output, uint id, long value)
+    {
+        Span<byte> b = stackalloc byte[8];
+        BinaryPrimitives.WriteInt64BigEndian(b, value);
+        int skip = 0;
+        while (skip < 7 && b[skip] == (value < 0 ? 0xFF : 0) && (b[skip + 1] & 0x80) == (value < 0 ? 0x80 : 0))
+        {
+            skip++;
+        }
+
+        Element(output, id, b[skip..]);
+    }
+
     public static void Float(Stream output, uint id, double value)
     {
         Span<byte> b = stackalloc byte[8];

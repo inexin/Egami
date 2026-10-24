@@ -26,13 +26,21 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
     private readonly MediaContext _context;
     private readonly CoreSettings _settings;
     private readonly Dictionary<int, ReadOnlyMemory<byte>> _hdr10Plus = [];
+    private readonly Av1SequenceOptions? _sequence;
     private EncoderPictures? _pictures;
     private Av1FrameCoder? _coder;
     private EncoderCore? _core;
     private int _sent;
     private bool _disposed;
 
-    public Av1VideoEncoder(VideoEncoderOptions options, MediaContext context)
+    /// <summary>Creates the encoder.</summary>
+    /// <param name="options">What to make.</param>
+    /// <param name="context">The context.</param>
+    /// <param name="sequence">
+    /// A sequence header to reproduce (from <see cref="Av1SequenceOptions.FromSequenceHeader"/>), whose bit depth, chroma format and
+    /// color the stream then has, or <see langword="null"/> to make one from the frames; smart cut joins a stream with it.
+    /// </param>
+    public Av1VideoEncoder(VideoEncoderOptions options, MediaContext context, Av1SequenceOptions? sequence = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(context);
@@ -76,6 +84,7 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
         int keyInterval = options.KeyframeInterval is int k ? Check(k, 1, int.MaxValue, "KeyframeInterval") : Math.Max(1, (int)Math.Ceiling(fps * 10));
         _options = options;
         _av1 = av1;
+        _sequence = sequence;
         _context = context;
         _settings = new CoreSettings
         {
@@ -164,16 +173,17 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
 
         if (_core is null)
         {
-            (int depth, ChromaFormat chroma) = FormatOf(frame);
-            ColorCodePoints color = ColorOf(frame, depth, chroma);
-            ChromaSiting? siting = chroma == ChromaFormat.Yuv420 && frame.Planes is { } planes && SameFormat(planes, depth, chroma) ? planes.Color.Siting : null;
+            (int depth, ChromaFormat chroma) = _sequence is { } given ? (given.BitDepth, given.Chroma) : FormatOf(frame);
+            ColorCodePoints color = _sequence?.CodePoints ?? ColorOf(frame, depth, chroma);
+            ChromaSiting? siting = _sequence is not null ? _sequence.ChromaSiting
+                : chroma == ChromaFormat.Yuv420 && frame.Planes is { } planes && SameFormat(planes, depth, chroma) ? planes.Color.Siting : null;
             _pictures = new EncoderPictures(_options.Width, _options.Height, EncoderPictures.Vp8Color, _context.Egami)
             {
                 FullFormat = (chroma, depth, YuvColorOf(color)),
             };
             bool realtime = _options.LatencyMode == LatencyMode.Realtime;
             double fps = (double)_options.FrameRate.Numerator / _options.FrameRate.Denominator;
-            Av1SequenceOptions sequence = new()
+            Av1SequenceOptions sequence = _sequence ?? new()
             {
                 Width = _options.Width,
                 Height = _options.Height,

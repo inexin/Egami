@@ -21,7 +21,7 @@ namespace Egami.Video;
 /// }
 /// </code>
 /// </example>
-public static class MediaFile
+public static partial class MediaFile
 {
     /// <summary>Reads a file's headers: format, duration, tracks and tags. No frame is decoded.</summary>
     /// <param name="path">The file path.</param>

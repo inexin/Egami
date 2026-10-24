@@ -182,7 +182,8 @@ internal static class MediaIO
             }
         }
 
+        // A hidden frame (a VP8 alternate reference) shares the time of the frame after it, and is no frame of its own.
         times.Sort();
-        return times;
+        return [.. times.Distinct()];
     }
 }

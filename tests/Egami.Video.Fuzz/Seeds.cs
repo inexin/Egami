@@ -34,6 +34,36 @@ internal static class Seeds
         }
     }
 
+    /// <summary>
+    /// Trim seeds: four bytes (mode, start and length in 1/64 s, output container) and the first packets of corpus clips with a
+    /// keyframe after their first (tests/video/corpus), so smart cut encodes a head and copies the rest.
+    /// </summary>
+    public static void WriteTrim(string directory)
+    {
+        string trim = Directory.CreateDirectory(Path.Combine(directory, "trim")).FullName;
+        foreach ((string clip, int packets, byte[] header) in (ReadOnlySpan<(string, int, byte[])>)[
+            ("vp8/v0-keyframes.webm", 9, [0, 12, 20, 0]), ("vp9/p0-keyframes.ivf", 8, [0, 6, 0, 3]), ("av1/forward-keyframes.webm", 14, [2, 8, 16, 2]),
+            ("vp8/v0-altref.ivf", 6, [1, 4, 8, 1])])
+        {
+            using IDemuxer demuxer = MediaFile.OpenDemuxer(Path.Combine("tests", "video", "corpus", clip));
+            string format = Path.GetExtension(clip)[1..];
+            MemoryStream output = new();
+            output.Write(header);
+            using (IMuxer muxer = MediaFile.CreateMuxer(output, format, demuxer.Tracks, leaveOpen: true))
+            {
+                for (int i = 0; i < packets && demuxer.ReadPacket() is { } packet; i++)
+                {
+                    using (packet)
+                    {
+                        muxer.WritePacket(packet);
+                    }
+                }
+            }
+
+            File.WriteAllBytes(Path.Combine(trim, $"{Path.GetFileNameWithoutExtension(clip)}-{packets}.trim"), output.ToArray());
+        }
+    }
+
     /// <summary>Subtitle seeds: the subtitle files of the corpus, and its files with subtitle tracks (tests/video/corpus/subtitles).</summary>
     public static void WriteSubtitles(string directory)
     {
@@ -157,6 +187,7 @@ internal static class Seeds
         WriteMp3(directory);
         WriteAc3(directory);
         WriteSubtitles(directory);
+        WriteTrim(directory);
         File.WriteAllBytes(Path.Combine(y4m, "420.y4m"), [.. "YUV4MPEG2 W4 H2 F25:1 Ip A1:1 C420jpeg XCOLORRANGE=FULL\n"u8, .. "FRAME\n"u8, .. new byte[12], .. "FRAME\n"u8, .. new byte[12]]);
         File.WriteAllBytes(Path.Combine(y4m, "444p10.y4m"), [.. "YUV4MPEG2 W2 H2 F30000:1001 It A4:3 C444p10\n"u8, .. "FRAME\n"u8, .. new byte[24]]);
 

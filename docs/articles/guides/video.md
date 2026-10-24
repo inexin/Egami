@@ -62,6 +62,43 @@ VP9's hidden and show-existing frames too. `SeekMode.Keyframe` stops at the keyf
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-remux)]
 
+## Trimming
+
+`MediaFile.Trim` cuts the part of a file from a start up to an end into a new file whose timestamps start at 0. The cut's first
+frame is the first at or after the start, and it ends after the last frame that starts before the end; a time within half a
+tick of a frame, such as the millisecond Matroska keeps, counts as that frame's. `TrimMode` says what happens when the start
+falls between keyframes:
+
+- `TrimMode.Smart`, the default, is frame-exact and encodes as little as it can. It decodes from the keyframe before the start
+  and encodes the frames from the start up to the next keyframe again, as a new group that starts with a keyframe; every
+  packet from that keyframe on is copied byte for byte. The new group matches the stream (codec, profile, size, bit depth,
+  chroma format and color, and for AV1 the sequence header byte for byte, as MP4 and Matroska keep it in the track header) and
+  is coded at the average quantizer of the packets it replaces, so the quality does not jump. A start on a keyframe, and Motion
+  JPEG or uncompressed video, are a plain copy.
+- `TrimMode.Keyframe` decodes nothing: the cut starts at the keyframe at or before the start, as `ffmpeg -ss -c copy` does.
+- `TrimMode.Reencode` encodes every frame of the cut again, with the same codec at the source's quantizer.
+
+The end needs no encoding: VP8, VP9 and AV1 decode in packet order and code a hidden frame before the frames that show it, so
+the cut keeps every packet up to the one that shows its last frame and drops a hidden frame after it that nothing shows.
+
+Smart cut falls back where it must and says so in a `MediaWarning`, in `TrimResult.Warnings` and through
+`MediaContext.Warnings`: a codec Egami.Video cannot encode (H.264, HEVC) starts at the keyframe (`trim-keyframe`), as do
+frames that change size, and a stream the encoder cannot match (a VP8 version other than 0, 4:4:0 or monochrome AV1, an AV1
+sequence header with frame ids or a decoder model) is encoded again whole (`trim-reencode`). `TrimResult` tells where the cut
+starts in the input, how many frames it holds and how many were encoded again.
+
+Audio and subtitles are copied. Audio is cut at the sample where the format can say so: PCM by slicing its packets, MP4 by its
+edit list, and Opus in Matroska and WebM by CodecDelay (with 80 ms of pre-roll) and DiscardPadding. Other audio is cut at the
+packet whose middle is nearest (`trim-audio-packet`). Subtitle cues shown across the cut are clipped to it, and so are
+chapters; tags and attachments are kept. A seekable input is read from a few seconds before the start. Trim takes a
+`Stream` in and out, progress and a token as the other jobs do.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoTrim.cs#video-trim)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoTrim.cs#video-trim-streams)]
+
+On the command line, `egami-video trim --smart` cuts this way, and `segment --scenes --exact` starts every part on its scene.
+
 ## Progress, cancellation and streams
 
 `MediaFile.Remux` and `MediaFile.Transcode` take an `IProgress<MediaProgress>` and a `CancellationToken` as their last

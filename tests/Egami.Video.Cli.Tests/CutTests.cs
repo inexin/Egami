@@ -37,6 +37,42 @@ public sealed class CutTests
     }
 
     [Fact]
+    public void TrimSmartStartsOnTheExactFrameAndCopiesFromTheNextKeyframe()
+    {
+        using Tool tool = new();
+        string clip = Path.Combine(Tool.Corpus, "vp8", "v0-keyframes.webm");
+        ToolRun run = tool.Run("trim", clip, "--from", "0.3", "--to", "0.7", "--smart", "-o", "cut.webm", "-v");
+        Assert.True(run.Code == 0, run.Error);
+        Assert.DoesNotContain("before --from", run.Error, StringComparison.Ordinal);
+        Assert.Contains("encoded again", run.Error, StringComparison.Ordinal);
+
+        // The source's frames from the first at or after 0.3 up to 0.7, the ones from the next keyframe on copied byte for byte.
+        List<Packet> source = Read(clip);
+        double first = source.Where(p => p.Time >= 0.3 - 0.0005).Min(p => p.Time);
+        List<Packet> wanted = [.. source.Where(p => p.Time >= first && p.Time < 0.7)];
+        List<Packet> output = Read(tool.PathOf("cut.webm"));
+        Assert.Equal(wanted.Count, output.Count);
+        Assert.Equal(wanted.Select(p => Math.Round(p.Time - first, 3)), output.Select(p => Math.Round(p.Time, 3)));
+        Assert.True(output[0].Keyframe);
+        int key = wanted.FindIndex(p => p.Keyframe);
+        Assert.True(key > 0, "the cut has a keyframe after its start");
+        Assert.Equal(wanted.Skip(key).Select(p => p.Hash), output.Skip(key).Select(p => p.Hash));
+        Assert.NotEqual(wanted[0].Hash, output[0].Hash);
+
+        ToolRun all = tool.Run("trim", clip, "--from", "0.3", "--to", "0.7", "--reencode", "-o", "all.webm", "-v");
+        Assert.True(all.Code == 0, all.Error);
+        Assert.Contains("all encoded again", all.Error, StringComparison.Ordinal);
+        Assert.Equal(wanted.Count, Read(tool.PathOf("all.webm")).Count);
+
+        ToolRun both = tool.Run("trim", clip, "--from", "0.3", "--smart", "--reencode", "-o", "a.webm");
+        Assert.Equal(2, both.Code);
+        Assert.Contains("--smart or --reencode, not both", both.Error, StringComparison.Ordinal);
+        ToolRun piped = tool.Run(["trim", "-", "--from", "0.3", "--smart", "-o", "-", "--format", "webm"], File.ReadAllBytes(clip));
+        Assert.Equal(2, piped.Code);
+        Assert.Contains("not standard input", piped.Error, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TrimFromStandardInputGivesTheSameFile()
     {
         using Tool tool = new();

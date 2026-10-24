@@ -245,7 +245,8 @@ internal sealed class MatroskaMuxer : IMuxer
 
             if (discardPadding > 0)
             {
-                EbmlWriter.Unsigned(group, MatroskaIds.DiscardPadding, (ulong)discardPadding);
+                // A signed element: written unsigned, a padding whose top bit is set would read back negative.
+                EbmlWriter.Signed(group, MatroskaIds.DiscardPadding, discardPadding);
             }
 
             if (packet.Additions.Count > 0)

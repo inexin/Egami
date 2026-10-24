@@ -23,12 +23,20 @@ internal sealed class Vp9VideoEncoder : IVideoEncoder
     private readonly Vp9EncoderOptions _vp9;
     private readonly MediaContext _context;
     private readonly CoreSettings _settings;
+    private readonly (int Space, int Range)? _colorConfig;
     private EncoderPictures? _pictures;
     private Vp9FrameCoder? _coder;
     private EncoderCore? _core;
     private bool _disposed;
 
-    public Vp9VideoEncoder(VideoEncoderOptions options, MediaContext context)
+    /// <summary>Creates the encoder.</summary>
+    /// <param name="options">What to make.</param>
+    /// <param name="context">The context.</param>
+    /// <param name="colorConfig">
+    /// The color_space and color_range keyframes write, or <see langword="null"/> to take them from the frames' color; smart cut
+    /// joins a stream with them, such as libvpx's color_space 0 (unknown).
+    /// </param>
+    public Vp9VideoEncoder(VideoEncoderOptions options, MediaContext context, (int Space, int Range)? colorConfig = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(context);
@@ -72,6 +80,7 @@ internal sealed class Vp9VideoEncoder : IVideoEncoder
         int keyInterval = options.KeyframeInterval is int k ? Check(k, 1, int.MaxValue, "KeyframeInterval") : Math.Max(1, (int)Math.Ceiling(fps * 10));
         _options = options;
         _vp9 = vp9;
+        _colorConfig = colorConfig;
         _context = context;
         _settings = new CoreSettings
         {
@@ -153,7 +162,7 @@ internal sealed class Vp9VideoEncoder : IVideoEncoder
             };
             bool realtime = _options.LatencyMode == LatencyMode.Realtime;
             int tileLog2 = _vp9.TileColumns is int t ? System.Numerics.BitOperations.Log2((uint)t) : 2;
-            _coder = new Vp9FrameCoder(_options.Width, _options.Height, depth, chroma, ColorSpaceOf(color), color.FullRange ? 1 : 0,
+            _coder = new Vp9FrameCoder(_options.Width, _options.Height, depth, chroma, _colorConfig?.Space ?? ColorSpaceOf(color), _colorConfig?.Range ?? (color.FullRange ? 1 : 0),
                 _options.Effort ?? DefaultEffort, tileLog2, _vp9.AdaptiveQuantization, _vp9.ErrorResilient ?? realtime, alpha, _context.Egami);
             bool full = depth != 8 || chroma != ChromaFormat.Yuv420;
             _core = new EncoderCore(_settings with { FullPictures = full }, _coder, _pictures, alpha);
