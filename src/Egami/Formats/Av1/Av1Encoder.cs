@@ -327,7 +327,7 @@ internal sealed class Av1Encoder
         int[] firstJob = new int[tiles + 1];
         for (int tile = 0; tile < tiles; tile++)
         {
-            rows[tile] = new Av1TileRows(frame, tile / header.TileCols, tile % header.TileCols);
+            rows[tile] = new Av1TileRows(frame, tile / header.TileCols, tile % header.TileCols, sequential: !settings.Stream);
             firstJob[tile + 1] = firstJob[tile] + rows[tile].Rows;
         }
 
@@ -337,6 +337,24 @@ internal sealed class Av1Encoder
         for (int tile = 0; tile < tiles; tile++)
         {
             primary[tile] = new Av1TileEncoder(frame, rows[tile].TileRow, rows[tile].TileCol, source, decisions, settings);
+        }
+
+        if (!settings.Stream)
+        {
+            // A still picture: each tile's rows in order on one worker.
+            frame.For(tiles, tile =>
+            {
+                for (int row = 0; row < rows[tile].Rows; row++)
+                {
+                    primary[tile]!.EncodeRow(rows[tile], row);
+                }
+            });
+            for (int tile = 0; tile < tiles; tile++)
+            {
+                primary[tile]!.SettleQuantizers();
+            }
+
+            return rows;
         }
 
         int next = -1;

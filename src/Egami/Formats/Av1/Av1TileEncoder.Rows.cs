@@ -16,7 +16,7 @@ internal sealed class Av1TileRows
     private readonly ushort[]?[] _saved;
     private readonly object _gate = new();
 
-    internal Av1TileRows(Av1Frame frame, int tileRow, int tileCol)
+    internal Av1TileRows(Av1Frame frame, int tileRow, int tileCol, bool sequential = false)
     {
         Av1FrameHeader header = frame.Header;
         int sbMi = 1 << frame.SbMiLog2;
@@ -26,10 +26,17 @@ internal sealed class Av1TileRows
         Rows = (miRowEnd - MiRowStart + sbMi - 1) / sbMi;
         Columns = (miColEnd - miColStart + sbMi - 1) / sbMi;
         _done = new int[Rows];
+        Sequential = sequential;
         _saved = new ushort[]?[3 * Columns];
         (TileRow, TileCol) = (tileRow, tileCol);
         FrameCdf = frame.Context.Cdf;
     }
+
+    /// <summary>
+    /// Gets whether the rows are searched in raster order by one worker, each carrying the CDFs and quantizer of the superblock before
+    /// it, as a still picture is (its sizes stay those the AVIF gates were tuned on); a stream's frames take the wavefront.
+    /// </summary>
+    internal bool Sequential { get; }
 
     internal int TileRow { get; }
 
@@ -115,8 +122,21 @@ internal sealed partial class Av1TileEncoder
     {
         int miRow = MiRowStart + (row * _sbMi);
         bool intra = _header.FrameIsIntra;
-        ResetRow();
-        ResetSearchMemory();
+        if (rows.Sequential)
+        {
+            // A still picture's rows in raster order, the CDFs and quantizer carried from each superblock to the next.
+            ResetLeftContext();
+            if (row == 0)
+            {
+                ResetSearchMemory();
+            }
+        }
+        else
+        {
+            ResetRow();
+            ResetSearchMemory();
+        }
+
         if (!intra)
         {
             rows.FrameCdf.CopyTo(_cdf, 0);
@@ -129,7 +149,16 @@ internal sealed partial class Av1TileEncoder
         {
             _frame.CancellationToken.ThrowIfCancellationRequested();
             rows.WaitFor(row - 1, column + 2, _frame.CancellationToken);
-            if (intra)
+            if (intra && rows.Sequential)
+            {
+                if (row == 0 && column == 0)
+                {
+                    rows.FrameCdf.CopyTo(_cdf, 0);
+                }
+
+                _costs.Fill(_cdf);
+            }
+            else if (intra)
             {
                 if (column == 0)
                 {
@@ -146,7 +175,7 @@ internal sealed partial class Av1TileEncoder
             // The superblock's quantizer (Variance Boost), a whole number of steps from the frame's.
             int[]? sbQ = _source.SuperblockQIndices;
             _sbQIndex = sbQ is null ? _header.BaseQIdx
-                : Av1VarianceBoost.Adjust(_header.DeltaQRes, _header.BaseQIdx, sbQ[((miRow / _sbMi) * _source.SuperblockColumns) + (miCol / _sbMi)]);
+                : Av1VarianceBoost.Adjust(_header.DeltaQRes, rows.Sequential ? _currentQIndex : _header.BaseQIdx, sbQ[((miRow / _sbMi) * _source.SuperblockColumns) + (miCol / _sbMi)]);
             _frameRdmult = Av1Rate.RdMultiplier(Math.Max(_sbQIndex, 1), _sequence.BitDepth);
             Snapshot start = Take(miRow, miCol, _frame.SbSize, pixels: false);
 
