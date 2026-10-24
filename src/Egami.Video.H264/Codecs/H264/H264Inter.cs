@@ -164,6 +164,14 @@ internal sealed class H264Inter
             }
 
             int at = _pic.ChromaOrigin + (cy * _pic.ChromaStride) + cx;
+            if (p0 is not null && p1 is not null && !_explicit && cw == 8 && _maxC == 255 && UseVectors && UseWideVectors)
+            {
+                // Both planes take the same weights without explicit ones: their rows share a vector.
+                int w0 = _implicitMode ? _implicit[(r0 * 32) + r1] : 32;
+                WeightedPair(_pic.Cb<T>(), _pic.Cr<T>(), at, _pic.ChromaStride, ch, w0, 64 - w0);
+                return;
+            }
+
             Combine(_pic.Cb<T>(), at, _pic.ChromaStride, cw, ch, r0, r1, 1, _maxC, _shiftC, 0);
             Combine(_pic.Cr<T>(), at, _pic.ChromaStride, cw, ch, r0, r1, 2, _maxC, _shiftC, CrRows);
             return;
@@ -489,6 +497,38 @@ internal sealed class H264Inter
                     H264Samples.Store8(ref d, (y * stride) + x, v.AsInt16());
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Implicit or default two-list weighting of an 8-wide 4:2:0 chroma block at 8 bits, Cb's row and Cr's row in one vector:
+    /// ((p0 w0 + p1 w1 + 32) &gt;&gt; 6) with w0 + w1 = 64, which equal weights make the rounded average.
+    /// </summary>
+    private void WeightedPair<T>(T[] cb, T[] cr, int at, int stride, int h, int w0, int w1)
+        where T : unmanaged
+    {
+        if (at < 0 || at + ((h - 1) * stride) + 8 > Math.Min(cb.Length, cr.Length) || w0 < -64 || w0 > 128)
+        {
+            throw H264Errors.Corrupt("A prediction block lies outside the picture.");
+        }
+
+        ref ushort a = ref MemoryMarshal.GetArrayDataReference(_pred0);
+        ref ushort b = ref MemoryMarshal.GetArrayDataReference(_pred1);
+        ref T db = ref H264Samples.At(cb, at), dr = ref H264Samples.At(cr, at);
+        Vector256<short> lw0 = Vector256.Create((short)w0), lw1 = Vector256.Create((short)w1), round = Vector256.Create((short)32);
+        Vector256<short> top = Vector256.Create((short)255);
+        for (int j = 0; j < h; j++)
+        {
+            Vector256<short> p0 = Vector256.Create(Vector128.LoadUnsafe(ref a), Vector128.LoadUnsafe(ref a, CrRows)).AsInt16();
+            Vector256<short> p1 = Vector256.Create(Vector128.LoadUnsafe(ref b), Vector128.LoadUnsafe(ref b, CrRows)).AsInt16();
+            Vector256<short> v = w0 == 32 ? (p0 + p1 + Vector256<short>.One) >>> 1
+                : Vector256.Min(Vector256.Max(((p0 * lw0) + (p1 * lw1) + round) >> 6, Vector256<short>.Zero), top);
+            H264Samples.Store8(ref db, 0, v.GetLower());
+            H264Samples.Store8(ref dr, 0, v.GetUpper());
+            a = ref Unsafe.Add(ref a, PredStride);
+            b = ref Unsafe.Add(ref b, PredStride);
+            db = ref Unsafe.Add(ref db, stride);
+            dr = ref Unsafe.Add(ref dr, stride);
         }
     }
 
