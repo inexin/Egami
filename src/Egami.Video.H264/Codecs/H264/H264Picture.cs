@@ -39,6 +39,8 @@ internal sealed class H264Picture : INalDpbPicture
         int chromaSize = chromaFormatIdc == 0 ? 0 : (ChromaStride * (ChromaHeight + (2 * Pad))) + Slack;
         _cb = narrow ? new byte[chromaSize] : new ushort[chromaSize];
         _cr = narrow ? new byte[chromaSize] : new ushort[chromaSize];
+        Origin = (Pad * Stride) + Pad;
+        ChromaOrigin = (Pad * ChromaStride) + Pad;
         int blocks = widthMbs * 4 * heightMbs * 4;
         Mv = [new int[blocks], new int[blocks]];
         RefIdx = [new sbyte[blocks], new sbyte[blocks]];
@@ -103,9 +105,9 @@ internal sealed class H264Picture : INalDpbPicture
         return Unsafe.As<T[]>(_cr);
     }
 
-    internal int Origin => (Pad * Stride) + Pad;
+    internal int Origin { get; }
 
-    internal int ChromaOrigin => (Pad * ChromaStride) + Pad;
+    internal int ChromaOrigin { get; }
 
     /// <summary>Gets the motion vectors per 4x4 block in raster order, x in the low 16 bits and y in the high 16 bits, per list.</summary>
     internal int[][] Mv { get; }
