@@ -12,6 +12,33 @@ internal static class H264Transform
     internal static void Add4x4<T>(Span<int> d, T[] plane, int at, int stride, int max)
         where T : unmanaged
     {
+        if (Vector128.IsHardwareAccelerated && Sse2.IsSupported && H264Inter.UseVectors)
+        {
+            if (d.Length < 16 || at < 0 || at + (3 * stride) + 8 > plane.Length)
+            {
+                throw H264Errors.Corrupt("A residual block lies outside the picture.");
+            }
+
+            // DC only when coefficients 1 to 15 are zero: three vector tests (the first lane of the first vector is the DC).
+            ref int c = ref MemoryMarshal.GetReference(d);
+            Vector128<int> ac = Vector128.LoadUnsafe(ref c).WithElement(0, 0) | Vector128.LoadUnsafe(ref c, 4) | Vector128.LoadUnsafe(ref c, 8) | Vector128.LoadUnsafe(ref c, 12);
+            if (ac == Vector128<int>.Zero)
+            {
+                ref T s = ref H264Samples.At(plane, at);
+                Vector128<int> dcv = Vector128.Create((c + 32) >> 6), zero = Vector128<int>.Zero, top = Vector128.Create(max);
+                for (int y = 0; y < 4; y++)
+                {
+                    Vector128<int> v = Vector128.Min(Vector128.Max(H264Samples.Load4Wide(ref s, y * stride) + dcv, zero), top);
+                    H264Samples.Store4Wide(ref s, y * stride, v);
+                }
+
+                return;
+            }
+
+            Add4x4Vector(d, plane, at, stride, max);
+            return;
+        }
+
         bool dcOnly = true;
         for (int i = 1; i < 16 && dcOnly; i++)
         {
@@ -30,12 +57,6 @@ internal static class H264Transform
                 }
             }
 
-            return;
-        }
-
-        if (Vector128.IsHardwareAccelerated && Sse2.IsSupported && H264Inter.UseVectors)
-        {
-            Add4x4Vector(d, plane, at, stride, max);
             return;
         }
 
