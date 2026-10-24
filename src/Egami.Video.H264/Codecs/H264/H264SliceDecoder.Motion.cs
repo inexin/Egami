@@ -672,6 +672,13 @@ internal sealed partial class H264SliceDecoder
         _decodedMask = 0xFFFF;
     }
 
+    /// <summary>
+    /// Where block (x, y)'s direct reference or vector is kept: the whole-macroblock 8x8 form of PredictSpatialDirect keeps one
+    /// reference per list, in block 0, and one vector per 8x8 block, in its first block.
+    /// </summary>
+    private int DirectSource(int list, int x, int y, bool reference) =>
+        (list * 16) + (!_directQuarters ? (y * 4) + x : reference ? 0 : ((y >> 1) * 8) + ((x >> 1) * 2));
+
     private void WriteDirectRefs(int list, int bx, int by)
     {
         H264Picture[] refs = list == 0 ? _list0 : _list1;
@@ -681,7 +688,7 @@ internal sealed partial class H264SliceDecoder
         {
             for (int x = bx; x < bx + 2; x++)
             {
-                int r = _directRefBlock[(list * 16) + (y * 4) + x];
+                int r = _directRefBlock[DirectSource(list, x, y, true)];
                 int b = Block(x, y);
                 refIdxs[b] = (sbyte)r;
                 ids[b] = r >= 0 && r < refs.Length ? refs[r].Id : -1;
@@ -698,8 +705,8 @@ internal sealed partial class H264SliceDecoder
             int b = Block(bx, y);
             for (int x = bx; x < bx + 2; x++, b++)
             {
-                bool used = _directRefBlock[(list * 16) + (y * 4) + x] >= 0;
-                mvs[b] = used ? _directMv[(list * 16) + (y * 4) + x] : 0;
+                bool used = _directRefBlock[DirectSource(list, x, y, true)] >= 0;
+                mvs[b] = used ? _directMv[DirectSource(list, x, y, false)] : 0;
             }
 
             mvds.AsSpan(Block(bx, y) * 2, 4).Clear();
