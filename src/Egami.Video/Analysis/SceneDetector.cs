@@ -156,7 +156,7 @@ public sealed class SceneDetector : IVideoDetector
         long index = _count++;
         MediaTime time = frame.Timestamp;
         FrameSignature current = Signature(index);
-        current.Measure(frame.Raster);
+        current.Measure(frame.Raster, histogram: _options.Method == SceneMethod.Histogram);
         double luma = current.Luma;
         bool dark = IsDark(luma);
         if (index == 0)

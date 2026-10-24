@@ -70,16 +70,34 @@ public static class MediaAnalysis
                 cancellationToken.ThrowIfCancellationRequested();
                 if (nextVideo is not null && (nextAudio is null || nextVideo.Timestamp <= nextAudio.Timestamp))
                 {
-                    using (YuvVideoFrame frame = nextVideo)
+                    YuvVideoFrame frame = nextVideo;
+                    nextVideo = null;
+                    bool kept = false;
+                    try
                     {
                         foreach (IVideoDetector detector in video)
                         {
-                            detector.Add(frame);
+                            // A freeze detector may keep the frame itself as its reference rather than copy it; it then owns it.
+                            if (!kept && detector is FreezeDetector freeze)
+                            {
+                                kept = freeze.AddAndKeep(frame);
+                            }
+                            else
+                            {
+                                detector.Add(frame);
+                            }
                         }
 
                         frames++;
                         videoEnd = frame.Duration is { } shown ? frame.Timestamp + shown : frame.Timestamp;
                         reporter?.Advance(frame.Timestamp, frames);
+                    }
+                    finally
+                    {
+                        if (!kept)
+                        {
+                            frame.Dispose();
+                        }
                     }
 
                     nextVideo = Next(videoReader, stop);
