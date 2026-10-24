@@ -11,6 +11,9 @@ internal sealed partial class H264SliceDecoder
 
     private readonly int[] _levels = new int[64];
 
+    // The scan positions of the coefficients the last CABAC block coded, so a block is placed without scanning its zeros.
+    private readonly byte[] _significant = new byte[64];
+
     private void ReadResidual()
     {
         bool intra = H264MbState.IsIntra(_kind);
@@ -57,7 +60,7 @@ internal sealed partial class H264SliceDecoder
                 bool ac = _kind == H264MbKind.I16x16;
                 int max = ac ? 15 : 16;
                 int count = _cabac
-                    ? ResidualCabac(ac ? 1 : 2, CbfInc(LumaCbfCond(bx - 1, by), LumaCbfCond(bx, by - 1)), max, _levels)
+                    ? ResidualCabac(ac ? 1 : 2, CbfInc(LumaCbfCond(bx - 1, by), LumaCbfCond(bx, by - 1)), max, _levels, clear: false)
                     : ResidualCavlc(LumaNc(bx, by), max);
                 int b = Block(bx, by);
                 _mb.NzLuma[b] = (byte)count;
@@ -67,13 +70,24 @@ internal sealed partial class H264SliceDecoder
                     _lumaCoded |= 1 << blk;
                     Span<int> dest = _coef.AsSpan(blk * 16, 16);
                     int first = ac ? 1 : 0;
-                    for (int k = 0; k < max; k++)
+                    if (_cabac)
                     {
-                        int level = _levels[k];
-                        if (level != 0)
+                        for (int i = 0; i < count; i++)
                         {
-                            int pos = H264ScalingLists.Zigzag4x4[k + first];
-                            dest[pos] = Scale4x4(level, qpY, scale4, pos);
+                            int k = _significant[i], pos = H264ScalingLists.Zigzag4x4[k + first];
+                            dest[pos] = Scale4x4(_levels[k], qpY, scale4, pos);
+                        }
+                    }
+                    else
+                    {
+                        for (int k = 0; k < max; k++)
+                        {
+                            int level = _levels[k];
+                            if (level != 0)
+                            {
+                                int pos = H264ScalingLists.Zigzag4x4[k + first];
+                                dest[pos] = Scale4x4(level, qpY, scale4, pos);
+                            }
                         }
                     }
                 }
@@ -94,14 +108,11 @@ internal sealed partial class H264SliceDecoder
         int total = 0;
         if (_cabac)
         {
-            total = ResidualCabac(5, -1, 64, _levels);
-            for (int k = 0; k < 64; k++)
+            total = ResidualCabac(5, -1, 64, _levels, clear: false);
+            for (int i = 0; i < total; i++)
             {
-                if (_levels[k] != 0)
-                {
-                    int pos = H264ScalingLists.Zigzag8x8[k];
-                    dest[pos] = Scale8x8(_levels[k], qpY, scale8, pos);
-                }
+                int k = _significant[i], pos = H264ScalingLists.Zigzag8x8[k];
+                dest[pos] = Scale8x8(_levels[k], qpY, scale8, pos);
             }
 
             for (int i4 = 0; i4 < 4; i4++)
@@ -177,19 +188,30 @@ internal sealed partial class H264SliceDecoder
                 {
                     int bx = blk & 1, by = blk >> 1;
                     int count = _cabac
-                        ? ResidualCabac(4, CbfInc(ChromaCbfCond(nz, bx - 1, by), ChromaCbfCond(nz, bx, by - 1)), 15, _levels)
+                        ? ResidualCabac(4, CbfInc(ChromaCbfCond(nz, bx - 1, by), ChromaCbfCond(nz, bx, by - 1)), 15, _levels, clear: !_cabac)
                         : ResidualCavlc(ChromaNc(nz, bx, by), 15);
                     nz[ChromaBlock(bx, by)] = (byte)count;
                     if (count > 0)
                     {
                         _chromaAcCoded |= 1 << ((c * 8) + blk);
                         Span<int> dest = _coefC.AsSpan(((c * 8) + blk) * 16, 16);
-                        for (int k = 0; k < 15; k++)
+                        if (_cabac)
                         {
-                            if (_levels[k] != 0)
+                            for (int i = 0; i < count; i++)
                             {
-                                int pos = H264ScalingLists.Zigzag4x4[k + 1];
+                                int k = _significant[i], pos = H264ScalingLists.Zigzag4x4[k + 1];
                                 dest[pos] = Scale4x4(_levels[k], qpc, scale, pos);
+                            }
+                        }
+                        else
+                        {
+                            for (int k = 0; k < 15; k++)
+                            {
+                                if (_levels[k] != 0)
+                                {
+                                    int pos = H264ScalingLists.Zigzag4x4[k + 1];
+                                    dest[pos] = Scale4x4(_levels[k], qpc, scale, pos);
+                                }
                             }
                         }
                     }
@@ -508,9 +530,13 @@ internal sealed partial class H264SliceDecoder
     /// Reads residual_block_cabac (7.3.5.3.3, 9.3.2.7) for a block category into <see cref="_levels"/> in scan order; returns the
     /// number of non-zero levels. cbfInc is -1 when coded_block_flag is not coded (8x8 blocks outside 4:4:4).
     /// </summary>
-    private int ResidualCabac(int cat, int cbfInc, int maxNumCoeff, int[] levels)
+    private int ResidualCabac(int cat, int cbfInc, int maxNumCoeff, int[] levels, bool clear = true)
     {
-        Array.Clear(levels, 0, maxNumCoeff);
+        if (clear)
+        {
+            Array.Clear(levels, 0, maxNumCoeff);
+        }
+
         ReadOnlySpan<byte> cbfOffset = [0, 4, 8, 12, 16];
         ReadOnlySpan<byte> sigOffset = [0, 15, 29, 44, 47];
         ReadOnlySpan<byte> absOffset = [0, 10, 20, 30, 39];
@@ -649,6 +675,7 @@ internal sealed partial class H264SliceDecoder
             }
 
             levels[significant[k]] = engine.Bypass(ref st) != 0 ? -value : value;
+            _significant[k] = significant[k];
         }
 
         engine.Restore(st);
