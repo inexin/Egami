@@ -588,7 +588,7 @@ internal sealed partial class H264SliceDecoder
         {
             for (int i = 0; i < numCoeff - 1; i++)
             {
-                int inc = Math.Min(i / numC8x8, 2);
+                int inc = Math.Min(numC8x8 == 1 ? i : i >> 1, 2);
                 if (engine.Decode(ref st, ref Unsafe.Add(ref sig, inc)) != 0)
                 {
                     significant[count++] = (byte)i;
