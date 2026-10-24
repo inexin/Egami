@@ -1,4 +1,6 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Egami.Video.Codecs.H264;
 
@@ -7,6 +9,13 @@ internal sealed partial class H264SliceDecoder
 {
     // Which 4x4 blocks of the current macroblock (bit bx + 4 * by) have their motion for the list being derived.
     private int _decodedMask;
+
+    // Whether the last direct prediction of a whole macroblock gave all 16 blocks the same motion: 1 yes, 0 no, -1 not known.
+    private int _directUniform = -1;
+
+    // Whether the last direct prediction was spatial over a whole macroblock with 8x8 inference: its motion is one reference per
+    // list and one vector per 8x8 block.
+    private bool _directQuarters;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int PackMv(int x, int y) => (ushort)x | (y << 16);
@@ -71,7 +80,7 @@ internal sealed partial class H264SliceDecoder
                     continue;
                 }
 
-                int refIdx = _pic.RefIdx[list][Block(bx, by)];
+                int refIdx = (list == 0 ? _refIdx0 : _refIdx1)[Block(bx, by)];
                 if (_partShape != 3)
                 {
                     ReadPartitionMv(list, bx, by, w, h, refIdx);
@@ -141,82 +150,97 @@ internal sealed partial class H264SliceDecoder
 
     private void FillRef(int list, int bx, int by, int w, int h, int refIdx, int id)
     {
-        int w4 = _mb.W4;
+        int w4 = _w4;
         int b = Block(bx, by);
+        sbyte[] refIdxs = list == 0 ? _refIdx0 : _refIdx1;
+        int[] ids = _pic.RefPicId[list];
+        if (b < 0 || b + ((h - 1) * w4) + w > Math.Min(refIdxs.Length, ids.Length))
+        {
+            throw H264Errors.Corrupt("A macroblock lies outside the picture.");
+        }
+
+        // Rows of one, two or four blocks, each written at once.
+        ref byte r = ref Unsafe.As<sbyte, byte>(ref MemoryMarshal.GetArrayDataReference(refIdxs));
+        ref int d = ref MemoryMarshal.GetArrayDataReference(ids);
+        uint refs = (byte)refIdx * 0x01010101u;
         for (int y = 0; y < h; y++, b += w4)
         {
-            _pic.RefIdx[list].AsSpan(b, w).Fill((sbyte)refIdx);
-            _pic.RefPicId[list].AsSpan(b, w).Fill(id);
+            switch (w)
+            {
+                case 4:
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref r, b), refs);
+                    Vector128.Create(id).StoreUnsafe(ref d, (nuint)b);
+                    break;
+                case 2:
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref r, b), (ushort)refs);
+                    Unsafe.WriteUnaligned(ref Unsafe.As<int, byte>(ref Unsafe.Add(ref d, b)), ((ulong)(uint)id << 32) | (uint)id);
+                    break;
+                default:
+                    Unsafe.Add(ref r, b) = (byte)refIdx;
+                    Unsafe.Add(ref d, b) = id;
+                    break;
+            }
         }
     }
 
     /// <summary>Writes a motion vector (and the absolute mvd for CABAC, x low byte, y high byte) to blocks, marking them decoded.</summary>
     private void FillMv(int list, int bx, int by, int w, int h, int mv, int mvd)
     {
-        int w4 = _mb.W4;
+        int w4 = _w4;
         int b = Block(bx, by);
-        byte mx = (byte)(mvd & 255), my = (byte)(mvd >> 8);
-        for (int y = 0; y < h; y++, b += w4)
+        int[] mvs = list == 0 ? _mv0 : _mv1;
+        byte[] mvds = _mb.Mvd[list];
+        if (b < 0 || b + ((h - 1) * w4) + w > Math.Min(mvs.Length, mvds.Length / 2))
         {
-            _pic.Mv[list].AsSpan(b, w).Fill(mv);
-            for (int x = 0; x < w; x++)
+            throw H264Errors.Corrupt("A macroblock lies outside the picture.");
+        }
+
+        // x in the low byte, y in the high one: a little-endian 16-bit value per block.
+        uint mvd16 = BitConverter.IsLittleEndian ? (ushort)mvd : (ushort)((mvd >> 8) | (mvd << 8));
+        ref int m = ref MemoryMarshal.GetArrayDataReference(mvs);
+        ref byte dm = ref MemoryMarshal.GetArrayDataReference(mvds);
+        int row = ((1 << w) - 1) << (bx + (by * 4));
+        for (int y = 0; y < h; y++, b += w4, row <<= 4)
+        {
+            switch (w)
             {
-                _mb.Mvd[list][((b + x) * 2) + 0] = mx;
-                _mb.Mvd[list][((b + x) * 2) + 1] = my;
-                _decodedMask |= 1 << (bx + x + ((by + y) * 4));
+                case 4:
+                    Vector128.Create(mv).StoreUnsafe(ref m, (nuint)b);
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref dm, b * 2), mvd16 * 0x0001000100010001ul);
+                    break;
+                case 2:
+                    Unsafe.WriteUnaligned(ref Unsafe.As<int, byte>(ref Unsafe.Add(ref m, b)), ((ulong)(uint)mv << 32) | (uint)mv);
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref dm, b * 2), mvd16 * 0x00010001u);
+                    break;
+                default:
+                    Unsafe.Add(ref m, b) = mv;
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref dm, b * 2), (ushort)mvd16);
+                    break;
             }
+
+            _decodedMask |= row;
         }
     }
 
     /// <summary>Gets a neighbouring 4x4 block's motion (6.4.11.7): whether it is available, its refIdx (-1 when the list is unused).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool Neighbor(int list, int bx, int by, out int refIdx, out int mv)
     {
         refIdx = -1;
         mv = 0;
-        int addr;
-        if (by < 0)
-        {
-            if (bx < 0)
-            {
-                addr = _mbX > 0 && _mbY > 0 ? _mbAddr - _widthMbs - 1 : -1;
-            }
-            else if (bx > 3)
-            {
-                addr = _mbX < _widthMbs - 1 && _mbY > 0 ? _mbAddr - _widthMbs + 1 : -1;
-            }
-            else
-            {
-                addr = TopMb;
-            }
-        }
-        else if (bx < 0)
-        {
-            addr = LeftMb;
-        }
-        else if (bx > 3)
-        {
-            return false;
-        }
-        else
-        {
-            if ((_decodedMask & (1 << (bx + (by * 4)))) == 0)
-            {
-                return false;
-            }
-
-            addr = _mbAddr;
-        }
-
-        if (addr != _mbAddr && !Available(addr))
+        bool available = by < 0
+            ? bx < 0 ? (_neighbors & NeighborD) != 0 : bx > 3 ? (_neighbors & NeighborC) != 0 : (_neighbors & NeighborB) != 0
+            : bx < 0 ? (_neighbors & NeighborA) != 0 : bx <= 3 && (_decodedMask & (1 << (bx + (by * 4)))) != 0;
+        if (!available)
         {
             return false;
         }
 
         int b = Block(bx, by);
-        refIdx = _pic.RefIdx[list][b];
+        refIdx = (list == 0 ? _refIdx0 : _refIdx1)[b];
         if (refIdx >= 0)
         {
-            mv = _pic.Mv[list][b];
+            mv = (list == 0 ? _mv0 : _mv1)[b];
         }
 
         return true;
@@ -292,7 +316,18 @@ internal sealed partial class H264SliceDecoder
         _decodedMask = 0;
         bool availableA = Neighbor(0, -1, 0, out int refA, out int mvA);
         bool availableB = Neighbor(0, 0, -1, out int refB, out int mvB);
-        int mv = !availableA || !availableB || (refA == 0 && mvA == 0) || (refB == 0 && mvB == 0) ? 0 : PredictMv(0, 0, 0, 4, 4, 0);
+        int mv = 0;
+        if (availableA && availableB && !(refA == 0 && mvA == 0) && !(refB == 0 && mvB == 0))
+        {
+            // The median of a 16x16 partition (8-212) from the same A and B, and C or D.
+            bool availableC = Neighbor(0, 4, -1, out int refC, out int mvC);
+            if (!availableC)
+            {
+                availableC = Neighbor(0, -1, -1, out refC, out mvC);
+            }
+
+            mv = Median(availableA, availableB, availableC, refA, refB, refC, mvA, mvB, mvC, 0);
+        }
         FillMv(0, 0, 0, 4, 4, mv, 0);
     }
 
@@ -303,6 +338,9 @@ internal sealed partial class H264SliceDecoder
         {
             throw H264Errors.Corrupt("A B slice has an empty reference list.");
         }
+
+        _directUniform = -1;
+        _directQuarters = false;
 
         if (_h.DirectSpatialMvPred)
         {
@@ -317,37 +355,57 @@ internal sealed partial class H264SliceDecoder
     private void PredictSpatialDirect(int mask)
     {
         _decodedMask = 0;
-        Span<int> refIdx = stackalloc int[2];
-        Span<int> mvp = stackalloc int[2];
-        for (int list = 0; list < 2; list++)
-        {
-            Neighbor(list, -1, 0, out int refA, out _);
-            Neighbor(list, 0, -1, out int refB, out _);
-            if (!Neighbor(list, 4, -1, out int refC, out _))
-            {
-                Neighbor(list, -1, -1, out refC, out _);
-            }
+        _directQuarters = false;
 
-            refIdx[list] = MinPositive(refA, MinPositive(refB, refC));
-        }
-
-        bool zero = refIdx[0] < 0 && refIdx[1] < 0;
+        // Neighbours A, B and C (or D) of the whole macroblock: their references give refIdx, and their vectors the median
+        // prediction of a 16x16 partition (8-212), so they are read once for both.
+        DirectNeighbors n0 = ReadDirectNeighbors(0), n1 = ReadDirectNeighbors(1);
+        int ref0 = MinPositive(n0.RefA, MinPositive(n0.RefB, n0.RefC)), ref1 = MinPositive(n1.RefA, MinPositive(n1.RefB, n1.RefC));
+        bool zero = ref0 < 0 && ref1 < 0;
         if (zero)
         {
-            refIdx[0] = refIdx[1] = 0;
+            ref0 = ref1 = 0;
         }
 
-        for (int list = 0; list < 2; list++)
-        {
-            mvp[list] = !zero && refIdx[list] >= 0 ? PredictMv(list, 0, 0, 4, 4, refIdx[list]) : 0;
-        }
+        int mvp0 = !zero && ref0 >= 0 ? Median(n0.AvailableA, n0.AvailableB, n0.AvailableC, n0.RefA, n0.RefB, n0.RefC, n0.MvA, n0.MvB, n0.MvC, ref0) : 0;
+        int mvp1 = !zero && ref1 >= 0 ? Median(n1.AvailableA, n1.AvailableB, n1.AvailableC, n1.RefA, n1.RefB, n1.RefC, n1.MvA, n1.MvB, n1.MvC, ref1) : 0;
+        Span<int> refIdx = [ref0, ref1];
+        Span<int> mvp = [mvp0, mvp1];
 
         H264Picture col = _list1[0];
         bool colShortTerm = !col.IsLongTermReference;
+        bool inferred = _sps.Direct8x8Inference;
+        int colZero8 = 0;
+        if (mask == 15 && inferred)
+        {
+            // A whole macroblock with 8x8 inference: one colZero test per 8x8 block, on its corner block, and only the first
+            // block of each 8x8 is written, which is all WriteDirectRows reads.
+            if (colShortTerm && !zero && !col.MbIntra[_mbAddr])
+            {
+                bool[] colZeros = col.ColZero;
+                colZero8 = (colZeros[Block(0, 0)] ? 1 : 0) | (colZeros[Block(3, 0)] ? 2 : 0) | (colZeros[Block(0, 3)] ? 4 : 0) | (colZeros[Block(3, 3)] ? 8 : 0);
+            }
+
+            for (int list = 0; list < 2; list++)
+            {
+                int r = refIdx[list], m = mvp[list];
+                _directRefBlock[list * 16] = (sbyte)r;
+                _directMv[list * 16] = r < 0 || (r == 0 && (colZero8 & 1) != 0) ? 0 : m;
+                _directMv[(list * 16) + 2] = r < 0 || (r == 0 && (colZero8 & 2) != 0) ? 0 : m;
+                _directMv[(list * 16) + 8] = r < 0 || (r == 0 && (colZero8 & 4) != 0) ? 0 : m;
+                _directMv[(list * 16) + 10] = r < 0 || (r == 0 && (colZero8 & 8) != 0) ? 0 : m;
+            }
+
+            bool split = colZero8 is not 0 and not 15 && ((refIdx[0] == 0 && mvp[0] != 0) || (refIdx[1] == 0 && mvp[1] != 0));
+            _directUniform = split ? 0 : 1;
+            _directQuarters = true;
+            return;
+        }
+
         for (int blk = 0; blk < 16; blk++)
         {
-            int bx = blk & 3, by = blk >> 2;
-            if ((mask & (1 << (((by >> 1) * 2) + (bx >> 1)))) == 0)
+            int bx = blk & 3, by = blk >> 2, quarter = ((by >> 1) * 2) + (bx >> 1);
+            if ((mask & (1 << quarter)) == 0)
             {
                 continue;
             }
@@ -355,8 +413,18 @@ internal sealed partial class H264SliceDecoder
             bool colZero = false;
             if (colShortTerm && !zero)
             {
-                ColocatedMotion(bx, by, out int refCol, out int mvCol, out _);
-                colZero = refCol == 0 && MvX(mvCol) is >= -1 and <= 1 && MvY(mvCol) is >= -1 and <= 1;
+                // With direct_8x8_inference the four blocks of an 8x8 share their co-located block.
+                if (inferred && ((bx | by) & 1) != 0)
+                {
+                    colZero = (colZero8 & (1 << quarter)) != 0;
+                }
+                else
+                {
+                    // The co-located picture stored the test as it was decoded; an intra macroblock never passes it.
+                    int cx = inferred ? (bx >> 1) * 3 : bx, cy = inferred ? (by >> 1) * 3 : by;
+                    colZero = !col.MbIntra[_mbAddr] && col.ColZero[Block(cx, cy)];
+                    colZero8 |= colZero ? 1 << quarter : 0;
+                }
             }
 
             for (int list = 0; list < 2; list++)
@@ -365,6 +433,69 @@ internal sealed partial class H264SliceDecoder
                 _directMv[(list * 16) + blk] = refIdx[list] < 0 || (refIdx[list] == 0 && colZero) ? 0 : mvp[list];
             }
         }
+
+        if (mask == 15 && inferred)
+        {
+            // The motion differs between 8x8 blocks only through colZero, in a list of refIdx 0 with a vector.
+            bool split = colZero8 is not 0 and not 15 && ((refIdx[0] == 0 && mvp[0] != 0) || (refIdx[1] == 0 && mvp[1] != 0));
+            _directUniform = split ? 0 : 1;
+            _directQuarters = true;
+        }
+    }
+
+    /// <summary>Works out <see cref="H264Picture.ColZero"/> for the current macroblock's blocks.</summary>
+    private void StoreColZero()
+    {
+        if (_sps.Direct8x8Inference)
+        {
+            // Only the corner blocks are read as co-located blocks.
+            int w4 = _w4, b0 = Block(0, 0);
+            StoreColZero(b0);
+            StoreColZero(b0 + 3);
+            StoreColZero(b0 + (3 * w4));
+            StoreColZero(b0 + (3 * w4) + 3);
+            return;
+        }
+
+        for (int by = 0; by < 4; by++)
+        {
+            for (int bx = 0; bx < 4; bx++)
+            {
+                StoreColZero(Block(bx, by));
+            }
+        }
+    }
+
+    private void StoreColZero(int b)
+    {
+        int r = _refIdx0[b], mv;
+        if (r >= 0)
+        {
+            mv = _mv0[b];
+        }
+        else
+        {
+            r = _refIdx1[b];
+            mv = _mv1[b];
+        }
+
+        _pic.ColZero[b] = r == 0 && (uint)(MvX(mv) + 1) <= 2 && (uint)(MvY(mv) + 1) <= 2;
+    }
+
+    /// <summary>Neighbours A, B and C (D when C is missing) of the whole macroblock in a list.</summary>
+    private DirectNeighbors ReadDirectNeighbors(int list)
+    {
+        DirectNeighbors n;
+        n.AvailableA = Neighbor(list, -1, 0, out n.RefA, out n.MvA);
+        n.AvailableB = Neighbor(list, 0, -1, out n.RefB, out n.MvB);
+        n.AvailableC = Neighbor(list, 4, -1, out n.RefC, out n.MvC) || Neighbor(list, -1, -1, out n.RefC, out n.MvC);
+        return n;
+    }
+
+    private struct DirectNeighbors
+    {
+        public bool AvailableA, AvailableB, AvailableC;
+        public int RefA, RefB, RefC, MvA, MvB, MvC;
     }
 
     private static int MinPositive(int x, int y) => x >= 0 && y >= 0 ? Math.Min(x, y) : Math.Max(x, y);
@@ -457,47 +588,121 @@ internal sealed partial class H264SliceDecoder
     /// <summary>Writes the direct prediction of the 8x8 blocks in the mask, both lists, to the picture (B_Skip, B_Direct_16x16).</summary>
     private void WriteDirect(int mask)
     {
+        int w4 = _w4, b0 = Block(0, 0);
+        if (mask == 15 && _directQuarters)
+        {
+            WriteDirectRows(w4, b0);
+            return;
+        }
         for (int list = 0; list < 2; list++)
         {
-            for (int p = 0; p < 4; p++)
+            H264Picture[] refs = list == 0 ? _list0 : _list1;
+            sbyte[] refIdxs = list == 0 ? _refIdx0 : _refIdx1;
+            int[] ids = _pic.RefPicId[list], mvs = _pic.Mv[list];
+            byte[] mvds = _mb.Mvd[list];
+            for (int blk = 0; blk < 16; blk++)
             {
-                if ((mask & (1 << p)) != 0)
+                int x = blk & 3, y = blk >> 2;
+                if ((mask & (1 << (((y >> 1) * 2) + (x >> 1)))) == 0)
                 {
-                    WriteDirectRefs(list, (p & 1) * 2, (p >> 1) * 2);
-                    WriteDirectMvs(list, (p & 1) * 2, (p >> 1) * 2);
+                    continue;
                 }
+
+                int r = _directRefBlock[(list * 16) + blk];
+                int b = b0 + (y * w4) + x;
+                refIdxs[b] = (sbyte)r;
+                ids[b] = r >= 0 && r < refs.Length ? refs[r].Id : -1;
+                mvs[b] = r >= 0 ? _directMv[(list * 16) + blk] : 0;
+                mvds[b * 2] = 0;
+                mvds[(b * 2) + 1] = 0;
+            }
+        }
+
+        for (int p = 0; p < 4; p++)
+        {
+            if ((mask & (1 << p)) != 0)
+            {
+                _decodedMask |= 0x33 << (((p & 1) * 2) + ((p >> 1) * 8));
             }
         }
     }
 
+    /// <summary>
+    /// Writes a whole macroblock of spatial direct prediction with 8x8 inference: one reference per list, and a vector per 8x8
+    /// block, so each row of four blocks is two pairs of equal vectors.
+    /// </summary>
+    private void WriteDirectRows(int w4, int b0)
+    {
+        if (b0 + (3 * w4) + 4 > _pic.Mv[0].Length)
+        {
+            throw H264Errors.Corrupt("A macroblock lies outside the picture.");
+        }
+
+        for (int list = 0; list < 2; list++)
+        {
+            H264Picture[] refs = list == 0 ? _list0 : _list1;
+            int r = _directRefBlock[list * 16];
+            int id = r >= 0 && r < refs.Length ? refs[r].Id : -1;
+            ref sbyte refIdxs = ref MemoryMarshal.GetArrayDataReference(_pic.RefIdx[list]);
+            ref int ids = ref MemoryMarshal.GetArrayDataReference(_pic.RefPicId[list]);
+            ref int mvs = ref MemoryMarshal.GetArrayDataReference(_pic.Mv[list]);
+            ref byte mvds = ref MemoryMarshal.GetArrayDataReference(_mb.Mvd[list]);
+            uint refRow = (byte)r * 0x01010101u;
+            Vector128<int> idRow = Vector128.Create(id);
+            for (int y = 0; y < 4; y++)
+            {
+                int b = b0 + (y * w4);
+                int top = (list * 16) + ((y >> 1) * 8);
+                int left = r >= 0 ? _directMv[top] : 0, right = r >= 0 ? _directMv[top + 2] : 0;
+                Unsafe.WriteUnaligned(ref Unsafe.As<sbyte, byte>(ref Unsafe.Add(ref refIdxs, b)), refRow);
+                idRow.StoreUnsafe(ref ids, (nuint)b);
+                Vector128.Create(left, left, right, right).StoreUnsafe(ref mvs, (nuint)b);
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref mvds, b * 2), 0ul);
+            }
+        }
+
+        _decodedMask = 0xFFFF;
+    }
+
+    /// <summary>
+    /// Where block (x, y)'s direct reference or vector is kept: the whole-macroblock 8x8 form of PredictSpatialDirect keeps one
+    /// reference per list, in block 0, and one vector per 8x8 block, in its first block.
+    /// </summary>
+    private int DirectSource(int list, int x, int y, bool reference) =>
+        (list * 16) + (!_directQuarters ? (y * 4) + x : reference ? 0 : ((y >> 1) * 8) + ((x >> 1) * 2));
+
     private void WriteDirectRefs(int list, int bx, int by)
     {
         H264Picture[] refs = list == 0 ? _list0 : _list1;
+        sbyte[] refIdxs = list == 0 ? _refIdx0 : _refIdx1;
+        int[] ids = _pic.RefPicId[list];
         for (int y = by; y < by + 2; y++)
         {
             for (int x = bx; x < bx + 2; x++)
             {
-                int r = _directRefBlock[(list * 16) + (y * 4) + x];
+                int r = _directRefBlock[DirectSource(list, x, y, true)];
                 int b = Block(x, y);
-                _pic.RefIdx[list][b] = (sbyte)r;
-                _pic.RefPicId[list][b] = r >= 0 && r < refs.Length ? refs[r].Id : -1;
+                refIdxs[b] = (sbyte)r;
+                ids[b] = r >= 0 && r < refs.Length ? refs[r].Id : -1;
             }
         }
     }
 
     private void WriteDirectMvs(int list, int bx, int by)
     {
+        int[] mvs = list == 0 ? _mv0 : _mv1;
+        byte[] mvds = _mb.Mvd[list];
         for (int y = by; y < by + 2; y++)
         {
-            for (int x = bx; x < bx + 2; x++)
+            int b = Block(bx, y);
+            for (int x = bx; x < bx + 2; x++, b++)
             {
-                int b = Block(x, y);
-                bool used = _directRefBlock[(list * 16) + (y * 4) + x] >= 0;
-                _pic.Mv[list][b] = used ? _directMv[(list * 16) + (y * 4) + x] : 0;
-                _mb.Mvd[list][b * 2] = 0;
-                _mb.Mvd[list][(b * 2) + 1] = 0;
-                _decodedMask |= 1 << (x + (y * 4));
+                bool used = _directRefBlock[DirectSource(list, x, y, true)] >= 0;
+                mvs[b] = used ? _directMv[DirectSource(list, x, y, false)] : 0;
             }
+
+            mvds.AsSpan(Block(bx, y) * 2, 4).Clear();
+            _decodedMask |= 3 << (bx + (y * 4));
         }
     }
 }

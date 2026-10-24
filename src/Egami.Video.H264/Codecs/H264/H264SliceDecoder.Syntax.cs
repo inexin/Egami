@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+
+using Egami.Nal;
+
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>The macroblock syntax elements, read with CAVLC (9.1, 9.2) or CABAC (9.3).</summary>
@@ -21,9 +25,7 @@ internal sealed partial class H264SliceDecoder
 
     private bool DecodeSkipFlag(int mbAddr)
     {
-        _mbAddr = mbAddr;
-        _mbX = mbAddr % _widthMbs;
-        _mbY = mbAddr / _widthMbs;
+        SetAddress(mbAddr);
         int left = LeftMb, top = TopMb;
         int inc = (Available(left) && !H264MbState.IsSkip(_mb.Kind[left]) ? 1 : 0) + (Available(top) && !H264MbState.IsSkip(_mb.Kind[top]) ? 1 : 0);
         return Bin((_h.IsB ? 24 : 11) + inc) != 0;
@@ -237,7 +239,7 @@ internal sealed partial class H264SliceDecoder
             if (_t8x8)
             {
                 _mb.IntraModes[b] = _mb.IntraModes[b + 1] = (sbyte)mode;
-                _mb.IntraModes[b + _mb.W4] = _mb.IntraModes[b + _mb.W4 + 1] = (sbyte)mode;
+                _mb.IntraModes[b + _w4] = _mb.IntraModes[b + _w4 + 1] = (sbyte)mode;
             }
             else
             {
@@ -424,16 +426,24 @@ internal sealed partial class H264SliceDecoder
             return _bits.Se();
         }
 
-        int sum = MvdAbs(list, bx - 1, by, component) + MvdAbs(list, bx, by - 1, component);
-        int ctx = component == 0 ? 40 : 47;
-        if (Bin(ctx + (sum < 3 ? 0 : sum > 32 ? 2 : 1)) == 0)
+        // The neighbours' absolute mvds: the block to the left is two bytes back and the one above a row of blocks back, inside
+        // the macroblock or in its neighbours, whose availability Begin found.
+        byte[] mvds = _mb.Mvd[list];
+        int at = (Block(bx, by) * 2) + component;
+        int left = bx > 0 || (_neighbors & NeighborA) != 0 ? at - 2 : -1, top = by > 0 || (_neighbors & NeighborB) != 0 ? at - (2 * _w4) : -1;
+        int sum = (left >= 0 ? mvds[left] : 0) + (top >= 0 ? mvds[top] : 0);
+        ref byte ctx = ref _ctx[component == 0 ? 46 : 53];
+        ctx = ref Unsafe.Subtract(ref ctx, 6);
+        CabacEngine.State e = _engine.Save();
+        if (_engine.Decode(ref e, ref Unsafe.Add(ref ctx, sum < 3 ? 0 : sum > 32 ? 2 : 1)) == 0)
         {
+            _engine.Restore(e);
             return 0;
         }
 
         int prefix = 1;
         int inc = 3;
-        while (prefix < 9 && Bin(ctx + inc) != 0)
+        while (prefix < 9 && _engine.Decode(ref e, ref Unsafe.Add(ref ctx, inc)) != 0)
         {
             prefix++;
             if (inc < 6)
@@ -442,8 +452,15 @@ internal sealed partial class H264SliceDecoder
             }
         }
 
+        if (prefix < 9)
+        {
+            int sign = _engine.Bypass(ref e);
+            _engine.Restore(e);
+            return sign != 0 ? -prefix : prefix;
+        }
+
+        _engine.Restore(e);
         int value = prefix;
-        if (prefix >= 9)
         {
             // UEG3 suffix.
             int k = 3;
@@ -460,11 +477,5 @@ internal sealed partial class H264SliceDecoder
         }
 
         return _engine.Bypass() != 0 ? -value : value;
-    }
-
-    private int MvdAbs(int list, int bx, int by, int component)
-    {
-        int addr = bx < 0 ? LeftMb : by < 0 ? TopMb : _mbAddr;
-        return Available(addr) ? _mb.Mvd[list][(Block(bx, by) * 2) + component] : 0;
     }
 }

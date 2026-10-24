@@ -55,6 +55,7 @@ internal sealed class H264MbState
         IntraModes = new sbyte[blocks];
         Mvd = [new byte[blocks * 2], new byte[blocks * 2]];
         Nonzero = new byte[blocks];
+        FlatInside = new bool[mbs];
     }
 
     internal int WidthMbs { get; }
@@ -104,6 +105,12 @@ internal sealed class H264MbState
 
     /// <summary>Gets whether each luma 4x4 block has non-zero coefficients, the 8x8 block's for the 8x8 transform (deblocking).</summary>
     internal byte[] Nonzero { get; }
+
+    /// <summary>
+    /// Gets whether an inter macroblock has no coefficients and one motion for all its blocks, so its internal edges have bS 0
+    /// and only its own left and top edges are deblocked.
+    /// </summary>
+    internal bool[] FlatInside { get; }
 
     /// <summary>Gets the Intra4x4/8x8 prediction mode per 4x4 block, -1 for other macroblocks.</summary>
     internal sbyte[] IntraModes { get; }

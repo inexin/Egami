@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 using Egami.Nal;
 
@@ -10,6 +11,9 @@ internal sealed partial class H264SliceDecoder
     private static readonly byte[] IdentityScan = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
     private readonly int[] _levels = new int[64];
+
+    // The scan positions of the coefficients the last CABAC block coded, so a block is placed without scanning its zeros.
+    private readonly byte[] _significant = new byte[64];
 
     private void ReadResidual()
     {
@@ -57,7 +61,7 @@ internal sealed partial class H264SliceDecoder
                 bool ac = _kind == H264MbKind.I16x16;
                 int max = ac ? 15 : 16;
                 int count = _cabac
-                    ? ResidualCabac(ac ? 1 : 2, CbfInc(LumaCbfCond(bx - 1, by), LumaCbfCond(bx, by - 1)), max, _levels)
+                    ? ResidualCabac(ac ? 1 : 2, CbfInc(LumaCbfCond(bx - 1, by), LumaCbfCond(bx, by - 1)), max, _levels, clear: false)
                     : ResidualCavlc(LumaNc(bx, by), max);
                 int b = Block(bx, by);
                 _mb.NzLuma[b] = (byte)count;
@@ -67,13 +71,20 @@ internal sealed partial class H264SliceDecoder
                     _lumaCoded |= 1 << blk;
                     Span<int> dest = _coef.AsSpan(blk * 16, 16);
                     int first = ac ? 1 : 0;
-                    for (int k = 0; k < max; k++)
+                    if (_cabac)
                     {
-                        int level = _levels[k];
-                        if (level != 0)
+                        Place(count, first, qpY, scale4, 4, H264ScalingLists.Zigzag4x4, _coef, blk * 16);
+                    }
+                    else
+                    {
+                        for (int k = 0; k < max; k++)
                         {
-                            int pos = H264ScalingLists.Zigzag4x4[k + first];
-                            dest[pos] = Scale4x4(level, qpY, scale4, pos);
+                            int level = _levels[k];
+                            if (level != 0)
+                            {
+                                int pos = H264ScalingLists.Zigzag4x4[k + first];
+                                dest[pos] = Scale4x4(level, qpY, scale4, pos);
+                            }
                         }
                     }
                 }
@@ -94,15 +105,8 @@ internal sealed partial class H264SliceDecoder
         int total = 0;
         if (_cabac)
         {
-            total = ResidualCabac(5, -1, 64, _levels);
-            for (int k = 0; k < 64; k++)
-            {
-                if (_levels[k] != 0)
-                {
-                    int pos = H264ScalingLists.Zigzag8x8[k];
-                    dest[pos] = Scale8x8(_levels[k], qpY, scale8, pos);
-                }
-            }
+            total = ResidualCabac(5, -1, 64, _levels, clear: false);
+            Place(total, 0, qpY, scale8, 6, H264ScalingLists.Zigzag8x8, _coef, i8 * 64);
 
             for (int i4 = 0; i4 < 4; i4++)
             {
@@ -177,19 +181,26 @@ internal sealed partial class H264SliceDecoder
                 {
                     int bx = blk & 1, by = blk >> 1;
                     int count = _cabac
-                        ? ResidualCabac(4, CbfInc(ChromaCbfCond(nz, bx - 1, by), ChromaCbfCond(nz, bx, by - 1)), 15, _levels)
+                        ? ResidualCabac(4, CbfInc(ChromaCbfCond(nz, bx - 1, by), ChromaCbfCond(nz, bx, by - 1)), 15, _levels, clear: !_cabac)
                         : ResidualCavlc(ChromaNc(nz, bx, by), 15);
                     nz[ChromaBlock(bx, by)] = (byte)count;
                     if (count > 0)
                     {
                         _chromaAcCoded |= 1 << ((c * 8) + blk);
                         Span<int> dest = _coefC.AsSpan(((c * 8) + blk) * 16, 16);
-                        for (int k = 0; k < 15; k++)
+                        if (_cabac)
                         {
-                            if (_levels[k] != 0)
+                            Place(count, 1, qpc, scale, 4, H264ScalingLists.Zigzag4x4, _coefC, ((c * 8) + blk) * 16);
+                        }
+                        else
+                        {
+                            for (int k = 0; k < 15; k++)
                             {
-                                int pos = H264ScalingLists.Zigzag4x4[k + 1];
-                                dest[pos] = Scale4x4(_levels[k], qpc, scale, pos);
+                                if (_levels[k] != 0)
+                                {
+                                    int pos = H264ScalingLists.Zigzag4x4[k + 1];
+                                    dest[pos] = Scale4x4(_levels[k], qpc, scale, pos);
+                                }
                             }
                         }
                     }
@@ -207,6 +218,42 @@ internal sealed partial class H264SliceDecoder
                     int qpc = ChromaQp(_qp, c == 0 ? _pps.ChromaQpIndexOffset : _pps.SecondChromaQpIndexOffset) + _qpBdOffsetC;
                     ChromaDcTransform(c, qpc, scale);
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Scales the levels of the last CABAC block (8.5.12.1) into their scan positions in dest from destAt: a block of
+    /// 16 (log 4) or 64 (log 6) coefficients whose first scan position is first. The scale row and the shift are found once.
+    /// </summary>
+    private void Place(int count, int first, int qp, int[] scale, int log, byte[] scan, int[] dest, int destAt)
+    {
+        int size = log == 4 ? 16 : 64, row = (qp % 6) * size, shift = (qp / 6) - log;
+        if (count > size - first || scan.Length < size || row + size > scale.Length || destAt < 0 || destAt + size > dest.Length)
+        {
+            throw H264Errors.Corrupt("A residual block is larger than its coefficients.");
+        }
+
+        ref byte sig = ref MemoryMarshal.GetArrayDataReference(_significant);
+        ref int levels = ref MemoryMarshal.GetArrayDataReference(_levels);
+        ref byte order = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(scan), first);
+        ref int ls = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(scale), row);
+        ref int d = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(dest), destAt);
+        if (shift >= 0)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                int k = Unsafe.Add(ref sig, i), pos = Unsafe.Add(ref order, k);
+                Unsafe.Add(ref d, pos) = (Unsafe.Add(ref levels, k) * Unsafe.Add(ref ls, pos)) << shift;
+            }
+        }
+        else
+        {
+            int down = -shift, round = 1 << (down - 1);
+            for (int i = 0; i < count; i++)
+            {
+                int k = Unsafe.Add(ref sig, i), pos = Unsafe.Add(ref order, k);
+                Unsafe.Add(ref d, pos) = ((Unsafe.Add(ref levels, k) * Unsafe.Add(ref ls, pos)) + round) >> down;
             }
         }
     }
@@ -508,9 +555,13 @@ internal sealed partial class H264SliceDecoder
     /// Reads residual_block_cabac (7.3.5.3.3, 9.3.2.7) for a block category into <see cref="_levels"/> in scan order; returns the
     /// number of non-zero levels. cbfInc is -1 when coded_block_flag is not coded (8x8 blocks outside 4:4:4).
     /// </summary>
-    private int ResidualCabac(int cat, int cbfInc, int maxNumCoeff, int[] levels)
+    private int ResidualCabac(int cat, int cbfInc, int maxNumCoeff, int[] levels, bool clear = true)
     {
-        Array.Clear(levels, 0, maxNumCoeff);
+        if (clear)
+        {
+            Array.Clear(levels, 0, maxNumCoeff);
+        }
+
         ReadOnlySpan<byte> cbfOffset = [0, 4, 8, 12, 16];
         ReadOnlySpan<byte> sigOffset = [0, 15, 29, 44, 47];
         ReadOnlySpan<byte> absOffset = [0, 10, 20, 30, 39];
@@ -534,22 +585,24 @@ internal sealed partial class H264SliceDecoder
         }
 
         int numC8x8 = _chromaArrayType == 1 ? 1 : 2;
-        Span<byte> significant = stackalloc byte[64];
-        int numCoeff = maxNumCoeff;
+        // The positions of the significant coefficients, kept for the caller's placing pass; at most 64.
+        ref byte significant = ref MemoryMarshal.GetArrayDataReference(_significant);
+        int numCoeff = Math.Min(maxNumCoeff, 64);
         int count = 0;
         bool last = false;
         ref byte sig = ref _ctx[sigBase];
         ref byte lastCtx = ref _ctx[lastBase];
         CabacEngine engine = _engine;
+        CabacEngine.State st = engine.Save();
         if (cat == 5)
         {
             ReadOnlySpan<byte> sigInc = H264Tables.Significant8x8, lastInc = H264Tables.Last8x8;
             for (int i = 0; i < 63; i++)
             {
-                if (engine.Decode(ref Unsafe.Add(ref sig, sigInc[i])) != 0)
+                if (engine.Decode(ref st, ref Unsafe.Add(ref sig, sigInc[i])) != 0)
                 {
-                    significant[count++] = (byte)i;
-                    if (engine.Decode(ref Unsafe.Add(ref lastCtx, lastInc[i])) != 0)
+                    Unsafe.Add(ref significant, count++) = (byte)i;
+                    if (engine.Decode(ref st, ref Unsafe.Add(ref lastCtx, lastInc[i])) != 0)
                     {
                         last = true;
                         break;
@@ -561,11 +614,11 @@ internal sealed partial class H264SliceDecoder
         {
             for (int i = 0; i < numCoeff - 1; i++)
             {
-                int inc = Math.Min(i / numC8x8, 2);
-                if (engine.Decode(ref Unsafe.Add(ref sig, inc)) != 0)
+                int inc = Math.Min(numC8x8 == 1 ? i : i >> 1, 2);
+                if (engine.Decode(ref st, ref Unsafe.Add(ref sig, inc)) != 0)
                 {
-                    significant[count++] = (byte)i;
-                    if (engine.Decode(ref Unsafe.Add(ref lastCtx, inc)) != 0)
+                    Unsafe.Add(ref significant, count++) = (byte)i;
+                    if (engine.Decode(ref st, ref Unsafe.Add(ref lastCtx, inc)) != 0)
                     {
                         last = true;
                         break;
@@ -577,10 +630,10 @@ internal sealed partial class H264SliceDecoder
         {
             for (int i = 0; i < numCoeff - 1; i++)
             {
-                if (engine.Decode(ref Unsafe.Add(ref sig, i)) != 0)
+                if (engine.Decode(ref st, ref Unsafe.Add(ref sig, i)) != 0)
                 {
-                    significant[count++] = (byte)i;
-                    if (engine.Decode(ref Unsafe.Add(ref lastCtx, i)) != 0)
+                    Unsafe.Add(ref significant, count++) = (byte)i;
+                    if (engine.Decode(ref st, ref Unsafe.Add(ref lastCtx, i)) != 0)
                     {
                         last = true;
                         break;
@@ -592,17 +645,23 @@ internal sealed partial class H264SliceDecoder
         if (!last)
         {
             // The last position is significant when no earlier one was the last.
-            significant[count++] = (byte)(numCoeff - 1);
+            Unsafe.Add(ref significant, count++) = (byte)(numCoeff - 1);
         }
 
         int eq1 = 0, gt1 = 0;
         int maxGt1Inc = cat == 3 ? 3 : 4;
         ref byte abs = ref _ctx[absBase];
+        if (levels.Length < numCoeff)
+        {
+            throw H264Errors.Corrupt("A residual block is larger than its coefficients.");
+        }
+
+        ref int level = ref MemoryMarshal.GetArrayDataReference(levels);
         for (int k = count - 1; k >= 0; k--)
         {
             int inc = gt1 != 0 ? 0 : Math.Min(4, 1 + eq1);
             int value;
-            if (engine.Decode(ref Unsafe.Add(ref abs, inc)) == 0)
+            if (engine.Decode(ref st, ref Unsafe.Add(ref abs, inc)) == 0)
             {
                 value = 1;
             }
@@ -610,7 +669,7 @@ internal sealed partial class H264SliceDecoder
             {
                 ref byte ctx = ref Unsafe.Add(ref abs, 5 + Math.Min(maxGt1Inc, gt1));
                 int prefix = 1;
-                while (prefix < 14 && engine.Decode(ref ctx) != 0)
+                while (prefix < 14 && engine.Decode(ref st, ref ctx) != 0)
                 {
                     prefix++;
                 }
@@ -621,7 +680,7 @@ internal sealed partial class H264SliceDecoder
                     // Exp-Golomb suffix, k = 0.
                     int k0 = 0;
                     int suffix = 0;
-                    while (_engine.Bypass() != 0)
+                    while (engine.Bypass(ref st) != 0)
                     {
                         suffix += 1 << k0;
                         if (++k0 > 24)
@@ -630,7 +689,10 @@ internal sealed partial class H264SliceDecoder
                         }
                     }
 
-                    suffix += (int)_engine.Bypass(k0);
+                    for (int i = 0; i < k0; i++)
+                    {
+                        suffix += engine.Bypass(ref st) << (k0 - 1 - i);
+                    }
                     value += suffix;
                 }
             }
@@ -644,9 +706,10 @@ internal sealed partial class H264SliceDecoder
                 gt1++;
             }
 
-            levels[significant[k]] = _engine.Bypass() != 0 ? -value : value;
+            Unsafe.Add(ref level, Unsafe.Add(ref significant, k)) = engine.Bypass(ref st) != 0 ? -value : value;
         }
 
+        engine.Restore(st);
         return count;
     }
 }

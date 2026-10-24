@@ -22,7 +22,12 @@ internal sealed class H264Decoder
     private readonly List<SliceJob> _jobs = [];
     private readonly List<H264SliceDecoder> _sliceDecoders = [];
     private readonly List<H264Deblock> _deblocks = [];
+    private Action<int>? _deblockBehind;
     private int[] _rowProgress = [];
+
+    // Macroblock rows of the current picture decoded from the top without a gap, and deblocked.
+    private int _decodedRows;
+    private int _deblockedRows;
 
     private H264Sps? _active;
     private H264MbState? _mb;
@@ -339,6 +344,8 @@ internal sealed class H264Decoder
         _curMissingReference = false;
         _sliceParams.Clear();
         _mb!.Clear();
+        _decodedRows = 0;
+        _deblockedRows = 0;
         return true;
     }
 
@@ -355,7 +362,7 @@ internal sealed class H264Decoder
             return candidate;
         }
 
-        H264Picture pic = new(sps.WidthInMbs, sps.HeightInMbs, sps.ChromaFormatIdc);
+        H264Picture pic = new(sps.WidthInMbs, sps.HeightInMbs, sps.ChromaFormatIdc, sps.BitDepthLuma == 8 && sps.BitDepthChroma == 8);
         pic.Reset();
         _all.Add(pic);
         return pic;
@@ -464,11 +471,12 @@ internal sealed class H264Decoder
             gap.Sps = sps;
             gap.FrameNum = frameNum;
             Array.Fill(gap.MbIntra, true);
-            if (_lastDecoded is not null)
+            if (_lastDecoded is not null && _lastDecoded.Narrow == gap.Narrow && _lastDecoded.YPlane.Length == gap.YPlane.Length
+                && _lastDecoded.CbPlane.Length == gap.CbPlane.Length)
             {
-                Array.Copy(_lastDecoded.Y, gap.Y, gap.Y.Length);
-                Array.Copy(_lastDecoded.Cb, gap.Cb, gap.Cb.Length);
-                Array.Copy(_lastDecoded.Cr, gap.Cr, gap.Cr.Length);
+                Array.Copy(_lastDecoded.YPlane, gap.YPlane, gap.YPlane.Length);
+                Array.Copy(_lastDecoded.CbPlane, gap.CbPlane, gap.CbPlane.Length);
+                Array.Copy(_lastDecoded.CrPlane, gap.CrPlane, gap.CrPlane.Length);
             }
             else
             {
@@ -491,9 +499,17 @@ internal sealed class H264Decoder
 
     private static void FillGray(H264Picture pic, H264Sps sps)
     {
-        Array.Fill(pic.Y, (ushort)(1 << (sps.BitDepthLuma - 1)));
-        Array.Fill(pic.Cb, (ushort)(1 << (sps.BitDepthChroma - 1)));
-        Array.Fill(pic.Cr, (ushort)(1 << (sps.BitDepthChroma - 1)));
+        if (pic.Narrow)
+        {
+            Array.Fill(pic.Y<byte>(), (byte)128);
+            Array.Fill(pic.Cb<byte>(), (byte)128);
+            Array.Fill(pic.Cr<byte>(), (byte)128);
+            return;
+        }
+
+        Array.Fill(pic.Y<ushort>(), (ushort)(1 << (sps.BitDepthLuma - 1)));
+        Array.Fill(pic.Cb<ushort>(), (ushort)(1 << (sps.BitDepthChroma - 1)));
+        Array.Fill(pic.Cr<ushort>(), (ushort)(1 << (sps.BitDepthChroma - 1)));
     }
 
     private void DecodeSliceData(H264SliceHeader h, byte[] rbsp)
@@ -526,7 +542,15 @@ internal sealed class H264Decoder
             }
 
             byte[] padded = Pad(0, rbsp);
-            _slices.Decode(h, padded, rbsp.Length, pic, _mb!, sliceNum, list0, list1, implicitWeights);
+            _slices.RowFinished = _deblockBehind ??= DeblockBehind;
+            try
+            {
+                _slices.Decode(h, padded, rbsp.Length, pic, _mb!, sliceNum, list0, list1, implicitWeights);
+            }
+            finally
+            {
+                _slices.RowFinished = null;
+            }
         }
         catch (CorruptDataException e)
         {
@@ -622,13 +646,36 @@ internal sealed class H264Decoder
     /// a macroblock once the row above has filtered the one up and to its right, whose left edge filter reaches the samples this
     /// macroblock's top edge filter reads. The result equals filtering in address order.
     /// </summary>
+    /// <summary>
+    /// Deblocks the rows of a picture decoded on one thread as decoding goes, while their samples are in the cache: a row once
+    /// the row below it is decoded, since that row's intra prediction reads the samples before the filter. A row filters its
+    /// own samples and the three rows above it, so the row below stays as decoded.
+    /// </summary>
+    private void DeblockBehind(int row)
+    {
+        H264MbState mb = _mb!;
+        int cols = mb.WidthMbs;
+        int[] slice = mb.Slice;
+        while (_decodedRows <= row && slice.AsSpan(_decodedRows * cols, cols).IndexOf(-1) < 0)
+        {
+            _decodedRows++;
+        }
+
+        if (_deblockedRows < _decodedRows - 1)
+        {
+            H264Sps sps = _first!.Sps;
+            _deblock.Filter(_cur!, mb, _sliceParams, sps.BitDepthLuma, sps.BitDepthChroma, _deblockedRows, _decodedRows - 1);
+            _deblockedRows = _decodedRows - 1;
+        }
+    }
+
     private void Deblock(H264Picture pic, H264MbState mb, H264Sps sps)
     {
         int rows = sps.HeightInMbs, cols = sps.WidthInMbs;
-        int workers = Math.Min(MaxParallelism, rows);
+        int workers = Math.Min(MaxParallelism, rows - _deblockedRows);
         if (workers <= 1)
         {
-            _deblock.Filter(pic, mb, _sliceParams, sps.BitDepthLuma, sps.BitDepthChroma, 0, rows);
+            _deblock.Filter(pic, mb, _sliceParams, sps.BitDepthLuma, sps.BitDepthChroma, _deblockedRows, rows);
             return;
         }
 
@@ -644,7 +691,7 @@ internal sealed class H264Decoder
 
         int[] progress = _rowProgress;
         Array.Clear(progress, 0, rows);
-        int next = -1;
+        int first = _deblockedRows, next = first - 1;
         Parallel.For(0, workers, new ParallelOptions { MaxDegreeOfParallelism = workers }, worker =>
         {
             H264Deblock deblock = _deblocks[worker];
@@ -653,7 +700,7 @@ internal sealed class H264Decoder
             {
                 // The row above is read only when the last value seen is not enough, and this row's progress is published
                 // every few macroblocks, so the threads touch the shared counters rarely.
-                int above = row > 0 ? 0 : cols;
+                int above = row > first ? 0 : cols;
                 for (int x = 0; x < cols; x++)
                 {
                     int need = Math.Min(x + 2, cols);
@@ -1209,14 +1256,15 @@ internal sealed class H264Decoder
             }
 
             int mbX = addr % sps.WidthInMbs, mbY = addr / sps.WidthInMbs;
-            CopyBlock(source?.Y, pic.Y, pic.Origin + (mbY * 16 * pic.Stride) + (mbX * 16), pic.Stride, 16, 16, (ushort)(1 << (sps.BitDepthLuma - 1)));
-            if (sps.ChromaFormatIdc != 0)
+            H264Picture? from = source is not null && source.Narrow == pic.Narrow && source.YPlane.Length == pic.YPlane.Length
+                && source.CbPlane.Length == pic.CbPlane.Length ? source : null;
+            if (pic.Narrow)
             {
-                int cw = sps.MbWidthC, ch = sps.MbHeightC;
-                int at = pic.ChromaOrigin + (mbY * ch * pic.ChromaStride) + (mbX * cw);
-                ushort gray = (ushort)(1 << (sps.BitDepthChroma - 1));
-                CopyBlock(source?.Cb, pic.Cb, at, pic.ChromaStride, cw, ch, gray);
-                CopyBlock(source?.Cr, pic.Cr, at, pic.ChromaStride, cw, ch, gray);
+                ConcealBlock<byte>(from, pic, sps, mbX, mbY);
+            }
+            else
+            {
+                ConcealBlock<ushort>(from, pic, sps, mbX, mbY);
             }
 
             pic.MbIntra[addr] = true;
@@ -1233,14 +1281,32 @@ internal sealed class H264Decoder
         }
     }
 
-    private static void CopyBlock(ushort[]? source, ushort[] target, int at, int stride, int w, int h, ushort gray)
+    private static void ConcealBlock<T>(H264Picture? source, H264Picture pic, H264Sps sps, int mbX, int mbY)
+        where T : unmanaged
+    {
+        CopyBlock(source?.Y<T>(), pic.Y<T>(), pic.Origin + (mbY * 16 * pic.Stride) + (mbX * 16), pic.Stride, 16, 16, 1 << (sps.BitDepthLuma - 1));
+        if (sps.ChromaFormatIdc != 0)
+        {
+            int cw = sps.MbWidthC, ch = sps.MbHeightC;
+            int at = pic.ChromaOrigin + (mbY * ch * pic.ChromaStride) + (mbX * cw);
+            int gray = 1 << (sps.BitDepthChroma - 1);
+            CopyBlock(source?.Cb<T>(), pic.Cb<T>(), at, pic.ChromaStride, cw, ch, gray);
+            CopyBlock(source?.Cr<T>(), pic.Cr<T>(), at, pic.ChromaStride, cw, ch, gray);
+        }
+    }
+
+    private static void CopyBlock<T>(T[]? source, T[] target, int at, int stride, int w, int h, int gray)
+        where T : unmanaged
     {
         for (int y = 0; y < h; y++)
         {
-            Span<ushort> row = target.AsSpan(at + (y * stride), w);
+            Span<T> row = target.AsSpan(at + (y * stride), w);
             if (source is null)
             {
-                row.Fill(gray);
+                for (int x = 0; x < w; x++)
+                {
+                    H264Samples.Set(target, at + (y * stride) + x, gray);
+                }
             }
             else
             {
