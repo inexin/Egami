@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -124,9 +125,11 @@ internal sealed class H264Inter
     private void Predict<T>(int x4, int y4, int w4, int h4)
         where T : unmanaged
     {
+        // The slice decoder wrote this block's motion and checked its reference indices against the lists.
         int b = (y4 * _w4) + x4;
-        int r0 = _refIdx0[b], r1 = _refIdx1[b];
-        int mv0 = _mv0[b], mv1 = _mv1[b];
+        Debug.Assert(b < _mv0.Length, "The block lies in the picture.");
+        int r0 = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_refIdx0), b), r1 = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_refIdx1), b);
+        int mv0 = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_mv0), b), mv1 = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_mv1), b);
         H264Picture? p0 = r0 >= 0 ? _list0[r0] : null;
         H264Picture? p1 = r1 >= 0 ? _list1[r1] : null;
         int w = w4 * 4, h = h4 * 4, x = x4 * 4, y = y4 * 4;
@@ -380,11 +383,8 @@ internal sealed class H264Inter
     private void Weighted<T>(T[] plane, int at, int stride, int w, int h, int w0, int w1, int round, int shift, int offset, int max, int po)
         where T : unmanaged
     {
-        if (at < 0 || at + ((h - 1) * stride) + w > plane.Length)
-        {
-            throw H264Errors.Corrupt("A prediction block lies outside the picture.");
-        }
-
+        // The block's position comes from a macroblock address the slice decoder checked.
+        Debug.Assert(at >= 0 && at + ((h - 1) * stride) + w <= plane.Length, "The block lies in the picture.");
         if (!UseVectors || w < 4)
         {
             for (int y = 0; y < h; y++)
@@ -413,13 +413,25 @@ internal sealed class H264Inter
             {
                 Vector256<short> lw0 = Vector256.Create((short)w0), lw1 = Vector256.Create((short)w1), lRound = Vector256.Create((short)round),
                     lOffset = Vector256.Create((short)offset), lMax = Vector256.Create((short)max);
+                if (average)
+                {
+                    for (int y = 0; y < h; y++)
+                    {
+                        nuint i = (nuint)(y * PredStride);
+                        H264Samples.Store16(ref d, y * stride, ((Vector256.LoadUnsafe(ref a, i) + Vector256.LoadUnsafe(ref b, i) + Vector256<ushort>.One) >>> 1).AsInt16());
+                    }
+
+                    return;
+                }
+
                 for (int y = 0; y < h; y++)
                 {
                     nuint i = (nuint)(y * PredStride);
                     Vector256<short> p0 = Vector256.LoadUnsafe(ref a, i).AsInt16(), p1 = Vector256.LoadUnsafe(ref b, i).AsInt16();
-                    Vector256<short> v = average ? (p0 + p1 + Vector256<short>.One) >>> 1
-                        : Vector256.Min(Vector256.Max((((p0 * lw0) + (p1 * lw1) + lRound) >> shift) + lOffset, Vector256<short>.Zero), lMax);
-                    H264Samples.Store16(ref d, y * stride, v);
+                    Vector256<short> v = (((p0 * lw0) + (p1 * lw1) + lRound) >> shift) + lOffset;
+
+                    // Bytes saturate to 0 to 255 as they are packed.
+                    H264Samples.Store16(ref d, y * stride, H264Samples.Narrow<T>() ? v : Vector256.Min(Vector256.Max(v, Vector256<short>.Zero), lMax));
                 }
 
                 return;
@@ -519,22 +531,24 @@ internal sealed class H264Inter
     private void WeightedPair<T>(T[] cb, T[] cr, int at, int stride, int h, int w0, int w1)
         where T : unmanaged
     {
-        if (at < 0 || at + ((h - 1) * stride) + 8 > Math.Min(cb.Length, cr.Length) || w0 < -64 || w0 > 128)
-        {
-            throw H264Errors.Corrupt("A prediction block lies outside the picture.");
-        }
+        Debug.Assert(at >= 0 && at + ((h - 1) * stride) + 8 <= Math.Min(cb.Length, cr.Length) && w0 is >= -64 and <= 128, "The block lies in the picture.");
 
         ref ushort a = ref MemoryMarshal.GetArrayDataReference(_pred0);
         ref ushort b = ref MemoryMarshal.GetArrayDataReference(_pred1);
         ref T db = ref H264Samples.At(cb, at), dr = ref H264Samples.At(cr, at);
         Vector256<short> lw0 = Vector256.Create((short)w0), lw1 = Vector256.Create((short)w1), round = Vector256.Create((short)32);
         Vector256<short> top = Vector256.Create((short)255);
+        bool average = w0 == 32;
         for (int j = 0; j < h; j++)
         {
             Vector256<short> p0 = Vector256.Create(Vector128.LoadUnsafe(ref a), Vector128.LoadUnsafe(ref a, CrRows)).AsInt16();
             Vector256<short> p1 = Vector256.Create(Vector128.LoadUnsafe(ref b), Vector128.LoadUnsafe(ref b, CrRows)).AsInt16();
-            Vector256<short> v = w0 == 32 ? (p0 + p1 + Vector256<short>.One) >>> 1
-                : Vector256.Min(Vector256.Max(((p0 * lw0) + (p1 * lw1) + round) >> 6, Vector256<short>.Zero), top);
+            Vector256<short> v = average ? (p0 + p1 + Vector256<short>.One) >>> 1 : ((p0 * lw0) + (p1 * lw1) + round) >> 6;
+            if (!H264Samples.Narrow<T>())
+            {
+                v = Vector256.Min(Vector256.Max(v, Vector256<short>.Zero), top);
+            }
+
             H264Samples.Store8(ref db, 0, v.GetLower());
             H264Samples.Store8(ref dr, 0, v.GetUpper());
             a = ref Unsafe.Add(ref a, PredStride);
@@ -548,35 +562,42 @@ internal sealed class H264Inter
     private static void Store<T>(ushort[] pred, T[] plane, int at, int stride, int w, int h, int po)
         where T : unmanaged
     {
-        if (at < 0 || at + ((h - 1) * stride) + w > plane.Length)
-        {
-            throw H264Errors.Corrupt("A prediction block lies outside the picture.");
-        }
-
+        Debug.Assert(at >= 0 && at + ((h - 1) * stride) + w <= plane.Length, "The block lies in the picture.");
         ref ushort p = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(pred), po);
         ref T d = ref H264Samples.At(plane, at);
-        for (int y = 0; y < h; y++)
+        switch (w)
         {
-            ref ushort from = ref Unsafe.Add(ref p, y * PredStride);
-            switch (w)
-            {
-                case 16:
-                    H264Samples.Store16(ref d, y * stride, Vector256.LoadUnsafe(ref from).AsInt16());
-                    break;
-                case 8:
-                    H264Samples.Store8(ref d, y * stride, Vector128.LoadUnsafe(ref from).AsInt16());
-                    break;
-                case 4:
-                    H264Samples.Store4(ref d, y * stride, Vector128.LoadUnsafe(ref from).AsInt16());
-                    break;
-                default:
+            case 16:
+                for (int y = 0; y < h; y++, p = ref Unsafe.Add(ref p, PredStride), d = ref Unsafe.Add(ref d, stride))
+                {
+                    H264Samples.Store16(ref d, 0, Vector256.LoadUnsafe(ref p).AsInt16());
+                }
+
+                break;
+            case 8:
+                for (int y = 0; y < h; y++, p = ref Unsafe.Add(ref p, PredStride), d = ref Unsafe.Add(ref d, stride))
+                {
+                    H264Samples.Store8(ref d, 0, Vector128.LoadUnsafe(ref p).AsInt16());
+                }
+
+                break;
+            case 4:
+                for (int y = 0; y < h; y++, p = ref Unsafe.Add(ref p, PredStride), d = ref Unsafe.Add(ref d, stride))
+                {
+                    H264Samples.Store4(ref d, 0, Vector128.LoadUnsafe(ref p).AsInt16());
+                }
+
+                break;
+            default:
+                for (int y = 0; y < h; y++)
+                {
                     for (int x = 0; x < w; x++)
                     {
-                        H264Samples.Set(plane, at + (y * stride) + x, Unsafe.Add(ref from, x));
+                        H264Samples.Set(plane, at + (y * stride) + x, Unsafe.Add(ref p, (y * PredStride) + x));
                     }
+                }
 
-                    break;
-            }
+                break;
         }
     }
 
@@ -741,14 +762,10 @@ internal sealed class H264Inter
     }
 
     /// <summary>Checks that the samples a w by h block's filters read, rows -2 to h + 3 and columns -2 to w + 10 around at, lie in src.</summary>
+    [Conditional("DEBUG")]
     private static void CheckReach<T>(T[] src, int at, int stride, int h)
-        where T : unmanaged
-    {
-        if (at - (2 * stride) - 2 < 0 || at + ((h + 3) * stride) + 24 > src.Length)
-        {
-            throw H264Errors.Corrupt("A prediction block reaches outside its reference.");
-        }
-    }
+        where T : unmanaged =>
+        Debug.Assert(at - (2 * stride) - 2 >= 0 && at + ((h + 3) * stride) + 24 <= src.Length, "The border test in Luma keeps the filters in the padded plane.");
 
     /// <summary>The full samples G, eight at a time.</summary>
     private static void Copy<T>(T[] src, int at, int stride, int w, int h, ushort[] dst)
