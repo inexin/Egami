@@ -260,6 +260,21 @@ internal sealed class H264Inter
         ref T cr = ref H264Samples.At(refPic.Cr<T>(), at);
         ref ushort d = ref MemoryMarshal.GetArrayDataReference(pred);
         Vector256<ushort> wTop = Vector256.Create((ushort)(8 - yFrac)), wBottom = Vector256.Create((ushort)yFrac), round = Vector256.Create((ushort)32);
+        if ((xFrac | yFrac) == 0)
+        {
+            // Full samples: the block itself.
+            for (int j = 0; j < h; j++)
+            {
+                H264Samples.Load8(ref cb).AsUInt16().StoreUnsafe(ref d);
+                H264Samples.Load8(ref cr).AsUInt16().StoreUnsafe(ref d, CrRows);
+                cb = ref Unsafe.Add(ref cb, stride);
+                cr = ref Unsafe.Add(ref cr, stride);
+                d = ref Unsafe.Add(ref d, PredStride);
+            }
+
+            return;
+        }
+
         if (H264Samples.Narrow<T>())
         {
             // Bytes: each sample and its right neighbour interleave into pairs, and one multiply-add of the pairs by
@@ -810,11 +825,14 @@ internal sealed class H264Inter
         CheckReach(src, at, stride, h);
         ref byte s = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at);
         ref byte a = ref MemoryMarshal.GetArrayDataReference(_bytesA), b = ref MemoryMarshal.GetArrayDataReference(_bytesB);
+        int aStride = 16;
         bool two = true;
         switch (frac)
         {
             case 0x0:
-                CopyBytes(ref s, stride, h, ref a);
+                // Full samples: the last pass reads the reference itself.
+                a = ref s;
+                aStride = stride;
                 two = false;
                 break;
             case 0x1:
@@ -894,7 +912,7 @@ internal sealed class H264Inter
             }
 
             v.StoreUnsafe(ref dst);
-            a = ref Unsafe.Add(ref a, 16);
+            a = ref Unsafe.Add(ref a, aStride);
             b = ref Unsafe.Add(ref b, 16);
             dst = ref Unsafe.Add(ref dst, dstStride);
         }
