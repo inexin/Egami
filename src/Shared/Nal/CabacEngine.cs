@@ -143,43 +143,30 @@ internal sealed class CabacEngine
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int Decode(ref byte state)
     {
+        // As Decode(ref State, ref byte): the symbol chosen by a mask, one renormalisation for both.
         int s = state;
         uint entry = Unsafe.Add(ref MemoryMarshal.GetReference(Packed), (s << 2) + (int)((_range >> 6) & 3));
         uint lps = entry & 0xFF;
-        _range -= lps;
-        uint scaledRange = _range << 7;
-        int bin;
-        if (_value < scaledRange)
+        uint mpsRange = _range - lps;
+        uint scaledRange = mpsRange << 7;
+        uint value = _value;
+        uint m = (uint)~(((int)value - (int)scaledRange) >> 31);
+        value -= scaledRange & m;
+        uint range = (lps & m) | (mpsRange & ~m);
+        state = (byte)(entry >> (8 + (int)(m & 8)));
+        int shift = System.Numerics.BitOperations.LeadingZeroCount(range) - 23;
+        _range = range << shift;
+        value <<= shift;
+        int bitsNeeded = _bitsNeeded + shift;
+        if (bitsNeeded >= 0)
         {
-            bin = s & 1;
-            state = (byte)(entry >> 8);
-            if (scaledRange < (256 << 7))
-            {
-                _range = scaledRange >> 6;
-                _value <<= 1;
-                if (++_bitsNeeded == 0)
-                {
-                    _bitsNeeded = -8;
-                    _value |= (uint)ReadByte();
-                }
-            }
-        }
-        else
-        {
-            bin = (s & 1) ^ 1;
-            state = (byte)(entry >> 16);
-            int shift = System.Numerics.BitOperations.LeadingZeroCount(lps) - 23;
-            _value = (_value - scaledRange) << shift;
-            _range = lps << shift;
-            _bitsNeeded += shift;
-            if (_bitsNeeded >= 0)
-            {
-                _value |= (uint)ReadByte() << _bitsNeeded;
-                _bitsNeeded -= 8;
-            }
+            value |= (uint)ReadByte() << bitsNeeded;
+            bitsNeeded -= 8;
         }
 
-        return bin;
+        _value = value;
+        _bitsNeeded = bitsNeeded;
+        return (s & 1) ^ (int)(m & 1);
     }
 
     /// <summary>
