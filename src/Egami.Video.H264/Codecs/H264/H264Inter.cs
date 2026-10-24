@@ -31,6 +31,13 @@ internal sealed class H264Inter
     private readonly byte[] _edge8 = new byte[(EdgeStride * 22) + EdgeStride];
 
     private H264Picture _pic = null!;
+
+    // The picture's motion arrays per list, and its row length in 4x4 blocks.
+    private sbyte[] _refIdx0 = [];
+    private sbyte[] _refIdx1 = [];
+    private int[] _mv0 = [];
+    private int[] _mv1 = [];
+    private int _w4;
     private H264SliceHeader _h = null!;
     private H264Picture[] _list0 = [];
     private H264Picture[] _list1 = [];
@@ -56,6 +63,11 @@ internal sealed class H264Inter
     internal void Setup(H264Picture pic, H264SliceHeader h, H264Picture[] list0, H264Picture[] list1, int[] implicitWeights)
     {
         _pic = pic;
+        _w4 = pic.WidthMbs * 4;
+        _refIdx0 = pic.RefIdx[0];
+        _refIdx1 = pic.RefIdx[1];
+        _mv0 = pic.Mv[0];
+        _mv1 = pic.Mv[1];
         _h = h;
         _list0 = list0;
         _list1 = list1;
@@ -112,9 +124,9 @@ internal sealed class H264Inter
     private void Predict<T>(int x4, int y4, int w4, int h4)
         where T : unmanaged
     {
-        int b = (y4 * _pic.WidthMbs * 4) + x4;
-        int r0 = _pic.RefIdx[0][b], r1 = _pic.RefIdx[1][b];
-        int mv0 = _pic.Mv[0][b], mv1 = _pic.Mv[1][b];
+        int b = (y4 * _w4) + x4;
+        int r0 = _refIdx0[b], r1 = _refIdx1[b];
+        int mv0 = _mv0[b], mv1 = _mv1[b];
         H264Picture? p0 = r0 >= 0 ? _list0[r0] : null;
         H264Picture? p1 = r1 >= 0 ? _list1[r1] : null;
         int w = w4 * 4, h = h4 * 4, x = x4 * 4, y = y4 * 4;
