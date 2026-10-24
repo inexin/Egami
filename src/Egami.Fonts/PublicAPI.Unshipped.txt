@@ -1,13 +1,1 @@
 #nullable enable
-Egami.Fonts.Layout.KashidaLevel
-Egami.Fonts.Layout.KashidaLevel.High = 2 -> Egami.Fonts.Layout.KashidaLevel
-Egami.Fonts.Layout.KashidaLevel.Low = 0 -> Egami.Fonts.Layout.KashidaLevel
-Egami.Fonts.Layout.KashidaLevel.Medium = 1 -> Egami.Fonts.Layout.KashidaLevel
-Egami.Fonts.Layout.ParagraphStyle.Kashida.get -> Egami.Fonts.Layout.KashidaLevel
-Egami.Fonts.Layout.ParagraphStyle.Kashida.init -> void
-Egami.Fonts.Layout.TextJustify.Kashida = 4 -> Egami.Fonts.Layout.TextJustify
-Egami.Fonts.Shaping.GlyphFlags.SafeToInsertTatweel = 4 -> Egami.Fonts.Shaping.GlyphFlags
-Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel.get -> bool
-Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel.init -> void
-Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel.get -> bool
-Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel.init -> void
