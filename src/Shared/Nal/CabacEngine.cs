@@ -76,14 +76,15 @@ internal sealed class CabacEngine
     internal int Decode(ref byte state)
     {
         int s = state;
-        uint lps = Unsafe.Add(ref MemoryMarshal.GetReference(RangeLps), ((s >> 1) << 2) + (int)((_range >> 6) & 3));
+        uint entry = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(Packed), (s << 2) + (int)((_range >> 6) & 3));
+        uint lps = entry & 0xFF;
         _range -= lps;
         uint scaledRange = _range << 7;
         int bin;
         if (_value < scaledRange)
         {
             bin = s & 1;
-            state = (byte)(s < 124 ? s + 2 : s);
+            state = (byte)(entry >> 8);
             if (scaledRange < (256 << 7))
             {
                 _range = scaledRange >> 6;
@@ -98,8 +99,7 @@ internal sealed class CabacEngine
         else
         {
             bin = (s & 1) ^ 1;
-            int p = s >> 1;
-            state = (byte)((Unsafe.Add(ref MemoryMarshal.GetReference(TransitionLps), p) << 1) | (p == 0 ? bin : s & 1));
+            state = (byte)(entry >> 16);
             int shift = System.Numerics.BitOperations.LeadingZeroCount(lps) - 23;
             _value = (_value - scaledRange) << shift;
             _range = lps << shift;
