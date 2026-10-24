@@ -38,12 +38,12 @@ internal sealed class Ac3Decoder : IAudioDecoder
         _options = options;
         _context = context;
         Ac3DecoderOptions ac3 = options.Ac3 ?? Ac3DecoderOptions.Default;
-        if (!float.IsFinite(ac3.DynamicRange) || ac3.DynamicRange < 0)
+        if (!double.IsFinite(ac3.DynamicRange) || ac3.DynamicRange < 0)
         {
             throw new ArgumentException("Ac3DecoderOptions.DynamicRange must be 0 or more.", nameof(options));
         }
 
-        _decoder.DynamicRange = ac3.DynamicRange;
+        _decoder.DynamicRange = (float)ac3.DynamicRange;
         if (ac3.Downmix is { } downmix)
         {
             if (!downmix.IsPositioned || downmix.ChannelCount == 0)

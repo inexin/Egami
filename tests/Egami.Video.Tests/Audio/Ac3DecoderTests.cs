@@ -112,6 +112,27 @@ public class Ac3DecoderTests(ITestOutputHelper log)
     }
 
     [Fact]
+    public void ReaderLayoutUsesTheStreamsDownmix()
+    {
+        // A stereo or mono AudioReaderOptions.Layout on a 5.1 track mixes in the decoder with the stream's levels, not ChannelMixer's.
+        byte[] stream = File.ReadAllBytes(Path.Combine(Directory, "3-2-lfe-384k.ac3"));
+        foreach (ChannelLayout layout in new[] { ChannelLayout.Stereo, ChannelLayout.Mono })
+        {
+            float[][] expected = Decode(stream, new Ac3DecoderOptions { Downmix = layout });
+            float[][] got = Decode(stream, layout: layout);
+            Assert.Equal(expected.Length, got.Length);
+            for (int c = 0; c < got.Length; c++)
+            {
+                Assert.Equal(expected[c], got[c]);
+            }
+        }
+
+        // A downmix asked of the decoder still wins, and the reader then mixes that to its Layout.
+        float[][] mixed = Decode(stream, new Ac3DecoderOptions { Downmix = ChannelLayout.Mono }, layout: ChannelLayout.Stereo);
+        Assert.Equal(2, mixed.Length);
+    }
+
+    [Fact]
     public void MixesInLayoutsWithMoreSpeakers()
     {
         byte[] stream = File.ReadAllBytes(Path.Combine(Directory, "stereo-160k-nocpl.ac3"));
@@ -175,9 +196,9 @@ public class Ac3DecoderTests(ITestOutputHelper log)
         Assert.Throws<ArgumentException>(() => Ac3Codec.Instance.CreateDecoder(track, new AudioDecoderOptions { Ac3 = new Ac3DecoderOptions { Downmix = ChannelLayout.Unpositioned(2) } }, MediaContext.Default));
     }
 
-    private static float[][] Decode(byte[] stream, Ac3DecoderOptions? ac3 = null, DecodeErrorMode errors = DecodeErrorMode.Throw)
+    private static float[][] Decode(byte[] stream, Ac3DecoderOptions? ac3 = null, DecodeErrorMode errors = DecodeErrorMode.Throw, ChannelLayout? layout = null)
     {
-        AudioReaderOptions options = new() { Errors = errors, Decoder = new AudioDecoderOptions { Ac3 = ac3 } };
+        AudioReaderOptions options = new() { Errors = errors, Layout = layout, Decoder = new AudioDecoderOptions { Ac3 = ac3 } };
         using AudioReader reader = AudioReader.Open(new MemoryStream(stream), options);
         List<float>[] channels = [.. Enumerable.Range(0, reader.Layout.ChannelCount).Select(_ => new List<float>())];
         foreach (AudioFrame frame in reader.ReadFrames())
