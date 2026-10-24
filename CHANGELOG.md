@@ -666,11 +666,11 @@ V5.4: AV1 encoding, through Egami's `Av1StreamEncoder` (Egami 2.9.9). API review
   LAST to LAST3, the golden frame and the hidden frames ahead as BWDREF, ALTREF2 and ALTREF. Each frame's layer goes to the AV1
   encoder, which weighs rate more the deeper the layer; the steps fall from the leaves' halfway toward the alternate reference's
   at each layer up.
-- Before a group is coded, it and the group after it run through `Av1StreamEncoder.Analyze`: the keyframe's and the alternate
-  reference's steps fall with the square root of how much the frames after them reuse them, the base frames get superblock
-  quantizers and the frames above them block multipliers from the same analysis. Keyframes and alternate references are blended
-  by the temporal filter, whose strength follows each picture's noise and the frame's quantizer (`TemporalFilterStrength` null,
-  the default).
+- Before a group is coded, it and the group after it (AV1 looks 40 frames ahead) run through `Av1StreamEncoder.Analyze`: the
+  keyframe's and the alternate reference's steps fall with the square root of how much the frames after them reuse them, the
+  base frames get superblock quantizers and the frames above them block multipliers from the same analysis. Keyframes and
+  alternate references are blended by the temporal filter, whose strength follows each picture's noise and the frame's
+  quantizer (`TemporalFilterStrength` null, the default). `AdaptiveQuantization` also gives the other frames Variance Boost.
 - Main, High and Professional profiles: 8, 10 and 12 bits, 4:2:0, 4:2:2 and 4:4:4, from the frames' planes or
   `Av1EncoderOptions.BitDepth`. The frames' color code points and 4:2:0 chroma siting go into the sequence header and the
   container; static HDR metadata into content light level and mastering display metadata OBUs on every keyframe and into the
@@ -690,18 +690,22 @@ V5.4: AV1 encoding, through Egami's `Av1StreamEncoder` (Egami 2.9.9). API review
   bytes at one thread and at all cores, and with hardware intrinsics off. 10 minutes of AFL++ on the av1enc target found no
   crash (two inputs at effort 10 ran past AFL++'s 5 s limit: 5.5 s each).
 - Against libaom 3.15.2 `aomenc --good` (one-pass VBR, 25 frames of lag, alternate references) and SVT-AV1 3.0.2
-  (`tools/video/time-av1-encoder.py`), at effort 4, 720p, 60 frames, BD-rate on PSNR-Y / SSIM: against `--cpu-used=2` crowd_run
-  +40.3 % / +12.3 %, ducks_take_off +38.2 % / -1.8 %, park_joy +44.4 % / +23.2 %, old_town_cross +189 % / +13.9 % (libaom keeps
-  its grain-free references far better there); against `--cpu-used=6` +18.2 % / -3.4 %, +29.0 % / -7.6 %, +28.8 % / +5.7 %,
-  +117 % / -10.6 %. SVT-AV1 preset 6: -0.5 % / -17.7 %, +8.5 % / -16.9 %, +7.9 % / -6.4 %, +64.5 % / -18.4 %. The +15 % gate is
-  missed on PSNR-Y on every clip, even against libaom's fastest setting; on SSIM it is met against `--cpu-used=2` by three
-  clips of four.
-- Speed (1080p, 10 frames, effort 4, crowd_run and park_joy): one thread 25 to 35 s a frame, between libaom's `--cpu-used=2`
-  (45 to 54 s) and `=3` (10 to 14 s); all 24 cores the same 26 to 35 s, as Egami's AV1 encoder codes frames up to 4096 pixels
-  wide as one tile, while libaom takes 13 to 17 s at `=2` and 0.5 to 0.6 s at `=6`. No libaom setting is as slow in BD-rate as
-  Egami, so the 2x speed gate is missed by far: 12 to 14 times `--cpu-used=6` on one thread and 48 to 57 times on all cores.
-- Rate control (720p, 100 frames, 3 Mbit/s, effort 0): one and two-pass bitrate +1.3 % to +4.5 % of the target, within the 5 %
-  gate; constant bitrate +0.3 % to -8.5 %, its one-second buffer never below 57 %.
+  (`tools/video/time-av1-encoder.py`), at effort 4, 720p, 60 frames, BD-rate on PSNR-Y / SSIM, with stage B's pyramid,
+  temporal model and filters: against `--cpu-used=4` crowd_run +18.4 % / +17.3 %, ducks_take_off +15.4 % / -8.8 %, park_joy
+  +21.4 % / +17.0 %, old_town_cross +42.8 % / +13.3 %; against `--cpu-used=5` +16.2 % / +8.3 %, +13.5 % / -10.3 %, +14.2 % /
+  +7.1 %, +37.0 % / -1.5 %; against `--cpu-used=6` +7.9 % / +3.4 %, +12.4 % / -11.1 %, +13.8 % / +6.3 %, +25.7 % / -1.5 % (stage
+  A: +26.7 % / +7.6 %, +31.9 % / -4.0 %, +34.5 % / +13.8 %, +131 % / -3.5 %). SVT-AV1 preset 6: -9.8 % / -8.0 %, -5.3 % /
+  -19.8 %, -4.4 % / -4.4 %, +9.5 % / -6.2 %. The +15 % gate is met on both metrics against `--cpu-used=6` by three clips of
+  four and against `=5` by two (crowd_run misses PSNR-Y by 1.2 points); old_town_cross misses PSNR-Y at every setting, and
+  against `=4` PSNR-Y is met by none but ducks_take_off's +15.4 % is close.
+- Speed (1080p, 10 frames, effort 4, crowd_run and park_joy, best of two runs): one thread 6.3 and 4.9 s a frame (stage A:
+  8.3 and 5.4 s), between libaom's `--cpu-used=4` (8.3 and 7.2 s) and `=5` (3.3 and 2.8 s); all 24 cores 1.6 and 1.4 s (stage A
+  1.8 and 2.2 s) against 2.5 and 2.3 s at `=4`, 0.76 and 0.66 s at `=5`, 0.63 and 0.55 s at `=6`. So the setting matched by
+  time is `=4`, where the BD-rate gate is missed, and the setting matched by BD-rate is faster than `=6`, against which Egami
+  takes 2.3 to 2.4 times as long on one thread and 2.5 to 2.6 times on all cores: the 2x speed gate is missed, by much less
+  than before stage A (12 to 14 times and 48 to 57 times).
+- Rate control (720p, 100 frames, 3 Mbit/s, effort 0): one-pass bitrate +0.8 % to +2.1 % of the target and two-pass +1.0 % to
+  +3.1 %, within the 5 % gate; constant bitrate -6.4 % to +2.2 %, its one-second buffer never below 55 %.
 
 ## Egami.Video 0.5.0 (unreleased)
 
