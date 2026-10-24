@@ -96,11 +96,13 @@ Times are seconds (`90.5`, `500ms`, `2m`), `[HH:]MM:SS[.mmm]` (`1:30`, `01:02:03
 A stream copy can only start on a keyframe. `trim` starts at the video keyframe at or before `--from`, ends exactly at `--to`,
 and says on standard error how far the start moved. `segment` starts each part at the first keyframe at or after its split point;
 `segment --scenes` starts each part at the keyframe at or before its scene's first frame and says on standard error how far
-before, with a warning when that is over a second. Starting exactly on the scene needs smart cut (`--exact`), which comes with
-a later step.
+before, with a warning when that is over a second. `trim --smart` starts on the exact frame: it encodes again only the frames
+from `--from` up to the next keyframe, matching the stream at its own quantizer, and copies the rest; `trim --reencode` encodes
+the whole cut again. `segment --scenes --exact` cuts every part that way, so each starts on its scene's first frame.
 
 ```sh
 egami-video trim in.webm --from 0.5 --duration 1 -o cut.webm
+egami-video trim in.webm --from 0.5 --duration 1 --smart -o exact.webm
 egami-video segment in.mkv --every 1 -o parts/{part:000}.mkv
 egami-video segment in.mkv --scenes -o shots/{part:000}.mkv -v
 egami-video concat parts/001.mkv parts/002.mkv -o joined.mkv

@@ -292,6 +292,13 @@ internal static class FfmpegTranslator
             return [[.. metadata]];
         }
 
+        if (cut && !CopiesVideo(line))
+        {
+            // ffmpeg encodes the cut again, starting on the exact frame: smart cut does too, encoding only up to the next keyframe.
+            RequireCopy(line, "a cut without filters");
+            return [["trim", input, .. outputWords, .. Range(line, first), .. Streams(line), "--smart", .. common]];
+        }
+
         CopyOnly(line, session);
         return cut
             ? [["trim", input, .. outputWords, .. Range(line, first), .. Streams(line), .. common]]
@@ -1087,6 +1094,10 @@ internal static class FfmpegTranslator
             }
         }
     }
+
+    /// <summary>Whether a line copies the video: <c>-c copy</c> or <c>-c:v copy</c>.</summary>
+    private static bool CopiesVideo(FfmpegLine line) =>
+        (line.Codecs.TryGetValue(string.Empty, out string? all) && all == "copy") || (line.Codecs.TryGetValue("v", out string? video) && video == "copy");
 
     private static void CopyOnly(FfmpegLine line, VideoSession session)
     {
