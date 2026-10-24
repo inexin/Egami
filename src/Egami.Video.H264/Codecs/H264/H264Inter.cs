@@ -152,7 +152,8 @@ internal sealed class H264Inter
         }
 
         bool bi = p0 is not null && p1 is not null;
-        if (H264Samples.Narrow<T>() && w == 16 && UseVectors && UseWideVectors && !_explicit && (!bi || !_implicitMode || _implicit[(r0 * 32) + r1] == 32))
+        bool bytes = H264Samples.Narrow<T>() && w == 16 && UseVectors && UseWideVectors && !_explicit && (!bi || !_implicitMode || _implicit[(r0 * 32) + r1] == 32);
+        if (bytes)
         {
             // 8 bits without weights: bytes from the filters to the picture, one list as it is or two averaged.
             byte[] luma = _pic.Y<byte>();
@@ -192,6 +193,28 @@ internal sealed class H264Inter
         int cw = w / 2, ch = _chroma == 1 ? h / 2 : h, cx = x / 2, cy = _chroma == 1 ? y / 2 : y;
         if (_chroma == 1)
         {
+            if (bytes && (p0 is null || ChromaInside(p0, cx, cy, ch, mv0)) && (p1 is null || ChromaInside(p1, cx, cy, ch, mv1)))
+            {
+                // As for luma: bytes from the filter to both planes, one list as it is or two averaged.
+                int chromaAt = _pic.ChromaOrigin + (cy * _pic.ChromaStride) + cx;
+                byte[] cbPlane = _pic.Cb<byte>(), crPlane = _pic.Cr<byte>();
+                Debug.Assert(chromaAt >= 0 && chromaAt + ((ch - 1) * _pic.ChromaStride) + 8 <= Math.Min(cbPlane.Length, crPlane.Length), "The block lies in the picture.");
+                ref byte dstCb = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(cbPlane), chromaAt);
+                ref byte dstCr = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(crPlane), chromaAt);
+                ref byte first = ref MemoryMarshal.GetArrayDataReference(_bytes0);
+                if (!bi)
+                {
+                    ChromaBytes(p0 ?? p1!, cx, cy, ch, p0 is not null ? mv0 : mv1, ref dstCb, ref dstCr, _pic.ChromaStride, ref first, false);
+                }
+                else
+                {
+                    ChromaBytes(p0!, cx, cy, ch, mv0, ref first, ref Unsafe.Add(ref first, 8), 16, ref first, false);
+                    ChromaBytes(p1!, cx, cy, ch, mv1, ref dstCb, ref dstCr, _pic.ChromaStride, ref first, true);
+                }
+
+                return;
+            }
+
             // 4:2:0 blocks are at most 8 rows: Cb's prediction takes rows 0 to 7 of the buffers and Cr's rows 8 to 15.
             if (p0 is not null)
             {
@@ -310,6 +333,72 @@ internal sealed class H264Inter
             v.GetUpper().StoreUnsafe(ref d, (nuint)((j * PredStride) + CrRows));
             above = below;
         }
+    }
+
+    /// <summary>Whether an 8-wide 4:2:0 block at (x, y) moved by mv, with its extra row and column, lies in the padded planes.</summary>
+    private static bool ChromaInside(H264Picture refPic, int x, int y, int h, int mv)
+    {
+        int xInt = x + (H264SliceDecoder.MvX(mv) >> 3), yInt = y + (H264SliceDecoder.MvY(mv) >> 3), pad = H264Picture.Pad;
+        return (uint)(xInt + pad) <= (uint)(refPic.ChromaWidth + (2 * pad) - 9) && (uint)(yInt + pad) <= (uint)(refPic.ChromaHeight + (2 * pad) - h - 1);
+    }
+
+    /// <summary>
+    /// The 4:2:0 chroma prediction of an 8-wide block of an 8-bit picture in bytes: each row of Cb and Cr is packed to bytes
+    /// and written to the destinations, or averaged with the first list's prediction (Cb in bytes 0 to 7 of each 16, Cr in 8 to 15).
+    /// </summary>
+    private static void ChromaBytes(H264Picture refPic, int x, int y, int h, int mv, ref byte dstCb, ref byte dstCr, int dstStride, ref byte first, bool average)
+    {
+        int mvx = H264SliceDecoder.MvX(mv), mvy = H264SliceDecoder.MvY(mv);
+        int xFrac = mvx & 7, yFrac = mvy & 7, stride = refPic.ChromaStride;
+        int at = refPic.ChromaOrigin + ((y + (mvy >> 3)) * stride) + x + (mvx >> 3);
+        byte[] cbPlane = refPic.Cb<byte>(), crPlane = refPic.Cr<byte>();
+        Debug.Assert(at >= 0 && at + (h * stride) + 9 <= Math.Min(cbPlane.Length, crPlane.Length), "ChromaInside keeps the block in the padded planes.");
+        ref byte b = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(cbPlane), at);
+        ref byte r = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(crPlane), at);
+        if ((xFrac | yFrac) == 0)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                Vector128<byte> v = Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref b), Unsafe.ReadUnaligned<ulong>(ref r)).AsByte();
+                StoreChroma(v, ref dstCb, ref dstCr, ref first, average);
+                b = ref Unsafe.Add(ref b, stride);
+                r = ref Unsafe.Add(ref r, stride);
+                dstCb = ref Unsafe.Add(ref dstCb, dstStride);
+                dstCr = ref Unsafe.Add(ref dstCr, dstStride);
+                first = ref Unsafe.Add(ref first, 16);
+            }
+
+            return;
+        }
+
+        Vector256<ushort> wTop = Vector256.Create((ushort)(8 - yFrac)), wBottom = Vector256.Create((ushort)yFrac), round = Vector256.Create((ushort)32);
+        Vector256<sbyte> across = Vector256.Create((short)((xFrac << 8) | (8 - xFrac))).AsSByte();
+        Vector256<ushort> top = Across(ref b, ref r, across);
+        for (int j = 0; j < h; j++)
+        {
+            b = ref Unsafe.Add(ref b, stride);
+            r = ref Unsafe.Add(ref r, stride);
+            Vector256<ushort> bottom = Across(ref b, ref r, across);
+            Vector256<short> v = (((wTop * top) + (wBottom * bottom) + round) >>> 6).AsInt16();
+            StoreChroma(Sse2.PackUnsignedSaturate(v.GetLower(), v.GetUpper()), ref dstCb, ref dstCr, ref first, average);
+            dstCb = ref Unsafe.Add(ref dstCb, dstStride);
+            dstCr = ref Unsafe.Add(ref dstCr, dstStride);
+            first = ref Unsafe.Add(ref first, 16);
+            top = bottom;
+        }
+    }
+
+    /// <summary>Writes a row of Cb (bytes 0 to 7) and Cr (8 to 15), averaged with the first list's row when asked.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void StoreChroma(Vector128<byte> v, ref byte dstCb, ref byte dstCr, ref byte first, bool average)
+    {
+        if (average)
+        {
+            v = Sse2.Average(v, Vector128.LoadUnsafe(ref first));
+        }
+
+        Unsafe.WriteUnaligned(ref dstCb, v.AsUInt64().ToScalar());
+        Unsafe.WriteUnaligned(ref dstCr, v.AsUInt64().GetElement(1));
     }
 
     /// <summary>The horizontal pass of 4:2:0 chroma for eight samples of a Cb row and a Cr row: (8 - xFrac) a + xFrac b.</summary>
