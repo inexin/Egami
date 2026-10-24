@@ -30,6 +30,9 @@ internal sealed class H264Inter
     private readonly int[] _half = new int[21 * 16];
     private readonly ushort[] _edge = new ushort[(EdgeStride * 22) + EdgeStride];
     private readonly byte[] _edge8 = new byte[(EdgeStride * 22) + EdgeStride];
+    private readonly byte[] _bytesA = new byte[(PredStride * 16) + PredStride];
+    private readonly byte[] _bytesB = new byte[(PredStride * 16) + PredStride];
+    private readonly byte[] _bytes0 = new byte[(PredStride * 16) + PredStride];
 
     private H264Picture _pic = null!;
 
@@ -148,17 +151,39 @@ internal sealed class H264Inter
             }
         }
 
-        if (p0 is not null)
+        bool bi = p0 is not null && p1 is not null;
+        if (H264Samples.Narrow<T>() && w == 16 && UseVectors && UseWideVectors && !_explicit && (!bi || !_implicitMode || _implicit[(r0 * 32) + r1] == 32))
         {
-            Luma<T>(p0, x, y, w, h, mv0, _pred0);
+            // 8 bits without weights: bytes from the filters to the picture, one list as it is or two averaged.
+            byte[] luma = _pic.Y<byte>();
+            int lumaAt = _pic.Origin + (y * _pic.Stride) + x;
+            Debug.Assert(lumaAt >= 0 && lumaAt + ((h - 1) * _pic.Stride) + 16 <= luma.Length, "The block lies in the picture.");
+            ref byte dst = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(luma), lumaAt);
+            ref byte first = ref MemoryMarshal.GetArrayDataReference(_bytes0);
+            if (!bi)
+            {
+                Luma16Bytes(p0 ?? p1!, x, y, h, p0 is not null ? mv0 : mv1, ref dst, _pic.Stride, ref first, false);
+            }
+            else
+            {
+                Luma16Bytes(p0!, x, y, h, mv0, ref first, 16, ref first, false);
+                Luma16Bytes(p1!, x, y, h, mv1, ref dst, _pic.Stride, ref first, true);
+            }
         }
-
-        if (p1 is not null)
+        else
         {
-            Luma<T>(p1, x, y, w, h, mv1, _pred1);
-        }
+            if (p0 is not null)
+            {
+                Luma<T>(p0, x, y, w, h, mv0, _pred0);
+            }
 
-        Combine(_pic.Y<T>(), _pic.Origin + (y * _pic.Stride) + x, _pic.Stride, w, h, r0, r1, 0, _maxY, _shiftY, 0);
+            if (p1 is not null)
+            {
+                Luma<T>(p1, x, y, w, h, mv1, _pred1);
+            }
+
+            Combine(_pic.Y<T>(), _pic.Origin + (y * _pic.Stride) + x, _pic.Stride, w, h, r0, r1, 0, _maxY, _shiftY, 0);
+        }
         if (_chroma == 0)
         {
             return;
@@ -760,6 +785,196 @@ internal sealed class H264Inter
                 break;
         }
     }
+
+    /// <summary>
+    /// The luma prediction of a 16-wide block of an 8-bit picture without weights, kept in bytes from end to end: each filter
+    /// packs its row to bytes, which clips it, quarter samples are the rounded average of two such rows (one pavgb), and the
+    /// last pass writes the destination, averaging with the first list's prediction for two lists.
+    /// </summary>
+    private void Luma16Bytes(H264Picture refPic, int x, int y, int h, int mv, ref byte dst, int dstStride, ref byte first, bool average)
+    {
+        int mvx = H264SliceDecoder.MvX(mv), mvy = H264SliceDecoder.MvY(mv);
+        int xInt = x + (mvx >> 2), yInt = y + (mvy >> 2);
+        int frac = ((mvx & 3) << 2) | (mvy & 3);
+        byte[] src = refPic.Y<byte>();
+        int stride = refPic.Stride, at = refPic.Origin + (yInt * stride) + xInt;
+        int pad = H264Picture.Pad;
+        if ((uint)(xInt - 2 + pad) > (uint)(refPic.Width + (2 * pad) - 21) || (uint)(yInt - 2 + pad) > (uint)(refPic.Height + (2 * pad) - h - 5))
+        {
+            FetchEdge(src, refPic.Origin, stride, refPic.Width, refPic.Height, xInt - 2, yInt - 2, EdgeStride, h + 6);
+            src = _edge8;
+            stride = EdgeStride;
+            at = (2 * EdgeStride) + 2;
+        }
+
+        CheckReach(src, at, stride, h);
+        ref byte s = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at);
+        ref byte a = ref MemoryMarshal.GetArrayDataReference(_bytesA), b = ref MemoryMarshal.GetArrayDataReference(_bytesB);
+        bool two = true;
+        switch (frac)
+        {
+            case 0x0:
+                CopyBytes(ref s, stride, h, ref a);
+                two = false;
+                break;
+            case 0x1:
+                CopyBytes(ref s, stride, h, ref a);
+                HalfVBytes(ref s, stride, h, ref b);
+                break;
+            case 0x2:
+                HalfVBytes(ref s, stride, h, ref a);
+                two = false;
+                break;
+            case 0x3:
+                CopyBytes(ref Unsafe.Add(ref s, stride), stride, h, ref a);
+                HalfVBytes(ref s, stride, h, ref b);
+                break;
+            case 0x4:
+                CopyBytes(ref s, stride, h, ref a);
+                HalfHBytes(ref s, stride, h, ref b);
+                break;
+            case 0x5:
+                HalfHBytes(ref s, stride, h, ref a);
+                HalfVBytes(ref s, stride, h, ref b);
+                break;
+            case 0x6:
+                HalfVBytes(ref s, stride, h, ref a);
+                CenterBytes(ref s, stride, h, ref b);
+                break;
+            case 0x7:
+                HalfVBytes(ref s, stride, h, ref a);
+                HalfHBytes(ref Unsafe.Add(ref s, stride), stride, h, ref b);
+                break;
+            case 0x8:
+                HalfHBytes(ref s, stride, h, ref a);
+                two = false;
+                break;
+            case 0x9:
+                HalfHBytes(ref s, stride, h, ref a);
+                CenterBytes(ref s, stride, h, ref b);
+                break;
+            case 0xA:
+                CenterBytes(ref s, stride, h, ref a);
+                two = false;
+                break;
+            case 0xB:
+                CenterBytes(ref s, stride, h, ref a);
+                HalfHBytes(ref Unsafe.Add(ref s, stride), stride, h, ref b);
+                break;
+            case 0xC:
+                CopyBytes(ref Unsafe.Add(ref s, 1), stride, h, ref a);
+                HalfHBytes(ref s, stride, h, ref b);
+                break;
+            case 0xD:
+                HalfHBytes(ref s, stride, h, ref a);
+                HalfVBytes(ref Unsafe.Add(ref s, 1), stride, h, ref b);
+                break;
+            case 0xE:
+                CenterBytes(ref s, stride, h, ref a);
+                HalfVBytes(ref Unsafe.Add(ref s, 1), stride, h, ref b);
+                break;
+            default:
+                HalfVBytes(ref Unsafe.Add(ref s, 1), stride, h, ref a);
+                HalfHBytes(ref Unsafe.Add(ref s, stride), stride, h, ref b);
+                break;
+        }
+
+        for (int j = 0; j < h; j++)
+        {
+            Vector128<byte> v = Vector128.LoadUnsafe(ref a);
+            if (two)
+            {
+                v = Sse2.Average(v, Vector128.LoadUnsafe(ref b));
+            }
+
+            if (average)
+            {
+                v = Sse2.Average(v, Vector128.LoadUnsafe(ref first));
+                first = ref Unsafe.Add(ref first, 16);
+            }
+
+            v.StoreUnsafe(ref dst);
+            a = ref Unsafe.Add(ref a, 16);
+            b = ref Unsafe.Add(ref b, 16);
+            dst = ref Unsafe.Add(ref dst, dstStride);
+        }
+    }
+
+    private static void CopyBytes(ref byte s, int stride, int h, ref byte d)
+    {
+        for (int j = 0; j < h; j++)
+        {
+            Vector128.LoadUnsafe(ref s).StoreUnsafe(ref d);
+            s = ref Unsafe.Add(ref s, stride);
+            d = ref Unsafe.Add(ref d, 16);
+        }
+    }
+
+    /// <summary>Packs 16 lanes of 16-bit results to bytes, clipping them to 0 to 255.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<byte> PackBytes(Vector256<short> v) => Sse2.PackUnsignedSaturate(v.GetLower(), v.GetUpper());
+
+    private static void HalfHBytes(ref byte s, int stride, int h, ref byte d)
+    {
+        Vector256<short> round = Vector256.Create((short)16);
+        ref byte r = ref Unsafe.Subtract(ref s, 2);
+        for (int j = 0; j < h; j++)
+        {
+            Vector256<short> t = Tap(Load16(ref r, 0), Load16(ref r, 1), Load16(ref r, 2), Load16(ref r, 3), Load16(ref r, 4), Load16(ref r, 5));
+            PackBytes((t + round) >> 5).StoreUnsafe(ref d);
+            r = ref Unsafe.Add(ref r, stride);
+            d = ref Unsafe.Add(ref d, 16);
+        }
+    }
+
+    private static void HalfVBytes(ref byte s, int stride, int h, ref byte d)
+    {
+        Vector256<short> round = Vector256.Create((short)16);
+        ref byte r = ref Unsafe.Subtract(ref s, 2 * stride);
+        Vector256<short> a = Load16(ref r, 0), b = Load16(ref r, stride), c = Load16(ref r, 2 * stride), e = Load16(ref r, 3 * stride),
+            f = Load16(ref r, 4 * stride);
+        r = ref Unsafe.Add(ref r, 5 * stride);
+        for (int j = 0; j < h; j++)
+        {
+            Vector256<short> g = Load16(ref r, 0);
+            PackBytes((Tap(a, b, c, e, f, g) + round) >> 5).StoreUnsafe(ref d);
+            (a, b, c, e, f) = (b, c, e, f, g);
+            r = ref Unsafe.Add(ref r, stride);
+            d = ref Unsafe.Add(ref d, 16);
+        }
+    }
+
+    /// <summary>j in bytes: the unrounded horizontal sums of rows -2 to h + 2, then the vertical filter in 32-bit lanes.</summary>
+    private void CenterBytes(ref byte s, int stride, int h, ref byte d)
+    {
+        ref byte r = ref Unsafe.Subtract(ref s, (2 * stride) + 2);
+        ref short m = ref MemoryMarshal.GetArrayDataReference(_mid);
+        ref short mr = ref m;
+        for (int j = 0; j < h + 5; j++)
+        {
+            Tap(Load16(ref r, 0), Load16(ref r, 1), Load16(ref r, 2), Load16(ref r, 3), Load16(ref r, 4), Load16(ref r, 5)).StoreUnsafe(ref mr);
+            r = ref Unsafe.Add(ref r, stride);
+            mr = ref Unsafe.Add(ref mr, PredStride);
+        }
+
+        Vector256<int> round = Vector256.Create(512);
+        for (int j = 0; j < h; j++)
+        {
+            Vector256<short> a = Vector256.LoadUnsafe(ref m), b = Vector256.LoadUnsafe(ref m, PredStride), c = Vector256.LoadUnsafe(ref m, 2 * PredStride),
+                e = Vector256.LoadUnsafe(ref m, 3 * PredStride), f = Vector256.LoadUnsafe(ref m, 4 * PredStride), g = Vector256.LoadUnsafe(ref m, 5 * PredStride);
+            Vector256<int> lo = (Tap32(Vector256.WidenLower(a), Vector256.WidenLower(b), Vector256.WidenLower(c), Vector256.WidenLower(e), Vector256.WidenLower(f), Vector256.WidenLower(g)) + round) >> 10;
+            Vector256<int> hi = (Tap32(Vector256.WidenUpper(a), Vector256.WidenUpper(b), Vector256.WidenUpper(c), Vector256.WidenUpper(e), Vector256.WidenUpper(f), Vector256.WidenUpper(g)) + round) >> 10;
+
+            // Widening splits the lanes in order, low eight then high eight, so the signed pack and the byte pack keep the order.
+            Vector128<short> low = Sse2.PackSignedSaturate(lo.GetLower(), lo.GetUpper()), high = Sse2.PackSignedSaturate(hi.GetLower(), hi.GetUpper());
+            Sse2.PackUnsignedSaturate(low, high).StoreUnsafe(ref d);
+            m = ref Unsafe.Add(ref m, PredStride);
+            d = ref Unsafe.Add(ref d, 16);
+        }
+    }
+
+    private static Vector256<int> Tap32(Vector256<int> a, Vector256<int> b, Vector256<int> c, Vector256<int> d, Vector256<int> e, Vector256<int> f) =>
+        ((c + d) * 20) - ((b + e) * 5) + (a + f);
 
     /// <summary>Checks that the samples a w by h block's filters read, rows -2 to h + 3 and columns -2 to w + 10 around at, lie in src.</summary>
     [Conditional("DEBUG")]
