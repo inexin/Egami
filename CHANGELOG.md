@@ -3,7 +3,10 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami 1.2.0 (unreleased)
+## Egami 1.2.0 (2026-10-24)
+
+The release train: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Cli and Egami.Cli.Host move
+to 1.2.0 together. It adds API and removes none.
 
 ### AV1 encoder speed (Phase 2.9.11, stage A)
 
@@ -148,6 +151,50 @@ changes that break code come only in a new major version.
   item. avifdec decodes every frame exactly as Egami does.
 - AVIF and HEIC image sequences now load their loop count from the edit list and the track duration (it was 0 or 1).
 
+### AV1 decoding
+
+- 8-bit AV1 decodes about 9 % faster on one thread: 8-bit frames keep their samples as bytes, and the motion filter, the
+  loop filter's vertical edges and the warp read them with byte kernels. On 1080p and 720p clips decoding takes about 3.2
+  and 3.4 times dav1d's time, from 3.5 and 3.7. Output is unchanged: every frame still equals libaom's.
+
+## Egami.Fonts 1.2.0 (2026-10-24)
+
+### Kashida
+
+- `TextJustify.Kashida` justifies Arabic lines by lengthening joined words with tatweels (U+0640) where shaping marks a
+  cluster safe for one: one point per word by the Arabic justification priorities, whole tatweel glyphs of the run's font
+  spread over the words up to `ParagraphStyle.Kashida` (`KashidaLevel.Low`, `Medium` or `High`: 1, 2 or 4 per word), and word
+  separators take what is left. Vertical lines, scripts that do not join and fonts without a tatweel justify at spaces.
+- `GlyphFlags.SafeToInsertTatweel`, produced when `ShapingOptions.ProduceSafeToInsertTatweel` or
+  `RunProperties.ProduceSafeToInsertTatweel` is set, marks the clusters a tatweel can go before without changing the
+  shaping around it, as HarfBuzz's flag of that name does.
+
+## Egami.Drawing 1.2.0 (2026-10-24)
+
+### Knockout groups
+
+- A layer inside a knockout layer now knocks out as one of its calls, on `RasterCanvas` and `InkCanvas` alike: it composites
+  with what the knockout layer started as and replaces what is under it wherever it drew, even where it is translucent, as
+  PDF's knockout groups require. A non-isolated layer inside one also starts from that first content. Before, such a layer
+  merged over the earlier calls, so they showed through it, and a non-isolated one blended with them.
+
+### Ink drawing
+
+- An image drawn on an `InkCanvas` with overprint off now knocks out every plate it covers, as a solid fill does. Before, the
+  plates the image had no ink for (spot plates under an RGB photo, or under an ink image of process plates only) kept what
+  was below where the image was opaque, so a spot showed through.
+
+### Kashida
+
+- Tatweels that kashida justification inserts are drawn in a marked-content span with an empty `ActualText`, so text
+  extracted from the drawing has none.
+
+## Egami.Svg, Egami.Css, Egami.Heic and Egami.Cli 1.2.0 (2026-10-24)
+
+- No changes of their own beyond Egami 1.2.0: they move to 1.2.0 with the release train. Egami.Heic depends on exactly
+  Egami 1.2.0. Egami.Cli gains the `chroma-key` and `despill` steps, reads and writes animated cursors, and compiles in
+  Egami.Cli.Host (see Egami 1.2.0).
+
 ## Egami.Cli 1.1.0 (2026-10-22)
 
 A new package: the `egami` command-line tool, a .NET tool built on Egami's public API (Roadmap 2.0). It carries its own copy of
@@ -185,27 +232,6 @@ which needs no .NET runtime.
   replace an input without `in_place`. The package is also listed as an MCP server on NuGet, with its `server.json`.
 - `egami <name>` runs an `egami-<name>` program from the PATH, so other families' tools join in; `egami formats` names
   `egami-heic` for HEIC, which the tool leaves out.
-## Egami 1.1.1 (unreleased)
-
-### Knockout groups
-
-- A layer inside a knockout layer now knocks out as one of its calls, on `RasterCanvas` and `InkCanvas` alike: it composites
-  with what the knockout layer started as and replaces what is under it wherever it drew, even where it is translucent, as
-  PDF's knockout groups require. A non-isolated layer inside one also starts from that first content. Before, such a layer
-  merged over the earlier calls, so they showed through it, and a non-isolated one blended with them.
-
-### Ink drawing
-
-- An image drawn on an `InkCanvas` with overprint off now knocks out every plate it covers, as a solid fill does. Before, the
-  plates the image had no ink for (spot plates under an RGB photo, or under an ink image of process plates only) kept what
-  was below where the image was opaque, so a spot showed through.
-
-### AV1 video
-
-- 8-bit AV1 decodes about 9 % faster on one thread: 8-bit frames keep their samples as bytes, and the motion filter, the
-  loop filter's vertical edges and the warp read them with byte kernels. On 1080p and 720p clips decoding takes about 3.2
-  and 3.4 times dav1d's time, from 3.5 and 3.7. Output is unchanged: every frame still equals libaom's.
-
 ## Egami.Barcodes 1.0.1 (unreleased)
 
 ### Package icon

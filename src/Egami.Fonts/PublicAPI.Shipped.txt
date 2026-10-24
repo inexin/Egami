@@ -545,6 +545,10 @@ Egami.Fonts.Layout.DecorationShape.StyleIndex.get -> int
 Egami.Fonts.Layout.DecorationShape.Thickness.get -> float
 Egami.Fonts.Layout.DecorationShape.Top.get -> float
 Egami.Fonts.Layout.ITextPaint
+Egami.Fonts.Layout.KashidaLevel
+Egami.Fonts.Layout.KashidaLevel.High = 2 -> Egami.Fonts.Layout.KashidaLevel
+Egami.Fonts.Layout.KashidaLevel.Low = 0 -> Egami.Fonts.Layout.KashidaLevel
+Egami.Fonts.Layout.KashidaLevel.Medium = 1 -> Egami.Fonts.Layout.KashidaLevel
 Egami.Fonts.Layout.LayoutRun
 Egami.Fonts.Layout.LayoutRun.Advance.get -> float
 Egami.Fonts.Layout.LayoutRun.BidiLevel.get -> int
@@ -645,6 +649,8 @@ Egami.Fonts.Layout.ParagraphStyle.Hyphen.get -> string?
 Egami.Fonts.Layout.ParagraphStyle.Hyphen.init -> void
 Egami.Fonts.Layout.ParagraphStyle.Justify.get -> Egami.Fonts.Layout.TextJustify
 Egami.Fonts.Layout.ParagraphStyle.Justify.init -> void
+Egami.Fonts.Layout.ParagraphStyle.Kashida.get -> Egami.Fonts.Layout.KashidaLevel
+Egami.Fonts.Layout.ParagraphStyle.Kashida.init -> void
 Egami.Fonts.Layout.ParagraphStyle.LineBreaking.get -> Egami.Fonts.Layout.LineBreakOptions
 Egami.Fonts.Layout.ParagraphStyle.LineBreaking.init -> void
 Egami.Fonts.Layout.ParagraphStyle.LineFill.get -> Egami.Fonts.Layout.LineFill
@@ -798,6 +804,7 @@ Egami.Fonts.Layout.TextJustify
 Egami.Fonts.Layout.TextJustify.Auto = 0 -> Egami.Fonts.Layout.TextJustify
 Egami.Fonts.Layout.TextJustify.InterCharacter = 2 -> Egami.Fonts.Layout.TextJustify
 Egami.Fonts.Layout.TextJustify.InterWord = 1 -> Egami.Fonts.Layout.TextJustify
+Egami.Fonts.Layout.TextJustify.Kashida = 4 -> Egami.Fonts.Layout.TextJustify
 Egami.Fonts.Layout.TextJustify.None = 3 -> Egami.Fonts.Layout.TextJustify
 Egami.Fonts.Layout.TextLayout
 Egami.Fonts.Layout.TextLayout.Decorations.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Layout.DecorationShape!>!
@@ -961,6 +968,7 @@ Egami.Fonts.Shaping.GlyphBuffer.GlyphIds.get -> System.ReadOnlySpan<ushort>
 Egami.Fonts.Shaping.GlyphBuffer.Positions.get -> System.ReadOnlySpan<Egami.Fonts.Shaping.GlyphPosition>
 Egami.Fonts.Shaping.GlyphFlags
 Egami.Fonts.Shaping.GlyphFlags.None = 0 -> Egami.Fonts.Shaping.GlyphFlags
+Egami.Fonts.Shaping.GlyphFlags.SafeToInsertTatweel = 4 -> Egami.Fonts.Shaping.GlyphFlags
 Egami.Fonts.Shaping.GlyphFlags.UnsafeToBreak = 1 -> Egami.Fonts.Shaping.GlyphFlags
 Egami.Fonts.Shaping.GlyphFlags.UnsafeToConcat = 2 -> Egami.Fonts.Shaping.GlyphFlags
 Egami.Fonts.Shaping.GlyphPosition
@@ -997,6 +1005,8 @@ Egami.Fonts.Shaping.RunProperties.Features.get -> System.Collections.Generic.IRe
 Egami.Fonts.Shaping.RunProperties.Features.init -> void
 Egami.Fonts.Shaping.RunProperties.Language.get -> string?
 Egami.Fonts.Shaping.RunProperties.Language.init -> void
+Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel.get -> bool
+Egami.Fonts.Shaping.RunProperties.ProduceSafeToInsertTatweel.init -> void
 Egami.Fonts.Shaping.RunProperties.RunProperties() -> void
 Egami.Fonts.Shaping.RunProperties.Script.get -> Egami.Fonts.Unicode.Script?
 Egami.Fonts.Shaping.RunProperties.Script.init -> void
@@ -1038,6 +1048,8 @@ Egami.Fonts.Shaping.ShapingOptions.Features.get -> System.Collections.Generic.IR
 Egami.Fonts.Shaping.ShapingOptions.Features.init -> void
 Egami.Fonts.Shaping.ShapingOptions.Language.get -> string?
 Egami.Fonts.Shaping.ShapingOptions.Language.init -> void
+Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel.get -> bool
+Egami.Fonts.Shaping.ShapingOptions.ProduceSafeToInsertTatweel.init -> void
 Egami.Fonts.Shaping.ShapingOptions.Script.get -> Egami.Fonts.Unicode.Script?
 Egami.Fonts.Shaping.ShapingOptions.Script.init -> void
 Egami.Fonts.Shaping.ShapingOptions.ShapingOptions() -> void
