@@ -75,6 +75,10 @@ jobs:
           plugins: code-review@claude-code-plugins
           # The Claude Code report in the job summary shows what Claude ran, including any command it was refused.
           display_report: true
+          # The run ends when Claude's turn ends, and anything still running in the background is stopped. On Egap #56 the
+          # review agents ran in the background and Claude ended with "the review agent is still running", so nothing was
+          # posted. This turns background runs off, so every subagent finishes before Claude goes on.
+          settings: '{"env": {"CLAUDE_CODE_DISABLE_BACKGROUND_TASKS": "1"}}'
           prompt: |
             /code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
 
@@ -93,6 +97,8 @@ jobs:
             own: no `cd`, no `&&` or `;`, and keep any file you save inside the working directory, not in /tmp. You and
             every subagent may run `gh pr view`, `gh pr diff`, `gh pr comment`, `gh pr list`, `gh issue view`,
             `gh issue list`, `gh search`, `head`, `tail`, `wc` and `grep`.
+            This run stops as soon as your turn ends, and anything still running is stopped with it. Run every subagent in
+            the foreground and wait for its result. Never end your turn while an agent is still running.
             If you still can't finish the review, because a command was refused or a step failed, don't end silently:
             post a comment with `gh pr comment` that starts with "## Code review" and says the review did not complete
             and why.
