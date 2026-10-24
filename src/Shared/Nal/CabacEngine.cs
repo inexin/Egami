@@ -34,6 +34,13 @@ internal sealed class CabacEngine
         24, 25, 26, 26, 27, 27, 28, 29, 29, 30, 30, 30, 31, 32, 32, 33, 33, 33, 34, 34, 35, 35, 35, 36, 36, 36, 37, 37, 37, 38, 38, 63,
     ];
 
+    /// <summary>
+    /// rangeTabLps and both transitions in one entry per state and qRangeIdx, indexed by (state &lt;&lt; 2) | qRangeIdx: the LPS range
+    /// in bits 0 to 7, the state after the more probable symbol in bits 8 to 15 and after the less probable one in bits 16 to 23,
+    /// so a bin needs one table load (the layout libavc uses).
+    /// </summary>
+    private static readonly uint[] Packed = MakePacked();
+
     private byte[] _data = [];
     private int _position;
     private int _end;
@@ -126,15 +133,17 @@ internal sealed class CabacEngine
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int Decode(ref State e, ref byte state)
     {
+        // One load gives the LPS range and the state after either symbol.
         int s = state;
-        uint lps = Unsafe.Add(ref MemoryMarshal.GetReference(RangeLps), ((s >> 1) << 2) + (int)((e.Range >> 6) & 3));
+        uint entry = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(Packed), (s << 2) + (int)((e.Range >> 6) & 3));
+        uint lps = entry & 0xFF;
         e.Range -= lps;
         uint scaledRange = e.Range << 7;
         int bin;
         if (e.Value < scaledRange)
         {
             bin = s & 1;
-            state = (byte)(s < 124 ? s + 2 : s);
+            state = (byte)(entry >> 8);
             if (scaledRange < (256 << 7))
             {
                 e.Range = scaledRange >> 6;
@@ -149,8 +158,7 @@ internal sealed class CabacEngine
         else
         {
             bin = (s & 1) ^ 1;
-            int p = s >> 1;
-            state = (byte)((Unsafe.Add(ref MemoryMarshal.GetReference(TransitionLps), p) << 1) | (p == 0 ? bin : s & 1));
+            state = (byte)(entry >> 16);
             int shift = System.Numerics.BitOperations.LeadingZeroCount(lps) - 23;
             e.Value = (e.Value - scaledRange) << shift;
             e.Range = lps << shift;
@@ -241,6 +249,23 @@ internal sealed class CabacEngine
         }
 
         return 0;
+    }
+
+    private static uint[] MakePacked()
+    {
+        uint[] packed = new uint[512];
+        for (int s = 0; s < 128; s++)
+        {
+            int p = s >> 1, mps = s & 1;
+            uint nextMps = (uint)(s < 124 ? s + 2 : s);
+            uint nextLps = (uint)((TransitionLps[p] << 1) | (p == 0 ? mps ^ 1 : mps));
+            for (int q = 0; q < 4; q++)
+            {
+                packed[(s << 2) + q] = RangeLps[(p << 2) + q] | (nextMps << 8) | (nextLps << 16);
+            }
+        }
+
+        return packed;
     }
 
     /// <summary>Reads raw bits from the byte position (pcm_sample after a terminating pcm_flag), most significant first.</summary>
