@@ -51,7 +51,7 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 | `animate` | Animated GIF, WebP or APNG | `ffmpeg -i in.mp4 out.gif` |
 | `hash` | Hashes of every frame or packet | `-f framemd5` |
 | `compare` | PSNR and SSIM between clips | `-lavfi psnr`, `-lavfi ssim` |
-| `audio` | Audio to WAV, FLAC or Opus; audio again while copying video | `-vn -c:a flac`, `-c:a libopus -b:a`, `-ar`, `-ac` |
+| `audio` | Audio to WAV, FLAC, Opus, AIFF, CAF or ALAC; audio again while copying video | `-vn -c:a flac`, `-c:a libopus -b:a`, `-ar`, `-ac` |
 | `formats` | The containers and codecs this build reads and writes | `ffmpeg -formats` |
 
 Commands that copy packets (`remux`, `trim`, `concat`, `segment`, `timestamps`, `extract`, `embed`, `metadata`) never decode, so
@@ -185,10 +185,12 @@ egami-video generate sweep -t 5 sweep.flac
 
 ## Audio
 
-`audio` decodes the picked audio track to WAV, Wave64, FLAC, Ogg FLAC or Opus, resampling with `--rate`, mixing with `--channels`
+`audio` decodes the picked audio track to WAV, Wave64, FLAC, Ogg FLAC, Opus, AIFF or CAF, resampling with `--rate`, mixing with `--channels`
 and converting with `--sample-format`. With a video container as output it copies the video unchanged and encodes the audio
-again. `--codec` picks FLAC, PCM or Opus; .opus and WebM outputs get Opus, WAV, Wave64 and AVI get PCM, and the rest FLAC.
-`--bitrate` sets Opus's bitrate for all channels together (64k a channel by default); `--level` sets FLAC's compression.
+again. `--codec` picks FLAC, PCM, Opus or ALAC (Apple Lossless); .opus and WebM outputs get Opus, WAV, Wave64, AVI, AIFF
+and CAF get PCM, .m4a gets ALAC, and the rest FLAC. ALAC also goes in .mov, .mka and .caf. `--bitrate` sets Opus's bitrate
+for all channels together (64k a channel by default); `--level` sets FLAC's compression (0 to 8) or ALAC's (0 fast, 1 the
+default). `extract` writes ALAC tracks to .m4a and AC-3 and E-AC-3 tracks to raw .ac3 and .eac3 files.
 
 ```sh
 egami-video audio in.mkv -o sound.flac
@@ -196,6 +198,8 @@ egami-video audio in.webm --rate 44100 --channels stereo --sample-format s16 -o 
 egami-video audio in.mkv --codec flac -o flac-audio.mkv
 egami-video audio sound.flac --bitrate 96k -o sound.opus
 egami-video audio in.mp4 --bitrate 64k -o opus-audio.webm
+egami-video audio sound.flac -o sound.m4a
+egami-video audio sound.wav --sample-format s24 -o sound.aiff
 ```
 
 ## Checking

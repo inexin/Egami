@@ -12,6 +12,9 @@ internal static class FfmpegTranslator
 
     private static readonly string[] AudioExtensions = [".wav", ".flac", ".w64", ".oga", ".opus"];
 
+    /// <summary>Audio files that also hold compressed audio: an audio job unless the line copies the audio (-c:a copy).</summary>
+    private static readonly string[] CopyableAudioExtensions = [".aiff", ".aif", ".aifc", ".caf"];
+
     /// <summary>The native command lines for an ffmpeg line, in the order they run; <paramref name="explain"/> skips the check that the output is new.</summary>
     public static IReadOnlyList<string[]> Translate(FfmpegLine line, VideoSession session, bool explain = false)
     {
@@ -183,7 +186,8 @@ internal static class FfmpegTranslator
             return [Frames(line, first, input, output, steps, fps, common)];
         }
 
-        bool audioJob = AudioExtensions.Contains(extension) || line.NoVideo || line.SampleRate is not null || line.Channels is not null || line.SampleFormat is not null
+        bool copiesAudio = (line.Codecs.TryGetValue("a", out string? audioCopy) ? audioCopy : line.Codecs.GetValueOrDefault(string.Empty)) == "copy";
+        bool audioJob = AudioExtensions.Contains(extension) || (CopyableAudioExtensions.Contains(extension) && !copiesAudio) || line.NoVideo || line.SampleRate is not null || line.Channels is not null || line.SampleFormat is not null
             || line.AudioBitrate is not null
             || (line.Codecs.TryGetValue("a", out string? audioCodec) && audioCodec != "copy");
         if (audioJob)
@@ -1153,9 +1157,10 @@ internal static class FfmpegTranslator
     private static string AudioCodec(string codec) => codec switch
     {
         "flac" => "flac",
-        "pcm_s16le" or "pcm_s24le" or "pcm_s32le" or "pcm_f32le" or "pcm_u8" => "pcm",
+        "alac" => "alac",
+        "pcm_s16le" or "pcm_s24le" or "pcm_s32le" or "pcm_f32le" or "pcm_u8" or "pcm_s16be" or "pcm_s24be" or "pcm_s32be" => "pcm",
         "libopus" or "opus" => "opus",
-        _ => throw FfmpegMode.Unsupported($"-c:a {codec}", why: "egami-video encodes flac, PCM and libopus, and copies"),
+        _ => throw FfmpegMode.Unsupported($"-c:a {codec}", why: "egami-video encodes flac, alac, PCM and libopus, and copies"),
     };
 
     private static string SampleFormat(string format) => format switch

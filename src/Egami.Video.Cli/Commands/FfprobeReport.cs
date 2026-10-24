@@ -325,6 +325,9 @@ internal static class FfprobeReport
         "FLAC" => "flac",
         "Ogg" => "ogg",
         "AV1 OBU" => "obu",
+        "AIFF" => "aiff",
+        "CAF" => "caf",
+        "AC-3" => "ac3",
         _ => name.ToLowerInvariant(),
     };
 
@@ -339,6 +342,9 @@ internal static class FfprobeReport
         "Wave64" => "Sony Wave64",
         "FLAC" => "raw FLAC",
         "Ogg" => "Ogg",
+        "AIFF" => "Audio IFF",
+        "CAF" => "Apple CAF (Core Audio Format)",
+        "AC-3" => "raw AC-3",
         _ => name,
     };
 

@@ -661,7 +661,7 @@ internal static class InfoCommand
         return $"#{track.Number} {Kinds.Name(track.Kind)} ({Kinds.Letter(track.Kind)}:{IndexInKind(data.Info.Tracks, track)}): {string.Join(", ", parts)}";
     }
 
-    private static bool IsLossless(string codecId) => codecId is CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian or CodecIds.PcmFloat or CodecIds.Flac;
+    private static bool IsLossless(string codecId) => codecId is CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian or CodecIds.PcmFloat or CodecIds.Flac or CodecIds.Alac;
 
     private static int IndexInKind(IReadOnlyList<TrackInfo> tracks, TrackInfo track) => tracks.Where(t => t.Kind == track.Kind).ToList().IndexOf(track);
 
@@ -695,6 +695,8 @@ internal static class InfoCommand
             CodecIds.PcmFloat => bits == 64 ? "dbl" : "flt",
             CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian => bits switch { 8 => "u8", <= 16 => "s16", <= 32 => "s32", _ => "s64" },
             CodecIds.Flac => bits is > 0 and <= 16 ? "s16" : "s32",
+            CodecIds.Alac => bits is > 0 and <= 16 ? "s16p" : "s32p",
+            CodecIds.G711MuLaw or CodecIds.G711ALaw => "s16",
             CodecIds.Opus or CodecIds.Vorbis or CodecIds.Aac or CodecIds.Ac3 => "fltp",
             CodecIds.Mp3 or CodecIds.Mp2 => "fltp",
             _ => null,

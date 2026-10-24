@@ -30,6 +30,42 @@ public sealed class AudioTests
     }
 
     [Theory]
+    [InlineData("audio/wav-s16-stereo.wav", "out.m4a")]
+    [InlineData("audio/wav-s24-51.wav", "out.caf", "--codec", "alac")]
+    [InlineData("audio/flac-l8-stereo.flac", "out.mka", "--codec", "alac", "--level", "0")]
+    [InlineData("audio/wav-s32-stereo.wav", "out.mov", "--codec", "alac")]
+    [InlineData("audio/alac-files/m4a-alac-24-51.m4a", "out.flac")]
+    public void AlacKeepsEverySample(string clip, string output, params string[] options)
+    {
+        using Tool tool = new();
+        string source = Path.Combine(Tool.Corpus, clip);
+        ToolRun run = tool.Run(["audio", source, "-o", output, .. options]);
+        Assert.True(run.Code == 0, run.Error);
+        AudioTrackInfo track = (AudioTrackInfo)MediaFile.Probe(tool.PathOf(output)).Tracks.Single();
+        Assert.Equal(output.EndsWith(".flac", StringComparison.Ordinal) ? CodecIds.Flac : CodecIds.Alac, track.CodecId);
+        Assert.Equal(((AudioTrackInfo)MediaFile.Probe(source).Tracks.Single()).BitsPerSample, track.BitsPerSample);
+        Assert.Equal(Samples(source), Samples(tool.PathOf(output)));
+        if (Ffmpeg.Find() is { } ffmpeg)
+        {
+            Ffmpeg.Run(ffmpeg, ["-v", "error", "-xerror", "-i", tool.PathOf(output), "-f", "null", "-"]);
+        }
+    }
+
+    [Theory]
+    [InlineData("audio/wav-s24-51.wav", "out.aiff", CodecIds.PcmBigEndian)]
+    [InlineData("audio/wav-s16-stereo.wav", "out.caf", CodecIds.PcmLittleEndian)]
+    public void WritesAiffAndCaf(string clip, string output, string codec)
+    {
+        using Tool tool = new();
+        string source = Path.Combine(Tool.Corpus, clip);
+        ToolRun run = tool.Run("audio", source, "-o", output);
+        Assert.True(run.Code == 0, run.Error);
+        AudioTrackInfo track = (AudioTrackInfo)MediaFile.Probe(tool.PathOf(output)).Tracks.Single();
+        Assert.Equal(codec, track.CodecId);
+        Assert.Equal(Samples(source), Samples(tool.PathOf(output)));
+    }
+
+    [Theory]
     [InlineData("audio/flac-24-51.flac", "out.wav", 24)]
     [InlineData("audio/flac-l5-stereo.flac", "out.w64", 16)]
     [InlineData("audio/wav-f32-stereo.wav", "out.wav", 32)]
@@ -180,6 +216,12 @@ public sealed class AudioTests
     [InlineData("out.opus", "--bitrate", "3M")]
     [InlineData("out.opus", "--bitrate", "fast")]
     [InlineData("out.flac", "--bitrate", "96k")]
+    [InlineData("out.aiff", "--codec", "flac")]
+    [InlineData("out.wav", "--codec", "alac")]
+    [InlineData("out.m4a", "--sample-format", "f32")]
+    [InlineData("out.m4a", "--sample-format", "u8")]
+    [InlineData("out.m4a", "--level", "5")]
+    [InlineData("out.flac", "--codec", "aac")]
     public void UsageErrors(string output, string option, string value)
     {
         using Tool tool = new();
