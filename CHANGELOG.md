@@ -463,6 +463,21 @@ V1.4 stage E: the command line.
   `-f lavfi` testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc run `generate`; showwavespic and
   showspectrumpic run `waveform` and `spectrum`. `-af` is parsed; filters outside these stop with exit code 2.
 
+V1.4 gates (tasks 5, 14 and 21, egami-compare).
+
+- Scenes: on hand-labeled cuts of the first 10 minutes of Big Buck Bunny, Sintel and Tears of Steel, `SceneDetector` scores F1
+  0.939, against PySceneDetect 0.7.2's AdaptiveDetector 0.935 and V1.1's detector 0.886.
+- Loudness: `LoudnessMeter` passes the EBU Tech 3342 cases of the EBU test set and matches ffmpeg's ebur128 within 0.05 LU on
+  69 of its 70 files; on the 70th (1.78 s long) a plain BS.1770 computation agrees with Egami, 0.5 LU from ffmpeg.
+- `analyze --ffmpeg-log` matches ffmpeg 7.1's log lines: cropdetect lines carry `pts`, a six-decimal `t` and `limit`;
+  volumedetect lists its `histogram_<n>db` lines; the ebur128 summary lists both gate thresholds and prefixes only its first
+  line. In `egami-video ffmpeg`, cropdetect rounds to 16 by default, as ffmpeg's does.
+- Speed: scenes, black and freeze in `MediaAnalysis.Run` cost little next to decoding (the scene grid adds rows column by column
+  with vector adds; black and freeze stop measuring a frame once the answer is known, so `BlackDetector.LastRatio` and
+  `FreezeDetector.LastDifference` are bounds for such frames; `MediaAnalysis.Run` hands the freeze detector the frame it keeps
+  instead of a copy). `InterlaceDetector`, `DuplicateDetector` and `SignalMeter` run 2 to 6 times faster.
+- QuickTime files whose user data ends with a 32-bit zero (QuickTime 7 wrote them so) open; they failed as cut off.
+
 V5.3: VP9 encoding. API review pending (combined encoders review).
 
 ### VP9 encoding
