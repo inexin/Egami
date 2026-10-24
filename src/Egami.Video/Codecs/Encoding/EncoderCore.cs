@@ -11,7 +11,9 @@ namespace Egami.Video.Codecs.Encoding;
 /// The frame's place in display order, counted from the first frame sent: a hidden frame's is the place it is shown at, and an
 /// overlay's that of the hidden frame it shows.
 /// </param>
-internal readonly record struct FrameDecision(FrameType Type, int Quantizer, bool AltRefAhead, bool RefreshGolden, int Index = 0);
+/// <param name="Layer">The frame's layer in its group's pyramid: 0 for keyframes and the group's alternate reference, more for each level below.</param>
+/// <param name="Referenced">Whether later frames predict from the frame; false for a pyramid's leaves.</param>
+internal readonly record struct FrameDecision(FrameType Type, int Quantizer, bool AltRefAhead, bool RefreshGolden, int Index = 0, int Layer = 0, bool Referenced = true);
 
 /// <summary>A frame a codec coded.</summary>
 /// <param name="Data">The frame's bytes.</param>
@@ -50,11 +52,21 @@ internal interface IFrameCoder : IDisposable
     CodedFrame Code(YuvRaster<byte> picture, YuvRaster? full, FrameDecision decision) => Code(picture, decision);
 
     /// <summary>
+    /// Runs the coder's temporal model over frames ahead in coding order, each naming the earlier ones (by their place in the list)
+    /// it will predict from, and keeps what it finds for when they are coded; returns each frame's importance (1 when nothing
+    /// predicts from it, more the more later frames reuse it), or null when the coder has no model.
+    /// </summary>
+    double[]? Analyze(IReadOnlyList<AnalysisFrame> frames) => null;
+
+    /// <summary>
     /// Codes a keyframe and, when given, the frame after it at one quantizer on the side, without touching the stream, and
     /// returns their sizes in bits: rate control learns from them what this content costs before it plans the first frame.
     /// </summary>
     (long Key, long Next) Probe(YuvRaster<byte> key, YuvRaster<byte>? next, int quantizer);
 }
+
+/// <summary>A frame for <see cref="IFrameCoder.Analyze"/>: its place in display order, its pictures, and the earlier frames of the list it predicts from.</summary>
+internal readonly record struct AnalysisFrame(int Index, YuvRaster<byte> Picture, YuvRaster? Full, int[] References);
 
 /// <summary>The settings the core plans with, from <see cref="VideoEncoderOptions"/> and the codec's own options.</summary>
 internal sealed record CoreSettings
@@ -106,10 +118,54 @@ internal sealed record CoreSettings
     public bool FreeOverlays { get; init; }
 
     /// <summary>
-    /// Whether a group with an alternate reference also codes a hidden frame halfway to it, shown later as an overlay of its own
-    /// (a two-level pyramid, AV1's ALTREF2). Needs a coder that keeps several hidden frames for one packet.
+    /// Whether a group with an alternate reference is coded as a pyramid: after the alternate reference at its end, a hidden frame
+    /// halfway to it, then halfway to that, down to pairs of frames, each shown later as an overlay of its own, and the frames
+    /// between them (the leaves) predicted from both sides and from nothing later (libaom's and SVT-AV1's hierarchical groups are
+    /// the idea). Needs a coder that keeps several hidden frames for one packet and shows them for free (AV1).
     /// </summary>
     public bool Pyramid { get; init; }
+
+    /// <summary>The shown frames of a pyramid's group, its alternate reference included: 16 makes five layers.</summary>
+    public int PyramidGroup { get; init; } = 16;
+
+    /// <summary>Whether a pyramid's leaves are references for later frames too (they are not by default).</summary>
+    public bool ReferencedLeaves { get; init; }
+
+    /// <summary>A pyramid leaf's step against an inter frame's in constant quality.</summary>
+    public double LeafStep { get; init; } = 1.0;
+
+    /// <summary>
+    /// Whether a pyramid's group and the one after it are run through the coder's temporal model (<see cref="IFrameCoder.Analyze"/>)
+    /// before the group is coded, its alternate reference's and keyframe's steps then following their importance.
+    /// </summary>
+    public bool TemporalModel { get; init; }
+
+    /// <summary>The frames <see cref="LatencyMode.Quality"/> looks ahead.</summary>
+    public int Lookahead { get; init; } = EncoderCore.Lookahead;
+
+    /// <summary>Whether keyframes are coded temporally filtered with the frames after them, as alternate references are.</summary>
+    public bool FilterKeyframes { get; init; }
+
+    /// <summary>Whether the temporal filter's strength follows each picture's noise and the frame's quantizer rather than <see cref="FilterStrength"/>.</summary>
+    public bool AdaptiveFilter { get; init; }
+
+    /// <summary>How many noise deviations apart two samples may be before the adaptive filter stops blending them, at the reference quantizer.</summary>
+    public double FilterReach { get; init; } = 3;
+
+    /// <summary>The quantizer at whose step the adaptive filter blends as <see cref="FilterReach"/> says; finer steps blend less, coarser more.</summary>
+    public int FilterReferenceQuantizer { get; init; } = 96;
+
+    /// <summary>The temporal model's alternate reference step against a leaf's at an importance of 1, before its square root divides it.</summary>
+    public double ImportanceStep { get; init; } = 1.0;
+
+    /// <summary>The temporal model's keyframe step against a leaf's at an importance of 1.</summary>
+    public double KeyImportanceStep { get; init; } = 0.9;
+
+    /// <summary>The finest step the temporal model gives an alternate reference or keyframe, against a leaf's.</summary>
+    public double ImportanceStepMin { get; init; } = 0.25;
+
+    /// <summary>The coarsest step the temporal model gives an alternate reference or keyframe, against a leaf's.</summary>
+    public double ImportanceStepMax { get; init; } = 0.8;
 }
 
 /// <summary>
@@ -145,10 +201,11 @@ internal sealed class EncoderCore : IDisposable
     private bool _refreshGoldenAtEnd;
     private int _altRef = -1;
     private bool _altRefCoded;
-    private int _altRef2 = -1;
-    private bool _altRef2Coded;
+    private readonly List<Step> _steps = [];
+    private int _stepNext;
     private bool _flushing;
     private double _altRefFactor = 0.7;
+    private double _keyFactor;
     private double _goldenFactor = 0.8;
 
     public EncoderCore(CoreSettings settings, IFrameCoder coder, EncoderPictures pictures, bool alpha)
@@ -160,7 +217,7 @@ internal sealed class EncoderCore : IDisposable
         _analyzer = new FrameAnalyzer(settings.Width, settings.Height);
         _rate = new RateController(settings.Rate);
         _timeBase = settings.FrameRate.Reciprocal();
-        _depth = settings.LatencyMode == LatencyMode.Quality ? Lookahead : 0;
+        _depth = settings.LatencyMode == LatencyMode.Quality ? settings.Lookahead : 0;
     }
 
     /// <summary>Gets or sets where each coded frame's type, quantizer and size go, for tuning.</summary>
@@ -237,28 +294,62 @@ internal sealed class EncoderCore : IDisposable
             return;
         }
 
-        if (_altRef2 >= 0 && !_altRef2Coded && !frame.Key)
-        {
-            CodeAltRef(frame, _altRef2, AltRef2Factor);
-            _altRef2Coded = true;
-            return;
-        }
-
         FrameType type = frame.Key ? FrameType.Key
-            : frame.Index == _altRef2 ? FrameType.Overlay
             : frame.Index == _groupEnd ? (_altRef == frame.Index ? FrameType.Overlay : _refreshGoldenAtEnd ? FrameType.Golden : FrameType.Inter)
             : FrameType.Inter;
+        int layer = 0;
+        bool referenced = true;
+        if (_stepNext < _steps.Count)
+        {
+            // The pyramid's next frame in coding order: a hidden frame of the group, or the frame at the head of the queue.
+            Step step = _steps[_stepNext++];
+            if (step.Kind == StepKind.Hidden)
+            {
+                CodeAltRef(frame, step.Index, LayerFactor(step.Layer), step.Layer, step.From);
+                return;
+            }
+
+            if (step.Index != frame.Index)
+            {
+                throw new InvalidOperationException($"The pyramid shows frame {step.Index} where frame {frame.Index} is next.");
+            }
+
+            (layer, referenced) = (step.Layer, step.Kind != StepKind.Leaf || _settings.ReferencedLeaves || frame.Key);
+            type = step.Kind == StepKind.Shown ? FrameType.Overlay : type;
+        }
+
         long complexity = type switch
         {
             FrameType.Key => frame.Stats.Intra,
             FrameType.Overlay => OverlayComplexity(frame.Stats),
             _ => frame.Stats.Inter,
         };
-        int quantizer = _rate.Next(type, complexity, Factor(type));
+        int quantizer = _rate.Next(type, complexity, layer > 0 && type == FrameType.Inter ? LeafFactor : type == FrameType.Key ? _keyFactor : Factor(type));
         bool refreshGolden = frame.Index == _groupEnd && _refreshGoldenAtEnd;
         bool ahead = _altRef > frame.Index && _altRefCoded;
-        FrameDecision decision = new(type, quantizer, ahead, refreshGolden, frame.Index);
-        CodedFrame coded = frame.Full is null ? _coder.Code(frame.Picture, decision) : _coder.Code(frame.Picture, frame.Full, decision);
+        FrameDecision decision = new(type, quantizer, ahead, refreshGolden, frame.Index, layer, referenced);
+        CodedFrame coded;
+        if (type == FrameType.Key && _settings.FilterKeyframes && frame.Full is null && _depth > 0)
+        {
+            // The keyframe every frame of its group predicts from, blended with the frames after it as an alternate reference is.
+            _filterFrames.Clear();
+            foreach (Pending p in _queue)
+            {
+                if (p.Index >= frame.Index && p.Index <= frame.Index + (_settings.FilterFrames / 2) && !(p.Key && p.Index > frame.Index))
+                {
+                    _filterFrames.Add(p.Picture);
+                }
+            }
+
+            YuvRaster<byte> filtered = _pictures.Rent(false);
+            Filter(0, quantizer, filtered);
+            coded = _coder.Code(filtered, decision);
+            _pictures.Return(filtered);
+        }
+        else
+        {
+            coded = frame.Full is null ? _coder.Code(frame.Picture, decision) : _coder.Code(frame.Picture, frame.Full, decision);
+        }
         _rate.Done(type, coded.Quantizer, coded.Bits ?? ((coded.Data.Length - coded.HiddenLength) * 8L), complexity);
         Trace?.Invoke($"{frame.Index} {type} q{coded.Quantizer} {coded.Data.Length - coded.HiddenLength}B c{complexity}");
         EncodedPacket packet = Packet(coded.Data, frame.Timestamp, frame.Key);
@@ -293,10 +384,12 @@ internal sealed class EncoderCore : IDisposable
             }
         }
 
-        int length = _settings.GoldenInterval ?? AdaptiveInterval();
+        // A pyramid's group is its shown frames after the keyframe; other groups adapt to the motion.
+        bool pyramid = _settings.Pyramid && _settings.AltRef && _depth > 0;
+        int length = _settings.GoldenInterval ?? (pyramid ? _settings.PyramidGroup + (first.Key ? 1 : 0) : AdaptiveInterval());
         bool wantAltRef = _settings.AltRef && _depth > 0;
         (double motion, double ratio) = Motion();
-        if (wantAltRef && _settings.GoldenInterval is null && motion > 0.5)
+        if (wantAltRef && !pyramid && _settings.GoldenInterval is null && motion > 0.5)
         {
             // An alternate reference only pays when the frames before it can reach it with short vectors: about 24 pixels.
             int reach = (int)(24 / motion);
@@ -310,7 +403,7 @@ internal sealed class EncoderCore : IDisposable
             }
         }
 
-        if (wantAltRef)
+        if (wantAltRef && !pyramid)
         {
             // Nor when the group's first frame predicts its last badly (zooms, fades, deformation): the alternate reference
             // stands in for frames the first can no longer reach. Noise does not count against it, as the filter removes it.
@@ -361,13 +454,48 @@ internal sealed class EncoderCore : IDisposable
         _altRef = altRef ? end : -1;
         _altRefCoded = false;
 
-        // The pyramid's middle frame halves the distance the frames before the alternate reference predict across.
+        // A pyramid: the alternate reference, then hidden frames halving the distances down to pairs, in coding order.
         int firstShown = first.Key ? start + 1 : start;
-        _altRef2 = altRef && _settings.Pyramid && end - firstShown >= 6 ? (firstShown + end) / 2 : -1;
-        _altRef2Coded = false;
+        _steps.Clear();
+        _stepNext = 0;
+        if (altRef && _settings.Pyramid)
+        {
+            if (first.Key)
+            {
+                _steps.Add(new Step(start, StepKind.Leaf, 0, -1, -1));
+            }
+
+            _steps.Add(new Step(end, StepKind.Hidden, 0, firstShown - 1, -1));
+            AddPyramid(_steps, firstShown - 1, end, 1);
+            _altRefCoded = true;
+        }
+
+        _keyFactor = 0;
+        if (_steps.Count > 0 && _settings.TemporalModel)
+        {
+            AnalyzeGroup(start, end, first.Key, nextKey);
+        }
 
         // The group's frames in coding order, for its bit budget.
         int n = 0;
+        if (_steps.Count > 0)
+        {
+            foreach (Step step in _steps)
+            {
+                FrameStats stats = Stats(step.Index);
+                _group[n++] = step.Kind switch
+                {
+                    StepKind.Hidden => new GroupFrame(FrameType.AltRef, HiddenComplexity(step.From, step.Index), LayerFactor(step.Layer)),
+                    StepKind.Shown => new GroupFrame(FrameType.Overlay, OverlayComplexity(stats)),
+                    _ when step.Index == start && first.Key => new GroupFrame(FrameType.Key, stats.Intra, _keyFactor),
+                    _ => new GroupFrame(FrameType.Inter, stats.Inter, LeafFactor),
+                };
+            }
+
+            _rate.StartGroup(_group.AsSpan(0, n));
+            return;
+        }
+
         int count = Math.Min(end - start + 1, _group.Length - 1);
         for (int i = 0; i < count; i++)
         {
@@ -389,8 +517,7 @@ internal sealed class EncoderCore : IDisposable
                 AddHidden(ref n);
             }
 
-            FrameType type = index == end ? (altRef ? FrameType.Overlay : _refreshGoldenAtEnd ? FrameType.Golden : FrameType.Inter)
-                : index == _altRef2 ? FrameType.Overlay : FrameType.Inter;
+            FrameType type = index == end ? (altRef ? FrameType.Overlay : _refreshGoldenAtEnd ? FrameType.Golden : FrameType.Inter) : FrameType.Inter;
             _group[n++] = new GroupFrame(type, type == FrameType.Overlay ? OverlayComplexity(stats) : stats.Inter, Factor(type));
         }
 
@@ -398,17 +525,150 @@ internal sealed class EncoderCore : IDisposable
     }
 
     /// <summary>Adds the group's hidden frames to its plan, in coding order.</summary>
-    private void AddHidden(ref int n)
+    private void AddHidden(ref int n) => _group[n++] = new GroupFrame(FrameType.AltRef, AltRefComplexity(_altRef), _altRefFactor);
+
+    /// <summary>
+    /// Adds the pyramid's frames after <paramref name="from"/> (shown) up to <paramref name="to"/> (hidden, coded) in coding
+    /// order: a hidden frame halfway, the frames up to it, and those after it; a lone frame between is a leaf.
+    /// </summary>
+    private static void AddPyramid(List<Step> steps, int from, int to, int layer)
     {
-        _group[n++] = new GroupFrame(FrameType.AltRef, AltRefComplexity(_altRef), _altRefFactor);
-        if (_altRef2 >= 0)
+        if (to - from > 2)
         {
-            _group[n++] = new GroupFrame(FrameType.AltRef, AltRefComplexity(_altRef2), AltRef2Factor);
+            int middle = (from + to) / 2;
+            steps.Add(new Step(middle, StepKind.Hidden, layer, from, to));
+            AddPyramid(steps, from, middle, layer + 1);
+            AddPyramid(steps, middle, to, layer + 1);
+            return;
+        }
+
+        if (to - from == 2)
+        {
+            steps.Add(new Step(from + 1, StepKind.Leaf, layer, from, to));
+        }
+
+        steps.Add(new Step(to, StepKind.Shown, layer, from, -1));
+    }
+
+    /// <summary>
+    /// Runs the temporal model over the group from <paramref name="start"/> to <paramref name="end"/> and the group after it, in
+    /// coding order, each frame predicting from the frames it sits between (SVT-AV1 looks one group ahead the same way); the
+    /// alternate reference's step, and a keyframe's, then fall with the square root of their importance.
+    /// </summary>
+    private void AnalyzeGroup(int start, int end, bool key, int nextKey)
+    {
+        List<Step> order = [.. _steps];
+        int last = _queue[^1].Index;
+        int limit = nextKey >= 0 ? Math.Min(last, nextKey - 1) : last;
+        int nextEnd = Math.Min(end + _settings.PyramidGroup, limit);
+        if (nextEnd - end >= 4)
+        {
+            order.Add(new Step(nextEnd, StepKind.Hidden, 0, end, -1));
+            AddPyramid(order, end, nextEnd, 1);
+        }
+
+        List<AnalysisFrame> frames = [];
+        Dictionary<int, int> place = [];
+        foreach (Step step in order)
+        {
+            if (step.Kind == StepKind.Shown || Find(step.Index) is not Pending p)
+            {
+                continue;
+            }
+
+            List<int> refs = [];
+            foreach (int r in (ReadOnlySpan<int>)[step.From, step.To])
+            {
+                if (r >= 0 && r != step.Index && place.TryGetValue(r, out int at) && !refs.Contains(at))
+                {
+                    refs.Add(at);
+                }
+            }
+
+            place[step.Index] = frames.Count;
+            frames.Add(new AnalysisFrame(step.Index, p.Picture, p.Full, [.. refs]));
+        }
+
+        if (_coder.Analyze(frames) is not { } importance)
+        {
+            return;
+        }
+
+        if (place.TryGetValue(end, out int arf))
+        {
+            _altRefFactor = Math.Clamp(_settings.ImportanceStep / Math.Sqrt(importance[arf]), _settings.ImportanceStepMin, _settings.ImportanceStepMax);
+        }
+
+        if (key && place.TryGetValue(start, out int k))
+        {
+            _keyFactor = Math.Clamp(_settings.KeyImportanceStep / Math.Sqrt(importance[k]), _settings.ImportanceStepMin, _settings.ImportanceStepMax);
         }
     }
 
-    /// <summary>The pyramid's middle frame's step: between the alternate reference's and an inter frame's.</summary>
-    private double AltRef2Factor => Math.Sqrt(_altRefFactor);
+    private Pending? Find(int index)
+    {
+        foreach (Pending p in _queue)
+        {
+            if (p.Index == index)
+            {
+                return p;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// A pyramid layer's step against an inter frame's: the alternate reference's at layer 0, each layer below halving the
+    /// distance to the leaves' (libaom's levels move halfway to the leaf quantizer in the same way).
+    /// </summary>
+    private double LayerFactor(int layer)
+    {
+        double factor = _altRefFactor;
+        for (int i = 0; i < layer; i++)
+        {
+            factor = Math.Sqrt(factor * LeafFactor);
+        }
+
+        return factor;
+    }
+
+    /// <summary>A pyramid leaf's step against an inter frame's.</summary>
+    private double LeafFactor => _settings.LeafStep;
+
+    /// <summary>The statistics of the frame at a place in the lookahead, or the last one held.</summary>
+    private FrameStats Stats(int index)
+    {
+        foreach (Pending p in _queue)
+        {
+            if (p.Index == index)
+            {
+                return p.Stats;
+            }
+        }
+
+        return _queue[^1].Stats;
+    }
+
+    /// <summary>A guess at a pyramid's hidden frame's cost: what the frames from its anchor change, but no more than coding it alone.</summary>
+    private long HiddenComplexity(int from, int target)
+    {
+        long sum = 0, intra = 0;
+        foreach (Pending p in _queue)
+        {
+            if (p.Index > from && p.Index <= target)
+            {
+                sum += p.Stats.Inter;
+            }
+
+            if (p.Index == target)
+            {
+                intra = p.Stats.Intra;
+            }
+        }
+
+        return Math.Max(1, Math.Min(intra, sum));
+    }
 
     /// <summary>An overlay's complexity: a quarter of its frame's, or none when the coder shows the hidden frame again.</summary>
     private long OverlayComplexity(FrameStats stats) => _settings.FreeOverlays ? 0 : stats.Inter / 4;
@@ -467,7 +727,7 @@ internal sealed class EncoderCore : IDisposable
     private long AltRefComplexity(int target)
     {
         long sum = 0, intra = 0;
-        int from = target == _altRef2 ? _groupStart : _altRef2 >= 0 ? _altRef2 : _groupStart;
+        int from = _groupStart;
         foreach (Pending p in _queue)
         {
             if (p.Index > from && p.Index <= target)
@@ -484,9 +744,10 @@ internal sealed class EncoderCore : IDisposable
         return Math.Max(1, Math.Min(intra, sum));
     }
 
-    private void CodeAltRef(Pending next, int target, double factor)
+    private void CodeAltRef(Pending next, int target, double factor, int layer = 0, int from = -1)
     {
-        int radius = _settings.FilterFrames / 2;
+        // A pyramid's hidden frames below its alternate reference are coded unfiltered, as libaom's are.
+        int radius = layer == 0 ? _settings.FilterFrames / 2 : 0;
         _filterFrames.Clear();
         int center = 0;
         YuvRaster? full = null;
@@ -508,11 +769,11 @@ internal sealed class EncoderCore : IDisposable
             }
         }
 
-        YuvRaster<byte> filtered = _pictures.Rent(false);
-        TemporalFilter.Apply(_filterFrames, center, _settings.FilterStrength, filtered, _settings.Parallelism);
-        long complexity = AltRefComplexity(target);
+        long complexity = from >= 0 ? HiddenComplexity(from, target) : AltRefComplexity(target);
         int quantizer = _rate.Next(FrameType.AltRef, complexity, factor);
-        FrameDecision decision = new(FrameType.AltRef, quantizer, AltRefAhead: true, RefreshGolden: false, target);
+        YuvRaster<byte> filtered = _pictures.Rent(false);
+        Filter(center, quantizer, filtered);
+        FrameDecision decision = new(FrameType.AltRef, quantizer, AltRefAhead: true, RefreshGolden: false, target, layer);
         CodedFrame coded = full is null ? _coder.Code(filtered, decision) : _coder.Code(filtered, full, decision);
         long bits = coded.Bits ?? (coded.Data.Length * 8L);
         _rate.Done(FrameType.AltRef, coded.Quantizer, bits, complexity);
@@ -522,6 +783,30 @@ internal sealed class EncoderCore : IDisposable
         {
             _ready.Enqueue(Packet(coded.Data, next.Timestamp, key: false));
         }
+    }
+
+    /// <summary>
+    /// Filters <see cref="_filterFrames"/>[<paramref name="center"/>] into <paramref name="output"/>: at the settings' strength, or,
+    /// adaptive, with a decay that follows the picture's noise and the frame's quantizer step, so clean pictures and fine
+    /// quantizers are left nearly as they are and noisy ones at coarse quantizers are smoothed most (libaom's and SVT-AV1's
+    /// noise-adaptive filters are the idea).
+    /// </summary>
+    private void Filter(int center, int quantizer, YuvRaster<byte> output)
+    {
+        if (!_settings.AdaptiveFilter || _filterFrames.Count == 1)
+        {
+            TemporalFilter.Apply(_filterFrames, center, _settings.FilterStrength, output, _settings.Parallelism);
+            return;
+        }
+
+        double sigma = TemporalFilter.Noise(_filterFrames[center].Y);
+        short[] steps = _settings.Rate.Steps;
+        double q = Math.Clamp((double)steps[quantizer] / steps[Math.Clamp(_settings.FilterReferenceQuantizer, 0, steps.Length - 1)], 0.25, 2.5);
+        double reach = _settings.FilterReach * sigma;
+        int decay = (int)Math.Clamp(48 * reach * reach * q, 16, 256 << 6);
+        int match = (int)Math.Clamp(Math.Round(1.5 * sigma), 2, 8);
+        Trace?.Invoke($"filter noise {sigma:F2} q{quantizer} decay {decay} match {match}");
+        TemporalFilter.Apply(_filterFrames, center, decay, match, output, _settings.Parallelism);
     }
 
     private static EncodedPacket Packet(ReadOnlyMemory<byte> data, MediaTime timestamp, bool key)
@@ -546,6 +831,24 @@ internal sealed class EncoderCore : IDisposable
             packet.Dispose();
         }
     }
+
+    private enum StepKind
+    {
+        /// <summary>A shown frame coded in display order: a keyframe or a leaf.</summary>
+        Leaf,
+
+        /// <summary>A hidden frame coded ahead of its place.</summary>
+        Hidden,
+
+        /// <summary>A hidden frame shown at its place.</summary>
+        Shown,
+    }
+
+    /// <summary>
+    /// One frame of a pyramid's coding order, its layer, and the frames it sits between: the shown frame before it that its part
+    /// of the group starts from, and the hidden frame after it (−1 for none).
+    /// </summary>
+    private readonly record struct Step(int Index, StepKind Kind, int Layer, int From, int To);
 
     private sealed record Pending(YuvRaster<byte> Picture, byte[] Half, int Index, MediaTime Timestamp, MediaTime Duration, bool Key, FrameStats Stats)
     {

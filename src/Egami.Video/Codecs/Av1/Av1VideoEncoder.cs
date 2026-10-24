@@ -87,10 +87,22 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
             SceneCuts = options.SceneCutKeyframes,
             AltRef = av1.AlternateReference && !realtime,
             Pyramid = av1.Pyramid,
+            TemporalModel = av1.Pyramid && Environment.GetEnvironmentVariable("EGAMI_AV1X")?.Contains("notpl", StringComparison.Ordinal) != true,
+            Lookahead = av1.Pyramid ? 40 : EncoderCore.Lookahead,
+            ImportanceStep = X("is", 1.0),
+            KeyImportanceStep = X("ks", 0.9),
+            ImportanceStepMin = X("ismin", 0.25),
+            ImportanceStepMax = X("ismax", 0.8),
+            LeafStep = X("leaf", 1.0),
+            FilterKeyframes = X("kf", 0) != 0,
+            AdaptiveFilter = X("atf", 0) != 0,
+            FilterReach = X("tfc", 3),
+            FilterReferenceQuantizer = (int)X("tfq", 96),
+            ReferencedLeaves = X("rl", 0) != 0,
             FreeOverlays = true,
             GoldenInterval = av1.GoldenInterval,
-            FilterFrames = av1.TemporalFilterFrames,
-            FilterStrength = av1.TemporalFilterStrength,
+            FilterFrames = (int)X("tff", av1.TemporalFilterFrames),
+            FilterStrength = (int)X("tfs", av1.TemporalFilterStrength),
             Parallelism = context.Egami.MaxParallelism,
 
             // AV1's hidden frames carry the group as VP9's do: every frame before them predicts from them, from both sides.
@@ -123,6 +135,20 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
     }
 
     public VideoTrackInfo Track { get; private set; }
+
+    private static double X(string name, double fallback)
+    {
+        foreach (string part in (Environment.GetEnvironmentVariable("EGAMI_AV1X") ?? "").Split(','))
+        {
+            string[] kv = part.Split('=');
+            if (kv.Length == 2 && kv[0] == name)
+            {
+                return double.Parse(kv[1], System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+
+        return fallback;
+    }
 
     /// <summary>Gets the rate controller once the first frame is in, for tests.</summary>
     internal RateController? Rate => _core?.Rate;

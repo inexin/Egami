@@ -18,7 +18,16 @@ internal static class TemporalFilter
     /// <param name="strength">0 (weakest) to 6.</param>
     /// <param name="output">Where the result goes, the same size; its alpha plane, if any, is not touched.</param>
     /// <param name="parallelism">The most threads to use.</param>
-    public static void Apply(IReadOnlyList<YuvRaster<byte>> frames, int center, int strength, YuvRaster<byte> output, int parallelism)
+    public static void Apply(IReadOnlyList<YuvRaster<byte>> frames, int center, int strength, YuvRaster<byte> output, int parallelism) =>
+        Apply(frames, center, 256 << strength, 0, output, parallelism);
+
+    /// <summary>
+    /// Filters as <see cref="Apply(IReadOnlyList{YuvRaster{byte}}, int, int, YuvRaster{byte}, int)"/> does with a decay of any
+    /// size: a sample's weight falls to 0 where three times its squared difference reaches <paramref name="decay"/> / 16, and a
+    /// neighbour's block counts fully below <paramref name="match"/> of mean absolute difference a sample, half below 2.5 times that
+    /// (0 for the fixed 3 and 8).
+    /// </summary>
+    public static void Apply(IReadOnlyList<YuvRaster<byte>> frames, int center, int decay, int match, YuvRaster<byte> output, int parallelism)
     {
         YuvRaster<byte> source = frames[center];
         int width = source.Width, height = source.Height;
@@ -36,7 +45,7 @@ internal static class TemporalFilter
         {
             for (int bx = 0; bx < cols; bx++)
             {
-                FilterBlock(frames, center, strength, output, bx * Block, by * Block, scratch);
+                FilterBlock(frames, center, decay, match, output, bx * Block, by * Block, scratch);
             }
 
             return scratch;
@@ -52,7 +61,7 @@ internal static class TemporalFilter
         public readonly int[] SumV = new int[Block * Block / 4];
     }
 
-    private static void FilterBlock(IReadOnlyList<YuvRaster<byte>> frames, int center, int strength, YuvRaster<byte> output, int x, int y, Scratch s)
+    private static void FilterBlock(IReadOnlyList<YuvRaster<byte>> frames, int center, int decay, int match, YuvRaster<byte> output, int x, int y, Scratch s)
     {
         YuvRaster<byte> source = frames[center];
         int width = source.Width, height = source.Height;
@@ -66,7 +75,8 @@ internal static class TemporalFilter
         Array.Clear(s.SumU);
         Array.Clear(s.CountU);
         Array.Clear(s.SumV);
-        int round = strength > 0 ? 1 << (strength - 1) : 0;
+        int round = decay / 2;
+        int full = match > 0 ? match * 2 : 6, half = match > 0 ? match * 5 : 16;
         for (int f = 0; f < frames.Count; f++)
         {
             YuvRaster<byte> other = frames[f];
@@ -76,8 +86,8 @@ internal static class TemporalFilter
                 (int sad, mx, my) = Search(source.Y, other.Y, x, y, bw, bh);
 
                 // The average difference per sample decides how much of the block the neighbour may give.
-                int perSample = sad / (bw * bh);
-                blockWeight = perSample < 3 ? 2 : perSample < 8 ? 1 : 0;
+                int perSample = sad * 2 / (bw * bh);
+                blockWeight = perSample < full ? 2 : perSample < half ? 1 : 0;
                 if (blockWeight == 0)
                 {
                     continue;
@@ -91,7 +101,7 @@ internal static class TemporalFilter
                 for (int j = 0; j < bw; j++)
                 {
                     int pixel = b[Math.Clamp(x + j + mx, 0, width - 1)];
-                    int weight = f == center ? 16 * blockWeight : Weight(a[j] - pixel, strength, round) * blockWeight;
+                    int weight = f == center ? 16 * blockWeight : Weight(a[j] - pixel, decay, round) * blockWeight;
                     s.Sum[(i * Block) + j] += weight * pixel;
                     s.Count[(i * Block) + j] += weight;
                 }
@@ -107,7 +117,7 @@ internal static class TemporalFilter
                 {
                     int col = Math.Clamp(cx + j + cmx, 0, chromaWidth - 1);
                     int pu = ou[col], pv = ov[col];
-                    int weight = f == center ? 16 * blockWeight : Math.Min(Weight(u[j] - pu, strength, round), Weight(v[j] - pv, strength, round)) * blockWeight;
+                    int weight = f == center ? 16 * blockWeight : Math.Min(Weight(u[j] - pu, decay, round), Weight(v[j] - pv, decay, round)) * blockWeight;
                     int k = (i * (Block / 2)) + j;
                     s.SumU[k] += weight * pu;
                     s.SumV[k] += weight * pv;
@@ -138,11 +148,42 @@ internal static class TemporalFilter
         }
     }
 
-    /// <summary>A sample's weight, 16 for equal values falling to 0 as the squared difference grows past 16 × 2^strength / 3.</summary>
-    private static int Weight(int difference, int strength, int round)
+    /// <summary>A sample's weight, 16 for equal values falling to 0 as the squared difference grows past 16 × decay / 768.</summary>
+    private static int Weight(int difference, int decay, int round)
     {
-        int modifier = ((difference * difference * 3) + round) >> strength;
+        int modifier = (int)((((long)difference * difference * 768) + round) / decay);
         return modifier >= 16 ? 0 : 16 - modifier;
+    }
+
+    /// <summary>
+    /// Estimates the standard deviation of a picture's luma noise: the mean absolute response to a Laplacian that cancels smooth
+    /// gradients, over the samples away from edges, scaled to a Gaussian's deviation (Immerkær's method, which libaom's noise
+    /// estimate also follows). Every other row is read.
+    /// </summary>
+    public static double Noise(YuvPlane<byte> luma)
+    {
+        long sum = 0, count = 0;
+        int width = luma.Width, height = luma.Height;
+        for (int y = 1; y < height - 1; y += 2)
+        {
+            ReadOnlySpan<byte> a = luma.Row(y - 1), b = luma.Row(y), c = luma.Row(y + 1);
+            for (int x = 1; x < width - 1; x++)
+            {
+                int gx = Math.Abs(a[x - 1] + (2 * b[x - 1]) + c[x - 1] - a[x + 1] - (2 * b[x + 1]) - c[x + 1]);
+                int gy = Math.Abs(a[x - 1] + (2 * a[x]) + a[x + 1] - c[x - 1] - (2 * c[x]) - c[x + 1]);
+                if (gx + gy >= 50)
+                {
+                    continue;
+                }
+
+                int laplacian = a[x - 1] - (2 * a[x]) + a[x + 1] - (2 * b[x - 1]) + (4 * b[x]) - (2 * b[x + 1]) + c[x - 1] - (2 * c[x]) + c[x + 1];
+                sum += Math.Abs(laplacian);
+                count++;
+            }
+        }
+
+        // E|N * I| = 6 σ √(2 / π) for Gaussian noise of deviation σ under the 3x3 mask N.
+        return count < 16 ? 0 : sum / (double)count * Math.Sqrt(Math.PI / 2) / 6;
     }
 
     private static (int Sad, int X, int Y) Search(YuvPlane<byte> a, YuvPlane<byte> b, int x, int y, int bw, int bh)

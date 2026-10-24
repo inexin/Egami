@@ -28,6 +28,7 @@ internal sealed class Av1FrameCoder : IFrameCoder
     private int _golden;
     private int _lastShown = -1;
     private int _hiddenBytes;
+    private readonly Dictionary<int, Av1FrameAnalysis> _analyses = [];
 
     public Av1FrameCoder(Av1SequenceOptions sequence, Av1FramePlan plan, byte[] hdrObus, Dictionary<int, ReadOnlyMemory<byte>> hdr10Plus, EgamiContext context)
     {
@@ -52,7 +53,8 @@ internal sealed class Av1FrameCoder : IFrameCoder
     {
         YuvRaster source = full ?? picture;
         int index = decision.Index;
-        Av1FramePlan common = _plan with { QIndex = decision.Quantizer, OrderHint = index };
+        _analyses.Remove(index, out Av1FrameAnalysis? analysis);
+        Av1FramePlan common = _plan with { QIndex = decision.Quantizer, OrderHint = index, Layer = Math.Min(decision.Layer, 7), Analysis = analysis };
         switch (decision.Type)
         {
             case FrameType.Key:
@@ -98,6 +100,13 @@ internal sealed class Av1FrameCoder : IFrameCoder
 
             default:
                 {
+                    if (!decision.Referenced)
+                    {
+                        // A pyramid's leaf: nothing predicts from it, so it takes no slot.
+                        Av1EncodedFrame leaf = _encoder.Encode(source, common with { ReferenceSlots = References(index), RefreshSlots = 0, Referenced = false });
+                        return Shown(leaf, index, decision.Quantizer);
+                    }
+
                     int slot = Victim(hidden: false);
                     Av1EncodedFrame inter = _encoder.Encode(source, common with { ReferenceSlots = References(index), RefreshSlots = 1 << slot });
                     _slots[slot] = index;
@@ -235,6 +244,30 @@ internal sealed class Av1FrameCoder : IFrameCoder
         }
 
         throw new InvalidOperationException("Every reference slot holds a frame the stream still needs.");
+    }
+
+    public double[]? Analyze(IReadOnlyList<AnalysisFrame> frames)
+    {
+        if (frames.Count == 0)
+        {
+            return null;
+        }
+
+        Av1AnalysisFrame[] list = new Av1AnalysisFrame[frames.Count];
+        for (int i = 0; i < list.Length; i++)
+        {
+            list[i] = new Av1AnalysisFrame { Picture = (YuvRaster?)frames[i].Full ?? frames[i].Picture, References = frames[i].References };
+        }
+
+        IReadOnlyList<Av1FrameAnalysis> result = _encoder.Analyze(list);
+        double[] importance = new double[result.Count];
+        for (int i = 0; i < result.Count; i++)
+        {
+            _analyses[frames[i].Index] = result[i];
+            importance[i] = result[i].Importance;
+        }
+
+        return importance;
     }
 
     public (long Key, long Next) Probe(YuvRaster<byte> key, YuvRaster<byte>? next, int quantizer)
