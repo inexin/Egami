@@ -177,7 +177,7 @@ internal sealed partial class Av1TileEncoder
             int[]? sbQ = _source.SuperblockQIndices;
             _sbQIndex = sbQ is null ? _header.BaseQIdx
                 : Av1VarianceBoost.Adjust(_header.DeltaQRes, rows.Sequential ? _currentQIndex : _header.BaseQIdx, sbQ[((miRow / _sbMi) * _source.SuperblockColumns) + (miCol / _sbMi)]);
-            _frameRdmult = Av1Rate.RdMultiplier(Math.Max(_sbQIndex, 1), _sequence.BitDepth);
+            _frameRdmult = _settings.RdMultiplier(Math.Max(_sbQIndex, 1), _sequence.BitDepth);
             Snapshot start = Take(miRow, miCol, _frame.SbSize, pixels: false);
 
             SearchPartition(miRow, miCol, _frame.SbSize, long.MaxValue);

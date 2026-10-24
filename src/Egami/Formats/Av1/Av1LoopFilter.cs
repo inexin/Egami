@@ -10,7 +10,7 @@ namespace Egami.Formats.Av1;
 /// THIRD-PARTY-NOTICES): every vertical transform edge of a plane, then every horizontal one, with the 4-, 6-, 8- or 14-tap
 /// filter the smaller transform beside the edge allows.
 /// </summary>
-internal static class Av1LoopFilter
+internal static partial class Av1LoopFilter
 {
     private static ReadOnlySpan<byte> FilterLengthLuma => [4, 8, 14, 14, 14];
 
@@ -44,6 +44,24 @@ internal static class Av1LoopFilter
             {
                 System.Buffers.ArrayPool<int>.Shared.Return(units);
             }
+        }
+    }
+
+    /// <summary>Filters one plane's edges of one direction in place, at the header's levels.</summary>
+    internal static void ApplyPlane<T>(Av1Frame frame, int plane, bool vertical)
+        where T : unmanaged
+    {
+        int ssx = plane > 0 ? frame.Sequence.SubsamplingX : 0, ssy = plane > 0 ? frame.Sequence.SubsamplingY : 0;
+        int planeMiRows = (frame.MiRows + ssy) >> ssy, planeMiCols = (frame.MiCols + ssx) >> ssx;
+        int[] units = System.Buffers.ArrayPool<int>.Shared.Rent(planeMiRows * planeMiCols);
+        try
+        {
+            Units(frame, plane, ssx, ssy, planeMiRows, planeMiCols, units);
+            FilterPlane<T>(frame, plane, units, vertical);
+        }
+        finally
+        {
+            System.Buffers.ArrayPool<int>.Shared.Return(units);
         }
     }
 

@@ -637,6 +637,8 @@ Egami.Formats.Av1.Av1FramePlan.ErrorResilient.init -> void
 Egami.Formats.Av1.Av1FramePlan.Referenced.get -> bool?
 Egami.Formats.Av1.Av1FramePlan.Referenced.init -> void
 Egami.Formats.Av1.Av1FramePlan.Kind.get -> Egami.Formats.Av1.Av1FrameKind
+Egami.Formats.Av1.Av1FramePlan.Layer.get -> int
+Egami.Formats.Av1.Av1FramePlan.Layer.init -> void
 Egami.Formats.Av1.Av1FramePlan.Kind.init -> void
 Egami.Formats.Av1.Av1FramePlan.OrderHint.get -> int?
 Egami.Formats.Av1.Av1FramePlan.OrderHint.init -> void
@@ -658,6 +660,8 @@ Egami.Formats.Av1.Av1FramePlan.Show.get -> bool
 Egami.Formats.Av1.Av1FramePlan.Show.init -> void
 Egami.Formats.Av1.Av1FramePlan.Showable.get -> bool
 Egami.Formats.Av1.Av1FramePlan.Showable.init -> void
+Egami.Formats.Av1.Av1FramePlan.Tune.get -> Egami.Formats.Av1.Av1Tune
+Egami.Formats.Av1.Av1FramePlan.Tune.init -> void
 Egami.Formats.Av1.Av1References
 Egami.Formats.Av1.Av1References.All = Egami.Formats.Av1.Av1References.Last | Egami.Formats.Av1.Av1References.Last2 | Egami.Formats.Av1.Av1References.Last3 | Egami.Formats.Av1.Av1References.Golden | Egami.Formats.Av1.Av1References.Backward | Egami.Formats.Av1.Av1References.Alternate2 | Egami.Formats.Av1.Av1References.Alternate -> Egami.Formats.Av1.Av1References
 Egami.Formats.Av1.Av1References.Alternate = 64 -> Egami.Formats.Av1.Av1References
@@ -697,6 +701,9 @@ Egami.Formats.Av1.Av1StreamDecoder.Reset() -> void
 Egami.Formats.Av1.Av1StreamDecoder.Send(System.ReadOnlySpan<byte> temporalUnit) -> void
 Egami.Formats.Av1.Av1StreamDecoder.TryReceiveFrame(Egami.YuvRaster! destination, out Egami.Formats.Av1.Av1FrameInfo info) -> bool
 Egami.Formats.Av1.Av1StreamEncoder
+Egami.Formats.Av1.Av1Tune
+Egami.Formats.Av1.Av1Tune.Image = 1 -> Egami.Formats.Av1.Av1Tune
+Egami.Formats.Av1.Av1Tune.Video = 0 -> Egami.Formats.Av1.Av1Tune
 Egami.Formats.Av1.Av1StreamEncoder.Av1StreamEncoder(Egami.Formats.Av1.Av1SequenceOptions! sequence, Egami.EgamiContext? context = null) -> void
 Egami.Formats.Av1.Av1StreamEncoder.Dispose() -> void
 Egami.Formats.Av1.Av1StreamEncoder.Encode(Egami.YuvRaster! frame, Egami.Formats.Av1.Av1FramePlan! plan) -> Egami.Formats.Av1.Av1EncodedFrame!
@@ -4007,3 +4014,16 @@ Egami.Operations.DespillColor.Blue = 1 -> Egami.Operations.DespillColor
 Egami.Operations.DespillColor.Green = 0 -> Egami.Operations.DespillColor
 Egami.Operations.RasterOps.ChromaKey(Egami.Pixels.Rgba8 color, float similarity = 0.1, float blend = 0.05) -> Egami.Operations.RasterOps!
 Egami.Operations.RasterOps.Despill(Egami.Operations.DespillColor screen = Egami.Operations.DespillColor.Green, float mix = 0.5, float expand = 0) -> Egami.Operations.RasterOps!
+Egami.Formats.Av1.Av1AnalysisFrame
+Egami.Formats.Av1.Av1AnalysisFrame.Av1AnalysisFrame() -> void
+Egami.Formats.Av1.Av1AnalysisFrame.Picture.get -> Egami.YuvRaster!
+Egami.Formats.Av1.Av1AnalysisFrame.Picture.init -> void
+Egami.Formats.Av1.Av1AnalysisFrame.References.get -> System.Collections.Generic.IReadOnlyList<int>!
+Egami.Formats.Av1.Av1AnalysisFrame.References.init -> void
+Egami.Formats.Av1.Av1FrameAnalysis
+Egami.Formats.Av1.Av1FrameAnalysis.Importance.get -> double
+Egami.Formats.Av1.Av1FramePlan.Analysis.get -> Egami.Formats.Av1.Av1FrameAnalysis?
+Egami.Formats.Av1.Av1FramePlan.Analysis.init -> void
+Egami.Formats.Av1.Av1StreamEncoder.Analyze(System.Collections.Generic.IReadOnlyList<Egami.Formats.Av1.Av1AnalysisFrame!>! frames) -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Av1.Av1FrameAnalysis!>!
+Egami.Formats.Av1.Av1FramePlan.VarianceBoost.get -> bool?
+Egami.Formats.Av1.Av1FramePlan.VarianceBoost.init -> void

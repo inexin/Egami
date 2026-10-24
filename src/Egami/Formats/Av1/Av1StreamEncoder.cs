@@ -127,6 +127,12 @@ public sealed class Av1StreamEncoder : IDisposable
             Parallelism = _parallelism,
             Stream = true,
             Reference = plan.Referenced ?? (kind == Av1FrameKind.Key || plan.RefreshSlots != 0),
+            Video = plan.Tune == Av1Tune.Video,
+            Analysis = plan.Tune == Av1Tune.Video && plan.Analysis is { } a && a.Width == Width && a.Height == Height ? a : null,
+            DeltaQuantizers = plan.DeltaQuantizers,
+            VarianceBoost = plan.VarianceBoost ?? plan.Tune == Av1Tune.Image,
+            Layer = intra ? 0 : plan.Layer,
+            Intra = intra,
         };
         Av1SearchProfile profile = Av1SearchProfile.For(settings.Effort, settings.Lossless, settings.Reference);
         Av1FrameParameters parameters = Av1Encoder.ParametersFor(input, _sequence, settings);
@@ -221,6 +227,40 @@ public sealed class Av1StreamEncoder : IDisposable
 
         return new Av1EncodedFrame(unit, payload.Length * 8L, kind, plan.Show, false, reconstruction.Header.BaseQIdx, orderHint, luma, chroma,
             (long)Width * Height, _sequence.BitDepth);
+    }
+
+    /// <summary>
+    /// Runs the temporal model over frames ahead, in the order they will be coded (<see cref="Av1AnalysisFrame.References"/> says
+    /// which earlier ones each predicts from): how much of each frame's content, block by block, the frames after it reuse. A
+    /// frame's <see cref="Av1FrameAnalysis"/> goes in its plan (<see cref="Av1FramePlan.Analysis"/>), and its
+    /// <see cref="Av1FrameAnalysis.Importance"/> can set a group's base quantizer. The frames are not coded and the stream does
+    /// not change; the result depends only on the pictures and references, not on the thread count.
+    /// </summary>
+    /// <param name="frames">The frames, in coding order, at the stream's size.</param>
+    /// <returns>Each frame's analysis, in the same order.</returns>
+    /// <exception cref="ArgumentException">A picture is not at the stream's size, or a frame names a reference that is not before it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Av1.cs" region="av1-analyze"/>
+    /// </example>
+    public IReadOnlyList<Av1FrameAnalysis> Analyze(IReadOnlyList<Av1AnalysisFrame> frames)
+    {
+        ArgumentNullException.ThrowIfNull(frames);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        for (int i = 0; i < frames.Count; i++)
+        {
+            Av1AnalysisFrame frame = frames[i] ?? throw new ArgumentException($"Frame {i} is null.", nameof(frames));
+            if (frame.Picture.Width != Width || frame.Picture.Height != Height)
+            {
+                throw new ArgumentException($"Frame {i} is {frame.Picture.Width}×{frame.Picture.Height}; the stream is {Width}×{Height}.", nameof(frames));
+            }
+
+            if (frame.References.Any(r => r < 0 || r >= i))
+            {
+                throw new ArgumentException($"Frame {i} names a reference that is not before it.", nameof(frames));
+            }
+        }
+
+        return Av1TemporalModel.Analyze(frames, Width, Height, _parallelism);
     }
 
     /// <summary>
@@ -578,6 +618,7 @@ public sealed record Av1FramePlan
     private readonly int? _orderHint;
     private readonly int? _primary;
     private readonly int _refresh = 1;
+    private readonly int _layer;
     private readonly IReadOnlyList<int> _slots = [0, 1, 2, 3, 4, 5, 6];
 
     /// <summary>Gets the plan of a shown inter frame that reads slots 0 to 6 as LAST to ALTREF and refreshes slot 0, at the default quality and effort.</summary>
@@ -679,14 +720,71 @@ public sealed record Av1FramePlan
     /// <summary>Gets whether the frame decodes without the probabilities and vectors of earlier frames, as real-time streams want. Defaults to false.</summary>
     public bool ErrorResilient { get; init; }
 
-    /// <summary>Gets whether each superblock may have its own quantizer, finer where the picture is flat (Variance Boost). Defaults to true.</summary>
+    /// <summary>
+    /// Gets whether each superblock may have its own quantizer: from the frame's <see cref="Analysis"/> on a referenced layer-0
+    /// video frame, else by <see cref="VarianceBoost"/>. Defaults to true.
+    /// </summary>
     public bool DeltaQuantizers { get; init; } = true;
+
+    /// <summary>
+    /// Gets whether superblocks the temporal analysis sets no quantizer for get finer quantizers where the picture is flat or finely
+    /// graded, where banding and blocking show (Variance Boost, from libaom's tune IQ): SSIM and the eye gain more than PSNR loses.
+    /// Null (the default) for on under <see cref="Av1Tune.Image"/> and off under <see cref="Av1Tune.Video"/>. Needs
+    /// <see cref="DeltaQuantizers"/>.
+    /// </summary>
+    public bool? VarianceBoost { get; init; }
+
+    /// <summary>
+    /// Gets what the frame's coding tools are tuned for: <see cref="Av1Tune.Video"/> (the default) or <see cref="Av1Tune.Image"/>,
+    /// the perceptual tools of still pictures.
+    /// </summary>
+    public Av1Tune Tune { get; init; }
+
+    /// <summary>
+    /// Gets the frame's layer in its group's pyramid, 0 (the default: key, golden and the group's base frames) to 7 (the deepest):
+    /// a video frame's rate-distortion multiplier rises with it, so the frames fewer others predict from spend fewer bits on
+    /// what they alone show. Intra frames are layer 0.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 7.</exception>
+    public int Layer
+    {
+        get => _layer;
+        init => _layer = InRange(value, 0, 7);
+    }
 
     /// <summary>Gets whether screen content tools (palettes, and intra block copy in intra frames) are on; null (the default) detects screen content.</summary>
     public bool? ScreenContent { get; init; }
 
+    /// <summary>
+    /// Gets the frame's temporal analysis from <see cref="Av1StreamEncoder.Analyze"/>, or null (the default) for none. A video frame
+    /// at layer 0 that others predict from codes finer quantizers in the superblocks the frames after it reuse most, when
+    /// <see cref="DeltaQuantizers"/> is on; other frames lower the rate-distortion multiplier of those blocks instead.
+    /// </summary>
+    public Av1FrameAnalysis? Analysis { get; init; }
+
     private static int InRange(int value, int min, int max, [System.Runtime.CompilerServices.CallerArgumentExpression(nameof(value))] string? name = null) =>
         value < min || value > max ? throw new ArgumentOutOfRangeException(name, value, $"The value must be {min} to {max}.") : value;
+}
+
+/// <summary>What an <see cref="Av1FramePlan"/>'s coding tools are tuned for.</summary>
+/// <example>
+/// <code language="csharp" source="../../../../tests/Egami.DocSamples/Av1.cs" region="av1-encode"/>
+/// </example>
+public enum Av1Tune
+{
+    /// <summary>
+    /// Video, measured by PSNR and SSIM as libaom's and SVT-AV1's defaults are: one quantizer for luma and chroma, no quantization
+    /// matrices, no loop filter sharpness, and rate-distortion multipliers by frame type and pyramid layer (<see cref="Av1FramePlan.Layer"/>).
+    /// A frame's quality matters most through the frames that predict from it.
+    /// </summary>
+    Video,
+
+    /// <summary>
+    /// Still pictures, as <see cref="Avif.AvifWriter"/> codes them (libaom's tune IQ): finer chroma, quantization matrices,
+    /// adaptive loop filter sharpness, Variance Boost (<see cref="Av1FramePlan.DeltaQuantizers"/>) and multipliers weighted by
+    /// local variance.
+    /// </summary>
+    Image,
 }
 
 /// <summary>The references an AV1 inter frame may predict from.</summary>

@@ -20,6 +20,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     /// <summary>Whether the frame is a stream's (<see cref="Av1EncoderSettings.Stream"/>), not a still picture's.</summary>
     private readonly bool _stream;
     private long _frameRdmult;
+    private readonly Av1EncoderSettings _settings;
     private int _sbQIndex;
     private long _rdmult;
 
@@ -60,7 +61,8 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         _profile = Av1SearchProfile.For(settings.Effort, frame.Header.CodedLossless, settings.Reference);
         _stream = settings.Stream;
         _stillIntra = frame.Header.FrameIsIntra;
-        _frameRdmult = _rdmult = Av1Rate.RdMultiplier(Math.Max(frame.Header.BaseQIdx, 1), frame.Sequence.BitDepth);
+        _settings = settings;
+        _frameRdmult = _rdmult = settings.RdMultiplier(Math.Max(frame.Header.BaseQIdx, 1), frame.Sequence.BitDepth);
     }
 
     /// <summary>
@@ -87,7 +89,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         long noneCost = long.MaxValue, splitCost = long.MaxValue;
         int noneMode = -1;
         bool motion = hasRows && hasCols && MotionSplit(miRow, miCol, bsize);
-        foreach (int partition in Candidates(bsize, hasRows, hasCols))
+        foreach (int partition in Candidates(bsize, hasRows, hasCols, miRow, miCol))
         {
             // The motion pre-pass sizes the partition: a block whose cells move apart is not tried whole (SVT-AV1's depth removal
             // by motion estimation distortion).
@@ -312,12 +314,42 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         return Math.Max(1, (long)((_frameRdmult * Math.Exp(log / count)) + 0.5));
     }
 
+    /// <summary>
+    /// Gets whether an 8x8 block of an inter frame below the profile's smallest split also tries 4x4 blocks: where the motion
+    /// pre-pass predicts its 16x16 cell worst, its mean absolute difference at its best reference more than
+    /// <see cref="Av1SearchProfile.SmallSplitMotion"/> sixteenths of the quantizer step.
+    /// </summary>
+    private bool SplitsSmall(int miRow, int miCol)
+    {
+        if (_profile.SmallSplitMotion == 0 || _source.Prepass is not { } prepass || _source.SearchReferences.Length == 0)
+        {
+            return false;
+        }
+
+        int r = (miRow * 4) / Av1MotionPrepass.Cell, c = (miCol * 4) / Av1MotionPrepass.Cell;
+        if (r >= prepass.Rows || c >= prepass.Columns)
+        {
+            return false;
+        }
+
+        long least = long.MaxValue;
+        foreach (int rf in _source.SearchReferences)
+        {
+            least = Math.Min(least, prepass.Sad(rf, r, c));
+        }
+
+        int depth = _sequence.BitDepth;
+        int q = depth == 8 ? Av1Tables.AcQLookup8[_header.BaseQIdx] : depth == 10 ? Av1Tables.AcQLookup10[_header.BaseQIdx] >> 2 : Av1Tables.AcQLookup12[_header.BaseQIdx] >> 4;
+        // The step in samples is about an eighth of the 8-bit AC quantizer; the cell's SAD is over 256 samples.
+        return least * 8 * 16 > (long)_profile.SmallSplitMotion * q * 256 << (depth - 8);
+    }
+
     private static long Add(long a, long b) => a == long.MaxValue || b == long.MaxValue ? long.MaxValue : a + b;
 
     private static long Left(long budget, long spent) => spent == long.MaxValue ? 0 : budget == long.MaxValue ? long.MaxValue : Math.Max(0, budget - spent);
 
     /// <summary>Lists the partitions to try for a square block, as the frame's edges allow and the effort chooses.</summary>
-    private List<int> Candidates(int bsize, bool hasRows, bool hasCols)
+    private List<int> Candidates(int bsize, bool hasRows, bool hasCols, int miRow, int miCol)
     {
         List<int> list = [];
         if (bsize < Bs.B8x8)
@@ -351,7 +383,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             list.Add(Partition.None);
         }
 
-        if (side > (intra ? _profile.MinBlock : _profile.InterMinBlock) || !whole)
+        if (side > (intra ? _profile.MinBlock : _profile.InterMinBlock) || !whole || (!intra && side == 8 && SplitsSmall(miRow, miCol)))
         {
             list.Add(Partition.Split);
         }
@@ -1752,6 +1784,12 @@ internal sealed class Av1SearchProfile
     internal int InterMinBlock { get; init; } = 4;
 
     /// <summary>
+    /// Gets, when inter frames split no 8x8 block (<see cref="InterMinBlock"/> 8), in sixteenths of the quantizer step, the mean
+    /// absolute pre-pass difference of a 16x16 cell above which its 8x8 blocks still try 4x4 blocks; 0 for never.
+    /// </summary>
+    internal int SmallSplitMotion { get; init; }
+
+    /// <summary>
     /// Gets, in percent of the sum of its 16x16 cells' own pre-pass distortions, the least distortion at which a square block of
     /// 32x32 or more of an inter frame, predicted whole from one vector, is only tried split; 0 to always try it whole.
     /// </summary>
@@ -1885,6 +1923,7 @@ internal sealed class Av1SearchProfile
             MinBlock = effort <= 1 ? 8 : 4,
             InterMaxBlock = effort <= 2 ? 32 : 64,
             InterMinBlock = effort <= 4 ? 8 : 4,
+            SmallSplitMotion = effort is 3 or 4 && reference ? 16 : 0,
             SkipKeepsWhole = 32,
             SplitMotion = effort <= 4 ? 150 : effort <= 6 ? 200 : 0,
             Rectangles = effort >= 5,

@@ -88,13 +88,15 @@ internal sealed partial class AvifWriter
             alphaEncoder?.Dispose();
         }
 
-        // Each frame after the first predicts from the one before (LAST) and the last golden frame, refreshed every eighth frame.
+        // Each frame after the first predicts from the one before (LAST) and the last golden frame, refreshed every eighth frame;
+        // video tools, with Variance Boost as Egami.Video codes AV1.
         static Av1FramePlan Plan(int index, int qindex, int effort) => new()
         {
             Kind = index == 0 ? Av1FrameKind.Key : Av1FrameKind.Inter,
             QIndex = qindex,
             Effort = effort,
             RefreshSlots = index % GoldenInterval == 0 ? 1 | 8 : 1,
+            VarianceBoost = true,
         };
 
         static Av1SequenceOptions SequenceOptions(Av1EncoderInput input) => new()

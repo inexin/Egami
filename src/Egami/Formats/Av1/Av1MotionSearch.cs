@@ -18,14 +18,18 @@ internal sealed class Av1ReferencePlane
 
     /// <summary>Builds the bordered plane of a frame's luma.</summary>
     internal Av1ReferencePlane(Av1Frame frame)
+        : this(frame.Plane<ushort>(0), frame.Strides[0], frame.Header.UpscaledWidth, frame.Header.FrameHeight)
     {
-        Width = frame.Header.UpscaledWidth;
-        Height = frame.Header.FrameHeight;
+    }
+
+    /// <summary>Builds the bordered plane of a luma plane of <paramref name="width"/> by <paramref name="height"/> samples at a stride.</summary>
+    internal Av1ReferencePlane(ushort[] plane, int frameStride, int width, int height)
+    {
+        Width = width;
+        Height = height;
         BorderSize = 192;
         Stride = Width + (2 * BorderSize);
         Samples = new ushort[(Stride * (Height + (2 * BorderSize))) + Padding];
-        ushort[] plane = frame.Plane<ushort>(0);
-        int frameStride = frame.Strides[0];
         for (int y = 0; y < Height + (2 * BorderSize); y++)
         {
             int from = Math.Clamp(y - BorderSize, 0, Height - 1) * frameStride;

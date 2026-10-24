@@ -22,6 +22,30 @@ changes that break code come only in a new major version.
   frames) the BD-rate (PSNR-Y) is 5.2% higher than 1.1.0's, for 4 to 6 times the speed on one thread and 12 to 20 times on 24 at
   1080p. Encoded bytes of video and AVIF sequences change.
 
+### AV1 encoder compression (Phase 2.9.11, stage B)
+
+- `Av1FramePlan.Tune` chooses a frame's tools: `Av1Tune.Video` (the default) codes one quantizer for luma and chroma, no
+  quantization matrices and no loop filter sharpness, without Variance Boost or SSIM-weighted multipliers, and weighs rate by
+  the square of the DC quantizer step a little more for key frames and by `Av1FramePlan.Layer`, the frame's pyramid layer, more
+  for frames fewer others predict from. `Av1Tune.Image` keeps the still-picture tools of libaom's tune IQ that AVIF uses.
+  `Av1FramePlan.VarianceBoost` turns Variance Boost on for video frames too (off by default under `Video`).
+- `Av1StreamEncoder.Analyze` runs a temporal dependency model over frames ahead in coding order (`Av1AnalysisFrame` names
+  each frame's references): every 16x16 block's intra and inter cost from the motion pre-pass on the source, propagated back
+  from the last frame, in a fixed order. `Av1FrameAnalysis.Importance` can set a group's base quantizer, and a plan's
+  `Av1FramePlan.Analysis` gives a referenced layer-0 frame superblock quantizers (within nine steps of four) and the other
+  frames block multipliers by how much of each block the frames after it reuse.
+- Video reference frames search their deblocking levels in one pass over all 64 levels (each line's outcomes and the levels
+  where they change, summed as differences), luma across vertical edges then horizontal ones, chroma for both; luma
+  loop restoration with a closed-form Wiener filter per 256x256 unit, kept where it pays. Frames nothing predicts from try only
+  the CDEF strengths of their nearest references.
+- Effort 3 and 4 try 4x4 inter blocks again in the 16x16 cells the motion pre-pass predicts worst.
+- Through Egami.Video's pyramid (720p derf clips, 60 frames, effort 4), BD-rate on PSNR-Y / SSIM against libaom 3.15.2
+  `--good --cpu-used=6` falls from stage A's +26.7 % / +7.6 % (crowd_run), +31.9 % / -4.0 % (ducks_take_off), +34.5 % /
+  +13.8 % (park_joy) and +131 % / -3.5 % (old_town_cross) to +7.9 % / +3.4 %, +12.4 % / -11.1 %, +13.8 % / +6.3 % and
+  +25.7 % / -1.5 %. The output is the same at any thread count and without SIMD.
+- Video and animated AVIF bytes change (animated AVIF codes its frames with the video tools and Variance Boost); still AVIF
+  files are byte for byte as before.
+
 ### Chroma key
 
 - `RasterOps.ChromaKey(color, similarity, blend)` keys out a green or blue screen by chroma: the distance between Rec. 709 Cb and

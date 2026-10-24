@@ -103,6 +103,78 @@ public class Av1StreamEncoderTests
         }
     }
 
+    [Fact]
+    public void AnalysisIsTheSameAtAnyThreadCountAndFindsWhatIsReused()
+    {
+        // A key frame, a hidden frame three ahead and the two between, which predict from both.
+        Av1SequenceOptions options = new() { Width = 240, Height = 200 };
+        using Av1StreamEncoder one = new(options, EgamiContext.Default with { MaxParallelism = 1 });
+        using Av1StreamEncoder many = new(options, EgamiContext.Default with { MaxParallelism = 8 });
+        YuvRaster[] pictures = [.. Enumerable.Range(0, 4).Select(i => Moving(240, 200, 8, ChromaFormat.Yuv420, i))];
+        Av1AnalysisFrame[] frames =
+        [
+            new() { Picture = pictures[0] },
+            new() { Picture = pictures[3], References = [0] },
+            new() { Picture = pictures[1], References = [0, 1] },
+            new() { Picture = pictures[2], References = [0, 1] },
+        ];
+        IReadOnlyList<Av1FrameAnalysis> a = one.Analyze(frames), b = many.Analyze(frames);
+        Assert.Equal(a.Select(f => f.Importance), b.Select(f => f.Importance));
+        Assert.True(a[0].Importance > 1.5, $"The key frame's importance is {a[0].Importance}.");
+        Assert.True(a[1].Importance > 1, $"The hidden frame's importance is {a[1].Importance}.");
+        Assert.Equal(1, a[2].Importance);
+        Assert.Equal(1, a[3].Importance);
+        Assert.Throws<ArgumentException>(() => one.Analyze([new Av1AnalysisFrame { Picture = pictures[0], References = [0] }]));
+        foreach (YuvRaster p in pictures)
+        {
+            p.Dispose();
+        }
+    }
+
+    [Theory]
+    [InlineData(4, 1)]
+    [InlineData(4, 8)]
+    public void FramesWithAnAnalysisDecodeToTheReconstruction(int effort, int threads)
+    {
+        // The key frame codes superblock quantizers from its analysis; the frames after it lower their blocks' multipliers.
+        Av1SequenceOptions options = new() { Width = 240, Height = 200 };
+        using Av1StreamEncoder encoder = new(options, EgamiContext.Default with { MaxParallelism = threads });
+        using Av1StreamDecoder decoder = new();
+        YuvRaster[] pictures = [.. Enumerable.Range(0, 4).Select(i => Moving(240, 200, 8, ChromaFormat.Yuv420, i))];
+        IReadOnlyList<Av1FrameAnalysis> analysis = encoder.Analyze(
+        [
+            new() { Picture = pictures[0] },
+            new() { Picture = pictures[1], References = [0] },
+            new() { Picture = pictures[2], References = [1] },
+            new() { Picture = pictures[3], References = [2] },
+        ]);
+        for (int i = 0; i < 4; i++)
+        {
+            Av1FramePlan plan = new() { Kind = i == 0 ? Av1FrameKind.Key : Av1FrameKind.Inter, Effort = effort, QIndex = 120, Layer = i == 0 ? 0 : 1, Analysis = analysis[i] };
+            decoder.Send(encoder.Encode(pictures[i], plan).Data.Span);
+            Assert.Equal(i == 0, encoder.Reconstruction!.Header.DeltaQPresent);
+            AssertDecodesToReconstruction(decoder, encoder.Reconstruction!, 240, 200, 8, ChromaFormat.Yuv420);
+        }
+
+        foreach (YuvRaster p in pictures)
+        {
+            p.Dispose();
+        }
+    }
+
+    [Fact]
+    public void ImageTuneKeepsThePerceptualTools()
+    {
+        Av1SequenceOptions options = new() { Width = 160, Height = 96 };
+        using Av1StreamEncoder encoder = new(options);
+        using YuvRaster frame = Moving(160, 96, 8, ChromaFormat.Yuv420, 0);
+        encoder.Encode(frame, new Av1FramePlan { Kind = Av1FrameKind.Key, Quality = 60, Tune = Av1Tune.Image });
+        Assert.True(encoder.Reconstruction!.Header.UsingQmatrix);
+        encoder.Encode(frame, new Av1FramePlan { Kind = Av1FrameKind.Key, Quality = 60 });
+        Assert.False(encoder.Reconstruction!.Header.UsingQmatrix);
+        Assert.False(encoder.Reconstruction!.Header.DeltaQPresent);
+    }
+
     /// <summary>Gets a screen-like picture: a few glyph tiles repeated across the frame, so copies come from far up and right.</summary>
     internal static YuvRaster Screen(int width, int height, int index)
     {

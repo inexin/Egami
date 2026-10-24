@@ -45,9 +45,15 @@ internal sealed class Av1MotionPrepass
     /// Searches every reference of <paramref name="refs"/> for every cell of the luma <paramref name="source"/> (the frame's padded
     /// plane at its stride), on the frame's threads.
     /// </summary>
-    internal static Av1MotionPrepass Build(Av1Frame frame, ushort[] source, int stride, Av1ReferencePlane?[] planes, int[] refs)
+    internal static Av1MotionPrepass Build(Av1Frame frame, ushort[] source, int stride, Av1ReferencePlane?[] planes, int[] refs) =>
+        Build(frame.Header.UpscaledWidth, frame.Header.FrameHeight, source, stride, planes, refs, frame.For);
+
+    /// <summary>
+    /// Searches as <see cref="Build(Av1Frame, ushort[], int, Av1ReferencePlane?[], int[])"/> does, for a picture of a size, its
+    /// rows run by <paramref name="forEach"/>; the source is padded to whole 64x64 blocks.
+    /// </summary>
+    internal static Av1MotionPrepass Build(int width, int height, ushort[] source, int stride, Av1ReferencePlane?[] planes, int[] refs, Action<int, Action<int>> forEach)
     {
-        int width = frame.Header.UpscaledWidth, height = frame.Header.FrameHeight;
         Av1MotionPrepass pass = new((width + Cell - 1) / Cell, (height + Cell - 1) / Cell);
         if (refs.Length == 0)
         {
@@ -77,7 +83,7 @@ internal sealed class Av1MotionPrepass
         }
 
         // Each level's rows of every reference at once, each reading the level before.
-        frame.For(n * rows2, job =>
+        forEach(n * rows2, job =>
         {
             int i = job / rows2, row = job % rows2;
             Av1ReferencePlane plane = planes[refs[i]]!.Half.Half;
@@ -86,7 +92,7 @@ internal sealed class Av1MotionPrepass
                 Exhaustive(quarter, stride / 4, plane, col * 16, row * 16, level2[i], ((row * cols2) + col) * 3);
             }
         });
-        frame.For(n * rows1, job =>
+        forEach(n * rows1, job =>
         {
             int i = job / rows1, row = job % rows1;
             Av1ReferencePlane plane = planes[refs[i]]!.Half;
@@ -95,7 +101,7 @@ internal sealed class Av1MotionPrepass
                 Refine(half, stride / 2, plane, col, row, level2[i], cols2, rows2, level1[i], cols1);
             }
         });
-        frame.For(n * pass.Rows, job =>
+        forEach(n * pass.Rows, job =>
         {
             int i = job / pass.Rows, row = job % pass.Rows;
             Av1ReferencePlane plane = planes[refs[i]]!;

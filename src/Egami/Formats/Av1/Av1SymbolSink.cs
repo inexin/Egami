@@ -153,6 +153,30 @@ internal static class Av1Rate
         return Math.Max(rdmult, 1);
     }
 
+    /// <summary>
+    /// Gets a frame's rate-distortion multiplier: a still picture's (<see cref="RdMultiplier(int, int)"/>), or a video frame's,
+    /// the square of the DC quantizer step times a little over three, a little more for key frames and less for inter frames
+    /// above the base layer, scaled up for each pyramid layer so the frames fewer others predict from spend fewer bits (libaom's
+    /// and SVT-AV1's layer factors are the idea).
+    /// </summary>
+    internal static long RdMultiplier(int qindex, int bitDepth, Av1EncoderSettings settings)
+    {
+        if (!settings.Video)
+        {
+            return RdMultiplier(qindex, bitDepth);
+        }
+
+        int q = bitDepth == 8 ? Av1Tables.DcQLookup8[qindex] : bitDepth == 10 ? Av1Tables.DcQLookup10[qindex] : Av1Tables.DcQLookup12[qindex];
+        double factor = (settings.Intra ? 3.3 : settings.Layer == 0 ? 3.25 : 3.2) + (0.0015 * (q >> (bitDepth - 8)));
+        factor *= LayerFactor(settings.Layer, settings.Reference);
+        long rdmult = (long)((double)q * q * factor);
+        rdmult = bitDepth == 10 ? (rdmult + 8) >> 4 : bitDepth == 12 ? (rdmult + 128) >> 8 : rdmult;
+        return Math.Max(rdmult, 1);
+    }
+
+    /// <summary>Gets a video frame's multiplier scale for its pyramid layer: 1 at the base, rising toward the leaves.</summary>
+    internal static double LayerFactor(int layer, bool reference) => layer <= 0 ? 1 : Math.Min(1 + (0.1 * layer), 1.4) * (reference ? 1 : 1.1);
+
     /// <summary>Gets RDCOST (rd.h): the rate in 1/512 bits times the multiplier, plus the distortion (a sum of squared errors) times 128.</summary>
     internal static long RdCost(long rdmult, long rate, long distortion) => (((rate * rdmult) + 256) >> 9) + (distortion << 7);
 
