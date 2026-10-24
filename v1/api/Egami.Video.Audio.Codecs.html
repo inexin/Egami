@@ -95,6 +95,21 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Codecs.Ac3Codec.html">Ac3Codec</a></dt>
+      <dd><p>AC-3 (Dolby Digital, ATSC A/52:2018), decode only: every channel mode from 1/0 to 3/2 and dual mono, with or without the LFE,
+at 32, 44.1 and 48 kHz and 32 to 640 kbit/s, with coupling, rematrixing, block switching and both frame CRCs. Frames come
+out as planar float, 1536 samples each, in Egami.Video's channel order: a 5.1 stream as front left, front right, center,
+LFE, side left, side right. The stream's dynamic range control is applied in full unless
+<a class="xref" href="Egami.Video.Audio.Codecs.Ac3DecoderOptions.html#Egami_Video_Audio_Codecs_Ac3DecoderOptions_DynamicRange">DynamicRange</a> says otherwise; dialogue normalization is not applied. Read from .ac3 files and
+from AC-3 tracks in MP4, Matroska, AVI and CAF. E-AC-3 (<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_EAc3">EAc3</a>) is not decoded.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Codecs.Ac3DecoderOptions.html">Ac3DecoderOptions</a></dt>
+      <dd><p>How the AC-3 decoder treats the stream's dynamic range control and channels.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Codecs.AlacCodec.html">AlacCodec</a></dt>
       <dd><p>Apple Lossless (ALAC), translated from Apple's Apache-2.0 reference codec: decodes 16, 20, 24 and 32-bit streams of 1 to 8
 channels into planar integer frames; encodes them with packets byte for byte as Apple's encoder makes them, at level 1

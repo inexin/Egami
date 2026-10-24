@@ -78770,6 +78770,19 @@ references:
   commentId: T:Egami.Video.Audio.AudioCodecs
   fullName: Egami.Video.Audio.AudioCodecs
   nameWithType: AudioCodecs
+- uid: Egami.Video.Audio.AudioCodecs.Ac3
+  name: Ac3
+  href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Ac3
+  commentId: P:Egami.Video.Audio.AudioCodecs.Ac3
+  fullName: Egami.Video.Audio.AudioCodecs.Ac3
+  nameWithType: AudioCodecs.Ac3
+- uid: Egami.Video.Audio.AudioCodecs.Ac3*
+  name: Ac3
+  href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Ac3_
+  commentId: Overload:Egami.Video.Audio.AudioCodecs.Ac3
+  isSpec: "True"
+  fullName: Egami.Video.Audio.AudioCodecs.Ac3
+  nameWithType: AudioCodecs.Ac3
 - uid: Egami.Video.Audio.AudioCodecs.Alac
   name: Alac
   href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Alac
@@ -78931,6 +78944,19 @@ references:
   commentId: T:Egami.Video.Audio.AudioDecoderOptions
   fullName: Egami.Video.Audio.AudioDecoderOptions
   nameWithType: AudioDecoderOptions
+- uid: Egami.Video.Audio.AudioDecoderOptions.Ac3
+  name: Ac3
+  href: api/Egami.Video.Audio.AudioDecoderOptions.html#Egami_Video_Audio_AudioDecoderOptions_Ac3
+  commentId: P:Egami.Video.Audio.AudioDecoderOptions.Ac3
+  fullName: Egami.Video.Audio.AudioDecoderOptions.Ac3
+  nameWithType: AudioDecoderOptions.Ac3
+- uid: Egami.Video.Audio.AudioDecoderOptions.Ac3*
+  name: Ac3
+  href: api/Egami.Video.Audio.AudioDecoderOptions.html#Egami_Video_Audio_AudioDecoderOptions_Ac3_
+  commentId: Overload:Egami.Video.Audio.AudioDecoderOptions.Ac3
+  isSpec: "True"
+  fullName: Egami.Video.Audio.AudioDecoderOptions.Ac3
+  nameWithType: AudioDecoderOptions.Ac3
 - uid: Egami.Video.Audio.AudioDecoderOptions.Default
   name: Default
   href: api/Egami.Video.Audio.AudioDecoderOptions.html#Egami_Video_Audio_AudioDecoderOptions_Default
@@ -79753,6 +79779,112 @@ references:
   commentId: N:Egami.Video.Audio.Codecs
   fullName: Egami.Video.Audio.Codecs
   nameWithType: Egami.Video.Audio.Codecs
+- uid: Egami.Video.Audio.Codecs.Ac3Codec
+  name: Ac3Codec
+  href: api/Egami.Video.Audio.Codecs.Ac3Codec.html
+  commentId: T:Egami.Video.Audio.Codecs.Ac3Codec
+  fullName: Egami.Video.Audio.Codecs.Ac3Codec
+  nameWithType: Ac3Codec
+- uid: Egami.Video.Audio.Codecs.Ac3Codec.CodecId
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.Ac3Codec.html#Egami_Video_Audio_Codecs_Ac3Codec_CodecId
+  commentId: P:Egami.Video.Audio.Codecs.Ac3Codec.CodecId
+  fullName: Egami.Video.Audio.Codecs.Ac3Codec.CodecId
+  nameWithType: Ac3Codec.CodecId
+- uid: Egami.Video.Audio.Codecs.Ac3Codec.CodecId*
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.Ac3Codec.html#Egami_Video_Audio_Codecs_Ac3Codec_CodecId_
+  commentId: Overload:Egami.Video.Audio.Codecs.Ac3Codec.CodecId
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Ac3Codec.CodecId
+  nameWithType: Ac3Codec.CodecId
+- uid: Egami.Video.Audio.Codecs.Ac3Codec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name: CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  href: api/Egami.Video.Audio.Codecs.Ac3Codec.html#Egami_Video_Audio_Codecs_Ac3Codec_CreateDecoder_Egami_Video_AudioTrackInfo_Egami_Video_Audio_AudioDecoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Audio.Codecs.Ac3Codec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name.vb: CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+  fullName: Egami.Video.Audio.Codecs.Ac3Codec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions?, Egami.Video.MediaContext)
+  fullName.vb: Egami.Video.Audio.Codecs.Ac3Codec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions, Egami.Video.MediaContext)
+  nameWithType: Ac3Codec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  nameWithType.vb: Ac3Codec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+- uid: Egami.Video.Audio.Codecs.Ac3Codec.CreateDecoder*
+  name: CreateDecoder
+  href: api/Egami.Video.Audio.Codecs.Ac3Codec.html#Egami_Video_Audio_Codecs_Ac3Codec_CreateDecoder_
+  commentId: Overload:Egami.Video.Audio.Codecs.Ac3Codec.CreateDecoder
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Ac3Codec.CreateDecoder
+  nameWithType: Ac3Codec.CreateDecoder
+- uid: Egami.Video.Audio.Codecs.Ac3Codec.Instance
+  name: Instance
+  href: api/Egami.Video.Audio.Codecs.Ac3Codec.html#Egami_Video_Audio_Codecs_Ac3Codec_Instance
+  commentId: P:Egami.Video.Audio.Codecs.Ac3Codec.Instance
+  fullName: Egami.Video.Audio.Codecs.Ac3Codec.Instance
+  nameWithType: Ac3Codec.Instance
+- uid: Egami.Video.Audio.Codecs.Ac3Codec.Instance*
+  name: Instance
+  href: api/Egami.Video.Audio.Codecs.Ac3Codec.html#Egami_Video_Audio_Codecs_Ac3Codec_Instance_
+  commentId: Overload:Egami.Video.Audio.Codecs.Ac3Codec.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Ac3Codec.Instance
+  nameWithType: Ac3Codec.Instance
+- uid: Egami.Video.Audio.Codecs.Ac3Codec.Name
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.Ac3Codec.html#Egami_Video_Audio_Codecs_Ac3Codec_Name
+  commentId: P:Egami.Video.Audio.Codecs.Ac3Codec.Name
+  fullName: Egami.Video.Audio.Codecs.Ac3Codec.Name
+  nameWithType: Ac3Codec.Name
+- uid: Egami.Video.Audio.Codecs.Ac3Codec.Name*
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.Ac3Codec.html#Egami_Video_Audio_Codecs_Ac3Codec_Name_
+  commentId: Overload:Egami.Video.Audio.Codecs.Ac3Codec.Name
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Ac3Codec.Name
+  nameWithType: Ac3Codec.Name
+- uid: Egami.Video.Audio.Codecs.Ac3DecoderOptions
+  name: Ac3DecoderOptions
+  href: api/Egami.Video.Audio.Codecs.Ac3DecoderOptions.html
+  commentId: T:Egami.Video.Audio.Codecs.Ac3DecoderOptions
+  fullName: Egami.Video.Audio.Codecs.Ac3DecoderOptions
+  nameWithType: Ac3DecoderOptions
+- uid: Egami.Video.Audio.Codecs.Ac3DecoderOptions.Default
+  name: Default
+  href: api/Egami.Video.Audio.Codecs.Ac3DecoderOptions.html#Egami_Video_Audio_Codecs_Ac3DecoderOptions_Default
+  commentId: P:Egami.Video.Audio.Codecs.Ac3DecoderOptions.Default
+  fullName: Egami.Video.Audio.Codecs.Ac3DecoderOptions.Default
+  nameWithType: Ac3DecoderOptions.Default
+- uid: Egami.Video.Audio.Codecs.Ac3DecoderOptions.Default*
+  name: Default
+  href: api/Egami.Video.Audio.Codecs.Ac3DecoderOptions.html#Egami_Video_Audio_Codecs_Ac3DecoderOptions_Default_
+  commentId: Overload:Egami.Video.Audio.Codecs.Ac3DecoderOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Ac3DecoderOptions.Default
+  nameWithType: Ac3DecoderOptions.Default
+- uid: Egami.Video.Audio.Codecs.Ac3DecoderOptions.Downmix
+  name: Downmix
+  href: api/Egami.Video.Audio.Codecs.Ac3DecoderOptions.html#Egami_Video_Audio_Codecs_Ac3DecoderOptions_Downmix
+  commentId: P:Egami.Video.Audio.Codecs.Ac3DecoderOptions.Downmix
+  fullName: Egami.Video.Audio.Codecs.Ac3DecoderOptions.Downmix
+  nameWithType: Ac3DecoderOptions.Downmix
+- uid: Egami.Video.Audio.Codecs.Ac3DecoderOptions.Downmix*
+  name: Downmix
+  href: api/Egami.Video.Audio.Codecs.Ac3DecoderOptions.html#Egami_Video_Audio_Codecs_Ac3DecoderOptions_Downmix_
+  commentId: Overload:Egami.Video.Audio.Codecs.Ac3DecoderOptions.Downmix
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Ac3DecoderOptions.Downmix
+  nameWithType: Ac3DecoderOptions.Downmix
+- uid: Egami.Video.Audio.Codecs.Ac3DecoderOptions.DynamicRange
+  name: DynamicRange
+  href: api/Egami.Video.Audio.Codecs.Ac3DecoderOptions.html#Egami_Video_Audio_Codecs_Ac3DecoderOptions_DynamicRange
+  commentId: P:Egami.Video.Audio.Codecs.Ac3DecoderOptions.DynamicRange
+  fullName: Egami.Video.Audio.Codecs.Ac3DecoderOptions.DynamicRange
+  nameWithType: Ac3DecoderOptions.DynamicRange
+- uid: Egami.Video.Audio.Codecs.Ac3DecoderOptions.DynamicRange*
+  name: DynamicRange
+  href: api/Egami.Video.Audio.Codecs.Ac3DecoderOptions.html#Egami_Video_Audio_Codecs_Ac3DecoderOptions_DynamicRange_
+  commentId: Overload:Egami.Video.Audio.Codecs.Ac3DecoderOptions.DynamicRange
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.Ac3DecoderOptions.DynamicRange
+  nameWithType: Ac3DecoderOptions.DynamicRange
 - uid: Egami.Video.Audio.Codecs.AlacCodec
   name: AlacCodec
   href: api/Egami.Video.Audio.Codecs.AlacCodec.html

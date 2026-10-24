@@ -372,7 +372,7 @@ Console.WriteLine($&quot;{opus.CodecId}: {opus.Duration}, {opus.CodecDelay} prim
 one E-AC-3 independent frame with the dependent substreams that follow it, as MP4 and Matroska store them; the track's rate,
 channels and layout come from the first frame's header (<code>CodecIds.Ac3</code>, <code>CodecIds.EAc3</code>). Bytes between frames are skipped,
 and a seek builds a frame index in one pass. Both pass through MP4 (ac-3 and ec-3 sample entries; the writer builds the dac3
-or dec3 box from the first frame), Matroska and CAF unchanged. Egami.Video does not decode them yet.</p>
+or dec3 box from the first frame), Matroska and CAF unchanged.</p>
 <pre><code class="lang-csharp">// A raw .ac3 or .eac3 stream: each packet is one sync frame (E-AC-3: an independent frame and its substreams).
 MediaInfo info = MediaFile.Probe(&quot;surround.ac3&quot;);
 AudioTrackInfo track = (AudioTrackInfo)info.Tracks[0];
@@ -380,6 +380,32 @@ Console.WriteLine($&quot;{track.CodecId}: {track.SampleRate} Hz, {track.Channels
 
 // Into MP4 (an ac-3 sample entry with its dac3 box), Matroska or CAF without decoding.
 MediaFile.Remux(&quot;surround.ac3&quot;, &quot;surround.mp4&quot;);
+</code></pre>
+<p><code>Ac3Codec</code> decodes AC-3 (ATSC A/52) in every channel mode, 1/0 to 3/2 and dual mono, with or without the LFE, at 32, 44.1 and
+48 kHz and 32 to 640 kbit/s, from raw .ac3 files and from AC-3 tracks in MP4, Matroska, AVI and CAF. Frames are 1536 samples of
+planar float in Egami.Video's channel order. Both frame CRCs are checked unless <code>VerifyChecksums</code> is off; a damaged frame is
+reported as <code>Ac3.BadCrc</code> or <code>Ac3.CorruptFrame</code> and handled as <code>Errors</code> says, and Conceal puts silence of its length in its
+place. The stream's dynamic range control is applied in full, as the standard asks; <code>Ac3DecoderOptions.DynamicRange</code> scales it
+(0 turns it off) and <code>Ac3DecoderOptions.Downmix</code> mixes to a smaller layout with the stream's own center and surround mix
+levels, scaled so the mix cannot clip. Dialogue normalization is left to the player. E-AC-3 passes through undecoded.</p>
+<pre><code class="lang-csharp">// AC-3 decodes to planar float in Egami.Video's order: 5.1 is front left, front right, center, LFE, side left, side right.
+using (AudioReader reader = AudioReader.Open(&quot;surround.ac3&quot;))
+{
+    Console.WriteLine($&quot;{reader.Layout}, {reader.SampleRate} Hz&quot;);
+}
+
+// The full dynamic range (no DRC gain words), mixed down to stereo with the stream's center and surround levels.
+AudioReaderOptions stereo = new()
+{
+    Decoder = new AudioDecoderOptions { Ac3 = new Ac3DecoderOptions { DynamicRange = 0, Downmix = ChannelLayout.Stereo } },
+};
+using (AudioReader reader = AudioReader.Open(&quot;surround.ac3&quot;, stereo))
+{
+    Console.WriteLine($&quot;{reader.Layout.ChannelCount} channels&quot;);
+}
+
+// Decoded and encoded again as FLAC, all six channels.
+MediaFile.Transcode(&quot;surround.ac3&quot;, &quot;surround.flac&quot;, FlacCodec.Instance);
 </code></pre>
 <p><code>AlacCodec</code> decodes and encodes Apple Lossless (ALAC) at 16, 20, 24 and 32 bits with 1 to 8 channels. It is translated from
 Apple's reference codec, so its packets are the bytes Apple's encoder makes: level 1, the default, searches the stereo matrix

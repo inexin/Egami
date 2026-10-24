@@ -12207,6 +12207,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.Ac3Codec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.Ac3Codec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.Ac3Codec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.Ac3Codec.yml\" sourcestartlinenumber=\"1\">AC-3 (Dolby Digital, ATSC A/52:2018), decode only: every channel mode from 1/0 to 3/2 and dual mono, with or without the LFE,\nat 32, 44.1 and 48 kHz and 32 to 640 kbit/s, with coupling, rematrixing, block switching and both frame CRCs. Frames come\nout as planar float, 1536 samples each, in Egami.Video's channel order: a 5.1 stream as front left, front right, center,\nLFE, side left, side right. The stream's dynamic range control is applied in full unless\n<xref href=\"Egami.Video.Audio.Codecs.Ac3DecoderOptions.DynamicRange\" data-throw-if-not-resolved=\"false\"></xref> says otherwise; dialogue normalization is not applied. Read from .ac3 files and\nfrom AC-3 tracks in MP4, Matroska, AVI and CAF. E-AC-3 (<xref href=\"Egami.Video.CodecIds.EAc3\" data-throw-if-not-resolved=\"false\"></xref>) is not decoded.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.Ac3DecoderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.Ac3DecoderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.Ac3DecoderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.Ac3DecoderOptions.yml\" sourcestartlinenumber=\"1\">How the AC-3 decoder treats the stream's dynamic range control and channels.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Codecs.AlacCodec.yml",
       "output": {
         ".html": {
