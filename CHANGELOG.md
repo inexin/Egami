@@ -534,7 +534,7 @@ V1.4 stage E: the command line.
 - `waveform` and `spectrum` draw audio pictures, with `--legend` for a time axis and level or frequency labels;
   `generate` writes test clips and sounds (pattern, bars, solid, gradient; sine, silence, noise, sweep).
 - `segment --scenes` splits at scene changes, each part from the keyframe at or before its scene, reporting the gap and
-  warning past a second; `--exact` waits for smart cut (V5.6). `run --crop auto` crops black bars off before the steps.
+  warning past a second; `--exact` starts each part on its first frame by smart cut (V5.6). `run --crop auto` crops black bars off before the steps.
 - `egami-video ffmpeg`: blackdetect, freezedetect, cropdetect, idet, signalstats, blurdetect, blockdetect, silencedetect,
   volumedetect, astats and ebur128 with `-f null -` run `analyze` and print ffmpeg's log lines (`analyze --ffmpeg-log`);
   `-f lavfi` testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc run `generate`; showwavespic and
