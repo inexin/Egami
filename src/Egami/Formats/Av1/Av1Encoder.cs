@@ -338,7 +338,6 @@ internal sealed class Av1Encoder
             contexts[tile] = writer.Context;
         });
         parameters.TileSizeBytes = Av1ObuWriter.TileSizeBytesFor(tileData);
-
         if (!frame.Header.DisableFrameEndUpdateCdf)
         {
             // The CDFs the context update tile ends with, which the frames that load this one start from.
