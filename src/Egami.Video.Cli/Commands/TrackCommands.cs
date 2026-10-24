@@ -118,6 +118,8 @@ internal static class TrackCommands
             CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian or CodecIds.PcmFloat => "wav",
             CodecIds.Flac => "flac",
             CodecIds.Alac => "m4a",
+            CodecIds.Ac3 => "ac3",
+            CodecIds.EAc3 => "eac3",
             CodecIds.Opus or CodecIds.Vorbis => "ogg",
             _ => string.Empty,
         };

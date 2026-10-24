@@ -38,7 +38,8 @@ public sealed class TrackTests
     [InlineData("mkv-metadata.mkv", "a", "wav")]
     [InlineData("mkv-raw-i420.mkv", "v", "y4m")]
     [InlineData("avi-raw-bgr24.avi", "v", "mkv")]
-    [InlineData("mkv-ac3.mkv", "a", "mka")]
+    [InlineData("mkv-ac3.mkv", "a", "ac3")]
+    [InlineData("audio/alac-files/mka-alac-stereo.mka", "a", "m4a")]
     [InlineData("audio/flac-tags-picture.flac", "a", "flac")]
     [InlineData("mp4/mp4-av1.mp4", "v", "ivf")]
     public void ExtractPicksAContainerForTheCodec(string clip, string track, string extension)

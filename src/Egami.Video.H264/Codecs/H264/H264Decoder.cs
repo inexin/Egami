@@ -255,7 +255,7 @@ internal sealed class H264Decoder
             // passed over like any other picture decoding cannot start at.
             if (_started)
             {
-                Fail("H264.CorruptSlice", $"A slice header cannot be read ({e.Message}).", e);
+                Fail("H264.CorruptFrame", $"A slice header cannot be read ({e.Message}).", e);
             }
 
             return;
@@ -555,7 +555,7 @@ internal sealed class H264Decoder
         catch (CorruptDataException e)
         {
             _curDamaged = true;
-            Fail("H264.CorruptSlice", $"A slice of frame_num {h.FrameNum} cannot be decoded ({e.Message}).", e);
+            Fail("H264.CorruptFrame", $"A slice of frame_num {h.FrameNum} cannot be decoded ({e.Message}).", e);
         }
     }
 
@@ -619,7 +619,7 @@ internal sealed class H264Decoder
             if (errors[i] is CorruptDataException e)
             {
                 _curDamaged = true;
-                Report?.Invoke("H264.CorruptSlice", $"A slice of frame_num {_jobs[i].Header.FrameNum} cannot be decoded ({e.Message}).");
+                Report?.Invoke("H264.CorruptFrame", $"A slice of frame_num {_jobs[i].Header.FrameNum} cannot be decoded ({e.Message}).");
                 first ??= e;
             }
         }
@@ -942,7 +942,7 @@ internal sealed class H264Decoder
         {
             _curDamaged = true;
             string problem = $"{missing} of {mb.Slice.Length} macroblocks of frame_num {h.FrameNum} are missing";
-            Report?.Invoke("H264.CorruptSlice", problem + "; they are filled from the frame before.");
+            Report?.Invoke("H264.CorruptFrame", problem + "; they are filled from the frame before.");
             Conceal(pic, mb, sps);
 
             // In Throw mode the picture is still finished, so the decoder stays whole, and the error comes after.

@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 using Egami.Video.Audio;
+using Egami.Video.Audio.Codecs;
 using Egami.Video.Containers;
 
 namespace Egami.Video;
@@ -38,9 +39,27 @@ public sealed class AudioReader : IDisposable
                     ?? throw new ArgumentException($"Track {n} is not an audio track.", nameof(options))
                 : demuxer.Tracks.OfType<AudioTrackInfo>().FirstOrDefault())
             ?? throw new UnsupportedFormatException("The file has no audio track.");
-        _decoder = AudioCodecs.CreateDecoder(Track, (_options.Decoder ?? AudioDecoderOptions.Default) with { Errors = _options.Errors, KeepPadding = _options.KeepAllSamples }, context);
+        AudioDecoderOptions decoderOptions = (_options.Decoder ?? AudioDecoderOptions.Default) with { Errors = _options.Errors, KeepPadding = _options.KeepAllSamples };
+        ChannelLayout? downmix = null;
+        if (Track.CodecId == CodecIds.Ac3)
+        {
+            // A mono or stereo Layout on a wider AC-3 track uses the stream's own mix levels (A/52's downmix) unless the caller asked
+            // the decoder for a downmix of its own; the downmix asked of the decoder sets the layout handed out, so the reader does
+            // not mix the channels back up.
+            Ac3DecoderOptions ac3 = decoderOptions.Ac3 ?? Ac3DecoderOptions.Default;
+            if (ac3.Downmix is null && _options.Layout is { } layout && (layout == ChannelLayout.Mono || layout == ChannelLayout.Stereo)
+                && Track.Channels > layout.ChannelCount)
+            {
+                ac3 = ac3 with { Downmix = layout };
+                decoderOptions = decoderOptions with { Ac3 = ac3 };
+            }
+
+            downmix = ac3.Downmix;
+        }
+
+        _decoder = AudioCodecs.CreateDecoder(Track, decoderOptions, context);
         SampleRate = _options.SampleRate ?? Track.SampleRate;
-        Layout = _options.Layout ?? Track.EffectiveLayout;
+        Layout = _options.Layout ?? downmix ?? Track.EffectiveLayout;
     }
 
     /// <summary>Gets what the file holds.</summary>
@@ -347,7 +366,11 @@ public sealed record AudioReaderOptions
     /// <summary>Gets the sample rate to resample to, or <see langword="null"/> for the track's.</summary>
     public int? SampleRate { get; init; }
 
-    /// <summary>Gets the layout to mix to with <see cref="ChannelMixer"/>'s default matrix, or <see langword="null"/> for the track's.</summary>
+    /// <summary>
+    /// Gets the layout to mix to with <see cref="ChannelMixer"/>'s default matrix, or <see langword="null"/> for the track's. A mono or
+    /// stereo layout on a wider AC-3 track mixes down in the decoder with the stream's own levels instead (see
+    /// <see cref="Ac3DecoderOptions.Downmix"/>).
+    /// </summary>
     public ChannelLayout? Layout { get; init; }
 
     /// <summary>Gets the resampler's quality, when the rate changes. Default <see cref="ResamplerQuality.Good"/>.</summary>

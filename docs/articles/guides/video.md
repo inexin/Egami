@@ -7,8 +7,9 @@ no copying. It is fully managed and ships only royalty-free codecs:
   frames.
 - Codecs: AV1 (8, 10 and 12 bit, 4:0:0 to 4:4:4, film grain, equal to libaom frame for frame), VP9 (all four profiles, 8,
   10 and 12 bit, equal to libvpx frame for frame), VP8 (with WebM alpha) and Motion JPEG decode; VP8 (see
-  [Encoding video](video-encoding.md)), Motion JPEG and uncompressed encode. FLAC and PCM audio decode and encode (see [Audio](audio.md)); other tracks are copied through
-  untouched. H.264 decodes with the opt-in Egami.Video.H264 package (see [H.264](h264.md)).
+  [Encoding video](video-encoding.md)), Motion JPEG and uncompressed encode. Audio codecs such as FLAC, Opus, ALAC and AC-3
+  (see [Audio](audio.md)); other tracks are copied through untouched. H.264 decodes with the opt-in Egami.Video.H264
+  package (see [H.264](h264.md)).
 
 ## Probing a file
 

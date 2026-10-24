@@ -19,7 +19,7 @@ public sealed class H264Format : ContainerFormat
     public static H264Format Instance { get; } = new();
 
     /// <inheritdoc/>
-    public override string Name => "H.264";
+    public override string Name => "H.264 Annex B";
 
     /// <inheritdoc/>
     public override IReadOnlyList<string> Extensions { get; } = [".h264", ".264", ".avc"];

@@ -35,7 +35,7 @@ prints `egami-video run in.mkv resize 640 + flip horizontal -o out.mkv --codec m
 | `-vf` with scale, crop, pad, transpose, hflip, vflip; `-s`; `-c:v mjpeg` or `rawvideo` | `run` |
 | `-vf thumbnail`, `select='gt(scene,0.4)'`, `tile=4x4` | `thumbnail`, `scenes`, `sheet` |
 | `.gif`, `.apng` or `.webp` output | `animate` |
-| `-vn`, `-c:a flac`, `-c:a libopus`, `-b:a`, `-ar`, `-ac`, `-sample_fmt` | `audio` |
+| `-vn`, `-c:a flac`, `-c:a alac`, `-c:a libopus`, `-b:a`, `-ar`, `-ac`, `-sample_fmt`, an .aiff or .caf output | `audio` |
 | `-f framemd5`, `-f framehash` | `hash` |
 | `-i distorted -i reference -lavfi psnr` or `ssim` | `compare` |
 | `-vf blackdetect`, `freezedetect`, `cropdetect`, `idet`, `signalstats`, `blurdetect`, `blockdetect` or `-af silencedetect`, `volumedetect`, `astats`, `ebur128`, with `-f null -` | `analyze --ffmpeg-log` |
@@ -88,7 +88,7 @@ ffmpeg mode takes `-i`, `-f`, `-y`, `-n`, `-ss`, `-to`, `-t`, `-itsoffset`, `-fr
 `-stats_period`, `-hide_banner`, `-loglevel`, `-v` and `-nostdin`, with `pipe:` and `%d` patterns. The filters are scale, crop,
 pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile, and with `-f null` the detection filters above; the
 `-f lavfi` sources are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc. Codecs: `copy`, `mjpeg` and `rawvideo` for video, `flac`,
-`libopus` (or `opus`) and the `pcm_` codecs for audio.
+`alac`, `libopus` (or `opus`) and the `pcm_` codecs for audio.
 
 ffprobe mode takes `-i`, `-show_streams`, `-show_format`, `-show_packets`, `-show_frames`, `-show_chapters`, `-select_streams`,
 `-show_entries`, `-of` (also `-print_format`, `-output_format`) with the json, csv, compact, default, flat and xml writers and

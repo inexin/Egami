@@ -250,7 +250,8 @@ recommended).
 
 ## Egami.Video.H264 0.6.0 (unreleased)
 
-V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version. The API review is still to come.
+V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version. API review questions decided 2026-10-23 (all as
+recommended): the raw reader is named "H.264 Annex B", `FrameRate` stays nullable, and broken data reports `H264.CorruptFrame`.
 
 - `H264Codec` and `WithH264()`: a managed H.264 decoder written from ITU-T H.264 for progressive Constrained Baseline, Main,
   High, High 10 and High 4:2:2 streams, 8 and 10 bit, 4:0:0, 4:2:0 and 4:2:2, and their Intra profiles: CAVLC and CABAC, B
@@ -258,7 +259,7 @@ V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version.
   matrices, long-term references and memory management, and several slices per frame. Frames equal FFmpeg's decode on all 31
   corpus clips. Interlaced streams, 4:4:4, lossless, FMO, ASO, SP and SI slices and data partitions give
   `UnsupportedFormatException`.
-- Decoding starts at the first IDR or recovery point; a broken slice reports `H264.CorruptSlice` and its macroblocks are
+- Decoding starts at the first IDR or recovery point; a broken slice reports `H264.CorruptFrame` and its macroblocks are
   concealed from the frame before (`Skip` and `Conceal`) or the frame is finished and the error thrown (`Throw`); a missing
   reference reports `H264.MissingReference`. Colour comes from the VUI, then the container, then BT.601 or BT.709 by size; HDR10
   mastering display and content light level SEI become `Hdr`, HDR10+ (T.35 user data SEI) `Hdr10Plus`.
@@ -495,7 +496,8 @@ V5.3: VP9 encoding. API review pending (combined encoders review).
   ahead. Egami matches libvpx's PSNR-Y BD-rate at about `--cpu-used=4` on crowd_run, park_joy and old_town_cross and `=2` on
   ducks_take_off, taking 0.65 to 1.8 times its time there on one thread and 1.1 to 2.0 times on all cores.
 
-V5.9 stage A: AIFF and AIFF-C, and G.711.
+V5.9 stage A: AIFF and AIFF-C, and G.711. V5.9 (stages A to D and the CLI) API reviewed and accepted 2026-10-24 (all as
+recommended); it ships in this release with the rest of 0.6.0.
 
 ### AIFF
 
@@ -558,6 +560,35 @@ V5.9 stage D (container part): AC-3 and E-AC-3.
 - MP4 reads ac-3 and ec-3 sample entries as `CodecIds.Ac3` and `CodecIds.EAc3` (they used to come through as `A_QUICKTIME`)
   and writes them, with a dac3 or dec3 box made from the first packet's headers; the boxes match FFmpeg's. CAF maps ec-3 too.
 - Fuzz target `ac3`.
+
+V5.9 tasks 14, 15 and 17: AC-3 decoding.
+
+### AC-3 decoding
+
+- `Ac3Codec` (`AudioCodecs.Ac3`, registered by default) decodes AC-3, written from ATSC A/52:2018 alone: every channel mode
+  (1/0 to 3/2 and dual mono) with or without the LFE, 32, 44.1 and 48 kHz, 32 to 640 kbit/s, coupling, rematrixing, block
+  switching, delta bit allocation and dither, with both frame CRCs checked (`Ac3.BadCrc`, `Ac3.CorruptFrame`, handled as
+  `AudioDecoderOptions.Errors` says). Frames are 1536 samples of planar float in Egami.Video's channel order, so AudioReader
+  reads AC-3 from .ac3 files and from MP4, Matroska, AVI and CAF tracks. E-AC-3 still passes through.
+- `AudioDecoderOptions.Ac3` takes an `Ac3DecoderOptions`: `DynamicRange` (1 by default, the stream's dynamic range control in
+  full; 0 turns it off) and `Downmix`, a layout to mix to with the stream's center and surround mix levels (A/52's LoRo
+  equations, scaled so the mix cannot clip). AudioReader hands out frames in the downmix layout, and an
+  `AudioReaderOptions.Layout` of mono or stereo on a wider AC-3 track uses this downmix too unless `Downmix` is set. Dialogue
+  normalization is not applied.
+- Within 2^-14 and at 90 dB SNR or more of FFmpeg's float decode on 24 FFmpeg-encoded streams (every mode FFmpeg writes, 32 to
+  640 kbit/s, LFE and coupling on and off, dual mono), made by `tools/video/make-audio-corpus.py --ac3-decode`.
+- Fuzz target `ac3raw`.
+
+V5.9 task 19: the CLI.
+
+### egami-video
+
+- `audio --codec alac` writes Apple Lossless (`--level` 0 or 1) to .m4a, .mov, .mka and .caf; .m4a outputs get ALAC by
+  default. `audio` also writes .aiff (PCM) and .caf (PCM by default, or FLAC, ALAC or Opus).
+- `extract` writes ALAC tracks to .m4a and AC-3 and E-AC-3 tracks to raw .ac3 and .eac3 files; `remux` writes .ac3, .aiff and .caf.
+- ffmpeg mode maps `-c:a alac` and the big-endian `pcm_s16be`, `pcm_s24be` and `pcm_s32be`, and sends .aiff and .caf outputs
+  to `audio` unless the audio is copied. `info` and ffprobe mode name ALAC, E-AC-3, G.711, AIFF, CAF and raw AC-3 as ffprobe
+  does.
 
 ## Egami.Video 0.5.0 (unreleased)
 

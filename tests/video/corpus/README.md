@@ -156,6 +156,13 @@ the egami-opusref image (the build command is in the file); `SilkTests` decodes 
 from a synthetic signal with libopus 1.5.2, with libopus's final range and decoded samples for each frame, some frames lost.
 `tools/video/opusref/make-celt-reference.c` makes it in the `egami-opusref` image; `CeltTests` decodes it.
 
+`ac3-decode` (`--ac3-decode`) holds 24 AC-3 streams from FFmpeg's encoder at 32 to 640 kbit/s: every channel mode it writes,
+LFE on and off, coupling on and off, and `dual-mono-192k.ac3`, a 2/0 stream rewritten bit for bit into 1+1, which FFmpeg's
+encoder does not write. Each `.f32.gz` is FFmpeg's float decode. FFmpeg fills zero-bit mantissas with its own random dither, so
+`Ac3Undither` (in Egami.Video.Tests) clears every stream's dithflags and fixes its CRCs before FFmpeg decodes it; the two
+`dither-*` clips keep their dither for `Ac3DecoderTests`' statistical check. `Ac3DecoderTests` asks for 90 dB SNR and 2^-14 on
+every other clip.
+
 `opus-encode/encoder-ref.bin` holds, for 46 encoder settings (every application, rate mode and frame duration, FEC, DTX,
 forced modes and bandwidths, 8 to 48 kHz, and multistream up to 7.1), the length, FNV-1a hash and final range of each packet
 libopus 1.5.2 makes from a synthetic signal. `tools/video/opusref/make-opus-encoder-reference.c` makes it in the
