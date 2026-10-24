@@ -847,6 +847,7 @@ internal sealed class H264Inter
             at = (2 * EdgeStride) + 2;
         }
 
+        CheckReach(src, at, stride, h);
         if (_shiftY != 0 || !UseVectors)
         {
             LumaScalar(src, at, stride, w, h, frac, pred);
@@ -1166,17 +1167,19 @@ internal sealed class H264Inter
     private static Vector256<int> Tap32(Vector256<int> a, Vector256<int> b, Vector256<int> c, Vector256<int> d, Vector256<int> e, Vector256<int> f) =>
         ((c + d) * 20) - ((b + e) * 5) + (a + f);
 
-    /// <summary>Checks that the samples a w by h block's filters read, rows -2 to h + 3 and columns -2 to w + 10 around at, lie in src.</summary>
+    /// <summary>
+    /// Checks that the samples a block's filters read, rows -2 to h + 2 around at and up to 24 columns past it, lie in src. The
+    /// vector loads read past a narrow block's last column; at the last rows of the plane that lands in its slack.
+    /// </summary>
     [Conditional("DEBUG")]
     private static void CheckReach<T>(T[] src, int at, int stride, int h)
         where T : unmanaged =>
-        Debug.Assert(at - (2 * stride) - 2 >= 0 && at + ((h + 3) * stride) + 24 <= src.Length, "The border test in Luma keeps the filters in the padded plane.");
+        Debug.Assert(at - (2 * stride) - 2 >= 0 && at + ((h + 2) * stride) + 24 <= src.Length, "The border test in Luma keeps the filters in the padded plane.");
 
     /// <summary>The full samples G, eight at a time.</summary>
     private static void Copy<T>(T[] src, int at, int stride, int w, int h, ushort[] dst)
         where T : unmanaged
     {
-        CheckReach(src, at, stride, h);
         ref T s = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at);
         ref ushort d = ref MemoryMarshal.GetArrayDataReference(dst);
         if (w == 16 && UseWideVectors)
@@ -1216,7 +1219,6 @@ internal sealed class H264Inter
     private static void HalfH<T>(T[] src, int at, int stride, int w, int h, ushort[] dst, int max)
         where T : unmanaged
     {
-        CheckReach(src, at, stride, h);
         ref T s0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at - 2);
         ref ushort d = ref MemoryMarshal.GetArrayDataReference(dst);
         if (w == 16 && UseWideVectors)
@@ -1249,7 +1251,6 @@ internal sealed class H264Inter
     private static void HalfV<T>(T[] src, int at, int stride, int w, int h, ushort[] dst, int max)
         where T : unmanaged
     {
-        CheckReach(src, at, stride, h);
         ref T s0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at - (2 * stride));
         ref ushort d = ref MemoryMarshal.GetArrayDataReference(dst);
         if (w == 16 && UseWideVectors)
@@ -1292,7 +1293,6 @@ internal sealed class H264Inter
     private void Center<T>(T[] src, int at, int stride, int w, int h, ushort[] dst, int max)
         where T : unmanaged
     {
-        CheckReach(src, at, stride, h);
         ref T s0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at - (2 * stride) - 2);
         ref short m = ref MemoryMarshal.GetArrayDataReference(_mid);
         for (int j = 0; j < h + 5; j++)
