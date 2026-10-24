@@ -469,22 +469,40 @@ internal sealed partial class H264SliceDecoder
     /// <summary>Works out <see cref="H264Picture.ColZero"/> for the current macroblock's blocks.</summary>
     private void StoreColZero()
     {
-        bool corners = _sps.Direct8x8Inference;
+        if (_sps.Direct8x8Inference)
+        {
+            // Only the corner blocks are read as co-located blocks.
+            int w4 = _mb.W4, b0 = Block(0, 0);
+            StoreColZero(b0);
+            StoreColZero(b0 + 3);
+            StoreColZero(b0 + (3 * w4));
+            StoreColZero(b0 + (3 * w4) + 3);
+            return;
+        }
+
         for (int by = 0; by < 4; by++)
         {
             for (int bx = 0; bx < 4; bx++)
             {
-                if (corners && (bx is 1 or 2 || by is 1 or 2))
-                {
-                    continue;
-                }
-
-                int b = Block(bx, by);
-                int list = _refIdx0[b] >= 0 ? 0 : 1;
-                int mv = list == 0 ? _mv0[b] : _mv1[b];
-                _pic.ColZero[b] = (list == 0 ? _refIdx0[b] : _refIdx1[b]) == 0 && MvX(mv) is >= -1 and <= 1 && MvY(mv) is >= -1 and <= 1;
+                StoreColZero(Block(bx, by));
             }
         }
+    }
+
+    private void StoreColZero(int b)
+    {
+        int r = _refIdx0[b], mv;
+        if (r >= 0)
+        {
+            mv = _mv0[b];
+        }
+        else
+        {
+            r = _refIdx1[b];
+            mv = _mv1[b];
+        }
+
+        _pic.ColZero[b] = r == 0 && (uint)(MvX(mv) + 1) <= 2 && (uint)(MvY(mv) + 1) <= 2;
     }
 
     private static int MinPositive(int x, int y) => x >= 0 && y >= 0 ? Math.Min(x, y) : Math.Max(x, y);
