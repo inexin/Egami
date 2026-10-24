@@ -44,6 +44,7 @@ internal sealed class H264Picture : INalDpbPicture
         RefIdx = [new sbyte[blocks], new sbyte[blocks]];
         RefPicId = [new int[blocks], new int[blocks]];
         MbIntra = new bool[widthMbs * heightMbs];
+        ColZero = new bool[blocks];
     }
 
     /// <summary>Gets a number no other picture of the process has, which motion data uses to name reference pictures.</summary>
@@ -117,6 +118,14 @@ internal sealed class H264Picture : INalDpbPicture
 
     /// <summary>Gets whether each macroblock is intra coded.</summary>
     internal bool[] MbIntra { get; }
+
+    /// <summary>
+    /// Gets, per 4x4 block of a reference picture's inter macroblocks, whether the block refers to reference index 0 with a
+    /// vector of at most 1 in each component: colZeroFlag's test (8.4.1.2.2) when the picture is the co-located one. Worked out
+    /// as each macroblock is decoded, for the corner blocks with direct_8x8_inference and every block without; the idea is
+    /// libavc's.
+    /// </summary>
+    internal bool[] ColZero { get; }
 
     internal int FrameNum { get; set; }
 

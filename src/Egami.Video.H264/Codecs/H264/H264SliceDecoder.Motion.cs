@@ -417,8 +417,9 @@ internal sealed partial class H264SliceDecoder
                 }
                 else
                 {
-                    ColocatedMotion(bx, by, out int refCol, out int mvCol, out _);
-                    colZero = refCol == 0 && MvX(mvCol) is >= -1 and <= 1 && MvY(mvCol) is >= -1 and <= 1;
+                    // The co-located picture stored the test as it was decoded; an intra macroblock never passes it.
+                    int cx = inferred ? (bx >> 1) * 3 : bx, cy = inferred ? (by >> 1) * 3 : by;
+                    colZero = !col.MbIntra[_mbAddr] && col.ColZero[Block(cx, cy)];
                     colZero8 |= colZero ? 1 << quarter : 0;
                 }
             }
@@ -436,6 +437,27 @@ internal sealed partial class H264SliceDecoder
             bool split = colZero8 is not 0 and not 15 && ((refIdx[0] == 0 && mvp[0] != 0) || (refIdx[1] == 0 && mvp[1] != 0));
             _directUniform = split ? 0 : 1;
             _directQuarters = true;
+        }
+    }
+
+    /// <summary>Works out <see cref="H264Picture.ColZero"/> for the current macroblock's blocks.</summary>
+    private void StoreColZero()
+    {
+        bool corners = _sps.Direct8x8Inference;
+        for (int by = 0; by < 4; by++)
+        {
+            for (int bx = 0; bx < 4; bx++)
+            {
+                if (corners && (bx is 1 or 2 || by is 1 or 2))
+                {
+                    continue;
+                }
+
+                int b = Block(bx, by);
+                int list = _refIdx0[b] >= 0 ? 0 : 1;
+                int mv = list == 0 ? _mv0[b] : _mv1[b];
+                _pic.ColZero[b] = (list == 0 ? _refIdx0[b] : _refIdx1[b]) == 0 && MvX(mv) is >= -1 and <= 1 && MvY(mv) is >= -1 and <= 1;
+            }
         }
     }
 

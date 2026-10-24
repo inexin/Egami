@@ -232,6 +232,10 @@ internal sealed partial class H264SliceDecoder
         _mb.QpC[1][addr] = (sbyte)ChromaQp(qp, _pps.SecondChromaQpIndexOffset);
         _pic.MbIntra[addr] = H264MbState.IsIntra(_kind);
         _mb.FlatInside[addr] = IsFlatInside();
+        if (_h.NalRefIdc != 0 && !H264MbState.IsIntra(_kind))
+        {
+            StoreColZero();
+        }
         Decoded++;
         LastMb = addr;
         if (_mbX == _widthMbs - 1)
