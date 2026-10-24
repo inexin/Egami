@@ -356,45 +356,21 @@ internal sealed partial class H264SliceDecoder
     {
         _decodedMask = 0;
         _directQuarters = false;
-        Span<int> refIdx = stackalloc int[2];
-        Span<int> mvp = stackalloc int[2];
-        Span<int> neighbors = stackalloc int[12];
-        for (int list = 0; list < 2; list++)
-        {
-            // Neighbours A, B and C (or D) of the whole macroblock: their references give refIdx, and their vectors the
-            // median prediction of a 16x16 partition (8-212), so they are read once for both.
-            bool availableA = Neighbor(list, -1, 0, out int refA, out int mvA);
-            bool availableB = Neighbor(list, 0, -1, out int refB, out int mvB);
-            bool availableC = Neighbor(list, 4, -1, out int refC, out int mvC);
-            if (!availableC)
-            {
-                availableC = Neighbor(list, -1, -1, out refC, out mvC);
-            }
 
-            refIdx[list] = MinPositive(refA, MinPositive(refB, refC));
-            Span<int> n = neighbors.Slice(list * 6, 6);
-            n[0] = availableA ? refA : int.MinValue;
-            n[1] = availableB ? refB : int.MinValue;
-            n[2] = availableC ? refC : int.MinValue;
-            n[3] = mvA;
-            n[4] = mvB;
-            n[5] = mvC;
-        }
-
-        bool zero = refIdx[0] < 0 && refIdx[1] < 0;
+        // Neighbours A, B and C (or D) of the whole macroblock: their references give refIdx, and their vectors the median
+        // prediction of a 16x16 partition (8-212), so they are read once for both.
+        DirectNeighbors n0 = ReadDirectNeighbors(0), n1 = ReadDirectNeighbors(1);
+        int ref0 = MinPositive(n0.RefA, MinPositive(n0.RefB, n0.RefC)), ref1 = MinPositive(n1.RefA, MinPositive(n1.RefB, n1.RefC));
+        bool zero = ref0 < 0 && ref1 < 0;
         if (zero)
         {
-            refIdx[0] = refIdx[1] = 0;
+            ref0 = ref1 = 0;
         }
 
-        for (int list = 0; list < 2; list++)
-        {
-            ReadOnlySpan<int> n = neighbors.Slice(list * 6, 6);
-            mvp[list] = !zero && refIdx[list] >= 0
-                ? Median(n[0] != int.MinValue, n[1] != int.MinValue, n[2] != int.MinValue, n[0] == int.MinValue ? -1 : n[0],
-                    n[1] == int.MinValue ? -1 : n[1], n[2] == int.MinValue ? -1 : n[2], n[3], n[4], n[5], refIdx[list])
-                : 0;
-        }
+        int mvp0 = !zero && ref0 >= 0 ? Median(n0.AvailableA, n0.AvailableB, n0.AvailableC, n0.RefA, n0.RefB, n0.RefC, n0.MvA, n0.MvB, n0.MvC, ref0) : 0;
+        int mvp1 = !zero && ref1 >= 0 ? Median(n1.AvailableA, n1.AvailableB, n1.AvailableC, n1.RefA, n1.RefB, n1.RefC, n1.MvA, n1.MvB, n1.MvC, ref1) : 0;
+        Span<int> refIdx = [ref0, ref1];
+        Span<int> mvp = [mvp0, mvp1];
 
         H264Picture col = _list1[0];
         bool colShortTerm = !col.IsLongTermReference;
@@ -504,6 +480,22 @@ internal sealed partial class H264SliceDecoder
         }
 
         _pic.ColZero[b] = r == 0 && (uint)(MvX(mv) + 1) <= 2 && (uint)(MvY(mv) + 1) <= 2;
+    }
+
+    /// <summary>Neighbours A, B and C (D when C is missing) of the whole macroblock in a list.</summary>
+    private DirectNeighbors ReadDirectNeighbors(int list)
+    {
+        DirectNeighbors n;
+        n.AvailableA = Neighbor(list, -1, 0, out n.RefA, out n.MvA);
+        n.AvailableB = Neighbor(list, 0, -1, out n.RefB, out n.MvB);
+        n.AvailableC = Neighbor(list, 4, -1, out n.RefC, out n.MvC) || Neighbor(list, -1, -1, out n.RefC, out n.MvC);
+        return n;
+    }
+
+    private struct DirectNeighbors
+    {
+        public bool AvailableA, AvailableB, AvailableC;
+        public int RefA, RefB, RefC, MvA, MvB, MvC;
     }
 
     private static int MinPositive(int x, int y) => x >= 0 && y >= 0 ? Math.Min(x, y) : Math.Max(x, y);
