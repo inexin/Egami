@@ -80,7 +80,7 @@ internal sealed partial class H264SliceDecoder
                     continue;
                 }
 
-                int refIdx = _pic.RefIdx[list][Block(bx, by)];
+                int refIdx = (list == 0 ? _refIdx0 : _refIdx1)[Block(bx, by)];
                 if (_partShape != 3)
                 {
                     ReadPartitionMv(list, bx, by, w, h, refIdx);
@@ -150,9 +150,9 @@ internal sealed partial class H264SliceDecoder
 
     private void FillRef(int list, int bx, int by, int w, int h, int refIdx, int id)
     {
-        int w4 = _mb.W4;
+        int w4 = _w4;
         int b = Block(bx, by);
-        sbyte[] refIdxs = _pic.RefIdx[list];
+        sbyte[] refIdxs = list == 0 ? _refIdx0 : _refIdx1;
         int[] ids = _pic.RefPicId[list];
         if (b < 0 || b + ((h - 1) * w4) + w > Math.Min(refIdxs.Length, ids.Length))
         {
@@ -186,9 +186,9 @@ internal sealed partial class H264SliceDecoder
     /// <summary>Writes a motion vector (and the absolute mvd for CABAC, x low byte, y high byte) to blocks, marking them decoded.</summary>
     private void FillMv(int list, int bx, int by, int w, int h, int mv, int mvd)
     {
-        int w4 = _mb.W4;
+        int w4 = _w4;
         int b = Block(bx, by);
-        int[] mvs = _pic.Mv[list];
+        int[] mvs = list == 0 ? _mv0 : _mv1;
         byte[] mvds = _mb.Mvd[list];
         if (b < 0 || b + ((h - 1) * w4) + w > Math.Min(mvs.Length, mvds.Length / 2))
         {
@@ -473,7 +473,7 @@ internal sealed partial class H264SliceDecoder
         if (_sps.Direct8x8Inference)
         {
             // Only the corner blocks are read as co-located blocks.
-            int w4 = _mb.W4, b0 = Block(0, 0);
+            int w4 = _w4, b0 = Block(0, 0);
             StoreColZero(b0);
             StoreColZero(b0 + 3);
             StoreColZero(b0 + (3 * w4));
@@ -596,7 +596,7 @@ internal sealed partial class H264SliceDecoder
     /// <summary>Writes the direct prediction of the 8x8 blocks in the mask, both lists, to the picture (B_Skip, B_Direct_16x16).</summary>
     private void WriteDirect(int mask)
     {
-        int w4 = _mb.W4, b0 = Block(0, 0);
+        int w4 = _w4, b0 = Block(0, 0);
         if (mask == 15 && _directQuarters)
         {
             WriteDirectRows(w4, b0);
@@ -605,7 +605,7 @@ internal sealed partial class H264SliceDecoder
         for (int list = 0; list < 2; list++)
         {
             H264Picture[] refs = list == 0 ? _list0 : _list1;
-            sbyte[] refIdxs = _pic.RefIdx[list];
+            sbyte[] refIdxs = list == 0 ? _refIdx0 : _refIdx1;
             int[] ids = _pic.RefPicId[list], mvs = _pic.Mv[list];
             byte[] mvds = _mb.Mvd[list];
             for (int blk = 0; blk < 16; blk++)
@@ -675,7 +675,7 @@ internal sealed partial class H264SliceDecoder
     private void WriteDirectRefs(int list, int bx, int by)
     {
         H264Picture[] refs = list == 0 ? _list0 : _list1;
-        sbyte[] refIdxs = _pic.RefIdx[list];
+        sbyte[] refIdxs = list == 0 ? _refIdx0 : _refIdx1;
         int[] ids = _pic.RefPicId[list];
         for (int y = by; y < by + 2; y++)
         {
@@ -691,7 +691,7 @@ internal sealed partial class H264SliceDecoder
 
     private void WriteDirectMvs(int list, int bx, int by)
     {
-        int[] mvs = _pic.Mv[list];
+        int[] mvs = list == 0 ? _mv0 : _mv1;
         byte[] mvds = _mb.Mvd[list];
         for (int y = by; y < by + 2; y++)
         {

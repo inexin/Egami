@@ -77,6 +77,10 @@ internal sealed partial class H264SliceDecoder
     private int[] _mv0 = [];
     private int[] _mv1 = [];
 
+    // Blocks per row of 4x4 blocks, and the first block of the current macroblock.
+    private int _w4;
+    private int _b0;
+
     private const int NeighborA = 1;
     private const int NeighborB = 2;
     private const int NeighborC = 4;
@@ -118,6 +122,7 @@ internal sealed partial class H264SliceDecoder
         _refIdx1 = pic.RefIdx[1];
         _mv0 = pic.Mv[0];
         _mv1 = pic.Mv[1];
+        _w4 = _mb.W4;
         Decoded = 0;
         LastMb = -1;
         _mbAddr = -2;
@@ -214,11 +219,13 @@ internal sealed partial class H264SliceDecoder
         if (mbAddr == _mbAddr + 1 && _mbX + 1 < _widthMbs)
         {
             _mbX++;
+            _b0 += 4;
         }
         else
         {
             _mbX = mbAddr % _widthMbs;
             _mbY = mbAddr / _widthMbs;
+            _b0 = (_mbY * 4 * _w4) + (_mbX * 4);
         }
 
         _mbAddr = mbAddr;
@@ -294,7 +301,7 @@ internal sealed partial class H264SliceDecoder
             return false;
         }
 
-        int w4 = _mb.W4, b = Block(0, 0);
+        int w4 = _w4, b = Block(0, 0);
         byte[] nonzero = _mb.Nonzero;
         if (b + (3 * w4) + 4 > nonzero.Length)
         {
@@ -315,7 +322,7 @@ internal sealed partial class H264SliceDecoder
 
     /// <summary>Gets the 4x4 block index in the picture of block (bx, by) of the current macroblock.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int Block(int bx, int by) => (((_mbY * 4) + by) * _mb.W4) + (_mbX * 4) + bx;
+    private int Block(int bx, int by) => _b0 + (by * _w4) + bx;
 
     /// <summary>Gets whether a macroblock address is in the picture and already decoded in this slice.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -349,7 +356,7 @@ internal sealed partial class H264SliceDecoder
     /// <summary>Clears the coefficient counts, mvd and intra modes of the current macroblock's blocks.</summary>
     private void ClearMbBlocks(bool intra)
     {
-        int w4 = _mb.W4;
+        int w4 = _w4;
         int b = Block(0, 0);
         byte[] nzLuma = _mb.NzLuma, nonzero = _mb.Nonzero, mvd0 = _mb.Mvd[0], mvd1 = _mb.Mvd[1];
         sbyte[] intraModes = _mb.IntraModes;
@@ -479,7 +486,7 @@ internal sealed partial class H264SliceDecoder
             DecodePcm();
             _cbp = 0x2F;
             _prevQpDeltaNonZero = false;
-            int w4 = _mb.W4;
+            int w4 = _w4;
             int b = Block(0, 0);
             for (int y = 0; y < 4; y++, b += w4)
             {

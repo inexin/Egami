@@ -235,7 +235,7 @@ internal sealed partial class H264SliceDecoder
             if (_t8x8)
             {
                 _mb.IntraModes[b] = _mb.IntraModes[b + 1] = (sbyte)mode;
-                _mb.IntraModes[b + _mb.W4] = _mb.IntraModes[b + _mb.W4 + 1] = (sbyte)mode;
+                _mb.IntraModes[b + _w4] = _mb.IntraModes[b + _w4 + 1] = (sbyte)mode;
             }
             else
             {
