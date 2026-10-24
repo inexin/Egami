@@ -97,6 +97,28 @@ public sealed class MediaAnalysisTests
         Assert.Throws<ArgumentException>(() => MediaAnalysis.Run(Clip.Value, new MediaAnalysisOptions { Scenes = null }, cancellationToken: TestContext.Current.CancellationToken));
     }
 
+    [Fact]
+    public void AudioPicturesReportProgressAndStop()
+    {
+        List<MediaProgress> waveform = [], spectrogram = [];
+        using (AudioPictures.Waveform(Clip.Value, progress: new Inline(waveform.Add), cancellationToken: TestContext.Current.CancellationToken))
+        using (AudioPictures.Spectrogram(Clip.Value, progress: new Inline(spectrogram.Add), cancellationToken: TestContext.Current.CancellationToken))
+        {
+        }
+
+        foreach (List<MediaProgress> reports in new[] { waveform, spectrogram })
+        {
+            Assert.NotEmpty(reports);
+            Assert.True(reports[^1].IsFinal);
+            Assert.Equal(1.0, reports[^1].Fraction ?? 0, 2);
+        }
+
+        using CancellationTokenSource cancel = new();
+        cancel.Cancel();
+        Assert.ThrowsAny<OperationCanceledException>(() => AudioPictures.Waveform(Clip.Value, cancellationToken: cancel.Token));
+        Assert.ThrowsAny<OperationCanceledException>(() => AudioPictures.Spectrogram(Clip.Value, cancellationToken: cancel.Token));
+    }
+
     [Theory]
     [InlineData(ScenePosition.First, new[] { 0.0, 1.0, 2.0 })]
     [InlineData(ScenePosition.Middle, new[] { 0.48, 1.48, 2.48 })]

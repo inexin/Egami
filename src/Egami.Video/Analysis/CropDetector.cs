@@ -51,21 +51,19 @@ public sealed class CropDetector : IVideoDetector
     /// <summary>Gets the last measured frame's rectangle, or <see langword="null"/> before the first one (or when every frame so far was black).</summary>
     public Rect? LastRectangle { get; private set; }
 
-    /// <summary>Gets what the detector found so far.</summary>
-    public CropReport Report
+    /// <summary>Returns what the detector found so far.</summary>
+    /// <returns>The report.</returns>
+    public CropReport Report()
     {
-        get
+        List<CropRun> runs = [.. _runs];
+        if (_runFrames > 0)
         {
-            List<CropRun> runs = [.. _runs];
-            if (_runFrames > 0)
-            {
-                runs.Add(new CropRun(_runStart, _lastEnd, _current, _runFrames));
-            }
-
-            Rect full = new(0, 0, _width, _height);
-            Rect common = _frequency.Count == 0 ? full : _frequency.MaxBy(pair => pair.Value).Key;
-            return new CropReport(_union ?? full, common, new Size(_width, _height), _measured, runs);
+            runs.Add(new CropRun(_runStart, _lastEnd, _current, _runFrames));
         }
+
+        Rect full = new(0, 0, _width, _height);
+        Rect common = _frequency.Count == 0 ? full : _frequency.MaxBy(pair => pair.Value).Key;
+        return new CropReport(_union ?? full, common, new Size(_width, _height), _measured, runs);
     }
 
     /// <summary>Takes the next frame.</summary>

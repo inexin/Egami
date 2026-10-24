@@ -180,13 +180,13 @@ public class VideoAnalysis
             Console.WriteLine($"Frozen from {range.Start.ToTimeSpan()} to {range.End.ToTimeSpan()}");
         }
 
-        Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report.Crop}, {fields.Report.Verdict}");
+        Console.WriteLine($"{black.Ranges.Count} black stretches, crop to {crop.Report().Crop}, {fields.Report().Verdict}");
         Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");
         #endregion
 
         Assert.Empty(black.Ranges);
         Assert.Equal(2, freeze.Ranges.Count);
-        Assert.False(crop.Report.HasBorders);
+        Assert.False(crop.Report().HasBorders);
     }
 
     [Fact]
@@ -200,7 +200,7 @@ public class VideoAnalysis
         // blockiness scores.
         SignalMeter meter = new(new SignalOptions { Blur = true, Blockiness = true });
         MediaAnalysis.Run("shots.mkv", new MediaAnalysisOptions { Scenes = null, VideoDetectors = [meter] });
-        SignalReport report = meter.Report;
+        SignalReport report = meter.Report();
         Console.WriteLine($"Y {report.Y.Min}..{report.Y.Max} (mean {report.Y.Mean:0.0}), {report.OutOfRange:P1} out of range, {report.Range} range");
         Console.WriteLine($"Edges {report.Blur:0.00} px wide, blockiness {report.Blockiness:0.00}");
         #endregion

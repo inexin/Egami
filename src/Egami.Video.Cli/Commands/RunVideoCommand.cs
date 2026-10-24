@@ -418,7 +418,7 @@ internal static class RunVideoCommand
             Analysis.CropDetector detector = new(new Analysis.CropOptions());
             Analysis.MediaAnalysis.Run(path, new Analysis.MediaAnalysisOptions { VideoDetectors = [detector], VideoTrack = track.Number },
                 session.Context, session.ProgressSink?.For(input, input.Index, count), session.Cancellation);
-            Analysis.CropReport report = detector.Report;
+            Analysis.CropReport report = detector.Report();
             Rect r = report.Crop;
             if (report.Frames == 0 || r.Width <= 0 || r.Height <= 0 || (r.Width == report.FrameSize.Width && r.Height == report.FrameSize.Height))
             {

@@ -7,8 +7,8 @@ namespace Egami.Video.Analysis;
 /// <summary>
 /// Finds repeated frames with ffmpeg mpdecimate's test, without dropping anything: a frame repeats the last kept frame when none
 /// of its 8 by 8 luma blocks differs by more than <see cref="DuplicateOptions.High"/> and no more than
-/// <see cref="DuplicateOptions.Fraction"/> of them differ by more than <see cref="DuplicateOptions.Low"/>. Block differences are
-/// sums of absolute differences on the 8-bit scale, so the thresholds mean the same at every bit depth.
+/// <see cref="DuplicateOptions.Fraction"/> of them differ by more than <see cref="DuplicateOptions.Low"/>. A block's difference is
+/// the mean absolute difference of its samples as a share of the range, so the thresholds mean the same at every bit depth.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoAnalysis.cs" region="analysis-video-detectors"/>
@@ -151,7 +151,7 @@ public sealed class DuplicateDetector : IVideoDetector
         }
 
         int shift = _depth - 8;
-        long high = (long)_options.High << shift, low = (long)_options.Low << shift;
+        long high = BlockSum(_options.High) << shift, low = BlockSum(_options.Low) << shift;
         int across = _width / 8, down = _height / 8;
         long blocks = (long)across * down;
         if (blocks == 0)
@@ -205,7 +205,7 @@ public sealed class DuplicateDetector : IVideoDetector
             return false;
         }
 
-        long high = _options.High, low = _options.Low;
+        long high = BlockSum(_options.High), low = BlockSum(_options.Low);
         long allowed = (long)Math.Floor(_options.Fraction * blocks);
         long overLow = 0;
         Span<ulong> sums = stackalloc ulong[4];
@@ -259,6 +259,9 @@ public sealed class DuplicateDetector : IVideoDetector
         return true;
     }
 
+    /// <summary>A share of the range as the sum of 64 absolute differences on the 8-bit scale, the unit mpdecimate's test counts in.</summary>
+    private static long BlockSum(double share) => (long)Math.Round(share * 64 * 255);
+
     private static bool Allowed(long sum, long high, long low, long allowed, ref long overLow) =>
         sum <= high && (sum <= low || ++overLow <= allowed);
 }
@@ -272,23 +275,29 @@ public sealed record DuplicateOptions
     /// <summary>Gets the default options.</summary>
     public static DuplicateOptions Default { get; } = new();
 
-    /// <summary>Gets the block difference, on the 8-bit scale, that any one block may not pass. Default 768 (64 times 12), as mpdecimate's hi.</summary>
-    public int High { get; init; } = 768;
+    /// <summary>
+    /// Gets the block difference, from 0 to 1, that any one block may not pass: the mean absolute difference of its 64 samples as a
+    /// share of the range. Default 12/255, as mpdecimate's hi of 768 (64 times 12 on the 8-bit scale).
+    /// </summary>
+    public double High { get; init; } = 12.0 / 255;
 
-    /// <summary>Gets the block difference, on the 8-bit scale, that only <see cref="Fraction"/> of blocks may pass. Default 320 (64 times 5), as mpdecimate's lo.</summary>
-    public int Low { get; init; } = 320;
+    /// <summary>
+    /// Gets the block difference, from 0 to <see cref="High"/>, that only <see cref="Fraction"/> of blocks may pass. Default 5/255, as
+    /// mpdecimate's lo of 320 (64 times 5).
+    /// </summary>
+    public double Low { get; init; } = 5.0 / 255;
 
     /// <summary>Gets the share of blocks, from 0 to 1, that may pass <see cref="Low"/>. Default 0.33, as mpdecimate's frac.</summary>
     public double Fraction { get; init; } = 0.33;
 
     internal void Validate()
     {
-        if (High < 0)
+        if (High is < 0 or > 1 || double.IsNaN(High))
         {
-            throw new ArgumentOutOfRangeException(nameof(High), High, "The high threshold cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(High), High, "The high threshold must be from 0 to 1.");
         }
 
-        if (Low < 0 || Low > High)
+        if (Low < 0 || Low > High || double.IsNaN(Low))
         {
             throw new ArgumentOutOfRangeException(nameof(Low), Low, "The low threshold must be from 0 to the high threshold.");
         }

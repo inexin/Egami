@@ -127,7 +127,7 @@ public sealed class VideoDetectorTests
     {
         CropDetector letterbox = new();
         Run(letterbox, 20, i => Painted(depth, p => p.Ramp(0, 6, 64, 30, 0.2, 0.9), width: 64, height: 36));
-        CropReport report = letterbox.Report;
+        CropReport report = letterbox.Report();
         Assert.Equal(new Rect(0, 6, 64, 24), report.Crop);
         Assert.Equal(report.Crop, report.MostCommon);
         Assert.Equal(18, report.Frames);
@@ -138,7 +138,7 @@ public sealed class VideoDetectorTests
 
         CropDetector pillarbox = new();
         Run(pillarbox, 10, i => Painted(depth, p => p.Fill(10, 0, 54, 36, 0.6, 0.4, 0.3), width: 64, height: 36));
-        Assert.Equal(new Rect(10, 0, 44, 36), pillarbox.Report.Crop);
+        Assert.Equal(new Rect(10, 0, 44, 36), pillarbox.Report().Crop);
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public sealed class VideoDetectorTests
         // Mostly a 4:3 window in a 16:9 frame, but a few frames are wider: the crop keeps them whole, the common one does not.
         CropDetector detector = new();
         Run(detector, 30, i => Painted(8, p => p.Fill(i is >= 10 and < 14 ? 4 : 8, 0, i is >= 10 and < 14 ? 60 : 56, 36, 0.7, 0.7, 0.7), width: 64, height: 36));
-        CropReport report = detector.Report;
+        CropReport report = detector.Report();
         Assert.Equal(new Rect(4, 0, 56, 36), report.Crop);
         Assert.Equal(new Rect(8, 0, 48, 36), report.MostCommon);
         Assert.Equal(3, report.Runs.Count);
@@ -155,8 +155,8 @@ public sealed class VideoDetectorTests
         // An all-black frame has no picture to measure.
         CropDetector black = new(new CropOptions { Skip = 0 });
         Run(black, 3, _ => Solid(8, 0, 0, 0));
-        Assert.Equal(0, black.Report.Frames);
-        Assert.False(black.Report.HasBorders);
+        Assert.Equal(0, black.Report().Frames);
+        Assert.False(black.Report().HasBorders);
     }
 
     [Theory]
@@ -168,7 +168,7 @@ public sealed class VideoDetectorTests
     {
         InterlaceDetector detector = new();
         Run(detector, 40, i => Fields(scan, i));
-        InterlaceReport report = detector.Report;
+        InterlaceReport report = detector.Report();
         Assert.Equal(verdict, report.Verdict);
         if (scan == Scan.Telecine)
         {
@@ -185,8 +185,8 @@ public sealed class VideoDetectorTests
     {
         InterlaceDetector detector = new();
         Run(detector, 10, _ => Solid(8, 0.3, 0.6, 0.2));
-        Assert.Equal(InterlaceVerdict.Unknown, detector.Report.Verdict);
-        Assert.Equal(9, detector.Report.Undetermined);
+        Assert.Equal(InterlaceVerdict.Unknown, detector.Report().Verdict);
+        Assert.Equal(9, detector.Report().Undetermined);
     }
 
     [Theory]
@@ -230,7 +230,7 @@ public sealed class VideoDetectorTests
     {
         SignalMeter meter = new(new SignalOptions { KeepSeries = true });
         Run(meter, 3, _ => Solid(depth, 0.5, 0.5, 0.5));
-        SignalReport report = meter.Report;
+        SignalReport report = meter.Report();
         int shift = depth - 8;
         double gray = Math.Round((16 + (219 * 0.5)) * (1 << shift), MidpointRounding.AwayFromZero);
         Assert.Equal(new PlaneLevels(gray, gray, gray, gray, gray), report.Y);
@@ -253,7 +253,7 @@ public sealed class VideoDetectorTests
             meter.Add(ramp);
         }
 
-        SignalReport report = meter.Report;
+        SignalReport report = meter.Report();
         Assert.Equal(16, report.Y.Min);
         Assert.Equal(235, report.Y.Max);
         Assert.InRange(report.Y.Low, 33, 41);
@@ -263,7 +263,7 @@ public sealed class VideoDetectorTests
         // 75 % red is (Cb, Cr) = (-19, +84) from the middle, 86 away; full-range black and white are outside broadcast range.
         SignalMeter red = new();
         Run(red, 1, _ => Solid(8, 0.75, 0, 0));
-        Assert.InRange(red.Report.Saturation.Mean, 84, 88);
+        Assert.InRange(red.Report().Saturation.Mean, 84, 88);
 
         SignalMeter full = new();
         Run(full, 1, _ =>
@@ -273,8 +273,8 @@ public sealed class VideoDetectorTests
             new YuvPainter(raster).FillCodes(0, 18, 64, 36, 255, 128, 128);
             return raster;
         });
-        Assert.Equal(1, full.Report.OutOfRange);
-        Assert.Equal(SignalRange.Full, full.Report.Range);
+        Assert.Equal(1, full.Report().OutOfRange);
+        Assert.Equal(SignalRange.Full, full.Report().Range);
     }
 
     [Theory]
@@ -295,7 +295,7 @@ public sealed class VideoDetectorTests
 
             return raster;
         });
-        Assert.Equal(use, meter.Report.Alpha);
+        Assert.Equal(use, meter.Report().Alpha);
     }
 
     [Fact]
@@ -313,7 +313,7 @@ public sealed class VideoDetectorTests
                     p.Fill(10 + (k * 30) + ramp, 0, 25 + (k * 30) + ramp, 72, 0.9, 0.9, 0.9);
                 }
             }, width: 128, height: 72));
-            return meter.Report.Blur!.Value;
+            return meter.Report().Blur!.Value;
         }
 
         double sharp = Measure(1), soft = Measure(4), softer = Measure(8);
@@ -340,8 +340,8 @@ public sealed class VideoDetectorTests
 
         SignalMeter smooth = new(new SignalOptions { Blockiness = true });
         Run(smooth, 1, _ => Painted(8, p => p.Ramp(0, 0, 128, 72, 0.2, 0.8), width: 128, height: 72));
-        Assert.True(blocky.Report.Blockiness > 10, $"{blocky.Report.Blockiness}");
-        Assert.InRange(smooth.Report.Blockiness!.Value, 1, 2);
+        Assert.True(blocky.Report().Blockiness > 10, $"{blocky.Report().Blockiness}");
+        Assert.InRange(smooth.Report().Blockiness!.Value, 1, 2);
     }
 
     [Fact]
@@ -351,7 +351,8 @@ public sealed class VideoDetectorTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new FreezeDetector(new FreezeOptions { Noise = -1 }));
         Assert.Throws<ArgumentOutOfRangeException>(() => new CropDetector(new CropOptions { Round = 0 }));
         Assert.Throws<ArgumentOutOfRangeException>(() => new InterlaceDetector(new InterlaceOptions { RepeatRatio = 0.5 }));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new DuplicateDetector(new DuplicateOptions { Low = 1000 }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new DuplicateDetector(new DuplicateOptions { Low = 0.5 }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new DuplicateDetector(new DuplicateOptions { High = 1.5 }));
         Assert.Throws<ArgumentOutOfRangeException>(() => new SignalMeter(new SignalOptions { BlockPeriodMin = 30 }));
     }
 

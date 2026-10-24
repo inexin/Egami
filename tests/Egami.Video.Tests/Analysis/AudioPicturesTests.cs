@@ -53,7 +53,7 @@ public sealed class AudioPicturesTests
     {
         // A full-scale 1 kHz sine: on the linear axis 1 kHz of 24 kHz sits 1/24 up from the bottom, and it reads 0 dB.
         SpectrogramOptions options = new() { Width = 40, Height = 480, Colors = SpectrogramColors.Grayscale };
-        using Raster<Rgba8> picture = AudioPictures.Spectrogram(Frames(1, Rate, i => Math.Sin(2 * Math.PI * 1000 * i / Rate), 2 * Rate), Seconds(2), options);
+        using Raster<Rgba8> picture = AudioPictures.Spectrogram(Frames(1, Rate, i => Math.Sin(2 * Math.PI * 1000 * i / Rate), 2 * Rate), Seconds(2), options, cancellationToken: TestContext.Current.CancellationToken);
         int expected = (int)Math.Round(480 * (1 - (1000.0 / 24000)) - 0.5);
         for (int x = 0; x < picture.Width; x++)
         {
@@ -79,7 +79,7 @@ public sealed class AudioPicturesTests
             double t = (double)i / Rate;
             return 0.5 * Math.Sin(2 * Math.PI * F0 * Seconds / k * (Math.Exp(k * t / Seconds) - 1));
         }, (long)(Seconds * Rate));
-        using Raster<Rgba8> picture = AudioPictures.Spectrogram(sweep, AudioPicturesTests.Seconds(Seconds), options);
+        using Raster<Rgba8> picture = AudioPictures.Spectrogram(sweep, AudioPicturesTests.Seconds(Seconds), options, cancellationToken: TestContext.Current.CancellationToken);
 
         double[] rows = new double[picture.Width];
         for (int x = 0; x < picture.Width; x++)
@@ -112,7 +112,7 @@ public sealed class AudioPicturesTests
     public void WaveformOutlineReachesThePeaks()
     {
         WaveformOptions options = new() { Width = 50, Height = 201 };
-        using Raster<Rgba8> picture = AudioPictures.Waveform(Frames(1, Rate, i => 0.5 * Math.Sin(2 * Math.PI * 440 * i / Rate)), Seconds(1), options);
+        using Raster<Rgba8> picture = AudioPictures.Waveform(Frames(1, Rate, i => 0.5 * Math.Sin(2 * Math.PI * 440 * i / Rate)), Seconds(1), options, cancellationToken: TestContext.Current.CancellationToken);
 
         // Middle 100.5, half 100.5: +0.5 reaches row 50 and -0.5 row 150.
         for (int x = 0; x < picture.Width; x++)
@@ -130,7 +130,7 @@ public sealed class AudioPicturesTests
     {
         // A -20 dBFS sine with the floor at -60 reaches two thirds of the way from the middle to the edge.
         WaveformOptions options = new() { Width = 20, Height = 301, Scale = WaveformScale.Decibel };
-        using Raster<Rgba8> picture = AudioPictures.Waveform(Frames(1, Rate, i => 0.1 * Math.Sin(2 * Math.PI * 440 * i / Rate)), Seconds(1), options);
+        using Raster<Rgba8> picture = AudioPictures.Waveform(Frames(1, Rate, i => 0.1 * Math.Sin(2 * Math.PI * 440 * i / Rate)), Seconds(1), options, cancellationToken: TestContext.Current.CancellationToken);
         (int top, int bottom) = Extent(picture, 10, options.Background);
         Assert.InRange(top, 49, 51);
         Assert.InRange(bottom, 249, 251);
@@ -140,7 +140,7 @@ public sealed class AudioPicturesTests
     public void StackedChannelsGetTheirOwnStrips()
     {
         WaveformOptions options = new() { Width = 30, Height = 200, Channels = AudioPictureChannels.Stacked };
-        using Raster<Rgba8> picture = AudioPictures.Waveform(Frames(2, Rate, i => 0.9 * Math.Sin(2 * Math.PI * 440 * i / Rate), gain: c => c == 0 ? 1 : 0), Seconds(1), options);
+        using Raster<Rgba8> picture = AudioPictures.Waveform(Frames(2, Rate, i => 0.9 * Math.Sin(2 * Math.PI * 440 * i / Rate), gain: c => c == 0 ? 1 : 0), Seconds(1), options, cancellationToken: TestContext.Current.CancellationToken);
 
         // The loud left channel fills most of the top strip; the silent right one is a single line through its middle.
         (int top, int bottom) = Extent(picture, 15, options.Background);
@@ -159,7 +159,7 @@ public sealed class AudioPicturesTests
     public void StackedSpectrogramSplitsTheChannels()
     {
         SpectrogramOptions options = new() { Width = 10, Height = 200, Channels = AudioPictureChannels.Stacked, Colors = SpectrogramColors.Grayscale };
-        using Raster<Rgba8> picture = AudioPictures.Spectrogram(Frames(2, Rate, i => Math.Sin(2 * Math.PI * 6000 * i / Rate), gain: c => c == 0 ? 1 : 0), Seconds(1), options);
+        using Raster<Rgba8> picture = AudioPictures.Spectrogram(Frames(2, Rate, i => Math.Sin(2 * Math.PI * 6000 * i / Rate), gain: c => c == 0 ? 1 : 0), Seconds(1), options, cancellationToken: TestContext.Current.CancellationToken);
 
         // 6 kHz of 24 kHz is a quarter up from the bottom of the top strip; the silent bottom strip stays at the darkest color.
         int expected = (int)Math.Round(100 * 0.75 - 0.5);
@@ -175,7 +175,7 @@ public sealed class AudioPicturesTests
     {
         // Less audio than one window: every column sees the same zero-padded window.
         SpectrogramOptions options = new() { Width = 8, Height = 64, Colors = SpectrogramColors.Grayscale };
-        using Raster<Rgba8> picture = AudioPictures.Spectrogram(Frames(1, Rate, i => Math.Sin(2 * Math.PI * 3000 * i / Rate), 500), new MediaTime(500, new Rational(1, Rate)), options);
+        using Raster<Rgba8> picture = AudioPictures.Spectrogram(Frames(1, Rate, i => Math.Sin(2 * Math.PI * 3000 * i / Rate), 500), new MediaTime(500, new Rational(1, Rate)), options, cancellationToken: TestContext.Current.CancellationToken);
         int row = Brightest(picture, 0).Row;
         for (int x = 1; x < 8; x++)
         {
@@ -187,11 +187,11 @@ public sealed class AudioPicturesTests
     public void MagmaRunsFromBlackToPaleYellow()
     {
         SpectrogramOptions options = new() { Width = 4, Height = 64, Floor = -1, Ceiling = 0 };
-        using Raster<Rgba8> silent = AudioPictures.Spectrogram(Frames(1, Rate, _ => 0, 4096), Seconds(4096.0 / Rate), options);
+        using Raster<Rgba8> silent = AudioPictures.Spectrogram(Frames(1, Rate, _ => 0, 4096), Seconds(4096.0 / Rate), options, cancellationToken: TestContext.Current.CancellationToken);
         Rgba8 dark = silent.Row(0)[0];
         Assert.True(dark.R < 4 && dark.G < 4 && dark.B < 8, dark.ToString());
 
-        using Raster<Rgba8> loud = AudioPictures.Spectrogram(Frames(1, Rate, i => Math.Sin(2 * Math.PI * 12000 * i / Rate), 4096), Seconds(4096.0 / Rate), options with { Height = 1 });
+        using Raster<Rgba8> loud = AudioPictures.Spectrogram(Frames(1, Rate, i => Math.Sin(2 * Math.PI * 12000 * i / Rate), 4096), Seconds(4096.0 / Rate), options with { Height = 1 }, cancellationToken: TestContext.Current.CancellationToken);
         Rgba8 bright = loud.Row(0)[0];
         Assert.True(bright.R > 245 && bright.G > 240 && bright.B is > 170 and < 205, bright.ToString());
     }
@@ -200,11 +200,11 @@ public sealed class AudioPicturesTests
     public void OptionsAreChecked()
     {
         AudioFrame[] none = [];
-        Assert.Throws<ArgumentOutOfRangeException>(() => AudioPictures.Spectrogram(none, Seconds(1), new SpectrogramOptions { WindowSize = 1000 }));
-        Assert.Throws<ArgumentOutOfRangeException>(() => AudioPictures.Spectrogram(none, Seconds(1), new SpectrogramOptions { Floor = 0 }));
-        Assert.Throws<ArgumentOutOfRangeException>(() => AudioPictures.Waveform(none, Seconds(1), new WaveformOptions { Width = 0 }));
-        Assert.Throws<ArgumentOutOfRangeException>(() => AudioPictures.Waveform(none, Seconds(1), new WaveformOptions { Floor = 3 }));
-        Assert.Throws<ArgumentOutOfRangeException>(() => AudioPictures.Waveform(none, MediaTime.Zero));
+        Assert.Throws<ArgumentOutOfRangeException>(() => AudioPictures.Spectrogram(none, Seconds(1), new SpectrogramOptions { WindowSize = 1000 }, cancellationToken: TestContext.Current.CancellationToken));
+        Assert.Throws<ArgumentOutOfRangeException>(() => AudioPictures.Spectrogram(none, Seconds(1), new SpectrogramOptions { Floor = 0 }, cancellationToken: TestContext.Current.CancellationToken));
+        Assert.Throws<ArgumentOutOfRangeException>(() => AudioPictures.Waveform(none, Seconds(1), new WaveformOptions { Width = 0 }, cancellationToken: TestContext.Current.CancellationToken));
+        Assert.Throws<ArgumentOutOfRangeException>(() => AudioPictures.Waveform(none, Seconds(1), new WaveformOptions { Floor = 3 }, cancellationToken: TestContext.Current.CancellationToken));
+        Assert.Throws<ArgumentOutOfRangeException>(() => AudioPictures.Waveform(none, MediaTime.Zero, cancellationToken: TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -231,14 +231,14 @@ public sealed class AudioPicturesTests
         }
 
         long before = GC.GetAllocatedBytesForCurrentThread();
-        using (Raster<Rgba8> waveform = AudioPictures.Waveform(Repeat(), duration))
+        using (Raster<Rgba8> waveform = AudioPictures.Waveform(Repeat(), duration, cancellationToken: TestContext.Current.CancellationToken))
         {
             Assert.Equal(1800, waveform.Width);
         }
 
         long waveformBytes = GC.GetAllocatedBytesForCurrentThread() - before;
         before = GC.GetAllocatedBytesForCurrentThread();
-        using (Raster<Rgba8> spectrogram = AudioPictures.Spectrogram(Repeat(), duration))
+        using (Raster<Rgba8> spectrogram = AudioPictures.Spectrogram(Repeat(), duration, cancellationToken: TestContext.Current.CancellationToken))
         {
             Assert.Equal(512, spectrogram.Height);
         }

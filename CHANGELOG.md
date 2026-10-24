@@ -486,7 +486,8 @@ stream's range so 8-bit and 10-bit video behave alike; they run in `MediaAnalysi
   frame's picture, the most common one and the runs of frames that share one.
 - `InterlaceDetector` (as idet, ratios 1.04, 1.5 and 3): `InterlaceReport` with top field first, bottom field first,
   progressive and undetermined frames, repeated fields and an `InterlaceVerdict` that names 3:2 telecine.
-- `DuplicateDetector`: mpdecimate's 8 by 8 block test (768, 320, 0.33) without dropping, as runs of repeated frames.
+- `DuplicateDetector`: mpdecimate's 8 by 8 block test without dropping, as runs of repeated frames; its thresholds are
+  12/255 and 5/255 of the range per sample (mpdecimate's 768 and 320) and 0.33.
 - `SignalMeter` (as signalstats and colordetect): `PlaneLevels` for Y, Cb, Cr and saturation, the share of pixels outside
   broadcast range, the `SignalRange` really used and `AlphaUse`; with `Blur` the mean edge width (blurdetect's thresholds) and
   with `Blockiness` how much a block grid stands out (blockdetect's periods). Per-frame `SignalFrame`s with `KeepSeries`.
@@ -511,7 +512,8 @@ V1.4 stage D: audio pictures.
   grayscale, on a linear or logarithmic frequency axis, mixed or per channel (`SpectrogramOptions`); a row that spans several
   bins shows the strongest, so pure tones never fall between rows. About 400 times faster than real time at 1800 x 512.
 - Both read a file or any run of `AudioFrame`s once with constant memory: three hours of audio cost no more than three
-  seconds. The pictures carry no text; the CLI adds axes and legends.
+  seconds. Both take a cancellation token, and the file overloads report progress. The pictures carry no text; the CLI adds
+  axes and legends.
 
 V1.4 stage E: the command line.
 

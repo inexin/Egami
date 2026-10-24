@@ -63,31 +63,29 @@ public sealed class SignalMeter : IVideoDetector
     /// <summary>Gets every frame's measures, when <see cref="SignalOptions.KeepSeries"/> is set; otherwise empty.</summary>
     public IReadOnlyList<SignalFrame> Series => _series;
 
-    /// <summary>Gets the measures over every frame so far.</summary>
-    public SignalReport Report
+    /// <summary>Returns the measures over every frame so far.</summary>
+    /// <returns>The report.</returns>
+    public SignalReport Report()
     {
-        get
-        {
-            VideoLevelsLite levels = new(_depth);
-            PlaneLevels y = Levels(_totalY), cb = Levels(_totalCb), cr = Levels(_totalCr), sat = Levels(_totalSat);
-            SignalRange range = _count == 0 || (y.Min >= levels.Black && y.Max <= levels.White
-                && (!_anyChroma || (cb.Min >= levels.ChromaLow && cb.Max <= levels.ChromaHigh && cr.Min >= levels.ChromaLow && cr.Max <= levels.ChromaHigh)))
-                ? SignalRange.Limited
-                : SignalRange.Full;
-            AlphaUse alpha = !_alphaSeen ? AlphaUse.None : !_translucent ? AlphaUse.Opaque : _straight ? AlphaUse.Straight : AlphaUse.Premultiplied;
-            return new SignalReport(
-                _count,
-                _depth,
-                y,
-                cb,
-                cr,
-                sat,
-                _lumaSamples == 0 ? 0 : (double)_outOfRange / _lumaSamples,
-                range,
-                alpha,
-                _blurFrames == 0 ? null : _blurSum / _blurFrames,
-                _blockFrames == 0 ? null : _blockSum / _blockFrames);
-        }
+        VideoLevelsLite levels = new(_depth);
+        PlaneLevels y = Levels(_totalY), cb = Levels(_totalCb), cr = Levels(_totalCr), sat = Levels(_totalSat);
+        SignalRange range = _count == 0 || (y.Min >= levels.Black && y.Max <= levels.White
+            && (!_anyChroma || (cb.Min >= levels.ChromaLow && cb.Max <= levels.ChromaHigh && cr.Min >= levels.ChromaLow && cr.Max <= levels.ChromaHigh)))
+            ? SignalRange.Limited
+            : SignalRange.Full;
+        AlphaUse alpha = !_alphaSeen ? AlphaUse.None : !_translucent ? AlphaUse.Opaque : _straight ? AlphaUse.Straight : AlphaUse.Premultiplied;
+        return new SignalReport(
+            _count,
+            _depth,
+            y,
+            cb,
+            cr,
+            sat,
+            _lumaSamples == 0 ? 0 : (double)_outOfRange / _lumaSamples,
+            range,
+            alpha,
+            _blurFrames == 0 ? null : _blurSum / _blurFrames,
+            _blockFrames == 0 ? null : _blockSum / _blockFrames);
     }
 
     /// <summary>Takes the next frame.</summary>

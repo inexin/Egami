@@ -48,17 +48,15 @@ public sealed class InterlaceDetector : IVideoDetector
     /// <summary>Gets how many frames the detector has taken.</summary>
     public long FrameCount => _count;
 
-    /// <summary>Gets the last frame's verdict on its own.</summary>
-    public FieldOrder LastFrame { get; private set; }
+    /// <summary>Gets the field order the last frame shows on its own.</summary>
+    public FieldOrder LastFieldOrder { get; private set; }
 
-    /// <summary>Gets the counts so far and the verdict they give.</summary>
-    public InterlaceReport Report
+    /// <summary>Returns the counts so far and the verdict they give.</summary>
+    /// <returns>The report.</returns>
+    public InterlaceReport Report()
     {
-        get
-        {
-            long repeats = _repeatedTop + _repeatedBottom;
-            return new InterlaceReport(_topFirst, _bottomFirst, _progressive, _undetermined, _repeatedTop, _repeatedBottom, Math.Max(0, _count - 1 - repeats), Verdict());
-        }
+        long repeats = _repeatedTop + _repeatedBottom;
+        return new InterlaceReport(_topFirst, _bottomFirst, _progressive, _undetermined, _repeatedTop, _repeatedBottom, Math.Max(0, _count - 1 - repeats), Verdict());
     }
 
     /// <summary>Takes the next frame.</summary>
@@ -101,7 +99,7 @@ public sealed class InterlaceDetector : IVideoDetector
         }
         else
         {
-            LastFrame = FieldOrder.Undetermined;
+            LastFieldOrder = FieldOrder.Undetermined;
         }
 
         (_previous, _current) = (_current, _previous);
@@ -174,7 +172,7 @@ public sealed class InterlaceDetector : IVideoDetector
             _undetermined++;
         }
 
-        LastFrame = order;
+        LastFieldOrder = order;
 
         // A field that repeats the frame before's differs from it far less than the other field does.
         double topChange = FieldChange(0), bottomChange = FieldChange(1);

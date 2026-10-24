@@ -535,7 +535,7 @@ internal static class PictureCommands
         List<ReportObject> rows = [];
         for (int i = 0; i < inputs.Count; i++)
         {
-            foreach (SceneScore score in found[i]?.Scores ?? [])
+            foreach (SceneScore score in found[i]?.Series ?? [])
             {
                 rows.Add(new ReportObject().Add("file", inputs[i].Display).Add("frame", score.Frame).Add("time", TimeValue.Format(score.Time))
                     .Add("seconds", Math.Round(score.Time.Seconds, 6)).Add("score", Math.Round(score.Score, 6)).Add("luma", Math.Round(score.Luma, 6)));
