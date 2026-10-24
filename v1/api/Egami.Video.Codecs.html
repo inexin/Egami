@@ -100,7 +100,14 @@ Classes
 profiles: 8, 10 and 12 bit, 4:0:0, 4:2:0, 4:2:2 and 4:4:4, film grain, scaled references and scalable streams, every frame equal
 to libaom's sample for sample. A packet is a temporal unit. Frames come out at their own size (a stream may change size at a
 key frame) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; a monochrome stream gives 4:0:0 planes. Hidden frames give
-no frame; a frame shown later with show_existing_frame comes out then. Decode only.</p>
+no frame; a frame shown later with show_existing_frame comes out then. Encoding goes through <a class="xref" href="Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_">CreateEncoder(VideoEncoderOptions, MediaContext)</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.Av1EncoderOptions.html">Av1EncoderOptions</a></dt>
+      <dd><p>The AV1 settings beyond <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a>, for experts: quantizer limits, hidden alternate reference frames
+and their pyramid, golden frame spacing, the temporal filter, adaptive quantization, screen content tools, error resilience
+and the bit depth. Every one has a default that suits most uses.</p>
 </dd>
     </dl>
     <dl class="jumplist">

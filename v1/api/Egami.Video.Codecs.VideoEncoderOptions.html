@@ -175,6 +175,38 @@ using IVideoEncoder rawEncoder = RawVideoCodec.Instance.CreateEncoder(options wi
 </h2>
 
 
+  <a id="Egami_Video_Codecs_VideoEncoderOptions_Av1_" data-uid="Egami.Video.Codecs.VideoEncoderOptions.Av1*"></a>
+
+  <h3 id="Egami_Video_Codecs_VideoEncoderOptions_Av1" data-uid="Egami.Video.Codecs.VideoEncoderOptions.Av1">
+  Av1
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the AV1 expert settings, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_Default">Default</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Av1EncoderOptions? Av1 { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Codecs.Av1EncoderOptions.html">Av1EncoderOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_Codecs_VideoEncoderOptions_Bitrate_" data-uid="Egami.Video.Codecs.VideoEncoderOptions.Bitrate*"></a>
 
   <h3 id="Egami_Video_Codecs_VideoEncoderOptions_Bitrate" data-uid="Egami.Video.Codecs.VideoEncoderOptions.Bitrate">
@@ -245,7 +277,7 @@ using IVideoEncoder rawEncoder = RawVideoCodec.Instance.CreateEncoder(options wi
 
   <h3 id="Egami_Video_Codecs_VideoEncoderOptions_ChromaFormat" data-uid="Egami.Video.Codecs.VideoEncoderOptions.ChromaFormat">
   ChromaFormat
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L188"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L191"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the chroma subsampling for frames given as RGB rasters, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the codec's default (4:2:0 for
@@ -282,7 +314,7 @@ Motion JPEG). Frames given as planes keep their own.</p>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how hard the encoder works, 0 (fastest) to 10 (smallest files), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the codec's default
-(4 for VP8 and VP9). Motion JPEG has no effort.</p>
+(4 for VP8, VP9 and AV1). Motion JPEG has no effort.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -445,7 +477,7 @@ at scene cuts unless <a class="xref" href="Egami.Video.Codecs.VideoEncoderOption
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L150"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets whether the encoder may hold frames back to code them better (VP8, VP9). Default <a class="xref" href="Egami.Video.Codecs.LatencyMode.html#Egami_Video_Codecs_LatencyMode_Quality">Quality</a>.</p>
+  <div class="markdown level1 summary"><p>Gets whether the encoder may hold frames back to code them better (VP8, VP9, AV1). Default <a class="xref" href="Egami.Video.Codecs.LatencyMode.html#Egami_Video_Codecs_LatencyMode_Quality">Quality</a>.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -511,7 +543,7 @@ at scene cuts unless <a class="xref" href="Egami.Video.Codecs.VideoEncoderOption
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the quality, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the codec's default: 1 to 100 for Motion JPEG (default 75, as Egami's JPEG
-writer), 0 to 100 for VP8 and VP9 (default 60, the scale of Egami's AVIF writer, where equal numbers look alike). With
+writer), 0 to 100 for VP8, VP9 and AV1 (default 60, the scale of Egami's AVIF writer, where equal numbers look alike). With
 <a class="xref" href="Egami.Video.Codecs.RateControlMode.html#Egami_Video_Codecs_RateControlMode_Quality">Quality</a> it is what every frame aims at.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -544,7 +576,7 @@ writer), 0 to 100 for VP8 and VP9 (default 60, the scale of Egami's AVIF writer,
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L147"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the codec's own quantizer for <a class="xref" href="Egami.Video.Codecs.RateControlMode.html#Egami_Video_Codecs_RateControlMode_Quantizer">Quantizer</a> (0 to 127 for VP8, 0 to 255 for VP9), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
+  <div class="markdown level1 summary"><p>Gets the codec's own quantizer for <a class="xref" href="Egami.Video.Codecs.RateControlMode.html#Egami_Video_Codecs_RateControlMode_Quantizer">Quantizer</a> (0 to 127 for VP8, 0 to 255 for VP9 and AV1), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
 to take the one <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Quality">Quality</a> maps to.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -577,7 +609,7 @@ to take the one <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.htm
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L123"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets how the encoder spends bits (VP8, VP9). Default <a class="xref" href="Egami.Video.Codecs.RateControlMode.html#Egami_Video_Codecs_RateControlMode_Quality">Quality</a>: constant quality.</p>
+  <div class="markdown level1 summary"><p>Gets how the encoder spends bits (VP8, VP9, AV1). Default <a class="xref" href="Egami.Video.Codecs.RateControlMode.html#Egami_Video_Codecs_RateControlMode_Quality">Quality</a>: constant quality.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -639,7 +671,7 @@ fixed spacing.</p>
 
   <h3 id="Egami_Video_Codecs_VideoEncoderOptions_TargetFrameBytes" data-uid="Egami.Video.Codecs.VideoEncoderOptions.TargetFrameBytes">
   TargetFrameBytes
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L182"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L185"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the largest packet size in bytes to aim for, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none. Motion JPEG then picks, per frame,

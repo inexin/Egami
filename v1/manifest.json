@@ -12721,7 +12721,21 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Video.Codecs.Av1Codec",
-      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.Av1Codec.yml\" sourcestartlinenumber=\"1\">AV1, as WebM, Matroska, MP4, IVF and raw OBU files carry it, decoded by Egami's AV1 decoder in the Main, High and Professional\nprofiles: 8, 10 and 12 bit, 4:0:0, 4:2:0, 4:2:2 and 4:4:4, film grain, scaled references and scalable streams, every frame equal\nto libaom's sample for sample. A packet is a temporal unit. Frames come out at their own size (a stream may change size at a\nkey frame) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; a monochrome stream gives 4:0:0 planes. Hidden frames give\nno frame; a frame shown later with show_existing_frame comes out then. Decode only.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.Av1Codec.yml\" sourcestartlinenumber=\"1\">AV1, as WebM, Matroska, MP4, IVF and raw OBU files carry it, decoded by Egami's AV1 decoder in the Main, High and Professional\nprofiles: 8, 10 and 12 bit, 4:0:0, 4:2:0, 4:2:2 and 4:4:4, film grain, scaled references and scalable streams, every frame equal\nto libaom's sample for sample. A packet is a temporal unit. Frames come out at their own size (a stream may change size at a\nkey frame) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; a monochrome stream gives 4:0:0 planes. Hidden frames give\nno frame; a frame shown later with show_existing_frame comes out then. Encoding goes through <xref href=\"Egami.Video.Codecs.Av1Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions%2cEgami.Video.MediaContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.Av1EncoderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.Av1EncoderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.Av1EncoderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.Av1EncoderOptions.yml\" sourcestartlinenumber=\"1\">The AV1 settings beyond <xref href=\"Egami.Video.Codecs.VideoEncoderOptions\" data-throw-if-not-resolved=\"false\"></xref>, for experts: quantizer limits, hidden alternate reference frames\nand their pyramid, golden frame spacing, the temporal filter, adaptive quantization, screen content tools, error resilience\nand the bit depth. Every one has a default that suits most uses.</p>\n"
     },
     {
       "type": "ManagedReference",

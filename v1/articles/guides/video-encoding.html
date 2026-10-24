@@ -87,10 +87,11 @@
         <article data-uid="">
 <h1 id="encoding-video">Encoding video</h1>
 
-<p>Egami.Video encodes VP8 and VP9 into WebM, Matroska and IVF (VP9 into MP4 too), with alpha in WebM and Matroska. VP8's frame
-coding is Egami's <code>Vp8StreamEncoder</code>, VP9's Egami.Video's own; for both, Egami.Video decides how each frame is coded: where
-keyframes go, which frames become references, and how many bits each frame gets. The same settings will drive AV1 when it can
-encode. Motion JPEG and uncompressed video encode too, without these settings: every frame is a keyframe.</p>
+<p>Egami.Video encodes VP8 and VP9 into WebM, Matroska and IVF (VP9 into MP4 too), with alpha in WebM and Matroska, and AV1 into
+WebM, Matroska, MP4, IVF, raw OBU and Annex B files. VP8's frame coding is Egami's <code>Vp8StreamEncoder</code>, VP9's Egami.Video's own
+and AV1's Egami's <code>Av1StreamEncoder</code>; for all three, Egami.Video decides how each frame is coded: where keyframes go, which
+frames become references, and how many bits each frame gets. Motion JPEG and uncompressed video encode too, without these
+settings: every frame is a keyframe.</p>
 <h2 id="writing-vp8">Writing VP8</h2>
 <p>Set <code>VideoWriterOptions.Codec</code> to <code>VideoCodecs.Vp8</code>. <code>Quality</code> runs from 0 to 100 (default 60, the scale of Egami's AVIF
 writer) and <code>Effort</code> from 0 (fastest) to 10 (smallest files, default 4). Frames given as 8-bit 4:2:0 planes are coded as they
@@ -156,6 +157,67 @@ using (VideoWriter writer = VideoWriter.Create(&quot;hdr.mp4&quot;, options))
     for (int i = 0; i &lt; 5; i++)
     {
         YuvRaster&lt;ushort&gt; planes = YuvRaster.Create(64, 48, ChromaFormat.Yuv420, 10, new YuvColor(YuvMatrix.Bt2020Ncl, YuvRange.Limited, ChromaSiting.Center));
+        using YuvVideoFrame frame = new(planes, new MediaTime(i, new Rational(1, 30)), color: pq) { Hdr = hdr };
+        writer.WriteFrame(frame);
+    }
+}
+</code></pre><h2 id="writing-av1">Writing AV1</h2>
+<p>Set <code>VideoWriterOptions.Codec</code> to <code>VideoCodecs.Av1</code>. <code>Quality</code> and <code>Effort</code> work as for VP8 and VP9 (default 60 and 4), and
+equal qualities give the same quantizer step as VP9's; <code>Quantizer</code> is AV1's base_q_idx, 0 to 255, and 0 is lossless. Each
+packet is a temporal unit of OBUs, as MP4 and Matroska store them, and the track's <code>av1C</code> comes from the sequence header.</p>
+<p>The frame coding is <code>Av1StreamEncoder</code>'s: partitions, intra and inter modes from up to seven references with compound
+prediction, transform types and sizes chosen by rate and distortion, a trellis, delta quantizers per superblock, deblocking levels
+searched over every level at once, CDEF strengths and, on frames others predict from, Wiener loop restoration; from effort 5, 6
+and 7 on it adds compound masks, overlapped and warped motion, dual filters and global motion. Egami.Video plans the references:
+each group of 16 frames is a pyramid. Its last frame, blended with its neighbours along their motion, is coded first as a hidden
+alternate reference, then a hidden frame halfway to it, halfway again and so on down to pairs, five layers in all; the frames left
+between them predict from both sides and nothing predicts from them. No hidden frame costs a frame of its own when its time comes:
+AV1 shows it again with <code>show_existing_frame</code>, a packet of a few bytes. Before a group is coded, it and the next run through
+<code>Av1StreamEncoder.Analyze</code>, which finds how much of each frame the frames after it reuse: the more, the finer the alternate
+reference's and the keyframe's quantizers, and the finer the superblocks that matter most. Deeper layers get coarser quantizers and
+spend fewer bits on what only they show. The temporal filter, on keyframes and alternate references, blends as much as each
+picture's noise and the frame's quantizer call for.</p>
+<pre><code class="lang-csharp">// AV1 in MP4 at constant quality, on the same Quality and Effort scales as VP8 and VP9. Each group's hidden alternate
+// reference, and a hidden frame halfway to it, are shown later with show_existing_frame.
+VideoWriterOptions options = new() { Codec = VideoCodecs.Av1, FrameRate = new Rational(30, 1), Quality = 70, Effort = 1 };
+using (VideoWriter writer = VideoWriter.Create(&quot;duck-av1.mp4&quot;, options))
+{
+    for (int i = 0; i &lt; 10; i++)
+    {
+        using Raster&lt;Rgb8&gt; frame = duck.Derive(ops =&gt; ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+}
+
+// Expert settings: no pyramid, no adaptive quantization, quantizer limits on AV1's 0 to 255 base_q_idx scale.
+VideoWriterOptions tuned = options with
+{
+    Av1 = new Av1EncoderOptions { Pyramid = false, AdaptiveQuantization = false, MinQuantizer = 20, MaxQuantizer = 200 },
+};
+</code></pre>
+<p><code>Av1EncoderOptions</code> holds the expert settings: quantizer limits, alternate references and the pyramid on or off, golden frame
+spacing, the temporal filter's frames and strength (adaptive by default), adaptive quantization (from the temporal model on the
+base frames, by block detail on the others), screen content tools, error resilience and the bit depth. AV1 codes no alpha in video files (Matroska and MP4 have no standard place for it); animated AVIF, through Egami's
+<code>AvifWriter</code>, does.</p>
+<h3 id="profiles-and-hdr">Profiles and HDR</h3>
+<p>8 and 10-bit 4:2:0 planes make Main profile streams, 4:4:4 High and 12-bit or 4:2:2 Professional, all coded as they are;
+<code>Av1EncoderOptions.BitDepth</code> codes another depth and <code>VideoEncoderOptions.ChromaFormat</code> sets the chroma format for RGB frames,
+which are converted to BT.601 limited range. The frames' code points (primaries, transfer, matrix, range) and the chroma
+siting of 4:2:0 planes go into the sequence header and the container. Their static HDR metadata goes into content light level
+and mastering display metadata OBUs on every keyframe, and into the container as for VP9; a frame's HDR10+ metadata goes into
+its own temporal unit as an ITU-T T.35 metadata OBU. The level is the smallest whose picture size and sample rate hold the
+stream.</p>
+<pre><code class="lang-csharp">// 10-bit 4:2:0 planes code the Main profile (4:4:4 High; 12 bits or 4:2:2 Professional). The frames' code points go into
+// the sequence header and the container, their HDR metadata into metadata OBUs on every keyframe and into the container
+// (Matroska's Colour, MP4's mdcv and clli).
+ColorCodePoints pq = new(9, 16, 9, false);
+HdrMetadata hdr = new() { MasteringMaxLuminance = 1000, MasteringMinLuminance = 0.005, MaxContentLightLevel = 1000, MaxFrameAverageLightLevel = 400 };
+VideoWriterOptions options = new() { Codec = VideoCodecs.Av1, Quality = 80, Effort = 1 };
+using (VideoWriter writer = VideoWriter.Create(&quot;hdr-av1.mkv&quot;, options))
+{
+    for (int i = 0; i &lt; 5; i++)
+    {
+        YuvRaster&lt;ushort&gt; planes = YuvRaster.Create(64, 48, ChromaFormat.Yuv420, 10, new YuvColor(YuvMatrix.Bt2020Ncl, YuvRange.Limited, ChromaSiting.TopLeft));
         using YuvVideoFrame frame = new(planes, new MediaTime(i, new Rational(1, 30)), color: pq) { Hdr = hdr };
         writer.WriteFrame(frame);
     }
@@ -240,8 +302,9 @@ arrives and starts a keyframe at a scene cut, at least every 10 seconds (<code>K
 and wherever <code>EncodeFrameOptions.ForceKeyframe</code> asks. Between keyframes it codes groups of 4 to 16 frames: the group's last
 frame is blended with its neighbours along their motion into a hidden alternate reference, coded first at a finer step, so
 the frames before it can predict from it. That happens only where the group's first frame still predicts its last well
-(still content); with motion, zooms or fades the group just ends in a golden frame. A hidden frame's
-packet carries the timestamp of the shown frame after it, and gives no frame when decoded. Turn <code>SceneCutKeyframes</code> off for
+(still content); with motion, zooms or fades the group just ends in a golden frame. A VP8 hidden frame's
+packet carries the timestamp of the shown frame after it, and gives no frame when decoded; VP9 and AV1 put their hidden frames in
+the next shown frame's packet. Turn <code>SceneCutKeyframes</code> off for
 keyframes at a fixed spacing.</p>
 <p><code>LatencyMode.Realtime</code> looks nowhere ahead: each packet comes out as soon as its frame goes in, there are no hidden frames,
 frames keep no probability updates for the next (so a lost packet spoils one frame), and 720p and larger VP8 frames get two or
@@ -277,7 +340,8 @@ muxer.Finish();
 </code></pre><h2 id="threads-and-repeatability">Threads and repeatability</h2>
 <p>The output depends only on the frames and the options, never on the number of threads or the machine, so a test can compare
 hashes. <code>EgamiContext.MaxParallelism</code> on the <code>MediaContext</code> sets how many threads the encoder uses. VP9's tile columns depend
-on the frame width and <code>Vp9EncoderOptions.TileColumns</code>, never on the threads.</p>
+on the frame width and <code>Vp9EncoderOptions.TileColumns</code>, never on the threads; AV1's are one per 4096 samples of width, so
+frames up to 4K are one tile, and its threads help little within a frame.</p>
 
 </article>
 

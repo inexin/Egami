@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Av1EncoderOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Av1EncoderOptions | Egami ">
+      
+      <meta name="description" content="The AV1 settings beyond , for experts: quantizer limits, hidden alternate reference frames and their pyramid, golden frame spacing, the temporal filter, adaptive quantization, screen content tools, error resilience and the bit depth. Every one has a default that suits most uses.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Codecs_Av1EncoderOptions.md&amp;value=---%0Auid%3A%20Egami.Video.Codecs.Av1EncoderOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Codecs.Av1EncoderOptions">
+
+
+
+  <h1 id="Egami_Video_Codecs_Av1EncoderOptions" data-uid="Egami.Video.Codecs.Av1EncoderOptions" class="text-break">
+Class Av1EncoderOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L279"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Codecs.html">Codecs</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The AV1 settings beyond <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a>, for experts: quantizer limits, hidden alternate reference frames
+and their pyramid, golden frame spacing, the temporal filter, adaptive quantization, screen content tools, error resilience
+and the bit depth. Every one has a default that suits most uses.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record Av1EncoderOptions : IEquatable&lt;Av1EncoderOptions&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Av1EncoderOptions</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Video.Codecs.Av1EncoderOptions.html">Av1EncoderOptions</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Codecs_Av1EncoderOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// AV1 in MP4 at constant quality, on the same Quality and Effort scales as VP8 and VP9. Each group's hidden alternate
+// reference, and a hidden frame halfway to it, are shown later with show_existing_frame.
+VideoWriterOptions options = new() { Codec = VideoCodecs.Av1, FrameRate = new Rational(30, 1), Quality = 70, Effort = 1 };
+using (VideoWriter writer = VideoWriter.Create("duck-av1.mp4", options))
+{
+    for (int i = 0; i &lt; 10; i++)
+    {
+        using Raster&lt;Rgb8&gt; frame = duck.Derive(ops =&gt; ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+}
+
+// Expert settings: no pyramid, no adaptive quantization, quantizer limits on AV1's 0 to 255 base_q_idx scale.
+VideoWriterOptions tuned = options with
+{
+    Av1 = new Av1EncoderOptions { Pyramid = false, AdaptiveQuantization = false, MinQuantizer = 20, MaxQuantizer = 200 },
+};</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_AdaptiveQuantization_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.AdaptiveQuantization*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_AdaptiveQuantization" data-uid="Egami.Video.Codecs.Av1EncoderOptions.AdaptiveQuantization">
+  AdaptiveQuantization
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L360"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether each 64x64 superblock gets its own quantizer (delta q): on a group's base frames from the temporal model, finer
+where the frames after it reuse most; on the others by its detail (Egami's Variance Boost), finer where the picture is flat
+and banding shows, which SSIM rewards more than PSNR loses. Default on.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AdaptiveQuantization { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_AlternateReference_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.AlternateReference*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_AlternateReference" data-uid="Egami.Video.Codecs.Av1EncoderOptions.AlternateReference">
+  AlternateReference
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L312"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Codecs.LatencyMode.html#Egami_Video_Codecs_LatencyMode_Quality">Quality</a> codes hidden alternate reference frames: a temporally filtered copy of a
+frame ahead that the frames before it predict from, shown later with show_existing_frame at its own place. Default on;
+<a class="xref" href="Egami.Video.Codecs.LatencyMode.html#Egami_Video_Codecs_LatencyMode_Realtime">Realtime</a> never codes them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AlternateReference { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_BitDepth_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.BitDepth*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_BitDepth" data-uid="Egami.Video.Codecs.Av1EncoderOptions.BitDepth">
+  BitDepth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L381"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bit depth to code, 8, 10 or 12, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for the frames' own: 10 or 12 for 16-bit
+planes of that depth, 8 for everything else. 8 and 10-bit 4:2:0 make Main profile streams, 4:4:4 High, and 12 bits or
+4:2:2 Professional.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? BitDepth { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not 8, 10 or 12.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_Default_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.Default*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_Default" data-uid="Egami.Video.Codecs.Av1EncoderOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L289"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the defaults.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Av1EncoderOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Codecs.Av1EncoderOptions.html">Av1EncoderOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_ErrorResilient_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.ErrorResilient*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_ErrorResilient" data-uid="Egami.Video.Codecs.Av1EncoderOptions.ErrorResilient">
+  ErrorResilient
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L373"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether frames start from the default probabilities and keep no motion vectors for the frames after them, so a lost
+packet spoils only its own frame, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for on in <a class="xref" href="Egami.Video.Codecs.LatencyMode.html#Egami_Video_Codecs_LatencyMode_Realtime">Realtime</a> and
+off otherwise.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool? ErrorResilient { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_GoldenInterval_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.GoldenInterval*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_GoldenInterval" data-uid="Egami.Video.Codecs.Av1EncoderOptions.GoldenInterval">
+  GoldenInterval
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L329"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the most frames between golden frame refreshes (and alternate reference frames), 4 to 64, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
+(the default) for 16 with the <a class="xref" href="Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_Pyramid">Pyramid</a>, else 8 to 16 chosen by how much the picture moves.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? GoldenInterval { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 4 to 64.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_MaxQuantizer_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.MaxQuantizer*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_MaxQuantizer" data-uid="Egami.Video.Codecs.Av1EncoderOptions.MaxQuantizer">
+  MaxQuantizer
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L301"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the largest base_q_idx rate control may use, 0 to 255. Default 255.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MaxQuantizer { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 255.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_MinQuantizer_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.MinQuantizer*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_MinQuantizer" data-uid="Egami.Video.Codecs.Av1EncoderOptions.MinQuantizer">
+  MinQuantizer
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L293"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the smallest base_q_idx rate control may use, 0 (finest, lossless) to 255. Default 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MinQuantizer { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 255.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_Pyramid_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.Pyramid*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_Pyramid" data-uid="Egami.Video.Codecs.Av1EncoderOptions.Pyramid">
+  Pyramid
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L322"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether each group is a pyramid, as libaom and SVT-AV1 build them: after the hidden alternate reference at its end, a
+hidden frame halfway to it, then halfway again, down to pairs of frames, each shown later the same way; the frames between
+predict from both sides and nothing predicts from them. Groups are 16 frames (five layers) unless
+<a class="xref" href="Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_GoldenInterval">GoldenInterval</a> says otherwise, and each group and the one after it are run through the AV1 encoder's
+temporal model first, which sets the alternate reference's and keyframe's quantizers. Default on; off codes one hidden
+alternate reference a group, its group 8 to 16 frames long by how much the picture moves.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Pyramid { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_ScreenContent_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.ScreenContent*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_ScreenContent" data-uid="Egami.Video.Codecs.Av1EncoderOptions.ScreenContent">
+  ScreenContent
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L366"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the screen content tools (palettes, and intra block copy in keyframes) are on, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
+(the default) to turn them on per frame when the frame looks like screen content.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool? ScreenContent { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_TemporalFilterFrames_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_TemporalFilterFrames" data-uid="Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames">
+  TemporalFilterFrames
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L337"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many frames the temporal filter blends into an alternate reference frame, 1 (none) to 15. Default 7.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int TemporalFilterFrames { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 1 to 15.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_Codecs_Av1EncoderOptions_TemporalFilterStrength_" data-uid="Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1EncoderOptions_TemporalFilterStrength" data-uid="Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength">
+  TemporalFilterStrength
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L349"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how strongly the temporal filter blends, 0 (weakest) to 6, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for a strength that
+follows each picture's noise and the frame's quantizer: clean pictures and fine quantizers blend little, noisy pictures at
+coarse quantizers most. With the <a class="xref" href="Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_Pyramid">Pyramid</a>, keyframes are blended with the frames after them too.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? TemporalFilterStrength { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 6.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/EncoderSettings.cs/#L279" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

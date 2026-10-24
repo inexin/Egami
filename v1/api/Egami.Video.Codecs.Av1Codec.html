@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class Av1Codec | Egami ">
       
-      <meta name="description" content="AV1, as WebM, Matroska, MP4, IVF and raw OBU files carry it, decoded by Egami&#39;s AV1 decoder in the Main, High and Professional profiles: 8, 10 and 12 bit, 4:0:0, 4:2:0, 4:2:2 and 4:4:4, film grain, scaled references and scalable streams, every frame equal to libaom&#39;s sample for sample. A packet is a temporal unit. Frames come out at their own size (a stream may change size at a key frame) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; a monochrome stream gives 4:0:0 planes. Hidden frames give no frame; a frame shown later with show_existing_frame comes out then. Decode only.">
+      <meta name="description" content="AV1, as WebM, Matroska, MP4, IVF and raw OBU files carry it, decoded by Egami&#39;s AV1 decoder in the Main, High and Professional profiles: 8, 10 and 12 bit, 4:0:0, 4:2:0, 4:2:2 and 4:4:4, film grain, scaled references and scalable streams, every frame equal to libaom&#39;s sample for sample. A packet is a temporal unit. Frames come out at their own size (a stream may change size at a key frame) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; a monochrome stream gives 4:0:0 planes. Hidden frames give no frame; a frame shown later with show_existing_frame comes out then. Encoding goes through .">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -101,7 +101,7 @@ Class Av1Codec  <a class="header-action link-secondary" title="View source" href
 profiles: 8, 10 and 12 bit, 4:0:0, 4:2:0, 4:2:2 and 4:4:4, film grain, scaled references and scalable streams, every frame equal
 to libaom's sample for sample. A packet is a temporal unit. Frames come out at their own size (a stream may change size at a
 key frame) as 8-bit planes, or 16-bit planes holding 10 or 12 bits; a monochrome stream gives 4:0:0 planes. Hidden frames give
-no frame; a frame shown later with show_existing_frame comes out then. Decode only.</p>
+no frame; a frame shown later with show_existing_frame comes out then. Encoding goes through <a class="xref" href="Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_">CreateEncoder(VideoEncoderOptions, MediaContext)</a>.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -127,13 +127,7 @@ no frame; a frame shown later with show_existing_frame comes out then. Decode on
     <dt>Inherited Members</dt>
     <dd>
     <div>
-      <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CanEncode">VideoCodec.CanEncode</a>
-    </div>
-    <div>
       <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CanDecode_Egami_Video_TrackInfo_">VideoCodec.CanDecode(TrackInfo)</a>
-    </div>
-    <div>
-      <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_">VideoCodec.CreateEncoder(VideoEncoderOptions, MediaContext)</a>
     </div>
     <div>
       <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_ToString">VideoCodec.ToString()</a>
@@ -201,6 +195,38 @@ frame; in <a class="xref" href="Egami.Video.DecodeErrorMode.html#Egami_Video_Dec
 
   <h2 class="section" id="properties">Properties
 </h2>
+
+
+  <a id="Egami_Video_Codecs_Av1Codec_CanEncode_" data-uid="Egami.Video.Codecs.Av1Codec.CanEncode*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1Codec_CanEncode" data-uid="Egami.Video.Codecs.Av1Codec.CanEncode">
+  CanEncode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Av1Codec.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_">CreateEncoder(VideoEncoderOptions, MediaContext)</a> is supported.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool CanEncode { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
 
 
   <a id="Egami_Video_Codecs_Av1Codec_CodecId_" data-uid="Egami.Video.Codecs.Av1Codec.CodecId*"></a>
@@ -307,7 +333,7 @@ frame; in <a class="xref" href="Egami.Video.DecodeErrorMode.html#Egami_Video_Dec
 
   <h3 id="Egami_Video_Codecs_Av1Codec_CreateDecoder_Egami_Video_VideoTrackInfo_Egami_Video_Codecs_VideoDecoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Codecs.Av1Codec.CreateDecoder(Egami.Video.VideoTrackInfo,Egami.Video.Codecs.VideoDecoderOptions,Egami.Video.MediaContext)">
   CreateDecoder(VideoTrackInfo, VideoDecoderOptions?, MediaContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Av1Codec.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Av1Codec.cs/#L53"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a decoder for a track.</p>
@@ -375,6 +401,82 @@ using YuvVideoFrame first = plain.ReadFrame()!;</code></pre>
 
 
 
+
+
+
+  <a id="Egami_Video_Codecs_Av1Codec_CreateEncoder_" data-uid="Egami.Video.Codecs.Av1Codec.CreateEncoder*"></a>
+
+  <h3 id="Egami_Video_Codecs_Av1Codec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Codecs.Av1Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions,Egami.Video.MediaContext)">
+  CreateEncoder(VideoEncoderOptions, MediaContext)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/Av1Codec.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates an AV1 encoder, which codes frames with Egami's <a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html">Av1StreamEncoder</a>. 8 and 10-bit 4:2:0
+planes make Main profile streams, 4:4:4 High and 12-bit or 4:2:2 Professional, coded as they are; RGB frames are converted
+to 8-bit 4:2:0 BT.601 limited range unless <a class="xref" href="Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_BitDepth">BitDepth</a> or
+<a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_ChromaFormat">ChromaFormat</a> say otherwise. By default it aims at constant quality 60 at effort 4, looks
+25 frames ahead for scene cuts and for a hidden alternate reference at each group's end with a hidden frame halfway to it,
+both shown later with show_existing_frame, and places a keyframe at least every 10 seconds; <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a>
+chooses bitrate, constant bitrate, two passes or real time instead, and <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Av1">Av1</a> holds the
+expert settings. Each packet is a temporal unit; the track's av1C comes from the sequence header, which also carries the
+frames' color code points, and keyframes carry their static HDR metadata as metadata OBUs (HDR10+ goes into the frames
+that have it). Alpha is not coded: AV1 has no alpha in Matroska or MP4. The output is the same at any thread count.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override IVideoEncoder CreateEncoder(VideoEncoderOptions options, MediaContext context)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>options</code> <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a></dt>
+    <dd><p>The picture size, frame rate and how to spend bits.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html">IVideoEncoder</a></dt>
+    <dd><p>The encoder.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_Codecs_Av1Codec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// AV1 in MP4 at constant quality, on the same Quality and Effort scales as VP8 and VP9. Each group's hidden alternate
+// reference, and a hidden frame halfway to it, are shown later with show_existing_frame.
+VideoWriterOptions options = new() { Codec = VideoCodecs.Av1, FrameRate = new Rational(30, 1), Quality = 70, Effort = 1 };
+using (VideoWriter writer = VideoWriter.Create("duck-av1.mp4", options))
+{
+    for (int i = 0; i &lt; 10; i++)
+    {
+        using Raster&lt;Rgb8&gt; frame = duck.Derive(ops =&gt; ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+}
+
+// Expert settings: no pyramid, no adaptive quantization, quantizer limits on AV1's 0 to 255 base_q_idx scale.
+VideoWriterOptions tuned = options with
+{
+    Av1 = new Av1EncoderOptions { Pyramid = false, AdaptiveQuantization = false, MinQuantizer = 20, MaxQuantizer = 200 },
+};</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The options are out of range, or a bitrate mode has no bitrate.</p>
+</dd>
+  </dl>
 
 
 

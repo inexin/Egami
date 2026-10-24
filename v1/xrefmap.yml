@@ -82890,6 +82890,19 @@ references:
   commentId: T:Egami.Video.Codecs.Av1Codec
   fullName: Egami.Video.Codecs.Av1Codec
   nameWithType: Av1Codec
+- uid: Egami.Video.Codecs.Av1Codec.CanEncode
+  name: CanEncode
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_CanEncode
+  commentId: P:Egami.Video.Codecs.Av1Codec.CanEncode
+  fullName: Egami.Video.Codecs.Av1Codec.CanEncode
+  nameWithType: Av1Codec.CanEncode
+- uid: Egami.Video.Codecs.Av1Codec.CanEncode*
+  name: CanEncode
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_CanEncode_
+  commentId: Overload:Egami.Video.Codecs.Av1Codec.CanEncode
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1Codec.CanEncode
+  nameWithType: Av1Codec.CanEncode
 - uid: Egami.Video.Codecs.Av1Codec.CodecId
   name: CodecId
   href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_CodecId
@@ -82919,6 +82932,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.Av1Codec.CreateDecoder
   nameWithType: Av1Codec.CreateDecoder
+- uid: Egami.Video.Codecs.Av1Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions,Egami.Video.MediaContext)
+  name: CreateEncoder(VideoEncoderOptions, MediaContext)
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Codecs.Av1Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions,Egami.Video.MediaContext)
+  fullName: Egami.Video.Codecs.Av1Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions, Egami.Video.MediaContext)
+  nameWithType: Av1Codec.CreateEncoder(VideoEncoderOptions, MediaContext)
+- uid: Egami.Video.Codecs.Av1Codec.CreateEncoder*
+  name: CreateEncoder
+  href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_CreateEncoder_
+  commentId: Overload:Egami.Video.Codecs.Av1Codec.CreateEncoder
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1Codec.CreateEncoder
+  nameWithType: Av1Codec.CreateEncoder
 - uid: Egami.Video.Codecs.Av1Codec.Instance
   name: Instance
   href: api/Egami.Video.Codecs.Av1Codec.html#Egami_Video_Codecs_Av1Codec_Instance
@@ -82945,6 +82971,168 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.Av1Codec.Name
   nameWithType: Av1Codec.Name
+- uid: Egami.Video.Codecs.Av1EncoderOptions
+  name: Av1EncoderOptions
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html
+  commentId: T:Egami.Video.Codecs.Av1EncoderOptions
+  fullName: Egami.Video.Codecs.Av1EncoderOptions
+  nameWithType: Av1EncoderOptions
+- uid: Egami.Video.Codecs.Av1EncoderOptions.AdaptiveQuantization
+  name: AdaptiveQuantization
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_AdaptiveQuantization
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.AdaptiveQuantization
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.AdaptiveQuantization
+  nameWithType: Av1EncoderOptions.AdaptiveQuantization
+- uid: Egami.Video.Codecs.Av1EncoderOptions.AdaptiveQuantization*
+  name: AdaptiveQuantization
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_AdaptiveQuantization_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.AdaptiveQuantization
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.AdaptiveQuantization
+  nameWithType: Av1EncoderOptions.AdaptiveQuantization
+- uid: Egami.Video.Codecs.Av1EncoderOptions.AlternateReference
+  name: AlternateReference
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_AlternateReference
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.AlternateReference
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.AlternateReference
+  nameWithType: Av1EncoderOptions.AlternateReference
+- uid: Egami.Video.Codecs.Av1EncoderOptions.AlternateReference*
+  name: AlternateReference
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_AlternateReference_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.AlternateReference
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.AlternateReference
+  nameWithType: Av1EncoderOptions.AlternateReference
+- uid: Egami.Video.Codecs.Av1EncoderOptions.BitDepth
+  name: BitDepth
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_BitDepth
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.BitDepth
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.BitDepth
+  nameWithType: Av1EncoderOptions.BitDepth
+- uid: Egami.Video.Codecs.Av1EncoderOptions.BitDepth*
+  name: BitDepth
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_BitDepth_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.BitDepth
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.BitDepth
+  nameWithType: Av1EncoderOptions.BitDepth
+- uid: Egami.Video.Codecs.Av1EncoderOptions.Default
+  name: Default
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_Default
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.Default
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.Default
+  nameWithType: Av1EncoderOptions.Default
+- uid: Egami.Video.Codecs.Av1EncoderOptions.Default*
+  name: Default
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_Default_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.Default
+  nameWithType: Av1EncoderOptions.Default
+- uid: Egami.Video.Codecs.Av1EncoderOptions.ErrorResilient
+  name: ErrorResilient
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_ErrorResilient
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.ErrorResilient
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.ErrorResilient
+  nameWithType: Av1EncoderOptions.ErrorResilient
+- uid: Egami.Video.Codecs.Av1EncoderOptions.ErrorResilient*
+  name: ErrorResilient
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_ErrorResilient_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.ErrorResilient
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.ErrorResilient
+  nameWithType: Av1EncoderOptions.ErrorResilient
+- uid: Egami.Video.Codecs.Av1EncoderOptions.GoldenInterval
+  name: GoldenInterval
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_GoldenInterval
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.GoldenInterval
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.GoldenInterval
+  nameWithType: Av1EncoderOptions.GoldenInterval
+- uid: Egami.Video.Codecs.Av1EncoderOptions.GoldenInterval*
+  name: GoldenInterval
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_GoldenInterval_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.GoldenInterval
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.GoldenInterval
+  nameWithType: Av1EncoderOptions.GoldenInterval
+- uid: Egami.Video.Codecs.Av1EncoderOptions.MaxQuantizer
+  name: MaxQuantizer
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_MaxQuantizer
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.MaxQuantizer
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.MaxQuantizer
+  nameWithType: Av1EncoderOptions.MaxQuantizer
+- uid: Egami.Video.Codecs.Av1EncoderOptions.MaxQuantizer*
+  name: MaxQuantizer
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_MaxQuantizer_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.MaxQuantizer
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.MaxQuantizer
+  nameWithType: Av1EncoderOptions.MaxQuantizer
+- uid: Egami.Video.Codecs.Av1EncoderOptions.MinQuantizer
+  name: MinQuantizer
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_MinQuantizer
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.MinQuantizer
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.MinQuantizer
+  nameWithType: Av1EncoderOptions.MinQuantizer
+- uid: Egami.Video.Codecs.Av1EncoderOptions.MinQuantizer*
+  name: MinQuantizer
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_MinQuantizer_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.MinQuantizer
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.MinQuantizer
+  nameWithType: Av1EncoderOptions.MinQuantizer
+- uid: Egami.Video.Codecs.Av1EncoderOptions.Pyramid
+  name: Pyramid
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_Pyramid
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.Pyramid
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.Pyramid
+  nameWithType: Av1EncoderOptions.Pyramid
+- uid: Egami.Video.Codecs.Av1EncoderOptions.Pyramid*
+  name: Pyramid
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_Pyramid_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.Pyramid
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.Pyramid
+  nameWithType: Av1EncoderOptions.Pyramid
+- uid: Egami.Video.Codecs.Av1EncoderOptions.ScreenContent
+  name: ScreenContent
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_ScreenContent
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.ScreenContent
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.ScreenContent
+  nameWithType: Av1EncoderOptions.ScreenContent
+- uid: Egami.Video.Codecs.Av1EncoderOptions.ScreenContent*
+  name: ScreenContent
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_ScreenContent_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.ScreenContent
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.ScreenContent
+  nameWithType: Av1EncoderOptions.ScreenContent
+- uid: Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames
+  name: TemporalFilterFrames
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_TemporalFilterFrames
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames
+  nameWithType: Av1EncoderOptions.TemporalFilterFrames
+- uid: Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames*
+  name: TemporalFilterFrames
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_TemporalFilterFrames_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames
+  nameWithType: Av1EncoderOptions.TemporalFilterFrames
+- uid: Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength
+  name: TemporalFilterStrength
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_TemporalFilterStrength
+  commentId: P:Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength
+  nameWithType: Av1EncoderOptions.TemporalFilterStrength
+- uid: Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength*
+  name: TemporalFilterStrength
+  href: api/Egami.Video.Codecs.Av1EncoderOptions.html#Egami_Video_Codecs_Av1EncoderOptions_TemporalFilterStrength_
+  commentId: Overload:Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength
+  nameWithType: Av1EncoderOptions.TemporalFilterStrength
 - uid: Egami.Video.Codecs.Av1Packets
   name: Av1Packets
   href: api/Egami.Video.Codecs.Av1Packets.html
@@ -83997,6 +84185,19 @@ references:
   commentId: T:Egami.Video.Codecs.VideoEncoderOptions
   fullName: Egami.Video.Codecs.VideoEncoderOptions
   nameWithType: VideoEncoderOptions
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Av1
+  name: Av1
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Av1
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.Av1
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Av1
+  nameWithType: VideoEncoderOptions.Av1
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Av1*
+  name: Av1
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Av1_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.Av1
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Av1
+  nameWithType: VideoEncoderOptions.Av1
 - uid: Egami.Video.Codecs.VideoEncoderOptions.Bitrate
   name: Bitrate
   href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Bitrate
@@ -92511,6 +92712,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoWriterOptions.AudioSampleRate
   nameWithType: VideoWriterOptions.AudioSampleRate
+- uid: Egami.Video.VideoWriterOptions.Av1
+  name: Av1
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Av1
+  commentId: P:Egami.Video.VideoWriterOptions.Av1
+  fullName: Egami.Video.VideoWriterOptions.Av1
+  nameWithType: VideoWriterOptions.Av1
+- uid: Egami.Video.VideoWriterOptions.Av1*
+  name: Av1
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Av1_
+  commentId: Overload:Egami.Video.VideoWriterOptions.Av1
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.Av1
+  nameWithType: VideoWriterOptions.Av1
 - uid: Egami.Video.VideoWriterOptions.Bitrate
   name: Bitrate
   href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Bitrate
