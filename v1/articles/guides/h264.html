@@ -127,7 +127,7 @@ foreach (VideoFrame&lt;Rgb8&gt; frame in reader.ReadFrames&lt;Rgb8&gt;())
     }
 }
 </code></pre>
-<p>Broken data follows <code>VideoReaderOptions.Errors</code>. A slice that cannot be read reports <code>H264.CorruptSlice</code>, and the macroblocks
+<p>Broken data follows <code>VideoReaderOptions.Errors</code>. A slice that cannot be read reports <code>H264.CorruptFrame</code>, and the macroblocks
 it leaves out are filled from the previous frame (<code>Conceal</code>, and <code>Skip</code>, the default) or the frame is finished and the error
 thrown (<code>Throw</code>). Decoding that starts in the middle of a stream waits for the next IDR or recovery point; a reference frame
 that is missing is replaced by the nearest one.</p>
