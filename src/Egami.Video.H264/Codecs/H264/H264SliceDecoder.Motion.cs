@@ -223,6 +223,7 @@ internal sealed partial class H264SliceDecoder
     }
 
     /// <summary>Gets a neighbouring 4x4 block's motion (6.4.11.7): whether it is available, its refIdx (-1 when the list is unused).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool Neighbor(int list, int bx, int by, out int refIdx, out int mv)
     {
         refIdx = -1;
