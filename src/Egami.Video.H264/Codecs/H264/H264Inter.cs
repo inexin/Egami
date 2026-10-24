@@ -23,6 +23,11 @@ internal sealed class H264Inter
     // Where a 4:2:0 Cr prediction starts in the prediction buffers: after Cb's eight rows.
     private const int CrRows = PredStride * 8;
 
+    // How a byte prediction meets the destination: written as it is, averaged with the first list's or weighted explicitly.
+    private const int Single = 0;
+    private const int Averaged = 1;
+    private const int Scaled = 2;
+
     private readonly ushort[] _pred0 = new ushort[(PredStride * 16) + PredStride];
     private readonly ushort[] _pred1 = new ushort[(PredStride * 16) + PredStride];
     private readonly ushort[] _temp = new ushort[(PredStride * 16) + PredStride];
@@ -152,7 +157,23 @@ internal sealed class H264Inter
         }
 
         bool bi = p0 is not null && p1 is not null;
-        bool bytes = H264Samples.Narrow<T>() && w == 16 && UseVectors && UseWideVectors && !_explicit && (!bi || !_implicitMode || _implicit[(r0 * 32) + r1] == 32);
+        bool bytes = H264Samples.Narrow<T>() && w == 16 && UseVectors && UseWideVectors
+            && (_explicit ? !bi : !bi || !_implicitMode || _implicit[(r0 * 32) + r1] == 32);
+        int mode = bi ? Averaged : Single;
+        ByteWeights weights = default;
+        if (bytes && _explicit)
+        {
+            // One list with explicit weights: a reference without them (weight 2^logWD, offset 0) predicts as it is.
+            int r = p0 is not null ? r0 : r1;
+            int[] wt = _h.Weights[p0 is not null ? 0 : 1];
+            int logWD = _h.LumaLog2WeightDenom;
+            if (wt[r * 6] != 1 << logWD || wt[(r * 6) + 1] != 0)
+            {
+                mode = Scaled;
+                weights = new ByteWeights(wt[r * 6], wt[r * 6], wt[(r * 6) + 1], wt[(r * 6) + 1], logWD);
+            }
+        }
+
         if (bytes)
         {
             // 8 bits without weights: bytes from the filters to the picture, one list as it is or two averaged.
@@ -163,12 +184,12 @@ internal sealed class H264Inter
             ref byte first = ref MemoryMarshal.GetArrayDataReference(_bytes0);
             if (!bi)
             {
-                Luma16Bytes(p0 ?? p1!, x, y, h, p0 is not null ? mv0 : mv1, ref dst, _pic.Stride, ref first, false);
+                Luma16Bytes(p0 ?? p1!, x, y, h, p0 is not null ? mv0 : mv1, ref dst, _pic.Stride, ref first, mode, weights);
             }
             else
             {
-                Luma16Bytes(p0!, x, y, h, mv0, ref first, 16, ref first, false);
-                Luma16Bytes(p1!, x, y, h, mv1, ref dst, _pic.Stride, ref first, true);
+                Luma16Bytes(p0!, x, y, h, mv0, ref first, 16, ref first, Single, weights);
+                Luma16Bytes(p1!, x, y, h, mv1, ref dst, _pic.Stride, ref first, Averaged, weights);
             }
         }
         else
@@ -193,6 +214,22 @@ internal sealed class H264Inter
         int cw = w / 2, ch = _chroma == 1 ? h / 2 : h, cx = x / 2, cy = _chroma == 1 ? y / 2 : y;
         if (_chroma == 1)
         {
+            if (bytes && _explicit)
+            {
+                int r = p0 is not null ? r0 : r1;
+                int[] wt = _h.Weights[p0 is not null ? 0 : 1];
+                int logWD = _h.ChromaLog2WeightDenom, unit = 1 << logWD;
+                if (wt[(r * 6) + 2] != unit || wt[(r * 6) + 3] != 0 || wt[(r * 6) + 4] != unit || wt[(r * 6) + 5] != 0)
+                {
+                    mode = Scaled;
+                    weights = new ByteWeights(wt[(r * 6) + 2], wt[(r * 6) + 4], wt[(r * 6) + 3], wt[(r * 6) + 5], logWD);
+                }
+                else
+                {
+                    mode = Single;
+                }
+            }
+
             if (bytes && (p0 is null || ChromaInside(p0, cx, cy, ch, mv0)) && (p1 is null || ChromaInside(p1, cx, cy, ch, mv1)))
             {
                 // As for luma: bytes from the filter to both planes, one list as it is or two averaged.
@@ -204,12 +241,12 @@ internal sealed class H264Inter
                 ref byte first = ref MemoryMarshal.GetArrayDataReference(_bytes0);
                 if (!bi)
                 {
-                    ChromaBytes(p0 ?? p1!, cx, cy, ch, p0 is not null ? mv0 : mv1, ref dstCb, ref dstCr, _pic.ChromaStride, ref first, false);
+                    ChromaBytes(p0 ?? p1!, cx, cy, ch, p0 is not null ? mv0 : mv1, ref dstCb, ref dstCr, _pic.ChromaStride, ref first, mode, weights);
                 }
                 else
                 {
-                    ChromaBytes(p0!, cx, cy, ch, mv0, ref first, ref Unsafe.Add(ref first, 8), 16, ref first, false);
-                    ChromaBytes(p1!, cx, cy, ch, mv1, ref dstCb, ref dstCr, _pic.ChromaStride, ref first, true);
+                    ChromaBytes(p0!, cx, cy, ch, mv0, ref first, ref Unsafe.Add(ref first, 8), 16, ref first, Single, weights);
+                    ChromaBytes(p1!, cx, cy, ch, mv1, ref dstCb, ref dstCr, _pic.ChromaStride, ref first, Averaged, weights);
                 }
 
                 return;
@@ -346,7 +383,7 @@ internal sealed class H264Inter
     /// The 4:2:0 chroma prediction of an 8-wide block of an 8-bit picture in bytes: each row of Cb and Cr is packed to bytes
     /// and written to the destinations, or averaged with the first list's prediction (Cb in bytes 0 to 7 of each 16, Cr in 8 to 15).
     /// </summary>
-    private static void ChromaBytes(H264Picture refPic, int x, int y, int h, int mv, ref byte dstCb, ref byte dstCr, int dstStride, ref byte first, bool average)
+    private static void ChromaBytes(H264Picture refPic, int x, int y, int h, int mv, ref byte dstCb, ref byte dstCr, int dstStride, ref byte first, int mode, in ByteWeights weights)
     {
         int mvx = H264SliceDecoder.MvX(mv), mvy = H264SliceDecoder.MvY(mv);
         int xFrac = mvx & 7, yFrac = mvy & 7, stride = refPic.ChromaStride;
@@ -360,7 +397,7 @@ internal sealed class H264Inter
             for (int j = 0; j < h; j++)
             {
                 Vector128<byte> v = Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref b), Unsafe.ReadUnaligned<ulong>(ref r)).AsByte();
-                StoreChroma(v, ref dstCb, ref dstCr, ref first, average);
+                StoreChroma(v, ref dstCb, ref dstCr, ref first, mode, weights);
                 b = ref Unsafe.Add(ref b, stride);
                 r = ref Unsafe.Add(ref r, stride);
                 dstCb = ref Unsafe.Add(ref dstCb, dstStride);
@@ -380,7 +417,7 @@ internal sealed class H264Inter
             r = ref Unsafe.Add(ref r, stride);
             Vector256<ushort> bottom = Across(ref b, ref r, across);
             Vector256<short> v = (((wTop * top) + (wBottom * bottom) + round) >>> 6).AsInt16();
-            StoreChroma(Sse2.PackUnsignedSaturate(v.GetLower(), v.GetUpper()), ref dstCb, ref dstCr, ref first, average);
+            StoreChroma(Sse2.PackUnsignedSaturate(v.GetLower(), v.GetUpper()), ref dstCb, ref dstCr, ref first, mode, weights);
             dstCb = ref Unsafe.Add(ref dstCb, dstStride);
             dstCr = ref Unsafe.Add(ref dstCr, dstStride);
             first = ref Unsafe.Add(ref first, 16);
@@ -388,13 +425,17 @@ internal sealed class H264Inter
         }
     }
 
-    /// <summary>Writes a row of Cb (bytes 0 to 7) and Cr (8 to 15), averaged with the first list's row when asked.</summary>
+    /// <summary>Writes a row of Cb (bytes 0 to 7) and Cr (8 to 15), averaged with the first list's row or weighted as the mode says.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void StoreChroma(Vector128<byte> v, ref byte dstCb, ref byte dstCr, ref byte first, bool average)
+    private static void StoreChroma(Vector128<byte> v, ref byte dstCb, ref byte dstCr, ref byte first, int mode, in ByteWeights weights)
     {
-        if (average)
+        if (mode == Averaged)
         {
             v = Sse2.Average(v, Vector128.LoadUnsafe(ref first));
+        }
+        else if (mode == Scaled)
+        {
+            v = weights.Apply(v);
         }
 
         Unsafe.WriteUnaligned(ref dstCb, v.AsUInt64().ToScalar());
@@ -895,7 +936,7 @@ internal sealed class H264Inter
     /// packs its row to bytes, which clips it, quarter samples are the rounded average of two such rows (one pavgb), and the
     /// last pass writes the destination, averaging with the first list's prediction for two lists.
     /// </summary>
-    private void Luma16Bytes(H264Picture refPic, int x, int y, int h, int mv, ref byte dst, int dstStride, ref byte first, bool average)
+    private void Luma16Bytes(H264Picture refPic, int x, int y, int h, int mv, ref byte dst, int dstStride, ref byte first, int mode, in ByteWeights weights)
     {
         int mvx = H264SliceDecoder.MvX(mv), mvy = H264SliceDecoder.MvY(mv);
         int xInt = x + (mvx >> 2), yInt = y + (mvy >> 2);
@@ -987,9 +1028,25 @@ internal sealed class H264Inter
         }
 
         // One loop per case keeps the rows free of branches.
-        if (two)
+        if (mode == Scaled)
         {
-            if (average)
+            for (int j = 0; j < h; j++)
+            {
+                Vector128<byte> v = Vector128.LoadUnsafe(ref a);
+                if (two)
+                {
+                    v = Sse2.Average(v, Vector128.LoadUnsafe(ref b));
+                }
+
+                weights.Apply(v).StoreUnsafe(ref dst);
+                a = ref Unsafe.Add(ref a, aStride);
+                b = ref Unsafe.Add(ref b, 16);
+                dst = ref Unsafe.Add(ref dst, dstStride);
+            }
+        }
+        else if (two)
+        {
+            if (mode == Averaged)
             {
                 for (int j = 0; j < h; j++)
                 {
@@ -1012,7 +1069,7 @@ internal sealed class H264Inter
                 }
             }
         }
-        else if (average)
+        else if (mode == Averaged)
         {
             for (int j = 0; j < h; j++)
             {
@@ -1406,6 +1463,34 @@ internal sealed class H264Inter
                 int s = at + (j * stride) + i;
                 pred[(j * PredStride) + i + po] = (ushort)(((wa * H264Samples.Get(src, s)) + (wb * H264Samples.Get(src, s + 1)) + (wc * H264Samples.Get(src, s + stride)) + (wd * H264Samples.Get(src, s + stride + 1)) + 32) >> 6);
             }
+        }
+    }
+
+    /// <summary>
+    /// The explicit weights of one list for 16 bytes, ((w p + 2^(logWD - 1)) &gt;&gt; logWD) + o clipped (8-270): each byte pairs
+    /// with 1 and one multiply-add by (w, round) gives the rounded product, which fits 16 bits for 8-bit samples. Lanes 0 to 7
+    /// take the first weight and offset, lanes 8 to 15 the second, so a Cb and a Cr row weigh together.
+    /// </summary>
+    private readonly struct ByteWeights
+    {
+        private readonly Vector256<sbyte> _pairs;
+        private readonly Vector256<short> _offsets;
+        private readonly int _shift;
+
+        public ByteWeights(int weightLow, int weightHigh, int offsetLow, int offsetHigh, int logWD)
+        {
+            int round = logWD >= 1 ? 1 << (logWD - 1) : 0;
+            _pairs = Vector256.Create(Vector128.Create((short)((round << 8) | (weightLow & 0xFF))), Vector128.Create((short)((round << 8) | (weightHigh & 0xFF)))).AsSByte();
+            _offsets = Vector256.Create(Vector128.Create((short)offsetLow), Vector128.Create((short)offsetHigh));
+            _shift = logWD;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Vector128<byte> Apply(Vector128<byte> v)
+        {
+            Vector128<byte> one = Vector128.Create((byte)1);
+            Vector256<short> sums = Avx2.MultiplyAddAdjacent(Vector256.Create(Sse2.UnpackLow(v, one), Sse2.UnpackHigh(v, one)), _pairs);
+            return PackBytes((sums >> _shift) + _offsets);
         }
     }
 }
