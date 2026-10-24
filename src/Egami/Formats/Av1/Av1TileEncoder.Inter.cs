@@ -207,10 +207,13 @@ internal sealed partial class Av1TileEncoder
         for (int i = 0; i < full; i++)
         {
             InterChoice choice = _interCandidates[i].Choice;
-            Try(choice);
-            if (!choice.SkipMode)
+            if (choice.SkipMode)
             {
-                Try(choice with { Skip = true });
+                Try(choice);
+            }
+            else
+            {
+                TryBoth(choice);
             }
         }
 
@@ -289,6 +292,21 @@ internal sealed partial class Av1TileEncoder
             }
         }
 
+        // A choice with and without its residual, from one prediction.
+        void TryBoth(InterChoice choice)
+        {
+            (long full, long skip) = EncodeInterBoth(choice, start, Math.Min(budget, best.Cost), chroma);
+            if (skip < best.Cost)
+            {
+                best = (skip, choice with { Skip = true });
+            }
+
+            if (full < best.Cost)
+            {
+                best = (full, choice with { Skip = false });
+            }
+        }
+
         void Try(InterChoice choice)
         {
             long cost = EncodeInter(choice, start, Math.Min(budget, best.Cost), chroma);
@@ -317,8 +335,7 @@ internal sealed partial class Av1TileEncoder
                             continue;
                         }
 
-                        Try(baseChoice with { FilterY = fy, FilterX = fx, Skip = false });
-                        Try(baseChoice with { FilterY = fy, FilterX = fx, Skip = true });
+                        TryBoth(baseChoice with { FilterY = fy, FilterX = fx, Skip = false });
                     }
                 }
             }
@@ -682,6 +699,54 @@ internal sealed partial class Av1TileEncoder
 
         _reconstructor.InterDone(this);
         return FinishBlock(start, _b.Size, chroma);
+    }
+
+    /// <summary>
+    /// Encodes the current block with an inter choice both without its residual and with it, from one prediction; returns both full
+    /// costs, as <see cref="EncodeInter"/> gives each.
+    /// </summary>
+    private (long Full, long Skip) EncodeInterBoth(InterChoice choice, Snapshot start, long budget, bool chroma)
+    {
+        start.Restore(this);
+        if (!Apply(choice with { Skip = true }))
+        {
+            start.Restore(this);
+            return (long.MaxValue, long.MaxValue);
+        }
+
+        _reconstructor.InterPrediction(this);
+        for (int plane = 0; plane < _planes; plane++)
+        {
+            _planeDistortion[plane] = plane == 0 || chroma ? Distortion(plane, _b.Size) : 0;
+        }
+
+        long skip = long.MaxValue;
+        if (!_header.LosslessArray[_b.SegmentId] || _planeDistortion[0] + (chroma ? _planeDistortion[1] + _planeDistortion[2] : 0) == 0)
+        {
+            _reconstructor.InterDone(this);
+            skip = FinishInter(start, _b.Size, chroma);
+            budget = Math.Min(budget, skip);
+        }
+
+        // The residual, on the same prediction.
+        start.RestoreContexts(this);
+        Apply(choice with { Skip = false });
+        long cost = Av1Rate.RdCost(_rdmult, ModeRate(), 0);
+        cost = Add(cost, EncodePlane(0, _b.Size, Left(budget, cost), searchTypes: _winner || _profile.TypesInModeSearch));
+        if (chroma && cost != long.MaxValue)
+        {
+            cost = Add(cost, EncodePlane(1, _b.Size, Left(budget, cost)));
+            cost = Add(cost, EncodePlane(2, _b.Size, Left(budget, cost)));
+        }
+
+        if (cost == long.MaxValue)
+        {
+            start.Restore(this);
+            return (long.MaxValue, skip);
+        }
+
+        _reconstructor.InterDone(this);
+        return (FinishBlock(start, _b.Size, chroma), skip);
     }
 
     /// <summary>Settles a block coded without residual and returns its exact cost, as <see cref="FinishBlock"/> does.</summary>
@@ -1114,6 +1179,29 @@ internal sealed partial class Av1TileEncoder
             Av1CostSink rate = new(false);
             CodeMv(ref rate, row, col);
             return rate.Cost;
+        }
+
+        int joint = (row != 0 ? 2 : 0) | (col != 0 ? 1 : 0);
+        ref long jointCost = ref _mvJointCosts[joint];
+        if (jointCost < 0)
+        {
+            Av1CostSink rate = new(false);
+            rate.Symbol(_cdf, Av1FrameContext.Mv.Joints[0], 4, joint);
+            jointCost = rate.Cost;
+        }
+
+        return jointCost + MvComponentRate(0, row) + MvComponentRate(1, col);
+    }
+
+    /// <summary>
+    /// Gets a vector difference's rate from the kept rates while an inter frame is searched, its CDFs the frame's throughout
+    /// (<see cref="Av1TileRows"/>).
+    /// </summary>
+    private protected override long? KnownMvRate(int row, int col)
+    {
+        if (_header.FrameIsIntra || Math.Abs(row) > MvCostReach || Math.Abs(col) > MvCostReach)
+        {
+            return null;
         }
 
         int joint = (row != 0 ? 2 : 0) | (col != 0 ? 1 : 0);

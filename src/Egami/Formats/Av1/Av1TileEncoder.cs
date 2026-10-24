@@ -13,6 +13,9 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     private readonly Av1Reconstructor<ushort> _reconstructor;
     private readonly Av1EncoderSource _source;
     private readonly Av1SearchProfile _profile;
+
+    /// <summary>Whether intra blocks search the intra modes of a still picture, not the faster ones of a stream's frames.</summary>
+    private readonly bool _stillIntra;
     private long _frameRdmult;
     private int _sbQIndex;
     private long _rdmult;
@@ -25,6 +28,14 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     private readonly int[] _coeffs = new int[32 * 32];
     private readonly ushort[] _predicted = new ushort[64 * 64];
     private readonly long[] _planeDistortion = new long[3];
+
+    /// <summary>Each plane's coefficient rate as its transform blocks were last coded in full, with <see cref="_codedPlanes"/>.</summary>
+    private readonly long[] _planeRate = new long[3];
+
+    /// <summary>The planes whose coefficients <see cref="EncodePlane"/> last coded in full, one bit each, which <see cref="FinishBlock"/> reuses.</summary>
+    private int _codedPlanes;
+
+    private static readonly bool NoReuse = Environment.GetEnvironmentVariable("EGAMI_AV1_NOREUSE") is not null; // TEMP-TUNE
     private readonly Stack<Snapshot> _pool = new();
     private readonly Dictionary<int, QuantTable> _tables = [];
     private readonly Av1CoeffCosts _costs = new();
@@ -42,6 +53,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         _reconstructor = new Av1Reconstructor<ushort>(frame);
         _source = source;
         _profile = Av1SearchProfile.For(settings.Effort, frame.Header.CodedLossless);
+        _stillIntra = frame.Header.FrameIsIntra && !(settings.Stream && _profile.FastStreamIntra);
         _frameRdmult = _rdmult = Av1Rate.RdMultiplier(Math.Max(frame.Header.BaseQIdx, 1), frame.Sequence.BitDepth);
     }
 
@@ -87,7 +99,8 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             // At lower efforts: a block coded whole with no residual is not split, and rectangles are tried only where
             // splitting beat keeping the block whole.
             if (_profile.PrunePartitions && partition == Partition.Split && noneCost != long.MaxValue
-                && Av1Tables.BlockSizeWide[bsize] >= 16 && _frame.Grid[(miRow * _miCols) + miCol] is { Skip: true } whole && whole.Size == bsize)
+                && Av1Tables.BlockSizeWide[bsize] >= 16 && (_header.FrameIsIntra || Av1Tables.BlockSizeWide[bsize] <= _profile.SkipKeepsWhole)
+                && _frame.Grid[(miRow * _miCols) + miCol] is { Skip: true } whole && whole.Size == bsize)
             {
                 continue;
             }
@@ -114,6 +127,13 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             _rdmult = nodeRdmult;
             long cost = PartitionCost(miRow, miCol, bsize, hasRows, hasCols, partition);
             cost = cost >= limit ? long.MaxValue : Add(cost, EncodePartitionChoice(miRow, miCol, bsize, partition, hasRows, hasCols, limit - cost));
+            // At the efforts that say so, an inter frame keeps a block larger than 32x32 whole only without residual.
+            if (partition == Partition.None && cost != long.MaxValue && !_header.FrameIsIntra && Av1Tables.BlockSizeWide[bsize] > _profile.InterResidualBlock
+                && _frame.Grid[(miRow * _miCols) + miCol] is { Skip: false })
+            {
+                cost = long.MaxValue;
+            }
+
             if (partition == Partition.None)
             {
                 noneCost = cost;
@@ -131,11 +151,11 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
                 bestCost = cost;
                 if (best is null)
                 {
-                    best = Take(miRow, miCol, bsize, pixels: true);
+                    best = Take(miRow, miCol, bsize, pixels: true, levels: true);
                 }
                 else
                 {
-                    best.Save(this, miRow, miCol, bsize, pixels: true);
+                    best.Save(this, miRow, miCol, bsize, pixels: true, levels: true);
                 }
             }
         }
@@ -427,7 +447,8 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         LumaChoice bestLuma = default;
         long bestLumaCost = long.MaxValue;
         List<LumaChoice> lumaCandidates = LumaCandidates(bsize, lossless);
-        if (_profile.LumaShortlist > 0 && lumaCandidates.Count > _profile.LumaShortlist)
+        int lumaShortlist = _stillIntra ? _profile.LumaShortlist : _profile.InterFrameLumaShortlist;
+        if (lumaShortlist > 0 && lumaCandidates.Count > lumaShortlist)
         {
             _scores.Clear();
             for (int i = 0; i < lumaCandidates.Count; i++)
@@ -435,7 +456,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
                 _scores.Add((LumaPredictionCost(lumaCandidates[i], start), i));
             }
 
-            Keep(lumaCandidates, _profile.LumaShortlist);
+            Keep(lumaCandidates, lumaShortlist);
         }
 
         FindLumaPalettes(bsize);
@@ -497,7 +518,8 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             ChromaChoice bestChroma = new(Pred.Dc, 0, 0, 0);
             long bestChromaCost = long.MaxValue;
             List<ChromaChoice> chromaCandidates = ChromaCandidates(bsize, cfl);
-            if (_profile.ChromaShortlist > 0 && chromaCandidates.Count > _profile.ChromaShortlist)
+            int chromaShortlist = _stillIntra ? _profile.ChromaShortlist : _profile.InterFrameChromaShortlist;
+            if (chromaShortlist > 0 && chromaCandidates.Count > chromaShortlist)
             {
                 _scores.Clear();
                 for (int i = 0; i < chromaCandidates.Count; i++)
@@ -505,7 +527,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
                     _scores.Add((ChromaPredictionCost(chromaCandidates[i], afterLuma), i));
                 }
 
-                Keep(chromaCandidates, _profile.ChromaShortlist);
+                Keep(chromaCandidates, chromaShortlist);
             }
 
             FindChromaPalettes(bsize);
@@ -564,6 +586,16 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
 
         KeepSkipSegment();
         KeepColorMaps();
+
+        // The coefficients' rate as they were coded, their contexts as coding them left them.
+        int planes = chroma ? (1 << _planes) - 1 : 1;
+        bool coded = !_b.Skip && (_codedPlanes & planes) == planes && !NoReuse;
+        Span<byte> contexts = stackalloc byte[3 * 64];
+        if (coded)
+        {
+            SaveEntropy(contexts, planes);
+        }
+
         start.RestoreContexts(this);
 
         // A whole superblock without residual codes no quantizer delta, and keeps the one before.
@@ -575,10 +607,66 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         Span<bool> cdef = stackalloc bool[4];
         _cdefTransmitted.CopyTo(cdef);
         Av1CostSink rate = new(false);
-        CodeBlock(ref rate, _miRow, _miCol, bsize);
+        if (coded)
+        {
+            CodeBlock(ref rate, _miRow, _miCol, bsize, coefficients: false);
+            LoadEntropy(contexts, planes);
+            rate.Cost += _planeRate[0] + (chroma ? _planeRate[1] + _planeRate[2] : 0);
+        }
+        else
+        {
+            CodeBlock(ref rate, _miRow, _miCol, bsize);
+        }
+
+        _codedPlanes = 0;
         cdef.CopyTo(_cdefTransmitted);
         long distortion = _planeDistortion[0] + (chroma ? _planeDistortion[1] + _planeDistortion[2] : 0);
         return Av1Rate.RdCost(_rdmult, rate.Cost, distortion);
+    }
+
+    /// <summary>Copies the above and left entropy contexts of the current block's planes (one bit each in <paramref name="planes"/>) out.</summary>
+    private void SaveEntropy(Span<byte> contexts, int planes)
+    {
+        for (int plane = 0; plane < _planes; plane++)
+        {
+            if (((planes >> plane) & 1) != 0)
+            {
+                (int aOff, int lOff, int w, int h) = EntropySpan(plane);
+                _aboveEntropy[plane].AsSpan(aOff, w).CopyTo(contexts[(plane * 64)..]);
+                _leftEntropy[plane].AsSpan(lOff, h).CopyTo(contexts[((plane * 64) + 32)..]);
+            }
+        }
+    }
+
+    /// <summary>Puts back what <see cref="SaveEntropy"/> copied out.</summary>
+    private void LoadEntropy(ReadOnlySpan<byte> contexts, int planes)
+    {
+        for (int plane = 0; plane < _planes; plane++)
+        {
+            if (((planes >> plane) & 1) != 0)
+            {
+                (int aOff, int lOff, int w, int h) = EntropySpan(plane);
+                contexts.Slice(plane * 64, w).CopyTo(_aboveEntropy[plane].AsSpan(aOff));
+                contexts.Slice((plane * 64) + 32, h).CopyTo(_leftEntropy[plane].AsSpan(lOff));
+            }
+        }
+    }
+
+    /// <summary>Gets where the current block's entropy contexts sit in a plane's above and left contexts, and how many there are.</summary>
+    private (int Above, int Left, int Width, int Height) EntropySpan(int plane)
+    {
+        (int count, int txSize) = TransformBlocks(plane, _b.Size);
+        int minX = int.MaxValue, minY = int.MaxValue, maxX = 0, maxY = 0;
+        for (int i = 0; i < count; i++)
+        {
+            (int blkRow, int blkCol, _, _) = _places[plane][i];
+            minX = Math.Min(minX, blkCol);
+            minY = Math.Min(minY, blkRow);
+            maxX = Math.Max(maxX, blkCol + Av1Tables.TxSizeWideUnit[txSize]);
+            maxY = Math.Max(maxY, blkRow + Av1Tables.TxSizeHighUnit[txSize]);
+        }
+
+        return (_aboveOffset[plane] + minX, _leftOffset[plane] + minY, maxX - minX, maxY - minY);
     }
 
     /// <summary>
@@ -701,7 +789,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         bool angles = bsize >= Bs.B8x8 && _profile.AngleDeltas;
         bool filter = !lossless && _profile.FilterIntra && _sequence.EnableFilterIntra
             && Av1Tables.BlockSizeWide[bsize] <= 32 && Av1Tables.BlockSizeHigh[bsize] <= 32;
-        foreach (int mode in _header.FrameIsIntra ? _profile.LumaModes : _profile.InterFrameLumaModes)
+        foreach (int mode in _stillIntra ? _profile.LumaModes : _profile.InterFrameLumaModes)
         {
             int deltas = angles && Pred.IsDirectional(mode) ? 3 : 0;
             for (int delta = -deltas; delta <= deltas; delta++)
@@ -726,7 +814,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         List<ChromaChoice> list = _chromaCandidates;
         list.Clear();
         bool angles = bsize >= Bs.B8x8 && _profile.AngleDeltas;
-        foreach (int mode in _header.FrameIsIntra ? _profile.ChromaModes : _profile.InterFrameChromaModes)
+        foreach (int mode in _stillIntra ? _profile.ChromaModes : _profile.InterFrameChromaModes)
         {
             int deltas = angles && Pred.IsDirectional(mode) ? 3 : 0;
             for (int delta = -deltas; delta <= deltas; delta++)
@@ -889,6 +977,8 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     {
         long cost = 0;
         _planeDistortion[plane] = 0;
+        _planeRate[plane] = 0;
+        _codedPlanes &= ~(1 << plane);
         (int count, int txSize) = TransformBlocks(plane, bsize);
         for (int i = 0; i < count; i++)
         {
@@ -900,6 +990,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             }
         }
 
+        _codedPlanes |= 1 << plane;
         return cost;
     }
 
@@ -1077,6 +1168,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         if (keep)
         {
             _planeDistortion[plane] += distortion;
+            _planeRate[plane] += rate.Cost;
         }
         if (!keep)
         {
@@ -1409,10 +1501,14 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         return InverseScans[key] = inverse;
     }
 
-    private Snapshot Take(int miRow, int miCol, int bsize, bool pixels)
+    /// <summary>
+    /// Saves the state of a square area; its coefficient levels only with <paramref name="levels"/>, which a snapshot needs only when
+    /// it puts back a decision as it was coded: every candidate tried after a snapshot is put back codes its own levels anew.
+    /// </summary>
+    private Snapshot Take(int miRow, int miCol, int bsize, bool pixels, bool levels = false)
     {
         Snapshot snapshot = _pool.Count > 0 ? _pool.Pop() : new Snapshot(this);
-        snapshot.Save(this, miRow, miCol, bsize, pixels);
+        snapshot.Save(this, miRow, miCol, bsize, pixels, levels);
         return snapshot;
     }
 
@@ -1440,18 +1536,20 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         private readonly (int Lo, int Count)[] _aboveRanges = new (int, int)[3];
         private int _miRow, _miCol, _rows, _cols, _bw;
         private int _currentQIndex;
-        private bool _pixelsSaved;
+        private bool _pixelsSaved, _levelsSaved;
 
         internal Snapshot(Av1TileEncoder tile)
         {
+            // A superblock's samples, chroma widened by up to 8 luma samples each way.
+            int side = (Av1Tables.BlockSizeWide[tile._frame.SbSize] + 8) * (Av1Tables.BlockSizeHigh[tile._frame.SbSize] + 8);
             for (int plane = 0; plane < tile._planes; plane++)
             {
-                _pixels[plane] = new ushort[136 * 136];
-                _levels[plane] = new int[136 * 136];
+                _pixels[plane] = new ushort[side];
+                _levels[plane] = new int[side];
             }
         }
 
-        internal void Save(Av1TileEncoder t, int miRow, int miCol, int bsize, bool pixels)
+        internal void Save(Av1TileEncoder t, int miRow, int miCol, int bsize, bool pixels, bool levels = false)
         {
             int bw = Av1Tables.MiSizeWide[bsize], bh = Av1Tables.MiSizeHigh[bsize];
             (_miRow, _miCol, _bw) = (miRow, miCol, bw);
@@ -1482,6 +1580,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             }
 
             _pixelsSaved = pixels;
+            _levelsSaved = pixels && levels;
             if (!pixels)
             {
                 return;
@@ -1492,12 +1591,16 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
                 (int x, int y, int w, int h) = Area(t, plane, miRow, miCol, bw, bh);
                 _areas[plane] = (x, y, w, h);
                 ushort[] data = t._frame.Plane<ushort>(plane);
-                int[] levels = t._decisions.Levels[plane];
+                int[] coefficients = t._decisions.Levels[plane];
                 int stride = t._frame.Strides[plane];
                 for (int r = 0; r < h; r++)
                 {
                     data.AsSpan(((y + r) * stride) + x, w).CopyTo(_pixels[plane].AsSpan(r * w));
-                    levels.AsSpan(((y + r) * stride) + x, w).CopyTo(_levels[plane].AsSpan(r * w));
+                }
+
+                for (int r = 0; r < h && _levelsSaved; r++)
+                {
+                    coefficients.AsSpan(((y + r) * stride) + x, w).CopyTo(_levels[plane].AsSpan(r * w));
                 }
             }
         }
@@ -1533,6 +1636,10 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
                     for (int r = 0; r < h; r++)
                     {
                         _pixels[plane].AsSpan(r * w, w).CopyTo(data.AsSpan(((y + r) * stride) + x));
+                    }
+
+                    for (int r = 0; r < h && _levelsSaved; r++)
+                    {
                         _levels[plane].AsSpan(r * w, w).CopyTo(levels.AsSpan(((y + r) * stride) + x));
                     }
                 }
@@ -1614,6 +1721,15 @@ internal sealed class Av1SearchProfile
     /// <summary>Gets the largest block side the partition of an inter frame keeps whole.</summary>
     internal int InterMaxBlock { get; init; } = 64;
 
+    /// <summary>
+    /// Gets the largest block side of an inter frame that, coded whole without residual, is not tried split: larger ones may hide a
+    /// part that wants a residual, and leaving it out shows in the frames that predict from it.
+    /// </summary>
+    internal int SkipKeepsWhole { get; init; } = 128;
+
+    /// <summary>Gets the largest block side an inter frame keeps whole with a residual; larger whole blocks are coded without one.</summary>
+    internal int InterResidualBlock { get; init; } = 128;
+
     /// <summary>Gets the smallest block side the partition of an inter frame splits.</summary>
     internal int InterMinBlock { get; init; } = 4;
 
@@ -1630,6 +1746,9 @@ internal sealed class Av1SearchProfile
     internal int[] LumaModes { get; init; } = AllModes;
 
     internal int[] ChromaModes { get; init; } = AllModes;
+
+    /// <summary>Gets whether the intra frames of a stream (<see cref="Av1EncoderSettings.Stream"/>) search intra modes as inter frames do.</summary>
+    internal bool FastStreamIntra { get; init; }
 
     /// <summary>Gets the luma intra modes an intra block of an inter frame tries.</summary>
     internal int[] InterFrameLumaModes { get; init; } = AllModes;
@@ -1688,6 +1807,12 @@ internal sealed class Av1SearchProfile
 
     /// <summary>Gets how many chroma modes, ranked by their prediction alone, are coded in full; 0 for all.</summary>
     internal int ChromaShortlist { get; init; }
+
+    /// <summary>Gets how many luma modes of an intra block of an inter frame, ranked by their prediction alone, are coded in full; 0 for all.</summary>
+    internal int InterFrameLumaShortlist { get; init; }
+
+    /// <summary>Gets how many chroma modes of an intra block of an inter frame are coded in full; 0 for all.</summary>
+    internal int InterFrameChromaShortlist { get; init; }
 
     /// <summary>Gets whether partitions are pruned: no split of a whole block without residual, no rectangles where split lost.</summary>
     internal bool PrunePartitions { get; init; }
@@ -1754,6 +1879,7 @@ internal sealed class Av1SearchProfile
             MinBlock = effort <= 1 ? 8 : 4,
             InterMaxBlock = effort <= 2 ? 32 : 64,
             InterMinBlock = effort <= 4 ? 8 : 4,
+            SkipKeepsWhole = 32,
             SplitMotion = effort <= 4 ? 150 : effort <= 6 ? 200 : 0,
             Rectangles = effort >= 5,
             ExtendedPartitions = effort >= 7,
@@ -1765,6 +1891,8 @@ internal sealed class Av1SearchProfile
             TxDepth = effort <= 4 ? 0 : effort <= 5 ? 1 : 2,
             LumaShortlist = effort <= 2 ? 2 : effort <= 4 ? 3 : effort <= 6 ? 5 : effort <= 8 ? 8 : 0,
             ChromaShortlist = effort <= 4 ? 2 : effort <= 6 ? 3 : effort <= 8 ? 5 : 0,
+            InterFrameLumaShortlist = effort <= 4 ? 2 : effort <= 6 ? 5 : effort <= 8 ? 8 : 0,
+            InterFrameChromaShortlist = effort <= 4 ? 1 : effort <= 6 ? 3 : effort <= 8 ? 5 : 0,
             PrunePartitions = effort <= 6,
             TypesInModeSearch = effort >= 8,
             Trellis = effort >= 1,

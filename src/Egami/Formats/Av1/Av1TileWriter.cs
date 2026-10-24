@@ -212,7 +212,7 @@ internal partial class Av1TileCoder : Av1TileState
         s.SymbolFixed(gathered, 2, partition == Partition.Split ? 1 : 0);
     }
 
-    private protected void CodeBlock<TSink>(ref TSink s, int miRow, int miCol, int bsize)
+    private protected void CodeBlock<TSink>(ref TSink s, int miRow, int miCol, int bsize, bool coefficients = true)
         where TSink : struct, IAv1SymbolSink
     {
         Av1BlockInfo b = _frame.Grid[(miRow * _miCols) + miCol]!;
@@ -256,7 +256,7 @@ internal partial class Av1TileCoder : Av1TileState
             ResetEntropyContext(bsize);
         }
 
-        CodeResidual(ref s, bsize, xMis, yMis);
+        CodeResidual(ref s, bsize, xMis, yMis, coefficients);
     }
 
     private protected void CodeIntraFrameModeInfo<TSink>(ref TSink s)
@@ -834,7 +834,7 @@ internal partial class Av1TileCoder : Av1TileState
         }
     }
 
-    private protected void CodeResidual<TSink>(ref TSink s, int bsize, int xMis, int yMis)
+    private protected void CodeResidual<TSink>(ref TSink s, int bsize, int xMis, int yMis, bool coefficients = true)
         where TSink : struct, IAv1SymbolSink
     {
         Av1BlockInfo b = _b;
@@ -848,7 +848,7 @@ internal partial class Av1TileCoder : Av1TileState
             _frame.TxSizeMap.AsSpan(((_miRow + y) * _miCols) + _miCol, xMis).Fill((byte)b.TxSize);
         }
 
-        if (b.Skip)
+        if (b.Skip || !coefficients)
         {
             return;
         }

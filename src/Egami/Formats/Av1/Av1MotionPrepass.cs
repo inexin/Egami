@@ -67,33 +67,43 @@ internal sealed class Av1MotionPrepass
 
         int cols2 = (width + 63) / 64, rows2 = (height + 63) / 64;
         int cols1 = (width + 31) / 32, rows1 = (height + 31) / 32;
-        foreach (int rf in refs)
+        int n = refs.Length;
+        int[][] level2 = new int[n][], level1 = new int[n][];
+        for (int i = 0; i < n; i++)
         {
-            Av1ReferencePlane full = planes[rf]!, halfPlane = full.Half, quarterPlane = halfPlane.Half;
-            int[] level2 = new int[cols2 * rows2 * 3], level1 = new int[cols1 * rows1 * 3], level0 = new int[pass.Columns * pass.Rows * 3];
-            frame.For(rows2, row =>
-            {
-                for (int col = 0; col < cols2; col++)
-                {
-                    Exhaustive(quarter, stride / 4, quarterPlane, col * 16, row * 16, level2, ((row * cols2) + col) * 3);
-                }
-            });
-            frame.For(rows1, row =>
-            {
-                for (int col = 0; col < cols1; col++)
-                {
-                    Refine(half, stride / 2, halfPlane, col, row, level2, cols2, rows2, level1, cols1);
-                }
-            });
-            frame.For(pass.Rows, row =>
-            {
-                for (int col = 0; col < pass.Columns; col++)
-                {
-                    Refine(source, stride, full, col, row, level1, cols1, rows1, level0, pass.Columns);
-                }
-            });
-            pass._cells[rf] = level0;
+            level2[i] = new int[cols2 * rows2 * 3];
+            level1[i] = new int[cols1 * rows1 * 3];
+            pass._cells[refs[i]] = new int[pass.Columns * pass.Rows * 3];
         }
+
+        // Each level's rows of every reference at once, each reading the level before.
+        frame.For(n * rows2, job =>
+        {
+            int i = job / rows2, row = job % rows2;
+            Av1ReferencePlane plane = planes[refs[i]]!.Half.Half;
+            for (int col = 0; col < cols2; col++)
+            {
+                Exhaustive(quarter, stride / 4, plane, col * 16, row * 16, level2[i], ((row * cols2) + col) * 3);
+            }
+        });
+        frame.For(n * rows1, job =>
+        {
+            int i = job / rows1, row = job % rows1;
+            Av1ReferencePlane plane = planes[refs[i]]!.Half;
+            for (int col = 0; col < cols1; col++)
+            {
+                Refine(half, stride / 2, plane, col, row, level2[i], cols2, rows2, level1[i], cols1);
+            }
+        });
+        frame.For(n * pass.Rows, job =>
+        {
+            int i = job / pass.Rows, row = job % pass.Rows;
+            Av1ReferencePlane plane = planes[refs[i]]!;
+            for (int col = 0; col < pass.Columns; col++)
+            {
+                Refine(source, stride, plane, col, row, level1[i], cols1, rows1, pass._cells[refs[i]]!, pass.Columns);
+            }
+        });
 
         return pass;
     }

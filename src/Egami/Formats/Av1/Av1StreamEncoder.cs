@@ -103,6 +103,7 @@ public sealed class Av1StreamEncoder : IDisposable
     /// <summary>Encodes one frame from planes at the stream's size and depth, as <see cref="Encode(YuvRaster, Av1FramePlan)"/> does.</summary>
     internal Av1EncodedFrame EncodePlanes(Av1EncoderInput input, Av1FramePlan plan)
     {
+        long tStart = System.Diagnostics.Stopwatch.GetTimestamp(); // TEMP-TIMES
         ObjectDisposedException.ThrowIf(_disposed, this);
         Av1FrameKind kind = _started ? plan.Kind : Av1FrameKind.Key;
         if (kind == Av1FrameKind.Switch)
@@ -125,6 +126,7 @@ public sealed class Av1StreamEncoder : IDisposable
             ScreenContent = plan.ScreenContent,
             IntraBlockCopy = intra ? null : false,
             Parallelism = _parallelism,
+            Stream = true,
         };
         Av1SearchProfile profile = Av1SearchProfile.For(settings.Effort, settings.Lossless);
         Av1FrameParameters parameters = Av1Encoder.ParametersFor(input, _sequence, settings);
@@ -208,6 +210,11 @@ public sealed class Av1StreamEncoder : IDisposable
 
         Av1ObuWriter.Obu(data, Av1ObuType.Frame, payload);
         (long luma, long chroma) = SquaredErrors(input, reconstruction);
+        if (Environment.GetEnvironmentVariable("EGAMI_AV1_TIMES") is not null) // TEMP-TIMES
+        {
+            Console.Error.WriteLine($"av1 total {System.Diagnostics.Stopwatch.GetElapsedTime(tStart).TotalMilliseconds:F0}");
+        }
+
         byte[] unit = [];
         if (plan.Show)
         {
