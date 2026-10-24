@@ -897,24 +897,50 @@ internal sealed class H264Inter
                 break;
         }
 
-        for (int j = 0; j < h; j++)
+        // One loop per case keeps the rows free of branches.
+        if (two)
         {
-            Vector128<byte> v = Vector128.LoadUnsafe(ref a);
-            if (two)
-            {
-                v = Sse2.Average(v, Vector128.LoadUnsafe(ref b));
-            }
-
             if (average)
             {
-                v = Sse2.Average(v, Vector128.LoadUnsafe(ref first));
-                first = ref Unsafe.Add(ref first, 16);
+                for (int j = 0; j < h; j++)
+                {
+                    Vector128<byte> v = Sse2.Average(Vector128.LoadUnsafe(ref a), Vector128.LoadUnsafe(ref b));
+                    Sse2.Average(v, Vector128.LoadUnsafe(ref first)).StoreUnsafe(ref dst);
+                    a = ref Unsafe.Add(ref a, aStride);
+                    b = ref Unsafe.Add(ref b, 16);
+                    first = ref Unsafe.Add(ref first, 16);
+                    dst = ref Unsafe.Add(ref dst, dstStride);
+                }
             }
-
-            v.StoreUnsafe(ref dst);
-            a = ref Unsafe.Add(ref a, aStride);
-            b = ref Unsafe.Add(ref b, 16);
-            dst = ref Unsafe.Add(ref dst, dstStride);
+            else
+            {
+                for (int j = 0; j < h; j++)
+                {
+                    Sse2.Average(Vector128.LoadUnsafe(ref a), Vector128.LoadUnsafe(ref b)).StoreUnsafe(ref dst);
+                    a = ref Unsafe.Add(ref a, aStride);
+                    b = ref Unsafe.Add(ref b, 16);
+                    dst = ref Unsafe.Add(ref dst, dstStride);
+                }
+            }
+        }
+        else if (average)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                Sse2.Average(Vector128.LoadUnsafe(ref a), Vector128.LoadUnsafe(ref first)).StoreUnsafe(ref dst);
+                a = ref Unsafe.Add(ref a, aStride);
+                first = ref Unsafe.Add(ref first, 16);
+                dst = ref Unsafe.Add(ref dst, dstStride);
+            }
+        }
+        else
+        {
+            for (int j = 0; j < h; j++)
+            {
+                Vector128.LoadUnsafe(ref a).StoreUnsafe(ref dst);
+                a = ref Unsafe.Add(ref a, aStride);
+                dst = ref Unsafe.Add(ref dst, dstStride);
+            }
         }
     }
 
