@@ -496,7 +496,8 @@ V5.3: VP9 encoding. API review pending (combined encoders review).
   ahead. Egami matches libvpx's PSNR-Y BD-rate at about `--cpu-used=4` on crowd_run, park_joy and old_town_cross and `=2` on
   ducks_take_off, taking 0.65 to 1.8 times its time there on one thread and 1.1 to 2.0 times on all cores.
 
-V5.9 stage A: AIFF and AIFF-C, and G.711.
+V5.9 stage A: AIFF and AIFF-C, and G.711. V5.9 (stages A to D and the CLI) API reviewed and accepted 2026-10-24 (all as
+recommended); it ships in this release with the rest of 0.6.0.
 
 ### AIFF
 
@@ -571,8 +572,9 @@ V5.9 tasks 14, 15 and 17: AC-3 decoding.
   reads AC-3 from .ac3 files and from MP4, Matroska, AVI and CAF tracks. E-AC-3 still passes through.
 - `AudioDecoderOptions.Ac3` takes an `Ac3DecoderOptions`: `DynamicRange` (1 by default, the stream's dynamic range control in
   full; 0 turns it off) and `Downmix`, a layout to mix to with the stream's center and surround mix levels (A/52's LoRo
-  equations, scaled so the mix cannot clip). AudioReader hands out frames in the downmix layout. Dialogue normalization is
-  not applied.
+  equations, scaled so the mix cannot clip). AudioReader hands out frames in the downmix layout, and an
+  `AudioReaderOptions.Layout` of mono or stereo on a wider AC-3 track uses this downmix too unless `Downmix` is set. Dialogue
+  normalization is not applied.
 - Within 2^-14 and at 90 dB SNR or more of FFmpeg's float decode on 24 FFmpeg-encoded streams (every mode FFmpeg writes, 32 to
   640 kbit/s, LFE and coupling on and off, dual mono), made by `tools/video/make-audio-corpus.py --ac3-decode`.
 - Fuzz target `ac3raw`.
