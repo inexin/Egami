@@ -128,9 +128,6 @@ internal sealed record CoreSettings
     /// <summary>The shown frames of a pyramid's group, its alternate reference included: 16 makes five layers.</summary>
     public int PyramidGroup { get; init; } = 16;
 
-    /// <summary>Whether a pyramid's leaves are references for later frames too (they are not by default).</summary>
-    public bool ReferencedLeaves { get; init; }
-
     /// <summary>A pyramid leaf's step against an inter frame's in constant quality.</summary>
     public double LeafStep { get; init; } = 1.0;
 
@@ -314,7 +311,7 @@ internal sealed class EncoderCore : IDisposable
                 throw new InvalidOperationException($"The pyramid shows frame {step.Index} where frame {frame.Index} is next.");
             }
 
-            (layer, referenced) = (step.Layer, step.Kind != StepKind.Leaf || _settings.ReferencedLeaves || frame.Key);
+            (layer, referenced) = (step.Layer, step.Kind != StepKind.Leaf || frame.Key);
             type = step.Kind == StepKind.Shown ? FrameType.Overlay : type;
         }
 
@@ -485,7 +482,7 @@ internal sealed class EncoderCore : IDisposable
                 FrameStats stats = Stats(step.Index);
                 _group[n++] = step.Kind switch
                 {
-                    StepKind.Hidden => new GroupFrame(FrameType.AltRef, HiddenComplexity(step.From, step.Index), LayerFactor(step.Layer)),
+                    StepKind.Hidden => new GroupFrame(step.Layer == 0 ? FrameType.AltRef : FrameType.Hidden, HiddenComplexity(step.From, step.Index), LayerFactor(step.Layer)),
                     StepKind.Shown => new GroupFrame(FrameType.Overlay, OverlayComplexity(stats)),
                     _ when step.Index == start && first.Key => new GroupFrame(FrameType.Key, stats.Intra, _keyFactor),
                     _ => new GroupFrame(FrameType.Inter, stats.Inter, LeafFactor),
@@ -770,14 +767,15 @@ internal sealed class EncoderCore : IDisposable
         }
 
         long complexity = from >= 0 ? HiddenComplexity(from, target) : AltRefComplexity(target);
-        int quantizer = _rate.Next(FrameType.AltRef, complexity, factor);
+        FrameType type = layer == 0 ? FrameType.AltRef : FrameType.Hidden;
+        int quantizer = _rate.Next(type, complexity, factor);
         YuvRaster<byte> filtered = _pictures.Rent(false);
         Filter(center, quantizer, filtered);
-        FrameDecision decision = new(FrameType.AltRef, quantizer, AltRefAhead: true, RefreshGolden: false, target, layer);
+        FrameDecision decision = new(type, quantizer, AltRefAhead: true, RefreshGolden: false, target, layer);
         CodedFrame coded = full is null ? _coder.Code(filtered, decision) : _coder.Code(filtered, full, decision);
         long bits = coded.Bits ?? (coded.Data.Length * 8L);
-        _rate.Done(FrameType.AltRef, coded.Quantizer, bits, complexity);
-        Trace?.Invoke($"{target} AltRef q{coded.Quantizer} {bits / 8}B c{complexity}");
+        _rate.Done(type, coded.Quantizer, bits, complexity);
+        Trace?.Invoke($"{target} {type} q{coded.Quantizer} {bits / 8}B c{complexity}");
         _pictures.Return(filtered);
         if (!_coder.MergesHiddenFrames)
         {

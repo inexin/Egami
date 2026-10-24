@@ -17,6 +17,9 @@ internal enum FrameType
 
     /// <summary>The shown frame at the alternate reference's place, which mostly copies it.</summary>
     Overlay,
+
+    /// <summary>A hidden frame of a pyramid below its alternate reference, coded unfiltered ahead of its place (AV1).</summary>
+    Hidden,
 }
 
 /// <summary>A frame of a group as rate control plans it: its type, how hard it is to code, and its step against an inter frame's (0 for the type's usual).</summary>
@@ -51,6 +54,12 @@ internal sealed record RateSettings
     /// <summary>Each frame type's step against an inter frame's in constant quality, or null for VP8's (0.7, 1, 0.8, 0.7, 1).</summary>
     public double[]? StepFactors { get; init; }
 
+    /// <summary>
+    /// The frames ahead that one-pass and two-pass bitrate modes budget over, which spreads what a frame overspends; null (the
+    /// default) for two seconds' worth. AV1's pyramids budget over two groups, so a group's costly base frames are paid back soon.
+    /// </summary>
+    public int? HorizonFrames { get; init; }
+
     /// <summary>For two passes, every frame's complexity from the first pass, in display order.</summary>
     public long[]? FirstPass { get; init; }
 
@@ -80,11 +89,11 @@ internal sealed record RateSettings
 internal sealed class RateController
 {
     /// <summary>Each type's step size relative to an inter frame's in constant quality.</summary>
-    private static readonly double[] StepFactors = [0.70, 1.0, 0.80, 0.70, 1.0];
+    private static readonly double[] StepFactors = [0.70, 1.0, 0.80, 0.70, 1.0, 0.85];
 
     private readonly RateSettings _settings;
-    private readonly double[] _correction = [2.0, 0.25, 0.4, 0.5, 0.25];
-    private readonly int[] _corrected = new int[5];
+    private readonly double[] _correction = [2.0, 0.25, 0.4, 0.5, 0.25, 0.4];
+    private readonly int[] _corrected = new int[6];
     private readonly double _frameBits;
     private readonly List<GroupFrame> _plan = [];
     private double _step;
@@ -130,6 +139,7 @@ internal sealed class RateController
             _correction[(int)FrameType.Golden] = inter * 1.6;
             _correction[(int)FrameType.AltRef] = inter * 2;
             _correction[(int)FrameType.Overlay] = inter;
+            _correction[(int)FrameType.Hidden] = inter * 1.5;
         }
         else if (_settings.InterFromKeyProbe)
         {
@@ -138,6 +148,7 @@ internal sealed class RateController
             _correction[(int)FrameType.Golden] = key;
             _correction[(int)FrameType.AltRef] = key;
             _correction[(int)FrameType.Overlay] = key;
+            _correction[(int)FrameType.Hidden] = key;
         }
     }
 
@@ -190,7 +201,7 @@ internal sealed class RateController
             GroupFrame f = _plan[i];
             double n = _correction[(int)f.Type] * Effective(f.Complexity) / Power(Factor(f.Type, f.StepFactor));
             need += n;
-            if (f.Type != FrameType.AltRef)
+            if (f.Type is not (FrameType.AltRef or FrameType.Hidden))
             {
                 shown++;
             }
@@ -208,7 +219,7 @@ internal sealed class RateController
             shown++;
         }
 
-        int horizon = Math.Max(shown, (int)(2 * s.FrameRate));
+        int horizon = Math.Max(shown, s.HorizonFrames ?? (int)(2 * s.FrameRate));
         double perInter = inter > 0 ? interNeed / inter : _correction[(int)FrameType.Inter] * Effective(complexity);
         if (s.PlanHiddenAhead && GroupNeedPerShown() is > 0 and var perShown)
         {
@@ -258,7 +269,7 @@ internal sealed class RateController
             }
 
             need += _correction[(int)f.Type] * Effective(f.Complexity) / Power(Factor(f.Type, f.StepFactor));
-            if (f.Type != FrameType.AltRef)
+            if (f.Type is not (FrameType.AltRef or FrameType.Hidden))
             {
                 shown++;
             }
@@ -335,7 +346,7 @@ internal sealed class RateController
     {
         RateSettings s = _settings;
         _spent += bits;
-        if (type != FrameType.AltRef)
+        if (type is not (FrameType.AltRef or FrameType.Hidden))
         {
             _framesDone++;
             _bufferLevel = Math.Min(s.BufferSize, _bufferLevel + _frameBits);

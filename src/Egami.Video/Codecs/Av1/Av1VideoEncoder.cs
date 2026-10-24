@@ -87,22 +87,21 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
             SceneCuts = options.SceneCutKeyframes,
             AltRef = av1.AlternateReference && !realtime,
             Pyramid = av1.Pyramid,
-            TemporalModel = av1.Pyramid && Environment.GetEnvironmentVariable("EGAMI_AV1X")?.Contains("notpl", StringComparison.Ordinal) != true,
+            // The temporal model sets the keyframe's and the alternate reference's steps from how much is reused: 1.3 and 1.1 times
+            // a leaf's over the square root of the importance, kept within 0.5 to 0.8 of it (tuned on the derf clips at 720p).
+            TemporalModel = av1.Pyramid,
             Lookahead = av1.Pyramid ? 40 : EncoderCore.Lookahead,
-            ImportanceStep = X("is", 1.0),
-            KeyImportanceStep = X("ks", 0.9),
-            ImportanceStepMin = X("ismin", 0.25),
-            ImportanceStepMax = X("ismax", 0.8),
-            LeafStep = X("leaf", 1.0),
-            FilterKeyframes = X("kf", 0) != 0,
-            AdaptiveFilter = X("atf", 0) != 0,
-            FilterReach = X("tfc", 3),
-            FilterReferenceQuantizer = (int)X("tfq", 96),
-            ReferencedLeaves = X("rl", 0) != 0,
+            ImportanceStep = 1.3,
+            KeyImportanceStep = 1.1,
+            ImportanceStepMin = 0.5,
+            ImportanceStepMax = 0.8,
+            FilterKeyframes = av1.Pyramid,
+            AdaptiveFilter = av1.TemporalFilterStrength is null,
+            FilterReach = 4,
             FreeOverlays = true,
             GoldenInterval = av1.GoldenInterval,
-            FilterFrames = (int)X("tff", av1.TemporalFilterFrames),
-            FilterStrength = (int)X("tfs", av1.TemporalFilterStrength),
+            FilterFrames = av1.TemporalFilterFrames,
+            FilterStrength = av1.TemporalFilterStrength ?? 5,
             Parallelism = context.Egami.MaxParallelism,
 
             // AV1's hidden frames carry the group as VP9's do: every frame before them predicts from them, from both sides.
@@ -125,7 +124,8 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
 
                 // AV1's 8-bit AC steps are VP9's.
                 Steps = Vp9.Vp9Tables.AcQLookup8,
-                StepFactors = [0.45, 1.0, 0.8, 0.7, 1.0],
+                StepFactors = [0.45, 1.0, 0.8, 0.7, 1.0, 0.85],
+                HorizonFrames = av1.Pyramid && !realtime ? 32 : null,
                 PlanHiddenAhead = true,
                 InterFromKeyProbe = true,
                 FirstPass = options.RateControl == RateControlMode.Bitrate && options.FirstPassStats is { } stats ? FirstPassComplexities(stats) : null,
@@ -135,20 +135,6 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
     }
 
     public VideoTrackInfo Track { get; private set; }
-
-    private static double X(string name, double fallback)
-    {
-        foreach (string part in (Environment.GetEnvironmentVariable("EGAMI_AV1X") ?? "").Split(','))
-        {
-            string[] kv = part.Split('=');
-            if (kv.Length == 2 && kv[0] == name)
-            {
-                return double.Parse(kv[1], System.Globalization.CultureInfo.InvariantCulture);
-            }
-        }
-
-        return fallback;
-    }
 
     /// <summary>Gets the rate controller once the first frame is in, for tests.</summary>
     internal RateController? Rate => _core?.Rate;
@@ -202,6 +188,7 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
                 Effort = _options.Effort ?? DefaultEffort,
                 ErrorResilient = _av1.ErrorResilient ?? realtime,
                 DeltaQuantizers = _av1.AdaptiveQuantization,
+                VarianceBoost = _av1.AdaptiveQuantization,
                 ScreenContent = _av1.ScreenContent,
             };
             _coder = new Av1FrameCoder(sequence, plan, HdrObus(frame.Hdr), _hdr10Plus, _context.Egami);

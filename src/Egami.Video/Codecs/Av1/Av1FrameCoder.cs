@@ -65,7 +65,7 @@ internal sealed class Av1FrameCoder : IFrameCoder
                     return Shown(key, index, decision.Quantizer);
                 }
 
-            case FrameType.AltRef:
+            case FrameType.AltRef or FrameType.Hidden:
                 {
                     int slot = Victim(hidden: true);
                     Av1EncodedFrame hidden = _encoder.Encode(source, common with

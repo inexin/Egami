@@ -49,8 +49,9 @@ public class Av1EncoderTests
     }
 
     [Fact]
-    public void PyramidAddsAHiddenFrameHalfwayToTheAlternateReference()
+    public void PyramidHidesFramesHalfwayDownToPairs()
     {
+        // A group of 16: the alternate reference, then hidden frames at 8, 4, 2, 6, 12, 10 and 14, each shown again later.
         using Clip clip = Clip.Moving(64, 48, 20, speed: 0);
         VideoEncoderOptions options = new() { Width = 64, Height = 48, Effort = 1, Av1 = new Av1EncoderOptions { GoldenInterval = 16 } };
         (_, List<EncodedPacket> pyramid) = Encode(clip, options);
@@ -58,7 +59,7 @@ public class Av1EncoderTests
         int existing = pyramid.Count(p => ShowsExisting(p.Data.Span)), flatExisting = flat.Count(p => ShowsExisting(p.Data.Span));
         pyramid.ForEach(p => p.Dispose());
         flat.ForEach(p => p.Dispose());
-        Assert.True(existing > flatExisting, $"{existing} frames shown again with the pyramid, {flatExisting} without");
+        Assert.True(existing >= 6 && flatExisting <= 2, $"{existing} frames shown again with the pyramid, {flatExisting} without");
     }
 
     [Fact]

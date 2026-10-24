@@ -450,7 +450,7 @@ Egami.Video.Codecs.Av1EncoderOptions.ScreenContent.get -> bool?
 Egami.Video.Codecs.Av1EncoderOptions.ScreenContent.init -> void
 Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames.get -> int
 Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterFrames.init -> void
-Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength.get -> int
+Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength.get -> int?
 Egami.Video.Codecs.Av1EncoderOptions.TemporalFilterStrength.init -> void
 Egami.Video.Codecs.Av1Packets
 Egami.Video.Codecs.CodecHeaderReader

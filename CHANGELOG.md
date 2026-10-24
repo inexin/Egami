@@ -659,11 +659,18 @@ V5.4: AV1 encoding, through Egami's `Av1StreamEncoder` (Egami 2.9.9). API review
   with the encoder core's keyframes, groups and rate control modes on the shared `Quality` (0 to 100, default 60, the same
   quantizer steps as VP9) and `Effort` (0 to 10, default 4) scales; `Quantizer` is AV1's base_q_idx, 0 to 255 (0 lossless).
   Each packet is a temporal unit; the track's av1C is built from the sequence header.
-- Hierarchical groups: each group's hidden alternate reference and a hidden frame halfway to it (a two-level pyramid, ALTREF2)
-  are coded ahead, lead the next shown frame's temporal unit, and are shown at their own place with `show_existing_frame`, a
-  packet of a few bytes, instead of an overlay frame. The frames between read their three nearest past frames as LAST to
-  LAST3, the golden frame and the hidden frames ahead as BWDREF, ALTREF2 and ALTREF; each refreshes a slot nothing needs any
-  more.
+- Hierarchical groups: each group of 16 frames is a five-layer pyramid (Phase 2.9.11 stage B). Its hidden alternate reference,
+  then hidden frames halfway to it, halfway again and down to pairs, are coded ahead, lead the next shown frame's temporal unit,
+  and are shown at their own place with `show_existing_frame`, a packet of a few bytes, instead of an overlay frame. The frames
+  left between them (the leaves) predict from both sides and refresh no slot. Every frame reads its three nearest past frames as
+  LAST to LAST3, the golden frame and the hidden frames ahead as BWDREF, ALTREF2 and ALTREF. Each frame's layer goes to the AV1
+  encoder, which weighs rate more the deeper the layer; the steps fall from the leaves' halfway toward the alternate reference's
+  at each layer up.
+- Before a group is coded, it and the group after it run through `Av1StreamEncoder.Analyze`: the keyframe's and the alternate
+  reference's steps fall with the square root of how much the frames after them reuse them, the base frames get superblock
+  quantizers and the frames above them block multipliers from the same analysis. Keyframes and alternate references are blended
+  by the temporal filter, whose strength follows each picture's noise and the frame's quantizer (`TemporalFilterStrength` null,
+  the default).
 - Main, High and Professional profiles: 8, 10 and 12 bits, 4:2:0, 4:2:2 and 4:4:4, from the frames' planes or
   `Av1EncoderOptions.BitDepth`. The frames' color code points and 4:2:0 chroma siting go into the sequence header and the
   container; static HDR metadata into content light level and mastering display metadata OBUs on every keyframe and into the
