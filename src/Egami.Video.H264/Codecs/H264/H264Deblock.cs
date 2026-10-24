@@ -451,6 +451,15 @@ internal sealed class H264Deblock
         Vector256<short> avg = (p0 + q0 + one) >> 1;
         Vector256<short> np1 = Vector256.ConditionalSelect(ap, p1 + Vector256.Min(Vector256.Max((p2 + avg - (p1 << 1)) >> 1, -tc0), tc0), p1);
         Vector256<short> nq1 = Vector256.ConditionalSelect(aq, q1 + Vector256.Min(Vector256.Max((q2 + avg - (q1 << 1)) >> 1, -tc0), tc0), q1);
+        if (strongBs == Vector256<short>.Zero)
+        {
+            // Inter edges have bS below 4: only the normal filter applies, on p1 to q1.
+            p0 = Vector256.ConditionalSelect(filter, np0, p0);
+            q0 = Vector256.ConditionalSelect(filter, nq0, q0);
+            p1 = Vector256.ConditionalSelect(filter, np1, p1);
+            q1 = Vector256.ConditionalSelect(filter, nq1, q1);
+            return;
+        }
 
         Vector256<short> small = Vector256.LessThan(Vector256.Abs(p0 - q0), (vAlpha >> 2) + two);
         Vector256<short> strongP = ap & small, strongQ = aq & small;
