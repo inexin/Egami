@@ -112,6 +112,8 @@
 => analyze in.mkv --detect black --black-min 0.5 --black-ratio 0.98 --ffmpeg-log blackdetect | ffmpeg -i in.mkv -vf blackdetect=d=0.5:pic_th=0.98 -f null -
 => analyze in.mkv --detect black,freeze --freeze-noise -60dB --freeze-min 2 --ffmpeg-log blackdetect,freezedetect | ffmpeg -i in.mkv -vf blackdetect,freezedetect=n=-60dB:d=2 -an -f null -
 => analyze in.mkv --detect crop --crop-limit 24 --crop-round 16 --start 60 --duration 10 --ffmpeg-log cropdetect | ffmpeg -ss 60 -i in.mkv -vf cropdetect=limit=24:round=16 -t 10 -f null -
+=> analyze in.mkv --detect crop --crop-round 16 --ffmpeg-log cropdetect | ffmpeg -i in.mkv -vf cropdetect -f null -
+=> analyze in.mkv --detect crop --crop-round 2 --ffmpeg-log cropdetect | ffmpeg -i in.mkv -vf cropdetect=round=2 -f null -
 => analyze in.mkv --detect interlace --ffmpeg-log idet | ffmpeg -i in.mkv -vf idet -frames:v 500 -an -f null -
 => analyze in.mkv --detect signal --ffmpeg-log signalstats | ffmpeg -i in.mkv -vf signalstats -f null /dev/null
 => analyze in.mkv --detect blur,blockiness --ffmpeg-log blurdetect,blockdetect | ffmpeg -i in.mkv -vf blurdetect,blockdetect -f null -

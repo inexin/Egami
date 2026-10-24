@@ -166,12 +166,20 @@ public sealed class FfmpegModeTests
         Assert.Contains("[Parsed_silencedetect_0 @ egami] silence_start: 1", log);
         Assert.Contains(log, l => l.StartsWith("[Parsed_silencedetect_0 @ egami] silence_end: 3.4", StringComparison.Ordinal) && l.Contains(" | silence_duration: 2.4", StringComparison.Ordinal));
         Assert.Contains("[Parsed_volumedetect_1 @ egami] max_volume: -18.0 dB", log);
-        Assert.Contains("[Parsed_ebur128_2 @ egami]     I:         -18.3 LUFS", log);
+        Assert.Contains(log, l => l.StartsWith("[Parsed_volumedetect_1 @ egami] histogram_18db: ", StringComparison.Ordinal));
+
+        // ffmpeg prefixes only the first line of the ebur128 summary, and lists both gates.
+        Assert.Contains("[Parsed_ebur128_2 @ egami] Summary:", log);
+        Assert.Contains("    I:         -18.3 LUFS", log);
+        Assert.Contains(log, l => l.StartsWith("    Threshold: ", StringComparison.Ordinal) && l.EndsWith(" LUFS", StringComparison.Ordinal));
 
         // The same as analyze with --ffmpeg-log.
         ToolRun native = tool.Run("analyze", "clip.mkv", "-d", "black,silence,levels,loudness", "--black-min", "1", "--silence-min", "1",
             "--ffmpeg-log", "blackdetect,silencedetect,volumedetect,ebur128");
         Assert.Equal(run.Error.Split('\n').Where(l => l.StartsWith('[')), native.Error.Split('\n').Where(l => l.StartsWith('[')));
+        ToolRun crop = tool.Run("ffmpeg", "-i", "clip.mkv", "-vf", "cropdetect", "-f", "null", "-");
+        Assert.Contains(crop.Error.Split('\n'), l => System.Text.RegularExpressions.Regex.IsMatch(l,
+            @"^\[Parsed_cropdetect_0 @ egami\] x1:\d+ x2:\d+ y1:\d+ y2:\d+ w:\d+ h:\d+ x:\d+ y:\d+ pts:\d+ t:\d+\.\d{6} limit:0\.094118 crop=\d+:\d+:\d+:\d+\r?$"));
         Assert.Equal(2, tool.Run("analyze", "clip.mkv", "-d", "black", "--ffmpeg-log", "blackdetect", "--json").Code);
         Assert.Equal(2, tool.Run("analyze", "clip.mkv", "-d", "black", "--ffmpeg-log", "loudnorm").Code);
     }
