@@ -23,6 +23,11 @@ Usage, from the repo root:
                                                        tests/video/corpus/audio/alac-files (add --local to run FFmpeg here).
   python tools/video/make-audio-corpus.py --ac3        V5.9: raw AC-3 and E-AC-3, and both in MP4 and Matroska, into
                                                        tests/video/corpus/audio/ac3 (add --local to use the local ffmpeg).
+  python tools/video/make-audio-corpus.py --ac3-decode V5.9: FFmpeg-encoded AC-3 at 32 to 640 kbit/s in every channel mode FFmpeg's
+                                                       encoder has, LFE on and off, coupling on and off, into
+                                                       tests/video/corpus/audio/ac3-decode (checked in), each with FFmpeg's float
+                                                       decode (.f32.gz) of the stream with its dither flags
+                                                       cleared. Add --local to run FFmpeg from the PATH.
   python tools/video/make-audio-corpus.py --caf        V5.9: CAF clips (PCM, G.711, FLAC, ALAC, Opus, MP3, AC-3) into
                                                        tests/video/corpus/audio/caf (checked in) with FFmpeg's decode MD5 for the
                                                        lossless ones and ffprobe's packet count for every clip. Add --local to run
@@ -456,6 +461,94 @@ def make_ac3(local):
         f.write("\n")
 
 
+# name: (FFmpeg channel layout, rate, bit rate, extra encoder arguments). The source puts a tone, a pink-noise bed and short chirp
+# bursts (transients) in every channel, each channel different, so that bit allocation, coupling and rematrixing all have work.
+AC3_DECODE_OUT = os.path.join(OUT, "ac3-decode")
+AC3_DECODE_CLIPS = {
+    "mono-32k.ac3": ("mono", 48000, "32k", ""),
+    "mono-lfe-64k-44k.ac3": ("FC+LFE", 44100, "64k", ""),
+    "stereo-40k.ac3": ("stereo", 48000, "40k", ""),
+    "stereo-56k-32k.ac3": ("stereo", 32000, "56k", ""),
+    "stereo-96k-cpl.ac3": ("stereo", 48000, "96k", "-channel_coupling 1 -cpl_start_band 1"),
+    "stereo-128k-cpl0.ac3": ("stereo", 44100, "128k", "-channel_coupling 1 -cpl_start_band 0"),
+    "stereo-160k-nocpl.ac3": ("stereo", 48000, "160k", "-channel_coupling 0"),
+    "stereo-192k-noremat.ac3": ("stereo", 48000, "192k", "-channel_coupling 0 -stereo_rematrixing 0"),
+    "stereo-lfe-224k-44k.ac3": ("2.1", 44100, "224k", ""),
+    "3-0-256k.ac3": ("3.0", 48000, "256k", ""),
+    "3-0-lfe-320k-32k.ac3": ("3.1", 32000, "320k", ""),
+    "2-1-112k-cpl.ac3": ("3.0(back)", 48000, "112k", "-channel_coupling 1"),
+    "2-1-lfe-256k.ac3": ("FL+FR+LFE+BC", 48000, "256k", "-channel_coupling 0"),
+    "3-1-384k.ac3": ("4.0", 44100, "384k", ""),
+    "3-1-lfe-448k.ac3": ("4.1", 48000, "448k", ""),
+    "2-2-80k-cpl.ac3": ("quad(side)", 48000, "80k", "-channel_coupling 1 -cpl_start_band 5"),
+    "2-2-320k.ac3": ("quad", 48000, "320k", "-channel_coupling 0"),
+    "3-2-448k.ac3": ("5.0(side)", 48000, "448k", ""),
+    "3-2-lfe-192k-cpl.ac3": ("5.1(side)", 48000, "192k", "-channel_coupling 1 -center_mixlev 0.707 -surround_mixlev 0.707"),
+    "3-2-lfe-384k.ac3": ("5.1(side)", 48000, "384k", ""),
+    "3-2-lfe-512k-44k.ac3": ("5.1(side)", 44100, "512k", "-channel_coupling 0"),
+    "3-2-lfe-576k-32k.ac3": ("5.1", 32000, "576k", ""),
+    "3-2-lfe-640k.ac3": ("5.1(side)", 48000, "640k", "-channel_coupling 0"),
+    "dual-mono-192k.ac3": ("stereo", 48000, "192k", "-channel_coupling 0"),
+    "dither-stereo-96k.ac3": ("stereo", 48000, "96k", ""),
+    "dither-3-2-lfe-448k.ac3": ("5.1(side)", 48000, "448k", ""),
+}
+
+
+def ac3_source(layout, rate, seconds=0.25):
+    channels = {"mono": 1, "stereo": 2, "FC+LFE": 2, "2.1": 3, "3.0": 3, "3.0(back)": 3, "3.1": 4, "FL+FR+LFE+BC": 4, "4.0": 4,
+                "quad": 4, "quad(side)": 4, "4.1": 5, "5.0(side)": 5, "5.1": 6, "5.1(side)": 6}[layout]
+    tones = [220, 277, 330, 440, 554, 659]
+    inputs = ""
+    for c in range(channels):
+        expr = f"0.35*sin(2*PI*{tones[c]}*t)+0.3*sin(2*PI*(300+{c}*150)*t*(1+40*t))*lt(mod(t+{c}*0.013\\,0.07)\\,0.003)"
+        inputs += f"-f lavfi -i \"aevalsrc='{expr}':s={rate}:d={seconds}\" "
+        inputs += f"-f lavfi -i anoisesrc=color=pink:seed={c + 1}:amplitude=0.12:sample_rate={rate}:duration={seconds} "
+    mixes = "".join(f"[{2 * c}][{2 * c + 1}]amix=inputs=2:normalize=0[m{c}];" for c in range(channels))
+    pads = "".join(f"[m{c}]" for c in range(channels))
+    merge = f"{pads}amerge=inputs={channels}," if channels > 1 else f"{pads}anull,"
+    return channels, inputs + f"-filter_complex \"{mixes}{merge}channelmap=channel_layout={layout}[out]\" -map \"[out]\""
+
+
+def make_ac3_decode(local):
+    os.makedirs(AC3_DECODE_OUT, exist_ok=True)
+
+    def output(command):
+        if local:
+            return subprocess.run(["sh", "-c", command.replace("/work/", AC3_DECODE_OUT.replace(os.sep, "/") + "/")], check=True,
+                                  capture_output=True).stdout
+        return subprocess.run(["docker", "run", "--rm", "-v", f"{AC3_DECODE_OUT}:/work", IMAGE, "sh", "-c", command], check=True,
+                              capture_output=True).stdout
+
+    for name, (layout, rate, bitrate, extra) in AC3_DECODE_CLIPS.items():
+        path = os.path.join(AC3_DECODE_OUT, name)
+        if os.path.exists(path):
+            os.remove(path)
+        channels, src = ac3_source(layout, rate)
+        output(f"ffmpeg -y -v error -bitexact {src} -c:a ac3 -b:a {bitrate} {extra} -f ac3 /work/{name}")
+
+    # FFmpeg's decoder fills zero-bit mantissas with its own random dither, which no other decoder can reproduce, so the streams
+    # get their dithflags cleared (and their CRCs fixed) by Egami.Video.Tests' Ac3Undither before FFmpeg decodes them. Clips named
+    # dither-* keep their dither for the tests that check it statistically; dual-mono-* are rewritten from 2/0 into 1+1, which
+    # FFmpeg's encoder does not write.
+    env = dict(os.environ, EGAMI_AC3_UNDITHER=AC3_DECODE_OUT)
+    subprocess.run(["dotnet", "test", os.path.join(ROOT, "tests", "Egami.Video.Tests"), "--filter", "FullyQualifiedName~Ac3Undither.RewritesTheFolder"],
+                   check=True, env=env)
+
+    manifest = {}
+    for name, (layout, rate, bitrate, extra) in AC3_DECODE_CLIPS.items():
+        path = os.path.join(AC3_DECODE_OUT, name)
+        channels = ac3_source(layout, rate)[0]
+        raw = output(f"ffmpeg -v error -i /work/{name} -c:a pcm_f32le -f f32le -")
+        with gzip.GzipFile(path + ".f32.gz", "wb", 9, mtime=0) as f:
+            f.write(raw)
+        manifest[name] = {"channels": channels, "rate": rate, "bitrate": bitrate, "samples": len(raw) // 4 // channels,
+                          "dither": name.startswith("dither-")}
+        print(name, os.path.getsize(path), manifest[name])
+    with open(os.path.join(AC3_DECODE_OUT, "manifest.json"), "w", newline="\n") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+
+
 def gates():
     """Compares .cache/audio/gates/L<n> (Egami.Video's FLAC) with libFLAC at the same level; prints sizes and flac -d's time."""
     gates_dir = os.path.join(CACHE, "gates")
@@ -488,6 +581,9 @@ if __name__ == "__main__":
         sys.exit(0)
     if "--caf" in sys.argv:
         make_caf("--local" in sys.argv)
+        sys.exit(0)
+    if "--ac3-decode" in sys.argv:
+        make_ac3_decode("--local" in sys.argv)
         sys.exit(0)
     if "--ac3" in sys.argv:
         make_ac3("--local" in sys.argv)

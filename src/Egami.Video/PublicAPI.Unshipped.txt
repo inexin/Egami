@@ -222,6 +222,8 @@ Egami.Video.Audio.AudioConvertOptions.Mixer.get -> Egami.Video.Audio.ChannelMixe
 Egami.Video.Audio.AudioConvertOptions.Mixer.init -> void
 Egami.Video.Audio.AudioDecoderOptions
 Egami.Video.Audio.AudioDecoderOptions.<Clone>$() -> Egami.Video.Audio.AudioDecoderOptions!
+Egami.Video.Audio.AudioDecoderOptions.Ac3.get -> Egami.Video.Audio.Codecs.Ac3DecoderOptions?
+Egami.Video.Audio.AudioDecoderOptions.Ac3.init -> void
 Egami.Video.Audio.AudioDecoderOptions.AudioDecoderOptions() -> void
 Egami.Video.Audio.AudioDecoderOptions.Equals(Egami.Video.Audio.AudioDecoderOptions? other) -> bool
 Egami.Video.Audio.AudioDecoderOptions.Errors.get -> Egami.Video.DecodeErrorMode
@@ -283,6 +285,15 @@ Egami.Video.Audio.ChannelMixer.Mix(Egami.Video.Audio.AudioFrame! source, Egami.V
 Egami.Video.Audio.ChannelMixer.Mix(Egami.Video.Audio.AudioFrame! source, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.AudioFrame!
 Egami.Video.Audio.ChannelMixer.Output.get -> Egami.Video.Audio.ChannelLayout
 Egami.Video.Audio.ChannelMixer.this[int output, int input].get -> float
+Egami.Video.Audio.Codecs.Ac3Codec
+Egami.Video.Audio.Codecs.Ac3DecoderOptions
+Egami.Video.Audio.Codecs.Ac3DecoderOptions.<Clone>$() -> Egami.Video.Audio.Codecs.Ac3DecoderOptions!
+Egami.Video.Audio.Codecs.Ac3DecoderOptions.Ac3DecoderOptions() -> void
+Egami.Video.Audio.Codecs.Ac3DecoderOptions.Downmix.get -> Egami.Video.Audio.ChannelLayout?
+Egami.Video.Audio.Codecs.Ac3DecoderOptions.Downmix.init -> void
+Egami.Video.Audio.Codecs.Ac3DecoderOptions.DynamicRange.get -> float
+Egami.Video.Audio.Codecs.Ac3DecoderOptions.DynamicRange.init -> void
+Egami.Video.Audio.Codecs.Ac3DecoderOptions.Equals(Egami.Video.Audio.Codecs.Ac3DecoderOptions? other) -> bool
 Egami.Video.Audio.Codecs.FlacCodec
 Egami.Video.Audio.Codecs.OpusCodec
 Egami.Video.Audio.Codecs.PcmCodec
@@ -920,6 +931,12 @@ override Egami.Video.Audio.AudioEncoderOptions.ToString() -> string!
 override Egami.Video.Audio.AudioFrame.ToString() -> string!
 override Egami.Video.Audio.ChannelLayout.GetHashCode() -> int
 override Egami.Video.Audio.ChannelLayout.ToString() -> string!
+override Egami.Video.Audio.Codecs.Ac3Codec.CodecId.get -> string!
+override Egami.Video.Audio.Codecs.Ac3Codec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
+override Egami.Video.Audio.Codecs.Ac3Codec.Name.get -> string!
+override Egami.Video.Audio.Codecs.Ac3DecoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Audio.Codecs.Ac3DecoderOptions.GetHashCode() -> int
+override Egami.Video.Audio.Codecs.Ac3DecoderOptions.ToString() -> string!
 override Egami.Video.Audio.Codecs.FlacCodec.CanEncode.get -> bool
 override Egami.Video.Audio.Codecs.FlacCodec.CodecId.get -> string!
 override Egami.Video.Audio.Codecs.FlacCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
@@ -1060,6 +1077,7 @@ static Egami.Video.Analysis.TestSources.Sweep(Egami.Video.Analysis.TestAudioForm
 static Egami.Video.Analysis.TestVideoFormat.Default.get -> Egami.Video.Analysis.TestVideoFormat!
 static Egami.Video.Analysis.TestVideoFormat.operator !=(Egami.Video.Analysis.TestVideoFormat? left, Egami.Video.Analysis.TestVideoFormat? right) -> bool
 static Egami.Video.Analysis.TestVideoFormat.operator ==(Egami.Video.Analysis.TestVideoFormat? left, Egami.Video.Analysis.TestVideoFormat? right) -> bool
+static Egami.Video.Audio.AudioCodecs.Ac3.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.IAudioDecoder!
 static Egami.Video.Audio.AudioCodecs.Flac.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Get(string! codecId, Egami.Video.MediaContext? context = null) -> Egami.Video.Audio.AudioCodec!
@@ -1067,6 +1085,10 @@ static Egami.Video.Audio.AudioCodecs.Opus.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Pcm.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Vorbis.get -> Egami.Video.Audio.AudioCodec!
 static Egami.Video.Audio.AudioCodecs.Mp3.get -> Egami.Video.Audio.AudioCodec!
+static Egami.Video.Audio.Codecs.Ac3Codec.Instance.get -> Egami.Video.Audio.Codecs.Ac3Codec!
+static Egami.Video.Audio.Codecs.Ac3DecoderOptions.Default.get -> Egami.Video.Audio.Codecs.Ac3DecoderOptions!
+static Egami.Video.Audio.Codecs.Ac3DecoderOptions.operator !=(Egami.Video.Audio.Codecs.Ac3DecoderOptions? left, Egami.Video.Audio.Codecs.Ac3DecoderOptions? right) -> bool
+static Egami.Video.Audio.Codecs.Ac3DecoderOptions.operator ==(Egami.Video.Audio.Codecs.Ac3DecoderOptions? left, Egami.Video.Audio.Codecs.Ac3DecoderOptions? right) -> bool
 static Egami.Video.Audio.Codecs.Mp3Codec.Instance.get -> Egami.Video.Audio.Codecs.Mp3Codec!
 static Egami.Video.Audio.AudioConvertOptions.Default.get -> Egami.Video.Audio.AudioConvertOptions!
 static Egami.Video.Audio.AudioConvertOptions.operator !=(Egami.Video.Audio.AudioConvertOptions? left, Egami.Video.Audio.AudioConvertOptions? right) -> bool

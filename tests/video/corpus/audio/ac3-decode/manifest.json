@@ -1,0 +1,184 @@
+{
+  "mono-32k.ac3": {
+    "channels": 1,
+    "rate": 48000,
+    "bitrate": "32k",
+    "samples": 12288,
+    "dither": false
+  },
+  "mono-lfe-64k-44k.ac3": {
+    "channels": 2,
+    "rate": 44100,
+    "bitrate": "64k",
+    "samples": 12288,
+    "dither": false
+  },
+  "stereo-40k.ac3": {
+    "channels": 2,
+    "rate": 48000,
+    "bitrate": "40k",
+    "samples": 12288,
+    "dither": false
+  },
+  "stereo-56k-32k.ac3": {
+    "channels": 2,
+    "rate": 32000,
+    "bitrate": "56k",
+    "samples": 9216,
+    "dither": false
+  },
+  "stereo-96k-cpl.ac3": {
+    "channels": 2,
+    "rate": 48000,
+    "bitrate": "96k",
+    "samples": 12288,
+    "dither": false
+  },
+  "stereo-128k-cpl0.ac3": {
+    "channels": 2,
+    "rate": 44100,
+    "bitrate": "128k",
+    "samples": 12288,
+    "dither": false
+  },
+  "stereo-160k-nocpl.ac3": {
+    "channels": 2,
+    "rate": 48000,
+    "bitrate": "160k",
+    "samples": 12288,
+    "dither": false
+  },
+  "stereo-192k-noremat.ac3": {
+    "channels": 2,
+    "rate": 48000,
+    "bitrate": "192k",
+    "samples": 12288,
+    "dither": false
+  },
+  "stereo-lfe-224k-44k.ac3": {
+    "channels": 3,
+    "rate": 44100,
+    "bitrate": "224k",
+    "samples": 12288,
+    "dither": false
+  },
+  "3-0-256k.ac3": {
+    "channels": 3,
+    "rate": 48000,
+    "bitrate": "256k",
+    "samples": 12288,
+    "dither": false
+  },
+  "3-0-lfe-320k-32k.ac3": {
+    "channels": 4,
+    "rate": 32000,
+    "bitrate": "320k",
+    "samples": 9216,
+    "dither": false
+  },
+  "2-1-112k-cpl.ac3": {
+    "channels": 3,
+    "rate": 48000,
+    "bitrate": "112k",
+    "samples": 12288,
+    "dither": false
+  },
+  "2-1-lfe-256k.ac3": {
+    "channels": 4,
+    "rate": 48000,
+    "bitrate": "256k",
+    "samples": 12288,
+    "dither": false
+  },
+  "3-1-384k.ac3": {
+    "channels": 4,
+    "rate": 44100,
+    "bitrate": "384k",
+    "samples": 12288,
+    "dither": false
+  },
+  "3-1-lfe-448k.ac3": {
+    "channels": 5,
+    "rate": 48000,
+    "bitrate": "448k",
+    "samples": 12288,
+    "dither": false
+  },
+  "2-2-80k-cpl.ac3": {
+    "channels": 4,
+    "rate": 48000,
+    "bitrate": "80k",
+    "samples": 12288,
+    "dither": false
+  },
+  "2-2-320k.ac3": {
+    "channels": 4,
+    "rate": 48000,
+    "bitrate": "320k",
+    "samples": 12288,
+    "dither": false
+  },
+  "3-2-448k.ac3": {
+    "channels": 5,
+    "rate": 48000,
+    "bitrate": "448k",
+    "samples": 12288,
+    "dither": false
+  },
+  "3-2-lfe-192k-cpl.ac3": {
+    "channels": 6,
+    "rate": 48000,
+    "bitrate": "192k",
+    "samples": 12288,
+    "dither": false
+  },
+  "3-2-lfe-384k.ac3": {
+    "channels": 6,
+    "rate": 48000,
+    "bitrate": "384k",
+    "samples": 12288,
+    "dither": false
+  },
+  "3-2-lfe-512k-44k.ac3": {
+    "channels": 6,
+    "rate": 44100,
+    "bitrate": "512k",
+    "samples": 12288,
+    "dither": false
+  },
+  "3-2-lfe-576k-32k.ac3": {
+    "channels": 6,
+    "rate": 32000,
+    "bitrate": "576k",
+    "samples": 9216,
+    "dither": false
+  },
+  "3-2-lfe-640k.ac3": {
+    "channels": 6,
+    "rate": 48000,
+    "bitrate": "640k",
+    "samples": 12288,
+    "dither": false
+  },
+  "dual-mono-192k.ac3": {
+    "channels": 2,
+    "rate": 48000,
+    "bitrate": "192k",
+    "samples": 12288,
+    "dither": false
+  },
+  "dither-stereo-96k.ac3": {
+    "channels": 2,
+    "rate": 48000,
+    "bitrate": "96k",
+    "samples": 12288,
+    "dither": true
+  },
+  "dither-3-2-lfe-448k.ac3": {
+    "channels": 6,
+    "rate": 48000,
+    "bitrate": "448k",
+    "samples": 12288,
+    "dither": true
+  }
+}

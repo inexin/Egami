@@ -83,6 +83,7 @@ static Action<Stream> Target(string name) => name switch
     "vorbisraw" => DecodeVorbisPackets,
     "mp3" => ReadMp3,
     "mp3raw" => DecodeMp3Packets,
+    "ac3raw" => DecodeAc3Packets,
     "alac" => DecodeAlacPackets,
     "av1" => ReadAv1,
     "av1raw" => DecodeAv1Packets,
@@ -91,7 +92,7 @@ static Action<Stream> Target(string name) => name switch
     "subs" => ReadSubtitles,
     "subtrack" => ReadSubtitleTracks,
     "vp9enc" => EncodeVp9,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, alac, opusenc, subs, subtrack, vp9enc."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -432,6 +433,61 @@ static void DecodeMp3Packets(Stream stream)
             using EncodedPacket packet = EncodedPacket.Rent(1, length, new MediaTime(n * 1152L, track.TimeBase));
             data.AsSpan(p + 2, length).CopyTo(packet.GetWritableData().Span);
             packet.Duration = n % 7 == 6 ? new MediaTime(500, track.TimeBase) : null;
+            decoder.Send(packet);
+        }
+
+        p += 2 + length;
+        n++;
+        while (decoder.TryReceive(out Egami.Video.Audio.AudioFrame? frame))
+        {
+            frame.Dispose();
+        }
+    }
+
+    decoder.Flush();
+    while (decoder.TryReceive(out Egami.Video.Audio.AudioFrame? frame))
+    {
+        frame.Dispose();
+    }
+}
+
+// Raw AC-3 bytes (V5.9): the first byte's bits turn the CRC check on (1), pick Skip over Conceal (2), a stereo downmix (4) and half
+// the dynamic range control (8); then chunks with 16-bit big-endian lengths go to the decoder as packets, so frames are cut
+// anywhere; a zero length is a lost packet. Damaged frames must never throw in Skip or Conceal.
+static void DecodeAc3Packets(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 1)
+    {
+        return;
+    }
+
+    MediaContext context = Context() with { Egami = Context().Egami with { Diagnostics = _ => { } } };
+    Egami.Video.AudioTrackInfo track = new() { Number = 1, Kind = TrackKind.Audio, CodecId = CodecIds.Ac3, TimeBase = new Rational(1, 48000), SampleRate = 48000, Channels = 6 };
+    Egami.Video.Audio.AudioDecoderOptions options = new()
+    {
+        Errors = (data[0] & 2) != 0 ? DecodeErrorMode.Skip : DecodeErrorMode.Conceal,
+        VerifyChecksums = (data[0] & 1) != 0,
+        Ac3 = new Egami.Video.Audio.Codecs.Ac3DecoderOptions
+        {
+            Downmix = (data[0] & 4) != 0 ? Egami.Video.Audio.ChannelLayout.Stereo : null,
+            DynamicRange = (data[0] & 8) != 0 ? 0.5f : 1,
+        },
+    };
+    using Egami.Video.Audio.IAudioDecoder decoder = Egami.Video.Audio.Codecs.Ac3Codec.Instance.CreateDecoder(track, options, context);
+    int p = 1;
+    int n = 0;
+    while (p + 2 <= data.Length && n < 200)
+    {
+        int length = Math.Min((data[p] << 8) | data[p + 1], data.Length - p - 2);
+        if (length == 0)
+        {
+            decoder.SendLoss(new MediaTime(1536, track.TimeBase));
+        }
+        else
+        {
+            using EncodedPacket packet = EncodedPacket.Rent(1, length, new MediaTime(n * 1536L, track.TimeBase));
+            data.AsSpan(p + 2, length).CopyTo(packet.GetWritableData().Span);
             decoder.Send(packet);
         }
 

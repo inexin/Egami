@@ -86,6 +86,12 @@ public sealed record AudioDecoderOptions
     /// <see cref="AudioReader"/> sets this from <see cref="AudioReaderOptions.KeepAllSamples"/>.
     /// </summary>
     public bool KeepPadding { get; init; }
+
+    /// <summary>
+    /// Gets how the AC-3 decoder applies dynamic range control and whether it mixes down, or <see langword="null"/> for
+    /// <see cref="Ac3DecoderOptions.Default"/>. Other codecs ignore it.
+    /// </summary>
+    public Ac3DecoderOptions? Ac3 { get; init; }
 }
 
 /// <summary>What an audio encoder makes.</summary>
@@ -208,6 +214,9 @@ public static class AudioCodecs
 
     /// <summary>Gets the MPEG audio codec: MP3, MP2 and MP1 (decode only).</summary>
     public static AudioCodec Mp3 => Mp3Codec.Instance;
+
+    /// <summary>Gets the AC-3 codec (decode only).</summary>
+    public static AudioCodec Ac3 => Ac3Codec.Instance;
 
     /// <summary>Creates a decoder for a track.</summary>
     /// <param name="track">The track.</param>

@@ -164,9 +164,19 @@ the file can be read as a stream. Reading a file whose packet table follows the 
 one E-AC-3 independent frame with the dependent substreams that follow it, as MP4 and Matroska store them; the track's rate,
 channels and layout come from the first frame's header (`CodecIds.Ac3`, `CodecIds.EAc3`). Bytes between frames are skipped,
 and a seek builds a frame index in one pass. Both pass through MP4 (ac-3 and ec-3 sample entries; the writer builds the dac3
-or dec3 box from the first frame), Matroska and CAF unchanged. Egami.Video does not decode them yet.
+or dec3 box from the first frame), Matroska and CAF unchanged.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-ac3)]
+
+`Ac3Codec` decodes AC-3 (ATSC A/52) in every channel mode, 1/0 to 3/2 and dual mono, with or without the LFE, at 32, 44.1 and
+48 kHz and 32 to 640 kbit/s, from raw .ac3 files and from AC-3 tracks in MP4, Matroska, AVI and CAF. Frames are 1536 samples of
+planar float in Egami.Video's channel order. Both frame CRCs are checked unless `VerifyChecksums` is off; a damaged frame is
+reported as `Ac3.BadCrc` or `Ac3.CorruptFrame` and handled as `Errors` says, and Conceal puts silence of its length in its
+place. The stream's dynamic range control is applied in full, as the standard asks; `Ac3DecoderOptions.DynamicRange` scales it
+(0 turns it off) and `Ac3DecoderOptions.Downmix` mixes to a smaller layout with the stream's own center and surround mix
+levels, scaled so the mix cannot clip. Dialogue normalization is left to the player. E-AC-3 passes through undecoded.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-ac3-decode)]
 
 `AlacCodec` decodes and encodes Apple Lossless (ALAC) at 16, 20, 24 and 32 bits with 1 to 8 channels. It is translated from
 Apple's reference codec, so its packets are the bytes Apple's encoder makes: level 1, the default, searches the stereo matrix
