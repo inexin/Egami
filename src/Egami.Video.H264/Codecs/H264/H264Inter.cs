@@ -211,8 +211,30 @@ internal sealed class H264Inter
         ref T cb = ref H264Samples.At(refPic.Cb<T>(), at);
         ref T cr = ref H264Samples.At(refPic.Cr<T>(), at);
         ref ushort d = ref MemoryMarshal.GetArrayDataReference(pred);
-        Vector256<ushort> wa = Vector256.Create((ushort)(8 - xFrac)), wb = Vector256.Create((ushort)xFrac);
         Vector256<ushort> wTop = Vector256.Create((ushort)(8 - yFrac)), wBottom = Vector256.Create((ushort)yFrac), round = Vector256.Create((ushort)32);
+        if (H264Samples.Narrow<T>())
+        {
+            // Bytes: each sample and its right neighbour interleave into pairs, and one multiply-add of the pairs by
+            // (8 - xFrac, xFrac) gives a row of both planes across.
+            ref byte b = ref Unsafe.As<T, byte>(ref cb), r = ref Unsafe.As<T, byte>(ref cr);
+            Vector256<sbyte> across = Vector256.Create((short)((xFrac << 8) | (8 - xFrac))).AsSByte();
+            Vector256<ushort> top = Across(ref b, ref r, across);
+            for (int j = 0; j < h; j++)
+            {
+                b = ref Unsafe.Add(ref b, stride);
+                r = ref Unsafe.Add(ref r, stride);
+                Vector256<ushort> bottom = Across(ref b, ref r, across);
+                Vector256<ushort> v = ((wTop * top) + (wBottom * bottom) + round) >>> 6;
+                v.GetLower().StoreUnsafe(ref d);
+                v.GetUpper().StoreUnsafe(ref d, CrRows);
+                d = ref Unsafe.Add(ref d, PredStride);
+                top = bottom;
+            }
+
+            return;
+        }
+
+        Vector256<ushort> wa = Vector256.Create((ushort)(8 - xFrac)), wb = Vector256.Create((ushort)xFrac);
         Vector256<ushort> above = (wa * Vector256.Create(H264Samples.Load8(ref cb).AsUInt16(), H264Samples.Load8(ref cr).AsUInt16()))
             + (wb * Vector256.Create(H264Samples.Load8(ref cb, (nint)(1)).AsUInt16(), H264Samples.Load8(ref cr, (nint)(1)).AsUInt16()));
         for (int j = 0; j < h; j++)
@@ -225,6 +247,17 @@ internal sealed class H264Inter
             v.GetUpper().StoreUnsafe(ref d, (nuint)((j * PredStride) + CrRows));
             above = below;
         }
+    }
+
+    /// <summary>The horizontal pass of 4:2:0 chroma for eight samples of a Cb row and a Cr row: (8 - xFrac) a + xFrac b.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<ushort> Across(ref byte cb, ref byte cr, Vector256<sbyte> weights)
+    {
+        Vector128<byte> pairsB = Sse2.UnpackLow(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref cb)).AsByte(),
+            Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref cb, 1))).AsByte());
+        Vector128<byte> pairsR = Sse2.UnpackLow(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref cr)).AsByte(),
+            Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref cr, 1))).AsByte());
+        return Avx2.MultiplyAddAdjacent(Vector256.Create(pairsB, pairsR), weights).AsUInt16();
     }
 
     /// <summary>Asks the cache for the reference samples a 16x16 block at (x, y) moved by mv reads, luma and chroma.</summary>
