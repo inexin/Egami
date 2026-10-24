@@ -236,8 +236,8 @@ public sealed class SceneDetectorTests
         }
 
         detector.Complete(new MediaTime(n, new Rational(1, 25)));
-        Assert.Equal(50, detector.Scores.Count);
-        Assert.Equal(1, detector.Scores[0].Luma, 2);
+        Assert.Equal(50, detector.Series.Count);
+        Assert.Equal(1, detector.Series[0].Luma, 2);
         Assert.Equal([0L, 25], detector.Cuts.Select(c => c.Frame));
     }
 

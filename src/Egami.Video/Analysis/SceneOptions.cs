@@ -59,7 +59,7 @@ public sealed record SceneOptions
     /// </summary>
     public double FadeBias { get; init; }
 
-    /// <summary>Gets whether <see cref="SceneDetector.Scores"/> keeps every frame's score and luma. Off by default to keep memory flat.</summary>
+    /// <summary>Gets whether <see cref="SceneDetector.Series"/> keeps every frame's score and luma. Off by default to keep memory flat.</summary>
     public bool KeepSeries { get; init; }
 
     internal double EffectiveThreshold => Threshold ?? (Method == SceneMethod.Adaptive ? 0.15 : 0.4);

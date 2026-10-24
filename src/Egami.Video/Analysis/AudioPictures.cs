@@ -18,16 +18,20 @@ public static class AudioPictures
     /// <param name="path">The media file.</param>
     /// <param name="options">The size, layout and colors, or <see langword="null"/> for <see cref="WaveformOptions.Default"/>.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
+    /// <param name="progress">Receives <see cref="MediaProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Stops the drawing between frames.</param>
     /// <returns>The picture.</returns>
     /// <exception cref="ArgumentOutOfRangeException">An option is out of range.</exception>
+    /// <exception cref="OperationCanceledException">The drawing was canceled.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoAnalysis.cs" region="analysis-pictures"/>
     /// </example>
-    public static Raster<Rgba8> Waveform(string path, WaveformOptions? options = null, MediaContext? context = null)
+    public static Raster<Rgba8> Waveform(string path, WaveformOptions? options = null, MediaContext? context = null,
+        IProgress<MediaProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         options ??= WaveformOptions.Default;
         options.Validate();
-        return FromFile(path, options.Track, context, (frames, duration) => Waveform(frames, duration, options, context));
+        return FromFile(path, options.Track, context, progress, (frames, duration) => Waveform(frames, duration, options, context, cancellationToken), cancellationToken);
     }
 
     /// <summary>Draws the waveform of a run of audio frames.</summary>
@@ -35,12 +39,15 @@ public static class AudioPictures
     /// <param name="duration">How long the audio runs, which sets how many samples each column covers.</param>
     /// <param name="options">The size, layout and colors, or <see langword="null"/> for <see cref="WaveformOptions.Default"/>.</param>
     /// <param name="context">The context the picture is allocated from, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
+    /// <param name="cancellationToken">Stops the drawing between frames.</param>
     /// <returns>The picture.</returns>
     /// <exception cref="ArgumentOutOfRangeException">An option is out of range, or the duration is not above zero.</exception>
+    /// <exception cref="OperationCanceledException">The drawing was canceled.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoAnalysis.cs" region="analysis-pictures"/>
     /// </example>
-    public static Raster<Rgba8> Waveform(IEnumerable<AudioFrame> frames, MediaTime duration, WaveformOptions? options = null, MediaContext? context = null)
+    public static Raster<Rgba8> Waveform(IEnumerable<AudioFrame> frames, MediaTime duration, WaveformOptions? options = null, MediaContext? context = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(frames);
         options ??= WaveformOptions.Default;
@@ -49,6 +56,7 @@ public static class AudioPictures
         WaveformBuilder builder = new(options, duration);
         foreach (AudioFrame frame in frames)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             builder.Add(frame);
         }
 
@@ -59,16 +67,20 @@ public static class AudioPictures
     /// <param name="path">The media file.</param>
     /// <param name="options">The size, window, scale and colors, or <see langword="null"/> for <see cref="SpectrogramOptions.Default"/>.</param>
     /// <param name="context">The context, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
+    /// <param name="progress">Receives <see cref="MediaProgress"/> reports, or <see langword="null"/>.</param>
+    /// <param name="cancellationToken">Stops the drawing between frames.</param>
     /// <returns>The picture.</returns>
     /// <exception cref="ArgumentOutOfRangeException">An option is out of range.</exception>
+    /// <exception cref="OperationCanceledException">The drawing was canceled.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoAnalysis.cs" region="analysis-pictures"/>
     /// </example>
-    public static Raster<Rgba8> Spectrogram(string path, SpectrogramOptions? options = null, MediaContext? context = null)
+    public static Raster<Rgba8> Spectrogram(string path, SpectrogramOptions? options = null, MediaContext? context = null,
+        IProgress<MediaProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         options ??= SpectrogramOptions.Default;
         options.Validate();
-        return FromFile(path, options.Track, context, (frames, duration) => Spectrogram(frames, duration, options, context));
+        return FromFile(path, options.Track, context, progress, (frames, duration) => Spectrogram(frames, duration, options, context, cancellationToken), cancellationToken);
     }
 
     /// <summary>Draws the spectrogram of a run of audio frames.</summary>
@@ -76,12 +88,15 @@ public static class AudioPictures
     /// <param name="duration">How long the audio runs, which sets where each column's window sits.</param>
     /// <param name="options">The size, window, scale and colors, or <see langword="null"/> for <see cref="SpectrogramOptions.Default"/>.</param>
     /// <param name="context">The context the picture is allocated from, or <see langword="null"/> for <see cref="MediaContext.Default"/>.</param>
+    /// <param name="cancellationToken">Stops the drawing between frames.</param>
     /// <returns>The picture.</returns>
     /// <exception cref="ArgumentOutOfRangeException">An option is out of range, or the duration is not above zero.</exception>
+    /// <exception cref="OperationCanceledException">The drawing was canceled.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoAnalysis.cs" region="analysis-pictures"/>
     /// </example>
-    public static Raster<Rgba8> Spectrogram(IEnumerable<AudioFrame> frames, MediaTime duration, SpectrogramOptions? options = null, MediaContext? context = null)
+    public static Raster<Rgba8> Spectrogram(IEnumerable<AudioFrame> frames, MediaTime duration, SpectrogramOptions? options = null, MediaContext? context = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(frames);
         options ??= SpectrogramOptions.Default;
@@ -90,6 +105,7 @@ public static class AudioPictures
         SpectrogramBuilder? builder = null;
         foreach (AudioFrame frame in frames)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             builder ??= new SpectrogramBuilder(options, duration, frame, (context ?? MediaContext.Default).Egami);
             builder.Add(frame);
         }
@@ -106,7 +122,8 @@ public static class AudioPictures
     }
 
     /// <summary>Opens the audio track and hands its frames and duration to <paramref name="draw"/>, counting samples first when the file has no duration.</summary>
-    private static Raster<Rgba8> FromFile(string path, int? track, MediaContext? context, Func<IEnumerable<AudioFrame>, MediaTime, Raster<Rgba8>> draw)
+    private static Raster<Rgba8> FromFile(string path, int? track, MediaContext? context, IProgress<MediaProgress>? progress,
+        Func<IEnumerable<AudioFrame>, MediaTime, Raster<Rgba8>> draw, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(path);
         AudioReaderOptions readerOptions = new() { TrackNumber = track };
@@ -121,6 +138,7 @@ public static class AudioPictures
                 {
                     using (frame)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         samples += frame.SampleCount;
                     }
                 }
@@ -130,16 +148,20 @@ public static class AudioPictures
         }
 
         using AudioReader reader = AudioReader.Open(path, readerOptions, context);
-        return draw(Disposing(reader.ReadFrames()), duration.Value);
+        AnalysisReporter? reporter = progress is null ? null : new(progress, duration, MediaTime.Zero);
+        Raster<Rgba8> picture = draw(Disposing(reader.ReadFrames(), reporter), duration.Value);
+        reporter?.Finish(duration.Value, 0);
+        return picture;
     }
 
-    private static IEnumerable<AudioFrame> Disposing(IEnumerable<AudioFrame> frames)
+    private static IEnumerable<AudioFrame> Disposing(IEnumerable<AudioFrame> frames, AnalysisReporter? reporter)
     {
         foreach (AudioFrame frame in frames)
         {
             using (frame)
             {
                 yield return frame;
+                reporter?.Advance(frame.Timestamp + frame.Duration, 0);
             }
         }
     }
@@ -497,7 +519,7 @@ public enum AudioPictureChannels
     Stacked,
 }
 
-/// <summary>How <see cref="AudioPictures.Waveform(IEnumerable{AudioFrame}, MediaTime, WaveformOptions?, MediaContext?)"/> scales sample values.</summary>
+/// <summary>How <see cref="AudioPictures.Waveform(IEnumerable{AudioFrame}, MediaTime, WaveformOptions?, MediaContext?, CancellationToken)"/> scales sample values.</summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoAnalysis.cs" region="analysis-pictures"/>
 /// </example>
@@ -510,7 +532,7 @@ public enum WaveformScale
     Decibel,
 }
 
-/// <summary>The frequency axis of <see cref="AudioPictures.Spectrogram(IEnumerable{AudioFrame}, MediaTime, SpectrogramOptions?, MediaContext?)"/>.</summary>
+/// <summary>The frequency axis of <see cref="AudioPictures.Spectrogram(IEnumerable{AudioFrame}, MediaTime, SpectrogramOptions?, MediaContext?, CancellationToken)"/>.</summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoAnalysis.cs" region="analysis-pictures"/>
 /// </example>
@@ -523,7 +545,7 @@ public enum FrequencyScale
     Logarithmic,
 }
 
-/// <summary>The colors of <see cref="AudioPictures.Spectrogram(IEnumerable{AudioFrame}, MediaTime, SpectrogramOptions?, MediaContext?)"/>.</summary>
+/// <summary>The colors of <see cref="AudioPictures.Spectrogram(IEnumerable{AudioFrame}, MediaTime, SpectrogramOptions?, MediaContext?, CancellationToken)"/>.</summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoAnalysis.cs" region="analysis-pictures"/>
 /// </example>

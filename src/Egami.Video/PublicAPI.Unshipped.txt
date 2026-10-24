@@ -115,7 +115,7 @@ Egami.Video.Analysis.SceneDetector.FrameCount.get -> long
 Egami.Video.Analysis.SceneDetector.Options.get -> Egami.Video.Analysis.SceneOptions!
 Egami.Video.Analysis.SceneDetector.SceneDetector(Egami.Video.Analysis.SceneOptions? options = null) -> void
 Egami.Video.Analysis.SceneDetector.Scenes.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.Scene!>!
-Egami.Video.Analysis.SceneDetector.Scores.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.SceneScore>!
+Egami.Video.Analysis.SceneDetector.Series.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.SceneScore>!
 Egami.Video.Analysis.SceneDetector.SettledFrames.get -> long
 Egami.Video.Analysis.SceneFrame
 Egami.Video.Analysis.SceneFrame.Deconstruct(out Egami.Video.Analysis.Scene! Scene, out Egami.Video.YuvVideoFrame! Frame) -> void
@@ -1337,7 +1337,7 @@ Egami.Video.Analysis.CropDetector.CropDetector(Egami.Video.Analysis.CropOptions?
 Egami.Video.Analysis.CropDetector.FrameCount.get -> long
 Egami.Video.Analysis.CropDetector.LastRectangle.get -> Egami.Rect?
 Egami.Video.Analysis.CropDetector.Options.get -> Egami.Video.Analysis.CropOptions!
-Egami.Video.Analysis.CropDetector.Report.get -> Egami.Video.Analysis.CropReport!
+Egami.Video.Analysis.CropDetector.Report() -> Egami.Video.Analysis.CropReport!
 Egami.Video.Analysis.CropOptions
 Egami.Video.Analysis.CropOptions.<Clone>$() -> Egami.Video.Analysis.CropOptions!
 Egami.Video.Analysis.CropOptions.CropOptions() -> void
@@ -1404,9 +1404,9 @@ Egami.Video.Analysis.DuplicateOptions.DuplicateOptions() -> void
 Egami.Video.Analysis.DuplicateOptions.Equals(Egami.Video.Analysis.DuplicateOptions? other) -> bool
 Egami.Video.Analysis.DuplicateOptions.Fraction.get -> double
 Egami.Video.Analysis.DuplicateOptions.Fraction.init -> void
-Egami.Video.Analysis.DuplicateOptions.High.get -> int
+Egami.Video.Analysis.DuplicateOptions.High.get -> double
 Egami.Video.Analysis.DuplicateOptions.High.init -> void
-Egami.Video.Analysis.DuplicateOptions.Low.get -> int
+Egami.Video.Analysis.DuplicateOptions.Low.get -> double
 Egami.Video.Analysis.DuplicateOptions.Low.init -> void
 Egami.Video.Analysis.FieldOrder
 Egami.Video.Analysis.FieldOrder.BottomFieldFirst = 3 -> Egami.Video.Analysis.FieldOrder
@@ -1446,9 +1446,9 @@ Egami.Video.Analysis.InterlaceDetector.Add(Egami.Video.YuvVideoFrame! frame) -> 
 Egami.Video.Analysis.InterlaceDetector.Complete(Egami.Video.MediaTime endTime) -> void
 Egami.Video.Analysis.InterlaceDetector.FrameCount.get -> long
 Egami.Video.Analysis.InterlaceDetector.InterlaceDetector(Egami.Video.Analysis.InterlaceOptions? options = null) -> void
-Egami.Video.Analysis.InterlaceDetector.LastFrame.get -> Egami.Video.Analysis.FieldOrder
+Egami.Video.Analysis.InterlaceDetector.LastFieldOrder.get -> Egami.Video.Analysis.FieldOrder
 Egami.Video.Analysis.InterlaceDetector.Options.get -> Egami.Video.Analysis.InterlaceOptions!
-Egami.Video.Analysis.InterlaceDetector.Report.get -> Egami.Video.Analysis.InterlaceReport!
+Egami.Video.Analysis.InterlaceDetector.Report() -> Egami.Video.Analysis.InterlaceReport!
 Egami.Video.Analysis.InterlaceOptions
 Egami.Video.Analysis.InterlaceOptions.<Clone>$() -> Egami.Video.Analysis.InterlaceOptions!
 Egami.Video.Analysis.InterlaceOptions.Equals(Egami.Video.Analysis.InterlaceOptions? other) -> bool
@@ -1530,7 +1530,7 @@ Egami.Video.Analysis.SignalMeter.Add(Egami.Video.YuvVideoFrame! frame) -> void
 Egami.Video.Analysis.SignalMeter.Complete(Egami.Video.MediaTime endTime) -> void
 Egami.Video.Analysis.SignalMeter.FrameCount.get -> long
 Egami.Video.Analysis.SignalMeter.Options.get -> Egami.Video.Analysis.SignalOptions!
-Egami.Video.Analysis.SignalMeter.Report.get -> Egami.Video.Analysis.SignalReport!
+Egami.Video.Analysis.SignalMeter.Report() -> Egami.Video.Analysis.SignalReport!
 Egami.Video.Analysis.SignalMeter.Series.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Analysis.SignalFrame!>!
 Egami.Video.Analysis.SignalMeter.SignalMeter(Egami.Video.Analysis.SignalOptions? options = null) -> void
 Egami.Video.Analysis.SignalOptions
@@ -1922,10 +1922,10 @@ override Egami.Video.Analysis.SpectrogramOptions.ToString() -> string!
 override Egami.Video.Analysis.WaveformOptions.Equals(object? obj) -> bool
 override Egami.Video.Analysis.WaveformOptions.GetHashCode() -> int
 override Egami.Video.Analysis.WaveformOptions.ToString() -> string!
-static Egami.Video.Analysis.AudioPictures.Spectrogram(string! path, Egami.Video.Analysis.SpectrogramOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Raster<Egami.Pixels.Rgba8>!
-static Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame!>! frames, Egami.Video.MediaTime duration, Egami.Video.Analysis.SpectrogramOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Raster<Egami.Pixels.Rgba8>!
-static Egami.Video.Analysis.AudioPictures.Waveform(string! path, Egami.Video.Analysis.WaveformOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Raster<Egami.Pixels.Rgba8>!
-static Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame!>! frames, Egami.Video.MediaTime duration, Egami.Video.Analysis.WaveformOptions? options = null, Egami.Video.MediaContext? context = null) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.AudioPictures.Spectrogram(string! path, Egami.Video.Analysis.SpectrogramOptions? options = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.AudioPictures.Spectrogram(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame!>! frames, Egami.Video.MediaTime duration, Egami.Video.Analysis.SpectrogramOptions? options = null, Egami.Video.MediaContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.AudioPictures.Waveform(string! path, Egami.Video.Analysis.WaveformOptions? options = null, Egami.Video.MediaContext? context = null, System.IProgress<Egami.Video.MediaProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster<Egami.Pixels.Rgba8>!
+static Egami.Video.Analysis.AudioPictures.Waveform(System.Collections.Generic.IEnumerable<Egami.Video.Audio.AudioFrame!>! frames, Egami.Video.MediaTime duration, Egami.Video.Analysis.WaveformOptions? options = null, Egami.Video.MediaContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> Egami.Raster<Egami.Pixels.Rgba8>!
 static Egami.Video.Analysis.SpectrogramOptions.Default.get -> Egami.Video.Analysis.SpectrogramOptions!
 static Egami.Video.Analysis.SpectrogramOptions.operator !=(Egami.Video.Analysis.SpectrogramOptions? left, Egami.Video.Analysis.SpectrogramOptions? right) -> bool
 static Egami.Video.Analysis.SpectrogramOptions.operator ==(Egami.Video.Analysis.SpectrogramOptions? left, Egami.Video.Analysis.SpectrogramOptions? right) -> bool

@@ -58,7 +58,7 @@ public static class MediaAnalysis
         }
 
         MediaTime? duration = options.Duration ?? (info.Duration is { Ticks: > 0 } total ? total - start : null);
-        Reporter? reporter = progress is null ? null : new Reporter(progress, duration, start);
+        AnalysisReporter? reporter = progress is null ? null : new(progress, duration, start);
         long frames = 0;
         MediaTime videoEnd = start, audioEnd = start;
         YuvVideoFrame? nextVideo = Next(videoReader, stop);
@@ -178,61 +178,6 @@ public static class MediaAnalysis
     }
 
     private static MediaTime Max(MediaTime a, MediaTime b) => a >= b ? a : b;
-
-    /// <summary>Reports progress at most every 250 ms, as the other jobs do, plus a final report.</summary>
-    private sealed class Reporter(IProgress<MediaProgress> progress, MediaTime? duration, MediaTime start)
-    {
-        private readonly long _interval = TimeProvider.System.TimestampFrequency / 4;
-        private readonly long _started = TimeProvider.System.GetTimestamp();
-        private long _next;
-        private readonly MediaTime _start = start;
-        private MediaTime _position = start;
-        private double _fraction;
-
-        public void Advance(MediaTime position, long frames)
-        {
-            if (position > _position)
-            {
-                _position = position;
-            }
-
-            long now = TimeProvider.System.GetTimestamp();
-            if (now >= _next)
-            {
-                _next = now + _interval;
-                Report(now, frames, final: false);
-            }
-        }
-
-        public void Finish(MediaTime end, long frames)
-        {
-            _position = end;
-            Report(TimeProvider.System.GetTimestamp(), frames, final: true);
-        }
-
-        private void Report(long now, long frames, bool final)
-        {
-            double done = (_position - _start).Seconds;
-            double? fraction = final ? 1 : duration is { Ticks: > 0 } d ? Math.Clamp(done / d.Seconds, 0, 1) : null;
-            if (fraction is { } f)
-            {
-                _fraction = Math.Max(_fraction, f);
-                fraction = _fraction;
-            }
-
-            TimeSpan elapsed = TimeProvider.System.GetElapsedTime(_started, now);
-            progress.Report(new MediaProgress
-            {
-                Position = _position,
-                Duration = duration,
-                Fraction = fraction,
-                Frames = frames,
-                Elapsed = elapsed,
-                Speed = elapsed > TimeSpan.Zero ? done / elapsed.TotalSeconds : null,
-                IsFinal = final,
-            });
-        }
-    }
 }
 
 /// <summary>What <see cref="MediaAnalysis.Run"/> looks for and where.</summary>
@@ -292,7 +237,7 @@ public sealed class MediaAnalysisResult
     public IReadOnlyList<Fade> Fades => _scenes?.Fades ?? [];
 
     /// <summary>Gets every frame's scene score and luma, when <see cref="SceneOptions.KeepSeries"/> was set.</summary>
-    public IReadOnlyList<SceneScore> SceneScores => _scenes?.Scores ?? [];
+    public IReadOnlyList<SceneScore> SceneScores => _scenes?.Series ?? [];
 
     /// <summary>Gets how many video frames were analyzed.</summary>
     public long VideoFrames { get; }

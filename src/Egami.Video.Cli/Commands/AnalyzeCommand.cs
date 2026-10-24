@@ -265,12 +265,12 @@ internal static class AnalyzeCommand
 
         if (crop is not null)
         {
-            findings.Crop(crop.Report, crop.Options.Limit);
+            findings.Crop(crop.Report(), crop.Options.Limit);
         }
 
         if (interlace is not null)
         {
-            findings.Interlace(interlace.Report);
+            findings.Interlace(interlace.Report());
         }
 
         if (duplicates is not null)
@@ -280,7 +280,7 @@ internal static class AnalyzeCommand
 
         if (signal is not null)
         {
-            findings.Signal(signal.Report, signal.Series);
+            findings.Signal(signal.Report(), signal.Series);
         }
 
         if (silence is not null)
@@ -449,11 +449,15 @@ internal static class AnalyzeCommand
             crop = Whole(result.GetValue(_cropSkip), "--crop-skip", 0) is { } skip ? crop with { Skip = skip } : crop;
 
             DuplicateOptions duplicates = new();
-            duplicates = Whole(result.GetValue(_dupHigh), "--dup-hi", 0) is { } high ? duplicates with { High = high } : duplicates;
-            duplicates = Whole(result.GetValue(_dupLow), "--dup-lo", 0) is { } low ? duplicates with { Low = low } : duplicates;
+            duplicates = BlockSum(result.GetValue(_dupHigh), "--dup-hi") is { } high ? duplicates with { High = high } : duplicates;
+            duplicates = BlockSum(result.GetValue(_dupLow), "--dup-lo") is { } low ? duplicates with { Low = low } : duplicates;
             duplicates = Fraction(result.GetValue(_dupFraction), "--dup-frac") is { } share ? duplicates with { Fraction = share } : duplicates;
             return new Plan(scenes, black, freeze, crop, duplicates, silence);
         }
+
+        /// <summary>An mpdecimate block threshold (a sum of 64 differences on the 8-bit scale) as the share of the range the library takes.</summary>
+        private static double? BlockSum(int? value, string option) =>
+            value is { } v && (v is < 0 or > 64 * 255) ? throw new UsageException($"{option} must be from 0 to {64 * 255}.") : value / (64.0 * 255);
 
         private static double? Fraction(double? value, string option) =>
             value is { } v && (v is < 0 or > 1 || double.IsNaN(v)) ? throw new UsageException($"{option} must be from 0 to 1.") : value;

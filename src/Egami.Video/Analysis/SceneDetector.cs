@@ -106,7 +106,7 @@ public sealed class SceneDetector : IVideoDetector
     public IReadOnlyList<Fade> Fades => _fades;
 
     /// <summary>Gets every frame's score and luma, when <see cref="SceneOptions.KeepSeries"/> is set; otherwise empty.</summary>
-    public IReadOnlyList<SceneScore> Scores => _scores;
+    public IReadOnlyList<SceneScore> Series => _scores;
 
     /// <summary>Gets how many frames the detector has taken.</summary>
     public long FrameCount => _count;
