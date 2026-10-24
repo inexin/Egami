@@ -365,8 +365,8 @@ V4.3: fragmented MP4 writing, and HLS and DASH segments. API reviewed and accept
   fragment in steady state; Chromium and Chrome (Media Source Extensions), hls.js, dash.js, ffprobe, MP4Box and Bento4 read
   the files (egami-compare).
 
-V5.2: VP8 encoding, on an encoder core that VP9 and AV1 encoding will share. The V5 encoder steps get one combined API review
-after V5.6 (Design Q17).
+V5.2: VP8 encoding, on an encoder core that VP9 and AV1 encoding will share. The V5 encoder steps had one combined API review
+after V5.6 (Design Q17), accepted 2026-10-24.
 
 ### VP8 encoding
 
@@ -391,7 +391,7 @@ after V5.6 (Design Q17).
 - The lookahead places keyframes at scene cuts, plans groups with hidden, temporally filtered alternate references where the
   group's first frame still predicts its last well, and gives each frame its quantizer. Output bytes do not depend on the thread count.
 
-V5.7: Opus encoding, translated from libopus 1.5.2. Part of the V5 encoders' combined API review (Design Q17).
+V5.7: Opus encoding, translated from libopus 1.5.2. API reviewed in the combined V5 encoders review, accepted 2026-10-24.
 
 ### Opus encoding
 
@@ -560,7 +560,7 @@ V1.4 gates (tasks 5, 14 and 21, egami-compare).
   instead of a copy). `InterlaceDetector`, `DuplicateDetector` and `SignalMeter` run 2 to 6 times faster.
 - QuickTime files whose user data ends with a 32-bit zero (QuickTime 7 wrote them so) open; they failed as cut off.
 
-V5.3: VP9 encoding. API review pending (combined encoders review).
+V5.3: VP9 encoding. API reviewed in the combined V5 encoders review, accepted 2026-10-24.
 
 ### VP9 encoding
 
@@ -687,7 +687,7 @@ V5.9 task 19: the CLI.
   to `audio` unless the audio is copied. `info` and ffprobe mode name ALAC, E-AC-3, G.711, AIFF, CAF and raw AC-3 as ffprobe
   does.
 
-V5.4: AV1 encoding, through Egami's `Av1StreamEncoder` (Egami 2.9.9). API review pending (combined encoders review).
+V5.4: AV1 encoding, through Egami's `Av1StreamEncoder` (Egami 2.9.9). API reviewed in the combined V5 encoders review, accepted 2026-10-24.
 
 ### AV1 encoding
 
@@ -743,7 +743,7 @@ V5.4: AV1 encoding, through Egami's `Av1StreamEncoder` (Egami 2.9.9). API review
 - Rate control (720p, 100 frames, 3 Mbit/s, effort 0): one-pass bitrate +0.8 % to +2.1 % of the target and two-pass +1.0 % to
   +3.1 %, within the 5 % gate; constant bitrate -6.4 % to +2.2 %, its one-second buffer never below 55 %.
 
-V5.6: smart cut. Part of the V5 encoders' combined API review (Design Q17).
+V5.6: smart cut. API reviewed in the combined V5 encoders review, accepted 2026-10-24.
 
 ### Trimming
 
