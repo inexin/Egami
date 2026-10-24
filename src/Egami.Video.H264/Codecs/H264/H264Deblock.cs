@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -45,7 +46,7 @@ internal sealed class H264Deblock
     private int _chroma;
 
     /// <summary>Filters the macroblock rows from <paramref name="firstRow"/> to before <paramref name="endRow"/>.</summary>
-    internal void Filter(H264Picture pic, H264MbState mb, IReadOnlyList<H264FilterParams> slices, int bitDepthY, int bitDepthC, int firstRow, int endRow)
+    internal void Filter(H264Picture pic, H264MbState mb, List<H264FilterParams> slices, int bitDepthY, int bitDepthC, int firstRow, int endRow)
     {
         for (int mbY = firstRow; mbY < endRow; mbY++)
         {
@@ -57,7 +58,7 @@ internal sealed class H264Deblock
     }
 
     /// <summary>Filters the edges of macroblock (mbX, mbY): its left and top edges and its internal ones.</summary>
-    internal void FilterOne(H264Picture pic, H264MbState mb, IReadOnlyList<H264FilterParams> slices, int bitDepthY, int bitDepthC, int mbX, int mbY)
+    internal void FilterOne(H264Picture pic, H264MbState mb, List<H264FilterParams> slices, int bitDepthY, int bitDepthC, int mbX, int mbY)
     {
         if (_pic != pic || _mb != mb)
         {
@@ -906,7 +907,7 @@ internal sealed class H264Deblock
                 }
                 else if (flat[addr - 1])
                 {
-                    Vector128.Create(StrengthOf(b0 - 1, b0)).StoreUnsafe(ref bs, 0);
+                    Vector128.Create(MotionStrength(b0 - 1, b0)).StoreUnsafe(ref bs, 0);
                 }
                 else
                 {
@@ -921,7 +922,7 @@ internal sealed class H264Deblock
             if (top)
             {
                 int above = addr - _widthMbs;
-                (mbIntra[above] ? Vector128.Create(4) : flat[above] ? Vector128.Create(StrengthOf(b0 - w4, b0)) : Strengths(b0, w4)).StoreUnsafe(ref bs, 16);
+                (mbIntra[above] ? Vector128.Create(4) : flat[above] ? Vector128.Create(MotionStrength(b0 - w4, b0)) : Strengths(b0, w4)).StoreUnsafe(ref bs, 16);
             }
 
             return;
@@ -949,6 +950,21 @@ internal sealed class H264Deblock
         {
             _bs[0] = _bs[1] = _bs[2] = _bs[3] = 4;
         }
+    }
+
+    /// <summary>
+    /// The bS between blocks of two flat macroblocks, which have no coefficients: 0 for the same motion, else by
+    /// <see cref="MotionDiffers"/>.
+    /// </summary>
+    private int MotionStrength(int p, int q)
+    {
+        Debug.Assert(p >= 0 && q < _mv0.Length, "Both blocks lie in the picture.");
+        ref int ref0 = ref MemoryMarshal.GetArrayDataReference(_ref0), ref1 = ref MemoryMarshal.GetArrayDataReference(_ref1);
+        ref int mv0 = ref MemoryMarshal.GetArrayDataReference(_mv0), mv1 = ref MemoryMarshal.GetArrayDataReference(_mv1);
+        int rp0 = Unsafe.Add(ref ref0, p), rp1 = Unsafe.Add(ref ref1, p);
+        bool same = rp0 == Unsafe.Add(ref ref0, q) && rp1 == Unsafe.Add(ref ref1, q)
+            && (rp0 < 0 || Unsafe.Add(ref mv0, p) == Unsafe.Add(ref mv0, q)) && (rp1 < 0 || Unsafe.Add(ref mv1, p) == Unsafe.Add(ref mv1, q));
+        return !same && MotionDiffers(p, q) ? 1 : 0;
     }
 
     /// <summary>The bS of an inter block q against block p across an edge: 2 with coefficients, else by their motion.</summary>
