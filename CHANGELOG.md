@@ -39,7 +39,8 @@ changes that break code come only in a new major version.
   loop restoration with a closed-form Wiener filter per 256x256 unit, kept where it pays. Frames nothing predicts from try only
   the CDEF strengths of their nearest references.
 - Effort 3 and 4 try 4x4 inter blocks again in the 16x16 cells the motion pre-pass predicts worst.
-- Video bytes change; still AVIF files are byte for byte as before.
+- Video and animated AVIF bytes change (animated AVIF codes its frames with the video tools and Variance Boost); still AVIF
+  files are byte for byte as before.
 
 ### Chroma key
 
