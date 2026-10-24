@@ -25,6 +25,9 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
 
     /// <summary>Whether the block's chosen modes are being coded for keeps, which is when the trellis runs below the efforts that search with it.</summary>
     private bool _winner;
+
+    // Whether rows run as the wavefront, which limits how far up and right intra block copy may read (DvValid).
+    private bool _rowWavefront;
     private readonly int[] _residual = new int[64 * 64];
     private readonly int[] _transformed = new int[64 * 64];
     private readonly int[] _quantized = new int[32 * 32];

@@ -122,6 +122,7 @@ internal sealed partial class Av1TileEncoder
     {
         int miRow = MiRowStart + (row * _sbMi);
         bool intra = _header.FrameIsIntra;
+        _rowWavefront = !rows.Sequential;
         if (rows.Sequential)
         {
             // A still picture's rows in raster order, the CDFs and quantizer carried from each superblock to the next.

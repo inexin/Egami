@@ -81,6 +81,65 @@ public class Av1StreamEncoderTests
     }
 
     [Theory]
+    [InlineData(2)]
+    [InlineData(6)]
+    public void ScreenContentKeyFramesAreTheSameAtAnyThreadCount(int effort)
+    {
+        // Intra block copy may read rows above and to the right; the wavefront must have finished what it reads.
+        Av1SequenceOptions options = new() { Width = 512, Height = 320 };
+        using Av1StreamEncoder one = new(options, EgamiContext.Default with { MaxParallelism = 1 });
+        using Av1StreamEncoder many = new(options, EgamiContext.Default with { MaxParallelism = 8 });
+        using Av1StreamDecoder decoder = new();
+        for (int i = 0; i < 2; i++)
+        {
+            using YuvRaster frame = Screen(512, 320, i);
+            Av1FramePlan plan = new() { Kind = Av1FrameKind.Key, Effort = effort, Quality = 60, ScreenContent = true };
+            byte[] single = one.Encode(frame, plan).Data.ToArray();
+            Assert.True(one.Reconstruction!.Header.AllowIntrabc);
+            Av1EncodedFrame threaded = many.Encode(frame, plan);
+            Assert.Equal(single, threaded.Data.ToArray());
+            decoder.Send(threaded.Data.Span);
+            AssertDecodesToReconstruction(decoder, many.Reconstruction!, 512, 320, 8, ChromaFormat.Yuv420);
+        }
+    }
+
+    /// <summary>Gets a screen-like picture: a few glyph tiles repeated across the frame, so copies come from far up and right.</summary>
+    internal static YuvRaster Screen(int width, int height, int index)
+    {
+        Random random = new(7 + index);
+        byte[][] glyphs = new byte[6][];
+        for (int g = 0; g < glyphs.Length; g++)
+        {
+            glyphs[g] = new byte[64];
+            for (int k = 0; k < 64; k++)
+            {
+                glyphs[g][k] = (byte)(random.Next(2) == 0 ? 30 : 220);
+            }
+        }
+
+        YuvRaster<byte> raster = YuvRaster.Create(width, height, ChromaFormat.Yuv420, YuvColor.Bt601Limited);
+        for (int y = 0; y < height; y++)
+        {
+            Span<byte> row = raster.Y.Row(y);
+            for (int x = 0; x < width; x++)
+            {
+                byte[] glyph = glyphs[((x / 8) + (3 * (y / 8)) + index) % glyphs.Length];
+                row[x] = glyph[((y % 8) * 8) + (x % 8)];
+            }
+        }
+
+        foreach (YuvPlane<byte> plane in (YuvPlane<byte>[])[raster.U!, raster.V!])
+        {
+            for (int y = 0; y < plane.Height; y++)
+            {
+                plane.Row(y).Fill((byte)(128 + ((y / 16) % 3)));
+            }
+        }
+
+        return raster;
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void GlobalMotionFollowsPansAndZooms(bool zoom)
