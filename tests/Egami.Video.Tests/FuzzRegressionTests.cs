@@ -40,6 +40,25 @@ public class FuzzRegressionTests
             return;
         }
 
+        if (input.StartsWith("trim", StringComparison.Ordinal))
+        {
+            // As the trim fuzz target: four bytes pick the mode, the start, the length and the container (V5.6).
+            TrimMode mode = (TrimMode)(data[0] % 3);
+            MediaTime start = new(data[1], new Rational(1, 64));
+            MediaTime? end = data[2] == 0 ? null : start + new MediaTime(data[2], new Rational(1, 64));
+            string format = (data[3] % 4) switch { 0 => "mkv", 1 => "webm", 2 => "mp4", _ => "ivf" };
+            try
+            {
+                using MemoryStream output = new();
+                MediaFile.Trim(new MemoryStream(data, 4, data.Length - 4), output, format, start, end, mode, context: context, leaveOpen: true, cancellationToken: TestContext.Current.CancellationToken);
+            }
+            catch (Exception e) when (e is EgamiException or InvalidDataException or NotSupportedException or ArgumentOutOfRangeException { ParamName: "start" })
+            {
+            }
+
+            return;
+        }
+
         if (input.StartsWith("vp9raw", StringComparison.Ordinal))
         {
             DecodeVp9Packets(data, context);

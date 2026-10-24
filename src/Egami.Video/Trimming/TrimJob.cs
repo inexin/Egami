@@ -34,13 +34,16 @@ internal sealed class TrimJob : IDisposable
     /// <summary>How far back a cue that starts before the cut and is still shown at it may lie.</summary>
     private static readonly MediaTime CueLookBack = MediaTime.FromSeconds(30);
 
+    /// <summary>The furthest a packet's timestamp may lie from 0 (about three years), so every time a cut takes fits in nanoseconds.</summary>
+    private const double MaxSeconds = 1e8;
+
     private readonly IDemuxer _demuxer;
     private readonly TrackInfo[] _kept;
     private readonly Dictionary<int, TrackInfo> _tracks;
     private readonly VideoTrackInfo? _main;
     private readonly TrimCodec? _codec;
     private readonly MediaTime _start;
-    private readonly long _halfTick;
+    private readonly double _halfTick;
     private readonly MediaTime? _end;
     private readonly TrimMode _asked;
     private readonly ContainerFormat _format;
@@ -99,7 +102,7 @@ internal sealed class TrimJob : IDisposable
         _end = end;
 
         // Containers round timestamps to their tick (Matroska's millisecond): a frame within half a tick of a time is at it.
-        _halfTick = _main is null ? 0 : new MediaTime(1, _main.TimeBase).Rescale(Rational.Nanosecond).Ticks / 2;
+        _halfTick = _main is null ? 0 : _main.TimeBase.ToDouble() / 2;
         _asked = mode;
         _mode = mode;
         _format = format;
@@ -168,6 +171,13 @@ internal sealed class TrimJob : IDisposable
             {
                 packet.Dispose();
                 continue;
+            }
+
+            if (Math.Abs(packet.Timestamp.Seconds) > MaxSeconds || Math.Abs((packet.DecodeTimestamp ?? packet.Timestamp).Seconds) > MaxSeconds)
+            {
+                // A broken file's timestamp: moved and rescaled by the cut, it would overflow.
+                packet.Dispose();
+                throw new CorruptDataException(_demuxer.Info.FormatName, 0, $"Track {packet.TrackNumber} has a packet at {packet.Timestamp.Seconds:0.###} s, past what a cut can move.");
             }
 
             _lastRead = packet.Timestamp > _lastRead ? packet.Timestamp : _lastRead;
@@ -879,7 +889,7 @@ internal sealed class TrimJob : IDisposable
     }
 
     /// <summary>Whether a main track frame starts before <paramref name="limit"/>, by more than the container's rounding.</summary>
-    private bool Before(MediaTime frame, MediaTime limit) => frame.Rescale(Rational.Nanosecond).Ticks + _halfTick < limit.Rescale(Rational.Nanosecond).Ticks;
+    private bool Before(MediaTime frame, MediaTime limit) => frame < limit && limit.Seconds - frame.Seconds > _halfTick;
 
     private void VideoDone()
     {
@@ -1035,7 +1045,7 @@ internal sealed class TrimJob : IDisposable
                     if (_end is { } end && length is { } shown && time + shown > end)
                     {
                         // The container's own means stop the audio at the end: MP4's edit list, Matroska's DiscardPadding.
-                        packet.Duration = Between(time, end).Rescale(new Rational(1, track.SampleRate));
+                        packet.Duration = new MediaTime(Samples(Between(time, end), track.SampleRate), new Rational(1, track.SampleRate));
                     }
 
                     Queue(packet, true);
@@ -1098,6 +1108,9 @@ internal sealed class TrimJob : IDisposable
         _ => null,
     };
 
+    /// <summary>A time as a sample index, clamped so a broken file's timestamps cannot overflow.</summary>
+    private static long Samples(MediaTime time, int rate) => (long)Math.Round(Math.Clamp(time.Seconds * rate, -4e18, 4e18));
+
     /// <summary>Cuts a PCM packet to the samples inside <c>[cut, end)</c>; null when none are.</summary>
     private EncodedPacket? SlicePcm(EncodedPacket packet, AudioTrackInfo track, MediaTime cut, MediaTime length)
     {
@@ -1105,20 +1118,20 @@ internal sealed class TrimJob : IDisposable
         {
             int bytes = FrameBytes(track)!.Value;
             Rational sample = new(1, track.SampleRate);
-            long at = packet.Timestamp.Rescale(sample).Ticks;
+            long at = Samples(packet.Timestamp, track.SampleRate);
             long count = packet.Data.Length / bytes;
 
             // A container's rounded timestamp (Matroska's millisecond) stands for the sample after the packet before it.
             AudioCut state = _audio[track.Number];
-            long slack = Math.Max(1, new MediaTime(1, track.TimeBase).Rescale(sample).Ticks);
+            long slack = Math.Max(1, (long)Math.Ceiling(track.TimeBase.ToDouble() * track.SampleRate));
             if (state.NextSample is { } next && Math.Abs(at - next) <= slack)
             {
                 at = next;
             }
 
             state.NextSample = at + count;
-            long first = Math.Clamp(cut.Rescale(sample).Ticks - at, 0, count);
-            long last = _end is { } end ? Math.Clamp(end.Rescale(sample).Ticks - at, 0, count) : count;
+            long first = Math.Clamp(Samples(cut, track.SampleRate) - at, 0, count);
+            long last = _end is { } end ? Math.Clamp(Samples(end, track.SampleRate) - at, 0, count) : count;
             if (last <= first)
             {
                 return null;
@@ -1182,8 +1195,11 @@ internal sealed class TrimJob : IDisposable
     }
 
     /// <summary>The time from <paramref name="from"/> to <paramref name="to"/>, in nanoseconds: a difference taken in either one's time base could round away.</summary>
-    private static MediaTime Between(MediaTime from, MediaTime to) =>
-        new(to.Rescale(Rational.Nanosecond).Ticks - from.Rescale(Rational.Nanosecond).Ticks, Rational.Nanosecond);
+    private static MediaTime Between(MediaTime from, MediaTime to)
+    {
+        double seconds = to.Seconds - from.Seconds;
+        return MediaTime.FromSeconds(double.IsFinite(seconds) ? Math.Clamp(seconds, -1e9, 1e9) : 0);
+    }
 
     /// <summary>Queues a packet of another track when it is kept, moved so the cut starts at 0; disposes it otherwise.</summary>
     private void Queue(EncodedPacket? packet, bool keep)
