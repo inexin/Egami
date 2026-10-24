@@ -276,6 +276,27 @@ public class TrimTests
     }
 
     [Fact]
+    public void LacedVorbisInMatroskaKeepsItsSamples()
+    {
+        // mkvmerge laces Vorbis packets under one block time: each gets its own time, so none of the cut is lost.
+        byte[] source = File.ReadAllBytes(Path.Combine(Corpus.Directory, "mkv-vorbis-xiph-laced.mkv"));
+        List<DecodedFrame> all = Decode(source);
+        TrimResult result = Trim(source, "mkv", all[5].Time, all[^5].Time, TrimMode.Smart, out byte[] cut);
+        using AudioReader reader = AudioReader.Open(new MemoryStream(cut));
+        long samples = reader.ReadFrames().Sum(f =>
+        {
+            using (f)
+            {
+                return (long)f.SampleCount;
+            }
+        });
+        double seconds = (all[^5].Time - all[5].Time).Seconds;
+
+        // Within two Vorbis long blocks (2 x 256 samples at 8 kHz) of the video's length.
+        Assert.InRange(samples, (seconds * 8000) - 512, (seconds * 8000) + 512);
+    }
+
+    [Fact]
     public void ProgressEndsWithAFinalReportAndTheStreamOverloadReadsAPipe()
     {
         byte[] source = MakeClip(Codec("vp8"), "webm");

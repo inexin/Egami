@@ -766,6 +766,8 @@ V5.6: smart cut. API reviewed in the combined V5 encoders review, accepted 2026-
   the cut; tags and attachments are kept.
 - Matroska writes DiscardPadding as the signed element it is: a padding whose top bit was set (14 ms, for one) read back as
   none, so the last Opus packet kept its padding.
+- Matroska reads each Vorbis packet laced in one block at its own time, where the samples before it end: all of them had the
+  block's time, so a trimmed or remuxed laced Vorbis track lost about a fifth of its samples.
 - vpxdec, dav1d and FFmpeg decode the cuts without errors, to the same frames as Egami (`tools/video/check-smart-cut.py`).
 - 10 minutes of AFL++ on the new trim target found no crash once broken timestamps were rejected (two inputs that overflowed
   are regression tests).
