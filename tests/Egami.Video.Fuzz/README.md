@@ -26,6 +26,7 @@ reports hangs. Limits are lowered so a valid but huge file cannot exhaust memory
 | `alac` | ALAC packets without a container (the 24-byte ALACSpecificConfig, then packets with 32-bit little-endian lengths, as `tools/video/make-alac-references.py` writes them), decoded with Skip and Conceal, some packets cut short by their duration | `tests/video/fuzz-seeds/alac/*` |
 | `subs` | A subtitle file (SRT, WebVTT, ASS, SSA): read leniently and strictly; a file read without repairs must save back to the same bytes, and retimed must save to a file with as many cues; then converted to every format and read back | `tests/video/fuzz-seeds/subs/*` |
 | `subtrack` | A container's text subtitle tracks read into documents, then written as tracks in Matroska, WebM and MP4 and read back | `tests/video/fuzz-seeds/subtrack/*` |
+| `trim` | `MediaFile.Trim`: the first four bytes pick the mode (smart, keyframe, re-encode), the start and length in 1/64 s and the output container (Matroska, WebM, MP4, IVF); the rest is a VP8, VP9 or AV1 file. It may fail only as the API says: broken data, a start past the end, no keyframe, a track the container cannot hold. Instruments Egami.dll too, where the VP8 and AV1 encoders are | `tests/video/fuzz-seeds/trim/*` |
 | `mjpeg` | One Motion JPEG packet: decoded at full and 1/4 scale (DHT splicing, AVI1 field weaving, junk trimming), converted to RGB, encoded back | `tests/video/fuzz-seeds/mjpeg/*` |
 
 The seeds are written by `dotnet run --project tests/Egami.Video.Fuzz -- seeds tests/video/fuzz-seeds`.

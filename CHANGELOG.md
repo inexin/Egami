@@ -315,6 +315,14 @@ recommended).
   method's own default `--threshold`, and `--min-gap` 0.6 s by default; `ffmpeg -vf select='gt(scene,X)'` maps to
   `--method content`.
 
+### Smart cut (V5.6)
+
+- `trim --smart` cuts on the exact frame, encoding again only the frames from `--from` up to the next keyframe; `trim
+  --reencode` encodes the whole cut again. Both read a file, not standard input.
+- `segment --scenes --exact` starts every part on its scene's first frame, by smart cut.
+- `egami-video ffmpeg` maps a cut that does not copy the video (`ffmpeg -ss 5 -to 9 -i in.webm out.webm`) to `trim --smart`.
+- `#n` frame numbers no longer count a VP8 hidden frame, which shares the time of the frame after it.
+
 ## Egami.Video.H264 0.6.0 (unreleased)
 
 V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version. API review questions decided 2026-10-23 (all as
@@ -734,6 +742,31 @@ V5.4: AV1 encoding, through Egami's `Av1StreamEncoder` (Egami 2.9.9). API review
   than before stage A (12 to 14 times and 48 to 57 times).
 - Rate control (720p, 100 frames, 3 Mbit/s, effort 0): one-pass bitrate +0.8 % to +2.1 % of the target and two-pass +1.0 % to
   +3.1 %, within the 5 % gate; constant bitrate -6.4 % to +2.2 %, its one-second buffer never below 55 %.
+
+V5.6: smart cut. Part of the V5 encoders' combined API review (Design Q17).
+
+### Trimming
+
+- `MediaFile.Trim` (a file or a `Stream` in and out, with progress and a cancellation token) cuts from a start up to an end,
+  with timestamps from 0, and returns a `TrimResult`: the mode that ran, where the cut starts in the input, the frames written
+  and encoded again, the packets, and the warnings. The first frame is the first at or after the start, within half of the
+  container's tick; the video ends after the packet that shows the last frame before the end, and a hidden frame after it
+  that nothing shows is dropped.
+- `TrimMode.Smart`, the default, is frame-exact: it decodes from the keyframe before the start and encodes the frames up to
+  the next keyframe again as a closed group starting with a keyframe, then copies every packet from that keyframe byte for
+  byte. VP8, VP9 and AV1; the group matches the stream (codec, profile, size, bit depth, chroma, VP9's color_space and range,
+  AV1's sequence header byte for byte through `Av1SequenceOptions.FromSequenceHeader`) and is coded at the average quantizer
+  of the packets it replaces. Motion JPEG, uncompressed video and starts on a keyframe are a plain copy. A stream the encoder
+  cannot match is encoded again whole (a `trim-reencode` warning); a codec Egami.Video cannot encode, or frames that change
+  size, start at the keyframe (`trim-keyframe`).
+- `TrimMode.Keyframe` copies from the keyframe at or before the start; `TrimMode.Reencode` encodes the whole cut again at the
+  source's quantizer.
+- Audio is cut at the sample for PCM (packets sliced), MP4 (the edit list) and Opus in Matroska and WebM (CodecDelay with 80 ms
+  of pre-roll, DiscardPadding), else at the nearest packet (`trim-audio-packet`); subtitle cues and chapters are clipped to
+  the cut; tags and attachments are kept.
+- Matroska writes DiscardPadding as the signed element it is: a padding whose top bit was set (14 ms, for one) read back as
+  none, so the last Opus packet kept its padding.
+- vpxdec, dav1d and FFmpeg decode the cuts without errors, to the same frames as Egami (`tools/video/check-smart-cut.py`).
 
 ## Egami.Video 0.5.0 (unreleased)
 
