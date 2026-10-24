@@ -250,7 +250,8 @@ recommended).
 
 ## Egami.Video.H264 0.6.0 (unreleased)
 
-V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version. The API review is still to come.
+V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version. API review questions decided 2026-10-23 (all as
+recommended): the raw reader is named "H.264 Annex B", `FrameRate` stays nullable, and broken data reports `H264.CorruptFrame`.
 
 - `H264Codec` and `WithH264()`: a managed H.264 decoder written from ITU-T H.264 for progressive Constrained Baseline, Main,
   High, High 10 and High 4:2:2 streams, 8 and 10 bit, 4:0:0, 4:2:0 and 4:2:2, and their Intra profiles: CAVLC and CABAC, B
@@ -258,7 +259,7 @@ V7: H.264 decoding, in a new opt-in package that ships at Egami.Video's version.
   matrices, long-term references and memory management, and several slices per frame. Frames equal FFmpeg's decode on all 31
   corpus clips. Interlaced streams, 4:4:4, lossless, FMO, ASO, SP and SI slices and data partitions give
   `UnsupportedFormatException`.
-- Decoding starts at the first IDR or recovery point; a broken slice reports `H264.CorruptSlice` and its macroblocks are
+- Decoding starts at the first IDR or recovery point; a broken slice reports `H264.CorruptFrame` and its macroblocks are
   concealed from the frame before (`Skip` and `Conceal`) or the frame is finished and the error thrown (`Throw`); a missing
   reference reports `H264.MissingReference`. Colour comes from the VUI, then the container, then BT.601 or BT.709 by size; HDR10
   mastering display and content light level SEI become `Hdr`, HDR10+ (T.35 user data SEI) `Hdr10Plus`.

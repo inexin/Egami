@@ -48,7 +48,7 @@ internal sealed class H264VideoDecoder : IVideoDecoder
             }
             catch (CorruptDataException e)
             {
-                Report(DiagnosticLevel.Warning, "H264.CorruptSlice", $"The track's avcC record cannot be read ({e.Message}).");
+                Report(DiagnosticLevel.Warning, "H264.CorruptFrame", $"The track's avcC record cannot be read ({e.Message}).");
                 if (_errors == DecodeErrorMode.Throw)
                 {
                     throw;
@@ -72,7 +72,7 @@ internal sealed class H264VideoDecoder : IVideoDecoder
         }
         catch (CorruptDataException e) when (_errors != DecodeErrorMode.Throw)
         {
-            Report(DiagnosticLevel.Warning, "H264.CorruptSlice", $"Packet {_packet} cannot be decoded ({e.Message}).");
+            Report(DiagnosticLevel.Warning, "H264.CorruptFrame", $"Packet {_packet} cannot be decoded ({e.Message}).");
         }
         finally
         {

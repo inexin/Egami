@@ -613,6 +613,7 @@ static Egami.Video.Containers.RawVideo.CreateMuxer(System.IO.Stream! stream, Ega
 static Egami.Video.Containers.RawVideo.OpenDemuxer(System.IO.Stream! stream, Egami.Video.VideoTrackInfo! track, bool leaveOpen = false) -> Egami.Video.Containers.IDemuxer!
 static Egami.Video.Containers.Y4mFormat.Instance.get -> Egami.Video.Containers.Y4mFormat!
 static Egami.Video.EncodedPacket.Rent(int trackNumber, int length, Egami.Video.MediaTime timestamp) -> Egami.Video.EncodedPacket!
+static Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory<byte> payload) -> Egami.Video.Hdr10PlusMetadata?
 static Egami.Video.Hdr10PlusMetadata.operator !=(Egami.Video.Hdr10PlusMetadata? left, Egami.Video.Hdr10PlusMetadata? right) -> bool
 static Egami.Video.Hdr10PlusMetadata.operator ==(Egami.Video.Hdr10PlusMetadata? left, Egami.Video.Hdr10PlusMetadata? right) -> bool
 static Egami.Video.Hdr10PlusPercentile.operator !=(Egami.Video.Hdr10PlusPercentile left, Egami.Video.Hdr10PlusPercentile right) -> bool

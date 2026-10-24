@@ -1872,7 +1872,6 @@ static Egami.Video.Analysis.SpectrogramOptions.operator ==(Egami.Video.Analysis.
 static Egami.Video.Analysis.WaveformOptions.Default.get -> Egami.Video.Analysis.WaveformOptions!
 static Egami.Video.Analysis.WaveformOptions.operator !=(Egami.Video.Analysis.WaveformOptions? left, Egami.Video.Analysis.WaveformOptions? right) -> bool
 static Egami.Video.Analysis.WaveformOptions.operator ==(Egami.Video.Analysis.WaveformOptions? left, Egami.Video.Analysis.WaveformOptions? right) -> bool
-static Egami.Video.Hdr10PlusMetadata.Parse(System.ReadOnlyMemory<byte> payload) -> Egami.Video.Hdr10PlusMetadata?
 Egami.Video.Audio.Codecs.AlacCodec
 override Egami.Video.Audio.Codecs.AlacCodec.CanEncode.get -> bool
 override Egami.Video.Audio.Codecs.AlacCodec.CodecId.get -> string!
