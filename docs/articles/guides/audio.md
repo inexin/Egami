@@ -2,13 +2,14 @@
 
 Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:
 
-- Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and encode, Vorbis I decode and
-  MPEG audio (MP3, MP2 and MP1) decode.
-- Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC, Ogg and MP3, read and written; FLAC,
-  PCM, Opus, Vorbis and MP3 in Matroska, WebM and MP4 too.
+- Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and encode, Apple Lossless
+  (ALAC) decode and encode, Vorbis I decode, MPEG audio (MP3, MP2 and MP1) decode, Dolby AC-3 (ATSC A/52) decode and G.711
+  μ-law and A-law decode.
+- Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC, Ogg, MP3, AIFF and AIFF-C, Apple CAF
+  and raw AC-3 and E-AC-3, read and written; these codecs in Matroska, WebM and MP4 too.
 - A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.
 
-Other audio tracks, such as AAC, are copied through untouched.
+Other audio tracks, such as AAC and E-AC-3, are copied through untouched.
 
 ## Frames
 

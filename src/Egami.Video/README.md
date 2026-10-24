@@ -18,8 +18,9 @@ libaom frame for frame, from WebM, Matroska, MP4 and IVF. Version 0.6 adds fragm
 subtitle files (`SubtitleDocument`): read, edit, retime and convert.
 
 Audio (V5) adds PCM and FLAC decode and encode, Opus decode and encode, Vorbis and MP3 decode, and WAV, FLAC, Ogg and MP3 files.
+V5.9 adds ALAC decode and encode, AC-3 and G.711 decode, and AIFF, CAF and raw AC-3 files.
 
-Royalty-free codecs only (MP3's patents have expired). No native code, no wrapped C or C++ libraries.
+Royalty-free codecs only (the MP3 and AC-3 patents have expired). No native code, no wrapped C or C++ libraries.
 
 ## Read frames
 
