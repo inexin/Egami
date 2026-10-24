@@ -240,11 +240,12 @@ internal sealed class H264Inter
         int xs = Math.Clamp(x + (H264SliceDecoder.MvX(mv) >> 2) - 2, -pad, refPic.Width + pad - 24);
         int ys = Math.Clamp(y + (H264SliceDecoder.MvY(mv) >> 2) - 2, -pad, refPic.Height + pad - 21);
         ref T luma = ref H264Samples.At(refPic.Y<T>(), refPic.Origin + (ys * refPic.Stride) + xs);
+        int stride = refPic.Stride;
         for (int row = 0; row < 21; row++)
         {
-            ref T at = ref Unsafe.Add(ref luma, row * refPic.Stride);
-            Prefetch(ref at);
-            Prefetch(ref Unsafe.Add(ref at, 23));
+            Prefetch(ref luma);
+            Prefetch(ref Unsafe.Add(ref luma, 23));
+            luma = ref Unsafe.Add(ref luma, stride);
         }
 
         if (_chroma != 1)
@@ -257,12 +258,15 @@ internal sealed class H264Inter
         int c = refPic.ChromaOrigin + (cy * refPic.ChromaStride) + cx;
         ref T cb = ref H264Samples.At(refPic.Cb<T>(), c);
         ref T cr = ref H264Samples.At(refPic.Cr<T>(), c);
+        int cStride = refPic.ChromaStride;
         for (int row = 0; row < 9; row++)
         {
-            Prefetch(ref Unsafe.Add(ref cb, row * refPic.ChromaStride));
-            Prefetch(ref Unsafe.Add(ref cb, (row * refPic.ChromaStride) + 9));
-            Prefetch(ref Unsafe.Add(ref cr, row * refPic.ChromaStride));
-            Prefetch(ref Unsafe.Add(ref cr, (row * refPic.ChromaStride) + 9));
+            Prefetch(ref cb);
+            Prefetch(ref Unsafe.Add(ref cb, 9));
+            Prefetch(ref cr);
+            Prefetch(ref Unsafe.Add(ref cr, 9));
+            cb = ref Unsafe.Add(ref cb, cStride);
+            cr = ref Unsafe.Add(ref cr, cStride);
         }
     }
 
