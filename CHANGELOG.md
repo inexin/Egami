@@ -767,6 +767,8 @@ V5.6: smart cut. Part of the V5 encoders' combined API review (Design Q17).
 - Matroska writes DiscardPadding as the signed element it is: a padding whose top bit was set (14 ms, for one) read back as
   none, so the last Opus packet kept its padding.
 - vpxdec, dav1d and FFmpeg decode the cuts without errors, to the same frames as Egami (`tools/video/check-smart-cut.py`).
+- 10 minutes of AFL++ on the new trim target found no crash once broken timestamps were rejected (two inputs that overflowed
+  are regression tests).
 
 ## Egami.Video 0.5.0 (unreleased)
 
