@@ -21,9 +21,7 @@ internal sealed partial class H264SliceDecoder
 
     private bool DecodeSkipFlag(int mbAddr)
     {
-        _mbAddr = mbAddr;
-        _mbX = mbAddr % _widthMbs;
-        _mbY = mbAddr / _widthMbs;
+        SetAddress(mbAddr);
         int left = LeftMb, top = TopMb;
         int inc = (Available(left) && !H264MbState.IsSkip(_mb.Kind[left]) ? 1 : 0) + (Available(top) && !H264MbState.IsSkip(_mb.Kind[top]) ? 1 : 0);
         return Bin((_h.IsB ? 24 : 11) + inc) != 0;

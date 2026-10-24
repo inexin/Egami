@@ -66,6 +66,11 @@ internal sealed partial class H264SliceDecoder
     // The neighbouring macroblocks of the current one that are available, as Neighbor* bits.
     private int _neighbors;
 
+    // The QPY whose chroma QPs are kept, and those QPs.
+    private int _chromaQpOf;
+    private sbyte _chromaQp0;
+    private sbyte _chromaQp1;
+
     // The picture's motion arrays, per list.
     private sbyte[] _refIdx0 = [];
     private sbyte[] _refIdx1 = [];
@@ -115,6 +120,8 @@ internal sealed partial class H264SliceDecoder
         _mv1 = pic.Mv[1];
         Decoded = 0;
         LastMb = -1;
+        _mbAddr = -2;
+        _chromaQpOf = -1000;
 
         int mbAddr = h.FirstMb;
         if (_cabac)
@@ -195,11 +202,31 @@ internal sealed partial class H264SliceDecoder
         }
     }
 
+    /// <summary>Makes a macroblock current: the next one steps its column, others divide.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void SetAddress(int mbAddr)
+    {
+        if (mbAddr == _mbAddr)
+        {
+            return;
+        }
+
+        if (mbAddr == _mbAddr + 1 && _mbX + 1 < _widthMbs)
+        {
+            _mbX++;
+        }
+        else
+        {
+            _mbX = mbAddr % _widthMbs;
+            _mbY = mbAddr / _widthMbs;
+        }
+
+        _mbAddr = mbAddr;
+    }
+
     private void Begin(int mbAddr)
     {
-        _mbAddr = mbAddr;
-        _mbX = mbAddr % _widthMbs;
-        _mbY = mbAddr / _widthMbs;
+        SetAddress(mbAddr);
 
         // Which neighbouring macroblocks (6.4.9: A left, B above, C above right, D above left) are in this slice.
         _neighbors = (_mbX > 0 && Available(mbAddr - 1) ? NeighborA : 0)
@@ -228,8 +255,16 @@ internal sealed partial class H264SliceDecoder
         _mb.Transform8x8[addr] = _t8x8;
         int qp = _kind == H264MbKind.IPcm ? 0 : _qp;
         _mb.Qp[addr] = (sbyte)qp;
-        _mb.QpC[0][addr] = (sbyte)ChromaQp(qp, _pps.ChromaQpIndexOffset);
-        _mb.QpC[1][addr] = (sbyte)ChromaQp(qp, _pps.SecondChromaQpIndexOffset);
+        if (qp != _chromaQpOf)
+        {
+            // QPC changes only with QPY.
+            _chromaQpOf = qp;
+            _chromaQp0 = (sbyte)ChromaQp(qp, _pps.ChromaQpIndexOffset);
+            _chromaQp1 = (sbyte)ChromaQp(qp, _pps.SecondChromaQpIndexOffset);
+        }
+
+        _mb.QpC[0][addr] = _chromaQp0;
+        _mb.QpC[1][addr] = _chromaQp1;
         _pic.MbIntra[addr] = H264MbState.IsIntra(_kind);
         _mb.FlatInside[addr] = IsFlatInside();
         if (_h.NalRefIdc != 0 && !H264MbState.IsIntra(_kind))
@@ -328,11 +363,12 @@ internal sealed partial class H264SliceDecoder
             // A row of four blocks: four bytes of counts and modes, eight of mvd.
             Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(nzLuma), b), 0u);
             Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(nonzero), b), 0u);
-            Unsafe.WriteUnaligned(ref Unsafe.As<sbyte, byte>(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(intraModes), b)), uint.MaxValue);
             Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(mvd0), b * 2), 0ul);
             Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(mvd1), b * 2), 0ul);
             if (intra)
             {
+                // Intra modes are read only from Intra4x4 and Intra8x8 macroblocks, which write their own.
+                Unsafe.WriteUnaligned(ref Unsafe.As<sbyte, byte>(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(intraModes), b)), uint.MaxValue);
                 _pic.RefIdx[0].AsSpan(b, 4).Fill(-1);
                 _pic.RefIdx[1].AsSpan(b, 4).Fill(-1);
                 _pic.RefPicId[0].AsSpan(b, 4).Fill(-1);
@@ -346,10 +382,16 @@ internal sealed partial class H264SliceDecoder
         {
             int cw = _mb.ChromaW4, rows = _chromaArrayType == 1 ? 2 : 4;
             int c = (_mbY * rows * cw) + (_mbX * 2);
+            byte[] nzCb = _mb.NzCb, nzCr = _mb.NzCr;
+            if (c + ((rows - 1) * cw) + 2 > Math.Min(nzCb.Length, nzCr.Length))
+            {
+                throw H264Errors.Corrupt("A macroblock lies outside the picture.");
+            }
+
             for (int y = 0; y < rows; y++, c += cw)
             {
-                _mb.NzCb.AsSpan(c, 2).Clear();
-                _mb.NzCr.AsSpan(c, 2).Clear();
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(nzCb), c), (ushort)0);
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(nzCr), c), (ushort)0);
             }
         }
     }
