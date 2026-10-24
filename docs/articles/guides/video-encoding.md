@@ -51,18 +51,23 @@ equal qualities give the same quantizer step as VP9's; `Quantizer` is AV1's base
 packet is a temporal unit of OBUs, as MP4 and Matroska store them, and the track's `av1C` comes from the sequence header.
 
 The frame coding is `Av1StreamEncoder`'s: partitions, intra and inter modes from up to seven references with compound
-prediction, transform types and sizes chosen by rate and distortion, a trellis, delta quantizers per superblock by block detail,
-and deblocking levels and CDEF strengths per frame; from effort 5, 6 and 7 on it adds compound masks, overlapped and warped
-motion, dual filters and global motion. Egami.Video plans the references: each group's last frame, blended with its neighbours along
-their motion, is coded first as a hidden alternate reference, then a hidden frame halfway to it (a two-level pyramid, AV1's
-ALTREF2). Neither costs a frame of its own when its time comes: AV1 shows it again with `show_existing_frame`, a packet of a
-few bytes. The frames in between read their three nearest past frames, the golden frame and the hidden frames ahead.
+prediction, transform types and sizes chosen by rate and distortion, a trellis, delta quantizers per superblock, deblocking levels
+searched over every level at once, CDEF strengths and, on frames others predict from, Wiener loop restoration; from effort 5, 6
+and 7 on it adds compound masks, overlapped and warped motion, dual filters and global motion. Egami.Video plans the references:
+each group of 16 frames is a pyramid. Its last frame, blended with its neighbours along their motion, is coded first as a hidden
+alternate reference, then a hidden frame halfway to it, halfway again and so on down to pairs, five layers in all; the frames left
+between them predict from both sides and nothing predicts from them. No hidden frame costs a frame of its own when its time comes:
+AV1 shows it again with `show_existing_frame`, a packet of a few bytes. Before a group is coded, it and the next run through
+`Av1StreamEncoder.Analyze`, which finds how much of each frame the frames after it reuse: the more, the finer the alternate
+reference's and the keyframe's quantizers, and the finer the superblocks that matter most. Deeper layers get coarser quantizers and
+spend fewer bits on what only they show. The temporal filter, on keyframes and alternate references, blends as much as each
+picture's noise and the frame's quantizer call for.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoEncode.cs#video-encode-av1)]
 
 `Av1EncoderOptions` holds the expert settings: quantizer limits, alternate references and the pyramid on or off, golden frame
-spacing, the temporal filter's frames and strength, adaptive quantization, screen content tools, error resilience and the bit
-depth. AV1 codes no alpha in video files (Matroska and MP4 have no standard place for it); animated AVIF, through Egami's
+spacing, the temporal filter's frames and strength (adaptive by default), adaptive quantization (from the temporal model on the
+base frames, by block detail on the others), screen content tools, error resilience and the bit depth. AV1 codes no alpha in video files (Matroska and MP4 have no standard place for it); animated AVIF, through Egami's
 `AvifWriter`, does.
 
 ### Profiles and HDR
