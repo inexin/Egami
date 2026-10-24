@@ -17,8 +17,12 @@ internal sealed class FrameSignature
     public const int Cells = GridWidth * GridHeight;
     public const int Bins = 64;
 
+    /// <summary>How many 8-bit rows a 16-bit column sum holds before it must be emptied into the cell sums (255 x 257 &lt; 65,536).</summary>
+    private const int ColumnRows = 257;
+
     private readonly double[] _sums = new double[Cells];
     private readonly int[] _counts = new int[Cells];
+    private ushort[] _columns = [];
     private byte[]? _binsOf8;
     private byte[]? _binsOf16;
     private int _binsDepth;
@@ -40,7 +44,9 @@ internal sealed class FrameSignature
     public double Luma { get; private set; }
 
     /// <summary>Measures a frame into this signature.</summary>
-    public void Measure(YuvRaster raster)
+    /// <param name="raster">The frame's planes.</param>
+    /// <param name="histogram">Whether to fill <see cref="Histogram"/> too; only the histogram method reads it.</param>
+    public void Measure(YuvRaster raster, bool histogram = true)
     {
         int depth = raster.BitDepth;
         bool limited = raster.Color.Range == YuvRange.Limited;
@@ -52,14 +58,20 @@ internal sealed class FrameSignature
             Grid(bytes.Y, Y, black, white);
             Chroma(bytes.U, Cb, max);
             Chroma(bytes.V, Cr, max);
-            Histogram8(bytes.Y, raster.Color.Range);
+            if (histogram)
+            {
+                Histogram8(bytes.Y, raster.Color.Range);
+            }
         }
         else if (raster is YuvRaster<ushort> words)
         {
             Grid(words.Y, Y, black, white);
             Chroma(words.U, Cb, max);
             Chroma(words.V, Cr, max);
-            Histogram16(words.Y, depth, raster.Color.Range);
+            if (histogram)
+            {
+                Histogram16(words.Y, depth, raster.Color.Range);
+            }
         }
         else
         {
@@ -159,6 +171,12 @@ internal sealed class FrameSignature
             edges[c] = c * width / GridWidth;
         }
 
+        if (typeof(T) == typeof(byte))
+        {
+            AccumulateBytes((YuvPlane<byte>)(object)plane, edges);
+            return;
+        }
+
         for (int y = 0; y < height; y++)
         {
             int row = y * GridHeight / height * GridWidth;
@@ -174,6 +192,79 @@ internal sealed class FrameSignature
                     _counts[row + c] += to - from;
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// The 8-bit <see cref="Accumulate"/>: the rows of each band of cells are added column by column into 16-bit sums, eight
+    /// columns at a time with vector adds, and each cell then sums its columns once per band. The sums are exact.
+    /// </summary>
+    private void AccumulateBytes(YuvPlane<byte> plane, ReadOnlySpan<int> edges)
+    {
+        int width = plane.Width, height = plane.Height;
+        if (_columns.Length < width)
+        {
+            _columns = new ushort[width];
+        }
+
+        Span<ushort> columns = _columns.AsSpan(0, width);
+        int band = 0, rows = 0;
+        for (int y = 0; y < height; y++)
+        {
+            int next = y * GridHeight / height;
+            if (next != band || rows == ColumnRows)
+            {
+                EmptyColumns(columns, band, rows, edges);
+                band = next;
+                rows = 0;
+            }
+
+            AddRow(plane.Row(y)[..width], columns);
+            rows++;
+        }
+
+        EmptyColumns(columns, band, rows, edges);
+    }
+
+    /// <summary>Adds each column's sum to its cell in band <paramref name="band"/> and clears the columns.</summary>
+    private void EmptyColumns(Span<ushort> columns, int band, int rows, ReadOnlySpan<int> edges)
+    {
+        if (rows == 0)
+        {
+            return;
+        }
+
+        int row = band * GridWidth;
+        for (int c = 0; c < GridWidth; c++)
+        {
+            int from = edges[c], to = edges[c + 1];
+            if (to > from)
+            {
+                _sums[row + c] += Sum(columns[from..to]);
+                _counts[row + c] += (to - from) * rows;
+            }
+        }
+
+        columns.Clear();
+    }
+
+    private static void AddRow(ReadOnlySpan<byte> row, Span<ushort> columns)
+    {
+        int x = 0;
+        if (Vector256.IsHardwareAccelerated && row.Length >= Vector256<byte>.Count)
+        {
+            ref ushort sums = ref MemoryMarshal.GetReference(columns);
+            for (; x <= row.Length - Vector256<byte>.Count; x += Vector256<byte>.Count)
+            {
+                (Vector256<ushort> lo, Vector256<ushort> hi) = Vector256.Widen(Vector256.Create(row.Slice(x, Vector256<byte>.Count)));
+                (Vector256.LoadUnsafe(ref sums, (nuint)x) + lo).StoreUnsafe(ref sums, (nuint)x);
+                (Vector256.LoadUnsafe(ref sums, (nuint)(x + Vector256<ushort>.Count)) + hi).StoreUnsafe(ref sums, (nuint)(x + Vector256<ushort>.Count));
+            }
+        }
+
+        for (; x < row.Length; x++)
+        {
+            columns[x] += row[x];
         }
     }
 

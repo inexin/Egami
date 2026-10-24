@@ -1,4 +1,6 @@
 using System.Numerics;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Egami.Video.Analysis;
 
@@ -117,7 +119,25 @@ public sealed class InterlaceDetector : IVideoDetector
         {
             ReadOnlySpan<T> row = plane.Row(y)[..width];
             Span<ushort> to = target.AsSpan(y * width, width);
-            for (int x = 0; x < width; x++)
+            if (typeof(T) == typeof(ushort))
+            {
+                MemoryMarshal.Cast<T, ushort>(row).CopyTo(to);
+                continue;
+            }
+
+            int x = 0;
+            if (typeof(T) == typeof(byte) && Vector256.IsHardwareAccelerated)
+            {
+                ReadOnlySpan<byte> bytes = MemoryMarshal.Cast<T, byte>(row);
+                for (; x <= width - Vector256<byte>.Count; x += Vector256<byte>.Count)
+                {
+                    (Vector256<ushort> lo, Vector256<ushort> hi) = Vector256.Widen(Vector256.Create(bytes.Slice(x, Vector256<byte>.Count)));
+                    lo.CopyTo(to.Slice(x, Vector256<ushort>.Count));
+                    hi.CopyTo(to.Slice(x + Vector256<ushort>.Count, Vector256<ushort>.Count));
+                }
+            }
+
+            for (; x < width; x++)
             {
                 to[x] = ushort.CreateTruncating(row[x]);
             }
@@ -182,11 +202,38 @@ public sealed class InterlaceDetector : IVideoDetector
             ReadOnlySpan<ushort> above = other.AsSpan((y - 1) * width, width);
             ReadOnlySpan<ushort> row = here.AsSpan(y * width, width);
             ReadOnlySpan<ushort> below = other.AsSpan((y + 1) * width, width);
-            for (int x = 0; x < width; x++)
+            total += CombRow(above, row, below);
+        }
+
+        return total;
+    }
+
+    /// <summary>Sums |2 row - above - below| over a row, sixteen samples at a time in 32-bit lanes.</summary>
+    private static long CombRow(ReadOnlySpan<ushort> above, ReadOnlySpan<ushort> row, ReadOnlySpan<ushort> below)
+    {
+        long total = 0;
+        int x = 0;
+        if (Vector256.IsHardwareAccelerated && row.Length >= Vector256<ushort>.Count)
+        {
+            // A lane gains at most 2 x 131,070 per 16 samples, so rows up to 16,000 samples stay within 32 bits.
+            Vector256<int> sum = Vector256<int>.Zero;
+            for (; x <= row.Length - Vector256<ushort>.Count; x += Vector256<ushort>.Count)
             {
-                int d = (2 * row[x]) - above[x] - below[x];
-                total += d < 0 ? -d : d;
+                (Vector256<uint> a0, Vector256<uint> a1) = Vector256.Widen(Vector256.Create(above.Slice(x, Vector256<ushort>.Count)));
+                (Vector256<uint> r0, Vector256<uint> r1) = Vector256.Widen(Vector256.Create(row.Slice(x, Vector256<ushort>.Count)));
+                (Vector256<uint> b0, Vector256<uint> b1) = Vector256.Widen(Vector256.Create(below.Slice(x, Vector256<ushort>.Count)));
+                Vector256<int> d0 = (r0 + r0 - a0 - b0).AsInt32();
+                Vector256<int> d1 = (r1 + r1 - a1 - b1).AsInt32();
+                sum += Vector256.Abs(d0) + Vector256.Abs(d1);
             }
+
+            total = Vector256.Sum(Vector256.WidenLower(sum) + Vector256.WidenUpper(sum));
+        }
+
+        for (; x < row.Length; x++)
+        {
+            int d = (2 * row[x]) - above[x] - below[x];
+            total += d < 0 ? -d : d;
         }
 
         return total;

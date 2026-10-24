@@ -130,7 +130,9 @@ internal static class AnalyzeCommand
             {
                 foreach (string line in findings.Log.TryGetValue(shapes[i], out List<string>? lines) ? lines : [])
                 {
-                    error.WriteLine(line.Length == 0 ? string.Empty : $"[Parsed_{shapes[i]}_{GraphIndex(shapes, i)} @ egami] {line}");
+                    // A line that starts with a space continues the one before, as the lines of ffmpeg's multi-line messages (the
+                    // ebur128 summary) do, and carries no prefix.
+                    error.WriteLine(line.Length == 0 || line[0] == ' ' ? line : $"[Parsed_{shapes[i]}_{GraphIndex(shapes, i)} @ egami] {line}");
                 }
             }
         }
@@ -263,7 +265,7 @@ internal static class AnalyzeCommand
 
         if (crop is not null)
         {
-            findings.Crop(crop.Report);
+            findings.Crop(crop.Report, crop.Options.Limit);
         }
 
         if (interlace is not null)
@@ -567,7 +569,7 @@ internal static class AnalyzeCommand
             }
         }
 
-        public void Crop(CropReport report)
+        public void Crop(CropReport report, double limit)
         {
             ReportObject crop = Json.Object("crop");
             Rect r = report.Crop;
@@ -587,7 +589,7 @@ internal static class AnalyzeCommand
             {
                 Rect c = run.Crop;
                 LogOf("cropdetect").Add(string.Create(CultureInfo.InvariantCulture,
-                    $"x1:{c.X} x2:{c.X + c.Width - 1} y1:{c.Y} y2:{c.Y + c.Height - 1} w:{c.Width} h:{c.Height} x:{c.X} y:{c.Y} t:{Seconds(run.Start.Seconds)} crop={CropText(c)}"));
+                    $"x1:{c.X} x2:{c.X + c.Width - 1} y1:{c.Y} y2:{c.Y + c.Height - 1} w:{c.Width} h:{c.Height} x:{c.X} y:{c.Y} pts:{run.Start.Ticks} t:{Number(run.Start.Seconds, "0.000000")} limit:{Number(limit, "0.000000")} crop={CropText(c)}"));
             }
 
             Rows.Add(Row("crop", null, null, "crop", CropText(r)));
@@ -698,6 +700,18 @@ internal static class AnalyzeCommand
                 $"mean_volume: {Number(report.Overall.Rms, "0.0")} dB",
                 $"max_volume: {Number(report.Overall.Peak, "0.0")} dB",
             ]);
+
+            // volumedetect lists the loudest 1 dB steps, from the peak down, until they hold a thousandth of the samples.
+            long total = report.Samples * channelCount, counted = 0;
+            IReadOnlyList<long> histogram = report.Overall.Histogram;
+            for (int db = 0; db < histogram.Count - 1 && counted * 1000 < total; db++)
+            {
+                if (histogram[db] > 0 || counted > 0)
+                {
+                    counted += histogram[db];
+                    LogOf("volumedetect").Add($"histogram_{db}db: {histogram[db]}");
+                }
+            }
             for (int c = 0; c < report.Channels.Count; c++)
             {
                 LogOf("astats").Add($"Channel: {c + 1}");
@@ -723,8 +737,10 @@ internal static class AnalyzeCommand
                 ("maxMomentary", Round(report.MaxMomentary, 2)), ("maxShortTerm", Round(report.MaxShortTerm, 2)),
             ], text: $"loudness: integrated {Number(report.Integrated, "0.0")} LUFS, range {Number(report.Range, "0.0")} LU, true peak {Number(report.TruePeak, "0.0")} dBTP, sample peak {Number(report.SamplePeak, "0.0")} dBFS");
             LogOf("ebur128").AddRange([
-                "Summary:", string.Empty, "  Integrated loudness:", $"    I:         {Number(report.Integrated, "0.0"),5} LUFS", string.Empty,
-                "  Loudness range:", $"    LRA:       {Number(report.Range, "0.0"),5} LU", $"    LRA low:   {Number(report.RangeLow, "0.0"),5} LUFS",
+                "Summary:", string.Empty, "  Integrated loudness:", $"    I:         {Number(report.Integrated, "0.0"),5} LUFS",
+                $"    Threshold: {Number(report.IntegratedThreshold, "0.0"),5} LUFS", string.Empty, "  Loudness range:",
+                $"    LRA:       {Number(report.Range, "0.0"),5} LU", $"    Threshold: {Number(report.RangeThreshold, "0.0"),5} LUFS",
+                $"    LRA low:   {Number(report.RangeLow, "0.0"),5} LUFS",
                 $"    LRA high:  {Number(report.RangeHigh, "0.0"),5} LUFS", string.Empty, "  Sample peak:", $"    Peak:      {Number(report.SamplePeak, "0.0"),5} dBFS",
                 string.Empty, "  True peak:", $"    Peak:      {Number(report.TruePeak, "0.0"),5} dBFS",
             ]);

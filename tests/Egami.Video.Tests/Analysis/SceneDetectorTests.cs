@@ -147,6 +147,23 @@ public sealed class SceneDetectorTests
     }
 
     [Fact]
+    public void ACutBetweenDarkShotsIsACut()
+    {
+        // Dark red to dark blue, both with a mean luma of about 4 % of the range: a cut, not a fade (a scene in a dark cave keeps
+        // its cuts). A fade level of 0.06, the old default, took both shots for black and found nothing.
+        List<Shot> shots = [Shot.Solid(new Rgba8(50, 0, 0, 255), 20), Shot.Solid(new Rgba8(0, 12, 50, 255), 20)];
+        SceneDetector detector = new();
+        Feed(detector, shots);
+        SceneCut cut = Assert.Single(detector.Cuts.Skip(1));
+        Assert.Equal((20L, SceneStart.Cut), (cut.Frame, cut.Kind));
+        Assert.Empty(detector.Fades);
+
+        SceneDetector old = new(new SceneOptions { FadeLevel = 0.06 });
+        Feed(old, shots);
+        Assert.Single(old.Cuts);
+    }
+
+    [Fact]
     public void ACutThroughBlackIsOneSceneChange()
     {
         List<Shot> shots = [Shot.Solid(new Rgba8(200, 200, 30, 255), 20), Shot.Solid(new Rgba8(0, 0, 0, 255), 8), Shot.Solid(new Rgba8(30, 200, 200, 255), 20)];

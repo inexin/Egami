@@ -48,8 +48,11 @@ ffmpeg's detection filters write what they find to its log, and scripts read tho
 map to `analyze`, and `--ffmpeg-log` makes it print the same lines on standard error, in the shapes ffmpeg's documentation
 shows: `black_start:1 black_end:3.4 black_duration:2.4`, `silence_start: 1` then `silence_end: 3.4 | silence_duration: 2.4`,
 `lavfi.freezedetect.freeze_start`, cropdetect's `crop=w:h:x:y`, idet's field counts, volumedetect's `mean_volume` and
-`max_volume`, astats's per-channel block and ebur128's summary. Each line starts with `[Parsed_<filter>_<n> @ egami]`, the
-filter numbered within its `-vf` or `-af` chain as ffmpeg numbers it, so the usual regular expressions still match.
+`max_volume` and the `histogram_<n>db` counts, astats's per-channel block and ebur128's summary with both gate thresholds. Each
+line starts with `[Parsed_<filter>_<n> @ egami]`, the filter numbered within its `-vf` or `-af` chain as ffmpeg numbers it, so
+the usual regular expressions still match; the ebur128 summary's later lines carry no prefix, as in ffmpeg's log. cropdetect
+prints its line (`x1` to `y2`, `w`, `h`, `x`, `y`, `pts`, `t`, `limit` and `crop=`) once for each run of frames with the same
+rectangle where ffmpeg prints it for every frame, and rounds to 16 by default here, as ffmpeg does (`analyze` itself rounds to 2).
 
 ```sh
 egami-video ffmpeg -i in.mkv -vf blackdetect=d=0.5 -af silencedetect=noise=-50dB:d=1 -f null -

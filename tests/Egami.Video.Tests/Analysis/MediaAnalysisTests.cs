@@ -44,6 +44,34 @@ public sealed class MediaAnalysisTests
     }
 
     [Fact]
+    public void AFreezeDetectorKeepsTheFrameItselfWithTheSameResult()
+    {
+        // The first freeze detector is handed the frames it keeps; the second copies them, as one fed outside the pass does.
+        FreezeOptions anyLength = new() { MinDuration = MediaTime.Zero };
+        using FreezeDetector handed = new(anyLength), copied = new(anyLength), alone = new(anyLength);
+        MediaAnalysisOptions options = new() { Scenes = null, VideoDetectors = [handed, copied] };
+        MediaAnalysis.Run(Clip.Value, options, cancellationToken: TestContext.Current.CancellationToken);
+        using (VideoReader reader = VideoReader.Open(Clip.Value))
+        {
+            MediaTime end = MediaTime.Zero;
+            while (reader.ReadFrame() is { } frame)
+            {
+                using (frame)
+                {
+                    alone.Add(frame);
+                    end = frame.Timestamp + frame.Duration!.Value;
+                }
+            }
+
+            alone.Complete(end);
+        }
+
+        Assert.Equal(2, handed.Ranges.Count);
+        Assert.Equal(alone.Ranges, handed.Ranges);
+        Assert.Equal(alone.Ranges, copied.Ranges);
+    }
+
+    [Fact]
     public void AWindowLimitsThePass()
     {
         MediaAnalysisOptions options = new() { Start = MediaTime.FromSeconds(0.2), Duration = MediaTime.FromSeconds(1.0) };

@@ -13,6 +13,8 @@ public sealed class FreezeDetector : IVideoDetector, IDisposable
     private readonly FreezeOptions _options;
     private readonly RangeBuilder _ranges;
     private YuvRaster? _reference;
+    private YuvVideoFrame? _owned;
+    private YuvVideoFrame? _offered;
     private MediaTime _referenceTime;
     private long _count;
     private MediaTime _lastEnd;
@@ -40,7 +42,10 @@ public sealed class FreezeDetector : IVideoDetector, IDisposable
     /// </summary>
     public IReadOnlyList<DetectedRange> Ranges => _ranges.Ranges;
 
-    /// <summary>Gets the last frame's difference from the frame the current run started with, from 0 to 1.</summary>
+    /// <summary>
+    /// Gets the last frame's difference from the frame the current run started with, from 0 to 1. Measuring stops once a frame has
+    /// clearly moved on, so for such a frame this is a lower bound still over <see cref="FreezeOptions.Noise"/>.
+    /// </summary>
     public double LastDifference { get; private set; }
 
     /// <summary>Gets how many frames the detector has taken.</summary>
@@ -68,7 +73,7 @@ public sealed class FreezeDetector : IVideoDetector, IDisposable
             return;
         }
 
-        double difference = Difference(_reference, raster);
+        double difference = Difference(_reference, raster, _options.Noise);
         LastDifference = difference;
         if (difference <= _options.Noise)
         {
@@ -105,41 +110,114 @@ public sealed class FreezeDetector : IVideoDetector, IDisposable
     /// <summary>Releases the copy of the frame the current run is compared with.</summary>
     public void Dispose()
     {
-        _reference?.Dispose();
+        ReleaseReference();
+    }
+
+    /// <summary>
+    /// Takes the next frame and, when it becomes the frame later ones are compared with, keeps the frame itself instead of a
+    /// copy. Returns whether it kept it; the detector then owns the frame and disposes it.
+    /// </summary>
+    internal bool AddAndKeep(YuvVideoFrame frame)
+    {
+        _offered = frame;
+        try
+        {
+            Add(frame);
+        }
+        finally
+        {
+            _offered = null;
+        }
+
+        return ReferenceEquals(_owned, frame);
+    }
+
+    private void ReleaseReference()
+    {
+        if (_owned is not null)
+        {
+            _owned.Dispose();
+            _owned = null;
+        }
+        else
+        {
+            _reference?.Dispose();
+        }
+
         _reference = null;
     }
 
     private static bool SameShape(YuvRaster a, YuvRaster b)
         => a.Width == b.Width && a.Height == b.Height && a.ChromaFormat == b.ChromaFormat && a.BitDepth == b.BitDepth && a.GetType() == b.GetType();
 
-    private static double Difference(YuvRaster a, YuvRaster b)
+    private static double Difference(YuvRaster a, YuvRaster b, double noise)
     {
         double max = (1 << a.BitDepth) - 1;
         return (a, b) switch
         {
-            (YuvRaster<byte> x, YuvRaster<byte> y) => Mean(x.Y, y.Y, x.U, y.U, x.V, y.V, max),
-            (YuvRaster<ushort> x, YuvRaster<ushort> y) => Mean(x.Y, y.Y, x.U, y.U, x.V, y.V, max),
+            (YuvRaster<byte> x, YuvRaster<byte> y) => Mean(x.Y, y.Y, x.U, y.U, x.V, y.V, max, noise),
+            (YuvRaster<ushort> x, YuvRaster<ushort> y) => Mean(x.Y, y.Y, x.U, y.U, x.V, y.V, max, noise),
             _ => throw new NotSupportedException($"Planes of {a.GetType().Name} are not supported."),
         };
     }
 
-    private static double Mean<T>(YuvPlane<T> y1, YuvPlane<T> y2, YuvPlane<T>? u1, YuvPlane<T>? u2, YuvPlane<T>? v1, YuvPlane<T>? v2, double max)
+    /// <summary>
+    /// The mean absolute difference over the planes as a fraction of <paramref name="max"/>. The planes' shares only add up, so
+    /// once the part measured passes <paramref name="noise"/> the frame has moved on and the rest is not read.
+    /// </summary>
+    private static double Mean<T>(YuvPlane<T> y1, YuvPlane<T> y2, YuvPlane<T>? u1, YuvPlane<T>? u2, YuvPlane<T>? v1, YuvPlane<T>? v2, double max, double noise)
         where T : unmanaged, System.Numerics.IBinaryInteger<T>
     {
-        double total = PlaneMath.AbsoluteDifference(y1, y2) / ((double)y1.Width * y1.Height);
-        int planes = 1;
-        if (u1 is not null && u2 is not null && v1 is not null && v2 is not null)
+        int planes = u1 is not null && u2 is not null && v1 is not null && v2 is not null ? 3 : 1;
+        double limit = noise * planes * max;
+        double total = Share(y1, y2, 0, limit);
+        if (planes == 3 && total <= limit)
         {
-            total += PlaneMath.AbsoluteDifference(u1, u2) / ((double)u1.Width * u1.Height);
-            total += PlaneMath.AbsoluteDifference(v1, v2) / ((double)v1.Width * v1.Height);
-            planes = 3;
+            total = Share(u1!, u2!, total, limit);
+            if (total <= limit)
+            {
+                total = Share(v1!, v2!, total, limit);
+            }
         }
 
         return total / planes / max;
     }
 
+    /// <summary>Adds a plane's mean absolute difference to <paramref name="total"/>, stopping past <paramref name="limit"/>.</summary>
+    private static double Share<T>(YuvPlane<T> a, YuvPlane<T> b, double total, double limit)
+        where T : unmanaged, System.Numerics.IBinaryInteger<T>
+    {
+        double scale = 1 / ((double)a.Width * a.Height);
+        long sum = 0;
+        for (int y = 0; y < a.Height; y++)
+        {
+            sum += PlaneMath.AbsoluteDifference<T>(a.Row(y)[..a.Width], b.Row(y)[..a.Width]);
+            if ((y & 15) == 15 && total + (sum * scale) > limit)
+            {
+                break;
+            }
+        }
+
+        return total + (sum * scale);
+    }
+
     private void Keep(YuvRaster raster, MediaTime time)
     {
+        if (_offered is { } offered)
+        {
+            // MediaAnalysis hands over the frame itself, so the reference needs no copy.
+            ReleaseReference();
+            _owned = offered;
+            _reference = offered.Raster;
+            _referenceTime = time;
+            return;
+        }
+
+        if (_owned is not null)
+        {
+            ReleaseReference();
+        }
+
         if (_reference is null || !SameShape(_reference, raster))
         {
             _reference?.Dispose();

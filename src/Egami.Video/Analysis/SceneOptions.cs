@@ -48,9 +48,10 @@ public sealed record SceneOptions
 
     /// <summary>
     /// Gets the mean luma, from black level (0) to white level (1), at or under which a frame counts as black for
-    /// <see cref="DetectFades"/>. Default 0.06, about PySceneDetect's 12 on its 0 to 255 scale; white uses 1 less this.
+    /// <see cref="DetectFades"/>. Default 0.02: true black, so a dark scene is not taken for a fade (a higher level made dark
+    /// shots end in fades and hid their cuts). White uses 1 less this.
     /// </summary>
-    public double FadeLevel { get; init; } = 0.06;
+    public double FadeLevel { get; init; } = 0.02;
 
     /// <summary>
     /// Gets where in a dark run the new scene starts, from -1 (the first dark frame) through 0 (the middle, the default) to 1 (the

@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Video.Analysis;
 
@@ -9,6 +10,13 @@ internal static class PlaneMath
 {
     /// <summary>Counts the samples at or under <paramref name="threshold"/>.</summary>
     public static long CountAtMost<T>(YuvPlane<T> plane, int threshold)
+        where T : unmanaged, IBinaryInteger<T> => CountAtMost(plane, threshold, long.MaxValue);
+
+    /// <summary>
+    /// Counts the samples at or under <paramref name="threshold"/>, stopping once more than <paramref name="misses"/> samples
+    /// were over it; the rows not read then count as under, so the result is an upper bound that tells the caller enough.
+    /// </summary>
+    public static long CountAtMost<T>(YuvPlane<T> plane, int threshold, long misses)
         where T : unmanaged, IBinaryInteger<T>
     {
         if (threshold < 0)
@@ -20,6 +28,11 @@ internal static class PlaneMath
         long count = 0;
         for (int y = 0; y < plane.Height; y++)
         {
+            if (((long)y * plane.Width) - count > misses)
+            {
+                return count + ((long)(plane.Height - y) * plane.Width);
+            }
+
             ReadOnlySpan<T> row = plane.Row(y)[..plane.Width];
             int x = 0;
             if (Vector256.IsHardwareAccelerated && row.Length >= Vector256<T>.Count)
@@ -62,7 +75,22 @@ internal static class PlaneMath
     {
         long total = 0;
         int x = 0;
-        if (typeof(T) == typeof(byte) && Vector256.IsHardwareAccelerated && a.Length >= Vector256<byte>.Count)
+        if (typeof(T) == typeof(byte) && Avx2.IsSupported && a.Length >= Vector256<byte>.Count)
+        {
+            // vpsadbw sums the absolute differences of each eight bytes into a 64-bit lane in one instruction.
+            ReadOnlySpan<byte> ab = MemoryMarshal.AsBytes(a);
+            ReadOnlySpan<byte> bb = MemoryMarshal.AsBytes(b);
+            Vector256<ulong> sum = Vector256<ulong>.Zero;
+            for (; x <= ab.Length - Vector256<byte>.Count; x += Vector256<byte>.Count)
+            {
+                Vector256<byte> va = Vector256.Create(ab.Slice(x, Vector256<byte>.Count));
+                Vector256<byte> vb = Vector256.Create(bb.Slice(x, Vector256<byte>.Count));
+                sum += Avx2.SumAbsoluteDifferences(va, vb).AsUInt64();
+            }
+
+            total = (long)Vector256.Sum(sum);
+        }
+        else if (typeof(T) == typeof(byte) && Vector256.IsHardwareAccelerated && a.Length >= Vector256<byte>.Count)
         {
             ReadOnlySpan<byte> ab = MemoryMarshal.AsBytes(a);
             ReadOnlySpan<byte> bb = MemoryMarshal.AsBytes(b);
