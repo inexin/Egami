@@ -116,7 +116,7 @@ internal sealed partial class Av1TileEncoder
         int miRow = MiRowStart + (row * _sbMi);
         bool intra = _header.FrameIsIntra;
         ResetRow();
-        Array.Clear(_seedMv);
+        ResetSearchMemory();
         if (!intra)
         {
             rows.FrameCdf.CopyTo(_cdf, 0);

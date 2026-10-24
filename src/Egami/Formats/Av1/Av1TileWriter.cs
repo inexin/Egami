@@ -50,6 +50,9 @@ internal partial class Av1TileCoder : Av1TileState
         _decisions = decisions;
     }
 
+    /// <summary>Builds the current block's reference vector stack (<see cref="Av1TileState.FindMvRefs"/>), as an inter block's mode info is coded.</summary>
+    private protected virtual void BlockMvRefs() => FindMvRefs();
+
     /// <summary>Codes every superblock of the tile.</summary>
     private protected void CodeTile<TSink>(ref TSink s)
         where TSink : struct, IAv1SymbolSink

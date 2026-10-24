@@ -68,8 +68,16 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         bool lastIsBest = false;
         long noneCost = long.MaxValue, splitCost = long.MaxValue;
         int noneMode = -1;
+        bool motion = hasRows && hasCols && MotionSplit(miRow, miCol, bsize);
         foreach (int partition in Candidates(bsize, hasRows, hasCols))
         {
+            // The motion pre-pass sizes the partition: a block whose cells move apart is not tried whole (SVT-AV1's depth removal
+            // by motion estimation distortion).
+            if (motion && partition != Partition.Split)
+            {
+                continue;
+            }
+
             // A block coded whole along one direction is not cut across it (prune_rect_part_using_none_pred_mode).
             if (_profile.PrunePartitions && (partition, noneMode) is (Partition.Horz, Pred.V) or (Partition.Vert, Pred.H))
             {
@@ -298,7 +306,8 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         }
 
         int side = Av1Tables.BlockSizeWide[bsize];
-        bool whole = side <= _profile.MaxBlock;
+        bool intra = _header.FrameIsIntra;
+        bool whole = side <= (intra ? _profile.MaxBlock : _profile.InterMaxBlock);
         if (!hasRows || !hasCols)
         {
             list.Add(Partition.Split);
@@ -315,7 +324,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             list.Add(Partition.None);
         }
 
-        if (side > _profile.MinBlock || !whole)
+        if (side > (intra ? _profile.MinBlock : _profile.InterMinBlock) || !whole)
         {
             list.Add(Partition.Split);
         }
@@ -363,6 +372,19 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     /// </summary>
     private long SearchBlock(int miRow, int miCol, int partition, int bsize, long budget)
     {
+        KeepStacks(true);
+        try
+        {
+            return SearchOneBlock(miRow, miCol, partition, bsize, budget);
+        }
+        finally
+        {
+            KeepStacks(false);
+        }
+    }
+
+    private long SearchOneBlock(int miRow, int miCol, int partition, int bsize, long budget)
+    {
         int bw = Av1Tables.MiSizeWide[bsize], bh = Av1Tables.MiSizeHigh[bsize];
         int xMis = Math.Min(bw, _miCols - miCol), yMis = Math.Min(bh, _frame.MiRows - miRow);
         // A superblock's first block codes its quantizer; the others keep it.
@@ -389,7 +411,10 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
 
         // An inter block predicted well enough to drop its residual is not searched for an intra mode, below the efforts that
         // search everything (libaom's skip_intra_in_interframe).
-        if (inter.Cost != long.MaxValue && inter.Choice.Skip && !_profile.IntraAfterSkip)
+        // Nor is one whose inter cost is well under the energy of its luma about its mean, which bounds what intra prediction can
+        // take away (libaom's intra pruning by the inter residual, SVT-AV1's intra skip in inter frames).
+        if (inter.Cost != long.MaxValue && ((inter.Choice.Skip && !_profile.IntraAfterSkip)
+            || (_profile.IntraInInter > 0 && inter.Cost < (LumaEnergy(bsize) << 7) / 100 * _profile.IntraInInter)))
         {
             start.Restore(this);
             long kept = EncodeInterWinner(inter.Choice, start, chroma);
@@ -676,7 +701,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         bool angles = bsize >= Bs.B8x8 && _profile.AngleDeltas;
         bool filter = !lossless && _profile.FilterIntra && _sequence.EnableFilterIntra
             && Av1Tables.BlockSizeWide[bsize] <= 32 && Av1Tables.BlockSizeHigh[bsize] <= 32;
-        foreach (int mode in _profile.LumaModes)
+        foreach (int mode in _header.FrameIsIntra ? _profile.LumaModes : _profile.InterFrameLumaModes)
         {
             int deltas = angles && Pred.IsDirectional(mode) ? 3 : 0;
             for (int delta = -deltas; delta <= deltas; delta++)
@@ -701,7 +726,7 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
         List<ChromaChoice> list = _chromaCandidates;
         list.Clear();
         bool angles = bsize >= Bs.B8x8 && _profile.AngleDeltas;
-        foreach (int mode in _profile.ChromaModes)
+        foreach (int mode in _header.FrameIsIntra ? _profile.ChromaModes : _profile.InterFrameChromaModes)
         {
             int deltas = angles && Pred.IsDirectional(mode) ? 3 : 0;
             for (int delta = -deltas; delta <= deltas; delta++)
@@ -1160,19 +1185,8 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     {
         int w = Math.Min(Av1Tables.TxSizeWide[txSize], _source.Widths[plane] - x);
         int h = Math.Min(Av1Tables.TxSizeHigh[txSize], _source.Heights[plane] - y);
-        ushort[] frame = _frame.Plane<ushort>(plane);
-        ushort[] source = _source.Planes[plane];
         int stride = _frame.Strides[plane];
-        long error = 0;
-        for (int r = 0; r < h; r++)
-        {
-            int at = ((y + r) * stride) + x;
-            for (int c = 0; c < w; c++)
-            {
-                int d = source[at + c] - frame[at + c];
-                error += d * d;
-            }
-        }
+        long error = Av1MotionSearch.SquaredError(_source.Planes[plane], _frame.Plane<ushort>(plane), (y * stride) + x, stride, w, h);
 
         // libaom's distortion: 16 times the squared error, at 8-bit scale.
         return _sequence.BitDepth switch
@@ -1282,6 +1296,14 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
             short[] inverseScan = InverseScan(txSize, txType);
             for (int pos = 0; pos < area; pos++)
             {
+                if ((pos & 7) == 0 && pos + 8 <= area && Av1MotionSearch.AllBelow(_transformed, rounding, steps, pos, shift))
+                {
+                    // Eight levels of 0 at once, the common case.
+                    _quantized.AsSpan(pos, 8).Clear();
+                    pos += 7;
+                    continue;
+                }
+
                 int value = _transformed[pos];
                 long abs = (long)Math.Abs(value) << shift;
                 int dqv = steps[pos];
@@ -1589,6 +1611,18 @@ internal sealed class Av1SearchProfile
     /// <summary>Gets the smallest block side the partition splits.</summary>
     internal int MinBlock { get; init; } = 4;
 
+    /// <summary>Gets the largest block side the partition of an inter frame keeps whole.</summary>
+    internal int InterMaxBlock { get; init; } = 64;
+
+    /// <summary>Gets the smallest block side the partition of an inter frame splits.</summary>
+    internal int InterMinBlock { get; init; } = 4;
+
+    /// <summary>
+    /// Gets, in percent of the sum of its 16x16 cells' own pre-pass distortions, the least distortion at which a square block of
+    /// 32x32 or more of an inter frame, predicted whole from one vector, is only tried split; 0 to always try it whole.
+    /// </summary>
+    internal int SplitMotion { get; init; }
+
     internal bool Rectangles { get; init; }
 
     internal bool ExtendedPartitions { get; init; }
@@ -1596,6 +1630,26 @@ internal sealed class Av1SearchProfile
     internal int[] LumaModes { get; init; } = AllModes;
 
     internal int[] ChromaModes { get; init; } = AllModes;
+
+    /// <summary>Gets the luma intra modes an intra block of an inter frame tries.</summary>
+    internal int[] InterFrameLumaModes { get; init; } = AllModes;
+
+    /// <summary>Gets the chroma intra modes an intra block of an inter frame tries.</summary>
+    internal int[] InterFrameChromaModes { get; init; } = AllModes;
+
+    // TEMP-TUNE
+    internal bool FastInterIntra
+    {
+        get => InterFrameLumaModes.Length < 13;
+        init
+        {
+            if (value)
+            {
+                InterFrameLumaModes = [Pred.Dc, Pred.V, Pred.H, Pred.Smooth, Pred.Paeth];
+                InterFrameChromaModes = [Pred.Dc, Pred.Paeth];
+            }
+        }
+    }
 
     internal bool AngleDeltas { get; init; }
 
@@ -1643,14 +1697,23 @@ internal sealed class Av1SearchProfile
     /// <summary>Gets how far the whole-sample motion search reaches from its start, in samples.</summary>
     internal int SearchRange { get; init; } = 32;
 
-    /// <summary>Gets how many reference frames an inter block searches, nearest first.</summary>
+    /// <summary>Gets the whole-sample motion search's first step, in samples, which halves down to one.</summary>
+    internal int MotionStep { get; init; } = 8;
+
+    /// <summary>Gets how many reference frames an inter frame searches, nearest first.</summary>
     internal int InterReferences { get; init; } = 7;
+
+    /// <summary>Gets how many of those each block searches, the ones the motion pre-pass ranks best (<see cref="Av1MotionPrepass"/>); 0 for all.</summary>
+    internal int BlockReferences { get; init; }
 
     /// <summary>Gets how many inter choices, ranked by their luma prediction and mode rate, are coded in full.</summary>
     internal int InterCandidates { get; init; } = 2;
 
     /// <summary>Gets which compound predictions are tried: 0 none, 1 averaged, 2 distance-weighted too, 3 wedge and difference-weighted too.</summary>
     internal int Compound { get; init; }
+
+    /// <summary>Gets how many of the references with the cheapest single predictions are paired for compound prediction.</summary>
+    internal int CompoundReferences { get; init; } = 3;
 
     /// <summary>Gets whether inter-intra prediction is tried.</summary>
     internal bool InterIntra { get; init; }
@@ -1670,6 +1733,12 @@ internal sealed class Av1SearchProfile
     /// <summary>Gets whether an inter block whose prediction needs no residual still searches the intra modes.</summary>
     internal bool IntraAfterSkip { get; init; }
 
+    /// <summary>
+    /// Gets, in percent of the energy of a block's luma about its mean, the inter cost under which an inter block searches no intra
+    /// mode; 0 to always search them.
+    /// </summary>
+    internal int IntraInInter { get; init; }
+
     /// <summary>Gets a buffer for the transform types of one size.</summary>
     internal int[] TxTypeBuffer { get; } = new int[16];
 
@@ -1678,11 +1747,14 @@ internal sealed class Av1SearchProfile
     {
         int[] fast = [Pred.Dc, Pred.V, Pred.H, Pred.Smooth, Pred.Paeth];
         int[] twoD = [TxType.DctDct, TxType.AdstDct, TxType.DctAdst, TxType.AdstAdst];
-        return new Av1SearchProfile
+        Av1SearchProfile made = new Av1SearchProfile
         {
             // libaom's speed 6 keeps no block larger than 32x32 whole.
             MaxBlock = effort <= 4 ? 32 : 64,
             MinBlock = effort <= 1 ? 8 : 4,
+            InterMaxBlock = effort <= 2 ? 32 : 64,
+            InterMinBlock = effort <= 4 ? 8 : 4,
+            SplitMotion = effort <= 4 ? 150 : effort <= 6 ? 200 : 0,
             Rectangles = effort >= 5,
             ExtendedPartitions = effort >= 7,
             LumaModes = effort <= 2 ? fast : AllModes,
@@ -1702,16 +1774,34 @@ internal sealed class Av1SearchProfile
             PaletteSizes = effort <= 1 ? 0 : effort <= 5 ? 1 : 2,
             TxTypes = effort <= 2 ? [TxType.DctDct] : effort <= 5 ? twoD : [.. Enumerable.Range(0, 16)],
             SearchRange = effort <= 2 ? 16 : effort <= 4 ? 32 : effort <= 6 ? 64 : 96,
+            MotionStep = effort <= 4 ? 2 : effort <= 6 ? 4 : 8,
             InterReferences = effort <= 1 ? 1 : effort <= 3 ? 3 : 7,
+            BlockReferences = effort <= 2 ? 2 : effort <= 4 ? 3 : effort <= 6 ? 4 : 0,
             InterCandidates = effort <= 2 ? 1 : effort <= 4 ? 2 : effort <= 6 ? 3 : 5,
             Compound = effort <= 2 ? 0 : effort <= 4 ? 1 : effort <= 5 ? 2 : 3,
+            CompoundReferences = effort <= 4 ? 2 : 3,
             InterIntra = effort >= 6,
             MotionModes = effort >= 6,
             Filters = effort <= 4 ? 0 : effort <= 6 ? 1 : 2,
             InterTxSplit = effort >= 5,
             GlobalMotion = effort >= 7,
             IntraAfterSkip = effort >= 8,
+            IntraInInter = effort <= 2 ? 25 : 0,
+            InterFrameLumaModes = effort <= 4 ? fast : AllModes,
+            InterFrameChromaModes = effort <= 4 ? [Pred.Dc, Pred.Paeth] : effort <= 5 ? fast : AllModes,
         };
+        // TEMP-TUNE: overrides for tuning runs; remove before landing.
+        if (Environment.GetEnvironmentVariable("EGAMI_AV1_TUNE") is { Length: > 0 } tune)
+        {
+            foreach (string pair in tune.Split(','))
+            {
+                string[] kv = pair.Split('=');
+                System.Reflection.PropertyInfo prop = typeof(Av1SearchProfile).GetProperty(kv[0], System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+                prop.SetValue(made, prop.PropertyType == typeof(bool) ? kv[1] == "1" : (object)int.Parse(kv[1], System.Globalization.CultureInfo.InvariantCulture));
+            }
+        }
+
+        return made;
 
     }
 }

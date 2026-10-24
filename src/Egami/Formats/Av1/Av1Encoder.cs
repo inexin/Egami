@@ -161,6 +161,9 @@ internal sealed class Av1EncoderSource
     /// <summary>Gets or sets the reference frames an inter block searches, each a different frame, nearest first.</summary>
     internal int[] SearchReferences { get; set; } = [];
 
+    /// <summary>Gets the motion pre-pass of an inter frame: each 16x16 luma cell's vector against each searched reference.</summary>
+    internal Av1MotionPrepass? Prepass { get; set; }
+
     /// <summary>Gets the hashes of the luma blocks, when the frame allows intra block copy.</summary>
     internal Av1BlockHash? Hash { get; set; }
 
@@ -260,6 +263,11 @@ internal sealed class Av1Encoder
             int sbCols = (header.MiCols + 15) >> 4, sbRows = (header.MiRows + 15) >> 4;
             source.SuperblockQIndices = Av1VarianceBoost.SuperblockQIndices(source.Planes[0], frame.Strides[0], sbCols, sbRows, header.BaseQIdx, sequence.BitDepth);
             source.SuperblockColumns = sbCols;
+        }
+
+        if (!header.FrameIsIntra && searchReferences.Length > 0)
+        {
+            source.Prepass = Av1MotionPrepass.Build(frame, source.Planes[0], frame.Strides[0], source.ReferencePlanes, searchReferences);
         }
 
         if (header.AllowIntrabc)

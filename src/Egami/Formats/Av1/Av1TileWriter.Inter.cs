@@ -178,7 +178,7 @@ internal partial class Av1TileCoder
             throw new InvalidOperationException("An inter block's mode does not match its number of references.");
         }
 
-        FindMvRefs();
+        BlockMvRefs();
         if (b.SkipMode)
         {
             Require(b.YMode == InterMode.NearestNearest, "A skip mode block uses its nearest vectors.");
@@ -422,7 +422,7 @@ internal partial class Av1TileCoder
     }
 
     /// <summary>Codes one nonzero component of a vector difference: sign, class, integer bits, fraction and high precision bit (read_mv_component).</summary>
-    private void CodeMvComponent<TSink>(ref TSink s, Av1FrameContext.MvTables t, int comp, int value, int precision)
+    private protected void CodeMvComponent<TSink>(ref TSink s, Av1FrameContext.MvTables t, int comp, int value, int precision)
         where TSink : struct, IAv1SymbolSink
     {
         int z = Math.Abs(value) - 1;

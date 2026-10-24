@@ -10,9 +10,89 @@ namespace Egami.Formats.Av1;
 /// </summary>
 internal sealed partial class Av1TileEncoder
 {
-    private readonly int[] _subpelIntermediate = new int[(64 + 7) * 64];
-    private readonly ushort[] _subpelPrediction = new ushort[64 * 64];
+    private readonly short[] _subpelIntermediate = new short[(128 + 7) * 128];
+    private readonly int[] _subpelPrediction = new int[128 * 128];
+
+    /// <summary>The rate of each vector difference component (row, then column) up to <see cref="MvCostReach"/> eighth samples, -1 until costed.</summary>
+    private readonly long[] _mvCosts = new long[2 * ((2 * MvCostReach) + 1)];
+    private readonly long[] _mvJointCosts = new long[4];
+
+    /// <summary>The vector each reference's last search found at each square block size, with its place, for the blocks inside it.</summary>
+    private readonly (int MiRow, int MiCol, int Row, int Col)[] _levelMv = new (int, int, int, int)[8 * 8];
+
+    /// <summary>The cheapest single reference of the last search at each square block size, with its place.</summary>
+    private readonly (int MiRow, int MiCol, int Ref)[] _levelRef = new (int, int, int)[8];
+    private readonly int[] _blockRefs = new int[8];
+    private readonly long[] _refScores = new long[8];
+    private readonly int[]?[] _pruned = new int[]?[8];
+
+    private const int MvCostReach = 2048;
+
+    private readonly MvStack[] _cachedStacks = [.. Enumerable.Range(0, 16).Select(_ => new MvStack())];
+    private int _cachedStackCount;
+
+    /// <summary>Whether a block's search is under way, its neighbours settled, so <see cref="CachedMvRefs"/> may keep its stacks.</summary>
+    private bool _stacksValid;
+
+    /// <summary>Keeps the stacks <see cref="CachedMvRefs"/> builds while the current block is searched, or stops keeping them.</summary>
+    private void KeepStacks(bool keep)
+    {
+        _stacksValid = keep;
+        _cachedStackCount = 0;
+    }
+
+    private protected override void BlockMvRefs() => CachedMvRefs();
+
+    /// <summary>The reference vector stack of one pair of references at the current block, as <see cref="Av1TileState.FindMvRefs"/> left it.</summary>
+    private sealed class MvStack
+    {
+        internal int Ref0, Ref1, Count, ModeContext, GmRow0, GmCol0, GmRow1, GmCol1;
+        internal readonly int[] Row0 = new int[MaxRefMvStack], Col0 = new int[MaxRefMvStack], Row1 = new int[MaxRefMvStack], Col1 = new int[MaxRefMvStack];
+        internal readonly int[] Weight = new int[MaxRefMvStack];
+    }
+
+    /// <summary>
+    /// Builds the current block's reference vector stack for its references (<see cref="Av1TileState.FindMvRefs"/>), or puts back
+    /// the one built for them before in this block's search: its neighbours do not change while it is searched.
+    /// </summary>
+    private void CachedMvRefs()
+    {
+        if (!_stacksValid)
+        {
+            FindMvRefs();
+            return;
+        }
+
+        int rf0 = _b.RefFrame0, rf1 = _b.HasSecondRef ? _b.RefFrame1 : Ref.None;
+        for (int i = 0; i < _cachedStackCount; i++)
+        {
+            MvStack s = _cachedStacks[i];
+            if (s.Ref0 == rf0 && s.Ref1 == rf1)
+            {
+                (_mvCount, _modeContext, _gmRow0, _gmCol0, _gmRow1, _gmCol1) = (s.Count, s.ModeContext, s.GmRow0, s.GmCol0, s.GmRow1, s.GmCol1);
+                s.Row0.CopyTo(_mvRow0, 0);
+                s.Col0.CopyTo(_mvCol0, 0);
+                s.Row1.CopyTo(_mvRow1, 0);
+                s.Col1.CopyTo(_mvCol1, 0);
+                s.Weight.CopyTo(_mvWeight, 0);
+                return;
+            }
+        }
+
+        FindMvRefs();
+        if (_cachedStackCount < _cachedStacks.Length)
+        {
+            MvStack s = _cachedStacks[_cachedStackCount++];
+            (s.Ref0, s.Ref1, s.Count, s.ModeContext, s.GmRow0, s.GmCol0, s.GmRow1, s.GmCol1) = (rf0, rf1, _mvCount, _modeContext, _gmRow0, _gmCol0, _gmRow1, _gmCol1);
+            _mvRow0.CopyTo(s.Row0, 0);
+            _mvCol0.CopyTo(s.Col0, 0);
+            _mvRow1.CopyTo(s.Row1, 0);
+            _mvCol1.CopyTo(s.Col1, 0);
+            _mvWeight.CopyTo(s.Weight, 0);
+        }
+    }
     private readonly List<(long Cost, InterChoice Choice)> _interCandidates = [];
+    private readonly List<long> _interErrors = [];
     private readonly (int Row, int Col)[] _newMv = new (int, int)[8];
     private readonly (int Row, int Col)[] _seedMv = new (int, int)[8];
     private readonly long[] _singleCost = new long[8];
@@ -71,14 +151,16 @@ internal sealed partial class Av1TileEncoder
         }
 
         _interCandidates.Clear();
+        _interErrors.Clear();
         int implied = _header.InterpolationFilter == Interp.Switchable ? Interp.Regular : _header.InterpolationFilter;
+        refs = BlockReferences(refs, bsize);
         foreach (int rf in refs)
         {
             _singleCost[rf] = long.MaxValue;
             SetReferences(rf, Ref.None);
             _b.YMode = InterMode.New;
             _b.RefMvIdx = 0;
-            FindMvRefs();
+            CachedMvRefs();
             int count = _mvCount;
             _newMv[rf] = _seedMv[rf] = MotionSearch(rf, bsize, Vectors(0));
             Rank(new InterChoice(rf, Ref.None, InterMode.Nearest, 0, 0, 0, 0, 0) { FilterY = implied, FilterX = implied });
@@ -137,40 +219,74 @@ internal sealed partial class Av1TileEncoder
             Refine();
         }
 
+        int level = Level(bsize), cheapest = Ref.None;
+        foreach (int rf in refs)
+        {
+            cheapest = _singleCost[rf] != long.MaxValue && (cheapest == Ref.None || _singleCost[rf] < _singleCost[cheapest]) ? rf : cheapest;
+        }
+
+        _levelRef[level] = (_miRow, _miCol, cheapest);
         start.Restore(this);
         ResetToIntra();
         return best;
 
         void Rank(InterChoice choice)
         {
-            long cost = ModelCost(choice, start);
-            if (cost == long.MaxValue)
+            if (!Apply(choice))
             {
                 return;
             }
 
-            if (choice.Ref1 == Ref.None && cost < _singleCost[choice.Ref0])
-            {
-                _singleCost[choice.Ref0] = cost;
-            }
-
-            // A choice whose vectors and references another already gives predicts the same: keep the cheaper.
+            // A choice whose vectors and references another already gives predicts the same: only its mode rate differs, and the
+            // cheaper is kept.
+            int same = -1;
             for (int i = 0; i < _interCandidates.Count; i++)
             {
                 InterChoice other = _interCandidates[i].Choice;
                 if (other.Ref0 == choice.Ref0 && other.Ref1 == choice.Ref1 && other.MvRow == _b.MvRow && other.MvCol == _b.MvCol
                     && other.Mv1Row == _b.Mv1Row && other.Mv1Col == _b.Mv1Col && other.SkipMode == choice.SkipMode)
                 {
-                    if (cost < _interCandidates[i].Cost)
-                    {
-                        _interCandidates[i] = (cost, choice with { MvRow = _b.MvRow, MvCol = _b.MvCol, Mv1Row = _b.Mv1Row, Mv1Col = _b.Mv1Col });
-                    }
-
-                    return;
+                    same = i;
+                    break;
                 }
             }
 
-            _interCandidates.Add((cost, choice with { MvRow = _b.MvRow, MvCol = _b.MvCol, Mv1Row = _b.Mv1Row, Mv1Col = _b.Mv1Col }));
+            long rate = ModeRate();
+            long error;
+            if (same >= 0)
+            {
+                error = _interErrors[same];
+            }
+            else
+            {
+                _reconstructor.LumaOnly = true;
+                _reconstructor.InterPrediction(this);
+                _reconstructor.LumaOnly = false;
+                error = Distortion(0, _b.Size);
+            }
+
+            // The next candidate's prediction covers the block's luma again, and the search puts the block back at its end.
+            if (_header.SegmentationEnabled)
+            {
+                start.Restore(this, lumaOnly: false);
+            }
+
+            long cost = Av1Rate.RdCost(_rdmult, rate, error);
+            if (choice.Ref1 == Ref.None && cost < _singleCost[choice.Ref0])
+            {
+                _singleCost[choice.Ref0] = cost;
+            }
+
+            InterChoice placed = choice with { MvRow = _b.MvRow, MvCol = _b.MvCol, Mv1Row = _b.Mv1Row, Mv1Col = _b.Mv1Col };
+            if (same < 0)
+            {
+                _interCandidates.Add((cost, placed));
+                _interErrors.Add(error);
+            }
+            else if (cost < _interCandidates[same].Cost)
+            {
+                _interCandidates[same] = (cost, placed);
+            }
         }
 
         void Try(InterChoice choice)
@@ -311,7 +427,7 @@ internal sealed partial class Av1TileEncoder
     /// <summary>Lists the compound pairs to try: the references with the cheapest single predictions, each pair the syntax allows.</summary>
     private List<(int R0, int R1)> CompoundPairs(int[] refs)
     {
-        List<int> ranked = [.. refs.Where(r => _singleCost[r] != long.MaxValue).OrderBy(r => _singleCost[r]).Take(3)];
+        List<int> ranked = [.. refs.Where(r => _singleCost[r] != long.MaxValue).OrderBy(r => _singleCost[r]).Take(_profile.CompoundReferences)];
         List<(int, int)> pairs = [];
         for (int i = 0; i < ranked.Count; i++)
         {
@@ -383,7 +499,7 @@ internal sealed partial class Av1TileEncoder
         b.UseFilterIntra = false;
         b.CflAlphaSigns = b.CflAlphaIdx = 0;
         b.PaletteSize[0] = b.PaletteSize[1] = 0;
-        FindMvRefs();
+        CachedMvRefs();
         if (c.RefMvIdx > 0 && (c.Mode is InterMode.New or InterMode.NewNew ? _mvCount <= c.RefMvIdx : _mvCount <= c.RefMvIdx + 1))
         {
             return false;
@@ -550,7 +666,8 @@ internal sealed partial class Av1TileEncoder
 
         _b.Skip = false;
         long cost = Av1Rate.RdCost(_rdmult, ModeRate(), 0);
-        cost = Add(cost, EncodePlane(0, _b.Size, Left(budget, cost)));
+        // Transform types are searched for the chosen choice only, below the efforts that search them for every mode.
+        cost = Add(cost, EncodePlane(0, _b.Size, Left(budget, cost), searchTypes: _winner || _profile.TypesInModeSearch));
         if (chroma && cost != long.MaxValue)
         {
             cost = Add(cost, EncodePlane(1, _b.Size, Left(budget, cost)));
@@ -615,9 +732,215 @@ internal sealed partial class Av1TileEncoder
     }
 
     /// <summary>
+    /// Lists the references a block searches: all the frame searches, or at the efforts that prune them the
+    /// <see cref="Av1SearchProfile.BlockReferences"/> whose pre-pass vectors fit the block's cells best (<see cref="Av1MotionPrepass"/>),
+    /// the ones the blocks above and to the left and the square block around it chose counting a quarter better (libaom's
+    /// selective_ref_frame and SVT-AV1's reference pruning by motion estimation distortion).
+    /// </summary>
+    private int[] BlockReferences(int[] refs, int bsize)
+    {
+        int keep = _profile.BlockReferences;
+        Av1MotionPrepass? prepass = _source.Prepass;
+        if (keep <= 0 || refs.Length <= keep || prepass is null)
+        {
+            return refs;
+        }
+
+        (int r0, int c0, int r1, int c1) = Cells(prepass, bsize);
+        int parent = ParentReference(bsize);
+        foreach (int rf in refs)
+        {
+            long score = 0;
+            if (prepass.Has(rf))
+            {
+                for (int r = r0; r <= r1; r++)
+                {
+                    for (int c = c0; c <= c1; c++)
+                    {
+                        score += prepass.Sad(rf, r, c);
+                    }
+                }
+            }
+            else
+            {
+                score = long.MaxValue / 2;
+            }
+
+            bool neighbour = rf == parent || (_above is { IsInter: true } a && (a.RefFrame0 == rf || a.RefFrame1 == rf))
+                || (_left is { IsInter: true } l && (l.RefFrame0 == rf || l.RefFrame1 == rf));
+            _refScores[rf] = neighbour ? score - (score >> 2) : score;
+        }
+
+        // The lowest scores, ties to the nearer reference (refs come nearest first), kept in the order given.
+        int[] kept = _pruned[keep] ??= new int[keep];
+        Span<int> order = stackalloc int[refs.Length];
+        for (int i = 0; i < refs.Length; i++)
+        {
+            order[i] = i;
+        }
+
+        for (int i = 1; i < order.Length; i++)
+        {
+            int at = i, value = order[i];
+            while (at > 0 && _refScores[refs[order[at - 1]]] > _refScores[refs[value]])
+            {
+                order[at] = order[at - 1];
+                at--;
+            }
+
+            order[at] = value;
+        }
+
+        order = order[..keep];
+        order.Sort();
+        for (int i = 0; i < keep; i++)
+        {
+            kept[i] = refs[order[i]];
+        }
+
+        return kept;
+    }
+
+    /// <summary>
+    /// Gets whether a square block of 32x32 or more of an inter frame moves apart by its motion pre-pass: whether no vector of its
+    /// best reference among its cells' predicts it whole within <see cref="Av1SearchProfile.SplitMotion"/> percent of the
+    /// distortion its cells have at their own vectors.
+    /// </summary>
+    private bool MotionSplit(int miRow, int miCol, int bsize)
+    {
+        Av1MotionPrepass? prepass = _source.Prepass;
+        int side = Av1Tables.BlockSizeWide[bsize];
+        if (prepass is null || side < 32 || _profile.SplitMotion == 0)
+        {
+            return false;
+        }
+
+        int[] refs = _source.SearchReferences;
+        int cell = Av1MotionPrepass.Cell;
+        int r0 = (miRow * 4) / cell, c0 = (miCol * 4) / cell;
+        int r1 = Math.Min(r0 + (side / cell), prepass.Rows) - 1, c1 = Math.Min(c0 + (side / cell), prepass.Columns) - 1;
+        long split = 0, bestTotal = long.MaxValue;
+        int bestRef = refs[0];
+        for (int r = r0; r <= r1; r++)
+        {
+            for (int c = c0; c <= c1; c++)
+            {
+                long least = long.MaxValue;
+                foreach (int rf in refs)
+                {
+                    least = Math.Min(least, prepass.Sad(rf, r, c));
+                }
+
+                split += least;
+            }
+        }
+
+        foreach (int rf in refs)
+        {
+            long total = 0;
+            for (int r = r0; r <= r1; r++)
+            {
+                for (int c = c0; c <= c1; c++)
+                {
+                    total += prepass.Sad(rf, r, c);
+                }
+            }
+
+            if (total < bestTotal)
+            {
+                (bestTotal, bestRef) = (total, rf);
+            }
+        }
+
+        // The whole area at each of a few of its cells' vectors.
+        Av1ReferencePlane plane = _source.ReferencePlanes[bestRef]!;
+        ushort[] source = _source.Planes[0];
+        int stride = _frame.Strides[0];
+        int x0 = c0 * cell, y0 = r0 * cell, w = (c1 - c0 + 1) * cell, h = (r1 - r0 + 1) * cell;
+        long whole = long.MaxValue;
+        ReadOnlySpan<(int R, int C)> picks = [(r0, c0), (r0, c1), (r1, c0), (r1, c1), ((r0 + r1) >> 1, (c0 + c1) >> 1)];
+        foreach ((int r, int c) in picks)
+        {
+            (int row, int col) = prepass.Vector(bestRef, r, c);
+            if (plane.Holds(x0 + col, y0 + row, w, h))
+            {
+                whole = Math.Min(whole, Av1MotionSearch.Sad(source, (y0 * stride) + x0, stride, plane.Samples, plane.At(x0 + col, y0 + row), plane.Stride, w, h));
+            }
+        }
+
+        return whole != long.MaxValue && whole * 100 >= Math.Max(split, 1) * _profile.SplitMotion;
+    }
+
+    /// <summary>Gets the energy of the current block's source luma inside the frame about its mean, at the scale of the distortion.</summary>
+    private long LumaEnergy(int bsize)
+    {
+        int x0 = _miCol * 4, y0 = _miRow * 4;
+        int w = Math.Min(Av1Tables.BlockSizeWide[bsize], _source.Widths[0] - x0), h = Math.Min(Av1Tables.BlockSizeHigh[bsize], _source.Heights[0] - y0);
+        ushort[] source = _source.Planes[0];
+        int stride = _frame.Strides[0];
+        long sum = 0, squares = 0;
+        for (int r = 0; r < h; r++)
+        {
+            int at = ((y0 + r) * stride) + x0;
+            for (int c = 0; c < w; c++)
+            {
+                int v = source[at + c];
+                sum += v;
+                squares += v * v;
+            }
+        }
+
+        long energy = squares - (sum * sum / Math.Max(1, w * h));
+        return _sequence.BitDepth switch { 10 => energy, 12 => (energy + 8) >> 4, _ => energy << 4 };
+    }
+
+    /// <summary>Gets the first and last pre-pass cells the current block covers inside the frame.</summary>
+    private (int Row0, int Col0, int Row1, int Col1) Cells(Av1MotionPrepass prepass, int bsize)
+    {
+        int x0 = _miCol * 4, y0 = _miRow * 4;
+        int w = Av1Tables.BlockSizeWide[bsize], h = Av1Tables.BlockSizeHigh[bsize];
+        int r0 = Math.Min(y0 / Av1MotionPrepass.Cell, prepass.Rows - 1), c0 = Math.Min(x0 / Av1MotionPrepass.Cell, prepass.Columns - 1);
+        int r1 = Math.Clamp((y0 + h - 1) / Av1MotionPrepass.Cell, r0, prepass.Rows - 1);
+        int c1 = Math.Clamp((x0 + w - 1) / Av1MotionPrepass.Cell, c0, prepass.Columns - 1);
+        return (r0, c0, r1, c1);
+    }
+
+    /// <summary>Gets the square size class of a block (4 to 128 samples as 0 to 5) by its longer side.</summary>
+    private static int Level(int bsize) =>
+        31 - int.LeadingZeroCount(Math.Max(Av1Tables.BlockSizeWide[bsize], Av1Tables.BlockSizeHigh[bsize])) - 2;
+
+    /// <summary>Gets the cheapest single reference the nearest larger block around the current one found, or <see cref="Ref.None"/>.</summary>
+    private int ParentReference(int bsize)
+    {
+        for (int level = Level(bsize) + 1; level < 6; level++)
+        {
+            (int miRow, int miCol, int rf) = _levelRef[level];
+            int side = 1 << level;
+            if (rf != Ref.None && _miRow >= miRow && _miCol >= miCol && _miRow < miRow + side && _miCol < miCol + side)
+            {
+                return rf;
+            }
+        }
+
+        return Ref.None;
+    }
+
+    /// <summary>Forgets the vectors and references of the blocks searched before, as a superblock row starts.</summary>
+    private void ResetSearchMemory()
+    {
+        Array.Clear(_seedMv);
+        Array.Fill(_levelMv, (-1, -1, 0, 0));
+        Array.Fill(_levelRef, (-1, -1, Ref.None));
+        Array.Fill(_mvCosts, -1);
+        Array.Fill(_mvJointCosts, -1);
+    }
+
+    /// <summary>
     /// Finds the current block's new vector against a reference: a whole-sample pattern search from the best of the stack's
-    /// vectors, the global vector, zero and the last vector found, then a refinement by halves to the frame's precision, each
-    /// place costed with its vector's rate against the stack's first vector.
+    /// vectors, the global vector, zero, the last vector found, the vector the block around it found and the pre-pass vectors of the
+    /// cells it covers, from steps of <see cref="Av1SearchProfile.MotionStep"/> down; then a refinement by halves to the frame's
+    /// precision, each step trying the four places along the axes and the corner between the better of each (libaom's pruned
+    /// sub-pixel tree). Each place is costed with its vector's rate against the stack's first vector.
     /// </summary>
     private (int Row, int Col) MotionSearch(int rf, int bsize, BlockVectors reference)
     {
@@ -644,9 +967,31 @@ internal sealed partial class Av1TileEncoder
 
         Check(Round(_gmRow0), Round(_gmCol0));
         Check(Round(_seedMv[rf].Row), Round(_seedMv[rf].Col));
+        int level = Level(bsize);
+        for (int up = level + 1; up < 6; up++)
+        {
+            (int miRow, int miCol, int row, int col) = _levelMv[(up * 8) + rf];
+            int side = 1 << up;
+            if (miRow >= 0 && _miRow >= miRow && _miCol >= miCol && _miRow < miRow + side && _miCol < miCol + side)
+            {
+                Check(Round(row), Round(col));
+                break;
+            }
+        }
+
+        if (_source.Prepass is { } prepass && prepass.Has(rf))
+        {
+            (int r0, int c0, int r1, int c1) = Cells(prepass, bsize);
+            CheckCell(prepass, r0, c0);
+            CheckCell(prepass, r0, c1);
+            CheckCell(prepass, r1, c0);
+            CheckCell(prepass, r1, c1);
+            CheckCell(prepass, (r0 + r1) >> 1, (c0 + c1) >> 1);
+        }
+
         (int Row, int Col) center = best;
         int range = _profile.SearchRange;
-        for (int step = Math.Max(1, range / 4); step >= 1; step >>= 1)
+        for (int step = Math.Min(_profile.MotionStep, Math.Max(1, range / 4)); step >= 1; step >>= 1)
         {
             bool moved = true;
             for (int round = 0; moved && round < 16; round++)
@@ -673,38 +1018,45 @@ internal sealed partial class Av1TileEncoder
         }
 
         (int Row, int Col) mv = (best.Row * 8, best.Col * 8);
-        if (integer)
+        if (!integer)
         {
-            return mv;
-        }
-
-        // Fractions: halves, quarters and, with high precision, eighths, each from the best so far.
-        long bestSub = SubpelCost(mv.Row, mv.Col);
-        for (int step = 4; step >= (hp ? 1 : 2); step >>= 1)
-        {
-            (int Row, int Col) from = mv;
-            for (int dy = -1; dy <= 1; dy++)
+            // Fractions: halves, quarters and, with high precision, eighths, each from the best so far.
+            long bestSub = SubpelCost(mv.Row, mv.Col);
+            for (int step = 4; step >= (hp ? 1 : 2); step >>= 1)
             {
-                for (int dx = -1; dx <= 1; dx++)
+                (int Row, int Col) from = mv;
+                long left = SubpelCost(from.Row, from.Col - step), right = SubpelCost(from.Row, from.Col + step);
+                long up = SubpelCost(from.Row - step, from.Col), down = SubpelCost(from.Row + step, from.Col);
+                int dx = left < right ? -1 : 1, dy = up < down ? -1 : 1;
+                long horizontal = Math.Min(left, right), vertical = Math.Min(up, down);
+                if (horizontal < bestSub)
                 {
-                    if ((dx | dy) == 0)
-                    {
-                        continue;
-                    }
+                    (bestSub, mv) = (horizontal, (from.Row, from.Col + (dx * step)));
+                }
 
-                    int row = from.Row + (dy * step), col = from.Col + (dx * step);
-                    long cost = SubpelCost(row, col);
-                    if (cost < bestSub)
-                    {
-                        (bestSub, mv) = (cost, (row, col));
-                    }
+                if (vertical < bestSub)
+                {
+                    (bestSub, mv) = (vertical, (from.Row + (dy * step), from.Col));
+                }
+
+                long corner = SubpelCost(from.Row + (dy * step), from.Col + (dx * step));
+                if (corner < bestSub)
+                {
+                    (bestSub, mv) = (corner, (from.Row + (dy * step), from.Col + (dx * step)));
                 }
             }
         }
 
+        _levelMv[(level * 8) + rf] = (_miRow, _miCol, mv.Row, mv.Col);
         return mv;
 
         static int Round(int v) => (v + 4) >> 3;
+
+        void CheckCell(Av1MotionPrepass prepass, int r, int c)
+        {
+            (int row, int col) = prepass.Vector(rf, r, c);
+            Check(row, col);
+        }
 
         bool Check(int row, int col)
         {
@@ -732,13 +1084,16 @@ internal sealed partial class Av1TileEncoder
             }
 
             Av1MotionSearch.Predict(plane, (x0 * 8) + col, (y0 * 8) + row, w, h, _sequence.BitDepth, _subpelIntermediate, _subpelPrediction);
-            long sse = Av1MotionSearch.Sse(source, sourceAt, stride, _subpelPrediction, w, h);
+            long sse = Av1MotionSearch.Sse(source, sourceAt, stride, _subpelPrediction, w, h, _sequence.BitDepth);
             long scaled = depth switch { 2 => sse, 4 => (sse + 8) >> 4, _ => sse << 4 };
             return Av1Rate.RdCost(_rdmult, MvRate(row - refRow, col - refCol), scaled);
         }
     }
 
-    /// <summary>Gets the rate of a vector difference at the frame's precision, in 1/512 bits.</summary>
+    /// <summary>
+    /// Gets the rate of a vector difference at the frame's precision, in 1/512 bits, from the CDFs as they stand: each component's
+    /// and the joint's rates are kept once costed, which holds while the CDFs stay as they are (an inter frame's search).
+    /// </summary>
     private long MvRate(int row, int col)
     {
         if (!_header.AllowHighPrecisionMv || _header.ForceIntegerMv)
@@ -754,8 +1109,40 @@ internal sealed partial class Av1TileEncoder
             return 1 << 20;
         }
 
-        Av1CostSink rate = new(false);
-        CodeMv(ref rate, row, col);
-        return rate.Cost;
+        if (Math.Abs(row) > MvCostReach || Math.Abs(col) > MvCostReach)
+        {
+            Av1CostSink rate = new(false);
+            CodeMv(ref rate, row, col);
+            return rate.Cost;
+        }
+
+        int joint = (row != 0 ? 2 : 0) | (col != 0 ? 1 : 0);
+        ref long jointCost = ref _mvJointCosts[joint];
+        if (jointCost < 0)
+        {
+            Av1CostSink rate = new(false);
+            rate.Symbol(_cdf, Av1FrameContext.Mv.Joints[0], 4, joint);
+            jointCost = rate.Cost;
+        }
+
+        return jointCost + MvComponentRate(0, row) + MvComponentRate(1, col);
+    }
+
+    private long MvComponentRate(int comp, int value)
+    {
+        if (value == 0)
+        {
+            return 0;
+        }
+
+        ref long cost = ref _mvCosts[(comp * ((2 * MvCostReach) + 1)) + value + MvCostReach];
+        if (cost < 0)
+        {
+            Av1CostSink rate = new(false);
+            CodeMvComponent(ref rate, Av1FrameContext.Mv, comp, value, _header.ForceIntegerMv ? -1 : _header.AllowHighPrecisionMv ? 1 : 0);
+            cost = rate.Cost;
+        }
+
+        return cost;
     }
 }
