@@ -169,9 +169,12 @@ quantizer, and <code>Effort</code> (0 to 10, default 4) how hard the encoder sea
 <code>RefreshSlots</code> which slots the frame replaces. References that read the same frame are searched once.</li>
 <li><code>Show = false</code> codes a hidden frame, such as an alternate reference from frames to come; <code>OrderHint</code> says where it shows, and
 <code>ShowExisting</code> shows it later with show_existing_frame.</li>
+<li><code>Tune</code> is <code>Av1Tune.Video</code> (the default: one quantizer for luma and chroma, no quantization matrices, rate-distortion weights by
+frame type) or <code>Av1Tune.Image</code>, the still-picture tools AVIF uses. <code>Layer</code> is the frame's layer in its group's pyramid: the
+deeper it is, the fewer frames predict from it and the fewer bits it spends. <code>Referenced</code> says whether any later frame does.</li>
 <li><code>ErrorResilient</code> makes a frame that decodes without the probabilities and vectors of the frames before it, <code>PrimaryReference</code>
-picks the reference a frame takes them from, <code>DeltaQuantizers</code> turns the per-superblock quantizers off, and <code>ScreenContent</code> the
-palettes on or off.</li>
+picks the reference a frame takes them from, <code>DeltaQuantizers</code> turns the per-superblock quantizers off, <code>VarianceBoost</code> gives
+flat superblocks finer ones, and <code>ScreenContent</code> the palettes on or off.</li>
 </ul>
 <p><code>Encode</code> returns an <code>Av1EncodedFrame</code> with the temporal unit's OBUs, without temporal delimiters, as MP4 samples and Matroska blocks
 store them; a key frame's unit starts with the sequence header. A hidden frame's data is empty: its OBUs lead the next shown frame's
@@ -179,7 +182,35 @@ unit, so every unit has one shown frame. The result also gives the frame's bits,
 the decoded frame against the picture (<code>LumaPsnr</code> from it), what rate control needs to plan the next frame.</p>
 <p>The encoder keeps the eight reference slots as a decoder does, and decides a frame's tiles on up to <code>EgamiContext.MaxParallelism</code>
 threads; its output does not depend on the thread count. AVIF stills are not affected: they encode as before, byte for byte.</p>
+<h2 id="temporal-analysis">Temporal analysis</h2>
+<p>Before coding a group, <code>Analyze</code> can look at its frames and the group after it in coding order, each naming the frames it will
+predict from. For every 16x16 block it measures what predicting from the references saves against coding the block alone, and
+carries that back from the last frame to the first: a block the frames after it reuse a lot carries much. <code>Importance</code> sums it
+over the frame, so a group's key frame and alternate reference can take finer quantizers the more they are reused, and a plan's
+<code>Analysis</code> gives a referenced layer-0 frame finer quantizers in the superblocks that matter most and the other frames lower
+rate-distortion weights there. The analysis reads the pictures only and is the same at any thread count.</p>
+<pre><code class="lang-csharp">// The frames ahead in coding order: a key frame, a hidden frame four pictures on, then the three between, each predicting
+// from the frames on both sides of it (their places in this list).
+IReadOnlyList&lt;Av1FrameAnalysis&gt; analysis = encoder.Analyze(
+[
+    new Av1AnalysisFrame { Picture = pictures[0] },
+    new Av1AnalysisFrame { Picture = pictures[4], References = [0] },
+    new Av1AnalysisFrame { Picture = pictures[1], References = [0, 1] },
+    new Av1AnalysisFrame { Picture = pictures[2], References = [0, 1] },
+    new Av1AnalysisFrame { Picture = pictures[3], References = [0, 1] },
+]);
 
+// The more the frames after them reuse the key and hidden frames, the finer their steps; each plan carries its analysis.
+int keyQ = (int)Math.Round(100 / Math.Sqrt(analysis[0].Importance));
+encoder.Encode(pictures[0], new Av1FramePlan { Kind = Av1FrameKind.Key, QIndex = keyQ, Analysis = analysis[0] });
+encoder.Encode(pictures[4], new Av1FramePlan { QIndex = 110, Show = false, OrderHint = 4, RefreshSlots = 0b10, Analysis = analysis[1] });
+for (int i = 1; i &lt; 4; i++)
+{
+    encoder.Encode(pictures[i], new Av1FramePlan { QIndex = 140, Layer = 1, ReferenceSlots = [0, 0, 0, 0, 1, 1, 1], RefreshSlots = 0, Analysis = analysis[i + 1] });
+}
+
+encoder.ShowExisting(1);
+</code></pre>
 </article>
 
         <div class="contribution d-print-none">

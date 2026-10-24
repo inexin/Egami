@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Av1_Av1FramePlan" data-uid="Egami.Formats.Av1.Av1FramePlan" class="text-break">
-Class Av1FramePlan  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L573"><i class="bi bi-code-slash"></i></a>
+Class Av1FramePlan  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L613"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -173,11 +173,45 @@ units.Add(encoder.ShowExisting(1).Data.ToArray());</code></pre>
 </h2>
 
 
+  <a id="Egami_Formats_Av1_Av1FramePlan_Analysis_" data-uid="Egami.Formats.Av1.Av1FramePlan.Analysis*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_Analysis" data-uid="Egami.Formats.Av1.Av1FramePlan.Analysis">
+  Analysis
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L763"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the frame's temporal analysis from <a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html#Egami_Formats_Av1_Av1StreamEncoder_Analyze_System_Collections_Generic_IReadOnlyList_Egami_Formats_Av1_Av1AnalysisFrame__">Analyze(IReadOnlyList&lt;Av1AnalysisFrame&gt;)</a>, or null (the default) for none. A video frame
+at layer 0 that others predict from codes finer quantizers in the superblocks the frames after it reuse most, when
+<a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_DeltaQuantizers">DeltaQuantizers</a> is on; other frames lower the rate-distortion multiplier of those blocks instead.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Av1FrameAnalysis? Analysis { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Av1.Av1FrameAnalysis.html">Av1FrameAnalysis</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Formats_Av1_Av1FramePlan_Default_" data-uid="Egami.Formats.Av1.Av1FramePlan.Default*"></a>
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_Default" data-uid="Egami.Formats.Av1.Av1FramePlan.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L584"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L625"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the plan of a shown inter frame that reads slots 0 to 6 as LAST to ALTREF and refreshes slot 0, at the default quality and effort.</p>
@@ -209,10 +243,11 @@ units.Add(encoder.ShowExisting(1).Data.ToArray());</code></pre>
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_DeltaQuantizers" data-uid="Egami.Formats.Av1.Av1FramePlan.DeltaQuantizers">
   DeltaQuantizers
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L683"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L727"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets whether each superblock may have its own quantizer, finer where the picture is flat (Variance Boost). Defaults to true.</p>
+  <div class="markdown level1 summary"><p>Gets whether each superblock may have its own quantizer: from the frame's <a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Analysis">Analysis</a> on a referenced layer-0
+video frame, else by <a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_VarianceBoost">VarianceBoost</a>. Defaults to true.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -241,7 +276,7 @@ units.Add(encoder.ShowExisting(1).Data.ToArray());</code></pre>
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_Effort" data-uid="Egami.Formats.Av1.Av1FramePlan.Effort">
   Effort
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L614"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L655"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how hard the encoder works, 0 (fastest) to 10 (smallest frames), on AVIF's scale: how far it searches for motion, how
@@ -281,7 +316,7 @@ and global motion. Defaults to 4.</p>
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_ErrorResilient" data-uid="Egami.Formats.Av1.Av1FramePlan.ErrorResilient">
   ErrorResilient
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L680"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L721"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the frame decodes without the probabilities and vectors of earlier frames, as real-time streams want. Defaults to false.</p>
@@ -313,7 +348,7 @@ and global motion. Defaults to 4.</p>
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_Kind" data-uid="Egami.Formats.Av1.Av1FramePlan.Kind">
   Kind
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L590"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L631"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the frame's type: <a class="xref" href="Egami.Formats.Av1.Av1FrameKind.html#Egami_Formats_Av1_Av1FrameKind_Inter">Inter</a> (the default), <a class="xref" href="Egami.Formats.Av1.Av1FrameKind.html#Egami_Formats_Av1_Av1FrameKind_Key">Key</a> (decodes on its own
@@ -342,11 +377,51 @@ and, shown, refreshes every slot) or <a class="xref" href="Egami.Formats.Av1.Av1
 
 
 
+  <a id="Egami_Formats_Av1_Av1FramePlan_Layer_" data-uid="Egami.Formats.Av1.Av1FramePlan.Layer*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_Layer" data-uid="Egami.Formats.Av1.Av1FramePlan.Layer">
+  Layer
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L749"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the frame's layer in its group's pyramid, 0 (the default: key, golden and the group's base frames) to 7 (the deepest):
+a video frame's rate-distortion multiplier rises with it, so the frames fewer others predict from spend fewer bits on
+what they alone show. Intra frames are layer 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Layer { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 7.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Formats_Av1_Av1FramePlan_OrderHint_" data-uid="Egami.Formats.Av1.Av1FramePlan.OrderHint*"></a>
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_OrderHint" data-uid="Egami.Formats.Av1.Av1FramePlan.OrderHint">
   OrderHint
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L631"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L672"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the frame's order hint, its place in display order, 0 to 127 (higher values wrap); null (the default) for the number
@@ -385,7 +460,7 @@ of frames shown so far. A hidden frame shown later sets the place it will show a
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_PrimaryReference" data-uid="Egami.Formats.Av1.Av1FramePlan.PrimaryReference">
   PrimaryReference
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L665"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L706"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the reference, 0 (LAST) to 6 (ALTREF), whose probabilities and state an inter frame starts from; null (the default) for
@@ -424,7 +499,7 @@ LAST. Ignored in error resilient frames, which start from the defaults.</p>
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_QIndex" data-uid="Egami.Formats.Av1.Av1FramePlan.QIndex">
   QIndex
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L602"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L643"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets base_q_idx, 0 (lossless) to 255, which rate control sets to replace <a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Quality">Quality</a>; null (the default) to use the quality.</p>
@@ -462,7 +537,7 @@ LAST. Ignored in error resilient frames, which start from the defaults.</p>
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_Quality" data-uid="Egami.Formats.Av1.Av1FramePlan.Quality">
   Quality
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L594"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L635"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the quality, 0 (smallest) to 100 (best), on AVIF's scale (<a class="xref" href="Egami.Formats.Avif.AvifWriterOptions.html#Egami_Formats_Avif_AvifWriterOptions_Quality">Quality</a>). Defaults to 75. Ignored when <a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_QIndex">QIndex</a> is set.</p>
@@ -500,7 +575,7 @@ LAST. Ignored in error resilient frames, which start from the defaults.</p>
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_ReferenceSlots" data-uid="Egami.Formats.Av1.Av1FramePlan.ReferenceSlots">
   ReferenceSlots
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L639"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L680"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the slots, 0 to 7, that LAST, LAST2, LAST3, GOLDEN, BWDREF, ALTREF2 and ALTREF read, in that order. Defaults to 0 to 6.</p>
@@ -538,7 +613,7 @@ LAST. Ignored in error resilient frames, which start from the defaults.</p>
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_Referenced" data-uid="Egami.Formats.Av1.Av1FramePlan.Referenced">
   Referenced
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L677"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L718"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether later frames predict from this one; null (the default) when it refreshes a slot. A frame nothing predicts from,
@@ -573,7 +648,7 @@ motion, and the deblocking and CDEF searches of higher efforts. The caller knows
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_References" data-uid="Egami.Formats.Av1.Av1FramePlan.References">
   References
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L650"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L691"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets which references inter blocks may predict from. Defaults to all; references that read the same frame are searched once.</p>
@@ -605,7 +680,7 @@ motion, and the deblocking and CDEF searches of higher efforts. The caller knows
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_RefreshSlots" data-uid="Egami.Formats.Av1.Av1FramePlan.RefreshSlots">
   RefreshSlots
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L654"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L695"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the slots the frame refreshes, one bit per slot. Defaults to 1, slot 0; a shown key frame refreshes all.</p>
@@ -643,7 +718,7 @@ motion, and the deblocking and CDEF searches of higher efforts. The caller knows
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_ScreenContent" data-uid="Egami.Formats.Av1.Av1FramePlan.ScreenContent">
   ScreenContent
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L686"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L756"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether screen content tools (palettes, and intra block copy in intra frames) are on; null (the default) detects screen content.</p>
@@ -675,7 +750,7 @@ motion, and the deblocking and CDEF searches of higher efforts. The caller knows
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_Show" data-uid="Egami.Formats.Av1.Av1FramePlan.Show">
   Show
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L621"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L662"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the frame is shown. A hidden frame, such as an alternate reference shown later with <a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html#Egami_Formats_Av1_Av1StreamEncoder_ShowExisting_System_Int32_">ShowExisting(int)</a>, only fills slots. Defaults to true.</p>
@@ -707,7 +782,7 @@ motion, and the deblocking and CDEF searches of higher efforts. The caller knows
 
   <h3 id="Egami_Formats_Av1_Av1FramePlan_Showable" data-uid="Egami.Formats.Av1.Av1FramePlan.Showable">
   Showable
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L624"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L665"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether a hidden frame may be shown later with show_existing_frame. Defaults to true.</p>
@@ -735,11 +810,79 @@ motion, and the deblocking and CDEF searches of higher efforts. The caller knows
 
 
 
+  <a id="Egami_Formats_Av1_Av1FramePlan_Tune_" data-uid="Egami.Formats.Av1.Av1FramePlan.Tune*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_Tune" data-uid="Egami.Formats.Av1.Av1FramePlan.Tune">
+  Tune
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L741"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets what the frame's coding tools are tuned for: <a class="xref" href="Egami.Formats.Av1.Av1Tune.html#Egami_Formats_Av1_Av1Tune_Video">Video</a> (the default) or <a class="xref" href="Egami.Formats.Av1.Av1Tune.html#Egami_Formats_Av1_Av1Tune_Image">Image</a>,
+the perceptual tools of still pictures.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Av1Tune Tune { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Av1.Av1Tune.html">Av1Tune</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Av1_Av1FramePlan_VarianceBoost_" data-uid="Egami.Formats.Av1.Av1FramePlan.VarianceBoost*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1FramePlan_VarianceBoost" data-uid="Egami.Formats.Av1.Av1FramePlan.VarianceBoost">
+  VarianceBoost
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L735"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether superblocks the temporal analysis sets no quantizer for get finer quantizers where the picture is flat or finely
+graded, where banding and blocking show (Variance Boost, from libaom's tune IQ): SSIM and the eye gain more than PSNR loses.
+Null (the default) for on under <a class="xref" href="Egami.Formats.Av1.Av1Tune.html#Egami_Formats_Av1_Av1Tune_Image">Image</a> and off under <a class="xref" href="Egami.Formats.Av1.Av1Tune.html#Egami_Formats_Av1_Av1Tune_Video">Video</a>. Needs
+<a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_DeltaQuantizers">DeltaQuantizers</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool? VarianceBoost { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L573" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L613" class="edit-link">Edit this page</a>
         </div>
 
 

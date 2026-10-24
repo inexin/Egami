@@ -37588,6 +37588,38 @@ references:
   commentId: N:Egami.Formats.Av1
   fullName: Egami.Formats.Av1
   nameWithType: Egami.Formats.Av1
+- uid: Egami.Formats.Av1.Av1AnalysisFrame
+  name: Av1AnalysisFrame
+  href: api/Egami.Formats.Av1.Av1AnalysisFrame.html
+  commentId: T:Egami.Formats.Av1.Av1AnalysisFrame
+  fullName: Egami.Formats.Av1.Av1AnalysisFrame
+  nameWithType: Av1AnalysisFrame
+- uid: Egami.Formats.Av1.Av1AnalysisFrame.Picture
+  name: Picture
+  href: api/Egami.Formats.Av1.Av1AnalysisFrame.html#Egami_Formats_Av1_Av1AnalysisFrame_Picture
+  commentId: P:Egami.Formats.Av1.Av1AnalysisFrame.Picture
+  fullName: Egami.Formats.Av1.Av1AnalysisFrame.Picture
+  nameWithType: Av1AnalysisFrame.Picture
+- uid: Egami.Formats.Av1.Av1AnalysisFrame.Picture*
+  name: Picture
+  href: api/Egami.Formats.Av1.Av1AnalysisFrame.html#Egami_Formats_Av1_Av1AnalysisFrame_Picture_
+  commentId: Overload:Egami.Formats.Av1.Av1AnalysisFrame.Picture
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1AnalysisFrame.Picture
+  nameWithType: Av1AnalysisFrame.Picture
+- uid: Egami.Formats.Av1.Av1AnalysisFrame.References
+  name: References
+  href: api/Egami.Formats.Av1.Av1AnalysisFrame.html#Egami_Formats_Av1_Av1AnalysisFrame_References
+  commentId: P:Egami.Formats.Av1.Av1AnalysisFrame.References
+  fullName: Egami.Formats.Av1.Av1AnalysisFrame.References
+  nameWithType: Av1AnalysisFrame.References
+- uid: Egami.Formats.Av1.Av1AnalysisFrame.References*
+  name: References
+  href: api/Egami.Formats.Av1.Av1AnalysisFrame.html#Egami_Formats_Av1_Av1AnalysisFrame_References_
+  commentId: Overload:Egami.Formats.Av1.Av1AnalysisFrame.References
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1AnalysisFrame.References
+  nameWithType: Av1AnalysisFrame.References
 - uid: Egami.Formats.Av1.Av1DecoderOptions
   name: Av1DecoderOptions
   href: api/Egami.Formats.Av1.Av1DecoderOptions.html
@@ -37782,6 +37814,25 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Av1.Av1EncodedFrame.QIndex
   nameWithType: Av1EncodedFrame.QIndex
+- uid: Egami.Formats.Av1.Av1FrameAnalysis
+  name: Av1FrameAnalysis
+  href: api/Egami.Formats.Av1.Av1FrameAnalysis.html
+  commentId: T:Egami.Formats.Av1.Av1FrameAnalysis
+  fullName: Egami.Formats.Av1.Av1FrameAnalysis
+  nameWithType: Av1FrameAnalysis
+- uid: Egami.Formats.Av1.Av1FrameAnalysis.Importance
+  name: Importance
+  href: api/Egami.Formats.Av1.Av1FrameAnalysis.html#Egami_Formats_Av1_Av1FrameAnalysis_Importance
+  commentId: P:Egami.Formats.Av1.Av1FrameAnalysis.Importance
+  fullName: Egami.Formats.Av1.Av1FrameAnalysis.Importance
+  nameWithType: Av1FrameAnalysis.Importance
+- uid: Egami.Formats.Av1.Av1FrameAnalysis.Importance*
+  name: Importance
+  href: api/Egami.Formats.Av1.Av1FrameAnalysis.html#Egami_Formats_Av1_Av1FrameAnalysis_Importance_
+  commentId: Overload:Egami.Formats.Av1.Av1FrameAnalysis.Importance
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FrameAnalysis.Importance
+  nameWithType: Av1FrameAnalysis.Importance
 - uid: Egami.Formats.Av1.Av1FrameInfo
   name: Av1FrameInfo
   href: api/Egami.Formats.Av1.Av1FrameInfo.html
@@ -37986,6 +38037,19 @@ references:
   commentId: T:Egami.Formats.Av1.Av1FramePlan
   fullName: Egami.Formats.Av1.Av1FramePlan
   nameWithType: Av1FramePlan
+- uid: Egami.Formats.Av1.Av1FramePlan.Analysis
+  name: Analysis
+  href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Analysis
+  commentId: P:Egami.Formats.Av1.Av1FramePlan.Analysis
+  fullName: Egami.Formats.Av1.Av1FramePlan.Analysis
+  nameWithType: Av1FramePlan.Analysis
+- uid: Egami.Formats.Av1.Av1FramePlan.Analysis*
+  name: Analysis
+  href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Analysis_
+  commentId: Overload:Egami.Formats.Av1.Av1FramePlan.Analysis
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FramePlan.Analysis
+  nameWithType: Av1FramePlan.Analysis
 - uid: Egami.Formats.Av1.Av1FramePlan.Default
   name: Default
   href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Default
@@ -38051,6 +38115,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Av1.Av1FramePlan.Kind
   nameWithType: Av1FramePlan.Kind
+- uid: Egami.Formats.Av1.Av1FramePlan.Layer
+  name: Layer
+  href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Layer
+  commentId: P:Egami.Formats.Av1.Av1FramePlan.Layer
+  fullName: Egami.Formats.Av1.Av1FramePlan.Layer
+  nameWithType: Av1FramePlan.Layer
+- uid: Egami.Formats.Av1.Av1FramePlan.Layer*
+  name: Layer
+  href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Layer_
+  commentId: Overload:Egami.Formats.Av1.Av1FramePlan.Layer
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FramePlan.Layer
+  nameWithType: Av1FramePlan.Layer
 - uid: Egami.Formats.Av1.Av1FramePlan.OrderHint
   name: OrderHint
   href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_OrderHint
@@ -38194,6 +38271,32 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Av1.Av1FramePlan.Showable
   nameWithType: Av1FramePlan.Showable
+- uid: Egami.Formats.Av1.Av1FramePlan.Tune
+  name: Tune
+  href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Tune
+  commentId: P:Egami.Formats.Av1.Av1FramePlan.Tune
+  fullName: Egami.Formats.Av1.Av1FramePlan.Tune
+  nameWithType: Av1FramePlan.Tune
+- uid: Egami.Formats.Av1.Av1FramePlan.Tune*
+  name: Tune
+  href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Tune_
+  commentId: Overload:Egami.Formats.Av1.Av1FramePlan.Tune
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FramePlan.Tune
+  nameWithType: Av1FramePlan.Tune
+- uid: Egami.Formats.Av1.Av1FramePlan.VarianceBoost
+  name: VarianceBoost
+  href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_VarianceBoost
+  commentId: P:Egami.Formats.Av1.Av1FramePlan.VarianceBoost
+  fullName: Egami.Formats.Av1.Av1FramePlan.VarianceBoost
+  nameWithType: Av1FramePlan.VarianceBoost
+- uid: Egami.Formats.Av1.Av1FramePlan.VarianceBoost*
+  name: VarianceBoost
+  href: api/Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_VarianceBoost_
+  commentId: Overload:Egami.Formats.Av1.Av1FramePlan.VarianceBoost
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1FramePlan.VarianceBoost
+  nameWithType: Av1FramePlan.VarianceBoost
 - uid: Egami.Formats.Av1.Av1References
   name: Av1References
   href: api/Egami.Formats.Av1.Av1References.html
@@ -38514,6 +38617,22 @@ references:
   fullName.vb: Egami.Formats.Av1.Av1StreamEncoder.New
   nameWithType: Av1StreamEncoder.Av1StreamEncoder
   nameWithType.vb: Av1StreamEncoder.New
+- uid: Egami.Formats.Av1.Av1StreamEncoder.Analyze(System.Collections.Generic.IReadOnlyList{Egami.Formats.Av1.Av1AnalysisFrame})
+  name: Analyze(IReadOnlyList<Av1AnalysisFrame>)
+  href: api/Egami.Formats.Av1.Av1StreamEncoder.html#Egami_Formats_Av1_Av1StreamEncoder_Analyze_System_Collections_Generic_IReadOnlyList_Egami_Formats_Av1_Av1AnalysisFrame__
+  commentId: M:Egami.Formats.Av1.Av1StreamEncoder.Analyze(System.Collections.Generic.IReadOnlyList{Egami.Formats.Av1.Av1AnalysisFrame})
+  name.vb: Analyze(IReadOnlyList(Of Av1AnalysisFrame))
+  fullName: Egami.Formats.Av1.Av1StreamEncoder.Analyze(System.Collections.Generic.IReadOnlyList<Egami.Formats.Av1.Av1AnalysisFrame>)
+  fullName.vb: Egami.Formats.Av1.Av1StreamEncoder.Analyze(System.Collections.Generic.IReadOnlyList(Of Egami.Formats.Av1.Av1AnalysisFrame))
+  nameWithType: Av1StreamEncoder.Analyze(IReadOnlyList<Av1AnalysisFrame>)
+  nameWithType.vb: Av1StreamEncoder.Analyze(IReadOnlyList(Of Av1AnalysisFrame))
+- uid: Egami.Formats.Av1.Av1StreamEncoder.Analyze*
+  name: Analyze
+  href: api/Egami.Formats.Av1.Av1StreamEncoder.html#Egami_Formats_Av1_Av1StreamEncoder_Analyze_
+  commentId: Overload:Egami.Formats.Av1.Av1StreamEncoder.Analyze
+  isSpec: "True"
+  fullName: Egami.Formats.Av1.Av1StreamEncoder.Analyze
+  nameWithType: Av1StreamEncoder.Analyze
 - uid: Egami.Formats.Av1.Av1StreamEncoder.Dispose
   name: Dispose()
   href: api/Egami.Formats.Av1.Av1StreamEncoder.html#Egami_Formats_Av1_Av1StreamEncoder_Dispose
@@ -38595,6 +38714,24 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Av1.Av1StreamEncoder.Width
   nameWithType: Av1StreamEncoder.Width
+- uid: Egami.Formats.Av1.Av1Tune
+  name: Av1Tune
+  href: api/Egami.Formats.Av1.Av1Tune.html
+  commentId: T:Egami.Formats.Av1.Av1Tune
+  fullName: Egami.Formats.Av1.Av1Tune
+  nameWithType: Av1Tune
+- uid: Egami.Formats.Av1.Av1Tune.Image
+  name: Image
+  href: api/Egami.Formats.Av1.Av1Tune.html#Egami_Formats_Av1_Av1Tune_Image
+  commentId: F:Egami.Formats.Av1.Av1Tune.Image
+  fullName: Egami.Formats.Av1.Av1Tune.Image
+  nameWithType: Av1Tune.Image
+- uid: Egami.Formats.Av1.Av1Tune.Video
+  name: Video
+  href: api/Egami.Formats.Av1.Av1Tune.html#Egami_Formats_Av1_Av1Tune_Video
+  commentId: F:Egami.Formats.Av1.Av1Tune.Video
+  fullName: Egami.Formats.Av1.Av1Tune.Video
+  nameWithType: Av1Tune.Video
 - uid: Egami.Formats.Avif
   name: Egami.Formats.Avif
   href: api/Egami.Formats.Avif.html

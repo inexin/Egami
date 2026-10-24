@@ -95,6 +95,12 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Av1.Av1AnalysisFrame.html">Av1AnalysisFrame</a></dt>
+      <dd><p>One frame for <a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html#Egami_Formats_Av1_Av1StreamEncoder_Analyze_System_Collections_Generic_IReadOnlyList_Egami_Formats_Av1_Av1AnalysisFrame__">Analyze(IReadOnlyList&lt;Av1AnalysisFrame&gt;)</a>: its picture and the frames before it in the list (coding order) that it
+will predict from.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Av1.Av1DecoderOptions.html">Av1DecoderOptions</a></dt>
       <dd><p>How an <a class="xref" href="Egami.Formats.Av1.Av1StreamDecoder.html">Av1StreamDecoder</a> decodes.</p>
 </dd>
@@ -102,6 +108,13 @@ Classes
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Av1.Av1EncodedFrame.html">Av1EncodedFrame</a></dt>
       <dd><p>One frame <a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html">Av1StreamEncoder</a> wrote, and what it cost.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Av1.Av1FrameAnalysis.html">Av1FrameAnalysis</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Formats.Av1.Av1StreamEncoder.html#Egami_Formats_Av1_Av1StreamEncoder_Analyze_System_Collections_Generic_IReadOnlyList_Egami_Formats_Av1_Av1AnalysisFrame__">Analyze(IReadOnlyList&lt;Av1AnalysisFrame&gt;)</a> found for one frame: how much of each 16x16 block's content the frames after it
+predict from it. A plan carries it (<a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Analysis">Analysis</a>) to give the blocks that matter most finer quantizers on
+a group's base frames, or lower rate-distortion multipliers on the others.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -154,6 +167,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Av1.Av1References.html">Av1References</a></dt>
       <dd><p>The references an AV1 inter frame may predict from.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Av1.Av1Tune.html">Av1Tune</a></dt>
+      <dd><p>What an <a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html">Av1FramePlan</a>'s coding tools are tuned for.</p>
 </dd>
     </dl>
 

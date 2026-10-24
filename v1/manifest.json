@@ -5417,6 +5417,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Av1.Av1AnalysisFrame.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Av1.Av1AnalysisFrame.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Av1.Av1AnalysisFrame",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Av1.Av1AnalysisFrame.yml\" sourcestartlinenumber=\"1\">One frame for <xref href=\"Egami.Formats.Av1.Av1StreamEncoder.Analyze(System.Collections.Generic.IReadOnlyList%7bEgami.Formats.Av1.Av1AnalysisFrame%7d)\" data-throw-if-not-resolved=\"false\"></xref>: its picture and the frames before it in the list (coding order) that it\nwill predict from.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Av1.Av1DecoderOptions.yml",
       "output": {
         ".html": {
@@ -5442,6 +5456,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Av1.Av1EncodedFrame",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Av1.Av1EncodedFrame.yml\" sourcestartlinenumber=\"1\">One frame <xref href=\"Egami.Formats.Av1.Av1StreamEncoder\" data-throw-if-not-resolved=\"false\"></xref> wrote, and what it cost.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Av1.Av1FrameAnalysis.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Av1.Av1FrameAnalysis.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Av1.Av1FrameAnalysis",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Av1.Av1FrameAnalysis.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Formats.Av1.Av1StreamEncoder.Analyze(System.Collections.Generic.IReadOnlyList%7bEgami.Formats.Av1.Av1AnalysisFrame%7d)\" data-throw-if-not-resolved=\"false\"></xref> found for one frame: how much of each 16x16 block's content the frames after it\npredict from it. A plan carries it (<xref href=\"Egami.Formats.Av1.Av1FramePlan.Analysis\" data-throw-if-not-resolved=\"false\"></xref>) to give the blocks that matter most finer quantizers on\na group's base frames, or lower rate-distortion multipliers on the others.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -5540,6 +5568,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Av1.Av1StreamEncoder",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Av1.Av1StreamEncoder.yml\" sourcestartlinenumber=\"1\">Encodes an AV1 video stream (AV1 Bitstream and Decoding Process 1.0.0 with errata 1) a frame at a time: key, intra-only and\ninter frames, inter blocks predicted from up to seven references with every single and compound mode, inter-intra, overlapped\nand warped motion, and hidden frames shown later with show_existing_frame. Each frame's <xref href=\"Egami.Formats.Av1.Av1FramePlan\" data-throw-if-not-resolved=\"false\"></xref> says what it\nis (its type, whether it is shown), its quality or quantizer, and which reference slots it reads and refreshes, so rate control\nand group-of-frames planning stay with the caller: Egami.Video drives this encoder for its containers, and any other source of\nframes can too. The frames decode in libaom and dav1d exactly as in <xref href=\"Egami.Formats.Av1.Av1StreamDecoder\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Av1.Av1Tune.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Av1.Av1Tune.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Av1.Av1Tune",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Av1.Av1Tune.yml\" sourcestartlinenumber=\"1\">What an <xref href=\"Egami.Formats.Av1.Av1FramePlan\" data-throw-if-not-resolved=\"false\"></xref>'s coding tools are tuned for.</p>\n"
     },
     {
       "type": "ManagedReference",

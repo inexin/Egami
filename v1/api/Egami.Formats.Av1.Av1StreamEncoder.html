@@ -353,11 +353,83 @@ units.Add(encoder.ShowExisting(1).Data.ToArray());</code></pre>
 </h2>
 
 
+  <a id="Egami_Formats_Av1_Av1StreamEncoder_Analyze_" data-uid="Egami.Formats.Av1.Av1StreamEncoder.Analyze*"></a>
+
+  <h3 id="Egami_Formats_Av1_Av1StreamEncoder_Analyze_System_Collections_Generic_IReadOnlyList_Egami_Formats_Av1_Av1AnalysisFrame__" data-uid="Egami.Formats.Av1.Av1StreamEncoder.Analyze(System.Collections.Generic.IReadOnlyList{Egami.Formats.Av1.Av1AnalysisFrame})">
+  Analyze(IReadOnlyList&lt;Av1AnalysisFrame&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L245"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Runs the temporal model over frames ahead, in the order they will be coded (<a class="xref" href="Egami.Formats.Av1.Av1AnalysisFrame.html#Egami_Formats_Av1_Av1AnalysisFrame_References">References</a> says
+which earlier ones each predicts from): how much of each frame's content, block by block, the frames after it reuse. A
+frame's <a class="xref" href="Egami.Formats.Av1.Av1FrameAnalysis.html">Av1FrameAnalysis</a> goes in its plan (<a class="xref" href="Egami.Formats.Av1.Av1FramePlan.html#Egami_Formats_Av1_Av1FramePlan_Analysis">Analysis</a>), and its
+<a class="xref" href="Egami.Formats.Av1.Av1FrameAnalysis.html#Egami_Formats_Av1_Av1FrameAnalysis_Importance">Importance</a> can set a group's base quantizer. The frames are not coded and the stream does
+not change; the result depends only on the pictures and references, not on the thread count.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Av1FrameAnalysis&gt; Analyze(IReadOnlyList&lt;Av1AnalysisFrame&gt; frames)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frames</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Formats.Av1.Av1AnalysisFrame.html">Av1AnalysisFrame</a>&gt;</dt>
+    <dd><p>The frames, in coding order, at the stream's size.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Formats.Av1.Av1FrameAnalysis.html">Av1FrameAnalysis</a>&gt;</dt>
+    <dd><p>Each frame's analysis, in the same order.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Av1_Av1StreamEncoder_Analyze_System_Collections_Generic_IReadOnlyList_Egami_Formats_Av1_Av1AnalysisFrame___examples">Examples</h4>
+  <pre><code class="lang-csharp">// The frames ahead in coding order: a key frame, a hidden frame four pictures on, then the three between, each predicting
+// from the frames on both sides of it (their places in this list).
+IReadOnlyList&lt;Av1FrameAnalysis&gt; analysis = encoder.Analyze(
+[
+    new Av1AnalysisFrame { Picture = pictures[0] },
+    new Av1AnalysisFrame { Picture = pictures[4], References = [0] },
+    new Av1AnalysisFrame { Picture = pictures[1], References = [0, 1] },
+    new Av1AnalysisFrame { Picture = pictures[2], References = [0, 1] },
+    new Av1AnalysisFrame { Picture = pictures[3], References = [0, 1] },
+]);
+
+// The more the frames after them reuse the key and hidden frames, the finer their steps; each plan carries its analysis.
+int keyQ = (int)Math.Round(100 / Math.Sqrt(analysis[0].Importance));
+encoder.Encode(pictures[0], new Av1FramePlan { Kind = Av1FrameKind.Key, QIndex = keyQ, Analysis = analysis[0] });
+encoder.Encode(pictures[4], new Av1FramePlan { QIndex = 110, Show = false, OrderHint = 4, RefreshSlots = 0b10, Analysis = analysis[1] });
+for (int i = 1; i &lt; 4; i++)
+{
+    encoder.Encode(pictures[i], new Av1FramePlan { QIndex = 140, Layer = 1, ReferenceSlots = [0, 0, 0, 0, 1, 1, 1], RefreshSlots = 0, Analysis = analysis[i + 1] });
+}
+
+encoder.ShowExisting(1);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>A picture is not at the stream's size, or a frame names a reference that is not before it.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Formats_Av1_Av1StreamEncoder_Dispose_" data-uid="Egami.Formats.Av1.Av1StreamEncoder.Dispose*"></a>
 
   <h3 id="Egami_Formats_Av1_Av1StreamEncoder_Dispose" data-uid="Egami.Formats.Av1.Av1StreamEncoder.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L262"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L302"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Drops the reference slots and the frames held for the next temporal unit.</p>
@@ -433,7 +505,7 @@ taken as the sequence's.</p>
 
   <h3 id="Egami_Formats_Av1_Av1StreamEncoder_ShowExisting_System_Int32_" data-uid="Egami.Formats.Av1.Av1StreamEncoder.ShowExisting(System.Int32)">
   ShowExisting(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L235"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Av1/Av1StreamEncoder.cs/#L275"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Shows the frame in a slot again (show_existing_frame), as a hidden alternate reference is shown when its time comes: a
