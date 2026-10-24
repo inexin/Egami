@@ -273,13 +273,7 @@ internal sealed class Av1Encoder
         }
         Av1FrameDecisions decisions = new(frame);
         int tiles = header.TileCols * header.TileRows;
-        long[] estimates = new long[tiles];
-        frame.For(tiles, tile =>
-        {
-            Av1TileEncoder encoder = new(frame, tile / header.TileCols, tile % header.TileCols, source, decisions, settings);
-            encoder.Encode();
-            estimates[tile] = encoder.EstimatedRate;
-        });
+        Av1TileRows[] tileRows = Search(frame, source, decisions, settings);
         MarkCdef(frame);
 
         Av1FilterSearch.Search(frame, source, sequence, parameters, settings.Effort, Av1Rate.RdMultiplier(Math.Max(parameters.BaseQIdx, 1), sequence.BitDepth));
@@ -301,7 +295,58 @@ internal sealed class Av1Encoder
             frame.SavedContext = saved;
         }
 
-        return (Av1ObuWriter.Frame(sequence, parameters, tileData), frame, estimates.Sum() / (double)Av1CostSink.BitCost, tileData.Sum(t => t.Length) * 8.0);
+        return (Av1ObuWriter.Frame(sequence, parameters, tileData), frame, tileRows.Sum(t => t.EstimatedRate) / (double)Av1CostSink.BitCost,
+            tileData.Sum(t => t.Length) * 8.0);
+    }
+
+    /// <summary>
+    /// Decides and reconstructs every tile, the superblock rows of all tiles taken in order by up to the frame's parallelism of
+    /// workers, each row a wavefront behind the one above it (<see cref="Av1TileRows"/>); the decisions do not depend on how many
+    /// workers there are or which takes which row.
+    /// </summary>
+    private static Av1TileRows[] Search(Av1Frame frame, Av1EncoderSource source, Av1FrameDecisions decisions, Av1EncoderSettings settings)
+    {
+        Av1FrameHeader header = frame.Header;
+        int tiles = header.TileCols * header.TileRows;
+        Av1TileRows[] rows = new Av1TileRows[tiles];
+        int[] firstJob = new int[tiles + 1];
+        for (int tile = 0; tile < tiles; tile++)
+        {
+            rows[tile] = new Av1TileRows(frame, tile / header.TileCols, tile % header.TileCols);
+            firstJob[tile + 1] = firstJob[tile] + rows[tile].Rows;
+        }
+
+        int jobs = firstJob[tiles];
+        int workers = Math.Clamp(frame.Parallelism, 1, jobs);
+        Av1TileEncoder?[] primary = new Av1TileEncoder?[tiles];
+        for (int tile = 0; tile < tiles; tile++)
+        {
+            primary[tile] = new Av1TileEncoder(frame, rows[tile].TileRow, rows[tile].TileCol, source, decisions, settings);
+        }
+
+        int next = -1;
+        frame.For(workers, worker =>
+        {
+            Av1TileEncoder?[] mine = worker == 0 ? primary : new Av1TileEncoder?[tiles];
+            for (int job = Interlocked.Increment(ref next); job < jobs; job = Interlocked.Increment(ref next))
+            {
+                int tile = 0;
+                while (firstJob[tile + 1] <= job)
+                {
+                    tile++;
+                }
+
+                Av1TileEncoder encoder = mine[tile] ??= new Av1TileEncoder(frame, rows[tile].TileRow, rows[tile].TileCol, source, decisions, settings, primary[tile]);
+                encoder.EncodeRow(rows[tile], job - firstJob[tile]);
+            }
+        });
+
+        for (int tile = 0; tile < tiles; tile++)
+        {
+            primary[tile]!.SettleQuantizers();
+        }
+
+        return rows;
     }
 
     /// <summary>

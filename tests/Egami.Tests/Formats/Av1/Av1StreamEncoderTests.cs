@@ -45,6 +45,24 @@ public class Av1StreamEncoderTests
     }
 
     [Theory]
+    [InlineData(4, 8, ChromaFormat.Yuv420)]
+    [InlineData(7, 8, ChromaFormat.Yuv420)]
+    [InlineData(2, 10, ChromaFormat.Yuv444)]
+    public void FramesAreTheSameAtAnyThreadCount(int effort, int bitDepth, ChromaFormat chroma)
+    {
+        // Four superblock rows in one tile: the rows are decided as a wavefront when there are threads.
+        Av1SequenceOptions options = new() { Width = 240, Height = 200, BitDepth = bitDepth, Chroma = chroma };
+        using Av1StreamEncoder one = new(options, EgamiContext.Default with { MaxParallelism = 1 });
+        using Av1StreamEncoder many = new(options, EgamiContext.Default with { MaxParallelism = 8 });
+        for (int i = 0; i < 4; i++)
+        {
+            using YuvRaster frame = Moving(240, 200, bitDepth, chroma, i);
+            Av1FramePlan plan = new() { Effort = effort, Quality = 60 };
+            Assert.Equal(one.Encode(frame, plan).Data.ToArray(), many.Encode(frame, plan).Data.ToArray());
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void GlobalMotionFollowsPansAndZooms(bool zoom)

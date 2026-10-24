@@ -34,54 +34,15 @@ internal sealed partial class Av1TileEncoder : Av1TileCoder
     private readonly List<ChromaChoice> _chromaCandidates = [];
     private readonly List<(long Cost, int Index)> _scores = [];
 
-    /// <summary>Starts a tile.</summary>
-    internal Av1TileEncoder(Av1Frame frame, int tileRow, int tileCol, Av1EncoderSource source, Av1FrameDecisions decisions, Av1EncoderSettings settings)
-        : base(frame, tileRow, tileCol, decisions)
+    /// <summary>Starts a tile, or another searcher of its rows sharing the above contexts of <paramref name="shared"/>.</summary>
+    internal Av1TileEncoder(Av1Frame frame, int tileRow, int tileCol, Av1EncoderSource source, Av1FrameDecisions decisions, Av1EncoderSettings settings,
+        Av1TileEncoder? shared = null)
+        : base(frame, tileRow, tileCol, decisions, shared)
     {
         _reconstructor = new Av1Reconstructor<ushort>(frame);
         _source = source;
         _profile = Av1SearchProfile.For(settings.Effort, frame.Header.CodedLossless);
         _frameRdmult = _rdmult = Av1Rate.RdMultiplier(Math.Max(frame.Header.BaseQIdx, 1), frame.Sequence.BitDepth);
-    }
-
-    /// <summary>Gets the rate the chosen superblocks cost as their symbols adapted the CDFs, in 1/512 bits.</summary>
-    internal long Rate { get; private set; }
-
-    /// <summary>Gets the rate the search estimated for the chosen superblocks, from the CDFs as each superblock began, in 1/512 bits.</summary>
-    internal long EstimatedRate { get; private set; }
-
-    /// <summary>Decides and reconstructs the tile.</summary>
-    internal void Encode()
-    {
-        for (int miRow = MiRowStart; miRow < MiRowEnd; miRow += _sbMi)
-        {
-            _frame.CancellationToken.ThrowIfCancellationRequested();
-            ResetLeftContext();
-            for (int miCol = MiColStart; miCol < MiColEnd; miCol += _sbMi)
-            {
-                // The superblock's quantizer (Variance Boost), coded as a delta from the one before.
-                int[]? sbQ = _source.SuperblockQIndices;
-                _sbQIndex = sbQ is null ? _header.BaseQIdx
-                    : Av1VarianceBoost.Adjust(_header.DeltaQRes, _currentQIndex, sbQ[((miRow / _sbMi) * _source.SuperblockColumns) + (miCol / _sbMi)]);
-                _frameRdmult = Av1Rate.RdMultiplier(Math.Max(_sbQIndex, 1), _sequence.BitDepth);
-                Snapshot start = Take(miRow, miCol, _frame.SbSize, pixels: false);
-                _costs.Fill(_cdf);
-
-                SearchPartition(miRow, miCol, _frame.SbSize, long.MaxValue);
-
-                // Code the chosen superblock from its starting contexts: first as the search saw it, then adapting the CDFs as
-                // the writer will.
-                start.RestoreContexts(this);
-                Av1CostSink estimate = new(false);
-                CodePartition(ref estimate, miRow, miCol, _frame.SbSize);
-                EstimatedRate += estimate.Cost;
-                start.RestoreContexts(this);
-                Av1CostSink adapt = new(true);
-                CodePartition(ref adapt, miRow, miCol, _frame.SbSize);
-                Rate += adapt.Cost;
-                Give(start);
-            }
-        }
     }
 
     /// <summary>

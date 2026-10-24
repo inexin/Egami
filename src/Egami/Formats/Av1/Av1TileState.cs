@@ -43,8 +43,11 @@ internal abstract partial class Av1TileState
     private protected bool _isChromaRef;
     private protected bool _isLastVerticalRect, _isFirstHorizontalRect;
 
-    /// <summary>Starts a tile of a frame: its bounds, its CDFs (a copy of the frame's) and empty above and left contexts.</summary>
-    private protected Av1TileState(Av1Frame frame, int tileRow, int tileCol)
+    /// <summary>
+    /// Starts a tile of a frame: its bounds, its CDFs (a copy of the frame's) and empty above and left contexts, or the above
+    /// contexts of <paramref name="shared"/>, another state of the same tile whose superblock rows this one takes turns with.
+    /// </summary>
+    private protected Av1TileState(Av1Frame frame, int tileRow, int tileCol, Av1TileState? shared = null)
     {
         _frame = frame;
         _header = frame.Header;
@@ -58,11 +61,19 @@ internal abstract partial class Av1TileState
         MiRowEnd = Math.Min(_header.MiRowStarts[tileRow + 1], frame.MiRows);
         MiColStart = _header.MiColStarts[tileCol];
         MiColEnd = Math.Min(_header.MiColStarts[tileCol + 1], frame.MiCols);
-        int width = ((MiColEnd - MiColStart + _sbMi - 1) & ~(_sbMi - 1)) + 32;
-        _aboveEntropy = [new byte[width], new byte[width], new byte[width]];
-        _abovePartition = new byte[width];
-        _aboveTxfm = new byte[width];
-        _aboveTxfm.AsSpan().Fill(64);
+        if (shared is not null)
+        {
+            (_aboveEntropy, _abovePartition, _aboveTxfm) = (shared._aboveEntropy, shared._abovePartition, shared._aboveTxfm);
+        }
+        else
+        {
+            int width = ((MiColEnd - MiColStart + _sbMi - 1) & ~(_sbMi - 1)) + 32;
+            _aboveEntropy = [new byte[width], new byte[width], new byte[width]];
+            _abovePartition = new byte[width];
+            _aboveTxfm = new byte[width];
+            _aboveTxfm.AsSpan().Fill(64);
+        }
+
         Context = frame.Context.Clone();
         _cdf = Context.Cdf;
         _currentQIndex = _header.BaseQIdx;
@@ -86,6 +97,26 @@ internal abstract partial class Av1TileState
 
         Array.Clear(_leftPartition);
         _leftTxfm.AsSpan().Fill(64);
+    }
+
+    /// <summary>
+    /// Clears what a superblock row carries from the superblocks before it, as a row of the tile starts in the encoder's search:
+    /// the left contexts, the quantizer and loop filter deltas back at the frame's, and the loop restoration references.
+    /// </summary>
+    private protected void ResetRow()
+    {
+        ResetLeftContext();
+        _currentQIndex = _header.BaseQIdx;
+        Array.Clear(_deltaLf);
+        Array.Clear(_cdefTransmitted);
+        for (int plane = 0; plane < 3; plane++)
+        {
+            _wienerRef[plane, 0] = _wienerRef[plane, 3] = 3;
+            _wienerRef[plane, 1] = _wienerRef[plane, 4] = -7;
+            _wienerRef[plane, 2] = _wienerRef[plane, 5] = 15;
+            _sgrRef[plane, 0] = -32;
+            _sgrRef[plane, 1] = 31;
+        }
     }
 
     /// <summary>Gets the tile's CDFs, as they adapt.</summary>

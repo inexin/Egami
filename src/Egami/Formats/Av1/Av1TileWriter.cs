@@ -44,8 +44,8 @@ internal partial class Av1TileCoder : Av1TileState
     private readonly byte[] _levels = new byte[((32 + 4) * (32 + 4)) + 16];
 
     /// <summary>Starts the syntax of a tile.</summary>
-    internal Av1TileCoder(Av1Frame frame, int tileRow, int tileCol, Av1FrameDecisions decisions)
-        : base(frame, tileRow, tileCol)
+    internal Av1TileCoder(Av1Frame frame, int tileRow, int tileCol, Av1FrameDecisions decisions, Av1TileState? shared = null)
+        : base(frame, tileRow, tileCol, shared)
     {
         _decisions = decisions;
     }
