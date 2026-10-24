@@ -5,6 +5,23 @@ changes that break code come only in a new major version.
 
 ## Egami 1.2.0 (unreleased)
 
+### AV1 encoder speed (Phase 2.9.11, stage A)
+
+- `Av1StreamEncoder` decides each tile's superblock rows as a wavefront on up to `EgamiContext.MaxParallelism` threads, so one
+  tile uses every core. The output is byte for byte the same at any thread count and without SIMD: rates come from a fixed CDF
+  rule (intra frames start a row from the row above's CDFs after its second superblock and blend 3:1 with the above-right
+  superblock's; inter frames cost every symbol at the frame's starting CDFs). Still pictures keep their rows in raster order,
+  so still AVIF files are byte for byte as before.
+- A motion pre-pass searches every reference for every 16x16 cell (quarter, half and full size, rows in parallel). The block
+  search starts from its vectors and the vector of the block around it, searches only the references the pre-pass ranks best,
+  and does not try a block whole whose cells move apart. Sub-sample refinement uses the decoder's SIMD filters and a pruned
+  pattern; vector rates, reference vector stacks and coefficient rates are kept instead of costed again.
+- `Av1FramePlan.Referenced` says whether later frames predict from a frame. One that is not is searched without transform size
+  search, chroma from luma, inter-intra, overlapped and warped motion, filter choice and global motion.
+- At effort 4, inter frames keep 64x64 blocks whole, try no 4x4 blocks and fewer intra modes. On the four derf clips (720p, 60
+  frames) the BD-rate (PSNR-Y) is 5.2% higher than 1.1.0's, for 4 to 6 times the speed on one thread and 12 to 20 times on 24 at
+  1080p. Encoded bytes of video and AVIF sequences change.
+
 ### Chroma key
 
 - `RasterOps.ChromaKey(color, similarity, blend)` keys out a green or blue screen by chroma: the distance between Rec. 709 Cb and
