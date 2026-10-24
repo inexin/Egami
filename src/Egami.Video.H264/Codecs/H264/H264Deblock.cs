@@ -864,6 +864,30 @@ internal sealed class H264Deblock
         int w4 = _mb.W4;
         int b0 = (mbY * 4 * w4) + (mbX * 4);
         ref int bs = ref MemoryMarshal.GetArrayDataReference(_bs);
+        if (_mb.FlatInside[addr])
+        {
+            // One motion and no coefficients inside: only the macroblock's own left and top edges can be filtered.
+            Vector256<int>.Zero.StoreUnsafe(ref bs, 0);
+            Vector256<int>.Zero.StoreUnsafe(ref bs, 8);
+            Vector256<int>.Zero.StoreUnsafe(ref bs, 16);
+            Vector256<int>.Zero.StoreUnsafe(ref bs, 24);
+            if (left)
+            {
+                bool intraP = mbIntra[addr - 1];
+                for (int k = 0; k < 4; k++)
+                {
+                    int q = b0 + (k * w4);
+                    _bs[k] = intraP ? 4 : StrengthOf(q - 1, q);
+                }
+            }
+
+            if (top)
+            {
+                (mbIntra[addr - _widthMbs] ? Vector128.Create(4) : Strengths(b0, w4)).StoreUnsafe(ref bs, 16);
+            }
+
+            return;
+        }
 
         // Vertical edges: row y of the macroblock's blocks holds segment y of edges 0 to 3; the row is transposed into the edges.
         Vector128<int> r0 = Strengths(b0, mbX > 0 ? 1 : 0), r1 = Strengths(b0 + w4, mbX > 0 ? 1 : 0);
@@ -887,6 +911,20 @@ internal sealed class H264Deblock
         {
             _bs[0] = _bs[1] = _bs[2] = _bs[3] = 4;
         }
+    }
+
+    /// <summary>The bS of an inter block q against block p across an edge: 2 with coefficients, else by their motion.</summary>
+    private int StrengthOf(int p, int q)
+    {
+        if ((_mb.Nonzero[q] | _mb.Nonzero[p]) != 0)
+        {
+            return 2;
+        }
+
+        int[] ref0 = _pic.RefPicId[0], ref1 = _pic.RefPicId[1], mv0 = _pic.Mv[0], mv1 = _pic.Mv[1];
+        int rp0 = ref0[p], rp1 = ref1[p];
+        bool same = rp0 == ref0[q] && rp1 == ref1[q] && (rp0 < 0 || mv0[p] == mv0[q]) && (rp1 < 0 || mv1[p] == mv1[q]);
+        return !same && MotionDiffers(p, q) ? 1 : 0;
     }
 
     /// <summary>

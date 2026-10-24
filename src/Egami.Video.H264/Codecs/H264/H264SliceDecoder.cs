@@ -231,12 +231,40 @@ internal sealed partial class H264SliceDecoder
         _mb.QpC[0][addr] = (sbyte)ChromaQp(qp, _pps.ChromaQpIndexOffset);
         _mb.QpC[1][addr] = (sbyte)ChromaQp(qp, _pps.SecondChromaQpIndexOffset);
         _pic.MbIntra[addr] = H264MbState.IsIntra(_kind);
+        _mb.FlatInside[addr] = IsFlatInside();
         Decoded++;
         LastMb = addr;
         if (_mbX == _widthMbs - 1)
         {
             RowFinished?.Invoke(_mbY);
         }
+    }
+
+    /// <summary>Whether the macroblock has one motion and no luma coefficients (<see cref="H264MbState.FlatInside"/>).</summary>
+    private bool IsFlatInside()
+    {
+        bool oneMotion = _kind switch
+        {
+            H264MbKind.PSkip => true,
+            H264MbKind.Inter => _partShape == 0,
+            H264MbKind.BSkip or H264MbKind.BDirect => _directUniform == 1,
+            _ => false,
+        };
+        if (!oneMotion)
+        {
+            return false;
+        }
+
+        int w4 = _mb.W4, b = Block(0, 0);
+        byte[] nonzero = _mb.Nonzero;
+        if (b + (3 * w4) + 4 > nonzero.Length)
+        {
+            return false;
+        }
+
+        ref byte n = ref MemoryMarshal.GetArrayDataReference(nonzero);
+        return (Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref n, b)) | Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref n, b + w4))
+            | Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref n, b + (2 * w4))) | Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref n, b + (3 * w4)))) == 0;
     }
 
     /// <summary>QPC (Table 8-15) for a QPY and a chroma offset, without the bit depth offset.</summary>
