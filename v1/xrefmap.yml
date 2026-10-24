@@ -88034,6 +88034,31 @@ references:
   isSpec: "True"
   fullName: Egami.Video.MediaFile.Transcode
   nameWithType: MediaFile.Transcode
+- uid: Egami.Video.MediaFile.Trim(System.IO.Stream,System.IO.Stream,System.String,Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime},Egami.Video.TrimMode,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Trim(Stream, Stream, string, MediaTime, MediaTime?, TrimMode, Func<TrackInfo, bool>?, MediaContext?, bool, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.MediaFile.html#Egami_Video_MediaFile_Trim_System_IO_Stream_System_IO_Stream_System_String_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__Egami_Video_TrimMode_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.MediaFile.Trim(System.IO.Stream,System.IO.Stream,System.String,Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime},Egami.Video.TrimMode,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Trim(Stream, Stream, String, MediaTime, MediaTime?, TrimMode, Func(Of TrackInfo, Boolean), MediaContext, Boolean, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.MediaFile.Trim(System.IO.Stream, System.IO.Stream, string, Egami.Video.MediaTime, Egami.Video.MediaTime?, Egami.Video.TrimMode, System.Func<Egami.Video.TrackInfo, bool>?, Egami.Video.MediaContext?, bool, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.MediaFile.Trim(System.IO.Stream, System.IO.Stream, String, Egami.Video.MediaTime, Egami.Video.MediaTime?, Egami.Video.TrimMode, System.Func(Of Egami.Video.TrackInfo, Boolean), Egami.Video.MediaContext, Boolean, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: MediaFile.Trim(Stream, Stream, string, MediaTime, MediaTime?, TrimMode, Func<TrackInfo, bool>?, MediaContext?, bool, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: MediaFile.Trim(Stream, Stream, String, MediaTime, MediaTime?, TrimMode, Func(Of TrackInfo, Boolean), MediaContext, Boolean, IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.MediaFile.Trim(System.String,System.String,Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime},Egami.Video.TrimMode,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name: Trim(string, string, MediaTime, MediaTime?, TrimMode, Func<TrackInfo, bool>?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  href: api/Egami.Video.MediaFile.html#Egami_Video_MediaFile_Trim_System_String_System_String_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__Egami_Video_TrimMode_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_
+  commentId: M:Egami.Video.MediaFile.Trim(System.String,System.String,Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime},Egami.Video.TrimMode,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)
+  name.vb: Trim(String, String, MediaTime, MediaTime?, TrimMode, Func(Of TrackInfo, Boolean), MediaContext, IProgress(Of MediaProgress), CancellationToken)
+  fullName: Egami.Video.MediaFile.Trim(string, string, Egami.Video.MediaTime, Egami.Video.MediaTime?, Egami.Video.TrimMode, System.Func<Egami.Video.TrackInfo, bool>?, Egami.Video.MediaContext?, System.IProgress<Egami.Video.MediaProgress>?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Video.MediaFile.Trim(String, String, Egami.Video.MediaTime, Egami.Video.MediaTime?, Egami.Video.TrimMode, System.Func(Of Egami.Video.TrackInfo, Boolean), Egami.Video.MediaContext, System.IProgress(Of Egami.Video.MediaProgress), System.Threading.CancellationToken)
+  nameWithType: MediaFile.Trim(string, string, MediaTime, MediaTime?, TrimMode, Func<TrackInfo, bool>?, MediaContext?, IProgress<MediaProgress>?, CancellationToken)
+  nameWithType.vb: MediaFile.Trim(String, String, MediaTime, MediaTime?, TrimMode, Func(Of TrackInfo, Boolean), MediaContext, IProgress(Of MediaProgress), CancellationToken)
+- uid: Egami.Video.MediaFile.Trim*
+  name: Trim
+  href: api/Egami.Video.MediaFile.html#Egami_Video_MediaFile_Trim_
+  commentId: Overload:Egami.Video.MediaFile.Trim
+  isSpec: "True"
+  fullName: Egami.Video.MediaFile.Trim
+  nameWithType: MediaFile.Trim
 - uid: Egami.Video.MediaInfo
   name: MediaInfo
   href: api/Egami.Video.MediaInfo.html
@@ -91704,6 +91729,114 @@ references:
   commentId: F:Egami.Video.TrackKind.Video
   fullName: Egami.Video.TrackKind.Video
   nameWithType: TrackKind.Video
+- uid: Egami.Video.TrimMode
+  name: TrimMode
+  href: api/Egami.Video.TrimMode.html
+  commentId: T:Egami.Video.TrimMode
+  fullName: Egami.Video.TrimMode
+  nameWithType: TrimMode
+- uid: Egami.Video.TrimMode.Keyframe
+  name: Keyframe
+  href: api/Egami.Video.TrimMode.html#Egami_Video_TrimMode_Keyframe
+  commentId: F:Egami.Video.TrimMode.Keyframe
+  fullName: Egami.Video.TrimMode.Keyframe
+  nameWithType: TrimMode.Keyframe
+- uid: Egami.Video.TrimMode.Reencode
+  name: Reencode
+  href: api/Egami.Video.TrimMode.html#Egami_Video_TrimMode_Reencode
+  commentId: F:Egami.Video.TrimMode.Reencode
+  fullName: Egami.Video.TrimMode.Reencode
+  nameWithType: TrimMode.Reencode
+- uid: Egami.Video.TrimMode.Smart
+  name: Smart
+  href: api/Egami.Video.TrimMode.html#Egami_Video_TrimMode_Smart
+  commentId: F:Egami.Video.TrimMode.Smart
+  fullName: Egami.Video.TrimMode.Smart
+  nameWithType: TrimMode.Smart
+- uid: Egami.Video.TrimResult
+  name: TrimResult
+  href: api/Egami.Video.TrimResult.html
+  commentId: T:Egami.Video.TrimResult
+  fullName: Egami.Video.TrimResult
+  nameWithType: TrimResult
+- uid: Egami.Video.TrimResult.Frames
+  name: Frames
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_Frames
+  commentId: P:Egami.Video.TrimResult.Frames
+  fullName: Egami.Video.TrimResult.Frames
+  nameWithType: TrimResult.Frames
+- uid: Egami.Video.TrimResult.Frames*
+  name: Frames
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_Frames_
+  commentId: Overload:Egami.Video.TrimResult.Frames
+  isSpec: "True"
+  fullName: Egami.Video.TrimResult.Frames
+  nameWithType: TrimResult.Frames
+- uid: Egami.Video.TrimResult.Mode
+  name: Mode
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_Mode
+  commentId: P:Egami.Video.TrimResult.Mode
+  fullName: Egami.Video.TrimResult.Mode
+  nameWithType: TrimResult.Mode
+- uid: Egami.Video.TrimResult.Mode*
+  name: Mode
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_Mode_
+  commentId: Overload:Egami.Video.TrimResult.Mode
+  isSpec: "True"
+  fullName: Egami.Video.TrimResult.Mode
+  nameWithType: TrimResult.Mode
+- uid: Egami.Video.TrimResult.Packets
+  name: Packets
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_Packets
+  commentId: P:Egami.Video.TrimResult.Packets
+  fullName: Egami.Video.TrimResult.Packets
+  nameWithType: TrimResult.Packets
+- uid: Egami.Video.TrimResult.Packets*
+  name: Packets
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_Packets_
+  commentId: Overload:Egami.Video.TrimResult.Packets
+  isSpec: "True"
+  fullName: Egami.Video.TrimResult.Packets
+  nameWithType: TrimResult.Packets
+- uid: Egami.Video.TrimResult.ReencodedFrames
+  name: ReencodedFrames
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_ReencodedFrames
+  commentId: P:Egami.Video.TrimResult.ReencodedFrames
+  fullName: Egami.Video.TrimResult.ReencodedFrames
+  nameWithType: TrimResult.ReencodedFrames
+- uid: Egami.Video.TrimResult.ReencodedFrames*
+  name: ReencodedFrames
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_ReencodedFrames_
+  commentId: Overload:Egami.Video.TrimResult.ReencodedFrames
+  isSpec: "True"
+  fullName: Egami.Video.TrimResult.ReencodedFrames
+  nameWithType: TrimResult.ReencodedFrames
+- uid: Egami.Video.TrimResult.Start
+  name: Start
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_Start
+  commentId: P:Egami.Video.TrimResult.Start
+  fullName: Egami.Video.TrimResult.Start
+  nameWithType: TrimResult.Start
+- uid: Egami.Video.TrimResult.Start*
+  name: Start
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_Start_
+  commentId: Overload:Egami.Video.TrimResult.Start
+  isSpec: "True"
+  fullName: Egami.Video.TrimResult.Start
+  nameWithType: TrimResult.Start
+- uid: Egami.Video.TrimResult.Warnings
+  name: Warnings
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_Warnings
+  commentId: P:Egami.Video.TrimResult.Warnings
+  fullName: Egami.Video.TrimResult.Warnings
+  nameWithType: TrimResult.Warnings
+- uid: Egami.Video.TrimResult.Warnings*
+  name: Warnings
+  href: api/Egami.Video.TrimResult.html#Egami_Video_TrimResult_Warnings_
+  commentId: Overload:Egami.Video.TrimResult.Warnings
+  isSpec: "True"
+  fullName: Egami.Video.TrimResult.Warnings
+  nameWithType: TrimResult.Warnings
 - uid: Egami.Video.VideoFrame
   name: VideoFrame
   href: api/Egami.Video.VideoFrame.html

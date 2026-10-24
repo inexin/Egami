@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_MediaFile" data-uid="Egami.Video.MediaFile" class="text-break">
-Class MediaFile  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L24"><i class="bi bi-code-slash"></i></a>
+Class MediaFile  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.Trim.cs/#L6"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -959,11 +959,213 @@ MediaFile.Transcode("talk.mka", "talk-flac.mkv", audio: FlacCodec.Instance, audi
 
 
 
+  <a id="Egami_Video_MediaFile_Trim_" data-uid="Egami.Video.MediaFile.Trim*"></a>
+
+  <h3 id="Egami_Video_MediaFile_Trim_System_IO_Stream_System_IO_Stream_System_String_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__Egami_Video_TrimMode_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Trim(System.IO.Stream,System.IO.Stream,System.String,Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime},Egami.Video.TrimMode,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.Boolean,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
+  Trim(Stream, Stream, string, MediaTime, MediaTime?, TrimMode, Func&lt;TrackInfo, bool&gt;?, MediaContext?, bool, IProgress&lt;MediaProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.Trim.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Cuts part of a stream into another, as
+<a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Trim_System_String_System_String_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__Egami_Video_TrimMode_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Trim(string, string, MediaTime, MediaTime?, TrimMode, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
+does for files. The input may be non-seekable (it is then read from its start, without seeking near the cut); the
+output works as for <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Remux_System_IO_Stream_System_IO_Stream_System_String_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Remux(Stream, Stream, string, Func&lt;TrackInfo, bool&gt;?, MediaContext?, bool, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TrimResult Trim(Stream input, Stream output, string outputFormat, MediaTime start, MediaTime? end, TrimMode mode = TrimMode.Smart, Func&lt;TrackInfo, bool&gt;? tracks = null, MediaContext? context = null, bool leaveOpen = false, IProgress&lt;MediaProgress&gt;? progress = null, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The source, read from its current position.</p>
+</dd>
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>Where to write.</p>
+</dd>
+    <dt><code>outputFormat</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The output container: &quot;Matroska&quot;, &quot;.mkv&quot;, &quot;webm&quot; and so on.</p>
+</dd>
+    <dt><code>start</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>Where the cut starts: its first frame is the first at or after this time.</p>
+</dd>
+    <dt><code>end</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a>?</dt>
+    <dd><p>Where the cut ends, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the end of the input.</p>
+</dd>
+    <dt><code>mode</code> <a class="xref" href="Egami.Video.TrimMode.html">TrimMode</a></dt>
+    <dd><p>How a start between keyframes is handled. Default <a class="xref" href="Egami.Video.TrimMode.html#Egami_Video_TrimMode_Smart">Smart</a>.</p>
+</dd>
+    <dt><code>tracks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;<a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>&gt;</dt>
+    <dd><p>Which tracks to keep, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for all.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>.</p>
+</dd>
+    <dt><code>leaveOpen</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether the job leaves both streams open when it ends.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a>&gt;</dt>
+    <dd><p>Receives <a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a> reports on the job's thread, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Stops the job between packets and frames; what was written to <code class="paramref">output</code> stays.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.TrimResult.html">TrimResult</a></dt>
+    <dd><p>Where the cut starts and what was copied and encoded again.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_MediaFile_Trim_System_IO_Stream_System_IO_Stream_System_String_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__Egami_Video_TrimMode_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_Boolean_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Streams in and out, such as cloud blobs: a non-seekable input is read from its start.
+using Stream source = File.OpenRead("movie.webm");
+using Stream upload = File.Create("cut.mkv");
+IProgress&lt;MediaProgress&gt; progress = new Progress&lt;MediaProgress&gt;(p =&gt; Console.Write($"\r{p.Fraction ?? 0:P0}"));
+TrimResult result = MediaFile.Trim(source, upload, "mkv", MediaTime.FromSeconds(1), null, TrimMode.Smart,
+    tracks: t =&gt; t.Kind == TrackKind.Video, leaveOpen: true, progress: progress, cancellationToken: cts.Token);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">start</code> is negative, or at or past the last frame.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">end</code> is not after <code class="paramref">start</code>, or no track is kept.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.invaliddataexception">InvalidDataException</a></dt>
+    <dd><p>The video has no keyframe to start from.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The input is not a registered container, or no container writes <code class="paramref">outputFormat</code>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The output container cannot hold one of the tracks or needs a seekable output, or <a class="xref" href="Egami.Video.TrimMode.html#Egami_Video_TrimMode_Reencode">Reencode</a> was asked for a codec that cannot encode.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p>The job was cancelled.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Video_MediaFile_Trim_" data-uid="Egami.Video.MediaFile.Trim*"></a>
+
+  <h3 id="Egami_Video_MediaFile_Trim_System_String_System_String_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__Egami_Video_TrimMode_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_" data-uid="Egami.Video.MediaFile.Trim(System.String,System.String,Egami.Video.MediaTime,System.Nullable{Egami.Video.MediaTime},Egami.Video.TrimMode,System.Func{Egami.Video.TrackInfo,System.Boolean},Egami.Video.MediaContext,System.IProgress{Egami.Video.MediaProgress},System.Threading.CancellationToken)">
+  Trim(string, string, MediaTime, MediaTime?, TrimMode, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.Trim.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Cuts the part of a file from <code class="paramref">start</code> up to <code class="paramref">end</code> into a new file, with timestamps from 0.
+<a class="xref" href="Egami.Video.TrimMode.html#Egami_Video_TrimMode_Smart">Smart</a>, the default, is frame-exact and encodes again only the frames from the start up to the next
+keyframe; every other packet is copied byte for byte. Video ends after the last frame that starts before
+<code class="paramref">end</code>. Audio is cut at the sample where the format allows (PCM, MP4 edit lists, Matroska Opus with
+CodecDelay and DiscardPadding), else at the nearest packet; subtitle cues shown across the cut are clipped to it, and
+chapters too. Tags and attachments are kept. The output container comes from the extension.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TrimResult Trim(string inputPath, string outputPath, MediaTime start, MediaTime? end, TrimMode mode = TrimMode.Smart, Func&lt;TrackInfo, bool&gt;? tracks = null, MediaContext? context = null, IProgress&lt;MediaProgress&gt;? progress = null, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inputPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The source file.</p>
+</dd>
+    <dt><code>outputPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The file to write; an existing file is replaced.</p>
+</dd>
+    <dt><code>start</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a></dt>
+    <dd><p>Where the cut starts: its first frame is the first at or after this time.</p>
+</dd>
+    <dt><code>end</code> <a class="xref" href="Egami.Video.MediaTime.html">MediaTime</a>?</dt>
+    <dd><p>Where the cut ends: nothing that starts at or after it is kept; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the end of the file.</p>
+</dd>
+    <dt><code>mode</code> <a class="xref" href="Egami.Video.TrimMode.html">TrimMode</a></dt>
+    <dd><p>How a start between keyframes is handled. Default <a class="xref" href="Egami.Video.TrimMode.html#Egami_Video_TrimMode_Smart">Smart</a>.</p>
+</dd>
+    <dt><code>tracks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;<a class="xref" href="Egami.Video.TrackInfo.html">TrackInfo</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>&gt;</dt>
+    <dd><p>Which tracks to keep, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for all.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a></dt>
+    <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>. Its <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Warnings">Warnings</a> gets what <a class="xref" href="Egami.Video.TrimResult.html#Egami_Video_TrimResult_Warnings">Warnings</a> lists.</p>
+</dd>
+    <dt><code>progress</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iprogress-1">IProgress</a>&lt;<a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a>&gt;</dt>
+    <dd><p>Receives <a class="xref" href="Egami.Video.MediaProgress.html">MediaProgress</a> reports on the job's thread, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Stops the job between packets and frames; the output file is then deleted.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.TrimResult.html">TrimResult</a></dt>
+    <dd><p>Where the cut starts and what was copied and encoded again.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Video_MediaFile_Trim_System_String_System_String_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__Egami_Video_TrimMode_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Frame-exact: only the frames from 0.3 s up to the next keyframe are encoded again; every other packet is copied.
+TrimResult result = MediaFile.Trim("show.webm", "cut.webm", MediaTime.FromSeconds(0.3), MediaTime.FromSeconds(0.8));
+Console.WriteLine($"{result.Frames} frames from {result.Start.Seconds:0.000} s, {result.ReencodedFrames} encoded again");
+foreach (MediaWarning warning in result.Warnings)
+{
+    Console.WriteLine(warning.Message);
+}
+
+// No decoding at all: the cut starts at the keyframe at or before 0.3 s.
+MediaFile.Trim("show.webm", "copy.webm", MediaTime.FromSeconds(0.3), MediaTime.FromSeconds(0.8), TrimMode.Keyframe);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">start</code> is negative, or at or past the last frame.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">end</code> is not after <code class="paramref">start</code>, or no track is kept.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.invaliddataexception">InvalidDataException</a></dt>
+    <dd><p>The video has no keyframe to start from.</p>
+</dd>
+    <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
+    <dd><p>The input is not a registered container, or no container writes the output's extension.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>The output container cannot hold one of the tracks, or <a class="xref" href="Egami.Video.TrimMode.html#Egami_Video_TrimMode_Reencode">Reencode</a> was asked for a codec that cannot encode.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a></dt>
+    <dd><p>The job was cancelled.</p>
+</dd>
+  </dl>
+
+
+
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.cs/#L24" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/MediaFile.Trim.cs/#L6" class="edit-link">Edit this page</a>
         </div>
 
 

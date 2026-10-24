@@ -13957,6 +13957,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.TrimMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.TrimMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.TrimMode",
+      "Summary": "<p sourcefile=\"api/Egami.Video.TrimMode.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Video.MediaFile.Trim(System.String%2cSystem.String%2cEgami.Video.MediaTime%2cSystem.Nullable%7bEgami.Video.MediaTime%7d%2cEgami.Video.TrimMode%2cSystem.Func%7bEgami.Video.TrackInfo%2cSystem.Boolean%7d%2cEgami.Video.MediaContext%2cSystem.IProgress%7bEgami.Video.MediaProgress%7d%2cSystem.Threading.CancellationToken)\" data-throw-if-not-resolved=\"false\"></xref>\nstarts a cut that does not fall on a keyframe.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.TrimResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.TrimResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.TrimResult",
+      "Summary": "<p sourcefile=\"api/Egami.Video.TrimResult.yml\" sourcestartlinenumber=\"1\">What a trim did: where the cut starts in the input, how much was copied and encoded again, and what it reported.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.VideoFrame-1.yml",
       "output": {
         ".html": {

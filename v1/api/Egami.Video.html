@@ -219,6 +219,11 @@ written to Matroska unchanged.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.TrimResult.html">TrimResult</a></dt>
+      <dd><p>What a trim did: where the cut starts in the input, how much was copied and encoded again, and what it reported.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.VideoFrame.html">VideoFrame</a></dt>
       <dd><p>A decoded picture with its time: a <a class="xref" href="Egami.Video.YuvVideoFrame.html">YuvVideoFrame</a> as decoders hand it out (the codec's own planes), or a
 <a class="xref" href="Egami.Video.VideoFrame-1.html">VideoFrame&lt;TPixel&gt;</a> of RGB pixels from <code>VideoReader.ReadFrames</code>. Disposing the frame returns its
@@ -332,6 +337,12 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.TrackKind.html">TrackKind</a></dt>
       <dd><p>What a track holds.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.TrimMode.html">TrimMode</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Video.MediaFile.html#Egami_Video_MediaFile_Trim_System_String_System_String_Egami_Video_MediaTime_System_Nullable_Egami_Video_MediaTime__Egami_Video_TrimMode_System_Func_Egami_Video_TrackInfo_System_Boolean__Egami_Video_MediaContext_System_IProgress_Egami_Video_MediaProgress__System_Threading_CancellationToken_">Trim(string, string, MediaTime, MediaTime?, TrimMode, Func&lt;TrackInfo, bool&gt;?, MediaContext?, IProgress&lt;MediaProgress&gt;?, CancellationToken)</a>
+starts a cut that does not fall on a keyframe.</p>
 </dd>
     </dl>
 

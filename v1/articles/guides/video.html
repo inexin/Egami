@@ -218,7 +218,52 @@ using (IMuxer muxer = MediaFile.CreateMuxer(&quot;movie.ivf&quot;, [demuxer.Info
 
     muxer.Finish();
 }
-</code></pre><h2 id="progress-cancellation-and-streams">Progress, cancellation and streams</h2>
+</code></pre><h2 id="trimming">Trimming</h2>
+<p><code>MediaFile.Trim</code> cuts the part of a file from a start up to an end into a new file whose timestamps start at 0. The cut's first
+frame is the first at or after the start, and it ends after the last frame that starts before the end; a time within half a
+tick of a frame, such as the millisecond Matroska keeps, counts as that frame's. <code>TrimMode</code> says what happens when the start
+falls between keyframes:</p>
+<ul>
+<li><code>TrimMode.Smart</code>, the default, is frame-exact and encodes as little as it can. It decodes from the keyframe before the start
+and encodes the frames from the start up to the next keyframe again, as a new group that starts with a keyframe; every
+packet from that keyframe on is copied byte for byte. The new group matches the stream (codec, profile, size, bit depth,
+chroma format and color, and for AV1 the sequence header byte for byte, as MP4 and Matroska keep it in the track header) and
+is coded at the average quantizer of the packets it replaces, so the quality does not jump. A start on a keyframe, and Motion
+JPEG or uncompressed video, are a plain copy.</li>
+<li><code>TrimMode.Keyframe</code> decodes nothing: the cut starts at the keyframe at or before the start, as <code>ffmpeg -ss -c copy</code> does.</li>
+<li><code>TrimMode.Reencode</code> encodes every frame of the cut again, with the same codec at the source's quantizer.</li>
+</ul>
+<p>The end needs no encoding: VP8, VP9 and AV1 decode in packet order and code a hidden frame before the frames that show it, so
+the cut keeps every packet up to the one that shows its last frame and drops a hidden frame after it that nothing shows.</p>
+<p>Smart cut falls back where it must and says so in a <code>MediaWarning</code>, in <code>TrimResult.Warnings</code> and through
+<code>MediaContext.Warnings</code>: a codec Egami.Video cannot encode (H.264, HEVC) starts at the keyframe (<code>trim-keyframe</code>), as do
+frames that change size, and a stream the encoder cannot match (a VP8 version other than 0, 4:4:0 or monochrome AV1, an AV1
+sequence header with frame ids or a decoder model) is encoded again whole (<code>trim-reencode</code>). <code>TrimResult</code> tells where the cut
+starts in the input, how many frames it holds and how many were encoded again.</p>
+<p>Audio and subtitles are copied. Audio is cut at the sample where the format can say so: PCM by slicing its packets, MP4 by its
+edit list, and Opus in Matroska and WebM by CodecDelay (with 80 ms of pre-roll) and DiscardPadding. Other audio is cut at the
+packet whose middle is nearest (<code>trim-audio-packet</code>). Subtitle cues shown across the cut are clipped to it, and so are
+chapters; tags and attachments are kept. A seekable input is read from a few seconds before the start. Trim takes a
+<code>Stream</code> in and out, progress and a token as the other jobs do.</p>
+<pre><code class="lang-csharp">// Frame-exact: only the frames from 0.3 s up to the next keyframe are encoded again; every other packet is copied.
+TrimResult result = MediaFile.Trim(&quot;show.webm&quot;, &quot;cut.webm&quot;, MediaTime.FromSeconds(0.3), MediaTime.FromSeconds(0.8));
+Console.WriteLine($&quot;{result.Frames} frames from {result.Start.Seconds:0.000} s, {result.ReencodedFrames} encoded again&quot;);
+foreach (MediaWarning warning in result.Warnings)
+{
+    Console.WriteLine(warning.Message);
+}
+
+// No decoding at all: the cut starts at the keyframe at or before 0.3 s.
+MediaFile.Trim(&quot;show.webm&quot;, &quot;copy.webm&quot;, MediaTime.FromSeconds(0.3), MediaTime.FromSeconds(0.8), TrimMode.Keyframe);
+</code></pre><pre><code class="lang-csharp">// Streams in and out, such as cloud blobs: a non-seekable input is read from its start.
+using Stream source = File.OpenRead(&quot;movie.webm&quot;);
+using Stream upload = File.Create(&quot;cut.mkv&quot;);
+IProgress&lt;MediaProgress&gt; progress = new Progress&lt;MediaProgress&gt;(p =&gt; Console.Write($&quot;\r{p.Fraction ?? 0:P0}&quot;));
+TrimResult result = MediaFile.Trim(source, upload, &quot;mkv&quot;, MediaTime.FromSeconds(1), null, TrimMode.Smart,
+    tracks: t =&gt; t.Kind == TrackKind.Video, leaveOpen: true, progress: progress, cancellationToken: cts.Token);
+</code></pre>
+<p>On the command line, <code>egami-video trim --smart</code> cuts this way, and <code>segment --scenes --exact</code> starts every part on its scene.</p>
+<h2 id="progress-cancellation-and-streams">Progress, cancellation and streams</h2>
 <p><code>MediaFile.Remux</code> and <code>MediaFile.Transcode</code> take an <code>IProgress&lt;MediaProgress&gt;</code> and a <code>CancellationToken</code> as their last
 parameters. A <code>MediaProgress</code> report carries the position, the duration, a 0 to 1 <code>Fraction</code>, frames, packets, bytes read and
 written, the elapsed time and the speed (media seconds per second, like FFmpeg's <code>speed=</code>). Reports come once the output is
