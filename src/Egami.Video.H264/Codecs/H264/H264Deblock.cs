@@ -40,6 +40,9 @@ internal sealed class H264Deblock
     private int[] _ref1 = [];
     private int[] _mv0 = [];
     private int[] _mv1 = [];
+
+    // The shortest of those arrays' lengths, found once per picture.
+    private int _blocks;
     private int _widthMbs;
     private int _bitDepthY;
     private int _bitDepthC;
@@ -67,6 +70,7 @@ internal sealed class H264Deblock
             _ref1 = pic.RefPicId[1];
             _mv0 = pic.Mv[0];
             _mv1 = pic.Mv[1];
+            _blocks = Math.Min(Math.Min(_ref0.Length, _ref1.Length), Math.Min(Math.Min(_mv0.Length, _mv1.Length), _nonzero.Length));
         }
 
         _pic = pic;
@@ -1013,7 +1017,7 @@ internal sealed class H264Deblock
         ref byte nz = ref MemoryMarshal.GetArrayDataReference(_nonzero);
         ref int ref0 = ref MemoryMarshal.GetArrayDataReference(_ref0), ref1 = ref MemoryMarshal.GetArrayDataReference(_ref1);
         ref int mv0 = ref MemoryMarshal.GetArrayDataReference(_mv0), mv1 = ref MemoryMarshal.GetArrayDataReference(_mv1);
-        if ((uint)(q + 3) >= (uint)Math.Min(Math.Min(_ref0.Length, _ref1.Length), Math.Min(Math.Min(_mv0.Length, _mv1.Length), _nonzero.Length)))
+        if ((uint)(q + 3) >= (uint)_blocks)
         {
             throw H264Errors.Corrupt("A deblocking edge lies outside the picture.");
         }
@@ -1047,6 +1051,23 @@ internal sealed class H264Deblock
             & (Vector128.LessThan(rp1, Vector128<int>.Zero) | Vector128.Equals(mq1, mp1));
         Vector128<int> result = coded & Vector128.Create(2);
         uint pending = (~(coded | same)).ExtractMostSignificantBits();
+        if (pending == 0)
+        {
+            return result;
+        }
+
+        // Both blocks predicted from one and the same list: they differ by reference, or by a vector component 4 or more apart
+        // (a vector is two 16-bit components, and their differences fit 16 bits). Other lanes take MotionDiffers.
+        Vector128<int> none0 = Vector128.LessThan(rp0, Vector128<int>.Zero) | Vector128.LessThan(rq0, Vector128<int>.Zero);
+        Vector128<int> none1 = Vector128.LessThan(rp1, Vector128<int>.Zero) | Vector128.LessThan(rq1, Vector128<int>.Zero);
+        Vector128<int> only0 = ~none0 & Vector128.LessThan(rp1, Vector128<int>.Zero) & Vector128.LessThan(rq1, Vector128<int>.Zero);
+        Vector128<int> only1 = ~none1 & Vector128.LessThan(rp0, Vector128<int>.Zero) & Vector128.LessThan(rq0, Vector128<int>.Zero);
+        Vector128<short> three = Vector128.Create((short)3);
+        Vector128<int> far0 = ~Vector128.Equals(Vector128.GreaterThan(Vector128.Abs(mq0.AsInt16() - mp0.AsInt16()), three).AsInt32(), Vector128<int>.Zero);
+        Vector128<int> far1 = ~Vector128.Equals(Vector128.GreaterThan(Vector128.Abs(mq1.AsInt16() - mp1.AsInt16()), three).AsInt32(), Vector128<int>.Zero);
+        Vector128<int> differ = (only0 & (~Vector128.Equals(rq0, rp0) | far0)) | (only1 & (~Vector128.Equals(rq1, rp1) | far1));
+        result |= differ & ~coded & Vector128<int>.One;
+        pending &= ~(only0 | only1).ExtractMostSignificantBits();
         if (pending == 0)
         {
             return result;
