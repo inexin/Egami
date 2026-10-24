@@ -75,7 +75,7 @@ internal static class H264Samples
         if (Narrow<T>())
         {
             Vector128<byte> v = Vector128.LoadUnsafe(ref Unsafe.As<T, byte>(ref from));
-            return Vector256.Create(Vector128.WidenLower(v), Vector128.WidenUpper(v)).AsInt16();
+            return Avx2.IsSupported ? Avx2.ConvertToVector256Int16(v) : Vector256.Create(Vector128.WidenLower(v), Vector128.WidenUpper(v)).AsInt16();
         }
 
         return Vector256.LoadUnsafe(ref Unsafe.As<T, ushort>(ref from)).AsInt16();
