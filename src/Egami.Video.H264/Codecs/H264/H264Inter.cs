@@ -220,9 +220,9 @@ internal sealed class H264Inter
         int xInt = x + (mvx >> 3), xFrac = mvx & 7, yInt = y + (mvy >> 3), yFrac = mvy & 7;
         int pad = H264Picture.Pad, stride = refPic.ChromaStride;
         int at = refPic.ChromaOrigin + (yInt * stride) + xInt;
+        // One unsigned compare per axis tests both sides: the block and its extra row and column lie in the padded plane.
         if (w < 4 || !UseVectors || !UseWideVectors
-            || xInt < -pad || yInt < -pad || xInt + w + 1 > refPic.ChromaWidth + pad || yInt + h + 1 > refPic.ChromaHeight + pad
-            || at < 0 || at + (h * stride) + 24 > Math.Min(refPic.Cb<T>().Length, refPic.Cr<T>().Length))
+            || (uint)(xInt + pad) > (uint)(refPic.ChromaWidth + (2 * pad) - w - 1) || (uint)(yInt + pad) > (uint)(refPic.ChromaHeight + (2 * pad) - h - 1))
         {
             Chroma(refPic.Cb<T>(), refPic, x, y, w, h, mv, pred, 0);
             Chroma(refPic.Cr<T>(), refPic, x, y, w, h, mv, pred, CrRows);
@@ -668,7 +668,7 @@ internal sealed class H264Inter
         T[] src = refPic.Y<T>();
         int stride = refPic.Stride, at = refPic.Origin + (yInt * stride) + xInt;
         int pad = H264Picture.Pad;
-        if (xInt - 2 < -pad || yInt - 2 < -pad || xInt + w + 3 > refPic.Width + pad || yInt + h + 3 > refPic.Height + pad)
+        if ((uint)(xInt - 2 + pad) > (uint)(refPic.Width + (2 * pad) - w - 5) || (uint)(yInt - 2 + pad) > (uint)(refPic.Height + (2 * pad) - h - 5))
         {
             // Past the border: a clamped copy, wide enough for the vector loads to read past the block.
             FetchEdge(src, refPic.Origin, stride, refPic.Width, refPic.Height, xInt - 2, yInt - 2, Math.Min(w + 13, EdgeStride), h + 6);
@@ -1022,7 +1022,7 @@ internal sealed class H264Inter
         T[] src = plane;
         int stride = refPic.ChromaStride, at = refPic.ChromaOrigin + (yInt * stride) + xInt;
         int pad = H264Picture.Pad;
-        if (xInt < -pad || yInt < -pad || xInt + w + 1 > refPic.ChromaWidth + pad || yInt + h + 1 > refPic.ChromaHeight + pad)
+        if ((uint)(xInt + pad) > (uint)(refPic.ChromaWidth + (2 * pad) - w - 1) || (uint)(yInt + pad) > (uint)(refPic.ChromaHeight + (2 * pad) - h - 1))
         {
             FetchEdge(plane, refPic.ChromaOrigin, stride, refPic.ChromaWidth, refPic.ChromaHeight, xInt, yInt, Math.Min(w + 9, EdgeStride), h + 1);
             src = Edge<T>();
@@ -1033,10 +1033,7 @@ internal sealed class H264Inter
         int wa = (8 - xFrac) * (8 - yFrac), wb = xFrac * (8 - yFrac), wc = (8 - xFrac) * yFrac, wd = xFrac * yFrac;
         if (UseVectors && w >= 4)
         {
-            if (at < 0 || at + (h * stride) + 24 > src.Length)
-            {
-                throw H264Errors.Corrupt("A prediction block reaches outside its reference.");
-            }
+            Debug.Assert(at >= 0 && at + (h * stride) + 24 <= src.Length, "The border test keeps the block in the padded plane.");
 
             // The four weights add to 64, so a sum of samples up to 1023 stays below 65536 in an unsigned lane.
             ref T s0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at);
