@@ -11,7 +11,8 @@ namespace Egami.Video.Benchmarks;
 /// The V7 speed gate: decode time per access unit of raw H.264 files, the best of five runs, at one thread and at all cores, for
 /// comparison with <c>ffmpeg -threads 1 -i clip.h264 -f null -</c>. Frames are decoded and not copied out. --one-thread times one
 /// thread only, for profiling; --threads=N times N threads only; --once runs once and --runs=N N times. --md5 instead prints the MD5 of every frame's
-/// 8-bit planes one after the other, as <c>ffmpeg -i clip.h264 -f md5 -</c> gives it, decoded on --threads=N threads (default 1).
+/// 8-bit planes one after the other, as <c>ffmpeg -i clip.h264 -f md5 -</c> gives it, decoded on --threads=N threads (default 1);
+/// --frame-md5 also prints each frame's MD5 first, one a line, as the hash column of <c>ffmpeg -f framemd5</c>.
 /// </summary>
 internal static class H264Timing
 {
@@ -59,6 +60,7 @@ internal static class H264Timing
     {
         int threads = files.FirstOrDefault(f => f.StartsWith("--threads=", StringComparison.Ordinal)) is { } t
             ? int.Parse(t["--threads=".Length..], System.Globalization.CultureInfo.InvariantCulture) : 1;
+        bool perFrame = files.Contains("--frame-md5");
         MediaContext context = MediaContext.Default.WithH264() with { Egami = EgamiContext.Default with { MaxParallelism = threads } };
         foreach (string file in files.Where(f => !f.StartsWith("--", StringComparison.Ordinal)))
         {
@@ -74,16 +76,16 @@ internal static class H264Timing
                     decoder.Send(packet);
                 }
 
-                frames += Append(decoder, md5);
+                frames += Append(decoder, md5, perFrame);
             }
 
             decoder.Flush();
-            frames += Append(decoder, md5);
+            frames += Append(decoder, md5, perFrame);
             Console.WriteLine($"{Path.GetFileName(file)}: {frames} frames, MD5={Convert.ToHexStringLower(md5.GetHashAndReset())}");
         }
     }
 
-    private static int Append(IVideoDecoder decoder, IncrementalHash md5)
+    private static int Append(IVideoDecoder decoder, IncrementalHash md5, bool perFrame)
     {
         int frames = 0;
         while (decoder.TryReceive(out YuvVideoFrame? frame))
@@ -91,12 +93,19 @@ internal static class H264Timing
             using (frame)
             {
                 YuvRaster<byte> raster = (YuvRaster<byte>)frame.Raster;
+                using IncrementalHash one = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
                 foreach (YuvPlane<byte>? plane in new[] { raster.Y, raster.U, raster.V })
                 {
                     for (int y = 0; plane is not null && y < plane.Height; y++)
                     {
                         md5.AppendData(plane.Row(y));
+                        one.AppendData(plane.Row(y));
                     }
+                }
+
+                if (perFrame)
+                {
+                    Console.WriteLine(Convert.ToHexStringLower(one.GetHashAndReset()));
                 }
             }
 
