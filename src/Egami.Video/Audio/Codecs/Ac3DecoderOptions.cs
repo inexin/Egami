@@ -14,7 +14,7 @@ public sealed record Ac3DecoderOptions
     /// in full as the standard asks of a decoder; 0 ignores it for the full dynamic range; values between scale each gain in
     /// decibels, so 0.5 applies half the compression. Values above 1 compress more.
     /// </summary>
-    public float DynamicRange { get; init; } = 1;
+    public double DynamicRange { get; init; } = 1;
 
     /// <summary>
     /// Gets the layout to mix down to, or <see langword="null"/> for the stream's own. The mix follows ATSC A/52's LoRo downmix
