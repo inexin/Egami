@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Video.Codecs.H264;
 
@@ -88,7 +89,7 @@ internal static class H264Samples
         ref T to = ref Unsafe.Add(ref at, offset);
         if (Narrow<T>())
         {
-            Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref to), Vector128.Narrow(v.AsUInt16(), v.AsUInt16()).AsUInt64().ToScalar());
+            Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref to), Pack(v, v).AsUInt64().ToScalar());
         }
         else
         {
@@ -104,7 +105,7 @@ internal static class H264Samples
         ref T to = ref Unsafe.Add(ref at, offset);
         if (Narrow<T>())
         {
-            Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref to), Vector128.Narrow(v.AsUInt16(), v.AsUInt16()).AsUInt32().ToScalar());
+            Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref to), Pack(v, v).AsUInt32().ToScalar());
         }
         else
         {
@@ -120,7 +121,7 @@ internal static class H264Samples
         ref T to = ref Unsafe.Add(ref at, offset);
         if (Narrow<T>())
         {
-            Vector128.Narrow(v.GetLower().AsUInt16(), v.GetUpper().AsUInt16()).StoreUnsafe(ref Unsafe.As<T, byte>(ref to));
+            Pack(v.GetLower(), v.GetUpper()).StoreUnsafe(ref Unsafe.As<T, byte>(ref to));
         }
         else
         {
@@ -147,4 +148,12 @@ internal static class H264Samples
         Vector128<short> words = Vector128.Narrow(v, v);
         Store4(ref at, offset, words);
     }
+
+    /// <summary>
+    /// Narrows 16-bit lanes holding values from 0 to 255 to bytes: one saturating pack on x86, where the values need no
+    /// masking first.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<byte> Pack(Vector128<short> low, Vector128<short> high) =>
+        Sse2.IsSupported ? Sse2.PackUnsignedSaturate(low, high) : Vector128.Narrow(low.AsUInt16(), high.AsUInt16());
 }
