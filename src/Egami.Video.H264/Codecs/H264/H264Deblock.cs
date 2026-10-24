@@ -896,19 +896,32 @@ internal sealed class H264Deblock
             Vector256<int>.Zero.StoreUnsafe(ref bs, 8);
             Vector256<int>.Zero.StoreUnsafe(ref bs, 16);
             Vector256<int>.Zero.StoreUnsafe(ref bs, 24);
+            // When the neighbour is flat as well, all four segments of the edge join the same two motions: one test serves.
+            bool[] flat = _mb.FlatInside;
             if (left)
             {
-                bool intraP = mbIntra[addr - 1];
-                for (int k = 0; k < 4; k++)
+                if (mbIntra[addr - 1])
                 {
-                    int q = b0 + (k * w4);
-                    _bs[k] = intraP ? 4 : StrengthOf(q - 1, q);
+                    Vector128.Create(4).StoreUnsafe(ref bs, 0);
+                }
+                else if (flat[addr - 1])
+                {
+                    Vector128.Create(StrengthOf(b0 - 1, b0)).StoreUnsafe(ref bs, 0);
+                }
+                else
+                {
+                    for (int k = 0; k < 4; k++)
+                    {
+                        int q = b0 + (k * w4);
+                        _bs[k] = StrengthOf(q - 1, q);
+                    }
                 }
             }
 
             if (top)
             {
-                (mbIntra[addr - _widthMbs] ? Vector128.Create(4) : Strengths(b0, w4)).StoreUnsafe(ref bs, 16);
+                int above = addr - _widthMbs;
+                (mbIntra[above] ? Vector128.Create(4) : flat[above] ? Vector128.Create(StrengthOf(b0 - w4, b0)) : Strengths(b0, w4)).StoreUnsafe(ref bs, 16);
             }
 
             return;
