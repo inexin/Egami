@@ -19,8 +19,9 @@ internal static class Av1FilterSearch
 
     /// <summary>Searches and applies the filters.</summary>
     internal static void Search(Av1Frame frame, Av1EncoderSource source, Av1SequenceHeader sequence, Av1FrameParameters parameters, int effort, long rdmult,
-        bool reference = true)
+        bool reference = true, bool video = false)
     {
+        bool exact = video && parameters.LoopFilterSharpness == 0 && (reference ? effort >= 3 : effort >= 5) && !Av1Experiment.On("noexactlf");
         // A frame no other predicts from searches its filters as two efforts lower do.
         effort = reference ? effort : Math.Max(0, effort - 2);
         Av1FrameHeader header = frame.Header;
@@ -32,11 +33,28 @@ internal static class Av1FilterSearch
 
         int planes = header.NumPlanes;
         ushort[][] prefilter = [.. frame.Planes!.Select(p => (ushort[])p.Clone())];
-        Deblock(frame, source, sequence, parameters, prefilter, search: effort >= 5);
+        if (exact)
+        {
+            DeblockExact(frame, source, sequence, parameters, prefilter);
+        }
+        else
+        {
+            Deblock(frame, source, sequence, parameters, prefilter, search: effort >= 5);
+        }
+
+        bool restore = video && reference && effort >= 3 && sequence.EnableRestoration && !Av1Experiment.On("nolr");
+        ushort[][]? deblocked = restore ? [.. frame.Planes!.Select(p => (ushort[])((ushort[])p).Clone())] : null;
+
         // Tune IQ's adaptive CDEF: off at the finest quantizers, where it blurs (pickcdef.c).
         if (sequence.EnableCdef && parameters.BaseQIdx > 32)
         {
             Cdef(frame, source, sequence, parameters, effort, rdmult);
+        }
+
+        if (restore)
+        {
+            frame.Header = Reparse(sequence, parameters);
+            Av1RestorationSearch.Search(frame, source, sequence, parameters, deblocked!, rdmult);
         }
 
         frame.Header = Reparse(sequence, parameters);
@@ -146,6 +164,60 @@ internal static class Av1FilterSearch
 
         frame.Header = Reparse(sequence, parameters);
         Av1LoopFilter.Apply<ushort>(frame);
+    }
+
+    /// <summary>
+    /// Finds the deblocking levels that leave the least squared error by the single pass over every level
+    /// (<see cref="Av1LoopFilter.LevelErrors"/>): luma across vertical edges, then, those filtered at their level, across
+    /// horizontal ones; each chroma plane's one level for both directions from both on the unfiltered plane.
+    /// </summary>
+    private static void DeblockExact(Av1Frame frame, Av1EncoderSource source, Av1SequenceHeader sequence, Av1FrameParameters parameters, ushort[][] prefilter)
+    {
+        int planes = frame.Header.NumPlanes;
+        int vertical = Best(Av1LoopFilter.LevelErrors(frame, 0, true, source.Planes[0]));
+        int[] levels = new int[4];
+        levels[0] = vertical;
+        if (vertical > 0)
+        {
+            Array.Fill(parameters.LoopFilterLevel, 0);
+            parameters.LoopFilterLevel[0] = vertical;
+            parameters.LoopFilterLevel[1] = 1;
+            frame.Header = Reparse(sequence, parameters);
+            Av1LoopFilter.ApplyPlane<ushort>(frame, 0, true);
+        }
+
+        levels[1] = Best(Av1LoopFilter.LevelErrors(frame, 0, false, source.Planes[0]));
+        prefilter[0].CopyTo(frame.Plane<ushort>(0), 0);
+        for (int plane = 1; plane < planes && (levels[0] > 0 || levels[1] > 0); plane++)
+        {
+            long[] v = Av1LoopFilter.LevelErrors(frame, plane, true, source.Planes[plane]);
+            long[] h = Av1LoopFilter.LevelErrors(frame, plane, false, source.Planes[plane]);
+            for (int i = 0; i < v.Length; i++)
+            {
+                v[i] += h[i];
+            }
+
+            levels[plane + 1] = Best(v);
+        }
+
+        levels.CopyTo(parameters.LoopFilterLevel, 0);
+        frame.Header = Reparse(sequence, parameters);
+        Av1LoopFilter.Apply<ushort>(frame);
+
+        // The lowest level of the least error.
+        static int Best(long[] errors)
+        {
+            int best = 0;
+            for (int level = 1; level < errors.Length; level++)
+            {
+                if (errors[level] < errors[best])
+                {
+                    best = level;
+                }
+            }
+
+            return best;
+        }
     }
 
     /// <summary>

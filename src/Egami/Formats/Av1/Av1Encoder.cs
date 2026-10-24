@@ -57,6 +57,30 @@ internal sealed class Av1EncoderSettings
     /// <summary>Gets whether later frames predict from the frame; one that is not searches with fewer tools (<see cref="Av1SearchProfile.For"/>).</summary>
     internal bool Reference { get; init; } = true;
 
+    /// <summary>
+    /// Gets whether the frame is tuned for video (<see cref="Av1Tune.Video"/>): no quantization matrices, chroma deltas, loop
+    /// filter sharpness, Variance Boost or SSIM-weighted multipliers, and a multiplier by frame type and layer.
+    /// </summary>
+    internal bool Video { get; init; }
+
+    /// <summary>Gets the frame's pyramid layer, 0 for key and base frames, which scales a video frame's multiplier.</summary>
+    internal int Layer { get; init; }
+
+    /// <summary>Gets the rate-distortion multiplier of a quantizer for this frame (<see cref="Av1Rate.RdMultiplier(int, int, Av1EncoderSettings)"/>).</summary>
+    internal long RdMultiplier(int qindex, int bitDepth) => Av1Rate.RdMultiplier(qindex, bitDepth, this);
+
+    /// <summary>Gets whether the frame is a key or intra-only frame, for the multiplier's frame type bias.</summary>
+    internal bool Intra { get; init; }
+
+    /// <summary>Gets the frame's temporal analysis (<see cref="Av1StreamEncoder.Analyze"/>), for a video frame.</summary>
+    internal Av1FrameAnalysis? Analysis { get; init; }
+
+    /// <summary>Gets whether a video frame with an analysis may code superblock quantizers from it.</summary>
+    internal bool DeltaQuantizers { get; init; } = true;
+
+    /// <summary>Gets whether the frame codes superblock quantizers from its temporal analysis: a referenced base frame's.</summary>
+    internal bool TemporalDeltaQ => Video && Analysis is not null && DeltaQuantizers && Layer == 0 && Reference && !Av1Experiment.On("notdq");
+
     internal CancellationToken CancellationToken { get; init; }
 }
 
@@ -103,6 +127,9 @@ internal sealed class Av1EncoderSource
     /// geometric mean, so flat cells spend more bits for their quality and busy ones fewer.
     /// </summary>
     internal double[] RdScale { get; private set; } = [];
+
+    /// <summary>Sets <see cref="RdScale"/> to given 16x16 scales.</summary>
+    internal void SetRdScale(double[] scale, int columns) => (RdScale, RdScaleColumns) = (scale, columns);
 
     /// <summary>Computes <see cref="RdScale"/> from the luma plane.</summary>
     internal void ComputeRdScale(int miRows, int miCols, int bitDepth)
@@ -267,7 +294,8 @@ internal sealed class Av1Encoder
         if (header.DeltaQPresent)
         {
             int sbCols = (header.MiCols + 15) >> 4, sbRows = (header.MiRows + 15) >> 4;
-            source.SuperblockQIndices = Av1VarianceBoost.SuperblockQIndices(source.Planes[0], frame.Strides[0], sbCols, sbRows, header.BaseQIdx, sequence.BitDepth);
+            source.SuperblockQIndices = settings.TemporalDeltaQ ? settings.Analysis!.SuperblockQIndices(sbCols, sbRows, 64, header.BaseQIdx, sequence.BitDepth)
+                : Av1VarianceBoost.SuperblockQIndices(source.Planes[0], frame.Strides[0], sbCols, sbRows, header.BaseQIdx, sequence.BitDepth);
             source.SuperblockColumns = sbCols;
         }
 
@@ -281,18 +309,26 @@ internal sealed class Av1Encoder
             source.Hash = new Av1BlockHash(source.Planes[0], frame.Strides[0], header.MiCols * 4, header.MiRows * 4);
         }
 
-        if (!header.CodedLossless)
+        if (!header.CodedLossless && (!settings.Video || Av1Experiment.On("rdscale")))
         {
             source.ComputeRdScale(header.MiRows, header.MiCols, sequence.BitDepth);
         }
+        else if (!header.CodedLossless && settings.Analysis is { } analysis && !header.DeltaQPresent && !Av1Experiment.On("nordm") && analysis.RdScales() is { } scales)
+        {
+            // Block-level multipliers from the temporal model where no quantizers are coded.
+            source.SetRdScale(scales, analysis.Columns);
+        }
         Av1FrameDecisions decisions = new(frame);
         int tiles = header.TileCols * header.TileRows;
+        long t0 = System.Diagnostics.Stopwatch.GetTimestamp();
         Av1TileRows[] tileRows = Search(frame, source, decisions, settings);
         MarkCdef(frame);
+        long t1 = System.Diagnostics.Stopwatch.GetTimestamp();
 
-        Av1FilterSearch.Search(frame, source, sequence, parameters, settings.Effort, Av1Rate.RdMultiplier(Math.Max(parameters.BaseQIdx, 1), sequence.BitDepth),
-            settings.Reference);
+        Av1FilterSearch.Search(frame, source, sequence, parameters, settings.Effort, settings.RdMultiplier(Math.Max(parameters.BaseQIdx, 1), sequence.BitDepth),
+            settings.Reference, settings.Video);
 
+        long t2 = System.Diagnostics.Stopwatch.GetTimestamp();
         byte[][] tileData = new byte[tiles][];
         Av1FrameContext?[] contexts = new Av1FrameContext?[tiles];
         frame.For(tiles, tile =>
@@ -302,6 +338,12 @@ internal sealed class Av1Encoder
             contexts[tile] = writer.Context;
         });
         parameters.TileSizeBytes = Av1ObuWriter.TileSizeBytesFor(tileData);
+        if (Av1Experiment.On("timing"))
+        {
+            long t3 = System.Diagnostics.Stopwatch.GetTimestamp();
+            Console.Error.WriteLine($"frame {(header.FrameIsIntra ? "intra" : "inter")} q{header.BaseQIdx} ref{settings.Reference}: search {(t1 - t0) * 1000 / System.Diagnostics.Stopwatch.Frequency} ms, filters {(t2 - t1) * 1000 / System.Diagnostics.Stopwatch.Frequency} ms, write {(t3 - t2) * 1000 / System.Diagnostics.Stopwatch.Frequency} ms");
+        }
+
         if (!frame.Header.DisableFrameEndUpdateCdf)
         {
             // The CDFs the context update tile ends with, which the frames that load this one start from.
@@ -472,13 +514,16 @@ internal sealed class Av1Encoder
         (bool tools, bool intrabc) = Av1ScreenContent.Detect(input.Planes[0], input.Width, input.Height, input.BitDepth);
         f.AllowScreenContentTools = settings.ScreenContent ?? tools;
         f.AllowIntrabc = f.AllowScreenContentTools && (settings.IntraBlockCopy ?? (intrabc && settings.Effort >= 2));
-        if (f.BaseQIdx > 0)
+        if (f.BaseQIdx > 0 && (!settings.Video || Av1Experiment.On("tune")))
         {
             Tune(f, sequence);
+        }
 
+        if (f.BaseQIdx > 0 && (!settings.Video || Av1Experiment.On("vboost") || settings.TemporalDeltaQ))
+        {
             // Tune IQ's Variance Boost: a quantizer for each superblock.
             f.DeltaQPresent = true;
-            f.DeltaQRes = Av1VarianceBoost.DeltaQResLog2(f.BaseQIdx);
+            f.DeltaQRes = settings.TemporalDeltaQ ? 2 : Av1VarianceBoost.DeltaQResLog2(f.BaseQIdx);
         }
 
         return f;
