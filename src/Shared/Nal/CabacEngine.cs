@@ -201,44 +201,28 @@ internal sealed class CabacEngine
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int Decode(ref State e, ref byte state)
     {
-        // One load gives the LPS range and the state after either symbol.
+        // One load gives the LPS range and the state after either symbol. The symbol is chosen without a branch: m is all
+        // ones for the less probable one, and one renormalisation by the leading zeros of the new range serves both.
         int s = state;
         uint entry = Unsafe.Add(ref MemoryMarshal.GetReference(Packed), (s << 2) + (int)((e.Range >> 6) & 3));
         uint lps = entry & 0xFF;
-        e.Range -= lps;
-        uint scaledRange = e.Range << 7;
-        int bin;
-        if (e.Value < scaledRange)
+        uint mpsRange = e.Range - lps;
+        uint scaledRange = mpsRange << 7;
+        uint m = (uint)~(((int)e.Value - (int)scaledRange) >> 31);
+        e.Value -= scaledRange & m;
+        uint range = (lps & m) | (mpsRange & ~m);
+        state = (byte)(entry >> (8 + (int)(m & 8)));
+        int shift = System.Numerics.BitOperations.LeadingZeroCount(range) - 23;
+        e.Range = range << shift;
+        e.Value <<= shift;
+        e.BitsNeeded += shift;
+        if (e.BitsNeeded >= 0)
         {
-            bin = s & 1;
-            state = (byte)(entry >> 8);
-            if (scaledRange < (256 << 7))
-            {
-                e.Range = scaledRange >> 6;
-                e.Value <<= 1;
-                if (++e.BitsNeeded == 0)
-                {
-                    e.BitsNeeded = -8;
-                    e.Value |= (uint)ReadByte(ref e.Position);
-                }
-            }
-        }
-        else
-        {
-            bin = (s & 1) ^ 1;
-            state = (byte)(entry >> 16);
-            int shift = System.Numerics.BitOperations.LeadingZeroCount(lps) - 23;
-            e.Value = (e.Value - scaledRange) << shift;
-            e.Range = lps << shift;
-            e.BitsNeeded += shift;
-            if (e.BitsNeeded >= 0)
-            {
-                e.Value |= (uint)ReadByte(ref e.Position) << e.BitsNeeded;
-                e.BitsNeeded -= 8;
-            }
+            e.Value |= (uint)ReadByte(ref e.Position) << e.BitsNeeded;
+            e.BitsNeeded -= 8;
         }
 
-        return bin;
+        return (s & 1) ^ (int)(m & 1);
     }
 
     /// <summary><see cref="Bypass()"/> on a saved state.</summary>
