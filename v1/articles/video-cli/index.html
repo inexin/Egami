@@ -226,7 +226,7 @@ egami-video audio in.mkv -o sound.flac
 </tr>
 <tr>
 <td><code>audio</code></td>
-<td>Audio to WAV, FLAC or Opus; audio again while copying video</td>
+<td>Audio to WAV, FLAC, Opus, AIFF, CAF or ALAC; audio again while copying video</td>
 <td><code>-vn -c:a flac</code>, <code>-c:a libopus -b:a</code>, <code>-ar</code>, <code>-ac</code></td>
 </tr>
 <tr>
@@ -350,15 +350,19 @@ egami-video generate bars --tone -t 10 bars.mkv
 egami-video generate sweep -t 5 sweep.flac
 </code></pre>
 <h2 id="audio">Audio</h2>
-<p><code>audio</code> decodes the picked audio track to WAV, Wave64, FLAC, Ogg FLAC or Opus, resampling with <code>--rate</code>, mixing with <code>--channels</code>
+<p><code>audio</code> decodes the picked audio track to WAV, Wave64, FLAC, Ogg FLAC, Opus, AIFF or CAF, resampling with <code>--rate</code>, mixing with <code>--channels</code>
 and converting with <code>--sample-format</code>. With a video container as output it copies the video unchanged and encodes the audio
-again. <code>--codec</code> picks FLAC, PCM or Opus; .opus and WebM outputs get Opus, WAV, Wave64 and AVI get PCM, and the rest FLAC.
-<code>--bitrate</code> sets Opus's bitrate for all channels together (64k a channel by default); <code>--level</code> sets FLAC's compression.</p>
+again. <code>--codec</code> picks FLAC, PCM, Opus or ALAC (Apple Lossless); .opus and WebM outputs get Opus, WAV, Wave64, AVI, AIFF
+and CAF get PCM, .m4a gets ALAC, and the rest FLAC. ALAC also goes in .mov, .mka and .caf. <code>--bitrate</code> sets Opus's bitrate
+for all channels together (64k a channel by default); <code>--level</code> sets FLAC's compression (0 to 8) or ALAC's (0 fast, 1 the
+default). <code>extract</code> writes ALAC tracks to .m4a and AC-3 and E-AC-3 tracks to raw .ac3 and .eac3 files.</p>
 <pre><code class="lang-sh">egami-video audio in.mkv -o sound.flac
 egami-video audio in.webm --rate 44100 --channels stereo --sample-format s16 -o sound.wav
 egami-video audio in.mkv --codec flac -o flac-audio.mkv
 egami-video audio sound.flac --bitrate 96k -o sound.opus
 egami-video audio in.mp4 --bitrate 64k -o opus-audio.webm
+egami-video audio sound.flac -o sound.m4a
+egami-video audio sound.wav --sample-format s24 -o sound.aiff
 </code></pre>
 <h2 id="checking">Checking</h2>
 <p><code>hash</code> writes a hash of every decoded frame (or every packet with <code>--packets</code>) in the layout of <code>ffmpeg -f framemd5</code>, and the

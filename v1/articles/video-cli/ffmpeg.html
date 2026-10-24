@@ -157,7 +157,7 @@ egami-video ffprobe -v error -show_entries format=duration -of default=noprint_w
 <td><code>animate</code></td>
 </tr>
 <tr>
-<td><code>-vn</code>, <code>-c:a flac</code>, <code>-c:a libopus</code>, <code>-b:a</code>, <code>-ar</code>, <code>-ac</code>, <code>-sample_fmt</code></td>
+<td><code>-vn</code>, <code>-c:a flac</code>, <code>-c:a alac</code>, <code>-c:a libopus</code>, <code>-b:a</code>, <code>-ar</code>, <code>-ac</code>, <code>-sample_fmt</code>, an .aiff or .caf output</td>
 <td><code>audio</code></td>
 </tr>
 <tr>
@@ -216,7 +216,7 @@ in a warning. An output that exists needs <code>-y</code>, as in ffmpeg.</p>
 <code>-stats_period</code>, <code>-hide_banner</code>, <code>-loglevel</code>, <code>-v</code> and <code>-nostdin</code>, with <code>pipe:</code> and <code>%d</code> patterns. The filters are scale, crop,
 pad, transpose, hflip, vflip, fps, thumbnail, select (scene) and tile, and with <code>-f null</code> the detection filters above; the
 <code>-f lavfi</code> sources are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc. Codecs: <code>copy</code>, <code>mjpeg</code> and <code>rawvideo</code> for video, <code>flac</code>,
-<code>libopus</code> (or <code>opus</code>) and the <code>pcm_</code> codecs for audio.</p>
+<code>alac</code>, <code>libopus</code> (or <code>opus</code>) and the <code>pcm_</code> codecs for audio.</p>
 <p>ffprobe mode takes <code>-i</code>, <code>-show_streams</code>, <code>-show_format</code>, <code>-show_packets</code>, <code>-show_frames</code>, <code>-show_chapters</code>, <code>-select_streams</code>,
 <code>-show_entries</code>, <code>-of</code> (also <code>-print_format</code>, <code>-output_format</code>) with the json, csv, compact, default, flat and xml writers and
 their <code>nokey</code>, <code>noprint_wrappers</code>, <code>print_section</code> and <code>item_sep</code> options, <code>-v</code>, <code>-loglevel</code>, <code>-hide_banner</code> and <code>-pretty</code>. Its
