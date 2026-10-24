@@ -385,13 +385,34 @@ internal sealed class H264Deblock
     /// <summary>Loads eight samples of two rows into the halves of one vector.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector256<short> Pair<T>(ref T low, ref T high, int offset)
-        where T : unmanaged => Vector256.Create(H264Samples.Load8(ref low, offset), H264Samples.Load8(ref high, offset));
+        where T : unmanaged
+    {
+        if (H264Samples.Narrow<T>())
+        {
+            // Both rows' bytes in one 128-bit vector, widened at once.
+            Vector128<ulong> rows = Vector128.Create(
+                Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref low, offset))),
+                Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref high, offset))));
+            return Avx2.ConvertToVector256Int16(rows.AsByte());
+        }
+
+        return Vector256.Create(H264Samples.Load8(ref low, offset), H264Samples.Load8(ref high, offset));
+    }
 
     /// <summary>Stores the halves of a vector as eight samples of two rows.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Unpair<T>(ref T low, ref T high, int offset, Vector256<short> v)
         where T : unmanaged
     {
+        if (H264Samples.Narrow<T>())
+        {
+            // One pack gives both rows' bytes.
+            Vector128<ulong> rows = Sse2.PackUnsignedSaturate(v.GetLower(), v.GetUpper()).AsUInt64();
+            Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref low, offset)), rows.ToScalar());
+            Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref high, offset)), rows.GetElement(1));
+            return;
+        }
+
         H264Samples.Store8(ref low, offset, v.GetLower());
         H264Samples.Store8(ref high, offset, v.GetUpper());
     }
