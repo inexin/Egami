@@ -399,6 +399,32 @@ internal sealed partial class H264SliceDecoder
         bool colShortTerm = !col.IsLongTermReference;
         bool inferred = _sps.Direct8x8Inference;
         int colZero8 = 0;
+        if (mask == 15 && inferred)
+        {
+            // A whole macroblock with 8x8 inference: one colZero test per 8x8 block, on its corner block, and only the first
+            // block of each 8x8 is written, which is all WriteDirectRows reads.
+            if (colShortTerm && !zero && !col.MbIntra[_mbAddr])
+            {
+                bool[] colZeros = col.ColZero;
+                colZero8 = (colZeros[Block(0, 0)] ? 1 : 0) | (colZeros[Block(3, 0)] ? 2 : 0) | (colZeros[Block(0, 3)] ? 4 : 0) | (colZeros[Block(3, 3)] ? 8 : 0);
+            }
+
+            for (int list = 0; list < 2; list++)
+            {
+                int r = refIdx[list], m = mvp[list];
+                _directRefBlock[list * 16] = (sbyte)r;
+                _directMv[list * 16] = r < 0 || (r == 0 && (colZero8 & 1) != 0) ? 0 : m;
+                _directMv[(list * 16) + 2] = r < 0 || (r == 0 && (colZero8 & 2) != 0) ? 0 : m;
+                _directMv[(list * 16) + 8] = r < 0 || (r == 0 && (colZero8 & 4) != 0) ? 0 : m;
+                _directMv[(list * 16) + 10] = r < 0 || (r == 0 && (colZero8 & 8) != 0) ? 0 : m;
+            }
+
+            bool split = colZero8 is not 0 and not 15 && ((refIdx[0] == 0 && mvp[0] != 0) || (refIdx[1] == 0 && mvp[1] != 0));
+            _directUniform = split ? 0 : 1;
+            _directQuarters = true;
+            return;
+        }
+
         for (int blk = 0; blk < 16; blk++)
         {
             int bx = blk & 3, by = blk >> 2, quarter = ((by >> 1) * 2) + (bx >> 1);
