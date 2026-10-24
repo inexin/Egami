@@ -20,6 +20,12 @@ public sealed class LoudnessMeter : IAudioDetector
     private const double Offset = -0.691;
     private const int ShortTermSteps = 30;
     private const int MomentarySteps = 4;
+
+    /// <summary>
+    /// How many 10 ms parts a 100 ms step has. The highest momentary and short-term loudness look at every window starting on a
+    /// 10 ms boundary, as a file-based meter must for EBU Tech 3341 cases 10 and 13 (bursts that start between steps).
+    /// </summary>
+    private const int Parts = 10;
     private const int PeakTaps = 12;
 
     private static readonly double AbsoluteGate = Power(-70);
@@ -35,6 +41,13 @@ public sealed class LoudnessMeter : IAudioDetector
     private KWeighting[] _filters = [];
     private double[] _weights = [];
     private double[] _squares = [];
+    private double[] _partSquares = [];
+    private readonly double[] _partPower = new double[ShortTermSteps * Parts];
+    private readonly long[] _partCount = new long[ShortTermSteps * Parts];
+    private long _part;
+    private long _partStart;
+    private long _partEnd;
+    private int _partsFilled;
     private float[] _samplePeaks = [];
     private PeakEstimator[] _truePeaks = [];
     private long _origin;
@@ -64,10 +77,10 @@ public sealed class LoudnessMeter : IAudioDetector
     /// <summary>Gets the loudness of the last 3 s in LUFS, or of what came so far when that is shorter.</summary>
     public double ShortTerm { get; private set; } = double.NegativeInfinity;
 
-    /// <summary>Gets the highest momentary loudness so far, in LUFS.</summary>
+    /// <summary>Gets the highest momentary loudness so far, in LUFS, over every 400 ms window that starts on a 10 ms boundary.</summary>
     public double MaxMomentary { get; private set; } = double.NegativeInfinity;
 
-    /// <summary>Gets the highest short-term loudness so far, in LUFS.</summary>
+    /// <summary>Gets the highest short-term loudness so far, in LUFS, over every 3 s window that starts on a 10 ms boundary.</summary>
     public double MaxShortTerm { get; private set; } = double.NegativeInfinity;
 
     /// <summary>Gets the gated integrated loudness of everything so far in LUFS (BS.1770: -70 LUFS absolute and -10 LU relative gates).</summary>
@@ -115,13 +128,13 @@ public sealed class LoudnessMeter : IAudioDetector
         int position = 0;
         while (position < count)
         {
-            int take = (int)Math.Min(count - position, _stepEnd - _samples);
+            int take = (int)Math.Min(count - position, _partEnd - _samples);
             for (int c = 0; c < _filters.Length; c++)
             {
                 ReadOnlySpan<float> samples = _input.Channel(c, count).Slice(position, take);
                 if (_weights[c] != 0)
                 {
-                    _squares[c] += _filters[c].Process(samples);
+                    _partSquares[c] += _filters[c].Process(samples);
                 }
 
                 _samplePeaks[c] = Math.Max(_samplePeaks[c], PeakOf(samples));
@@ -133,6 +146,11 @@ public sealed class LoudnessMeter : IAudioDetector
 
             position += take;
             _samples += take;
+            if (_samples == _partEnd)
+            {
+                EndPart();
+            }
+
             if (_samples == _stepEnd)
             {
                 EndStep();
@@ -278,6 +296,7 @@ public sealed class LoudnessMeter : IAudioDetector
         _filters = new KWeighting[channels];
         _weights = new double[channels];
         _squares = new double[channels];
+        _partSquares = new double[channels];
         _samplePeaks = new float[channels];
         for (int c = 0; c < channels; c++)
         {
@@ -301,10 +320,57 @@ public sealed class LoudnessMeter : IAudioDetector
 
         _origin = frame.Timestamp.Rescale(new Rational(1, frame.SampleRate)).Ticks;
         _stepEnd = Boundary(1, frame.SampleRate);
+        _partEnd = PartBoundary(1, frame.SampleRate);
     }
 
     /// <summary>Returns where 100 ms step <paramref name="step"/> starts, in samples, so steps stay exact at any rate.</summary>
     private static long Boundary(long step, int rate) => ((step * rate) + 5) / 10;
+
+    /// <summary>Returns where 10 ms part <paramref name="part"/> starts; every tenth part starts where a step does.</summary>
+    private static long PartBoundary(long part, int rate) => ((part * rate) + 50) / 100;
+
+    /// <summary>Ends a 10 ms part: adds it to its step and takes the highest momentary and short-term loudness ending here.</summary>
+    private void EndPart()
+    {
+        double weighted = 0;
+        for (int c = 0; c < _partSquares.Length; c++)
+        {
+            weighted += _weights[c] * _partSquares[c];
+            _squares[c] += _partSquares[c];
+            _partSquares[c] = 0;
+        }
+
+        int slot = (int)(_part % _partPower.Length);
+        _partPower[slot] = weighted;
+        _partCount[slot] = _partEnd - _partStart;
+        _partsFilled = Math.Min(_partsFilled + 1, _partPower.Length);
+        _part++;
+        _partStart = _partEnd;
+        _partEnd = PartBoundary(_part + 1, _input.SampleRate);
+        if (_partsFilled >= MomentarySteps * Parts)
+        {
+            MaxMomentary = Math.Max(MaxMomentary, Loudness(RecentParts(MomentarySteps * Parts)));
+        }
+
+        if (_partsFilled >= ShortTermSteps * Parts)
+        {
+            MaxShortTerm = Math.Max(MaxShortTerm, Loudness(RecentParts(ShortTermSteps * Parts)));
+        }
+    }
+
+    private double RecentParts(int parts)
+    {
+        double power = 0;
+        long count = 0;
+        for (int i = 1; i <= parts; i++)
+        {
+            int slot = (int)((_part - i) % _partPower.Length);
+            power += _partPower[slot];
+            count += _partCount[slot];
+        }
+
+        return count > 0 ? power / count : 0;
+    }
 
     private void EndStep()
     {
@@ -329,7 +395,6 @@ public sealed class LoudnessMeter : IAudioDetector
         if (_filled >= MomentarySteps)
         {
             _blocks.Add(momentary);
-            MaxMomentary = Math.Max(MaxMomentary, Momentary);
             if (_options.KeepSeries)
             {
                 _momentarySeries.Add(new LoudnessValue(time, Momentary));
@@ -341,7 +406,6 @@ public sealed class LoudnessMeter : IAudioDetector
         if (_filled >= ShortTermSteps)
         {
             _shortBlocks.Add(shortTerm);
-            MaxShortTerm = Math.Max(MaxShortTerm, ShortTerm);
             if (_options.KeepSeries)
             {
                 _shortTermSeries.Add(new LoudnessValue(time, ShortTerm));

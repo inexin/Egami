@@ -466,9 +466,14 @@ V1.4 stage E: the command line.
 V1.4 gates (tasks 5, 14 and 21, egami-compare).
 
 - Scenes: on hand-labeled cuts of the first 10 minutes of Big Buck Bunny, Sintel and Tears of Steel, `SceneDetector` scores F1
-  0.939, against PySceneDetect 0.7.2's AdaptiveDetector 0.935 and V1.1's detector 0.886.
-- Loudness: `LoudnessMeter` passes the EBU Tech 3342 cases of the EBU test set and matches ffmpeg's ebur128 within 0.05 LU on
-  69 of its 70 files; on the 70th (1.78 s long) a plain BS.1770 computation agrees with Egami, 0.5 LU from ffmpeg.
+  0.953 (0.939 with the old FadeLevel), against PySceneDetect 0.7.2's AdaptiveDetector 0.935 and V1.1's detector 0.886.
+- Loudness: `LoudnessMeter` passes every EBU Tech 3341 and 3342 case of the EBU test set v05 and matches ffmpeg's ebur128
+  within 0.05 LU on 69 of its 70 files; on the 70th (1.78 s long) a plain BS.1770 computation agrees with Egami, 0.5 LU from
+  ffmpeg. `MaxMomentary` and `MaxShortTerm` now take every window that starts on a 10 ms boundary, so a burst that starts between
+  100 ms steps reads its full level (Tech 3341 cases 10 and 13; ffmpeg's ebur128 reads 0.2 to 0.5 LU low there).
+- `SceneOptions.FadeLevel` defaults to 0.02 (was 0.06): dark shots are no longer taken for black, which made fades that were
+  not there and hid real cuts. On the scene gate's films F1 goes from 0.939 to 0.953, Sintel's dark scenes from 0.866 to
+  0.903.
 - `analyze --ffmpeg-log` matches ffmpeg 7.1's log lines: cropdetect lines carry `pts`, a six-decimal `t` and `limit`;
   volumedetect lists its `histogram_<n>db` lines; the ebur128 summary lists both gate thresholds and prefixes only its first
   line. In `egami-video ffmpeg`, cropdetect rounds to 16 by default, as ffmpeg's does.

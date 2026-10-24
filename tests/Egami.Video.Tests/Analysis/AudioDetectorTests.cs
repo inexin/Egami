@@ -55,6 +55,26 @@ public sealed class AudioDetectorTests
     }
 
     [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(7)]
+    [InlineData(19)]
+    public void Tech3341BurstsBetweenSteps(int i)
+    {
+        // Case 13: i x 20 ms of silence, 400 ms at -23 dBFS, 1 s of silence; the highest momentary loudness is -23 wherever the
+        // burst starts. Case 10: i x 150 ms of silence, 3 s at -23 dBFS, 1 s of silence, for the short-term loudness.
+        LoudnessMeter momentary = new();
+        Feed(momentary, Tone(Rate, 2, (double.NegativeInfinity, i * 0.02), (-23, 0.4), (double.NegativeInfinity, 1)));
+        Assert.Equal(-23, momentary.MaxMomentary, 0.1);
+
+        LoudnessMeter shortTerm = new();
+        Feed(shortTerm, Tone(Rate, 2, (double.NegativeInfinity, i * 0.15), (-23, 3), (double.NegativeInfinity, 1)));
+        Assert.Equal(-23, shortTerm.MaxShortTerm, 0.1);
+    }
+
+    [Theory]
     [InlineData(44100)]
     [InlineData(32000)]
     [InlineData(96000)]
