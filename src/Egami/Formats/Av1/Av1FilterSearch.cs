@@ -21,7 +21,7 @@ internal static class Av1FilterSearch
     internal static void Search(Av1Frame frame, Av1EncoderSource source, Av1SequenceHeader sequence, Av1FrameParameters parameters, int effort, long rdmult,
         bool reference = true, bool video = false)
     {
-        bool exact = video && parameters.LoopFilterSharpness == 0 && (reference ? effort >= 3 : effort >= 5) && !Av1Experiment.On("noexactlf");
+        bool exact = video && parameters.LoopFilterSharpness == 0 && (reference ? effort >= 3 : effort >= 5);
         // A frame no other predicts from searches its filters as two efforts lower do.
         effort = reference ? effort : Math.Max(0, effort - 2);
         Av1FrameHeader header = frame.Header;
@@ -42,13 +42,13 @@ internal static class Av1FilterSearch
             Deblock(frame, source, sequence, parameters, prefilter, search: effort >= 5);
         }
 
-        bool restore = video && reference && effort >= 3 && sequence.EnableRestoration && !Av1Experiment.On("nolr");
+        bool restore = video && reference && effort >= 3 && sequence.EnableRestoration;
         ushort[][]? deblocked = restore ? [.. frame.Planes!.Select(p => (ushort[])((ushort[])p).Clone())] : null;
 
         // Tune IQ's adaptive CDEF: off at the finest quantizers, where it blurs (pickcdef.c).
         if (sequence.EnableCdef && parameters.BaseQIdx > 32)
         {
-            Cdef(frame, source, sequence, parameters, effort, rdmult);
+            Cdef(frame, source, sequence, parameters, effort, rdmult, video && !reference ? ReferenceStrengths(parameters) : null);
         }
 
         if (restore)
@@ -225,10 +225,11 @@ internal static class Av1FilterSearch
     /// deblocked frame once, each unit's error measured under it, then pairs are added greedily while they pay for their index
     /// bits.
     /// </summary>
-    private static void Cdef(Av1Frame frame, Av1EncoderSource source, Av1SequenceHeader sequence, Av1FrameParameters parameters, int effort, long rdmult)
+    private static void Cdef(Av1Frame frame, Av1EncoderSource source, Av1SequenceHeader sequence, Av1FrameParameters parameters, int effort, long rdmult,
+        (int Pri, int Sec)[]? candidates = null)
     {
         int planes = frame.Header.NumPlanes;
-        (int Pri, int Sec)[] strengths = CdefSets[effort <= 4 ? 0 : effort <= 6 ? 1 : 2];
+        (int Pri, int Sec)[] strengths = candidates ?? CdefSets[effort <= 4 ? 0 : effort <= 6 ? 1 : 2];
         int units = frame.CdefIndex.Length;
         bool[] coded = new bool[units];
         int codedUnits = 0;
@@ -383,6 +384,35 @@ internal static class Av1FilterSearch
 
             return total;
         }
+    }
+
+    /// <summary>
+    /// Gets the CDEF strengths a frame no other predicts from tries: off, and those its nearest references, LAST and BWDREF, chose
+    /// for luma and chroma (SVT-AV1's leaf frames reuse their references' strengths the same way).
+    /// </summary>
+    private static (int Pri, int Sec)[] ReferenceStrengths(Av1FrameParameters parameters)
+    {
+        List<(int Pri, int Sec)> list = [(0, 0)];
+        foreach (int rf in (ReadOnlySpan<int>)[0, 4])
+        {
+            if (parameters.Slots?[parameters.RefFrameIdx[rf]]?.Header is not { } h)
+            {
+                continue;
+            }
+
+            for (int i = 0; i < 1 << h.CdefBits; i++)
+            {
+                foreach ((int, int) pair in (ReadOnlySpan<(int, int)>)[(h.CdefYPriStrength[i], h.CdefYSecStrength[i]), (h.CdefUvPriStrength[i], h.CdefUvSecStrength[i])])
+                {
+                    if (!list.Contains(pair) && list.Count < 8)
+                    {
+                        list.Add(pair);
+                    }
+                }
+            }
+        }
+
+        return [.. list];
     }
 
     /// <summary>Gets the frame header the parameters write, as the decoder reads it.</summary>

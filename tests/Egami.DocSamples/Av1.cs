@@ -85,6 +85,56 @@ public class Av1
         pictures.ForEach(p => p.Dispose());
     }
 
+    [Fact]
+    public void Analyze()
+    {
+        using SampleFiles files = new();
+        List<YuvRaster> pictures = [];
+        using (Av1StreamDecoder source = new())
+        {
+            foreach (byte[] unit in IvfFrames("clip-av1.ivf"))
+            {
+                source.Send(unit);
+                while (source.NextFrame is Av1FrameInfo next)
+                {
+                    YuvRaster picture = YuvRaster.Create(next.Width, next.Height, next.Chroma, YuvColor.Bt601Limited);
+                    source.TryReceiveFrame(picture, out _);
+                    pictures.Add(picture);
+                }
+            }
+        }
+
+        using Av1StreamEncoder encoder = new(new Av1SequenceOptions { Width = pictures[0].Width, Height = pictures[0].Height });
+
+        #region av1-analyze
+        // The frames ahead in coding order: a key frame, a hidden frame four pictures on, then the three between, each predicting
+        // from the frames on both sides of it (their places in this list).
+        IReadOnlyList<Av1FrameAnalysis> analysis = encoder.Analyze(
+        [
+            new Av1AnalysisFrame { Picture = pictures[0] },
+            new Av1AnalysisFrame { Picture = pictures[4], References = [0] },
+            new Av1AnalysisFrame { Picture = pictures[1], References = [0, 1] },
+            new Av1AnalysisFrame { Picture = pictures[2], References = [0, 1] },
+            new Av1AnalysisFrame { Picture = pictures[3], References = [0, 1] },
+        ]);
+
+        // The more the frames after them reuse the key and hidden frames, the finer their steps; each plan carries its analysis.
+        int keyQ = (int)Math.Round(100 / Math.Sqrt(analysis[0].Importance));
+        encoder.Encode(pictures[0], new Av1FramePlan { Kind = Av1FrameKind.Key, QIndex = keyQ, Analysis = analysis[0] });
+        encoder.Encode(pictures[4], new Av1FramePlan { QIndex = 110, Show = false, OrderHint = 4, RefreshSlots = 0b10, Analysis = analysis[1] });
+        for (int i = 1; i < 4; i++)
+        {
+            encoder.Encode(pictures[i], new Av1FramePlan { QIndex = 140, Layer = 1, ReferenceSlots = [0, 0, 0, 0, 1, 1, 1], RefreshSlots = 0, Analysis = analysis[i + 1] });
+        }
+
+        encoder.ShowExisting(1);
+        #endregion
+
+        Assert.True(analysis[0].Importance > 1);
+        Assert.Equal(1, analysis[4].Importance);
+        pictures.ForEach(p => p.Dispose());
+    }
+
     /// <summary>The frames of an IVF file: a 32-byte header, then each frame's 4-byte size and 8-byte timestamp before its data.</summary>
     private static IEnumerable<byte[]> IvfFrames(string path)
     {

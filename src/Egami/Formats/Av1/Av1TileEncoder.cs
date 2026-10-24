@@ -1923,7 +1923,7 @@ internal sealed class Av1SearchProfile
             MinBlock = effort <= 1 ? 8 : 4,
             InterMaxBlock = effort <= 2 ? 32 : 64,
             InterMinBlock = effort <= 4 ? 8 : 4,
-            SmallSplitMotion = effort is 3 or 4 && reference ? (int)Av1Experiment.Value("ssm", 16) : 0,
+            SmallSplitMotion = effort is 3 or 4 && reference ? 16 : 0,
             SkipKeepsWhole = 32,
             SplitMotion = effort <= 4 ? 150 : effort <= 6 ? 200 : 0,
             Rectangles = effort >= 5,

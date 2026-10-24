@@ -68,9 +68,12 @@ Each call takes an `Av1FramePlan`, so the caller decides what the stream looks l
   `RefreshSlots` which slots the frame replaces. References that read the same frame are searched once.
 - `Show = false` codes a hidden frame, such as an alternate reference from frames to come; `OrderHint` says where it shows, and
   `ShowExisting` shows it later with show_existing_frame.
+- `Tune` is `Av1Tune.Video` (the default: one quantizer for luma and chroma, no quantization matrices, rate-distortion weights by
+  frame type) or `Av1Tune.Image`, the still-picture tools AVIF uses. `Layer` is the frame's layer in its group's pyramid: the
+  deeper it is, the fewer frames predict from it and the fewer bits it spends. `Referenced` says whether any later frame does.
 - `ErrorResilient` makes a frame that decodes without the probabilities and vectors of the frames before it, `PrimaryReference`
-  picks the reference a frame takes them from, `DeltaQuantizers` turns the per-superblock quantizers off, and `ScreenContent` the
-  palettes on or off.
+  picks the reference a frame takes them from, `DeltaQuantizers` turns the per-superblock quantizers off, `VarianceBoost` gives
+  flat superblocks finer ones, and `ScreenContent` the palettes on or off.
 
 `Encode` returns an `Av1EncodedFrame` with the temporal unit's OBUs, without temporal delimiters, as MP4 samples and Matroska blocks
 store them; a key frame's unit starts with the sequence header. A hidden frame's data is empty: its OBUs lead the next shown frame's
@@ -79,3 +82,14 @@ the decoded frame against the picture (`LumaPsnr` from it), what rate control ne
 
 The encoder keeps the eight reference slots as a decoder does, and decides a frame's tiles on up to `EgamiContext.MaxParallelism`
 threads; its output does not depend on the thread count. AVIF stills are not affected: they encode as before, byte for byte.
+
+## Temporal analysis
+
+Before coding a group, `Analyze` can look at its frames and the group after it in coding order, each naming the frames it will
+predict from. For every 16x16 block it measures what predicting from the references saves against coding the block alone, and
+carries that back from the last frame to the first: a block the frames after it reuse a lot carries much. `Importance` sums it
+over the frame, so a group's key frame and alternate reference can take finer quantizers the more they are reused, and a plan's
+`Analysis` gives a referenced layer-0 frame finer quantizers in the superblocks that matter most and the other frames lower
+rate-distortion weights there. The analysis reads the pictures only and is the same at any thread count.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Av1.cs#av1-analyze)]

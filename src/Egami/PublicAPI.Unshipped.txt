@@ -4025,3 +4025,5 @@ Egami.Formats.Av1.Av1FrameAnalysis.Importance.get -> double
 Egami.Formats.Av1.Av1FramePlan.Analysis.get -> Egami.Formats.Av1.Av1FrameAnalysis?
 Egami.Formats.Av1.Av1FramePlan.Analysis.init -> void
 Egami.Formats.Av1.Av1StreamEncoder.Analyze(System.Collections.Generic.IReadOnlyList<Egami.Formats.Av1.Av1AnalysisFrame!>! frames) -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Av1.Av1FrameAnalysis!>!
+Egami.Formats.Av1.Av1FramePlan.VarianceBoost.get -> bool?
+Egami.Formats.Av1.Av1FramePlan.VarianceBoost.init -> void

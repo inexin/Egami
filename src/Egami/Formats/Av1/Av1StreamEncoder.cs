@@ -130,6 +130,7 @@ public sealed class Av1StreamEncoder : IDisposable
             Video = plan.Tune == Av1Tune.Video,
             Analysis = plan.Tune == Av1Tune.Video && plan.Analysis is { } a && a.Width == Width && a.Height == Height ? a : null,
             DeltaQuantizers = plan.DeltaQuantizers,
+            VarianceBoost = plan.VarianceBoost ?? plan.Tune == Av1Tune.Image,
             Layer = intra ? 0 : plan.Layer,
             Intra = intra,
         };
@@ -720,10 +721,18 @@ public sealed record Av1FramePlan
     public bool ErrorResilient { get; init; }
 
     /// <summary>
-    /// Gets whether each superblock may have its own quantizer. Under <see cref="Av1Tune.Image"/> it is finer where the picture is
-    /// flat (Variance Boost); video frames have none. Defaults to true.
+    /// Gets whether each superblock may have its own quantizer: from the frame's <see cref="Analysis"/> on a referenced layer-0
+    /// video frame, else by <see cref="VarianceBoost"/>. Defaults to true.
     /// </summary>
     public bool DeltaQuantizers { get; init; } = true;
+
+    /// <summary>
+    /// Gets whether superblocks the temporal analysis sets no quantizer for get finer quantizers where the picture is flat or finely
+    /// graded, where banding and blocking show (Variance Boost, from libaom's tune IQ): SSIM and the eye gain more than PSNR loses.
+    /// Null (the default) for on under <see cref="Av1Tune.Image"/> and off under <see cref="Av1Tune.Video"/>. Needs
+    /// <see cref="DeltaQuantizers"/>.
+    /// </summary>
+    public bool? VarianceBoost { get; init; }
 
     /// <summary>
     /// Gets what the frame's coding tools are tuned for: <see cref="Av1Tune.Video"/> (the default) or <see cref="Av1Tune.Image"/>,

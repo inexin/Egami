@@ -70,7 +70,7 @@ public sealed class Av1FrameAnalysis
     /// <summary>Gets the rows of 16x16 blocks.</summary>
     internal int Rows { get; }
 
-    /// <summary>Gets each block's intra cost (a sum of absolute transformed differences against its DC prediction).</summary>
+    /// <summary>Gets each block's intra cost (a sum of absolute differences against its DC prediction).</summary>
     internal double[] Intra { get; }
 
     /// <summary>Gets the cost of later frames' content each block carries, propagated back through the frames that predict from it.</summary>
@@ -164,10 +164,10 @@ public sealed class Av1FrameAnalysis
 
 /// <summary>
 /// The temporal dependency model of <see cref="Av1StreamEncoder.Analyze"/>, after the mbtree-like models of SVT-AV1 and libaom
-/// (the ideas of their temporal model documents; BSD): for every 16x16 luma block of every frame, an intra cost (the summed
-/// absolute Hadamard transform of its residual against its DC prediction from the source) and an inter cost (the same of its
-/// residual at the whole-sample vector the motion pre-pass finds on the source, against each reference the frame names, the
-/// best kept); then, in reverse coding order, each block hands the share of its cost and of what it carries that its
+/// (the ideas of their temporal model documents; BSD): for every 16x16 luma block of every frame, an intra cost (the sum of
+/// absolute differences against its DC prediction from the source) and an inter cost (the sum of absolute differences at the
+/// whole-sample vector the motion pre-pass finds on the source, against each reference the frame names, the best kept: SVT-AV1's
+/// cheap costs at its middle presets); then, in reverse coding order, each block hands the share of its cost and of what it carries that its
 /// reference explains (1 − inter / intra) to the reference blocks its vector covers, by area. The order is fixed, so the result
 /// does not depend on the thread count.
 /// </summary>
@@ -206,6 +206,8 @@ internal static class Av1TemporalModel
             luma[i] = Luma(frames[i].Picture, width, height, stride, padded);
         }
 
+        int middle = 1 << ((frames.Count > 0 ? frames[0].Picture.BitDepth : 8) - 1);
+
         for (int i = 0; i < n; i++)
         {
             IReadOnlyList<int> refs = frames[i].References;
@@ -219,7 +221,7 @@ internal static class Av1TemporalModel
             {
                 for (int col = 0; col < cols; col++)
                 {
-                    intraCost[(row * cols) + col] = IntraCost(source, stride, col * Cell, row * Cell, Math.Min(Cell, width - (col * Cell)), Math.Min(Cell, height - (row * Cell)));
+                    intraCost[(row * cols) + col] = IntraCost(source, stride, col * Cell, row * Cell, Math.Min(Cell, width - (col * Cell)), Math.Min(Cell, height - (row * Cell)), middle);
                 }
             });
             Array.Copy(intraCost, interCost, cells);
@@ -265,7 +267,7 @@ internal static class Av1TemporalModel
                             continue;
                         }
 
-                        double cost = Satd(source, (row * Cell * stride) + (col * Cell), stride, plane.Samples, plane.At(x, y), plane.Stride, w, h);
+                        double cost = pass.Sad(k + 1, row, col);
                         if (cost < interCost[at])
                         {
                             interCost[at] = cost;
@@ -356,8 +358,8 @@ internal static class Av1TemporalModel
         return samples;
     }
 
-    /// <summary>Gets a block's intra cost: the transformed residual against the mean of the source row above and column to its left.</summary>
-    private static double IntraCost(ushort[] source, int stride, int x0, int y0, int w, int h)
+    /// <summary>Gets a block's intra cost: its differences from the mean of the source row above and column to its left (the middle value without either).</summary>
+    private static double IntraCost(ushort[] source, int stride, int x0, int y0, int w, int h, int middle)
     {
         int sum = 0, count = 0;
         if (y0 > 0)
@@ -380,82 +382,18 @@ internal static class Av1TemporalModel
             count += h;
         }
 
-        int dc = count > 0 ? (sum + (count / 2)) / count : 128;
-        Span<int> residual = stackalloc int[Cell * Cell];
+        int dc = count > 0 ? (sum + (count / 2)) / count : middle;
+
+        // The sum of absolute differences over the whole 16x16 cell, as the pre-pass measures its vectors.
+        long sad = 0;
         for (int y = 0; y < Cell; y++)
         {
             for (int x = 0; x < Cell; x++)
             {
-                residual[(y * Cell) + x] = y < h && x < w ? source[((y0 + y) * stride) + x0 + x] - dc : 0;
+                sad += Math.Abs(source[((y0 + y) * stride) + x0 + x] - dc);
             }
         }
 
-        return Hadamard(residual);
-    }
-
-    /// <summary>Gets the summed absolute Hadamard transform of the difference of a 16x16 source block and a reference block.</summary>
-    private static double Satd(ushort[] source, int sourceAt, int sourceStride, ushort[] reference, int referenceAt, int referenceStride, int w, int h)
-    {
-        Span<int> residual = stackalloc int[Cell * Cell];
-        for (int y = 0; y < Cell; y++)
-        {
-            for (int x = 0; x < Cell; x++)
-            {
-                residual[(y * Cell) + x] = y < h && x < w ? source[sourceAt + (y * sourceStride) + x] - reference[referenceAt + (y * referenceStride) + x] : 0;
-            }
-        }
-
-        return Hadamard(residual);
-    }
-
-    /// <summary>Gets the sum of the absolute 8x8 Hadamard transforms of a 16x16 residual's four quarters.</summary>
-    private static double Hadamard(Span<int> residual)
-    {
-        long total = 0;
-        Span<int> m = stackalloc int[64];
-        for (int quarter = 0; quarter < 4; quarter++)
-        {
-            int ox = (quarter & 1) * 8, oy = (quarter >> 1) * 8;
-            for (int y = 0; y < 8; y++)
-            {
-                for (int x = 0; x < 8; x++)
-                {
-                    m[(y * 8) + x] = residual[((oy + y) * Cell) + ox + x];
-                }
-            }
-
-            for (int y = 0; y < 8; y++)
-            {
-                Butterfly(m.Slice(y * 8, 8), 1);
-            }
-
-            for (int x = 0; x < 8; x++)
-            {
-                Butterfly(m[x..], 8);
-            }
-
-            for (int i = 0; i < 64; i++)
-            {
-                total += Math.Abs(m[i]);
-            }
-        }
-
-        return total / 8.0;
-
-        static void Butterfly(Span<int> v, int step)
-        {
-            for (int half = 1; half < 8; half <<= 1)
-            {
-                for (int i = 0; i < 8; i += 2 * half)
-                {
-                    for (int j = i; j < i + half; j++)
-                    {
-                        int a = v[j * step], b = v[(j + half) * step];
-                        v[j * step] = a + b;
-                        v[(j + half) * step] = a - b;
-                    }
-                }
-            }
-        }
+        return sad;
     }
 }
