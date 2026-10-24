@@ -32,6 +32,13 @@ internal sealed class H264Deblock
     /// <summary>Gets or sets whether the 256-bit forms run; tests turn them off to check the 128-bit ones.</summary>
     internal static bool UseWideVectors { get; set; } = Avx2.IsSupported;
     private H264MbState _mb = null!;
+
+    // The arrays the strengths read, kept from the picture so each lookup is one load.
+    private byte[] _nonzero = [];
+    private int[] _ref0 = [];
+    private int[] _ref1 = [];
+    private int[] _mv0 = [];
+    private int[] _mv1 = [];
     private int _widthMbs;
     private int _bitDepthY;
     private int _bitDepthC;
@@ -52,6 +59,15 @@ internal sealed class H264Deblock
     /// <summary>Filters the edges of macroblock (mbX, mbY): its left and top edges and its internal ones.</summary>
     internal void FilterOne(H264Picture pic, H264MbState mb, IReadOnlyList<H264FilterParams> slices, int bitDepthY, int bitDepthC, int mbX, int mbY)
     {
+        if (_pic != pic || _mb != mb)
+        {
+            _nonzero = mb.Nonzero;
+            _ref0 = pic.RefPicId[0];
+            _ref1 = pic.RefPicId[1];
+            _mv0 = pic.Mv[0];
+            _mv1 = pic.Mv[1];
+        }
+
         _pic = pic;
         _mb = mb;
         _widthMbs = mb.WidthMbs;
@@ -916,12 +932,12 @@ internal sealed class H264Deblock
     /// <summary>The bS of an inter block q against block p across an edge: 2 with coefficients, else by their motion.</summary>
     private int StrengthOf(int p, int q)
     {
-        if ((_mb.Nonzero[q] | _mb.Nonzero[p]) != 0)
+        if ((_nonzero[q] | _nonzero[p]) != 0)
         {
             return 2;
         }
 
-        int[] ref0 = _pic.RefPicId[0], ref1 = _pic.RefPicId[1], mv0 = _pic.Mv[0], mv1 = _pic.Mv[1];
+        int[] ref0 = _ref0, ref1 = _ref1, mv0 = _mv0, mv1 = _mv1;
         int rp0 = ref0[p], rp1 = ref1[p];
         bool same = rp0 == ref0[q] && rp1 == ref1[q] && (rp0 < 0 || mv0[p] == mv0[q]) && (rp1 < 0 || mv1[p] == mv1[q]);
         return !same && MotionDiffers(p, q) ? 1 : 0;
@@ -935,11 +951,10 @@ internal sealed class H264Deblock
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Vector128<int> Strengths(int q, int back)
     {
-        ref byte nz = ref MemoryMarshal.GetArrayDataReference(_mb.Nonzero);
-        int[][] refs = _pic.RefPicId, mvs = _pic.Mv;
-        ref int ref0 = ref MemoryMarshal.GetArrayDataReference(refs[0]), ref1 = ref MemoryMarshal.GetArrayDataReference(refs[1]);
-        ref int mv0 = ref MemoryMarshal.GetArrayDataReference(mvs[0]), mv1 = ref MemoryMarshal.GetArrayDataReference(mvs[1]);
-        if ((uint)(q + 3) >= (uint)refs[0].Length || (uint)(q + 3) >= (uint)_mb.Nonzero.Length)
+        ref byte nz = ref MemoryMarshal.GetArrayDataReference(_nonzero);
+        ref int ref0 = ref MemoryMarshal.GetArrayDataReference(_ref0), ref1 = ref MemoryMarshal.GetArrayDataReference(_ref1);
+        ref int mv0 = ref MemoryMarshal.GetArrayDataReference(_mv0), mv1 = ref MemoryMarshal.GetArrayDataReference(_mv1);
+        if ((uint)(q + 3) >= (uint)Math.Min(Math.Min(_ref0.Length, _ref1.Length), Math.Min(Math.Min(_mv0.Length, _mv1.Length), _nonzero.Length)))
         {
             throw H264Errors.Corrupt("A deblocking edge lies outside the picture.");
         }
@@ -973,17 +988,20 @@ internal sealed class H264Deblock
             & (Vector128.LessThan(rp1, Vector128<int>.Zero) | Vector128.Equals(mq1, mp1));
         Vector128<int> result = coded & Vector128.Create(2);
         uint pending = (~(coded | same)).ExtractMostSignificantBits();
+        if (pending == 0)
+        {
+            return result;
+        }
+
+        int differs = 0;
         while (pending != 0)
         {
             int lane = BitOperations.TrailingZeroCount(pending);
             pending &= pending - 1;
-            if (MotionDiffers(q + lane - back, q + lane))
-            {
-                result = result.WithElement(lane, 1);
-            }
+            differs |= MotionDiffers(q + lane - back, q + lane) ? 1 << lane : 0;
         }
 
-        return result;
+        return result | Vector128.Create(differs & 1, (differs >> 1) & 1, (differs >> 2) & 1, differs >> 3);
     }
 
     /// <summary>The scalar form of <see cref="ComputeStrengths"/>, the reference the vector form matches.</summary>
@@ -1041,8 +1059,8 @@ internal sealed class H264Deblock
     /// <summary>Whether the two blocks use different reference pictures, a different number of vectors or vectors 4 or more apart.</summary>
     private bool MotionDiffers(int p, int q)
     {
-        int p0 = _pic.RefPicId[0][p], p1 = _pic.RefPicId[1][p];
-        int q0 = _pic.RefPicId[0][q], q1 = _pic.RefPicId[1][q];
+        int p0 = _ref0[p], p1 = _ref1[p];
+        int q0 = _ref0[q], q1 = _ref1[q];
         int countP = (p0 >= 0 ? 1 : 0) + (p1 >= 0 ? 1 : 0), countQ = (q0 >= 0 ? 1 : 0) + (q1 >= 0 ? 1 : 0);
         if (countP != countQ)
         {
@@ -1057,7 +1075,7 @@ internal sealed class H264Deblock
                 return true;
             }
 
-            return Far(_pic.Mv[p0 >= 0 ? 0 : 1][p], _pic.Mv[q0 >= 0 ? 0 : 1][q]);
+            return Far((p0 >= 0 ? _mv0 : _mv1)[p], (q0 >= 0 ? _mv0 : _mv1)[q]);
         }
 
         if (!((p0 == q0 && p1 == q1) || (p0 == q1 && p1 == q0)))
@@ -1065,7 +1083,7 @@ internal sealed class H264Deblock
             return true;
         }
 
-        int mvP0 = _pic.Mv[0][p], mvP1 = _pic.Mv[1][p], mvQ0 = _pic.Mv[0][q], mvQ1 = _pic.Mv[1][q];
+        int mvP0 = _mv0[p], mvP1 = _mv1[p], mvQ0 = _mv0[q], mvQ1 = _mv1[q];
         if (p0 != p1)
         {
             // Two different pictures: compare the vectors for the same picture.

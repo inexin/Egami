@@ -10,7 +10,7 @@ namespace Egami.Video.Benchmarks;
 /// <summary>
 /// The V7 speed gate: decode time per access unit of raw H.264 files, the best of five runs, at one thread and at all cores, for
 /// comparison with <c>ffmpeg -threads 1 -i clip.h264 -f null -</c>. Frames are decoded and not copied out. --one-thread times one
-/// thread only, for profiling; --threads=N times N threads only; --once runs once. --md5 instead prints the MD5 of every frame's
+/// thread only, for profiling; --threads=N times N threads only; --once runs once and --runs=N N times. --md5 instead prints the MD5 of every frame's
 /// 8-bit planes one after the other, as <c>ffmpeg -i clip.h264 -f md5 -</c> gives it, decoded on --threads=N threads (default 1).
 /// </summary>
 internal static class H264Timing
@@ -23,7 +23,8 @@ internal static class H264Timing
             return;
         }
 
-        int runs = files.Contains("--once") ? 1 : 5;
+        int runs = files.Contains("--once") ? 1 : files.FirstOrDefault(f => f.StartsWith("--runs=", StringComparison.Ordinal)) is { } r
+            ? int.Parse(r["--runs=".Length..], System.Globalization.CultureInfo.InvariantCulture) : 5;
         int[] counts = files.Contains("--one-thread") ? [1] : files.FirstOrDefault(f => f.StartsWith("--threads=", StringComparison.Ordinal)) is { } t
             ? [int.Parse(t["--threads=".Length..], System.Globalization.CultureInfo.InvariantCulture)]
             : [1, Environment.ProcessorCount];
