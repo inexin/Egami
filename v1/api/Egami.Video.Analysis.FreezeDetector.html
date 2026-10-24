@@ -181,7 +181,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_FreezeDetector__ctor_Egami_Video_Analysis_FreezeOptions_" data-uid="Egami.Video.Analysis.FreezeDetector.#ctor(Egami.Video.Analysis.FreezeOptions)">
   FreezeDetector(FreezeOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L29"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a detector.</p>
@@ -242,7 +242,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_FreezeDetector_FrameCount" data-uid="Egami.Video.Analysis.FreezeDetector.FrameCount">
   FrameCount
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L52"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how many frames the detector has taken.</p>
@@ -274,10 +274,11 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_FreezeDetector_LastDifference" data-uid="Egami.Video.Analysis.FreezeDetector.LastDifference">
   LastDifference
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L49"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the last frame's difference from the frame the current run started with, from 0 to 1.</p>
+  <div class="markdown level1 summary"><p>Gets the last frame's difference from the frame the current run started with, from 0 to 1. Measuring stops once a frame has
+clearly moved on, so for such a frame this is a lower bound still over <a class="xref" href="Egami.Video.Analysis.FreezeOptions.html#Egami_Video_Analysis_FreezeOptions_Noise">Noise</a>.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -306,7 +307,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_FreezeDetector_Options" data-uid="Egami.Video.Analysis.FreezeDetector.Options">
   Options
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L37"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the options the detector runs with.</p>
@@ -338,7 +339,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_FreezeDetector_Ranges" data-uid="Egami.Video.Analysis.FreezeDetector.Ranges">
   Ranges
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L43"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the frozen ranges found so far. Each starts at the frame that froze and ends at the first frame that moved on; its value
@@ -375,7 +376,7 @@ is the largest difference seen in it.</p>
 
   <h3 id="Egami_Video_Analysis_FreezeDetector_Add_Egami_Video_YuvVideoFrame_" data-uid="Egami.Video.Analysis.FreezeDetector.Add(Egami.Video.YuvVideoFrame)">
   Add(YuvVideoFrame)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L57"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Takes the next frame.</p>
@@ -414,7 +415,7 @@ is the largest difference seen in it.</p>
 
   <h3 id="Egami_Video_Analysis_FreezeDetector_Complete_Egami_Video_MediaTime_" data-uid="Egami.Video.Analysis.FreezeDetector.Complete(Egami.Video.MediaTime)">
   Complete(MediaTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L98"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Ends a frozen range that runs to the end of the video.</p>
@@ -447,7 +448,7 @@ is the largest difference seen in it.</p>
 
   <h3 id="Egami_Video_Analysis_FreezeDetector_Dispose" data-uid="Egami.Video.Analysis.FreezeDetector.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/FreezeDetector.cs/#L111"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Releases the copy of the frame the current run is compared with.</p>

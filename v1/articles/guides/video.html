@@ -485,7 +485,9 @@ foreach (Scene scene in result.Scenes)
 <p><code>SceneOptions</code> picks the method and its threshold. <code>SceneMethod.Adaptive</code> weighs each frame's change against the frames
 around it, so a fast pan is not taken for a cut; <code>Content</code> compares with the frames just before, as ffmpeg's scene score does;
 <code>Histogram</code> compares luma histograms, which ignores motion inside a steady picture. A cut closer than <code>MinSceneLength</code> to the
-last is dropped, and with <code>FlashMode.Merge</code> a flash that comes back to the picture before it is no scene. <code>KeepSeries</code> keeps every frame's score.</p>
+last is dropped, and with <code>FlashMode.Merge</code> a flash that comes back to the picture before it is no scene. A frame counts as black
+for fades when its mean luma is at or under <code>FadeLevel</code> (2 % of the range, so dark scenes keep their cuts). <code>KeepSeries</code> keeps
+every frame's score.</p>
 <pre><code class="lang-csharp">// Content compares each frame with the one before, as ffmpeg's scene score does; Adaptive (the default) also weighs the
 // frames around it, so fast motion is not taken for a cut. Fades through black end a scene in the dark.
 SceneOptions options = new()

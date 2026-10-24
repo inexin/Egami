@@ -241,7 +241,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_BlackDetector_FrameCount" data-uid="Egami.Video.Analysis.BlackDetector.FrameCount">
   FrameCount
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/BlackDetector.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/BlackDetector.cs/#L50"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how many frames the detector has taken.</p>
@@ -273,10 +273,12 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_BlackDetector_LastRatio" data-uid="Egami.Video.Analysis.BlackDetector.LastRatio">
   LastRatio
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/BlackDetector.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/BlackDetector.cs/#L47"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the share of the last frame's luma samples that counted as black, from 0 to 1.</p>
+  <div class="markdown level1 summary"><p>Gets the share of the last frame's luma samples that counted as black, from 0 to 1. Unless
+<a class="xref" href="Egami.Video.Analysis.BlackOptions.html#Egami_Video_Analysis_BlackOptions_KeepSeries">KeepSeries</a> is set, counting stops once a frame cannot be black, so for such a frame this is an
+upper bound still under <a class="xref" href="Egami.Video.Analysis.BlackOptions.html#Egami_Video_Analysis_BlackOptions_PictureRatio">PictureRatio</a>.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -405,7 +407,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_BlackDetector_Add_Egami_Video_YuvVideoFrame_" data-uid="Egami.Video.Analysis.BlackDetector.Add(Egami.Video.YuvVideoFrame)">
   Add(YuvVideoFrame)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/BlackDetector.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/BlackDetector.cs/#L55"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Takes the next frame.</p>
@@ -444,7 +446,7 @@ Console.WriteLine($"{duplicates.DuplicateCount} repeated frames");</code></pre>
 
   <h3 id="Egami_Video_Analysis_BlackDetector_Complete_Egami_Video_MediaTime_" data-uid="Egami.Video.Analysis.BlackDetector.Complete(Egami.Video.MediaTime)">
   Complete(MediaTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/BlackDetector.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/BlackDetector.cs/#L85"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Ends a black range that runs to the end of the video.</p>

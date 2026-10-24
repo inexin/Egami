@@ -187,8 +187,11 @@ egami-video ffprobe -v error -show_entries format=duration -of default=noprint_w
 map to <code>analyze</code>, and <code>--ffmpeg-log</code> makes it print the same lines on standard error, in the shapes ffmpeg's documentation
 shows: <code>black_start:1 black_end:3.4 black_duration:2.4</code>, <code>silence_start: 1</code> then <code>silence_end: 3.4 | silence_duration: 2.4</code>,
 <code>lavfi.freezedetect.freeze_start</code>, cropdetect's <code>crop=w:h:x:y</code>, idet's field counts, volumedetect's <code>mean_volume</code> and
-<code>max_volume</code>, astats's per-channel block and ebur128's summary. Each line starts with <code>[Parsed_&lt;filter&gt;_&lt;n&gt; @ egami]</code>, the
-filter numbered within its <code>-vf</code> or <code>-af</code> chain as ffmpeg numbers it, so the usual regular expressions still match.</p>
+<code>max_volume</code> and the <code>histogram_&lt;n&gt;db</code> counts, astats's per-channel block and ebur128's summary with both gate thresholds. Each
+line starts with <code>[Parsed_&lt;filter&gt;_&lt;n&gt; @ egami]</code>, the filter numbered within its <code>-vf</code> or <code>-af</code> chain as ffmpeg numbers it, so
+the usual regular expressions still match; the ebur128 summary's later lines carry no prefix, as in ffmpeg's log. cropdetect
+prints its line (<code>x1</code> to <code>y2</code>, <code>w</code>, <code>h</code>, <code>x</code>, <code>y</code>, <code>pts</code>, <code>t</code>, <code>limit</code> and <code>crop=</code>) once for each run of frames with the same
+rectangle where ffmpeg prints it for every frame, and rounds to 16 by default here, as ffmpeg does (<code>analyze</code> itself rounds to 2).</p>
 <pre><code class="lang-sh">egami-video ffmpeg -i in.mkv -vf blackdetect=d=0.5 -af silencedetect=noise=-50dB:d=1 -f null -
 egami-video ffmpeg -i in.mkv -af ebur128=peak=true -f null -
 </code></pre>

@@ -273,7 +273,7 @@ on. The fades themselves are listed in <a class="xref" href="Egami.Video.Analysi
 
   <h3 id="Egami_Video_Analysis_SceneOptions_FadeBias" data-uid="Egami.Video.Analysis.SceneOptions.FadeBias">
   FadeBias
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L60"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets where in a dark run the new scene starts, from -1 (the first dark frame) through 0 (the middle, the default) to 1 (the
@@ -306,11 +306,12 @@ first frame after it), as PySceneDetect's fade bias.</p>
 
   <h3 id="Egami_Video_Analysis_SceneOptions_FadeLevel" data-uid="Egami.Video.Analysis.SceneOptions.FadeLevel">
   FadeLevel
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L54"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the mean luma, from black level (0) to white level (1), at or under which a frame counts as black for
-<a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_DetectFades">DetectFades</a>. Default 0.06, about PySceneDetect's 12 on its 0 to 255 scale; white uses 1 less this.</p>
+<a class="xref" href="Egami.Video.Analysis.SceneOptions.html#Egami_Video_Analysis_SceneOptions_DetectFades">DetectFades</a>. Default 0.02: true black, so a dark scene is not taken for a fade (a higher level made dark
+shots end in fades and hid their cuts). White uses 1 less this.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -403,7 +404,7 @@ first frame after it), as PySceneDetect's fade bias.</p>
 
   <h3 id="Egami_Video_Analysis_SceneOptions_KeepSeries" data-uid="Egami.Video.Analysis.SceneOptions.KeepSeries">
   KeepSeries
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Analysis/SceneOptions.cs/#L63"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Analysis.SceneDetector.html#Egami_Video_Analysis_SceneDetector_Scores">Scores</a> keeps every frame's score and luma. Off by default to keep memory flat.</p>

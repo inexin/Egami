@@ -178,7 +178,7 @@ as does a meter fed only silence.</p>
 
   <h3 id="Egami_Video_Audio_LoudnessMeter__ctor_Egami_Video_Audio_LoudnessOptions_" data-uid="Egami.Video.Audio.LoudnessMeter.#ctor(Egami.Video.Audio.LoudnessOptions)">
   LoudnessMeter(LoudnessOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L66"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a meter.</p>
@@ -226,7 +226,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_Duration" data-uid="Egami.Video.Audio.LoudnessMeter.Duration">
   Duration
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L99"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how much audio the meter has taken.</p>
@@ -258,7 +258,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_Integrated" data-uid="Egami.Video.Audio.LoudnessMeter.Integrated">
   Integrated
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L87"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the gated integrated loudness of everything so far in LUFS (BS.1770: -70 LUFS absolute and -10 LU relative gates).</p>
@@ -290,10 +290,10 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_MaxMomentary" data-uid="Egami.Video.Audio.LoudnessMeter.MaxMomentary">
   MaxMomentary
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L81"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the highest momentary loudness so far, in LUFS.</p>
+  <div class="markdown level1 summary"><p>Gets the highest momentary loudness so far, in LUFS, over every 400 ms window that starts on a 10 ms boundary.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -322,10 +322,10 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_MaxShortTerm" data-uid="Egami.Video.Audio.LoudnessMeter.MaxShortTerm">
   MaxShortTerm
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L84"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the highest short-term loudness so far, in LUFS.</p>
+  <div class="markdown level1 summary"><p>Gets the highest short-term loudness so far, in LUFS, over every 3 s window that starts on a 10 ms boundary.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -354,7 +354,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_Momentary" data-uid="Egami.Video.Audio.LoudnessMeter.Momentary">
   Momentary
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L75"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the loudness of the last 400 ms in LUFS, or of what came so far when that is shorter.</p>
@@ -386,7 +386,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_MomentarySeries" data-uid="Egami.Video.Audio.LoudnessMeter.MomentarySeries">
   MomentarySeries
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L102"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the momentary loudness every 100 ms, when <a class="xref" href="Egami.Video.Audio.LoudnessOptions.html#Egami_Video_Audio_LoudnessOptions_KeepSeries">KeepSeries</a> is set; otherwise empty.</p>
@@ -418,7 +418,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_Options" data-uid="Egami.Video.Audio.LoudnessMeter.Options">
   Options
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L72"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the options the meter runs with.</p>
@@ -450,7 +450,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_Range" data-uid="Egami.Video.Audio.LoudnessMeter.Range">
   Range
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L90"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the loudness range so far in LU: the spread from the 10th to the 95th percentile of the gated short-term loudness (EBU Tech 3342).</p>
@@ -482,7 +482,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_SamplePeak" data-uid="Egami.Video.Audio.LoudnessMeter.SamplePeak">
   SamplePeak
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L96"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the highest sample level so far in dBFS, over all channels.</p>
@@ -514,7 +514,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_ShortTerm" data-uid="Egami.Video.Audio.LoudnessMeter.ShortTerm">
   ShortTerm
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L65"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L78"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the loudness of the last 3 s in LUFS, or of what came so far when that is shorter.</p>
@@ -546,7 +546,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_ShortTermSeries" data-uid="Egami.Video.Audio.LoudnessMeter.ShortTermSeries">
   ShortTermSeries
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L105"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the short-term loudness every 100 ms from 3 s on, when <a class="xref" href="Egami.Video.Audio.LoudnessOptions.html#Egami_Video_Audio_LoudnessOptions_KeepSeries">KeepSeries</a> is set; otherwise empty.</p>
@@ -578,7 +578,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_TruePeak" data-uid="Egami.Video.Audio.LoudnessMeter.TruePeak">
   TruePeak
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L93"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the highest true peak so far in dBTP, over all channels; the sample peak when <a class="xref" href="Egami.Video.Audio.LoudnessOptions.html#Egami_Video_Audio_LoudnessOptions_TruePeak">TruePeak</a> is off.</p>
@@ -614,7 +614,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_Add_Egami_Video_Audio_AudioFrame_" data-uid="Egami.Video.Audio.LoudnessMeter.Add(Egami.Video.Audio.AudioFrame)">
   Add(AudioFrame)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L113"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Takes the next frame of samples.</p>
@@ -656,7 +656,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_Complete_Egami_Video_MediaTime_" data-uid="Egami.Video.Audio.LoudnessMeter.Complete(Egami.Video.MediaTime)">
   Complete(MediaTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L163"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Marks the end of the audio. A last step shorter than 100 ms is left out, as BS.1770 measures whole blocks.</p>
@@ -689,7 +689,7 @@ foreach (LoudnessValue value in meter.ShortTermSeries)
 
   <h3 id="Egami_Video_Audio_LoudnessMeter_Report" data-uid="Egami.Video.Audio.LoudnessMeter.Report">
   Report()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L152"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Audio/LoudnessMeter.cs/#L170"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns everything measured so far.</p>
